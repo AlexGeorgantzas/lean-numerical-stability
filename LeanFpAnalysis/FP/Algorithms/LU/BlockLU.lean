@@ -172,6 +172,13 @@
   - Higham13Eq1322GlobalTableauSourceChain,
     higham13_algorithm13_3_activeSuffixTail,
     higham13_algorithm13_3_activeSuffixStageTailBlock,
+    Higham13Eq1322GlobalTableauSourceChain.nonterminal_pivot_right_inverse,
+    Higham13Eq1322GlobalTableauSourceChain.nonterminal_pivot_det_ne_zero,
+    Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final,
+    Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final_right_inverse,
+    Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final_nonsingInv,
+    Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final_nonsingInv,
+    Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final,
     Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau,
     Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_exact_kappa,
@@ -815,6 +822,15 @@
     higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq_active_mul_eq_one,
     higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_pivot_bound:
     concrete upper factor assembled from Algorithm 13.3 Schur stages
+  - higham13_algorithm13_3_normedStageHistoryBound,
+    higham13_algorithm13_3_normedStageHistoryBound_contains_stage,
+    higham13_algorithm13_3_normedStageHistoryBound_contains_initial,
+    higham13_algorithm13_3_normedStageHistoryBound_contains_upperFromNormedStages,
+    higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_diag_lower,
+    higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_source_table_reciprocal,
+    higham13_algorithm13_3_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_column_bdd_source_table_reciprocal:
+    source-norm finite stage-history endpoint for Theorem 13.8, paired with
+    the source-norm assembled upper-factor bound
   - higham13_algorithm13_3_lowerFromMatrixStages,
     higham13_algorithm13_3_upperFromMatrixStages_eq_of_le,
     higham13_algorithm13_3_upperFromMatrixStages_lower_zero,
@@ -15867,6 +15883,266 @@ theorem
       stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)
       hReciprocal)
     hDiagUpdate
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
+    finite source-norm history bound for the Algorithm 13.3 Schur-stage table.
+
+    This is the subordinate-block-norm analogue of the scalar max-entry
+    history object.  It records the largest block norm among the finitely many
+    stages `0, ..., m`, without translating through the entrywise max norm. -/
+noncomputable def higham13_algorithm13_3_normedStageHistoryBound {m : ℕ}
+    {α : Type*} [SeminormedRing α]
+    (hm : 0 < m)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α) : ℝ :=
+  Finset.sup' (Finset.univ : Finset (Fin (m + 1)))
+    (Finset.univ_nonempty_iff.mpr ⟨⟨0, Nat.succ_pos m⟩⟩)
+    (fun k : Fin (m + 1) =>
+      higham13_blockNormSup hm
+        (fun i j => higham13_algorithm13_3_schurStageBlock A pivotInv k.val i j))
+
+/-- The source-norm history bound contains every recorded Schur stage. -/
+theorem higham13_algorithm13_3_normedStageHistoryBound_contains_stage {m : ℕ}
+    {α : Type*} [SeminormedRing α]
+    (hm : 0 < m)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    (k : ℕ) (hk : k ≤ m) :
+    higham13_blockNormSup hm
+        (fun i j => higham13_algorithm13_3_schurStageBlock A pivotInv k i j) ≤
+      higham13_algorithm13_3_normedStageHistoryBound hm A pivotInv := by
+  unfold higham13_algorithm13_3_normedStageHistoryBound
+  simpa using
+    (Finset.le_sup'
+      (fun K : Fin (m + 1) =>
+        higham13_blockNormSup hm
+          (fun i j =>
+            higham13_algorithm13_3_schurStageBlock A pivotInv K.val i j))
+      (Finset.mem_univ (⟨k, Nat.lt_succ_of_le hk⟩ : Fin (m + 1))))
+
+/-- The source-norm history bound contains the initial block table. -/
+theorem higham13_algorithm13_3_normedStageHistoryBound_contains_initial {m : ℕ}
+    {α : Type*} [SeminormedRing α]
+    (hm : 0 < m)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α) :
+    higham13_blockNormSup hm A ≤
+      higham13_algorithm13_3_normedStageHistoryBound hm A pivotInv := by
+  simpa [higham13_algorithm13_3_schurStageBlock] using
+    higham13_algorithm13_3_normedStageHistoryBound_contains_stage
+      hm A pivotInv 0 (Nat.zero_le m)
+
+/-- The source-norm history bound is nonnegative. -/
+lemma higham13_algorithm13_3_normedStageHistoryBound_nonneg {m : ℕ}
+    {α : Type*} [SeminormedRing α]
+    (hm : 0 < m)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α) :
+    0 ≤ higham13_algorithm13_3_normedStageHistoryBound hm A pivotInv := by
+  exact le_trans (higham13_blockNormSup_nonneg hm A)
+    (higham13_algorithm13_3_normedStageHistoryBound_contains_initial
+      hm A pivotInv)
+
+/-- The source-norm history bound contains the upper factor assembled from
+    the recorded Schur stages. -/
+theorem higham13_algorithm13_3_normedStageHistoryBound_contains_upperFromNormedStages
+    {m : ℕ} {α : Type*} [SeminormedRing α]
+    (hm : 0 < m)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α) :
+    higham13_blockNormSup hm
+        (higham13_algorithm13_3_upperFromNormedStages A pivotInv) ≤
+      higham13_algorithm13_3_normedStageHistoryBound hm A pivotInv := by
+  apply higham13_blockNormSup_le_of_norm_le hm
+  intro i j
+  by_cases hij : i.val ≤ j.val
+  · have hstage :
+        higham13_algorithm13_3_upperFromNormedStages A pivotInv i j =
+          higham13_algorithm13_3_schurStageBlock A pivotInv i.val i j :=
+      higham13_algorithm13_3_upperFromNormedStages_eq_stage A pivotInv i j hij
+    rw [hstage]
+    exact le_trans
+      (higham13_block_norm_le_blockNormSup hm
+        (fun p q => higham13_algorithm13_3_schurStageBlock A pivotInv i.val p q) i j)
+      (higham13_algorithm13_3_normedStageHistoryBound_contains_stage
+        hm A pivotInv i.val (Nat.le_of_lt i.isLt))
+  · have hji : j.val < i.val := Nat.lt_of_not_ge hij
+    have hzero :
+        higham13_algorithm13_3_upperFromNormedStages A pivotInv i j = 0 :=
+      higham13_algorithm13_3_upperFromNormedStages_lower_zero A pivotInv i j hji
+    rw [hzero, norm_zero]
+    exact higham13_algorithm13_3_normedStageHistoryBound_nonneg hm A pivotInv
+
+/-- Active-stage source-norm bounds extend to every block of every recorded
+    Schur stage. -/
+theorem higham13_algorithm13_3_normedStageBlock_bound_of_active_bound
+    {m : ℕ} {α : Type*} [SeminormedRing α]
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    {C : ℝ}
+    (hActive : ∀ k : ℕ, ∀ i j : Fin m, k ≤ m → k ≤ i.val → k ≤ j.val →
+      ‖higham13_algorithm13_3_schurStageBlock A pivotInv k i j‖ ≤ C) :
+    ∀ k : ℕ, k ≤ m → ∀ i j : Fin m,
+      ‖higham13_algorithm13_3_schurStageBlock A pivotInv k i j‖ ≤ C := by
+  intro k hk
+  induction k with
+  | zero =>
+      intro i j
+      exact hActive 0 i j (Nat.zero_le m) (Nat.zero_le i.val) (Nat.zero_le j.val)
+  | succ k ih =>
+      intro i j
+      by_cases hactive : k + 1 ≤ i.val ∧ k + 1 ≤ j.val
+      · exact hActive (k + 1) i j hk hactive.1 hactive.2
+      · have hklt : k < m := Nat.lt_of_succ_le hk
+        have hnot_lt : ¬(k < i.val ∧ k < j.val) := by
+          intro hlt
+          exact hactive ⟨Nat.succ_le_of_lt hlt.1, Nat.succ_le_of_lt hlt.2⟩
+        have hstage :
+            higham13_algorithm13_3_schurStageBlock A pivotInv (k + 1) i j =
+              higham13_algorithm13_3_schurStageBlock A pivotInv k i j := by
+          simp [higham13_algorithm13_3_schurStageBlock, hklt, hnot_lt]
+        simpa [hstage] using ih (Nat.le_of_succ_le hk) i j
+
+/-- A uniform source-norm bound on each recorded Schur stage controls the
+    finite source-norm history bound. -/
+theorem higham13_algorithm13_3_normedStageHistoryBound_le_of_stage_bound
+    {m : ℕ} {α : Type*} [SeminormedRing α]
+    (hm : 0 < m)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    {C : ℝ}
+    (hStage : ∀ k : ℕ, k ≤ m →
+      higham13_blockNormSup hm
+          (fun i j => higham13_algorithm13_3_schurStageBlock A pivotInv k i j) ≤
+        C) :
+    higham13_algorithm13_3_normedStageHistoryBound hm A pivotInv ≤ C := by
+  unfold higham13_algorithm13_3_normedStageHistoryBound
+  apply Finset.sup'_le
+  intro K _hK
+  exact hStage K.val (Nat.le_of_lt_succ K.isLt)
+
+/-- Active-stage source-norm bounds control the finite source-norm history
+    bound. -/
+theorem higham13_algorithm13_3_normedStageHistoryBound_le_of_active_bound
+    {m : ℕ} {α : Type*} [SeminormedRing α]
+    (hm : 0 < m)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    {C : ℝ}
+    (hActive : ∀ k : ℕ, ∀ i j : Fin m, k ≤ m → k ≤ i.val → k ≤ j.val →
+      ‖higham13_algorithm13_3_schurStageBlock A pivotInv k i j‖ ≤ C) :
+    higham13_algorithm13_3_normedStageHistoryBound hm A pivotInv ≤ C :=
+  higham13_algorithm13_3_normedStageHistoryBound_le_of_stage_bound hm A pivotInv
+    (fun k hk =>
+      higham13_blockNormSup_le_of_norm_le hm
+        (fun i j => higham13_algorithm13_3_schurStageBlock A pivotInv k i j)
+        (fun i j =>
+          higham13_algorithm13_3_normedStageBlock_bound_of_active_bound
+            A pivotInv hActive k hk i j))
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
+    source-norm stage-history bound from the one-sided active diagonal
+    certificate. -/
+theorem
+    higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_diag_lower
+    {m : ℕ} {α : Type*} [SeminormedRing α]
+    (hm : 0 < m)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => ‖A i j‖) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ ‖A j j‖)
+    (hInitInv : ∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j)
+    (hDiagLower : SchurStageActivePivotInvDiagLower13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv))
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    higham13_algorithm13_3_normedStageHistoryBound hm A pivotInv ≤
+      2 * higham13_blockNormSup hm A := by
+  classical
+  let normMax : ℝ := higham13_blockNormSup hm A
+  have hMax : ∀ i j : Fin m, ‖A i j‖ ≤ normMax := by
+    intro i j
+    simpa [normMax] using higham13_block_norm_le_blockNormSup hm A i j
+  have hPivotBound :
+      ∀ k : ℕ, ∀ hk : k < m,
+        higham13_algorithm13_3_pivotInvNorm pivotInv k *
+          stageInvDiagBound k ⟨k, hk⟩ ≤ 1 :=
+    higham13_theorem13_7_pivot_inverse_bound_of_diag_lower
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)
+      (higham13_algorithm13_3_pivotInvNorm_nonneg pivotInv) hDiagLower
+  exact
+    higham13_algorithm13_3_normedStageHistoryBound_le_of_active_bound
+      hm A pivotInv
+      (fun k i j _hk hik hjk => by
+        simpa [higham13_algorithm13_3_schurStageNorm] using
+          higham13_algorithm13_3_active_stage_block_bound_of_pivot_bound
+            (fun i j : Fin m => ‖A i j‖) invDiagBound hDom hDiagBound
+            A pivotInv stageInvDiagBound
+            (by
+              intro i j
+              rfl)
+            hInitInv hPivotBound hDiagUpdate normMax hMax k i j hik hjk)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
+    source-norm stage-history bound in the reciprocal-table form closest to
+    the book's lower-norm proof. -/
+theorem
+    higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_source_table_reciprocal
+    {m : ℕ} {α : Type*} [SeminormedRing α]
+    (hm : 0 < m)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => ‖A i j‖) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ ‖A j j‖)
+    (hInitInv : ∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j)
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv))
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    higham13_algorithm13_3_normedStageHistoryBound hm A pivotInv ≤
+      2 * higham13_blockNormSup hm A :=
+  higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_diag_lower
+    hm A pivotInv invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+    (SchurStageActivePivotInvDiagLower13_7.of_reciprocal
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)
+      hReciprocal)
+    hDiagUpdate
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.21) and Theorem 13.8:
+    paired source-norm package for the assembled upper factor and the finite
+    Schur-stage history bound.
+
+    This is the clean subordinate-norm endpoint.  It avoids the false
+    entrywise max-norm product shortcut, and it still leaves the source lower
+    table/active reciprocal construction explicit. -/
+theorem
+    higham13_algorithm13_3_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_column_bdd_source_table_reciprocal
+    {m : ℕ} {α : Type*} [SeminormedRing α]
+    (hm : 0 < m)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => ‖A i j‖) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ ‖A j j‖)
+    (hInitInv : ∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j)
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv))
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    higham13_blockNormSup hm
+        (higham13_algorithm13_3_upperFromNormedStages A pivotInv) ≤
+        2 * higham13_blockNormSup hm A ∧
+      higham13_algorithm13_3_normedStageHistoryBound hm A pivotInv ≤
+        2 * higham13_blockNormSup hm A :=
+  ⟨higham13_algorithm13_3_upperFromNormedStages_blockNormSup_bound_of_column_bdd_source_table_reciprocal
+      hm A pivotInv invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+      hReciprocal hDiagUpdate,
+    higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_source_table_reciprocal
+      hm A pivotInv invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+      hReciprocal hDiagUpdate⟩
 
 /-- Column-BDD Eq.13.21 specialization using only the active pivot product
     certificate.  This removes the redundant separate nonzero-norm premise from
@@ -43000,6 +43276,257 @@ theorem
       (AinvGlob := Ainv) (hApos := hApos) (n := n)
       (Ablk := Ablk) (pivotInv := pivotInv)
       hpivot hsn hA_le_G hSchur_le_G hAinv_entry hFirstRow hTail)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    nonterminal active pivot right-inverse data carried by the fixed-ambient
+    global-tableau source certificate.
+
+    This exposes the pivot identities stored by the recursive global-tableau
+    route in the same table form used by the BDD/product-update interfaces.
+    The terminal one-block pivot is intentionally not included; all-pivot
+    wrappers below isolate that final datum. -/
+theorem Higham13Eq1322GlobalTableauSourceChain.nonterminal_pivot_right_inverse
+    {r N n : ℕ} {hr : 0 < r} {hN : 0 < N}
+    {Aglob Gglob AinvGlob : Fin N → Fin N → ℝ}
+    {hApos : 0 < maxEntryNorm hN Aglob} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob AinvGlob
+        hApos n m Ablk pivotInv →
+        ∀ k : ℕ, ∀ hk : k < m,
+          IsRightInverse r
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+              ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩
+              ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩)
+            (pivotInv k) := by
+  intro m Ablk pivotInv hcert
+  induction hcert with
+  | one hUpper =>
+      intro k hk
+      exact (Nat.not_lt_zero k hk).elim
+  | @succ m Ablk pivotInv hA11 hSchur hFull hpivot hsn hA_le_G
+      hSchur_le_G hAinv_entry hFirstRow hTail ih =>
+      intro k hk
+      cases k with
+      | zero =>
+          letI : Invertible (blockMatrixFirstSplitA11 Ablk) := hA11
+          have hri :
+              IsRightInverse r (blockMatrixFirstSplitA11 Ablk) (pivotInv 0) :=
+            isRightInverse_of_eq_invOf
+              (blockMatrixFirstSplitA11 Ablk) (pivotInv 0) hpivot
+          simpa [higham13_algorithm13_3_schurStageMatrixBlock,
+            higham13_algorithm13_3_schurStageBlock, blockMatrixFirstSplitA11]
+            using hri
+      | succ k =>
+          have hkTail : k < m := Nat.succ_lt_succ_iff.mp hk
+          have htail := ih k hkTail
+          have hkTailFin : k < m + 1 := Nat.lt_trans hkTail (Nat.lt_succ_self m)
+          have hkFull : k + 1 < (m + 1) + 1 :=
+            Nat.lt_trans hk (Nat.lt_succ_self (m + 1))
+          have hidx :
+              (Fin.succ (⟨k, hkTailFin⟩ : Fin (m + 1)) :
+                  Fin ((m + 1) + 1)) =
+                (⟨k + 1, hkFull⟩ : Fin ((m + 1) + 1)) := by
+            ext
+            rfl
+          have hstage :=
+            higham13_algorithm13_3_schurStageMatrixBlock_tail_shift
+              Ablk pivotInv k (⟨k, hkTailFin⟩ : Fin (m + 1))
+              (⟨k, hkTailFin⟩ : Fin (m + 1))
+          simpa [hidx, hstage] using htail
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    determinant nonsingularity of every nonterminal active pivot represented by
+    a fixed-ambient global-tableau source chain. -/
+theorem Higham13Eq1322GlobalTableauSourceChain.nonterminal_pivot_det_ne_zero
+    {r N n : ℕ} {hr : 0 < r} {hN : 0 < N}
+    {Aglob Gglob AinvGlob : Fin N → Fin N → ℝ}
+    {hApos : 0 < maxEntryNorm hN Aglob} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob AinvGlob
+        hApos n m Ablk pivotInv →
+        ∀ k : ℕ, ∀ hk : k < m,
+          Matrix.det
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+              ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩
+              ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert k hk
+  have hRight :=
+    Higham13Eq1322GlobalTableauSourceChain.nonterminal_pivot_right_inverse
+      hcert k hk
+  exact
+    Matrix.det_ne_zero_of_right_inverse
+      (A := higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+        ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩
+        ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩)
+      (B := pivotInv k)
+      (by
+        ext i j
+        rw [Matrix.mul_apply, Matrix.one_apply]
+        exact hRight i j)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    full active pivot right-inverse table for a fixed-ambient global-tableau
+    source chain, once the final one-block pivot is supplied separately. -/
+theorem Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final
+    {r N n : ℕ} {hr : 0 < r} {hN : 0 < N}
+    {Aglob Gglob AinvGlob : Fin N → Fin N → ℝ}
+    {hApos : 0 < maxEntryNorm hN Aglob} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob AinvGlob
+        hApos n m Ablk pivotInv →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        IsRightInverse r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)
+          (pivotInv k) := by
+  intro m Ablk pivotInv hcert hfinal k hk
+  by_cases hkm : k < m
+  · exact
+      Higham13Eq1322GlobalTableauSourceChain.nonterminal_pivot_right_inverse
+        hcert k hkm
+  · have hle : k ≤ m := Nat.lt_succ_iff.mp hk
+    have hmk : m ≤ k := Nat.le_of_not_gt hkm
+    have hEq : k = m := Nat.le_antisymm hle hmk
+    subst k
+    simpa using hfinal
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    full active pivot determinant table for a fixed-ambient global-tableau
+    source chain, once the final one-block pivot determinant is supplied
+    separately. -/
+theorem Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final
+    {r N n : ℕ} {hr : 0 < r} {hN : 0 < N}
+    {Aglob Gglob AinvGlob : Fin N → Fin N → ℝ}
+    {hApos : 0 < maxEntryNorm hN Aglob} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob AinvGlob
+        hApos n m Ablk pivotInv →
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hfinal k hk
+  by_cases hkm : k < m
+  · exact
+      Higham13Eq1322GlobalTableauSourceChain.nonterminal_pivot_det_ne_zero
+        hcert k hkm
+  · have hle : k ≤ m := Nat.lt_succ_iff.mp hk
+    have hmk : m ≤ k := Nat.le_of_not_gt hkm
+    have hEq : k = m := Nat.le_antisymm hle hmk
+    subst k
+    simpa using hfinal
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    full active pivot determinant table for a fixed-ambient global-tableau
+    source chain when the final one-block pivot is supplied as a right-inverse
+    certificate. -/
+theorem Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final_right_inverse
+    {r N n : ℕ} {hr : 0 < r} {hN : 0 < N}
+    {Aglob Gglob AinvGlob : Fin N → Fin N → ℝ}
+    {hApos : 0 < maxEntryNorm hN Aglob} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob AinvGlob
+        hApos n m Ablk pivotInv →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hfinal
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
+      Ablk pivotInv
+      (Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final
+        hcert hfinal)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    all-pivot right-inverse table for a fixed-ambient global-tableau source
+    chain when the terminal one-block pivot is the canonical `nonsingInv`. -/
+theorem Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final_nonsingInv
+    {r N n : ℕ} {hr : 0 < r} {hN : 0 < N}
+    {Aglob Gglob AinvGlob : Fin N → Fin N → ℝ}
+    {hApos : 0 < maxEntryNorm hN Aglob} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob AinvGlob
+        hApos n m Ablk pivotInv →
+      Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      pivotInv m =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        IsRightInverse r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)
+          (pivotInv k) := by
+  intro m Ablk pivotInv hcert hdet hfinalEq
+  apply Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final hcert
+  simpa [hfinalEq] using
+    (isInverse_nonsingInv_of_det_ne_zero r
+      (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+        ⟨m, Nat.lt_succ_self m⟩
+        ⟨m, Nat.lt_succ_self m⟩) hdet).2
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    all-pivot determinant table for a fixed-ambient global-tableau source chain
+    when the terminal one-block pivot is the canonical `nonsingInv`. -/
+theorem Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final_nonsingInv
+    {r N n : ℕ} {hr : 0 < r} {hN : 0 < N}
+    {Aglob Gglob AinvGlob : Fin N → Fin N → ℝ}
+    {hApos : 0 < maxEntryNorm hN Aglob} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob AinvGlob
+        hApos n m Ablk pivotInv →
+      Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      pivotInv m =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hdet hfinalEq
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
+      Ablk pivotInv
+      (Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final_nonsingInv
+        hcert hdet hfinalEq)
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     a fixed-ambient global-tableau source certificate instantiates the

@@ -34,6 +34,22 @@ end-to-end stability rebuild is tagged as
   source-strength entrywise max-growth route, concrete BDD source-table
   construction, Problem 13.4 source comparisons, and Theorem 13.6 cited
   implementation estimates remain open.
+- 2026-07-01 BDD generic source-norm finite-history endpoint: added
+  `higham13_algorithm13_3_normedStageHistoryBound` and containment/nonnegativity
+  helpers, the active-stage-to-history bound
+  `higham13_algorithm13_3_normedStageHistoryBound_le_of_active_bound`, the
+  one-sided and reciprocal source-table endpoints
+  `higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_diag_lower`
+  and
+  `higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_source_table_reciprocal`,
+  and the paired theorem
+  `higham13_algorithm13_3_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_column_bdd_source_table_reciprocal`.
+  These prove the finite source-norm history bound over stages `0, ..., m` in
+  any `SeminormedRing` block algebra and pair it with the assembled
+  source-norm upper-factor Eq.13.21 bound.  This is clean Theorem 13.8
+  source-norm dependency progress only: scalar entrywise `growthFactorEntry <= 2`,
+  the concrete BDD source-table/nonsingularity construction, Problem 13.4 source
+  comparisons, and Theorem 13.6 cited implementation estimates remain open.
 - 2026-07-01 Problem 13.4 canonical all-tail global-tableau source-chain
   constructor: added `higham13_algorithm13_3_activeSuffixTail`,
   `higham13_algorithm13_3_activeSuffixStageTailBlock`, the stage-zero/stage-one
@@ -94,6 +110,21 @@ end-to-end stability rebuild is tagged as
   raw growth-factor and ambient-right-inverse plumbing at the global-tableau
   source-chain boundary, but it does not construct the all-tail source chain or
   prove the inverse-entry/source comparison.
+- 2026-07-01 Problem 13.4 global-tableau source-chain pivot tables: added
+  `Higham13Eq1322GlobalTableauSourceChain.nonterminal_pivot_right_inverse`,
+  `Higham13Eq1322GlobalTableauSourceChain.nonterminal_pivot_det_ne_zero`,
+  `Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final`,
+  `Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final`,
+  `Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final_right_inverse`,
+  `Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final_nonsingInv`,
+  and
+  `Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final_nonsingInv`.
+  These expose the pivot identity stored at each nonterminal step of the
+  fixed-ambient global-tableau source certificate and add the terminal-pivot
+  wrappers needed to satisfy all-pivot right-inverse/determinant APIs.  This
+  removes an all-pivot proof-artifact table from the global-tableau route, but
+  the all-tail source comparison/nonsingularity data, source-strength BDD
+  product/update data, and Theorem 13.6 cited estimates remain open.
 - 2026-07-01 Problem 13.4 derived active-tail Eq.13.23 product-update
   wrappers: added
   `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update`,
