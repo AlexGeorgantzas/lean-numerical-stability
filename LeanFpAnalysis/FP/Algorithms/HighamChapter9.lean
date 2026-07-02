@@ -60908,6 +60908,97 @@ theorem higham9_9_colDiagDominant_fin_two_exists_LUFactSpec_growthFactorEntry_le
     higham9_9_growthFactorEntry_le_two_of_upper_entry_bound_exists_hAmax
       (by norm_num : 0 < 2) A U hdet hU_bound
 
+/-- **Theorem 9.9**, `2 by 2` row diagonally dominant nonsingular matrices
+have an exact no-pivot LU package whose max-entry growth factor is at most `2`.
+
+This closes the first nontrivial finite-dimensional row-dominant endpoint of
+Wilkinson's diagonal-dominance growth theorem.  Unlike the column-dominant
+endpoint, no unit-multiplier bound is claimed, matching the source note that
+row-dominant multipliers can be arbitrarily large. -/
+theorem higham9_9_rowDiagDominant_fin_two_exists_LUFactSpec_growthFactorEntry_le_two
+    (A : Fin 2 → Fin 2 → ℝ)
+    (hDD : IsRowDiagDominant 2 A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin 2) (Fin 2) ℝ) ≠ 0) :
+    ∃ L U : Fin 2 → Fin 2 → ℝ,
+      LUFactSpec 2 A L U ∧
+        ∃ hAmax : 0 < maxEntryNorm (by norm_num : 0 < 2) A,
+          growthFactorEntry (by norm_num : 0 < 2) A U hAmax ≤ 2 := by
+  classical
+  let S : Fin 1 → Fin 1 → ℝ := higham9_1_firstSchurComplement A
+  let L₁ : Fin 1 → Fin 1 → ℝ := fun _ _ => 1
+  let U₁ : Fin 1 → Fin 1 → ℝ := S
+  let L : Fin 2 → Fin 2 → ℝ := luFirstStepL A L₁
+  let U : Fin 2 → Fin 2 → ℝ := luFirstStepU A U₁
+  have hpivot : A 0 0 ≠ 0 :=
+    (higham9_9_rowDiagDominant_diag_ne_zero_of_det_ne_zero hDD hdet) 0
+  have hLU₁ : LUFactSpec 1 (higham9_1_firstSchurComplement A) L₁ U₁ := by
+    simpa [S, L₁, U₁] using
+      (higham9_1_LUFactSpec_one_explicit (higham9_1_firstSchurComplement A))
+  have hLU : LUFactSpec 2 A L U := by
+    simpa [L, U] using
+      (LUFactSpec.of_firstSchurComplement_explicit (m := 1) hpivot hLU₁)
+  have hU_bound : ∀ i j : Fin 2, |U i j| ≤
+      2 * maxEntryNorm (by norm_num : 0 < 2) A := by
+    intro i j
+    fin_cases i <;> fin_cases j
+    · have hentry := entry_le_maxEntryNorm (by norm_num : 0 < 2) A 0 0
+      have hnonneg : 0 ≤ maxEntryNorm (by norm_num : 0 < 2) A :=
+        maxEntryNorm_nonneg (by norm_num : 0 < 2) A
+      have htwo : maxEntryNorm (by norm_num : 0 < 2) A ≤
+          2 * maxEntryNorm (by norm_num : 0 < 2) A := by nlinarith
+      simpa [U, luFirstStepU] using le_trans hentry htwo
+    · have hentry := entry_le_maxEntryNorm (by norm_num : 0 < 2) A 0 1
+      have hnonneg : 0 ≤ maxEntryNorm (by norm_num : 0 < 2) A :=
+        maxEntryNorm_nonneg (by norm_num : 0 < 2) A
+      have htwo : maxEntryNorm (by norm_num : 0 < 2) A ≤
+          2 * maxEntryNorm (by norm_num : 0 < 2) A := by nlinarith
+      simpa [U, luFirstStepU] using le_trans hentry htwo
+    · have hnonneg : 0 ≤ 2 * maxEntryNorm (by norm_num : 0 < 2) A := by
+        have hA_nonneg : 0 ≤ maxEntryNorm (by norm_num : 0 < 2) A :=
+          maxEntryNorm_nonneg (by norm_num : 0 < 2) A
+        nlinarith
+      simpa [U, luFirstStepU] using hnonneg
+    · let M : ℝ := maxEntryNorm (by norm_num : 0 < 2) A
+      have hdiag : |A 1 1| ≤ M := by
+        simpa [M] using entry_le_maxEntryNorm (by norm_num : 0 < 2) A 1 1
+      have hleft : |A 1 0| ≤ M := by
+        simpa [M] using entry_le_maxEntryNorm (by norm_num : 0 < 2) A 1 0
+      have hratio : |A 0 1 / A 0 0| ≤ 1 :=
+        higham9_9_rowDiagDominant_entry_ratio_abs_le_one hDD
+          (by decide : (1 : Fin 2) ≠ 0) hpivot
+      have hprod :
+          |A 0 1 / A 0 0| * |A 1 0| ≤ 1 * M :=
+        mul_le_mul hratio hleft (abs_nonneg _) (by norm_num)
+      have hfactor :
+          |A 1 0 * A 0 1 / A 0 0| =
+            |A 0 1 / A 0 0| * |A 1 0| := by
+        have hden_abs : |A 0 0| ≠ 0 := abs_ne_zero.mpr hpivot
+        calc
+          |A 1 0 * A 0 1 / A 0 0|
+              = |A 1 0| * |A 0 1| / |A 0 0| := by
+                  rw [abs_div, abs_mul]
+          _ = (|A 0 1| / |A 0 0|) * |A 1 0| := by
+                  field_simp [hden_abs]
+          _ = |A 0 1 / A 0 0| * |A 1 0| := by
+                  rw [abs_div]
+      have htail : |S 0 0| ≤ 2 * M := by
+        calc
+          |S 0 0|
+              = |A 1 1 - A 1 0 * A 0 1 / A 0 0| := by
+                  simp [S, higham9_1_firstSchurComplement, luFirstSchurComplement]
+          _ ≤ |A 1 1| + |A 1 0 * A 0 1 / A 0 0| := by
+                  simpa [abs_neg] using
+                    (abs_sub_le (A 1 1) 0 (A 1 0 * A 0 1 / A 0 0))
+          _ = |A 1 1| + |A 0 1 / A 0 0| * |A 1 0| := by
+                  rw [hfactor]
+          _ ≤ M + 1 * M := add_le_add hdiag hprod
+          _ = 2 * M := by ring
+      simpa [U, U₁, S, luFirstStepU, M] using htail
+  refine ⟨L, U, hLU, ?_⟩
+  exact
+    higham9_9_growthFactorEntry_le_two_of_upper_entry_bound_exists_hAmax
+      (by norm_num : 0 < 2) A U hdet hU_bound
+
 /-- **Theorem 9.13**, source-facing exact-LU existence and componentwise
 growth package for nonsingular column-diagonally-dominant tridiagonal
 matrices.  The no-pivot LU existence theorem supplies exact factors with
