@@ -60999,6 +60999,75 @@ theorem higham9_9_rowDiagDominant_fin_two_exists_LUFactSpec_growthFactorEntry_le
     higham9_9_growthFactorEntry_le_two_of_upper_entry_bound_exists_hAmax
       (by norm_num : 0 < 2) A U hdet hU_bound
 
+/-- **Theorem 9.9**, column diagonally dominant nonsingular matrices in
+dimensions one and two have exact no-pivot LU factors with unit-bounded lower
+entries and max-entry growth factor at most `2`.
+
+This packages the explicit `1 by 1` base case with the verified `2 by 2`
+endpoint, matching the small-dimension closure pattern used for the
+Wilkinson/Foster growth families elsewhere in this chapter. -/
+theorem higham9_9_colDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2)
+    (A : Fin n → Fin n → ℝ)
+    (hDD : IsDiagDominant n A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n A L U ∧
+        (∀ i j : Fin n, |L i j| ≤ 1) ∧
+          ∃ hAmax : 0 < maxEntryNorm hn A,
+            growthFactorEntry hn A U hAmax ≤ 2 := by
+  interval_cases n
+  · refine ⟨(fun _ _ => 1), A, ?_, ?_, ?_⟩
+    · exact higham9_1_LUFactSpec_one_explicit A
+    · intro i j
+      fin_cases i
+      fin_cases j
+      norm_num
+    · exact
+        higham9_9_growthFactorEntry_le_two_of_upper_entry_bound_exists_hAmax
+          hn A A hdet (by
+            intro i j
+            have hentry : |A i j| ≤ maxEntryNorm hn A :=
+              entry_le_maxEntryNorm hn A i j
+            have hnonneg : 0 ≤ maxEntryNorm hn A :=
+              maxEntryNorm_nonneg hn A
+            nlinarith)
+  · simpa using
+      higham9_9_colDiagDominant_fin_two_exists_LUFactSpec_growthFactorEntry_le_two
+        A hDD hdet
+
+/-- **Theorem 9.9**, row diagonally dominant nonsingular matrices in dimensions
+one and two have exact no-pivot LU factors with max-entry growth factor at most
+`2`.
+
+This is the row-dominant companion to the small-dimension column endpoint.  It
+retains the source distinction that row diagonal dominance proves the growth
+bound without asserting unit-bounded multipliers. -/
+theorem higham9_9_rowDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2)
+    (A : Fin n → Fin n → ℝ)
+    (hDD : IsRowDiagDominant n A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n A L U ∧
+        ∃ hAmax : 0 < maxEntryNorm hn A,
+          growthFactorEntry hn A U hAmax ≤ 2 := by
+  interval_cases n
+  · refine ⟨(fun _ _ => 1), A, ?_, ?_⟩
+    · exact higham9_1_LUFactSpec_one_explicit A
+    · exact
+        higham9_9_growthFactorEntry_le_two_of_upper_entry_bound_exists_hAmax
+          hn A A hdet (by
+            intro i j
+            have hentry : |A i j| ≤ maxEntryNorm hn A :=
+              entry_le_maxEntryNorm hn A i j
+            have hnonneg : 0 ≤ maxEntryNorm hn A :=
+              maxEntryNorm_nonneg hn A
+            nlinarith)
+  · simpa using
+      higham9_9_rowDiagDominant_fin_two_exists_LUFactSpec_growthFactorEntry_le_two
+        A hDD hdet
+
 /-- **Theorem 9.13**, source-facing exact-LU existence and componentwise
 growth package for nonsingular column-diagonally-dominant tridiagonal
 matrices.  The no-pivot LU existence theorem supplies exact factors with
