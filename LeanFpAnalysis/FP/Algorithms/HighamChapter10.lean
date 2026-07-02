@@ -1871,12 +1871,26 @@ theorem higham10_12_w_norm_bound_from_cond
   w_norm_bound_from_cond W_norm κ_A11 hκ hW
 
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
-`‖W‖^2`, with Higham's `(n-r)(4^r-1)/3` constant. -/
-theorem higham10_13_complete_pivoting_w_bound (n r : ℕ) (hr : r ≤ n)
-    (W_norm_sq : ℝ)
-    (hW : W_norm_sq ≤ (↑(n - r) : ℝ) * ((4 : ℝ) ^ r - 1) / 3) :
-    W_norm_sq ≤ (↑(n - r) : ℝ) * ((4 : ℝ) ^ r - 1) / 3 :=
-  complete_pivoting_w_bound n r hr W_norm_sq hW
+`‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
+an `r × r` upper-triangular block `U` with positive diagonal whose rows
+are pivot-dominated on and right of the diagonal — exactly what
+complete pivoting guarantees via the (10.13) column-tail invariant
+(`tail_invariant_entry_le` applied to the factor from
+`psd_pivoted_cholesky_exists_tail`) — the solution `W` of `U W = B`
+with pivot-dominated right-hand columns `B` (the border block `R₁₂`)
+satisfies `∑_{i,j} W i j ² ≤ m (4^r − 1)/3`, `m = n − r` border
+columns. -/
+theorem higham10_13_complete_pivoting_w_bound {r m : ℕ}
+    (U : Fin r → Fin r → ℝ) (B W : Fin r → Fin m → ℝ)
+    (hupper : ∀ i j : Fin r, j.val < i.val → U i j = 0)
+    (hdiag_pos : ∀ i : Fin r, 0 < U i i)
+    (hentry : ∀ i j : Fin r, i.val ≤ j.val → |U i j| ≤ U i i)
+    (hB : ∀ (i : Fin r) (j : Fin m), |B i j| ≤ U i i)
+    (hsolve : ∀ (i : Fin r) (j : Fin m),
+      ∑ k : Fin r, U i k * W k j = B i j) :
+    ∑ j : Fin m, ∑ i : Fin r, W i j ^ 2 ≤
+      (m : ℝ) * (((4 : ℝ) ^ r - 1) / 3) :=
+  complete_pivoting_w_bound U B W hupper hdiag_pos hentry hB hsolve
 
 /-- **Theorem 10.14 / equation (10.22)**: PSD Cholesky backward-error
 interface after `r` stages. -/
