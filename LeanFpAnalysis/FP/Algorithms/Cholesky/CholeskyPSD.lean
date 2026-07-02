@@ -2505,6 +2505,300 @@ theorem fl_cp_termination_trailing_bound (fp : FPModel) {n : ℕ}
     linarith [h2.2]
   exact psd_abs_entry_le_maxdiag (cpState hn A r) hSr (tol + h r)
     hdiag
+/-- **Factor-form floating-point elimination step** — the update as
+    Algorithm 10.2-pivoted actually computes it: divide the pivot row
+    and column by the rounded square root of the pivot and subtract
+    the product of the computed factor entries. -/
+noncomputable def fl_schurStepFactor (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (p : Fin n) : Fin n → Fin n → ℝ :=
+  fun i j => if i = p ∨ j = p then 0
+    else fp.fl_sub (A i j)
+      (fp.fl_mul (fp.fl_div (A i p) (fp.fl_sqrt (A p p)))
+        (fp.fl_div (A p j) (fp.fl_sqrt (A p p))))
+
+/-- **Factor-form one-stage proximity**: the √-scaled fl update is
+    entrywise within `u(c + c²/ρ) + (1+u)γ₅(c²/ρ)` of the exact Schur
+    step — five rounding factors (one shared square root entering
+    twice reciprocally, two divides, one multiply) against the sharp
+    Stewart-counter bound `γ₅`, plus the final subtraction. -/
+theorem fl_schurStepFactor_close (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (p : Fin n) (c ρ : ℝ)
+    (hc : 0 ≤ c) (hρ : 0 < ρ)
+    (hcap : ∀ i j : Fin n, |A i j| ≤ c)
+    (hfloor : ρ ≤ A p p) (h5 : gammaValid fp 5) :
+    ∀ i j : Fin n,
+      |fl_schurStepFactor fp A p i j - schurStep A p i j| ≤
+      fp.u * (c + c ^ 2 / ρ) +
+        (1 + fp.u) * gamma fp 5 * (c ^ 2 / ρ) := by
+  intro i j
+  have hu0 := fp.u_nonneg
+  have hu1 : fp.u < 1 := by
+    unfold gammaValid at h5
+    push_cast at h5
+    nlinarith
+  have hγ5 : 0 ≤ gamma fp 5 := gamma_nonneg fp h5
+  have hrhs0 : (0:ℝ) ≤ fp.u * (c + c ^ 2 / ρ) +
+      (1 + fp.u) * gamma fp 5 * (c ^ 2 / ρ) := by positivity
+  by_cases hij : i = p ∨ j = p
+  · unfold fl_schurStepFactor schurStep
+    rw [if_pos hij, if_pos hij, sub_zero, abs_zero]
+    exact hrhs0
+  · unfold fl_schurStepFactor schurStep
+    rw [if_neg hij, if_neg hij]
+    have hdpos : (0:ℝ) < A p p := lt_of_lt_of_le hρ hfloor
+    have hsq : (0:ℝ) < Real.sqrt (A p p) := Real.sqrt_pos.mpr hdpos
+    obtain ⟨δa, hδa, hsqrt⟩ := fp.model_sqrt (A p p) hdpos.le
+    have h1a : (0:ℝ) < 1 + δa := by
+      have := abs_le.mp hδa
+      linarith [this.1]
+    have hfs0 : fp.fl_sqrt (A p p) ≠ 0 := by
+      rw [hsqrt]
+      positivity
+    obtain ⟨δb, hδb, hdivb⟩ := fp.model_div (A i p)
+      (fp.fl_sqrt (A p p)) hfs0
+    obtain ⟨δc, hδc, hdivc⟩ := fp.model_div (A p j)
+      (fp.fl_sqrt (A p p)) hfs0
+    obtain ⟨δm, hδm, hmul⟩ := fp.model_mul
+      (fp.fl_div (A i p) (fp.fl_sqrt (A p p)))
+      (fp.fl_div (A p j) (fp.fl_sqrt (A p p)))
+    obtain ⟨δs, hδs, hsub⟩ := fp.model_sub (A i j)
+      (fp.fl_mul (fp.fl_div (A i p) (fp.fl_sqrt (A p p)))
+        (fp.fl_div (A p j) (fp.fl_sqrt (A p p))))
+    set C : ℝ := (1 + δb) * (1 + δc) * (1 + δm) /
+      ((1 + δa) * (1 + δa)) with hC
+    -- the computed product is the exact quotient times the counter C
+    have hprod : fp.fl_mul (fp.fl_div (A i p) (fp.fl_sqrt (A p p)))
+        (fp.fl_div (A p j) (fp.fl_sqrt (A p p))) =
+        A i p * A p j / A p p * C := by
+      rw [hmul, hdivb, hdivc, hsqrt, hC]
+      field_simp
+      rw [Real.sq_sqrt hdpos.le]
+      ring
+    -- C is a five-factor Stewart counter
+    have hcounter : relErrorCounter fp 5 C := by
+      refine ⟨![δb, δc, δm, δa, δa],
+        ![false, false, false, true, true], ?_, ?_⟩
+      · intro i
+        fin_cases i <;> simpa
+      · rw [hC, Fin.prod_univ_five]
+        norm_num [Matrix.cons_val_zero, Matrix.cons_val_one,
+          Matrix.cons_val_two, Matrix.cons_val_three,
+          Matrix.cons_val_four, Matrix.head_cons, Matrix.tail_cons]
+        field_simp
+    have hC1 : |C - 1| ≤ gamma fp 5 :=
+      relErrorCounter_abs_sub_one_le_gamma fp 5 C hcounter h5
+    -- quotient magnitude and exact-entry magnitude
+    have hquot : |A i p * A p j / A p p| ≤ c ^ 2 / ρ := by
+      rw [abs_div, abs_of_pos hdpos]
+      have hnum : |A i p * A p j| ≤ c ^ 2 := by
+        rw [abs_mul]
+        calc |A i p| * |A p j| ≤ c * c :=
+              mul_le_mul (hcap i p) (hcap p j) (abs_nonneg _) hc
+          _ = c ^ 2 := by ring
+      calc |A i p * A p j| / A p p ≤ c ^ 2 / A p p := by gcongr
+        _ ≤ c ^ 2 / ρ := by gcongr
+    have hS : |A i j - A i p * A p j / A p p| ≤ c + c ^ 2 / ρ := by
+      have h := abs_add_le (A i j) (-(A i p * A p j / A p p))
+      rw [abs_neg, ← sub_eq_add_neg] at h
+      exact h.trans (add_le_add (hcap i j) hquot)
+    -- expand the computed entry
+    rw [hsub, hprod]
+    have hexpand : (A i j - A i p * A p j / A p p * C) * (1 + δs) -
+        (A i j - A i p * A p j / A p p) =
+        (A i j - A i p * A p j / A p p) * δs -
+        A i p * A p j / A p p * ((C - 1) * (1 + δs)) := by ring
+    rw [hexpand]
+    have h1s : |1 + δs| ≤ 1 + fp.u := by
+      have := abs_le.mp hδs
+      rw [abs_le]
+      constructor <;> linarith [this.1, this.2]
+    calc |(A i j - A i p * A p j / A p p) * δs -
+          A i p * A p j / A p p * ((C - 1) * (1 + δs))|
+        ≤ |(A i j - A i p * A p j / A p p) * δs| +
+          |A i p * A p j / A p p * ((C - 1) * (1 + δs))| := by
+          have h := abs_add_le
+            ((A i j - A i p * A p j / A p p) * δs)
+            (-(A i p * A p j / A p p * ((C - 1) * (1 + δs))))
+          rw [abs_neg, ← sub_eq_add_neg] at h
+          exact h
+      _ ≤ (c + c ^ 2 / ρ) * fp.u +
+          (c ^ 2 / ρ) * (gamma fp 5 * (1 + fp.u)) := by
+          refine add_le_add ?_ ?_
+          · rw [abs_mul]
+            exact mul_le_mul hS hδs (abs_nonneg _) (by positivity)
+          · rw [abs_mul, abs_mul]
+            refine mul_le_mul hquot ?_
+              (mul_nonneg (abs_nonneg _) (abs_nonneg _))
+              (by positivity)
+            exact mul_le_mul hC1 h1s (abs_nonneg _) hγ5
+      _ = fp.u * (c + c ^ 2 / ρ) +
+          (1 + fp.u) * gamma fp 5 * (c ^ 2 / ρ) := by ring
+
+/-- **The factor-form floating-point complete-pivoting trace**: the
+    pivoted algorithm as actually implemented — √-scaled fl updates,
+    pivots from the computed working diagonal. -/
+noncomputable def fl_cpStateFactor (fp : FPModel) {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) : ℕ → (Fin n → Fin n → ℝ)
+  | 0 => A
+  | t + 1 => fl_schurStepFactor fp (fl_cpStateFactor fp hn A t)
+      (diagArgmax hn (fl_cpStateFactor fp hn A t))
+
+/-- The pivot the factor-form run selects at stage `t`. -/
+noncomputable def fl_cpPivotFactor (fp : FPModel) {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (t : ℕ) : Fin n :=
+  diagArgmax hn (fl_cpStateFactor fp hn A t)
+
+/-- **The factor-form run follows the exact pivot sequence** — the
+    `fl_cpPivot_sequence_agrees` induction for the √-scaled
+    formulation, with the `γ₅` Stewart rounding contribution
+    `U = u(c′ + c′²/(ρ/2)) + (1+u)γ₅(c′²/(ρ/2))`, `c′ = c + δ/2`. -/
+theorem fl_cpPivotFactor_sequence_agrees (fp : FPModel) {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ) (r : ℕ)
+    (δ ρ c : ℝ) (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (h5 : gammaValid fp 5)
+    (h : ℕ → ℝ) (hh0 : h 0 = 0)
+    (hhstep : ∀ t : ℕ, t < r →
+      h t + (3 * c ^ 2 * h t + c * h t ^ 2) / (ρ / 2) ^ 2 +
+        (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+          (1 + fp.u) * gamma fp 5 * ((c + δ / 2) ^ 2 / (ρ / 2))) ≤
+        h (t + 1))
+    (hhhalf : ∀ t : ℕ, t < r → h t < δ / 2)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c) :
+    ∀ t : ℕ, t ≤ r →
+      (∀ i j : Fin n,
+        |cpState hn A t i j - fl_cpStateFactor fp hn A t i j| ≤ h t) ∧
+      (∀ s : ℕ, s < t →
+        cpPivot hn A s = fl_cpPivotFactor fp hn A s) := by
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  have hu0 := fp.u_nonneg
+  have hγ5 : 0 ≤ gamma fp 5 := gamma_nonneg fp h5
+  have hh_nonneg : ∀ t : ℕ, t ≤ r → 0 ≤ h t := by
+    intro t
+    induction t with
+    | zero => intro _; rw [hh0]
+    | succ t iht =>
+      intro htr
+      have ht' : t < r := Nat.lt_of_succ_le htr
+      have h0 := iht (Nat.le_of_lt ht')
+      have hstep := hhstep t ht'
+      have h1 : (0:ℝ) ≤
+          (3 * c ^ 2 * h t + c * h t ^ 2) / (ρ / 2) ^ 2 := by
+        positivity
+      have h2 : (0:ℝ) ≤
+          fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+          (1 + fp.u) * gamma fp 5 * ((c + δ / 2) ^ 2 / (ρ / 2)) := by
+        positivity
+      linarith
+  intro t
+  induction t with
+  | zero =>
+    intro _
+    refine ⟨fun i j => ?_, fun s hs => absurd hs (Nat.not_lt_zero s)⟩
+    show |A i j - A i j| ≤ h 0
+    rw [sub_self, abs_zero, hh0]
+  | succ t ih =>
+    intro htr
+    have ht' : t < r := Nat.lt_of_succ_le htr
+    obtain ⟨hdiff, hpiv⟩ := ih (Nat.le_of_lt ht')
+    have hht0 := hh_nonneg t (Nat.le_of_lt ht')
+    set p : Fin n := cpPivot hn A t with hp
+    set Et : Fin n → Fin n → ℝ :=
+      fun i j => fl_cpStateFactor fp hn A t i j - cpState hn A t i j
+      with hEt
+    have hEdiag : ∀ i : Fin n, |Et i i| < δ / 2 := by
+      intro i
+      have hd := hdiff i i
+      rw [abs_sub_comm] at hd
+      exact lt_of_le_of_lt hd (hhhalf t ht')
+    have hstable := diagArgmax_stable hn (cpState hn A t) Et p δ
+      (hgap t ht') hEdiag
+    have hFfun : (fun i j => cpState hn A t i j + Et i j) =
+        fl_cpStateFactor fp hn A t := by
+      funext i j
+      simp [hEt]
+    have hpivF : fl_cpPivotFactor fp hn A t = p := by
+      show diagArgmax hn (fl_cpStateFactor fp hn A t) = p
+      rw [← hFfun]
+      exact hstable.2
+    have hFcap : ∀ i j : Fin n,
+        |fl_cpStateFactor fp hn A t i j| ≤ c + δ / 2 := by
+      intro i j
+      have h1 := hdiff i j
+      have h2 := hcap t ht' i j
+      have h3 := abs_sub_abs_le_abs_sub
+        (fl_cpStateFactor fp hn A t i j) (cpState hn A t i j)
+      rw [abs_sub_comm (fl_cpStateFactor fp hn A t i j)
+        (cpState hn A t i j)] at h3
+      have h4 := hhhalf t ht'
+      linarith
+    have hAfloor : ρ / 2 ≤ cpState hn A t p p := by
+      have := hfloor t ht'
+      linarith
+    have hFfloor : ρ / 2 ≤ fl_cpStateFactor fp hn A t p p := by
+      have h1 := hEdiag p
+      have h2 := abs_lt.mp h1
+      have h3 := hfloor t ht'
+      have h4 : fl_cpStateFactor fp hn A t p p =
+          cpState hn A t p p + Et p p := by simp [hEt]
+      rw [h4]
+      linarith [h2.1, hδρ]
+    have hexact := schurStep_entrywise_perturbation
+      (cpState hn A t) (fl_cpStateFactor fp hn A t) p (h t) c (ρ / 2)
+      hht0 hc (by linarith) hdiff (hcap t ht') hAfloor hFfloor
+    have hround := fl_schurStepFactor_close fp
+      (fl_cpStateFactor fp hn A t) p (c + δ / 2) (ρ / 2)
+      (by linarith) (by linarith) hFcap hFfloor h5
+    constructor
+    · intro i j
+      have hSA : cpState hn A (t + 1) =
+          schurStep (cpState hn A t) p := rfl
+      have hSF : fl_cpStateFactor fp hn A (t + 1) =
+          fl_schurStepFactor fp (fl_cpStateFactor fp hn A t) p := by
+        show fl_schurStepFactor fp (fl_cpStateFactor fp hn A t)
+          (diagArgmax hn (fl_cpStateFactor fp hn A t)) =
+          fl_schurStepFactor fp (fl_cpStateFactor fp hn A t) p
+        rw [show diagArgmax hn (fl_cpStateFactor fp hn A t) =
+          fl_cpPivotFactor fp hn A t from rfl, hpivF]
+      rw [hSA, hSF]
+      have htri : |schurStep (cpState hn A t) p i j -
+          fl_schurStepFactor fp (fl_cpStateFactor fp hn A t) p i j| ≤
+          |schurStep (cpState hn A t) p i j -
+            schurStep (fl_cpStateFactor fp hn A t) p i j| +
+          |fl_schurStepFactor fp (fl_cpStateFactor fp hn A t) p i j -
+            schurStep (fl_cpStateFactor fp hn A t) p i j| := by
+        have habs := abs_add_le
+          (schurStep (cpState hn A t) p i j -
+            schurStep (fl_cpStateFactor fp hn A t) p i j)
+          (schurStep (fl_cpStateFactor fp hn A t) p i j -
+            fl_schurStepFactor fp (fl_cpStateFactor fp hn A t) p i j)
+        rw [sub_add_sub_cancel] at habs
+        rw [abs_sub_comm
+          (fl_schurStepFactor fp (fl_cpStateFactor fp hn A t) p i j)
+          (schurStep (fl_cpStateFactor fp hn A t) p i j)]
+        exact habs
+      calc |schurStep (cpState hn A t) p i j -
+            fl_schurStepFactor fp (fl_cpStateFactor fp hn A t) p i j|
+          ≤ _ + _ := htri
+        _ ≤ (h t + (3 * c ^ 2 * h t + c * h t ^ 2) / (ρ / 2) ^ 2) +
+            (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+              (1 + fp.u) * gamma fp 5 *
+                ((c + δ / 2) ^ 2 / (ρ / 2))) :=
+            add_le_add (hexact i j) (hround i j)
+        _ ≤ h (t + 1) := by
+            have := hhstep t ht'
+            linarith
+    · intro s hs
+      rcases Nat.lt_or_eq_of_le (Nat.le_of_lt_succ hs) with h' | h'
+      · exact hpiv s h'
+      · subst h'
+        rw [hpivF]
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
