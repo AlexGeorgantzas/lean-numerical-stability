@@ -35,9 +35,10 @@ The library formalizes reusable results and stability contracts from **Chapter 1
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
-The current Split 3B route has a checked source-faithful Householder
-normalization certificate surface feeding the Theorem 19.13 final-panel
-pipeline, while the full rounded stored-loop proof remains open until those
+The current Split 3B route has checked source-faithful Householder
+normalization certificate surfaces, plus an exact-arithmetic all-stage
+tail-vector bridge that feeds the Theorem 19.13 final-panel pipeline through
+those certificates. The full rounded stored-loop proof remains open until the
 per-stage certificate fields are proved from a stronger model or replaced by a
 separate compatibility/perturbation theorem.
 
