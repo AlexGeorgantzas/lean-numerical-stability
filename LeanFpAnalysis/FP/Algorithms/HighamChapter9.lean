@@ -58253,6 +58253,63 @@ theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProduc
       hU_diag hn hU_margin hL_margin hL_num_le)
     hn hn3 hL_bound
 
+/-- **Equation (9.14) / Algorithm 9.2**, exact-product margin
+complete-pivoting bridge at Wilkinson's sharp RHS in dimension one. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductMargins_of_eq_one
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hone : n = 1)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_flDoolittleUEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_flDoolittleLEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_margin : ∀ k j : Fin n, k.val ≤ j.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau k j| + (1 + fp.u) *
+          doolittleUProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        |U_hat k j|)
+    (hL_margin : ∀ i k : Fin n, k.val < i.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau i k| + (1 + fp.u) *
+          doolittleLProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_num_le : ∀ i k : Fin n, k.val < i.val →
+      doolittleLNumeratorAbs fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductMargins_of_le_two
+    fp n hn_pos (by omega) A L_hat U_hat sigma tau b hAmax htrace
+    hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag
+    hsigma htau hn hn3 hU_margin hL_margin hL_num_le hL_bound
+
 /-- **Equation (9.14) / Algorithm 9.2**, exact-product numerator-margin
 complete-pivoting bridge at Wilkinson's sharp RHS, conditional on the supplied
 per-trace Wilkinson theorem. -/
