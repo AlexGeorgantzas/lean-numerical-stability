@@ -11447,6 +11447,14 @@ lemma higham9_14_completePivotWilkinsonBound_one :
   norm_num [higham9_14_completePivotWilkinsonBound,
     higham9_14_completePivotWilkinsonProduct]
 
+/-- **Equation (9.14)**, in dimension one Wilkinson's displayed
+complete-pivoting RHS dominates the elementary recursive trace bound. -/
+lemma higham9_14_pow_two_le_completePivotWilkinsonBound_of_eq_one {n : ℕ}
+    (hone : n = 1) :
+    (2 : ℝ) ^ (n - 1) ≤ higham9_14_completePivotWilkinsonBound n := by
+  subst n
+  simp [higham9_14_completePivotWilkinsonBound_one]
+
 /-- **Equation (9.14)**, in dimensions one and two Wilkinson's displayed
 complete-pivoting RHS dominates the elementary recursive trace bound
 `2^(n-1)`. -/
@@ -55509,6 +55517,20 @@ theorem higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of
       hn A U hAmax htrace)
     (higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two hn hle)
 
+/-- **Equation (9.14)**, complete-pivoting recursive trace growth satisfies
+Wilkinson's displayed RHS in dimension one. -/
+theorem higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_eq_one
+    {n : ℕ} (hn : 0 < n) (hone : n = 1)
+    (A U : Fin n → Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U) :
+    growthFactorEntry hn A U hAmax ≤
+      higham9_14_completePivotWilkinsonBound n :=
+  le_trans
+    (higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two
+      hn A U hAmax htrace)
+    (higham9_14_pow_two_le_completePivotWilkinsonBound_of_eq_one hone)
+
 /-- **Equation (9.14)**, trace-growth values satisfy Wilkinson's displayed RHS
 in dimensions one and two. -/
 theorem higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_le_two
@@ -55517,6 +55539,15 @@ theorem higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_le_tw
     r ≤ higham9_14_completePivotWilkinsonBound n :=
   le_trans (higham9_completePivotingUTraceGrowthValues_le_pow_two hr)
     (higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two hn hle)
+
+/-- **Equation (9.14)**, trace-growth values satisfy Wilkinson's displayed RHS
+in dimension one. -/
+theorem higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_eq_one
+    {n : ℕ} (hn : 0 < n) (hone : n = 1) {r : ℝ}
+    (hr : r ∈ higham9_completePivotingUTraceGrowthValues n) :
+    r ≤ higham9_14_completePivotWilkinsonBound n :=
+  le_trans (higham9_completePivotingUTraceGrowthValues_le_pow_two hr)
+    (higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two hn (by omega))
 
 /-- **Equation (9.14)**, boundedness of the complete-pivoting trace-growth
 value family at Wilkinson's displayed RHS in dimensions one and two. -/
@@ -55528,6 +55559,17 @@ theorem higham9_14_completePivotingUTraceGrowthValues_bddAbove_wilkinsonBound_of
   exact
     higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_le_two
       hn hle hr
+
+/-- **Equation (9.14)**, boundedness of the complete-pivoting trace-growth
+value family at Wilkinson's displayed RHS in dimension one. -/
+theorem higham9_14_completePivotingUTraceGrowthValues_bddAbove_wilkinsonBound_of_eq_one
+    {n : ℕ} (hn : 0 < n) (hone : n = 1) :
+    BddAbove (higham9_completePivotingUTraceGrowthValues n) := by
+  refine ⟨higham9_14_completePivotWilkinsonBound n, ?_⟩
+  intro r hr
+  exact
+    higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_eq_one
+      hn hone hr
 
 /-- **Equation (9.14)**, trace-value consumer for Wilkinson's sharp
 complete-pivoting product bound.
@@ -56071,6 +56113,21 @@ theorem higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinson
       hn hle A U hAmax hU⟩
 
 /-- **Theorem 9.8 / equation (9.14)**, determinant-input complete-pivoting
+trace existence at Wilkinson's displayed RHS in dimension one, with no global
+sharp-growth premise. -/
+theorem higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_det_ne_zero_of_eq_one
+    {n : ℕ} (hn : 0 < n) (hone : n = 1)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hAmax : 0 < maxEntryNorm hn A) :
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_8_CompletePivotGECPUTrace n A U ∧
+        growthFactorEntry hn A U hAmax ≤
+          higham9_14_completePivotWilkinsonBound n :=
+  higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_det_ne_zero_of_le_two
+    hn (by omega) A hdet hAmax
+
+/-- **Theorem 9.8 / equation (9.14)**, determinant-input complete-pivoting
 trace existence at Wilkinson's displayed RHS in dimensions one and two,
 deriving the positive source denominator from nonsingularity. -/
 theorem higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_det_ne_zero_exists_hAmax_of_le_two
@@ -56088,6 +56145,21 @@ theorem higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinson
     higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_det_ne_zero_of_le_two
       hn hle A hdet hAmax
   exact ⟨hAmax, U, hU, hρ⟩
+
+/-- **Theorem 9.8 / equation (9.14)**, determinant-input complete-pivoting
+trace existence at Wilkinson's displayed RHS in dimension one, deriving the
+positive source denominator from nonsingularity. -/
+theorem higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_det_ne_zero_exists_hAmax_of_eq_one
+    {n : ℕ} (hn : 0 < n) (hone : n = 1)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ hAmax : 0 < maxEntryNorm hn A,
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_8_CompletePivotGECPUTrace n A U ∧
+        growthFactorEntry hn A U hAmax ≤
+          higham9_14_completePivotWilkinsonBound n :=
+  higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_det_ne_zero_exists_hAmax_of_le_two
+    hn (by omega) A hdet
 
 /-- **Problem 9.11 / equation (9.15)**, the trace-level complete-pivoting
 growth-value family is nonempty in every positive dimension. -/
@@ -56172,6 +56244,18 @@ theorem higham9_14_completePivotingUTraceGrowthSup_le_wilkinsonBound_of_le_two
   exact
     higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_le_two
       hn hle hr
+
+/-- **Equation (9.14)**, source-shaped trace supremum bound at Wilkinson's
+displayed RHS in dimension one. -/
+theorem higham9_14_completePivotingUTraceGrowthSup_le_wilkinsonBound_of_eq_one
+    {n : ℕ} (hn : 0 < n) (hone : n = 1) :
+    higham9_completePivotingUTraceGrowthSup n ≤
+      higham9_14_completePivotWilkinsonBound n := by
+  apply csSup_le (higham9_completePivotingUTraceGrowthValues_nonempty hn)
+  intro r hr
+  exact
+    higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_eq_one
+      hn hone hr
 
 /-- **Equation (9.14)**, source-shaped supremum consumer for Wilkinson's
 sharp complete-pivoting product bound.
@@ -58648,6 +58732,28 @@ theorem higham9_8_exists_CompletePermutedLUFactSpec_L_bound_growth_le_wilkinsonB
       le_trans hgrowth
         (higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two
           hn_pos hle)⟩
+
+/-- **Theorem 9.8 / equation (9.14)**, determinant-input complete-pivoting
+certificate package at Wilkinson's sharp product RHS in dimension one. -/
+theorem higham9_8_exists_CompletePermutedLUFactSpec_L_bound_growth_le_wilkinsonBound_of_det_ne_zero_of_eq_one
+    (n : ℕ)
+    (hn_pos : 0 < n)
+    (hone : n = 1)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+    ∃ _hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i : Fin n, U_hat i i ≠ 0) ∧
+      ∃ hBmax :
+        0 < maxEntryNorm hn_pos
+          (higham9_2_rowColPermutedMatrix A sigma tau),
+        growthFactorEntry hn_pos
+          (higham9_2_rowColPermutedMatrix A sigma tau) U_hat hBmax ≤
+            higham9_14_completePivotWilkinsonBound n :=
+  higham9_8_exists_CompletePermutedLUFactSpec_L_bound_growth_le_wilkinsonBound_of_det_ne_zero_of_le_two
+    n hn_pos (by omega) A hdet
 
 /-- **Theorem 9.8 / equation (9.13) complex support**, a recursive exact
 complete-pivoting trace over complex matrices. -/
@@ -63673,6 +63779,37 @@ theorem higham9_14_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_d
       (higham9_14_completePivotWilkinsonBound n)
       hBmax (higham9_14_completePivotWilkinsonBound_nonneg n)
       hgrowth hU_diag hLU hn hn3 hL_bound
+
+/-- **Theorem 9.5 / equation (9.14)**, determinant-only complete-pivoting
+solve wrapper at Wilkinson's sharp product RHS in dimension one.
+
+This is the one-dimensional source endpoint corresponding to
+`higham9_14_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_det_ne_zero_of_le_two`. -/
+theorem higham9_14_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_det_ne_zero_of_eq_one
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hone : n = 1)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+    ∃ hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      let bP : Fin n → ℝ := fun i => b (sigma i)
+      let y_hat := fl_forwardSub fp n L_hat bP
+      let z_hat := fl_backSub fp n U_hat y_hat
+      let x_hat : Fin n → ℝ :=
+        fun j => z_hat ((Equiv.ofBijective tau hLU.1).symm j)
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (infNorm ΔA ≤
+          (↑n) ^ 2 * gamma fp (3 * n) *
+            higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_det_ne_zero_of_le_two
+    fp n hn_pos (by omega) A b hdet hn hn3
 
 /-- **Equation (9.16) / Theorem 9.5**, source-facing rook-pivoting exact solve
 wrapper for every nonsingular real input at the elementary `2^(n-1)`
