@@ -42545,6 +42545,78 @@ theorem higham9_15_local_majorant_le_nonsingInv_resolvent_of_spectralRadius_lt_o
   intro i j
   simpa [Gabs, Wloc] using hmajor i j
 
+/-- **Theorem 9.15 spectral-majorant support**.  Source-shaped normalized
+`G` local-majorant handoff: a supplied nonnegative resolvent for
+`I - |L⁻¹ ΔA U⁻¹|` bounds the local Barrlund--Sun majorant
+`|G| + |L⁻¹ΔL| |ΔU U⁻¹|` once the self-majorant inequality has been proved. -/
+theorem higham9_15_GMatrix_local_majorant_le_resolvent_of_self_majorant
+    {n : ℕ}
+    (Linv ΔA Uinv ΔL ΔU R : Matrix (Fin n) (Fin n) ℝ)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| +
+            rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+              (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          absMatrix n (higham9_27_GMatrix Linv ΔA Uinv) i j +
+            rectMatMul (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                  rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                    (absMatrix n (rectMatMul ΔU Uinv)) r c)
+              i j) :
+    ∀ i j : Fin n,
+      |higham9_27_GMatrix Linv ΔA Uinv i j| +
+          rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+            (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+        rectMatMul R
+          (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) i j :=
+  higham9_15_local_majorant_le_resolvent_of_self_majorant
+    (higham9_27_GMatrix Linv ΔA Uinv)
+    (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) R hR hself
+
+/-- **Theorem 9.15 spectral-majorant support**.  Source-shaped normalized
+`G` canonical-resolvent handoff from the spectral-radius contraction
+`rho(|L⁻¹ ΔA U⁻¹|) < 1`.
+
+This names the exact local inequality produced after the remaining
+Barrlund--Sun self-majorant/Schur-induction step. -/
+theorem higham9_15_GMatrix_local_majorant_le_nonsingInv_resolvent_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n)
+    (Linv ΔA Uinv ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) < 1)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| +
+            rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+              (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          absMatrix n (higham9_27_GMatrix Linv ΔA Uinv) i j +
+            rectMatMul (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                  rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                    (absMatrix n (rectMatMul ΔU Uinv)) r c)
+              i j) :
+    ∀ i j : Fin n,
+      |higham9_27_GMatrix Linv ΔA Uinv i j| +
+          rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+            (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+        rectMatMul
+          (nonsingInv n
+            (matSub_id n
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) i j :=
+  higham9_15_local_majorant_le_nonsingInv_resolvent_of_spectralRadius_lt_one
+    hn (higham9_27_GMatrix Linv ΔA Uinv)
+    (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hrho hself
+
 /-- **Theorem 9.15**, componentwise source-bound wrapper reducing the remaining
 Barrlund--Sun spectral theorem to normalized strict-lower/upper majorants. -/
 theorem higham9_15_componentwise_source_bound_of_normalized_majorants {n : ℕ}
