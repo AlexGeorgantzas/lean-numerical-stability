@@ -1571,6 +1571,26 @@ noncomputable def householderQRRhsPanelSqrtGrowthCoeff (fp : FPModel) :
           ((m + 1 : ℝ) * C +
             tail * ((m + 1 : ℝ) * (1 + C)))
 
+/-- Sharper dimension-only coefficient for the recursive zero-aware QR RHS
+    perturbation bound.
+
+    Compared with `householderQRRhsPanelSqrtGrowthCoeff`, this coefficient also
+    uses the Cauchy--Schwarz `sqrt(m+1)` transport estimate in the intermediate
+    rounded-vector growth bound.  The rounded one-reflector residual term
+    remains controlled by `(m+1) * householderConstructApplyBound`. -/
+noncomputable def householderQRRhsPanelSqrtGrowthCoeffSharp (fp : FPModel) :
+    (m p : ℕ) → ℝ
+  | 0, _ => 0
+  | Nat.succ _, 0 => 0
+  | m + 1, p + 1 =>
+      let tail : ℝ := householderQRRhsPanelSqrtGrowthCoeffSharp fp m p
+      let C : ℝ := householderConstructApplyBound fp (m + 1)
+      let rows : ℝ := (m + 1 : ℝ)
+      let srows : ℝ := Real.sqrt (m + 1 : ℝ)
+      tail +
+        srows *
+          (rows * C + tail * (srows + rows * C))
+
 /-- Square specialization of `householderQRRhsPanelGrowthCoeff`. -/
 noncomputable def householderQRRhsGrowthCoeff (fp : FPModel) (n : ℕ) : ℝ :=
   householderQRRhsPanelGrowthCoeff fp n n
@@ -1898,6 +1918,51 @@ theorem householderQRRhsPanelSqrtGrowthCoeff_nonneg (fp : FPModel) :
             mul_nonneg (Real.sqrt_nonneg _) hinside
           simpa [householderQRRhsPanelSqrtGrowthCoeff, tail, C] using
             add_nonneg htail hstep
+
+/-- The sharper dimension-only QR RHS growth coefficient is nonnegative under
+    the same global one-step gamma-validity condition used for the active panel. -/
+theorem householderQRRhsPanelSqrtGrowthCoeffSharp_nonneg (fp : FPModel) :
+    ∀ (m p : ℕ), gammaValid fp (11 * m + 23) →
+      0 ≤ householderQRRhsPanelSqrtGrowthCoeffSharp fp m p := by
+  intro m
+  induction m with
+  | zero =>
+      intro p _hvalid
+      simp [householderQRRhsPanelSqrtGrowthCoeffSharp]
+  | succ m ih =>
+      intro p hvalid
+      cases p with
+      | zero =>
+          simp [householderQRRhsPanelSqrtGrowthCoeffSharp]
+      | succ p =>
+          let tail : ℝ := householderQRRhsPanelSqrtGrowthCoeffSharp fp m p
+          let C : ℝ := householderConstructApplyBound fp (m + 1)
+          let rows : ℝ := (m + 1 : ℝ)
+          let srows : ℝ := Real.sqrt (m + 1 : ℝ)
+          have hvalid_tail : gammaValid fp (11 * m + 23) :=
+            gammaValid_mono fp (by omega) hvalid
+          have htail : 0 ≤ tail := by
+            simpa [tail] using ih p hvalid_tail
+          have hC : 0 ≤ C := by
+            simpa [C] using
+              householderConstructApplyBound_nonneg fp (m + 1) hvalid
+          have hrows : 0 ≤ rows := by
+            dsimp [rows]
+            positivity
+          have hsrows : 0 ≤ srows := by
+            dsimp [srows]
+            exact Real.sqrt_nonneg _
+          have hinside :
+              0 ≤ rows * C + tail * (srows + rows * C) := by
+            exact add_nonneg
+              (mul_nonneg hrows hC)
+              (mul_nonneg htail
+                (add_nonneg hsrows (mul_nonneg hrows hC)))
+          have hstep :
+              0 ≤ srows * (rows * C + tail * (srows + rows * C)) :=
+            mul_nonneg hsrows hinside
+          simpa [householderQRRhsPanelSqrtGrowthCoeffSharp, tail, C, rows,
+            srows] using add_nonneg htail hstep
 
 /-- Square specialization: the QR RHS growth coefficient is nonnegative. -/
 theorem householderQRRhsGrowthCoeff_nonneg (fp : FPModel) (n : ℕ)
@@ -2732,6 +2797,73 @@ theorem fl_householder_first_column_rhs_step_infNormVec_le (fp : FPModel)
       (mul_nonneg (by positivity) (by linarith))
       (infNormVec_nonneg b)
 
+/-- Sharpened infinity-norm growth bound for the concrete QR first-column RHS
+    Householder step.
+
+    This improves only the exact orthogonal transport part of
+    `fl_householder_first_column_rhs_step_infNormVec_le`, replacing
+    `(m+1) * ‖b‖∞` by `sqrt(m+1) * ‖b‖∞`.  The rounded application residual
+    is still bounded by the same Frobenius-to-infinity estimate. -/
+theorem fl_householder_first_column_rhs_step_infNormVec_le_sqrt (fp : FPModel)
+    {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) (b : Fin (m + 1) → ℝ)
+    (hx : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    let y : Fin (m + 1) → ℝ :=
+      fl_householderApply fp (m + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) 1 b
+    infNormVec y ≤
+      (Real.sqrt (m + 1 : ℝ) +
+          (m + 1 : ℝ) * householderConstructApplyBound fp (m + 1)) *
+        infNormVec b := by
+  intro y
+  let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    householder (m + 1)
+      (householderNormalizedVector (m + 1)
+        (householderVector (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A))
+        (householderBetaFromScale (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A))) 1
+  let C : ℝ := householderConstructApplyBound fp (m + 1)
+  obtain ⟨e, hy, he⟩ := by
+    have hraw :=
+      fl_householder_first_column_rhs_step_residual_bound fp A b hx hvalid
+    simpa [P, y, C, Nat.cast_add, Nat.cast_one] using hraw
+  have hPorth : IsOrthogonal (m + 1) P := by
+    have hstep :=
+      fl_householder_first_column_rhs_step_error fp A b hx hvalid
+    simpa [P, C] using hstep.orth
+  have hC : 0 ≤ C := by
+    simpa [C] using householderConstructApplyBound_nonneg fp (m + 1) hvalid
+  apply infNormVec_le_of_abs_le
+  · intro i
+    calc
+      |y i|
+          = |fl_householderApply fp (m + 1)
+              (fl_householderNormalizedVector fp (Nat.succ_pos m)
+                (panelFirstColumn (Nat.succ_pos p) A)) 1 b i| := by
+              rfl
+      _ = |matMulVec (m + 1) P b i + e i| := by
+          simpa [P] using congrArg abs (hy i)
+      _ ≤ |matMulVec (m + 1) P b i| + |e i| := abs_add_le _ _
+      _ ≤ Real.sqrt (m + 1 : ℝ) * infNormVec b +
+            (m + 1 : ℝ) * C * infNormVec b := by
+          exact add_le_add
+            (by
+              simpa [Nat.cast_add, Nat.cast_one] using
+                hPorth.abs_matMulVec_le_sqrt_card_infNormVec b i)
+            (by simpa [C, Nat.cast_add, Nat.cast_one] using he i)
+      _ = (Real.sqrt (m + 1 : ℝ) + (m + 1 : ℝ) * C) *
+            infNormVec b := by ring
+      _ = (Real.sqrt (m + 1 : ℝ) +
+              (m + 1 : ℝ) * householderConstructApplyBound fp (m + 1)) *
+            infNormVec b := by simp [C]
+  · exact mul_nonneg
+      (add_nonneg (Real.sqrt_nonneg _)
+        (mul_nonneg (by positivity) hC))
+      (infNormVec_nonneg b)
+
 /-- Tail version of
     `fl_householder_first_column_rhs_step_infNormVec_le`. -/
 theorem vectorTail_fl_householder_first_column_rhs_step_infNormVec_le
@@ -2756,6 +2888,32 @@ theorem vectorTail_fl_householder_first_column_rhs_step_infNormVec_le
     (by
       simpa [y] using
         fl_householder_first_column_rhs_step_infNormVec_le fp A b hx hvalid)
+
+/-- Tail version of
+    `fl_householder_first_column_rhs_step_infNormVec_le_sqrt`. -/
+theorem vectorTail_fl_householder_first_column_rhs_step_infNormVec_le_sqrt
+    (fp : FPModel)
+    {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) (b : Fin (m + 1) → ℝ)
+    (hx : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    infNormVec
+      (vectorTail
+        (fl_householderApply fp (m + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 b)) ≤
+      (Real.sqrt (m + 1 : ℝ) +
+          (m + 1 : ℝ) * householderConstructApplyBound fp (m + 1)) *
+        infNormVec b := by
+  let y : Fin (m + 1) → ℝ :=
+    fl_householderApply fp (m + 1)
+      (fl_householderNormalizedVector fp (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos p) A)) 1 b
+  exact le_trans (vectorTail_infNormVec_le y)
+    (by
+      simpa [y] using
+        fl_householder_first_column_rhs_step_infNormVec_le_sqrt
+          fp A b hx hvalid)
 
 /-- The implementation-backed recursive zero-aware QR RHS perturbation bound
     is controlled by the dimension-only RHS growth coefficient times
@@ -3013,6 +3171,144 @@ theorem householderQRRhsPanelSqrtBackwardBound_le_sqrtGrowthCoeff
             simpa [householderQRRhsPanelSqrtBackwardBound,
               householderQRRhsPanelSqrtGrowthCoeff, hcol, tailCoeff, C, nR,
               sR, bstep, cstep, Nat.cast_add, Nat.cast_one] using hmain
+
+/-- The sharpened implementation-backed recursive zero-aware QR RHS
+    perturbation bound is controlled by the sharper dimension-only coefficient
+    that also improves intermediate rounded-vector growth. -/
+theorem householderQRRhsPanelSqrtBackwardBound_le_sqrtGrowthCoeffSharp
+    (fp : FPModel) :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ) (b : Fin m → ℝ),
+      gammaValid fp (11 * m + 23) →
+      HouseholderQRPanelReady fp m p A →
+      householderQRRhsPanelSqrtBackwardBound fp m p A b ≤
+        householderQRRhsPanelSqrtGrowthCoeffSharp fp m p * infNormVec b := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A b _hvalid _hready
+      simp [householderQRRhsPanelSqrtBackwardBound,
+        householderQRRhsPanelSqrtGrowthCoeffSharp]
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A b _hvalid _hready
+          simp [householderQRRhsPanelSqrtBackwardBound,
+            householderQRRhsPanelSqrtGrowthCoeffSharp]
+      | succ p =>
+          intro A b hvalid hready
+          let tailCoeff : ℝ := householderQRRhsPanelSqrtGrowthCoeffSharp fp m p
+          let C : ℝ := householderConstructApplyBound fp (m + 1)
+          let nR : ℝ := (m + 1 : ℝ)
+          let sR : ℝ := Real.sqrt (m + 1 : ℝ)
+          have hvalid_tail : gammaValid fp (11 * m + 23) :=
+            gammaValid_mono fp (by omega) hvalid
+          have htailCoeff : 0 ≤ tailCoeff := by
+            simpa [tailCoeff] using
+              householderQRRhsPanelSqrtGrowthCoeffSharp_nonneg fp m p
+                hvalid_tail
+          have hC : 0 ≤ C := by
+            simpa [C] using
+              householderConstructApplyBound_nonneg fp (m + 1) hvalid
+          have hnR : 0 ≤ nR := by
+            dsimp [nR]
+            positivity
+          have hsR : 0 ≤ sR := by
+            dsimp [sR]
+            exact Real.sqrt_nonneg _
+          have hinside :
+              0 ≤ nR * C + tailCoeff * (sR + nR * C) := by
+            exact add_nonneg
+              (mul_nonneg hnR hC)
+              (mul_nonneg htailCoeff
+                (add_nonneg hsR (mul_nonneg hnR hC)))
+          have hstepNonneg :
+              0 ≤ sR * (nR * C + tailCoeff * (sR + nR * C)) :=
+            mul_nonneg hsR hinside
+          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+          · have htailReady :
+                HouseholderQRPanelReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
+            have htail :=
+              ih p (trailingPanel A) (vectorTail b) hvalid_tail htailReady
+            have htailNorm : infNormVec (vectorTail b) ≤ infNormVec b :=
+              vectorTail_infNormVec_le b
+            have htailToB :
+                householderQRRhsPanelSqrtBackwardBound fp m p
+                    (trailingPanel A) (vectorTail b) ≤
+                  tailCoeff * infNormVec b := by
+              exact le_trans htail
+                (mul_le_mul_of_nonneg_left htailNorm htailCoeff)
+            have hdom :
+                tailCoeff * infNormVec b ≤
+                  (tailCoeff +
+                    sR * (nR * C + tailCoeff * (sR + nR * C))) *
+                    infNormVec b := by
+              have hb : 0 ≤ infNormVec b := infNormVec_nonneg b
+              nlinarith
+            simpa [householderQRRhsPanelSqrtBackwardBound,
+              householderQRRhsPanelSqrtGrowthCoeffSharp, hcol, tailCoeff, C,
+              nR, sR] using le_trans htailToB hdom
+          · have hready' :
+                gammaValid fp (11 * (m + 1) + 23) ∧
+                HouseholderQRPanelReady fp m p
+                  (fl_householderTrailingPanelStep fp A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
+            let bstep : Fin (m + 1) → ℝ :=
+              fl_householderApply fp (m + 1)
+                (fl_householderNormalizedVector fp (Nat.succ_pos m)
+                  (panelFirstColumn (Nat.succ_pos p) A)) 1 b
+            let cstep : ℝ :=
+              (m + 1 : ℝ) * householderConstructApplyBound fp (m + 1) *
+                infNormVec b
+            have htail :=
+              ih p (fl_householderTrailingPanelStep fp A) (vectorTail bstep)
+                hvalid_tail hready'.2
+            have htailNorm :
+                infNormVec (vectorTail bstep) ≤
+                  (sR + nR * C) * infNormVec b := by
+              simpa [bstep, C, nR, sR, Nat.cast_add, Nat.cast_one] using
+                vectorTail_fl_householder_first_column_rhs_step_infNormVec_le_sqrt
+                  fp A b hcol hready'.1
+            have htailToB :
+                householderQRRhsPanelSqrtBackwardBound fp m p
+                    (fl_householderTrailingPanelStep fp A) (vectorTail bstep) ≤
+                  tailCoeff * ((sR + nR * C) * infNormVec b) := by
+              exact le_trans htail
+                (mul_le_mul_of_nonneg_left htailNorm htailCoeff)
+            have hmain :
+                sR *
+                    (nR * C * infNormVec b +
+                      householderQRRhsPanelSqrtBackwardBound fp m p
+                        (fl_householderTrailingPanelStep fp A)
+                        (vectorTail bstep)) ≤
+                  (tailCoeff +
+                    sR * (nR * C + tailCoeff * (sR + nR * C))) *
+                    infNormVec b := by
+              have hb : 0 ≤ infNormVec b := infNormVec_nonneg b
+              have hleft :
+                  sR *
+                      (nR * C * infNormVec b +
+                        householderQRRhsPanelSqrtBackwardBound fp m p
+                          (fl_householderTrailingPanelStep fp A)
+                          (vectorTail bstep)) ≤
+                    sR *
+                      (nR * C * infNormVec b +
+                        tailCoeff * ((sR + nR * C) * infNormVec b)) := by
+                exact mul_le_mul_of_nonneg_left
+                  (add_le_add_right htailToB (nR * C * infNormVec b)) hsR
+              have hright :
+                  sR *
+                      (nR * C * infNormVec b +
+                        tailCoeff * ((sR + nR * C) * infNormVec b)) ≤
+                    (tailCoeff +
+                      sR * (nR * C + tailCoeff * (sR + nR * C))) *
+                      infNormVec b := by
+                nlinarith [mul_nonneg htailCoeff hb]
+              exact le_trans hleft hright
+            simpa [householderQRRhsPanelSqrtBackwardBound,
+              householderQRRhsPanelSqrtGrowthCoeffSharp, hcol, tailCoeff, C,
+              nR, sR, bstep, cstep, Nat.cast_add, Nat.cast_one] using hmain
 
 /-- The implementation-backed panel QR RHS perturbation bound is controlled by
     the nonrecursive closed growth coefficient. -/
