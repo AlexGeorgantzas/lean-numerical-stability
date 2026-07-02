@@ -1187,6 +1187,205 @@ theorem finiteMinEigenvalue_leading_principal_ge (n : ℕ) (hn : 0 < n)
   rw [hpadquad] at hray
   exact hray
 
+/-- **Maximum eigenvalue** of a symmetric real matrix, through the
+repository's `finiteHermitianEigenvalues` (the `λ_max` of the spectral
+reading of `‖·‖₂` on Gram matrices). -/
+noncomputable def finiteMaxEigenvalue {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M) : ℝ :=
+  Finset.univ.sup' (Finset.univ_nonempty_iff.mpr
+    (Fin.pos_iff_nonempty.mp hn)) (finiteHermitianEigenvalues M hM)
+
+/-- Every eigenvalue is at most the maximum eigenvalue. -/
+theorem le_finiteMaxEigenvalue {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M) (a : Fin n) :
+    finiteHermitianEigenvalues M hM a ≤ finiteMaxEigenvalue hn M hM :=
+  Finset.le_sup' _ (Finset.mem_univ a)
+
+/-- The maximum eigenvalue is attained. -/
+theorem exists_finiteMaxEigenvalue_eq {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M) :
+    ∃ a : Fin n, finiteHermitianEigenvalues M hM a =
+      finiteMaxEigenvalue hn M hM := by
+  obtain ⟨a, _, ha⟩ := Finset.exists_mem_eq_sup' (Finset.univ_nonempty_iff.mpr
+    (Fin.pos_iff_nonempty.mp hn)) (finiteHermitianEigenvalues M hM)
+  exact ⟨a, ha.symm⟩
+
+/-- **Rayleigh upper bound from `λ_max`**: `xᵀMx ≤ λ_max(M) ‖x‖₂²`. -/
+theorem finiteMaxEigenvalue_rayleigh {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M)
+    (x : Fin n → ℝ) :
+    ∑ i : Fin n, ∑ j : Fin n, x i * M i j * x j ≤
+      finiteMaxEigenvalue hn M hM * ∑ i : Fin n, x i ^ 2 := by
+  have h := finiteLoewnerLe_smul_id_of_finiteHermitianEigenvalues_le
+    M hM (le_finiteMaxEigenvalue hn M hM) x
+  rw [finiteQuadraticForm_smul_finiteIdMatrix,
+    finiteQuadraticForm_eq_sum_sum] at h
+  simpa [finiteVecNorm2Sq] using h
+
+
+/-- Splitting a double sum over `Fin (m+1)` into interior, two borders,
+and corner. -/
+theorem sum_sum_castSucc_split (m : ℕ) (F : Fin (m + 1) → Fin (m + 1) → ℝ) :
+    ∑ i : Fin (m + 1), ∑ l : Fin (m + 1), F i l =
+      (∑ i : Fin m, ∑ l : Fin m, F i.castSucc l.castSucc) +
+      (∑ i : Fin m, F i.castSucc (Fin.last m)) +
+      (∑ l : Fin m, F (Fin.last m) l.castSucc) +
+      F (Fin.last m) (Fin.last m) := by
+  rw [Fin.sum_univ_castSucc]
+  rw [show ∑ i : Fin m, ∑ l : Fin (m + 1), F i.castSucc l =
+      ∑ i : Fin m, ((∑ l : Fin m, F i.castSucc l.castSucc) +
+        F i.castSucc (Fin.last m)) from
+    Finset.sum_congr rfl fun i _ => Fin.sum_univ_castSucc _]
+  rw [Fin.sum_univ_castSucc (f := fun l => F (Fin.last m) l)]
+  rw [Finset.sum_add_distrib]
+  ring
+
+/-- **Theorem 10.7 (Demmel), success direction for the concrete
+Algorithm 10.2** (Higham p. 200): if the minimum eigenvalue of the scaled
+matrix `H = D⁻¹AD⁻¹` (`D = diag(√a_ii)`) exceeds
+`(2n+3)·γ_{n+1}/(1−γ_{n+1})`, the concrete floating-point Cholesky
+algorithm runs to completion: every rounded pivot is positive.  Per-stage
+Rayleigh floors come from `λ_min(H)` by interlacing on the bordered
+leading blocks and the substitution `z = (√a_i·y_i, √a_jj)`.  The
+threshold constant is coarser than the source `n·γ_{n+1}/(1−γ_{n+1})`;
+sharpening is open. -/
+theorem higham10_7_fl_cholesky_success (fp : FPModel) (n : ℕ)
+    (hn0 : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hn1 : gammaValid fp (n + 1))
+    (hγ1 : gamma fp (n + 1) < 1)
+    (hH_sym : IsSymmetricFiniteMatrix (fun i l : Fin n =>
+      A i l / (Real.sqrt (A i i) * Real.sqrt (A l l))))
+    (hthresh : (2 * (n : ℝ) + 3) *
+      (gamma fp (n + 1) / (1 - gamma fp (n + 1))) <
+      finiteMinEigenvalue hn0 (fun i l : Fin n =>
+        A i l / (Real.sqrt (A i i) * Real.sqrt (A l l))) hH_sym) :
+    ∀ j : Fin n, 0 < fl_cholPivot fp n A j := by
+  apply fl_cholesky_pivots_pos fp A hsym hAdiag hn1 hγ1
+    (finiteMinEigenvalue hn0 _ hH_sym) _ hthresh
+  intro j y
+  have hm1n : j.val + 1 ≤ n := j.isLt
+  have hHb_sym : IsSymmetricFiniteMatrix (fun i l : Fin (j.val + 1) =>
+      (fun i l : Fin n => A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+        ⟨i.val, by omega⟩ ⟨l.val, by omega⟩) :=
+    fun i l => hH_sym _ _
+  have hinterlace := finiteMinEigenvalue_leading_principal_ge n hn0 _
+    hH_sym (j.val + 1) (Nat.succ_pos j.val) hm1n hHb_sym
+  set z : Fin (j.val + 1) → ℝ := Fin.snoc
+    (fun i : Fin j.val =>
+      Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) * y i)
+    (Real.sqrt (A j j)) with hz
+  have hray := finiteMinEigenvalue_rayleigh (Nat.succ_pos j.val)
+    (fun i l : Fin (j.val + 1) =>
+      (fun i l : Fin n => A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+        ⟨i.val, by omega⟩ ⟨l.val, by omega⟩) hHb_sym z
+  have hlast_eq : (⟨(Fin.last j.val).val, by omega⟩ : Fin n) = j :=
+    Fin.ext (by simp)
+  have hcancel : ∀ (i l : Fin n) (u v : ℝ),
+      (Real.sqrt (A i i) * u) *
+        (A i l / (Real.sqrt (A i i) * Real.sqrt (A l l))) *
+        (Real.sqrt (A l l) * v) = u * A i l * v := by
+    intro i l u v
+    have hi := (Real.sqrt_pos.mpr (hAdiag i)).ne'
+    have hl := (Real.sqrt_pos.mpr (hAdiag l)).ne'
+    field_simp
+  have hnorm : ∑ i : Fin (j.val + 1), z i ^ 2 =
+      (∑ i : Fin j.val,
+        A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2) + A j j := by
+    rw [Fin.sum_univ_castSucc]
+    congr 1
+    · apply Finset.sum_congr rfl
+      intro i _
+      rw [hz, Fin.snoc_castSucc, mul_pow, Real.sq_sqrt (hAdiag _).le]
+    · rw [hz, Fin.snoc_last, Real.sq_sqrt (hAdiag j).le]
+  have hz_nonneg_sq : 0 ≤ ∑ i : Fin (j.val + 1), z i ^ 2 :=
+    Finset.sum_nonneg fun i _ => sq_nonneg _
+  have hquad : ∑ i : Fin (j.val + 1), ∑ l : Fin (j.val + 1),
+      z i * ((fun i l : Fin n =>
+        A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+        ⟨i.val, by omega⟩ ⟨l.val, by omega⟩) * z l =
+      (∑ i : Fin j.val, ∑ l : Fin j.val,
+        y i * A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ * y l) +
+      2 * (∑ i : Fin j.val, y i * A ⟨i.val, by omega⟩ j) + A j j := by
+    rw [sum_sum_castSucc_split j.val]
+    have hp1 : ∑ i : Fin j.val, ∑ l : Fin j.val,
+        z i.castSucc * ((fun i l : Fin n =>
+          A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+          ⟨(i.castSucc).val, by omega⟩ ⟨(l.castSucc).val, by omega⟩) *
+          z l.castSucc =
+        ∑ i : Fin j.val, ∑ l : Fin j.val,
+          y i * A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ * y l := by
+      apply Finset.sum_congr rfl
+      intro i _
+      apply Finset.sum_congr rfl
+      intro l _
+      rw [hz, Fin.snoc_castSucc, Fin.snoc_castSucc]
+      exact hcancel _ _ (y i) (y l)
+    have hp2 : ∑ i : Fin j.val,
+        z i.castSucc * ((fun i l : Fin n =>
+          A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+          ⟨(i.castSucc).val, by omega⟩
+          ⟨(Fin.last j.val).val, by omega⟩) * z (Fin.last j.val) =
+        ∑ i : Fin j.val, y i * A ⟨i.val, by omega⟩ j := by
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [hz, Fin.snoc_castSucc, Fin.snoc_last, hlast_eq]
+      have hthis := hcancel ⟨i.val, by omega⟩ j (y i) 1
+      simp only [mul_one] at hthis
+      exact hthis
+    have hp3 : ∑ l : Fin j.val,
+        z (Fin.last j.val) * ((fun i l : Fin n =>
+          A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+          ⟨(Fin.last j.val).val, by omega⟩
+          ⟨(l.castSucc).val, by omega⟩) * z l.castSucc =
+        ∑ l : Fin j.val, y l * A ⟨l.val, by omega⟩ j := by
+      apply Finset.sum_congr rfl
+      intro l _
+      rw [hz, Fin.snoc_castSucc, Fin.snoc_last, hlast_eq]
+      have hthis := hcancel j ⟨l.val, by omega⟩ 1 (y l)
+      simp only [one_mul, mul_one] at hthis
+      have hfin : Real.sqrt (A j j) *
+          (A j ⟨l.val, by omega⟩ /
+            (Real.sqrt (A j j) *
+             Real.sqrt (A ⟨l.val, by omega⟩ ⟨l.val, by omega⟩))) *
+          (Real.sqrt (A ⟨l.val, by omega⟩ ⟨l.val, by omega⟩) * y l) =
+          y l * A ⟨l.val, by omega⟩ j := by
+        rw [hthis, hsym j ⟨l.val, by omega⟩]
+        ring
+      exact hfin
+    have hp4 : z (Fin.last j.val) * ((fun i l : Fin n =>
+        A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+        ⟨(Fin.last j.val).val, by omega⟩
+        ⟨(Fin.last j.val).val, by omega⟩) * z (Fin.last j.val) =
+        A j j := by
+      rw [hz, Fin.snoc_last, hlast_eq]
+      have hthis := hcancel j j 1 1
+      simp only [one_mul, mul_one] at hthis
+      exact hthis
+    rw [hp1, hp2, hp3, hp4]
+    ring
+  have hmono : finiteMinEigenvalue hn0 _ hH_sym *
+      ∑ i : Fin (j.val + 1), z i ^ 2 ≤
+      finiteMinEigenvalue (Nat.succ_pos j.val) _ hHb_sym *
+      ∑ i : Fin (j.val + 1), z i ^ 2 :=
+    mul_le_mul_of_nonneg_right hinterlace hz_nonneg_sq
+  calc finiteMinEigenvalue hn0 _ hH_sym *
+      ((∑ i : Fin j.val,
+        A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2) + A j j)
+      = finiteMinEigenvalue hn0 _ hH_sym *
+        ∑ i : Fin (j.val + 1), z i ^ 2 := by rw [hnorm]
+    _ ≤ finiteMinEigenvalue (Nat.succ_pos j.val) _ hHb_sym *
+        ∑ i : Fin (j.val + 1), z i ^ 2 := hmono
+    _ ≤ ∑ i : Fin (j.val + 1), ∑ l : Fin (j.val + 1),
+        z i * ((fun i l : Fin n =>
+          A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+          ⟨i.val, by omega⟩ ⟨l.val, by omega⟩) * z l := hray
+    _ = (∑ i : Fin j.val, ∑ l : Fin j.val,
+          y i * A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ * y l) +
+        2 * (∑ i : Fin j.val, y i * A ⟨i.val, by omega⟩ j) + A j j := hquad
+
+
 
 
 /-- **Theorem 10.7 foundation** (Higham §10.1, proof of Theorem 10.7): the
@@ -1316,6 +1515,133 @@ theorem chol_cert_scaled_entrywise_le (n : ℕ) (A R : Fin n → Fin n → ℝ)
         linear_combination
           (-(ε * Real.sqrt (A i i) * Real.sqrt (A j j))) *
             (Real.sq_sqrt h1ε.le)
+
+/-- **Scaled operator-norm certificate for factor-shaped perturbations**
+(Theorem 10.6 assembly, steps 1–2): any perturbation bounded
+componentwise by `ε_tot·|R̂ᵀ||R̂|`, with `R̂` carrying the Theorem 10.3
+certificate at `γ`, has a `D⁻¹·D⁻¹`-scaled operator-2-norm certificate
+`n·ε_tot/(1−γ)` — via the certificate's column-norm control,
+Cauchy–Schwarz, and the ones-matrix bound. -/
+theorem scaled_opNorm2Le_of_factor_bound (fp : FPModel) (n : ℕ)
+    (A R : Fin n → Fin n → ℝ)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hγ1 : gamma fp (n + 1) < 1)
+    (hChol : CholeskyBackwardError n A R (gamma fp (n + 1)))
+    (M : Fin n → Fin n → ℝ) (εtot : ℝ) (hε : 0 ≤ εtot)
+    (hM : ∀ i j : Fin n, |M i j| ≤
+      εtot * ∑ k : Fin n, |R k i| * |R k j|) :
+    opNorm2Le (fun i j =>
+      M i j / (Real.sqrt (A i i) * Real.sqrt (A j j)))
+      ((n : ℝ) * (εtot / (1 - gamma fp (n + 1)))) := by
+  set γ : ℝ := gamma fp (n + 1) with hγdef
+  have h1γ : (0:ℝ) < 1 - γ := by linarith
+  -- uniform entrywise bound on the scaled perturbation
+  have hcol : ∀ l : Fin n, Real.sqrt (∑ k : Fin n, R k l ^ 2) ≤
+      Real.sqrt (A l l) / Real.sqrt (1 - γ) := by
+    intro l
+    rw [show Real.sqrt (A l l) / Real.sqrt (1 - γ) =
+        Real.sqrt (A l l / (1 - γ)) from
+      (Real.sqrt_div (hAdiag l).le _).symm]
+    apply Real.sqrt_le_sqrt
+    rw [le_div_iff₀ h1γ]
+    linarith [chol_cert_colNormSq_le n A R γ hChol l]
+  have hcs : ∀ i j : Fin n, ∑ k : Fin n, |R k i| * |R k j| ≤
+      Real.sqrt (∑ k : Fin n, R k i ^ 2) *
+      Real.sqrt (∑ k : Fin n, R k j ^ 2) := by
+    intro i j
+    have h := abs_vecInnerProduct_le_vecNorm2_mul
+      (fun k => |R k i|) (fun k => |R k j|)
+    have hnn : 0 ≤ ∑ k : Fin n, |R k i| * |R k j| :=
+      Finset.sum_nonneg fun k _ =>
+        mul_nonneg (abs_nonneg _) (abs_nonneg _)
+    rw [abs_of_nonneg hnn] at h
+    calc ∑ k : Fin n, |R k i| * |R k j|
+        ≤ vecNorm2 (fun k => |R k i|) * vecNorm2 (fun k => |R k j|) := h
+      _ = Real.sqrt (∑ k : Fin n, R k i ^ 2) *
+          Real.sqrt (∑ k : Fin n, R k j ^ 2) := by
+          unfold vecNorm2 vecNorm2Sq
+          congr 2 <;> exact Finset.sum_congr rfl fun k _ => sq_abs _
+  have hsqrt1γ : Real.sqrt (1 - γ) * Real.sqrt (1 - γ) = 1 - γ :=
+    Real.mul_self_sqrt h1γ.le
+  have hentry : ∀ i j : Fin n,
+      |M i j / (Real.sqrt (A i i) * Real.sqrt (A j j))| ≤
+      εtot / (1 - γ) := by
+    intro i j
+    have hsi := Real.sqrt_pos.mpr (hAdiag i)
+    have hsj := Real.sqrt_pos.mpr (hAdiag j)
+    rw [abs_div, abs_of_pos (mul_pos hsi hsj),
+      div_le_iff₀ (mul_pos hsi hsj)]
+    calc |M i j|
+        ≤ εtot * ∑ k : Fin n, |R k i| * |R k j| := hM i j
+      _ ≤ εtot * (Real.sqrt (∑ k : Fin n, R k i ^ 2) *
+          Real.sqrt (∑ k : Fin n, R k j ^ 2)) :=
+          mul_le_mul_of_nonneg_left (hcs i j) hε
+      _ ≤ εtot * ((Real.sqrt (A i i) / Real.sqrt (1 - γ)) *
+          (Real.sqrt (A j j) / Real.sqrt (1 - γ))) := by
+          apply mul_le_mul_of_nonneg_left _ hε
+          exact mul_le_mul (hcol i) (hcol j) (Real.sqrt_nonneg _)
+            (div_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+      _ = εtot / (1 - γ) * (Real.sqrt (A i i) * Real.sqrt (A j j)) := by
+          field_simp
+          linear_combination (-εtot) * (Real.sq_sqrt h1γ.le)
+  -- entrywise → operator certificate through the ones matrix
+  have hones := opNorm2Le_smul n (fun _ _ : Fin n => (1:ℝ)) n
+    (εtot / (1 - γ)) (div_nonneg hε h1γ.le)
+    (higham10_7_onesMatrix_opNorm2Le n)
+  have habs := opNorm2Le_of_abs_le n
+    (fun i j => M i j / (Real.sqrt (A i i) * Real.sqrt (A j j)))
+    (fun _ _ : Fin n => εtot / (1 - γ) * 1)
+    (fun i j => by rw [mul_one]; exact hentry i j)
+    (εtot / (1 - γ) * n) hones
+  intro x
+  calc vecNorm2 (matMulVec n (fun i j =>
+      M i j / (Real.sqrt (A i i) * Real.sqrt (A j j))) x)
+      ≤ εtot / (1 - γ) * n * vecNorm2 x := habs x
+    _ = (n : ℝ) * (εtot / (1 - γ)) * vecNorm2 x := by ring
+
+/-- **Theorem 10.6 (Demmel–Wilkinson) for the concrete solve chain**
+(Higham §10.1, equation (10.10)): with the Theorem 10.3 certificate for
+`R̂`, a solve-chain perturbation `ΔA` bounded by `ε_tot·|R̂ᵀ||R̂|`
+(supplied by `cholesky_solve_backward_error_expanded`), an inverse-action
+certificate for `H = D⁻¹AD⁻¹` and a `κ₂(H)`-style operator certificate
+for `H⁻¹`, the `D`-scaled forward error satisfies
+`‖D(x̂−x)‖₂ ≤ c/(1−c)·‖Dx‖₂` with the explicit
+`c = κ·n·ε_tot/(1−γ_{n+1})` — the source display (10.10) with
+`ε_tot = γ_{n+1} + 2γ_n + γ_n²` in place of `γ_{3n+1}`. -/
+theorem higham10_6_fl_scaled_forward_error (fp : FPModel) (n : ℕ)
+    (A R Hinv ΔA : Fin n → Fin n → ℝ) (x xhat b : Fin n → ℝ)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hγ1 : gamma fp (n + 1) < 1)
+    (hChol : CholeskyBackwardError n A R (gamma fp (n + 1)))
+    (εtot : ℝ) (hε : 0 ≤ εtot)
+    (hΔA : ∀ i j : Fin n, |ΔA i j| ≤
+      εtot * ∑ k : Fin n, |R k i| * |R k j|)
+    (hInv : ∀ v : Fin n → ℝ,
+      matMulVec n Hinv (matMulVec n (fun i l : Fin n =>
+        A i l / (Real.sqrt (A i i) * Real.sqrt (A l l))) v) = v)
+    (κ : ℝ) (hκ0 : 0 ≤ κ) (hκ : opNorm2Le Hinv κ)
+    (hAx : matMulVec n A x = b)
+    (hAhat : ∀ i : Fin n,
+      matMulVec n A xhat i + matMulVec n ΔA xhat i = b i)
+    (hc1 : κ * ((n : ℝ) * (εtot / (1 - gamma fp (n + 1)))) < 1) :
+    vecNorm2 (fun i => Real.sqrt (A i i) * xhat i -
+        Real.sqrt (A i i) * x i) ≤
+      κ * ((n : ℝ) * (εtot / (1 - gamma fp (n + 1)))) /
+        (1 - κ * ((n : ℝ) * (εtot / (1 - gamma fp (n + 1))))) *
+      vecNorm2 (fun i => Real.sqrt (A i i) * x i) := by
+  have hscaled := scaled_opNorm2Le_of_factor_bound fp n A R hAdiag hγ1
+    hChol ΔA εtot hε hΔA
+  have hcomp := opNorm2Le_matMul n Hinv
+    (fun i j => ΔA i j / (Real.sqrt (A i i) * Real.sqrt (A j j)))
+    κ ((n : ℝ) * (εtot / (1 - gamma fp (n + 1)))) hκ0 hκ hscaled
+  exact higham10_6_scaled_forward_error_assembled n A ΔA
+    (fun i l : Fin n => A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+    Hinv (fun i => Real.sqrt (A i i)) x xhat b
+    (fun i => (Real.sqrt_pos.mpr (hAdiag i)).ne')
+    (fun i j => rfl) hInv hAx hAhat
+    (κ * ((n : ℝ) * (εtot / (1 - gamma fp (n + 1))))) hcomp hc1
+
+
 
 
 

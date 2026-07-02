@@ -3582,6 +3582,10 @@ Source-facing Chapter 10 wrappers:
 - `finiteMinEigenvalue_le`
 - `exists_finiteMinEigenvalue_eq`
 - `finiteMinEigenvalue_rayleigh`
+- `finiteMaxEigenvalue`
+- `le_finiteMaxEigenvalue`
+- `exists_finiteMaxEigenvalue_eq`
+- `finiteMaxEigenvalue_rayleigh`
 - `higham10_7_success_factorization_min_eig`
 - `higham10_7_failure_no_factorization_min_eig`
 - `quadForm_add_pos_of_perturbation`
@@ -3620,6 +3624,8 @@ Source-facing Chapter 10 wrappers:
 - `fl_cholesky_pivot_pos_step`
 - `fl_cholesky_pivots_pos`
 - `fl_cholesky_diag_pos_of_floor`
+- `sum_sum_castSucc_split`
+- `higham10_7_fl_cholesky_success`
 - `fl_cholesky_truncated_bound`
 - `fl_cholesky_border_bound`
 - `fl_chol_offdiag_solve_form`
