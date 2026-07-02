@@ -3565,6 +3565,8 @@ Source-facing Chapter 10 wrappers:
 - `fl_cholesky_offdiag_eq`
 - `fl_cholesky_diag_eq`
 - `fl_sub_fold_local_factors`
+- `fl_cholEntry_leading_principal`
+- `fl_cholesky_leading_principal`
 - `fl_chol_offdiag_solve_form`
 - `fl_chol_diag_solve_form`
 - `fl_cholPivot`
