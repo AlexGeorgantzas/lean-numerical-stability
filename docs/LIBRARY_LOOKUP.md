@@ -3662,6 +3662,8 @@ Source-facing Chapter 10 wrappers:
 - `isPosSemiDef_perm`
 - `psd_pivot_selection`
 - `psd_all_diag_zero`
+- `extendPerm`
+- `extendPerm_isPermutation`
 - `higham10_9_PivotedCholeskySpec`
 - `higham10_9_psd_cholesky_existence`
 - `higham10_9_spd_pivoted_cholesky_full_rank`

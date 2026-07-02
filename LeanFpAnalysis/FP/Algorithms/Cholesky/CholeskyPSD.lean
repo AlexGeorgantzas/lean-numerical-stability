@@ -176,6 +176,43 @@ lemma psd_all_diag_zero {n : ℕ} (A : Fin n → Fin n → ℝ)
     rw [hdiag i, hdiag j] at hpos hneg
     nlinarith [hpos, hneg, hsym]
 
+/-- Extend a permutation of `Fin m` to `Fin (m+1)` fixing `0` and acting
+    on successors (Theorem 10.9(b) recursion: composing the tail stage's
+    permutation with the current pivot transposition). -/
+noncomputable def extendPerm {m : ℕ} (σ' : Fin m → Fin m) :
+    Fin (m + 1) → Fin (m + 1) :=
+  Fin.cases 0 (fun i => (σ' i).succ)
+
+@[simp] lemma extendPerm_zero {m : ℕ} (σ' : Fin m → Fin m) :
+    extendPerm σ' 0 = 0 := rfl
+
+@[simp] lemma extendPerm_succ {m : ℕ} (σ' : Fin m → Fin m) (i : Fin m) :
+    extendPerm σ' i.succ = (σ' i).succ := by
+  unfold extendPerm
+  rw [Fin.cases_succ]
+
+/-- Extension preserves the permutation property. -/
+lemma extendPerm_isPermutation {m : ℕ} (σ' : Fin m → Fin m)
+    (hσ' : IsPermutation m σ') :
+    IsPermutation (m + 1) (extendPerm σ') := by
+  obtain ⟨inv', hleft, hright⟩ :=
+    Function.bijective_iff_has_inverse.mp hσ'
+  refine Function.bijective_iff_has_inverse.mpr
+    ⟨Fin.cases 0 (fun i => (inv' i).succ), ?_, ?_⟩
+  · intro x
+    refine Fin.cases ?_ ?_ x
+    · rfl
+    · intro i
+      rw [extendPerm_succ]
+      simp only [Fin.cases_succ]
+      rw [hleft i]
+  · intro x
+    refine Fin.cases ?_ ?_ x
+    · rfl
+    · intro i
+      simp only [Fin.cases_succ]
+      rw [extendPerm_succ, hright i]
+
 -- ============================================================
 -- §10.3  Theorem 10.9: PSD Cholesky existence (helpers)
 -- ============================================================
