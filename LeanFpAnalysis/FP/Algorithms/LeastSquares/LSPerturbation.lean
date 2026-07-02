@@ -733,6 +733,47 @@ theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_penrose1_injective_rectOpNorm2Le
       A B Aplus Bplus hAplus_pos heta hsmall hleftA hAplus hDelta
       hleftB hSymB
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column predicate-form pseudoinverse perturbation bound with the
+    perturbed-side injectivity derived from the smallness condition.
+
+    The A-side left inverse and operator bound supply the lower action radius
+    `1 / Aplus_norm`; the source smallness condition `eta = Aplus_norm * delta
+    < 1` makes the perturbation strict enough to preserve injectivity of `B`.
+    The first Penrose equation for `Bplus` then supplies the remaining
+    perturbed-side left-inverse field. -/
+theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_penrose1_small_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {Aplus_norm delta eta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBpenrose1 : rectMatMul (rectMatMul B Bplus) B = B)
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus)) :
+    rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)) := by
+  have hsmall_mul : Aplus_norm * delta < 1 := by
+    simpa [heta] using hsmall
+  have hdelta_lt : delta < 1 / Aplus_norm := by
+    rw [lt_div_iff₀ hAplus_pos]
+    simpa [mul_comm] using hsmall_mul
+  have hlowerA :
+      ∀ x : Fin (k + 1) → ℝ,
+        (1 / Aplus_norm) * vecNorm2 x ≤
+          vecNorm2 (rectMatMulVec A x) :=
+    wedinLemma20_11_lowerActionBound_of_left_inverse_rectOpNorm2Le
+      A Aplus hAplus_pos hleftA hAplus
+  have hBinj : Function.Injective (rectMatMulVec B) :=
+    wedinLemma20_11_rectMatMulVec_injective_of_sub_rectOpNorm2Le_lt
+      A B hlowerA hDelta hdelta_lt
+  exact
+    wedinLemma20_11_rectOpNorm2Le_Bplus_of_penrose1_injective_rectOpNorm2Le
+      A B Aplus Bplus hAplus_pos heta hsmall hleftA hAplus hDelta
+      hBpenrose1 hBinj hSymB
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
