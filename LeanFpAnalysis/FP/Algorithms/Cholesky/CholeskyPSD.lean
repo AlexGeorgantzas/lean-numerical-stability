@@ -73,6 +73,39 @@ structure PivotedCholeskySpec (n : ℕ) (A R : Fin n → Fin n → ℝ)
   product_eq : ∀ i j : Fin n,
     ∑ k : Fin n, R k i * R k j = A (σ i) (σ j)
 
+/-- **Positive semidefiniteness is invariant under simultaneous
+    permutation** (Theorem 10.9(b) foundation): if `σ` is a permutation,
+    `(i, j) ↦ A (σ i) (σ j)` is PSD whenever `A` is — the permuted
+    quadratic form at `x` is the original form at `x ∘ σ⁻¹`. -/
+lemma isPosSemiDef_perm (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n) (hσ : IsPermutation n σ)
+    (hPSD : IsPosSemiDef n A) :
+    IsPosSemiDef n (fun i j => A (σ i) (σ j)) := by
+  obtain ⟨σinv, hleft, hright⟩ :=
+    Function.bijective_iff_has_inverse.mp hσ
+  refine ⟨fun i j => hPSD.1 (σ i) (σ j), ?_⟩
+  intro x
+  have h1 : ∀ (F : Fin n → ℝ), ∑ i : Fin n, F i = ∑ i : Fin n, F (σ i) :=
+    fun F => (Fintype.sum_bijective σ hσ (fun i => F (σ i)) F
+      (fun i => rfl)).symm
+  have h := hPSD.2 (fun k => x (σinv k))
+  calc (0:ℝ)
+      ≤ ∑ i : Fin n, ∑ j : Fin n,
+          x (σinv i) * A i j * x (σinv j) := h
+    _ = ∑ i : Fin n, ∑ j : Fin n,
+          x (σinv (σ i)) * A (σ i) (σ j) * x (σinv (σ j)) := by
+        rw [h1 (fun i => ∑ j : Fin n,
+          x (σinv i) * A i j * x (σinv j))]
+        apply Finset.sum_congr rfl
+        intro i _
+        rw [h1 (fun j => x (σinv (σ i)) * A (σ i) j * x (σinv j))]
+    _ = ∑ i : Fin n, ∑ j : Fin n, x i * A (σ i) (σ j) * x j := by
+        apply Finset.sum_congr rfl
+        intro i _
+        apply Finset.sum_congr rfl
+        intro j _
+        rw [hleft i, hleft j]
+
 -- ============================================================
 -- §10.3  Theorem 10.9: PSD Cholesky existence (helpers)
 -- ============================================================
