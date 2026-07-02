@@ -3572,6 +3572,10 @@ Source-facing Chapter 10 wrappers:
 - `finiteMinEigenvalue_le`
 - `exists_finiteMinEigenvalue_eq`
 - `finiteMinEigenvalue_rayleigh`
+- `finiteMaxEigenvalue`
+- `le_finiteMaxEigenvalue`
+- `exists_finiteMaxEigenvalue_eq`
+- `finiteMaxEigenvalue_rayleigh`
 - `higham10_7_success_factorization_min_eig`
 - `higham10_7_failure_no_factorization_min_eig`
 - `quadForm_add_pos_of_perturbation`

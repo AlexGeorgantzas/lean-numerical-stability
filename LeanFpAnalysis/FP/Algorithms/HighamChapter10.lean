@@ -1187,6 +1187,42 @@ theorem finiteMinEigenvalue_leading_principal_ge (n : ℕ) (hn : 0 < n)
   rw [hpadquad] at hray
   exact hray
 
+/-- **Maximum eigenvalue** of a symmetric real matrix, through the
+repository's `finiteHermitianEigenvalues` (the `λ_max` of the spectral
+reading of `‖·‖₂` on Gram matrices). -/
+noncomputable def finiteMaxEigenvalue {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M) : ℝ :=
+  Finset.univ.sup' (Finset.univ_nonempty_iff.mpr
+    (Fin.pos_iff_nonempty.mp hn)) (finiteHermitianEigenvalues M hM)
+
+/-- Every eigenvalue is at most the maximum eigenvalue. -/
+theorem le_finiteMaxEigenvalue {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M) (a : Fin n) :
+    finiteHermitianEigenvalues M hM a ≤ finiteMaxEigenvalue hn M hM :=
+  Finset.le_sup' _ (Finset.mem_univ a)
+
+/-- The maximum eigenvalue is attained. -/
+theorem exists_finiteMaxEigenvalue_eq {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M) :
+    ∃ a : Fin n, finiteHermitianEigenvalues M hM a =
+      finiteMaxEigenvalue hn M hM := by
+  obtain ⟨a, _, ha⟩ := Finset.exists_mem_eq_sup' (Finset.univ_nonempty_iff.mpr
+    (Fin.pos_iff_nonempty.mp hn)) (finiteHermitianEigenvalues M hM)
+  exact ⟨a, ha.symm⟩
+
+/-- **Rayleigh upper bound from `λ_max`**: `xᵀMx ≤ λ_max(M) ‖x‖₂²`. -/
+theorem finiteMaxEigenvalue_rayleigh {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M)
+    (x : Fin n → ℝ) :
+    ∑ i : Fin n, ∑ j : Fin n, x i * M i j * x j ≤
+      finiteMaxEigenvalue hn M hM * ∑ i : Fin n, x i ^ 2 := by
+  have h := finiteLoewnerLe_smul_id_of_finiteHermitianEigenvalues_le
+    M hM (le_finiteMaxEigenvalue hn M hM) x
+  rw [finiteQuadraticForm_smul_finiteIdMatrix,
+    finiteQuadraticForm_eq_sum_sum] at h
+  simpa [finiteVecNorm2Sq] using h
+
+
 /-- Splitting a double sum over `Fin (m+1)` into interior, two borders,
 and corner. -/
 theorem sum_sum_castSucc_split (m : ℕ) (F : Fin (m + 1) → Fin (m + 1) → ℝ) :
