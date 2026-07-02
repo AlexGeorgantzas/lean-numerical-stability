@@ -3732,6 +3732,8 @@ Source-facing Chapter 10 wrappers:
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
+- `fl_cholesky_truncated_demmel` (Th10.14 leading-block engine: computed block Demmel-stable under early termination)
+- `fl_cholesky_truncated_border_demmel` (Th10.14 border block: trace-controlled under computed-pivot domination)
 - `higham10_26_nonpositivePivotCriterion`
 - `higham10_27_residualStopCriterion`
 - `higham10_27_nonpositiveDiagonalCriterion`
