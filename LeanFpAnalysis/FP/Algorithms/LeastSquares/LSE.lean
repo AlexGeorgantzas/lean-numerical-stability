@@ -15455,6 +15455,159 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
       (LSEStackedFullColumnRank.vecNorm2LowerMargin_lower_bound hStack)
       hStackMargin
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    combined Householder Frobenius budget that controls the rank-preservation
+    perturbation radius in the source-rank branch. -/
+noncomputable def theorem20_10_householder_sourceRankBudget
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) : ℝ :=
+  theorem20_10_householder_gammaA fp r p q * frobNormRect A +
+    theorem20_10_householder_gammaB fp r p q * frobNormRect B
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    source-rank radius induced by the `Bᵀ` and stacked `[A; B]`
+    finite-dimensional lower-bound margins. -/
+noncomputable def theorem20_10_householder_sourceRankRadius
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B) : ℝ :=
+  min (LSEFullRowRank.transposeVecNorm2LowerMargin hB)
+    (LSEStackedFullColumnRank.vecNorm2LowerMargin hStack)
+
+/-- Positivity of the noncomputable source-rank radius used in the
+    Theorem 20.10(b) source-rank branch. -/
+theorem theorem20_10_householder_sourceRankRadius_pos
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B) :
+    0 < theorem20_10_householder_sourceRankRadius hB hStack := by
+  exact lt_min
+    (LSEFullRowRank.transposeVecNorm2LowerMargin_pos hB)
+    (LSEStackedFullColumnRank.vecNorm2LowerMargin_pos hStack)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    source-rank margin-radius wrapper for the constructed rounded Householder
+    GQR Part B returned-vector theorem.
+
+    This replaces the two explicit strict margin hypotheses of
+    `..._of_source_ranks_frobenius_margins_composed_conservative_gamma` by one
+    canonical condition: the combined Householder Frobenius rank budget is
+    strictly below the minimum of the `Bᵀ` and stacked source margins. -/
+theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_source_ranks_rank_radius_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hMargin :
+      theorem20_10_householder_sourceRankBudget fp A B <
+        theorem20_10_householder_sourceRankRadius hB hStack) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    let beta : Fin q → ℝ :=
+      theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+    ∃ DeltaA0 : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB0 : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab0 : Fin (r + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB0 i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA0 ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB0 ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab0 ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA0 i j)
+          (fun i j => B i j + DeltaB0 i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        (∀ j : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun k => b k + Deltab0 k) (Fin.natAdd r j) =
+            beta j) ∧
+        let xhat : Fin (p + q) → ℝ :=
+          theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d
+        let gammaA : ℝ :=
+          theorem20_10_householder_composed_partA_gammaA fp r p q
+        let gammaB : ℝ :=
+          theorem20_10_householder_composed_partA_gammaB fp r p q
+        ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+        ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+        ∃ Deltab : Fin (r + q) → ℝ,
+        ∃ Deltad : Fin p → ℝ,
+          Deltad = (0 : Fin p → ℝ) ∧
+          frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+          frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+          vecNorm2 Deltab ≤
+            gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+          vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) xhat ∧
+          (∃! x : Fin (p + q) → ℝ,
+            IsLSEMinimizer
+              (fun i j => A i j + DeltaA i j)
+              (fun i => b i + Deltab i)
+              (fun i j => B i j + DeltaB i j)
+              (fun i => d i + Deltad i) x) := by
+  have hgammaA_nonneg :
+      0 ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidA
+  have hAterm_nonneg :
+      0 ≤ theorem20_10_householder_gammaA fp r p q * frobNormRect A :=
+    mul_nonneg hgammaA_nonneg (frobNormRect_nonneg A)
+  have hBMargin :
+      theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        LSEFullRowRank.transposeVecNorm2LowerMargin hB := by
+    calc
+      theorem20_10_householder_gammaB fp r p q * frobNormRect B
+          ≤ theorem20_10_householder_sourceRankBudget fp A B := by
+            dsimp [theorem20_10_householder_sourceRankBudget]
+            linarith
+      _ < theorem20_10_householder_sourceRankRadius hB hStack := hMargin
+      _ ≤ LSEFullRowRank.transposeVecNorm2LowerMargin hB := by
+            exact min_le_left _ _
+  have hStackMargin :
+      theorem20_10_householder_gammaA fp r p q * frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        LSEStackedFullColumnRank.vecNorm2LowerMargin hStack := by
+    calc
+      theorem20_10_householder_gammaA fp r p q * frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B
+          = theorem20_10_householder_sourceRankBudget fp A B := by
+            rfl
+      _ < theorem20_10_householder_sourceRankRadius hB hStack := hMargin
+      _ ≤ LSEStackedFullColumnRank.vecNorm2LowerMargin hStack := by
+            exact min_le_right _ _
+  exact
+    theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_source_ranks_frobenius_margins_composed_conservative_gamma
+      fp A B b d hp hq hvalidA hvalidB hhalf hB hStack hBMargin
+      hStackMargin
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
     Part B certificate route with the currently proved conservative RHS
     coefficient.

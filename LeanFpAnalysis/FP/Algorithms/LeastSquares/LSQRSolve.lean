@@ -15669,6 +15669,274 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQR
   simpa [Q, Rhat, c_hat, K, H3] using hbase
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    handoff with source-shaped matrix perturbation, an explicit zero `Delta g`
+    package, and the sharpened fixed-`Q` RHS perturbation bound.
+
+    This is the sqrt-budget analogue of
+    `exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_zero_deltag_bound`.
+    The only changed component is the `Delta f` radius, which is now
+    `householderQRRhsPanelSqrtBackwardBound`. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_zero_deltag_bound_sqrt
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0)
+    (hγ : gammaValid fp n) :
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤
+        gamma fp (n * householderConstructApplyGammaIndex (n + k)) *
+          frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i,
+        |Deltaf i| ≤
+          householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let K : ℕ := householderConstructApplyGammaIndex (n + k)
+  let row0 : Fin (n + k) := ⟨0, by omega⟩
+  let H3 : Fin (n + k) → Fin (n + k) → ℝ :=
+    fun i j => if row0 = i ∧ row0 = j then 1 else 0
+  have hH3nonneg : ∀ i j, 0 ≤ H3 i j := by
+    intro i j
+    by_cases hij : row0 = i ∧ row0 = j
+    · have hij_eq : i = j := hij.1.symm.trans hij.2
+      simp [H3, hij, hij_eq]
+    · simp [H3, hij]
+  have hH3norm : frobNorm H3 = 1 := by
+    calc
+      frobNorm H3 = frobNormRect H3 := (frobNormRect_eq_frobNormFn H3).symm
+      _ = |(1 : ℝ)| := by
+          simpa [H3] using frobNormRect_single_left row0 row0 (1 : ℝ)
+      _ = 1 := by norm_num
+  have hn_le_rows : n ≤ n + k := Nat.le_add_right n k
+  have hsteps : 0 < Nat.min (n + k) n := by
+    simpa [Nat.min_eq_right hn_le_rows] using hn
+  have hQR :
+      StructuredHouseholderQRPanelHighamBackwardError (n + k) n A Q Rhat
+        (gamma fp (n * K) * frobNorm A)
+        ((n + k : ℝ) * gamma fp (n * K)) := by
+    have hraw :=
+      fl_householderQRPanel_R_higham_backward_error_gammaHigham_of_global_gammaValid
+        fp (n + k) n A hsteps
+        (by simpa [K, Nat.min_eq_right hn_le_rows] using hvalid)
+    simpa [Q, Rhat, K, Nat.min_eq_right hn_le_rows] using hraw
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * (n + k) + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * (n + k) + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) (by
+      simpa [K] using hvalid)
+  have hready : HouseholderQRPanelReady fp (n + k) n A :=
+    HouseholderQRPanelReady_of_global_gammaValid fp (n + k) n (n + k) A
+      (le_refl (n + k)) hbase_valid
+  have hRhs :
+      HouseholderQRRhsPanelExplicitBackwardError (n + k) n A f Q c_hat
+        (householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f) := by
+    simpa [Q, c_hat] using
+      fl_householderQRPanel_rhs_explicit_backward_error_sqrt
+        fp (n + k) n A f hready
+  have hcG :
+      0 ≤ Real.sqrt (n + k : ℝ) * (n : ℝ) * gamma fp (n * K) := by
+    exact mul_nonneg
+      (mul_nonneg (Real.sqrt_nonneg _) (by positivity))
+      (gamma_nonneg fp (by simpa [K] using hvalid))
+  have hbase :=
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_forwardSub_fl_backSub_of_higham_qr_and_rhs_explicit_backward_error_with_zero_deltag_bound
+      fp Q A Rhat f c_hat g
+      (gamma fp (n * K) * frobNorm A)
+      ((n + k : ℝ) * gamma fp (n * K))
+      (householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f)
+      (Real.sqrt (n + k : ℝ) * (n : ℝ) * gamma fp (n * K))
+      H3 hQR hRhs hcG hH3nonneg hH3norm
+      (by simpa [Rhat] using hdiag) hγ
+  simpa [Q, Rhat, c_hat, K, H3] using hbase
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    handoff with source-shaped matrix perturbation, an explicit zero `Delta g`
+    package, and the residual-sharpened fixed-`Q` RHS perturbation bound.
+
+    This is the residual-sharpened analogue of
+    `exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_zero_deltag_bound_sqrt`.
+    The only changed component is the `Delta f` radius, which is now
+    `householderQRRhsPanelSqrtResidualBackwardBound`. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_zero_deltag_bound_sqrt_residual
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0)
+    (hγ : gammaValid fp n) :
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤
+        gamma fp (n * householderConstructApplyGammaIndex (n + k)) *
+          frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i,
+        |Deltaf i| ≤
+          householderQRRhsPanelSqrtResidualBackwardBound fp
+            (n + k) n A f) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let K : ℕ := householderConstructApplyGammaIndex (n + k)
+  let row0 : Fin (n + k) := ⟨0, by omega⟩
+  let H3 : Fin (n + k) → Fin (n + k) → ℝ :=
+    fun i j => if row0 = i ∧ row0 = j then 1 else 0
+  have hH3nonneg : ∀ i j, 0 ≤ H3 i j := by
+    intro i j
+    by_cases hij : row0 = i ∧ row0 = j
+    · have hij_eq : i = j := hij.1.symm.trans hij.2
+      simp [H3, hij, hij_eq]
+    · simp [H3, hij]
+  have hH3norm : frobNorm H3 = 1 := by
+    calc
+      frobNorm H3 = frobNormRect H3 := (frobNormRect_eq_frobNormFn H3).symm
+      _ = |(1 : ℝ)| := by
+          simpa [H3] using frobNormRect_single_left row0 row0 (1 : ℝ)
+      _ = 1 := by norm_num
+  have hn_le_rows : n ≤ n + k := Nat.le_add_right n k
+  have hsteps : 0 < Nat.min (n + k) n := by
+    simpa [Nat.min_eq_right hn_le_rows] using hn
+  have hQR :
+      StructuredHouseholderQRPanelHighamBackwardError (n + k) n A Q Rhat
+        (gamma fp (n * K) * frobNorm A)
+        ((n + k : ℝ) * gamma fp (n * K)) := by
+    have hraw :=
+      fl_householderQRPanel_R_higham_backward_error_gammaHigham_of_global_gammaValid
+        fp (n + k) n A hsteps
+        (by simpa [K, Nat.min_eq_right hn_le_rows] using hvalid)
+    simpa [Q, Rhat, K, Nat.min_eq_right hn_le_rows] using hraw
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * (n + k) + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * (n + k) + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) (by
+      simpa [K] using hvalid)
+  have hready : HouseholderQRPanelReady fp (n + k) n A :=
+    HouseholderQRPanelReady_of_global_gammaValid fp (n + k) n (n + k) A
+      (le_refl (n + k)) hbase_valid
+  have hRhs :
+      HouseholderQRRhsPanelExplicitBackwardError (n + k) n A f Q c_hat
+        (householderQRRhsPanelSqrtResidualBackwardBound fp
+          (n + k) n A f) := by
+    simpa [Q, c_hat] using
+      fl_householderQRPanel_rhs_explicit_backward_error_sqrt_residual
+        fp (n + k) n A f hready
+  have hcG :
+      0 ≤ Real.sqrt (n + k : ℝ) * (n : ℝ) * gamma fp (n * K) := by
+    exact mul_nonneg
+      (mul_nonneg (Real.sqrt_nonneg _) (by positivity))
+      (gamma_nonneg fp (by simpa [K] using hvalid))
+  have hbase :=
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_forwardSub_fl_backSub_of_higham_qr_and_rhs_explicit_backward_error_with_zero_deltag_bound
+      fp Q A Rhat f c_hat g
+      (gamma fp (n * K) * frobNorm A)
+      ((n + k : ℝ) * gamma fp (n * K))
+      (householderQRRhsPanelSqrtResidualBackwardBound fp (n + k) n A f)
+      (Real.sqrt (n + k : ℝ) * (n : ℝ) * gamma fp (n * K))
+      H3 hQR hRhs hcG hH3nonneg hH3norm
+      (by simpa [Rhat] using hdiag) hγ
+  simpa [Q, Rhat, c_hat, K, H3] using hbase
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
     handoff with all printed perturbation slots exposed, conditional on the
     remaining `Delta f` source-majorant domination.
 
@@ -16239,6 +16507,351 @@ theorem householderQRRhsPanelBackwardBound_uniform_f_source_witness_of_growthCoe
     householderQRRhsPanelBackwardBound_uniform_f_source_witness_of_scalar_infNorm_dom
       fp A f g hn (householderQRRhsPanelGrowthCoeff fp (n + k) n) heta hInfDom
 
+/-- Uniform-column `H_1` source witness for any nonnegative scalar
+    infinity-norm domination of the sharpened Householder QR RHS recursion.
+
+    This is the sqrt-bound analogue of
+    `householderQRRhsPanelBackwardBound_uniform_f_source_witness_of_scalar_infNorm_dom`.
+    If the sharpened implementation-backed RHS perturbation is bounded by
+    `eta * infNormVec f`, the same max-component construction yields the
+    Theorem 20.4 source-majorant shape with coefficient `sqrt(n+k) * eta`. -/
+theorem householderQRRhsPanelSqrtBackwardBound_uniform_f_source_witness_of_scalar_infNorm_dom
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n) (eta : ℝ) (heta : 0 ≤ eta)
+    (hInfDom :
+      householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+        eta * infNormVec f) :
+    ∃ H1 H2 : Fin (n + k) → Fin (n + k) → ℝ,
+      (∀ i j, 0 ≤ H1 i j) ∧
+      (∀ i j, 0 ≤ H2 i j) ∧
+      frobNorm H1 = 1 ∧
+      frobNorm H2 = 1 ∧
+      (let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+        fl_householderQRPanel_Q fp (n + k) n A
+      let Rhat : Fin (n + k) → Fin n → ℝ :=
+        fl_householderQRPanel_R fp (n + k) n A
+      let R : Fin n → Fin n → ℝ :=
+        fun i j => Rhat (Fin.castAdd k i) j
+      let c_hat : Fin (n + k) → ℝ :=
+        fl_householderQRPanel_rhs fp (n + k) n A f
+      let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+      let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+      let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+      ∀ i : Fin (n + k),
+        householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+          (Real.sqrt (n + k : ℝ) * eta) *
+            lsTheorem20_4DeltafMajorant H1 H2 f rhat i) := by
+  have hm : 0 < n + k := Nat.lt_of_lt_of_le hn (Nat.le_add_right n k)
+  obtain ⟨j0, hmax_eq⟩ := infNormVec_exists_abs_eq hm f
+  let H1 : Fin (n + k) → Fin (n + k) → ℝ :=
+    lsTheorem20_4UniformColumnMajorant j0
+  let H2 : Fin (n + k) → Fin (n + k) → ℝ :=
+    lsTheorem20_4OneHotMajorant j0 j0
+  have hmax : infNormVec f ≤ |f j0| := le_of_eq hmax_eq
+  have hH1nonneg : ∀ i j, 0 ≤ H1 i j := by
+    simpa [H1] using lsTheorem20_4UniformColumnMajorant_nonneg j0
+  have hH2nonneg : ∀ i j, 0 ≤ H2 i j := by
+    simpa [H2] using lsTheorem20_4OneHotMajorant_nonneg j0 j0
+  have hH1norm : frobNorm H1 = 1 := by
+    simpa [H1] using lsTheorem20_4UniformColumnMajorant_frobNorm hm j0
+  have hH2norm : frobNorm H2 = 1 := by
+    simpa [H2] using lsTheorem20_4OneHotMajorant_frobNorm j0 j0
+  have hDeltafDom :
+      let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+        fl_householderQRPanel_Q fp (n + k) n A
+      let Rhat : Fin (n + k) → Fin n → ℝ :=
+        fl_householderQRPanel_R fp (n + k) n A
+      let R : Fin n → Fin n → ℝ :=
+        fun i j => Rhat (Fin.castAdd k i) j
+      let c_hat : Fin (n + k) → ℝ :=
+        fl_householderQRPanel_rhs fp (n + k) n A f
+      let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+      let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+      let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+      ∀ i : Fin (n + k),
+        householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+          (Real.sqrt (n + k : ℝ) * eta) *
+            lsTheorem20_4DeltafMajorant H1 H2 f rhat i := by
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    have hc : 0 ≤ Real.sqrt (n + k : ℝ) * eta := by
+      exact mul_nonneg (Real.sqrt_nonneg _) heta
+    apply
+      lsTheorem20_4DeltafMajorant_dom_of_f_term_dom H1 H2 f rhat
+        (householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f)
+        (Real.sqrt (n + k : ℝ) * eta) hc hH1nonneg hH2nonneg j0
+    intro i
+    have hscale : eta * infNormVec f ≤ eta * |f j0| := by
+      exact mul_le_mul_of_nonneg_left hmax heta
+    have hbase :
+        householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+          eta * |f j0| :=
+      hInfDom.trans hscale
+    have hmR : 0 < (n + k : ℝ) := by exact_mod_cast hm
+    have hsqrt_pos : 0 < Real.sqrt (n + k : ℝ) := Real.sqrt_pos.2 hmR
+    have hsimpl :
+        eta * |f j0| =
+          (Real.sqrt (n + k : ℝ) * eta) * (H1 i j0 * |f j0|) := by
+      simp [H1, lsTheorem20_4UniformColumnMajorant]
+      field_simp [ne_of_gt hsqrt_pos]
+    simpa [hsimpl] using hbase
+  exact ⟨H1, H2, hH1nonneg, hH2nonneg, hH1norm, hH2norm, hDeltafDom⟩
+
+/-- Implementation-backed uniform-column `H_1` source witness for Theorem
+    20.4's `Delta f` bound using the sharpened recursive RHS growth
+    coefficient.
+
+    This removes the abstract scalar `hInfDom` obligation by applying
+    `householderQRRhsPanelSqrtBackwardBound_le_sqrtGrowthCoeff`.  The resulting
+    coefficient is conservative and implementation-derived; it is a sharpened
+    bound for the current fixed-`Q` RHS transport path, not Higham's printed
+    `n * gamma` constant. -/
+theorem householderQRRhsPanelSqrtBackwardBound_uniform_f_source_witness_of_sqrtGrowthCoeff
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid : gammaValid fp (11 * (n + k) + 23))
+    (hready : HouseholderQRPanelReady fp (n + k) n A) :
+    ∃ H1 H2 : Fin (n + k) → Fin (n + k) → ℝ,
+      (∀ i j, 0 ≤ H1 i j) ∧
+      (∀ i j, 0 ≤ H2 i j) ∧
+      frobNorm H1 = 1 ∧
+      frobNorm H2 = 1 ∧
+      (let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+        fl_householderQRPanel_Q fp (n + k) n A
+      let Rhat : Fin (n + k) → Fin n → ℝ :=
+        fl_householderQRPanel_R fp (n + k) n A
+      let R : Fin n → Fin n → ℝ :=
+        fun i j => Rhat (Fin.castAdd k i) j
+      let c_hat : Fin (n + k) → ℝ :=
+        fl_householderQRPanel_rhs fp (n + k) n A f
+      let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+      let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+      let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+      ∀ i : Fin (n + k),
+        householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+          (Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n) *
+            lsTheorem20_4DeltafMajorant H1 H2 f rhat i) := by
+  have heta :
+      0 ≤ householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n :=
+    householderQRRhsPanelSqrtGrowthCoeff_nonneg fp (n + k) n hvalid
+  have hInfDom :
+      householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+        householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n * infNormVec f :=
+    householderQRRhsPanelSqrtBackwardBound_le_sqrtGrowthCoeff fp
+      (n + k) n A f hvalid hready
+  simpa using
+    householderQRRhsPanelSqrtBackwardBound_uniform_f_source_witness_of_scalar_infNorm_dom
+      fp A f g hn (householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n)
+      heta hInfDom
+
+/-- Implementation-backed uniform-column `H_1` source witness for Theorem
+    20.4's `Delta f` bound using the sharper recursive RHS growth coefficient.
+
+    Compared with
+    `householderQRRhsPanelSqrtBackwardBound_uniform_f_source_witness_of_sqrtGrowthCoeff`,
+    this consumes
+    `householderQRRhsPanelSqrtBackwardBound_le_sqrtGrowthCoeffSharp`, whose
+    coefficient also sharpens the intermediate rounded-vector growth estimate
+    for each one-reflector RHS step. -/
+theorem householderQRRhsPanelSqrtBackwardBound_uniform_f_source_witness_of_sqrtGrowthCoeffSharp
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid : gammaValid fp (11 * (n + k) + 23))
+    (hready : HouseholderQRPanelReady fp (n + k) n A) :
+    ∃ H1 H2 : Fin (n + k) → Fin (n + k) → ℝ,
+      (∀ i j, 0 ≤ H1 i j) ∧
+      (∀ i j, 0 ≤ H2 i j) ∧
+      frobNorm H1 = 1 ∧
+      frobNorm H2 = 1 ∧
+      (let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+        fl_householderQRPanel_Q fp (n + k) n A
+      let Rhat : Fin (n + k) → Fin n → ℝ :=
+        fl_householderQRPanel_R fp (n + k) n A
+      let R : Fin n → Fin n → ℝ :=
+        fun i j => Rhat (Fin.castAdd k i) j
+      let c_hat : Fin (n + k) → ℝ :=
+        fl_householderQRPanel_rhs fp (n + k) n A f
+      let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+      let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+      let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+      ∀ i : Fin (n + k),
+        householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+          (Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtGrowthCoeffSharp fp (n + k) n) *
+            lsTheorem20_4DeltafMajorant H1 H2 f rhat i) := by
+  have heta :
+      0 ≤ householderQRRhsPanelSqrtGrowthCoeffSharp fp (n + k) n :=
+    householderQRRhsPanelSqrtGrowthCoeffSharp_nonneg fp (n + k) n hvalid
+  have hInfDom :
+      householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+        householderQRRhsPanelSqrtGrowthCoeffSharp fp (n + k) n *
+          infNormVec f :=
+    householderQRRhsPanelSqrtBackwardBound_le_sqrtGrowthCoeffSharp fp
+      (n + k) n A f hvalid hready
+  simpa using
+    householderQRRhsPanelSqrtBackwardBound_uniform_f_source_witness_of_scalar_infNorm_dom
+      fp A f g hn
+      (householderQRRhsPanelSqrtGrowthCoeffSharp fp (n + k) n)
+      heta hInfDom
+
+/-- Generic uniform-column `H_1` source witness for Theorem 20.4's `Delta f`
+    source-majorant shape from any scalar RHS budget dominated by
+    `eta * ||f||∞`.
+
+    This packages the max-component construction independently of the concrete
+    QR RHS budget, so sharper implementation budgets can reuse the same source
+    witness argument. -/
+theorem lsTheorem20_4DeltafBound_uniform_f_source_witness_of_scalar_infNorm_dom
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n) (beta eta : ℝ) (heta : 0 ≤ eta)
+    (hInfDom : beta ≤ eta * infNormVec f) :
+    ∃ H1 H2 : Fin (n + k) → Fin (n + k) → ℝ,
+      (∀ i j, 0 ≤ H1 i j) ∧
+      (∀ i j, 0 ≤ H2 i j) ∧
+      frobNorm H1 = 1 ∧
+      frobNorm H2 = 1 ∧
+      (let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+        fl_householderQRPanel_Q fp (n + k) n A
+      let Rhat : Fin (n + k) → Fin n → ℝ :=
+        fl_householderQRPanel_R fp (n + k) n A
+      let R : Fin n → Fin n → ℝ :=
+        fun i j => Rhat (Fin.castAdd k i) j
+      let c_hat : Fin (n + k) → ℝ :=
+        fl_householderQRPanel_rhs fp (n + k) n A f
+      let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+      let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+      let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+      ∀ i : Fin (n + k),
+        beta ≤
+          (Real.sqrt (n + k : ℝ) * eta) *
+            lsTheorem20_4DeltafMajorant H1 H2 f rhat i) := by
+  have hm : 0 < n + k := Nat.lt_of_lt_of_le hn (Nat.le_add_right n k)
+  obtain ⟨j0, hmax_eq⟩ := infNormVec_exists_abs_eq hm f
+  let H1 : Fin (n + k) → Fin (n + k) → ℝ :=
+    lsTheorem20_4UniformColumnMajorant j0
+  let H2 : Fin (n + k) → Fin (n + k) → ℝ :=
+    lsTheorem20_4OneHotMajorant j0 j0
+  have hmax : infNormVec f ≤ |f j0| := le_of_eq hmax_eq
+  have hH1nonneg : ∀ i j, 0 ≤ H1 i j := by
+    simpa [H1] using lsTheorem20_4UniformColumnMajorant_nonneg j0
+  have hH2nonneg : ∀ i j, 0 ≤ H2 i j := by
+    simpa [H2] using lsTheorem20_4OneHotMajorant_nonneg j0 j0
+  have hH1norm : frobNorm H1 = 1 := by
+    simpa [H1] using lsTheorem20_4UniformColumnMajorant_frobNorm hm j0
+  have hH2norm : frobNorm H2 = 1 := by
+    simpa [H2] using lsTheorem20_4OneHotMajorant_frobNorm j0 j0
+  have hDeltafDom :
+      let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+        fl_householderQRPanel_Q fp (n + k) n A
+      let Rhat : Fin (n + k) → Fin n → ℝ :=
+        fl_householderQRPanel_R fp (n + k) n A
+      let R : Fin n → Fin n → ℝ :=
+        fun i j => Rhat (Fin.castAdd k i) j
+      let c_hat : Fin (n + k) → ℝ :=
+        fl_householderQRPanel_rhs fp (n + k) n A f
+      let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+      let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+      let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+      ∀ i : Fin (n + k),
+        beta ≤
+          (Real.sqrt (n + k : ℝ) * eta) *
+            lsTheorem20_4DeltafMajorant H1 H2 f rhat i := by
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    have hc : 0 ≤ Real.sqrt (n + k : ℝ) * eta := by
+      exact mul_nonneg (Real.sqrt_nonneg _) heta
+    apply
+      lsTheorem20_4DeltafMajorant_dom_of_f_term_dom H1 H2 f rhat
+        beta (Real.sqrt (n + k : ℝ) * eta) hc hH1nonneg hH2nonneg j0
+    intro i
+    have hscale : eta * infNormVec f ≤ eta * |f j0| := by
+      exact mul_le_mul_of_nonneg_left hmax heta
+    have hbase : beta ≤ eta * |f j0| :=
+      hInfDom.trans hscale
+    have hmR : 0 < (n + k : ℝ) := by exact_mod_cast hm
+    have hsqrt_pos : 0 < Real.sqrt (n + k : ℝ) := Real.sqrt_pos.2 hmR
+    have hsimpl :
+        eta * |f j0| =
+          (Real.sqrt (n + k : ℝ) * eta) * (H1 i j0 * |f j0|) := by
+      simp [H1, lsTheorem20_4UniformColumnMajorant]
+      field_simp [ne_of_gt hsqrt_pos]
+    simpa [hsimpl] using hbase
+  exact ⟨H1, H2, hH1nonneg, hH2nonneg, hH1norm, hH2norm, hDeltafDom⟩
+
+/-- Implementation-backed uniform-column `H_1` source witness for Theorem
+    20.4's `Delta f` bound using the residual-sharpened recursive RHS growth
+    coefficient. -/
+theorem householderQRRhsPanelSqrtResidualBackwardBound_uniform_f_source_witness_of_sqrtResidualGrowthCoeff
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid : gammaValid fp (11 * (n + k) + 23))
+    (hready : HouseholderQRPanelReady fp (n + k) n A) :
+    ∃ H1 H2 : Fin (n + k) → Fin (n + k) → ℝ,
+      (∀ i j, 0 ≤ H1 i j) ∧
+      (∀ i j, 0 ≤ H2 i j) ∧
+      frobNorm H1 = 1 ∧
+      frobNorm H2 = 1 ∧
+      (let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+        fl_householderQRPanel_Q fp (n + k) n A
+      let Rhat : Fin (n + k) → Fin n → ℝ :=
+        fl_householderQRPanel_R fp (n + k) n A
+      let R : Fin n → Fin n → ℝ :=
+        fun i j => Rhat (Fin.castAdd k i) j
+      let c_hat : Fin (n + k) → ℝ :=
+        fl_householderQRPanel_rhs fp (n + k) n A f
+      let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+      let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+      let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+      ∀ i : Fin (n + k),
+        householderQRRhsPanelSqrtResidualBackwardBound fp (n + k) n A f ≤
+          (Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n) *
+            lsTheorem20_4DeltafMajorant H1 H2 f rhat i) := by
+  have heta :
+      0 ≤ householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n :=
+    householderQRRhsPanelSqrtResidualGrowthCoeff_nonneg fp (n + k) n hvalid
+  have hInfDom :
+      householderQRRhsPanelSqrtResidualBackwardBound fp (n + k) n A f ≤
+        householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n *
+          infNormVec f :=
+    householderQRRhsPanelSqrtResidualBackwardBound_le_growthCoeff fp
+      (n + k) n A f hvalid hready
+  simpa using
+    lsTheorem20_4DeltafBound_uniform_f_source_witness_of_scalar_infNorm_dom
+      fp A f g hn
+      (householderQRRhsPanelSqrtResidualBackwardBound fp (n + k) n A f)
+      (householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n)
+      heta hInfDom
+
 /-- Implementation-backed uniform-column `H_1` source witness for Theorem
     20.4's `Delta f` bound using the nonrecursive closed RHS growth
     coefficient.
@@ -16678,6 +17291,1427 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQR
     hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm,
     hDeltaR1, hDeltaR2, ?_⟩
   simpa [Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    handoff with implementation-backed uniform `Delta f` source witnesses and
+    the sharpened fixed-`Q` RHS growth coefficient.
+
+    Compared with
+    `exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_growth_source_rhs_bound`,
+    this theorem uses the `householderQRRhsPanelSqrtBackwardBound` path and
+    the corresponding `householderQRRhsPanelSqrtGrowthCoeff` in the source-side
+    `Delta f` coefficient.  The matrix-side and `Delta g` coefficients remain
+    the printed Theorem 20.4 shapes. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_sqrt_growth_source_rhs_bound
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0)
+    (hγ : gammaValid fp n) :
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤
+        gamma fp (n * householderConstructApplyGammaIndex (n + k)) *
+          frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) *
+          householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let R : Fin n → Fin n → ℝ :=
+    fun i j => Rhat (Fin.castAdd k i) j
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+  let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+  let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+  let K : ℕ := householderConstructApplyGammaIndex (n + k)
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * (n + k) + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * (n + k) + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) (by
+      simpa [K] using hvalid)
+  have hready : HouseholderQRPanelReady fp (n + k) n A :=
+    HouseholderQRPanelReady_of_global_gammaValid fp (n + k) n (n + k) A
+      (le_refl (n + k)) hbase_valid
+  rcases
+    householderQRRhsPanelSqrtBackwardBound_uniform_f_source_witness_of_sqrtGrowthCoeff
+      fp A f g hn hbase_valid hready with
+    ⟨H1, H2, hH1nonneg, hH2nonneg, hH1norm, hH2norm, hDeltafDom⟩
+  rcases
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_zero_deltag_bound_sqrt
+      fp A f g hn hvalid hdiag hγ with
+    ⟨DeltaA, G, Deltaf, Deltag, H3, DeltaR1, DeltaR2, hDeltaA,
+      hGnonneg, hGnorm, hDeltaAcomp, hDeltaf, hDeltag, hH3nonneg,
+      hH3norm, hDeltaR1, hDeltaR2, hsys⟩
+  have hDeltafSrc : ∀ i : Fin (n + k),
+      |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) *
+          householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n) *
+          lsTheorem20_4DeltafMajorant H1 H2 f rhat i := by
+    intro i
+    exact le_trans (hDeltaf i)
+      (by simpa [Q, Rhat, R, c_hat, cBot, h, rhat] using hDeltafDom i)
+  refine ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2,
+    hDeltaA, hGnonneg, hGnorm, hDeltaAcomp, hDeltafSrc, hDeltag,
+    hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm,
+    hDeltaR1, hDeltaR2, ?_⟩
+  simpa [Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    handoff with implementation-backed uniform `Delta f` source witnesses and
+    the sharper fixed-`Q` RHS growth coefficient.
+
+    Compared with
+    `exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_sqrt_growth_source_rhs_bound`,
+    this theorem replaces `householderQRRhsPanelSqrtGrowthCoeff` by
+    `householderQRRhsPanelSqrtGrowthCoeffSharp`, whose recurrence also uses
+    the `sqrt(m+1)` bound for intermediate rounded-vector growth.  The
+    matrix-side and `Delta g` coefficients remain the printed Theorem 20.4
+    shapes. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_sharp_sqrt_growth_source_rhs_bound
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0)
+    (hγ : gammaValid fp n) :
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤
+        gamma fp (n * householderConstructApplyGammaIndex (n + k)) *
+          frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) *
+          householderQRRhsPanelSqrtGrowthCoeffSharp fp (n + k) n) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let R : Fin n → Fin n → ℝ :=
+    fun i j => Rhat (Fin.castAdd k i) j
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+  let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+  let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+  let K : ℕ := householderConstructApplyGammaIndex (n + k)
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * (n + k) + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * (n + k) + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) (by
+      simpa [K] using hvalid)
+  have hready : HouseholderQRPanelReady fp (n + k) n A :=
+    HouseholderQRPanelReady_of_global_gammaValid fp (n + k) n (n + k) A
+      (le_refl (n + k)) hbase_valid
+  rcases
+    householderQRRhsPanelSqrtBackwardBound_uniform_f_source_witness_of_sqrtGrowthCoeffSharp
+      fp A f g hn hbase_valid hready with
+    ⟨H1, H2, hH1nonneg, hH2nonneg, hH1norm, hH2norm, hDeltafDom⟩
+  rcases
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_zero_deltag_bound_sqrt
+      fp A f g hn hvalid hdiag hγ with
+    ⟨DeltaA, G, Deltaf, Deltag, H3, DeltaR1, DeltaR2, hDeltaA,
+      hGnonneg, hGnorm, hDeltaAcomp, hDeltaf, hDeltag, hH3nonneg,
+      hH3norm, hDeltaR1, hDeltaR2, hsys⟩
+  have hDeltafSrc : ∀ i : Fin (n + k),
+      |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) *
+          householderQRRhsPanelSqrtGrowthCoeffSharp fp (n + k) n) *
+          lsTheorem20_4DeltafMajorant H1 H2 f rhat i := by
+    intro i
+    exact le_trans (hDeltaf i)
+      (by simpa [Q, Rhat, R, c_hat, cBot, h, rhat] using hDeltafDom i)
+  refine ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2,
+    hDeltaA, hGnonneg, hGnorm, hDeltaAcomp, hDeltafSrc, hDeltag,
+    hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm,
+    hDeltaR1, hDeltaR2, ?_⟩
+  simpa [Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    handoff with implementation-backed uniform `Delta f` source witnesses and
+    the residual-sharpened fixed-`Q` RHS growth coefficient.
+
+    Compared with
+    `exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_sharp_sqrt_growth_source_rhs_bound`,
+    this theorem replaces `householderQRRhsPanelSqrtGrowthCoeffSharp` by
+    `householderQRRhsPanelSqrtResidualGrowthCoeff`, whose recurrence also uses
+    the `sqrt(m+1)` bound for the one-reflector rounded RHS residual. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_sqrt_residual_growth_source_rhs_bound
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0)
+    (hγ : gammaValid fp n) :
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤
+        gamma fp (n * householderConstructApplyGammaIndex (n + k)) *
+          frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) *
+          householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let R : Fin n → Fin n → ℝ :=
+    fun i j => Rhat (Fin.castAdd k i) j
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+  let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+  let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+  let K : ℕ := householderConstructApplyGammaIndex (n + k)
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * (n + k) + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * (n + k) + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) (by
+      simpa [K] using hvalid)
+  have hready : HouseholderQRPanelReady fp (n + k) n A :=
+    HouseholderQRPanelReady_of_global_gammaValid fp (n + k) n (n + k) A
+      (le_refl (n + k)) hbase_valid
+  rcases
+    householderQRRhsPanelSqrtResidualBackwardBound_uniform_f_source_witness_of_sqrtResidualGrowthCoeff
+      fp A f g hn hbase_valid hready with
+    ⟨H1, H2, hH1nonneg, hH2nonneg, hH1norm, hH2norm, hDeltafDom⟩
+  rcases
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_zero_deltag_bound_sqrt_residual
+      fp A f g hn hvalid hdiag hγ with
+    ⟨DeltaA, G, Deltaf, Deltag, H3, DeltaR1, DeltaR2, hDeltaA,
+      hGnonneg, hGnorm, hDeltaAcomp, hDeltaf, hDeltag, hH3nonneg,
+      hH3norm, hDeltaR1, hDeltaR2, hsys⟩
+  have hDeltafSrc : ∀ i : Fin (n + k),
+      |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) *
+          householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n) *
+          lsTheorem20_4DeltafMajorant H1 H2 f rhat i := by
+    intro i
+    exact le_trans (hDeltaf i)
+      (by simpa [Q, Rhat, R, c_hat, cBot, h, rhat] using hDeltafDom i)
+  refine ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2,
+    hDeltaA, hGnonneg, hGnorm, hDeltaAcomp, hDeltafSrc, hDeltag,
+    hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm,
+    hDeltaR1, hDeltaR2, ?_⟩
+  simpa [Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
+
+/-- Explicit conservative `γ̃` coefficient for the concrete Householder QR
+    augmented-system solve in Higham, Chapter 20, Theorem 20.4.
+
+    Higham states Theorem 20.4 with a tilde gamma `γ̃_m`, hiding a modest
+    implementation-dependent constant.  This repository-facing coefficient
+    makes that hidden constant explicit for the current model by dominating both
+    the matrix-side QR gamma and the sharpened fixed-`Q` RHS growth coefficient. -/
+noncomputable def lsTheorem20_4ConcreteGammaTilde (fp : FPModel)
+    (m n : ℕ) : ℝ :=
+  gamma fp (n * householderConstructApplyGammaIndex m) +
+    householderQRRhsPanelSqrtGrowthCoeff fp m n
+
+/-- The global Householder gamma-validity assumption used in the concrete
+    Theorem 20.4 handoff also validates the fixed-`Q` RHS coefficient base. -/
+theorem lsTheorem20_4ConcreteGammaTilde_base_gammaValid
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    gammaValid fp (11 * m + 23) := by
+  let K : ℕ := householderConstructApplyGammaIndex m
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * m + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  exact gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) (by
+    simpa [K] using hvalid)
+
+/-- Higham, Chapter 20, Theorem 20.4 concrete `γ̃` is nonnegative under the
+    same gamma-validity hypothesis as the Householder QR handoff. -/
+theorem lsTheorem20_4ConcreteGammaTilde_nonneg
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    0 ≤ lsTheorem20_4ConcreteGammaTilde fp m n := by
+  have hbase_valid :
+      gammaValid fp (11 * m + 23) :=
+    lsTheorem20_4ConcreteGammaTilde_base_gammaValid fp hn hvalid
+  exact add_nonneg (gamma_nonneg fp hvalid)
+    (householderQRRhsPanelSqrtGrowthCoeff_nonneg fp m n hbase_valid)
+
+/-- The matrix-side QR gamma is dominated by the explicit concrete `γ̃` used in
+    the Chapter 20, Theorem 20.4 Householder QR handoff. -/
+theorem gamma_le_lsTheorem20_4ConcreteGammaTilde
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    gamma fp (n * householderConstructApplyGammaIndex m) ≤
+      lsTheorem20_4ConcreteGammaTilde fp m n := by
+  have hbase_valid :
+      gammaValid fp (11 * m + 23) :=
+    lsTheorem20_4ConcreteGammaTilde_base_gammaValid fp hn hvalid
+  dsimp [lsTheorem20_4ConcreteGammaTilde]
+  exact le_add_of_nonneg_right
+    (householderQRRhsPanelSqrtGrowthCoeff_nonneg fp m n hbase_valid)
+
+/-- The fixed-`Q` RHS growth coefficient is dominated by the explicit concrete
+    `γ̃` used in the Chapter 20, Theorem 20.4 Householder QR handoff. -/
+theorem householderQRRhsPanelSqrtGrowthCoeff_le_lsTheorem20_4ConcreteGammaTilde
+    (fp : FPModel) {m n : ℕ}
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    householderQRRhsPanelSqrtGrowthCoeff fp m n ≤
+      lsTheorem20_4ConcreteGammaTilde fp m n := by
+  dsimp [lsTheorem20_4ConcreteGammaTilde]
+  exact le_add_of_nonneg_left (gamma_nonneg fp hvalid)
+
+/-- Sharper explicit conservative `γ̃` coefficient for the concrete
+    Householder QR augmented-system solve in Higham, Chapter 20, Theorem 20.4.
+
+    This is the same presentation idea as `lsTheorem20_4ConcreteGammaTilde`,
+    but it uses `householderQRRhsPanelSqrtGrowthCoeffSharp`, whose recurrence
+    also improves intermediate rounded-vector growth. -/
+noncomputable def lsTheorem20_4ConcreteGammaTildeSharp (fp : FPModel)
+    (m n : ℕ) : ℝ :=
+  gamma fp (n * householderConstructApplyGammaIndex m) +
+    householderQRRhsPanelSqrtGrowthCoeffSharp fp m n
+
+/-- The global Householder gamma-validity assumption used in the concrete
+    Theorem 20.4 handoff also validates the sharp fixed-`Q` RHS coefficient base. -/
+theorem lsTheorem20_4ConcreteGammaTildeSharp_base_gammaValid
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    gammaValid fp (11 * m + 23) :=
+  lsTheorem20_4ConcreteGammaTilde_base_gammaValid fp hn hvalid
+
+/-- Higham, Chapter 20, Theorem 20.4 sharp concrete `γ̃` is nonnegative under
+    the same gamma-validity hypothesis as the Householder QR handoff. -/
+theorem lsTheorem20_4ConcreteGammaTildeSharp_nonneg
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    0 ≤ lsTheorem20_4ConcreteGammaTildeSharp fp m n := by
+  have hbase_valid :
+      gammaValid fp (11 * m + 23) :=
+    lsTheorem20_4ConcreteGammaTildeSharp_base_gammaValid fp hn hvalid
+  exact add_nonneg (gamma_nonneg fp hvalid)
+    (householderQRRhsPanelSqrtGrowthCoeffSharp_nonneg fp m n hbase_valid)
+
+/-- The matrix-side QR gamma is dominated by the sharp explicit concrete `γ̃`
+    used in the Chapter 20, Theorem 20.4 Householder QR handoff. -/
+theorem gamma_le_lsTheorem20_4ConcreteGammaTildeSharp
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    gamma fp (n * householderConstructApplyGammaIndex m) ≤
+      lsTheorem20_4ConcreteGammaTildeSharp fp m n := by
+  have hbase_valid :
+      gammaValid fp (11 * m + 23) :=
+    lsTheorem20_4ConcreteGammaTildeSharp_base_gammaValid fp hn hvalid
+  dsimp [lsTheorem20_4ConcreteGammaTildeSharp]
+  exact le_add_of_nonneg_right
+    (householderQRRhsPanelSqrtGrowthCoeffSharp_nonneg fp m n hbase_valid)
+
+/-- The sharp fixed-`Q` RHS growth coefficient is dominated by the sharp
+    explicit concrete `γ̃` used in the Chapter 20, Theorem 20.4 handoff. -/
+theorem householderQRRhsPanelSqrtGrowthCoeffSharp_le_lsTheorem20_4ConcreteGammaTildeSharp
+    (fp : FPModel) {m n : ℕ}
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    householderQRRhsPanelSqrtGrowthCoeffSharp fp m n ≤
+      lsTheorem20_4ConcreteGammaTildeSharp fp m n := by
+  dsimp [lsTheorem20_4ConcreteGammaTildeSharp]
+  exact le_add_of_nonneg_left (gamma_nonneg fp hvalid)
+
+/-- Residual-sharpened explicit conservative `γ̃` coefficient for the concrete
+    Householder QR augmented-system solve in Higham, Chapter 20,
+    Theorem 20.4.
+
+    This uses `householderQRRhsPanelSqrtResidualGrowthCoeff`, whose recurrence
+    sharpens both intermediate rounded-vector growth and the one-reflector RHS
+    residual estimate. -/
+noncomputable def lsTheorem20_4ConcreteGammaTildeSqrtResidual
+    (fp : FPModel) (m n : ℕ) : ℝ :=
+  gamma fp (n * householderConstructApplyGammaIndex m) +
+    householderQRRhsPanelSqrtResidualGrowthCoeff fp m n
+
+/-- The global Householder gamma-validity assumption used in the concrete
+    Theorem 20.4 handoff also validates the residual-sharpened fixed-`Q` RHS
+    coefficient base. -/
+theorem lsTheorem20_4ConcreteGammaTildeSqrtResidual_base_gammaValid
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    gammaValid fp (11 * m + 23) :=
+  lsTheorem20_4ConcreteGammaTilde_base_gammaValid fp hn hvalid
+
+/-- Higham, Chapter 20, Theorem 20.4 residual-sharpened concrete `γ̃` is
+    nonnegative under the same gamma-validity hypothesis as the Householder QR
+    handoff. -/
+theorem lsTheorem20_4ConcreteGammaTildeSqrtResidual_nonneg
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    0 ≤ lsTheorem20_4ConcreteGammaTildeSqrtResidual fp m n := by
+  have hbase_valid :
+      gammaValid fp (11 * m + 23) :=
+    lsTheorem20_4ConcreteGammaTildeSqrtResidual_base_gammaValid fp
+      hn hvalid
+  exact add_nonneg (gamma_nonneg fp hvalid)
+    (householderQRRhsPanelSqrtResidualGrowthCoeff_nonneg fp m n hbase_valid)
+
+/-- The matrix-side QR gamma is dominated by the residual-sharpened explicit
+    concrete `γ̃` used in the Chapter 20, Theorem 20.4 Householder QR handoff. -/
+theorem gamma_le_lsTheorem20_4ConcreteGammaTildeSqrtResidual
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    gamma fp (n * householderConstructApplyGammaIndex m) ≤
+      lsTheorem20_4ConcreteGammaTildeSqrtResidual fp m n := by
+  have hbase_valid :
+      gammaValid fp (11 * m + 23) :=
+    lsTheorem20_4ConcreteGammaTildeSqrtResidual_base_gammaValid fp
+      hn hvalid
+  dsimp [lsTheorem20_4ConcreteGammaTildeSqrtResidual]
+  exact le_add_of_nonneg_right
+    (householderQRRhsPanelSqrtResidualGrowthCoeff_nonneg fp m n hbase_valid)
+
+/-- The residual-sharpened fixed-`Q` RHS growth coefficient is dominated by
+    the residual-sharpened explicit concrete `γ̃` used in the Chapter 20,
+    Theorem 20.4 handoff. -/
+theorem householderQRRhsPanelSqrtResidualGrowthCoeff_le_lsTheorem20_4ConcreteGammaTildeSqrtResidual
+    (fp : FPModel) {m n : ℕ}
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    householderQRRhsPanelSqrtResidualGrowthCoeff fp m n ≤
+      lsTheorem20_4ConcreteGammaTildeSqrtResidual fp m n := by
+  dsimp [lsTheorem20_4ConcreteGammaTildeSqrtResidual]
+  exact le_add_of_nonneg_left (gamma_nonneg fp hvalid)
+
+/-- The global Householder QR gamma-validity assumption used in Theorem 20.4
+    also supplies the triangular-solve gamma-validity assumption. -/
+theorem gammaValid_n_of_householderConstructApplyGammaValid
+    (fp : FPModel) (m n : ℕ)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    gammaValid fp n := by
+  have hK_pos : 0 < householderConstructApplyGammaIndex m := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  exact gammaValid_mono fp (Nat.le_mul_of_pos_right n hK_pos) hvalid
+
+/-- Computed-QR nonbreakdown domain for the concrete Chapter 20,
+    Theorem 20.4 Householder path.
+
+    Higham's printed theorem assumes source full column rank.  The verified
+    implementation-backed triangular solves also require the computed top
+    square `R` diagonal to be nonzero; this predicate names that finite-
+    precision domain condition instead of leaving it as an anonymous `hdiag`. -/
+def lsTheorem20_4ComputedQRNonbreakdown (fp : FPModel) {n k : ℕ}
+    (A : Fin (n + k) → Fin n → ℝ) : Prop :=
+  ∀ i : Fin n,
+    fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0
+
+/-- Source-facing domain for the concrete Chapter 20, Theorem 20.4
+    Householder path: the printed full-column-rank hypothesis plus the
+    computed nonbreakdown side condition consumed by triangular solves. -/
+def lsTheorem20_4FullRankComputedQRDomain (fp : FPModel) {n k : ℕ}
+    (A : Fin (n + k) → Fin n → ℝ) : Prop :=
+  lsRealRectColRank A = n ∧ lsTheorem20_4ComputedQRNonbreakdown fp A
+
+theorem lsTheorem20_4FullRankComputedQRDomain.fullRank (fp : FPModel)
+    {n k : ℕ} {A : Fin (n + k) → Fin n → ℝ}
+    (h : lsTheorem20_4FullRankComputedQRDomain fp A) :
+    lsRealRectColRank A = n :=
+  h.1
+
+theorem lsTheorem20_4FullRankComputedQRDomain.computedQRNonbreakdown
+    (fp : FPModel) {n k : ℕ} {A : Fin (n + k) → Fin n → ℝ}
+    (h : lsTheorem20_4FullRankComputedQRDomain fp A) :
+    lsTheorem20_4ComputedQRNonbreakdown fp A :=
+  h.2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    handoff with an explicit conservative `γ̃` coefficient.
+
+    This is the source-shaped closure corresponding to Higham's printed
+    `mn γ̃_m`, `sqrt(m)n γ̃_m` bounds.  The `γ̃` is not identified with the
+    sharper printed-looking `gamma fp (n * householderConstructApplyGammaIndex
+    m)`; it is the explicit conservative coefficient
+    `lsTheorem20_4ConcreteGammaTilde`, which is large enough to cover the
+    verified fixed-`Q` RHS path. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTilde
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0)
+    (hγ : gammaValid fp n) :
+    let gammaTilde : ℝ :=
+      lsTheorem20_4ConcreteGammaTilde fp (n + k) n
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤
+        gamma fp (n * householderConstructApplyGammaIndex (n + k)) *
+          frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let gammaTilde : ℝ :=
+    lsTheorem20_4ConcreteGammaTilde fp (n + k) n
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let R : Fin n → Fin n → ℝ :=
+    fun i j => Rhat (Fin.castAdd k i) j
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+  let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+  let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+  let K : ℕ := householderConstructApplyGammaIndex (n + k)
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * (n + k) + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * (n + k) + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) (by
+      simpa [K] using hvalid)
+  have hgamma_nonneg :
+      0 ≤ gamma fp (n * householderConstructApplyGammaIndex (n + k)) :=
+    gamma_nonneg fp hvalid
+  have hsqrtCoeff_nonneg :
+      0 ≤ householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n :=
+    householderQRRhsPanelSqrtGrowthCoeff_nonneg fp (n + k) n hbase_valid
+  have hgamma_le_tilde :
+      gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+        gammaTilde := by
+    dsimp [gammaTilde, lsTheorem20_4ConcreteGammaTilde]
+    exact le_add_of_nonneg_right hsqrtCoeff_nonneg
+  have hsqrtCoeff_le_tilde :
+      householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n ≤ gammaTilde := by
+    dsimp [gammaTilde, lsTheorem20_4ConcreteGammaTilde]
+    exact le_add_of_nonneg_left hgamma_nonneg
+  have htilde_nonneg : 0 ≤ gammaTilde := by
+    exact le_trans hgamma_nonneg hgamma_le_tilde
+  have htilde_le_n_tilde : gammaTilde ≤ (n : ℝ) * gammaTilde := by
+    have hn1 : (1 : ℝ) ≤ (n : ℝ) := by
+      exact_mod_cast Nat.succ_le_of_lt hn
+    calc
+      gammaTilde = (1 : ℝ) * gammaTilde := by ring
+      _ ≤ (n : ℝ) * gammaTilde :=
+          mul_le_mul_of_nonneg_right hn1 htilde_nonneg
+  have hgamma_le_n_tilde :
+      gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+        (n : ℝ) * gammaTilde :=
+    le_trans hgamma_le_tilde htilde_le_n_tilde
+  have hsqrtCoeff_le_n_tilde :
+      householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n ≤
+        (n : ℝ) * gammaTilde :=
+    le_trans hsqrtCoeff_le_tilde htilde_le_n_tilde
+  rcases
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_sqrt_growth_source_rhs_bound
+      fp A f g hn hvalid hdiag hγ with
+    ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2, hDeltaA,
+      hGnonneg, hGnorm, hDeltaAcomp, hDeltaf, hDeltag, hH1nonneg,
+      hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm, hDeltaR1,
+      hDeltaR2, hsys⟩
+  have hDeltaAcomp_tilde : ∀ i j,
+      |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j := by
+    intro i j
+    have hmaj_nonneg :
+        0 ≤ matMulRect (n + k) (n + k) n G
+          (fun a b => |A a b|) i j := by
+      unfold matMulRect
+      exact Finset.sum_nonneg (by
+        intro t _
+        exact mul_nonneg (hGnonneg i t) (abs_nonneg _))
+    have hcoeff :
+        (n + k : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      calc
+        (n + k : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          (n + k : ℝ) * ((n : ℝ) * gammaTilde) :=
+            mul_le_mul_of_nonneg_left hgamma_le_n_tilde (by positivity)
+        _ = (n + k : ℝ) * (n : ℝ) * gammaTilde := by ring
+    exact le_trans (hDeltaAcomp i j)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  have hDeltaf_tilde : ∀ i,
+      |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1 H2 f rhat i := by
+    intro i
+    have hmaj_nonneg :
+        0 ≤ lsTheorem20_4DeltafMajorant H1 H2 f rhat i :=
+      lsTheorem20_4DeltafMajorant_nonneg H1 H2 f rhat
+        hH1nonneg hH2nonneg i
+    have hcoeff :
+        Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n ≤
+          Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      calc
+        Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n ≤
+          Real.sqrt (n + k : ℝ) * ((n : ℝ) * gammaTilde) :=
+            mul_le_mul_of_nonneg_left hsqrtCoeff_le_n_tilde
+              (Real.sqrt_nonneg _)
+        _ = Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by ring
+    exact le_trans (hDeltaf i)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  have hDeltag_tilde : ∀ j,
+      |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j := by
+    intro j
+    have hmaj_nonneg :
+        0 ≤ lsTheorem20_4DeltagMajorant A H3 rhat j :=
+      lsTheorem20_4DeltagMajorant_nonneg A H3 rhat hH3nonneg j
+    have hcoeff :
+        Real.sqrt (n + k : ℝ) * (n : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      have hleft_nonneg : 0 ≤ Real.sqrt (n + k : ℝ) * (n : ℝ) :=
+        mul_nonneg (Real.sqrt_nonneg _) (Nat.cast_nonneg n)
+      exact mul_le_mul_of_nonneg_left hgamma_le_tilde hleft_nonneg
+    exact le_trans (hDeltag j)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  refine ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2,
+    hDeltaA, hGnonneg, hGnorm, hDeltaAcomp_tilde, hDeltaf_tilde,
+    hDeltag_tilde, hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm,
+    hH3norm, hDeltaR1, hDeltaR2, ?_⟩
+  simpa [gammaTilde, Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    handoff with the normwise matrix perturbation also stated using the
+    explicit conservative `γ̃` coefficient.
+
+    This is a presentation wrapper around the concrete `γ̃` theorem above.  It
+    weakens the first Frobenius bound from the matrix-side QR gamma to `γ̃`, so
+    all displayed perturbation budgets in the source-facing handoff use the same
+    conservative coefficient. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTilde_unified_frob_bound
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0)
+    (hγ : gammaValid fp n) :
+    let gammaTilde : ℝ :=
+      lsTheorem20_4ConcreteGammaTilde fp (n + k) n
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤ gammaTilde * frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let gammaTilde : ℝ :=
+    lsTheorem20_4ConcreteGammaTilde fp (n + k) n
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let R : Fin n → Fin n → ℝ :=
+    fun i j => Rhat (Fin.castAdd k i) j
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+  let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+  let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+  have hgamma_le_tilde :
+      gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+        gammaTilde := by
+    simpa [gammaTilde] using
+      (gamma_le_lsTheorem20_4ConcreteGammaTilde fp
+        (m := n + k) (n := n) hn hvalid)
+  rcases
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTilde
+      fp A f g hn hvalid hdiag hγ with
+    ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2,
+      hDeltaA, hGnonneg, hGnorm, hDeltaAcomp, hDeltaf, hDeltag,
+      hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm,
+      hDeltaR1, hDeltaR2, hsys⟩
+  have hDeltaA_tilde :
+      frobNorm DeltaA ≤ gammaTilde * frobNorm A := by
+    exact le_trans hDeltaA
+      (mul_le_mul_of_nonneg_right hgamma_le_tilde (frobNorm_nonneg A))
+  refine ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2,
+    hDeltaA_tilde, hGnonneg, hGnorm, hDeltaAcomp, hDeltaf, hDeltag,
+    hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm,
+    hDeltaR1, hDeltaR2, ?_⟩
+  simpa [gammaTilde, Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    handoff with all displayed perturbation budgets stated using the sharper
+    explicit conservative `γ̃` coefficient.
+
+    This is the sharp-coefficient analogue of
+    `exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTilde_unified_frob_bound`.
+    It uses `lsTheorem20_4ConcreteGammaTildeSharp`, whose RHS component is
+    `householderQRRhsPanelSqrtGrowthCoeffSharp`. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTildeSharp_unified_frob_bound
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0)
+    (hγ : gammaValid fp n) :
+    let gammaTilde : ℝ :=
+      lsTheorem20_4ConcreteGammaTildeSharp fp (n + k) n
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤ gammaTilde * frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let gammaTilde : ℝ :=
+    lsTheorem20_4ConcreteGammaTildeSharp fp (n + k) n
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let R : Fin n → Fin n → ℝ :=
+    fun i j => Rhat (Fin.castAdd k i) j
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+  let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+  let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+  have hbase_valid : gammaValid fp (11 * (n + k) + 23) :=
+    lsTheorem20_4ConcreteGammaTildeSharp_base_gammaValid fp
+      (m := n + k) (n := n) hn hvalid
+  have hgamma_nonneg :
+      0 ≤ gamma fp (n * householderConstructApplyGammaIndex (n + k)) :=
+    gamma_nonneg fp hvalid
+  have hsharpCoeff_nonneg :
+      0 ≤ householderQRRhsPanelSqrtGrowthCoeffSharp fp (n + k) n :=
+    householderQRRhsPanelSqrtGrowthCoeffSharp_nonneg fp (n + k) n
+      hbase_valid
+  have hgamma_le_tilde :
+      gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+        gammaTilde := by
+    simpa [gammaTilde] using
+      (gamma_le_lsTheorem20_4ConcreteGammaTildeSharp fp
+        (m := n + k) (n := n) hn hvalid)
+  have hsharpCoeff_le_tilde :
+      householderQRRhsPanelSqrtGrowthCoeffSharp fp (n + k) n ≤
+        gammaTilde := by
+    simpa [gammaTilde] using
+      (householderQRRhsPanelSqrtGrowthCoeffSharp_le_lsTheorem20_4ConcreteGammaTildeSharp
+        fp (m := n + k) (n := n) hvalid)
+  have htilde_nonneg : 0 ≤ gammaTilde := by
+    exact le_trans hgamma_nonneg hgamma_le_tilde
+  have htilde_le_n_tilde : gammaTilde ≤ (n : ℝ) * gammaTilde := by
+    have hn1 : (1 : ℝ) ≤ (n : ℝ) := by
+      exact_mod_cast Nat.succ_le_of_lt hn
+    calc
+      gammaTilde = (1 : ℝ) * gammaTilde := by ring
+      _ ≤ (n : ℝ) * gammaTilde :=
+          mul_le_mul_of_nonneg_right hn1 htilde_nonneg
+  have hgamma_le_n_tilde :
+      gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+        (n : ℝ) * gammaTilde :=
+    le_trans hgamma_le_tilde htilde_le_n_tilde
+  have hsharpCoeff_le_n_tilde :
+      householderQRRhsPanelSqrtGrowthCoeffSharp fp (n + k) n ≤
+        (n : ℝ) * gammaTilde :=
+    le_trans hsharpCoeff_le_tilde htilde_le_n_tilde
+  rcases
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_sharp_sqrt_growth_source_rhs_bound
+      fp A f g hn hvalid hdiag hγ with
+    ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2, hDeltaA,
+      hGnonneg, hGnorm, hDeltaAcomp, hDeltaf, hDeltag, hH1nonneg,
+      hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm, hDeltaR1,
+      hDeltaR2, hsys⟩
+  have hDeltaA_tilde :
+      frobNorm DeltaA ≤ gammaTilde * frobNorm A := by
+    exact le_trans hDeltaA
+      (mul_le_mul_of_nonneg_right hgamma_le_tilde (frobNorm_nonneg A))
+  have hDeltaAcomp_tilde : ∀ i j,
+      |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j := by
+    intro i j
+    have hmaj_nonneg :
+        0 ≤ matMulRect (n + k) (n + k) n G
+          (fun a b => |A a b|) i j := by
+      unfold matMulRect
+      exact Finset.sum_nonneg (by
+        intro t _
+        exact mul_nonneg (hGnonneg i t) (abs_nonneg _))
+    have hcoeff :
+        (n + k : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      calc
+        (n + k : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          (n + k : ℝ) * ((n : ℝ) * gammaTilde) :=
+            mul_le_mul_of_nonneg_left hgamma_le_n_tilde (by positivity)
+        _ = (n + k : ℝ) * (n : ℝ) * gammaTilde := by ring
+    exact le_trans (hDeltaAcomp i j)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  have hDeltaf_tilde : ∀ i,
+      |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1 H2 f rhat i := by
+    intro i
+    have hmaj_nonneg :
+        0 ≤ lsTheorem20_4DeltafMajorant H1 H2 f rhat i :=
+      lsTheorem20_4DeltafMajorant_nonneg H1 H2 f rhat
+        hH1nonneg hH2nonneg i
+    have hcoeff :
+        Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtGrowthCoeffSharp fp (n + k) n ≤
+          Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      calc
+        Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtGrowthCoeffSharp fp (n + k) n ≤
+          Real.sqrt (n + k : ℝ) * ((n : ℝ) * gammaTilde) :=
+            mul_le_mul_of_nonneg_left hsharpCoeff_le_n_tilde
+              (Real.sqrt_nonneg _)
+        _ = Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by ring
+    exact le_trans (hDeltaf i)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  have hDeltag_tilde : ∀ j,
+      |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j := by
+    intro j
+    have hmaj_nonneg :
+        0 ≤ lsTheorem20_4DeltagMajorant A H3 rhat j :=
+      lsTheorem20_4DeltagMajorant_nonneg A H3 rhat hH3nonneg j
+    have hcoeff :
+        Real.sqrt (n + k : ℝ) * (n : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      have hleft_nonneg : 0 ≤ Real.sqrt (n + k : ℝ) * (n : ℝ) :=
+        mul_nonneg (Real.sqrt_nonneg _) (Nat.cast_nonneg n)
+      exact mul_le_mul_of_nonneg_left hgamma_le_tilde hleft_nonneg
+    exact le_trans (hDeltag j)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  refine ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2,
+    hDeltaA_tilde, hGnonneg, hGnorm, hDeltaAcomp_tilde, hDeltaf_tilde,
+    hDeltag_tilde, hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm,
+    hH3norm, hDeltaR1, hDeltaR2, ?_⟩
+  simpa [gammaTilde, Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    handoff with all displayed perturbation budgets stated using the
+    residual-sharpened explicit conservative `γ̃` coefficient.
+
+    This is the residual-sharpened analogue of
+    `exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTildeSharp_unified_frob_bound`.
+    It uses `lsTheorem20_4ConcreteGammaTildeSqrtResidual`, whose RHS component
+    is `householderQRRhsPanelSqrtResidualGrowthCoeff`. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTildeSqrtResidual_unified_frob_bound
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0)
+    (hγ : gammaValid fp n) :
+    let gammaTilde : ℝ :=
+      lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤ gammaTilde * frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let gammaTilde : ℝ :=
+    lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let R : Fin n → Fin n → ℝ :=
+    fun i j => Rhat (Fin.castAdd k i) j
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+  let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+  let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+  have hgamma_le_tilde :
+      gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+        gammaTilde := by
+    simpa [gammaTilde] using
+      (gamma_le_lsTheorem20_4ConcreteGammaTildeSqrtResidual fp
+        (m := n + k) (n := n) hn hvalid)
+  have hresCoeff_le_tilde :
+      householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n ≤
+        gammaTilde := by
+    simpa [gammaTilde] using
+      (householderQRRhsPanelSqrtResidualGrowthCoeff_le_lsTheorem20_4ConcreteGammaTildeSqrtResidual
+        fp (m := n + k) (n := n) hvalid)
+  have htilde_nonneg : 0 ≤ gammaTilde := by
+    simpa [gammaTilde] using
+      (lsTheorem20_4ConcreteGammaTildeSqrtResidual_nonneg fp
+        (m := n + k) (n := n) hn hvalid)
+  have htilde_le_n_tilde : gammaTilde ≤ (n : ℝ) * gammaTilde := by
+    have hn1 : (1 : ℝ) ≤ (n : ℝ) := by
+      exact_mod_cast Nat.succ_le_of_lt hn
+    calc
+      gammaTilde = (1 : ℝ) * gammaTilde := by ring
+      _ ≤ (n : ℝ) * gammaTilde :=
+          mul_le_mul_of_nonneg_right hn1 htilde_nonneg
+  have hgamma_le_n_tilde :
+      gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+        (n : ℝ) * gammaTilde :=
+    le_trans hgamma_le_tilde htilde_le_n_tilde
+  have hresCoeff_le_n_tilde :
+      householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n ≤
+        (n : ℝ) * gammaTilde :=
+    le_trans hresCoeff_le_tilde htilde_le_n_tilde
+  rcases
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_sqrt_residual_growth_source_rhs_bound
+      fp A f g hn hvalid hdiag hγ with
+    ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2, hDeltaA,
+      hGnonneg, hGnorm, hDeltaAcomp, hDeltaf, hDeltag, hH1nonneg,
+      hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm, hDeltaR1,
+      hDeltaR2, hsys⟩
+  have hDeltaA_tilde :
+      frobNorm DeltaA ≤ gammaTilde * frobNorm A := by
+    exact le_trans hDeltaA
+      (mul_le_mul_of_nonneg_right hgamma_le_tilde (frobNorm_nonneg A))
+  have hDeltaAcomp_tilde : ∀ i j,
+      |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j := by
+    intro i j
+    have hmaj_nonneg :
+        0 ≤ matMulRect (n + k) (n + k) n G
+          (fun a b => |A a b|) i j := by
+      unfold matMulRect
+      exact Finset.sum_nonneg (by
+        intro t _
+        exact mul_nonneg (hGnonneg i t) (abs_nonneg _))
+    have hcoeff :
+        (n + k : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      calc
+        (n + k : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          (n + k : ℝ) * ((n : ℝ) * gammaTilde) :=
+            mul_le_mul_of_nonneg_left hgamma_le_n_tilde (by positivity)
+        _ = (n + k : ℝ) * (n : ℝ) * gammaTilde := by ring
+    exact le_trans (hDeltaAcomp i j)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  have hDeltaf_tilde : ∀ i,
+      |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1 H2 f rhat i := by
+    intro i
+    have hmaj_nonneg :
+        0 ≤ lsTheorem20_4DeltafMajorant H1 H2 f rhat i :=
+      lsTheorem20_4DeltafMajorant_nonneg H1 H2 f rhat
+        hH1nonneg hH2nonneg i
+    have hcoeff :
+        Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n ≤
+          Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      calc
+        Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n ≤
+          Real.sqrt (n + k : ℝ) * ((n : ℝ) * gammaTilde) :=
+            mul_le_mul_of_nonneg_left hresCoeff_le_n_tilde
+              (Real.sqrt_nonneg _)
+        _ = Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by ring
+    exact le_trans (hDeltaf i)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  have hDeltag_tilde : ∀ j,
+      |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j := by
+    intro j
+    have hmaj_nonneg :
+        0 ≤ lsTheorem20_4DeltagMajorant A H3 rhat j :=
+      lsTheorem20_4DeltagMajorant_nonneg A H3 rhat hH3nonneg j
+    have hcoeff :
+        Real.sqrt (n + k : ℝ) * (n : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      have hleft_nonneg : 0 ≤ Real.sqrt (n + k : ℝ) * (n : ℝ) :=
+        mul_nonneg (Real.sqrt_nonneg _) (Nat.cast_nonneg n)
+      exact mul_le_mul_of_nonneg_left hgamma_le_tilde hleft_nonneg
+    exact le_trans (hDeltag j)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  refine ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2,
+    hDeltaA_tilde, hGnonneg, hGnorm, hDeltaAcomp_tilde, hDeltaf_tilde,
+    hDeltag_tilde, hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm,
+    hH3norm, hDeltaR1, hDeltaR2, ?_⟩
+  simpa [gammaTilde, Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    residual-sharpened handoff with no separate triangular-solve
+    gamma-validity input.
+
+The global Householder QR validity hypothesis already implies `gammaValid fp n`,
+so callers only supply the single source-facing validity condition for the
+residual-sharpened `γ̃` theorem. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTildeSqrtResidual_unified_frob_bound_of_global_gammaValid
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0) :
+    let gammaTilde : ℝ :=
+      lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤ gammaTilde * frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  have hγ : gammaValid fp n :=
+    gammaValid_n_of_householderConstructApplyGammaValid fp (n + k) n hvalid
+  exact
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTildeSqrtResidual_unified_frob_bound
+      fp A f g hn hvalid hdiag hγ
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 source-domain wrapper.
+
+    This is the same residual-sharpened concrete `γ̃` handoff as
+    `..._of_global_gammaValid`, but its solve-side domain is named in the
+    source-facing form: full column rank of `A` together with computed QR
+    nonbreakdown for the top square `R`.  The full-rank field records the
+    printed hypothesis; the computed nonbreakdown field is the finite-precision
+    triangular-solve side condition still not derivable from full rank alone by
+    the current verified zero-aware QR API. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_source_fullRank_computed_nonbreakdown
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdomain : lsTheorem20_4FullRankComputedQRDomain fp A) :
+    let gammaTilde : ℝ :=
+      lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤ gammaTilde * frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  exact
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTildeSqrtResidual_unified_frob_bound_of_global_gammaValid
+      fp A f g hn hvalid
+      (lsTheorem20_4FullRankComputedQRDomain.computedQRNonbreakdown fp hdomain)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
     handoff with implementation-backed uniform `Delta f` source witnesses and a
@@ -17224,6 +19258,116 @@ theorem theorem20_4_printed_deltaf_coefficient_lt_conservative_gammaFactor_coeff
         householderQRRhsPanelGammaClosedGrowthFactor_printedCoeff_lt_factorCoeff
           fp (m := n + k) (p := n) hm hn hu hvalid)
     hsqrt_pos
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4, residual-sharpened coefficient
+    obstruction for the printed `Delta f` route in every nonempty panel.
+
+    The residual-sharpened unified coefficient is
+    `gamma + householderQRRhsPanelSqrtResidualGrowthCoeff`.  The residual-growth
+    addend is strictly positive under positive unit roundoff for any nonempty
+    panel, so the current implementation-backed `gammaTilde` coefficient is
+    still strictly larger than Higham's printed `gamma` coefficient after the
+    common `sqrt(n+k)*n` source factor is restored. -/
+theorem theorem20_4_printed_deltaf_coefficient_lt_concrete_gammaTildeSqrtResidual
+    (fp : FPModel) {n k : ℕ} (hn : 0 < n) (hu : 0 < fp.u)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k))) :
+    Real.sqrt (n + k : ℝ) *
+        ((n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) <
+      Real.sqrt (n + k : ℝ) *
+        ((n : ℝ) *
+          lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n) := by
+  have hm : 0 < n + k := Nat.lt_of_lt_of_le hn (Nat.le_add_right n k)
+  have hm_real : 0 < (n + k : ℝ) := by
+    exact_mod_cast hm
+  have hn_real : 0 < (n : ℝ) := by
+    exact_mod_cast hn
+  have hsqrt_pos : 0 < Real.sqrt (n + k : ℝ) :=
+    Real.sqrt_pos.2 hm_real
+  have hbase_valid : gammaValid fp (11 * (n + k) + 23) :=
+    lsTheorem20_4ConcreteGammaTildeSqrtResidual_base_gammaValid fp
+      (m := n + k) (n := n) hn hvalid
+  have htail_pos :
+      0 <
+        householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n :=
+    householderQRRhsPanelSqrtResidualGrowthCoeff_pos fp hm hn hu
+      hbase_valid
+  have htilde_gt_gamma :
+      gamma fp (n * householderConstructApplyGammaIndex (n + k)) <
+        lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n := by
+    have hadd :
+        gamma fp (n * householderConstructApplyGammaIndex (n + k)) <
+          gamma fp (n * householderConstructApplyGammaIndex (n + k)) +
+            householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n :=
+      lt_add_of_pos_right _ htail_pos
+    simpa [lsTheorem20_4ConcreteGammaTildeSqrtResidual] using hadd
+  have hinner :
+      (n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k)) <
+        (n : ℝ) *
+          lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n :=
+    mul_lt_mul_of_pos_left htilde_gt_gamma hn_real
+  exact mul_lt_mul_of_pos_left hinner hsqrt_pos
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4, residual-sharpened coefficient
+    obstruction for the printed `Delta f` route in the one-column panel case.
+
+    The latest residual-sharpened unified coefficient is
+    `gamma + householderQRRhsPanelSqrtResidualGrowthCoeff`.  For one panel
+    reflector the residual-growth term is already positive under positive unit
+    roundoff, so the current implementation-backed `gammaTilde` coefficient is
+    still strictly larger than Higham's printed `1 * gamma` coefficient. -/
+theorem theorem20_4_printed_deltaf_coefficient_lt_concrete_gammaTildeSqrtResidual_one_column
+    (fp : FPModel) {k : ℕ} (hu : 0 < fp.u)
+    (hvalid :
+      gammaValid fp (1 * householderConstructApplyGammaIndex (k + 1))) :
+    Real.sqrt (k + 1 : ℝ) *
+        ((1 : ℝ) *
+          gamma fp (1 * householderConstructApplyGammaIndex (k + 1))) <
+      Real.sqrt (k + 1 : ℝ) *
+        lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (k + 1) 1 := by
+  have hm : 0 < k + 1 := Nat.succ_pos k
+  have hm_real : 0 < (k + 1 : ℝ) := by
+    exact_mod_cast hm
+  have hm_real_nat : 0 < ((k + 1 : ℕ) : ℝ) := by
+    exact_mod_cast hm
+  have hbase_valid : gammaValid fp (11 * (k + 1) + 23) :=
+    gammaValid_mono fp (by
+      dsimp [householderConstructApplyGammaIndex]
+      omega) hvalid
+  have hCpos : 0 < householderConstructApplyBound fp (k + 1) := by
+    unfold householderConstructApplyBound
+    have hu_sq : 0 < fp.u ^ 2 := sq_pos_of_pos hu
+    have hprod : 0 < ((k + 1 : ℕ) : ℝ) * fp.u ^ 2 :=
+      mul_pos hm_real_nat hu_sq
+    have hsqrt : 0 < Real.sqrt (((k + 1 : ℕ) : ℝ) * fp.u ^ 2) :=
+      Real.sqrt_pos.2 hprod
+    have hgamma_nonneg : 0 ≤ gamma fp (11 * (k + 1) + 23) :=
+      gamma_nonneg fp hbase_valid
+    exact add_pos_of_pos_of_nonneg hsqrt
+      (mul_nonneg (by norm_num) hgamma_nonneg)
+  have hsqrt_pos : 0 < Real.sqrt (k + 1 : ℝ) :=
+    Real.sqrt_pos.2 hm_real
+  have htail_pos :
+      0 <
+        householderQRRhsPanelSqrtResidualGrowthCoeff fp (k + 1) 1 := by
+    have htail_zero :
+        householderQRRhsPanelSqrtResidualGrowthCoeff fp k 0 = 0 := by
+      cases k <;> simp [householderQRRhsPanelSqrtResidualGrowthCoeff]
+    simpa [householderQRRhsPanelSqrtResidualGrowthCoeff, htail_zero] using
+      mul_pos hsqrt_pos (mul_pos hsqrt_pos hCpos)
+  have hinner :
+      (1 : ℝ) *
+          gamma fp (1 * householderConstructApplyGammaIndex (k + 1)) <
+        lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (k + 1) 1 := by
+    have hadd :
+        gamma fp (1 * householderConstructApplyGammaIndex (k + 1)) <
+          gamma fp (1 * householderConstructApplyGammaIndex (k + 1)) +
+            householderQRRhsPanelSqrtResidualGrowthCoeff fp (k + 1) 1 :=
+      lt_add_of_pos_right _ htail_pos
+    simpa [lsTheorem20_4ConcreteGammaTildeSqrtResidual] using hadd
+  exact mul_lt_mul_of_pos_left hinner hsqrt_pos
 
 private theorem vecNorm2Sq_add_eq {m : ℕ} (r e : Fin m → ℝ) :
     vecNorm2Sq (fun i => r i + e i) =
@@ -43835,6 +45979,20 @@ theorem qrStageHorizonBudget_nonneg
   · simpa [qrStageHorizonBudget, ht] using hBudget_nonneg t
   · simpa [qrStageHorizonBudget, ht] using hBudget_nonneg n
 
+/-- The QR-horizon clamp is globally nonnegative when the original stage budget
+    is nonnegative on the finite algorithmic horizon. -/
+theorem qrStageHorizonBudget_nonneg_of_nonneg_on_stages
+    (n : ℕ) (stageBudget : ℕ → ℝ)
+    (hBudget_nonneg_on_stages :
+      ∀ t : ℕ, t ≤ n → 0 ≤ stageBudget t) :
+    ∀ t : ℕ, 0 ≤ qrStageHorizonBudget n stageBudget t := by
+  intro t
+  by_cases ht : t ≤ n
+  · simpa [qrStageHorizonBudget, ht] using
+      hBudget_nonneg_on_stages t ht
+  · simpa [qrStageHorizonBudget, ht] using
+      hBudget_nonneg_on_stages n le_rfl
+
 theorem qrStageHorizonBudget_mono_of_mono_on_stages
     (n : ℕ) (stageBudget : ℕ → ℝ)
     (hBudget_mono_on_stages :
@@ -52542,6 +54700,144 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominan
   have hBudget'_nonneg : ∀ t : ℕ, 0 ≤ stageBudget' t := by
     simpa [stageBudget'] using
       qrStageHorizonBudget_nonneg n stageBudget hBudget_nonneg
+  have hglobalBudget' : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget' t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget' (t + 1) := by
+    intro t ht
+    have ht_le : t ≤ n := Nat.le_of_lt ht
+    have hsucc_le : t + 1 ≤ n := Nat.succ_le_iff.mpr ht
+    simpa [stageBudget', qrStageHorizonBudget, ht_le, hsucc_le] using
+      hglobalBudget t ht
+  have hinit' : ∀ k (hk : k < n), ∀ i j : Fin (k + 1),
+      ∀ _hij : i.val < j.val,
+        |A_hat 0
+            (qrLeadingRow m k
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+            (qrLeadingColumn n k hk j)| ≤
+          stageBudget' 0 := by
+    intro k hk i j hij
+    have h0 : 0 ≤ n := Nat.zero_le n
+    simpa [stageBudget', qrStageHorizonBudget, h0] using
+      hinit k hk i j hij
+  have hinitBlock' : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget' 0 := by
+    intro r l
+    have h0 : 0 ≤ n := Nat.zero_le n
+    simpa [stageBudget', qrStageHorizonBudget, h0] using hinitBlock r l
+  have hcomparison' :
+      storedQRStageRowMaxComparisonDefectBudget hmn A_hat stageBudget' ≤ 0 := by
+    simpa [stageBudget'] using
+      storedQRStageRowMaxComparisonDefectBudget_nonpos_of_horizonBudget
+        hmn A_hat stageBudget hcomparison
+  exact
+    StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominant_signedStageUniformBudget_globalCompactBudget_activeMaxPivot_completedColumns_finiteMaxSourceDenURationalGammaCanonicalBounds_stageRowMaxComparisonDefect_offdiag_rows
+      hmn fp A_hat b_hat alpha stageBudget' Ucap hm hStepA hAlphaDef
+      hDD hinit' hinitBlock' hglobalBudget' hBudget'_nonneg
+      hBudget'_mono hcomparison' hpivotChoice hUcap_nonneg hden hu huCap
+      hsmall
+
+/-- Horizon-clamped source-denominator/cap source-control handoff from only
+    initial stage-budget nonnegativity.
+
+The finite global compact-step recurrence propagates nonnegativity and
+monotonicity on the QR horizon.  After clamping the budget after `n`, that
+finite-horizon information is enough for the older globally quantified
+source-control surface. -/
+theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominant_signedStageUniformBudget_globalCompactBudget_activeMaxPivot_completedColumns_finiteMaxSourceDenURationalGammaCanonicalBounds_stageRowMaxComparisonDefect_offdiag_rows_of_horizonBudget_of_initial_nonneg
+    {m n : ℕ} (hmn : n ≤ m)
+    (fp : FPModel)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (b_hat : ℕ → Fin m → ℝ)
+    (alpha : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (Ucap : ℝ)
+    (hm : gammaValid fp m)
+    (hStepA : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩)))
+          (A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩))
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hinit : ∀ k (hk : k < n), ∀ i j : Fin (k + 1), ∀ _hij : i.val < j.val,
+      |A_hat 0
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          (qrLeadingColumn n k hk j)| ≤
+        stageBudget 0)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn A_hat stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩ (A_hat t))
+    (hUcap_nonneg : 0 ≤ Ucap)
+    (hden : ∀ k (hk : k < n),
+      (∑ i : Fin m,
+        householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k) i *
+          householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k) i) ≠ 0)
+    (hu : fp.u ≤ Ucap)
+    (huCap : (m : ℝ) * Ucap < 1)
+    (hsmall :
+      let Dcap := storedQRDiagDominantInvFactorBudget hmn A_hat
+      let Ncap := storedQRPivotColumnNormBudget hmn A_hat
+      let Gcap := ((m : ℝ) * Ucap) / (1 - (m : ℝ) * Ucap)
+      let Fcap :=
+        Ucap * (1 + Gcap) * (1 + Ucap) +
+          Ucap * (1 + Gcap) +
+          Gcap +
+          Ucap * (1 + Gcap) * (1 + Ucap) ^ 2
+      2 * Dcap *
+          ((m : ℝ) *
+            ((((n : ℝ) * ((n : ℝ) + 1) * (Ucap + 2 * Fcap)) *
+                Ncap) ^ 2)) <
+        1) :
+    StoredQRSourceOffDiagonalControl hmn fp A_hat b_hat alpha := by
+  let stageBudget' := qrStageHorizonBudget n stageBudget
+  have hBudget_nonneg_on_stages :
+      ∀ t : ℕ, t ≤ n → 0 ≤ stageBudget t :=
+    storedQRSignedStageBudget_nonneg_on_stages_of_globalCompactBudget
+      hmn fp A_hat alpha stageBudget hm hglobalBudget hBudget0_nonneg
+  have hBudget_mono_on_stages :
+      ∀ a b : ℕ, a ≤ b → b ≤ n → stageBudget a ≤ stageBudget b :=
+    storedQRSignedStageBudget_mono_on_stages_of_globalCompactBudget_of_initial_nonneg
+      hmn fp A_hat alpha stageBudget hm hglobalBudget hBudget0_nonneg
+  have hBudget'_mono :
+      ∀ a b : ℕ, a ≤ b → stageBudget' a ≤ stageBudget' b := by
+    simpa [stageBudget'] using
+      qrStageHorizonBudget_mono_of_mono_on_stages
+        n stageBudget hBudget_mono_on_stages
+  have hBudget'_nonneg : ∀ t : ℕ, 0 ≤ stageBudget' t := by
+    simpa [stageBudget'] using
+      qrStageHorizonBudget_nonneg_of_nonneg_on_stages
+        n stageBudget hBudget_nonneg_on_stages
   have hglobalBudget' : ∀ t (ht : t < n),
       coxHighamActiveRowGrowthFactor m * stageBudget' t +
           storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
@@ -65588,6 +67884,372 @@ theorem exists_perturbed_ls_minimizer_of_stored_trailing_householder_sequence_to
         hinit hinitBlock hglobalBudget hBudget_nonneg hcomparison
         hpivotChoice hsmall)
 
+/-- Concrete stored-Householder QR matrix sequence used by the Chapter 20,
+    Theorem 20.3 stored-loop wrappers.
+
+For `k < n`, step `k + 1` applies the rounded stored Householder panel update
+with the signed `alpha` computed from the current active column.  After the QR
+horizon the sequence is held fixed. -/
+noncomputable def storedHouseholderQRMatrixSeq (fp : FPModel) {m n : ℕ}
+    (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) :
+    ℕ → Fin m → Fin n → ℝ
+  | 0 => A
+  | k + 1 =>
+      if hk : k < n then
+        let Aprev := storedHouseholderQRMatrixSeq fp hmn A k
+        let alpha :=
+          signedHouseholderAlpha
+            (Real.sqrt
+              (householderTrailingNorm2Sq m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a => Aprev a ⟨k, hk⟩)))
+            (Aprev ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩)
+        let v :=
+          householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => Aprev a ⟨k, hk⟩) alpha
+        let beta := householderBetaSpec m v
+        fl_householderStoredPanelStep fp m n k v beta Aprev
+      else
+        storedHouseholderQRMatrixSeq fp hmn A k
+
+/-- Signed Householder scalar chosen by the concrete stored-Householder QR
+    matrix sequence. -/
+noncomputable def storedHouseholderQRAlphaSeq (fp : FPModel) {m n : ℕ}
+    (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) (k : ℕ) : ℝ :=
+  if hk : k < n then
+    signedHouseholderAlpha
+      (Real.sqrt
+        (householderTrailingNorm2Sq m
+          ⟨k, lt_of_lt_of_le hk hmn⟩
+          (fun a => storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)))
+      (storedHouseholderQRMatrixSeq fp hmn A k
+        ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩)
+  else
+    0
+
+/-- Concrete stored-Householder QR right-hand-side sequence paired with
+    `storedHouseholderQRMatrixSeq`. -/
+noncomputable def storedHouseholderQRRhsSeq (fp : FPModel) {m n : ℕ}
+    (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) :
+    ℕ → Fin m → ℝ
+  | 0 => b
+  | k + 1 =>
+      if hk : k < n then
+        let Aprev := storedHouseholderQRMatrixSeq fp hmn A k
+        let alpha := storedHouseholderQRAlphaSeq fp hmn A k
+        let v :=
+          householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => Aprev a ⟨k, hk⟩) alpha
+        let beta := householderBetaSpec m v
+        fl_householderStoredRhsStep fp m k v beta
+          (storedHouseholderQRRhsSeq fp hmn A b k)
+      else
+        storedHouseholderQRRhsSeq fp hmn A b k
+
+/-- Canonical Frobenius-starting stage budget for the concrete stored
+    Householder QR loop.
+
+The budget starts at `||A||_F` and then follows the same signed-stage global
+compact recurrence used by the Chapter 20, Theorem 20.3 stored-loop wrappers.
+This packages the recurrence as data instead of asking callers to supply a
+separate proof for it. -/
+noncomputable def storedHouseholderQRFrobStageBudget (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) : ℕ → ℝ
+  | 0 => frobNormRect A
+  | t + 1 =>
+      coxHighamActiveRowGrowthFactor m *
+          storedHouseholderQRFrobStageBudget fp hmn A t +
+        if ht : t < n then
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht
+        else
+          0
+
+@[simp] theorem storedHouseholderQRMatrixSeq_zero (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) :
+    storedHouseholderQRMatrixSeq fp hmn A 0 = A := rfl
+
+@[simp] theorem storedHouseholderQRRhsSeq_zero (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) :
+    storedHouseholderQRRhsSeq fp hmn A b 0 = b := rfl
+
+@[simp] theorem storedHouseholderQRFrobStageBudget_zero (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) :
+    storedHouseholderQRFrobStageBudget fp hmn A 0 = frobNormRect A := rfl
+
+theorem storedHouseholderQRFrobStageBudget_succ_of_lt (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (t : ℕ) (ht : t < n) :
+    storedHouseholderQRFrobStageBudget fp hmn A (t + 1) =
+      coxHighamActiveRowGrowthFactor m *
+          storedHouseholderQRFrobStageBudget fp hmn A t +
+        storedQRSignedStageGlobalCompactBudget hmn fp
+          (storedHouseholderQRMatrixSeq fp hmn A)
+          (storedHouseholderQRAlphaSeq fp hmn A) t ht := by
+  simp [storedHouseholderQRFrobStageBudget, ht]
+
+theorem storedHouseholderQRAlphaSeq_eq_signed (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (k : ℕ) (hk : k < n) :
+    storedHouseholderQRAlphaSeq fp hmn A k =
+      signedHouseholderAlpha
+        (Real.sqrt
+          (householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)))
+        (storedHouseholderQRMatrixSeq fp hmn A k
+          ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩) := by
+  simp [storedHouseholderQRAlphaSeq, hk]
+
+theorem storedHouseholderQRMatrixSeq_succ_of_lt (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (k : ℕ) (hk : k < n) :
+    storedHouseholderQRMatrixSeq fp hmn A (k + 1) =
+      fl_householderStoredPanelStep fp m n k
+        (householderTrailingActiveVector m
+          ⟨k, lt_of_lt_of_le hk hmn⟩
+          (fun a => storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+          (storedHouseholderQRAlphaSeq fp hmn A k))
+        (householderBetaSpec m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+            (storedHouseholderQRAlphaSeq fp hmn A k)))
+        (storedHouseholderQRMatrixSeq fp hmn A k) := by
+  simp [storedHouseholderQRMatrixSeq, storedHouseholderQRAlphaSeq, hk]
+
+theorem storedHouseholderQRRhsSeq_succ_of_lt (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (k : ℕ) (hk : k < n) :
+    storedHouseholderQRRhsSeq fp hmn A b (k + 1) =
+      fl_householderStoredRhsStep fp m k
+        (householderTrailingActiveVector m
+          ⟨k, lt_of_lt_of_le hk hmn⟩
+          (fun a => storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+          (storedHouseholderQRAlphaSeq fp hmn A k))
+        (householderBetaSpec m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+            (storedHouseholderQRAlphaSeq fp hmn A k)))
+        (storedHouseholderQRRhsSeq fp hmn A b k) := by
+  simp [storedHouseholderQRRhsSeq, storedHouseholderQRAlphaSeq, hk]
+
+/-- The first concrete stored-Householder matrix state agrees with the
+    diagonally dominant scalar-comparison counterexample. -/
+theorem storedDiagDominantComparisonCounterexample_concreteStoredMatrixSeq_one :
+    storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+      (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0 1 =
+    storedDiagDominantComparisonCounterexampleSeq 1 := by
+  rw [storedHouseholderQRMatrixSeq_succ_of_lt
+    exactHouseholderQRDiagDominanceCounterexampleFP (by omega : 2 ≤ 2)
+    activeMaxPivotRowMaxComparisonCounterexampleA0 0 (by norm_num)]
+  have hstep :=
+    storedDiagDominantComparisonCounterexample_stored_step 0
+      (by norm_num : 0 < 2)
+  rw [hstep]
+  have hA0 :
+      storedDiagDominantComparisonCounterexampleSeq 0 =
+        activeMaxPivotRowMaxComparisonCounterexampleA0 := rfl
+  have halpha0 :
+      storedHouseholderQRAlphaSeq exactHouseholderQRDiagDominanceCounterexampleFP
+        (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0 0 =
+      storedDiagDominantComparisonCounterexampleAlpha 0 := by
+    rw [storedHouseholderQRAlphaSeq_eq_signed
+      exactHouseholderQRDiagDominanceCounterexampleFP (by omega : 2 ≤ 2)
+      activeMaxPivotRowMaxComparisonCounterexampleA0 0 (by norm_num)]
+    symm
+    simpa [hA0] using
+      storedDiagDominantComparisonCounterexample_signed_alpha_def 0
+        (by norm_num : 0 < 2)
+  simp [hA0, halpha0]
+
+/-- The canonical Frobenius-starting budget does not remove the scalar
+    stage-budget/row-max comparison obstruction.
+
+For the exact `2 x 2` diagonally dominant active-pivot witness, stage one has
+strict-upper row maximum `2`, while the canonical Frobenius-starting stage
+budget is at least `3`.  Hence the finite comparison defect is positive. -/
+theorem storedDiagDominantComparisonCounterexample_concreteFrobStageBudget_stageRowMaxComparisonDefectBudget_pos :
+    0 < storedQRStageRowMaxComparisonDefectBudget (by omega : 2 ≤ 2)
+      (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+        (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+      (storedHouseholderQRFrobStageBudget exactHouseholderQRDiagDominanceCounterexampleFP
+        (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0) := by
+  let i : Fin (1 + 1) := ⟨0, by norm_num⟩
+  have hle :=
+    storedQRStageRowMaxComparisonDefect_le_budget
+      (by omega : 2 ≤ 2)
+      (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+        (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+      (storedHouseholderQRFrobStageBudget exactHouseholderQRDiagDominanceCounterexampleFP
+        (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+      (k := 1) (hk := by norm_num) i (by norm_num)
+  have hrow :
+      qrLeadingStrictUpperRowMaxBudget (by omega : 2 ≤ 2)
+        (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+          (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+        1 (by norm_num) i = 2 := by
+    rw [qrLeadingStrictUpperRowMaxBudget]
+    rw [dif_pos (by norm_num : i.val < 1)]
+    have hsup :
+        (Finset.univ.filter (fun j : Fin (1 + 1) => i.val < j.val)).sup'
+            (by
+              refine ⟨(⟨1, by norm_num⟩ : Fin (1 + 1)), ?_⟩
+              simp [i])
+            (fun j =>
+              |qrLeadingBlock
+                ((storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+                  (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0) 1)
+                (Nat.succ_le_iff.mpr
+                  (lt_of_lt_of_le (by norm_num : 1 < 2) (by omega : 2 ≤ 2)))
+                (by norm_num : 1 < 2) i j|) = 2 := by
+      apply Finset.sup'_eq_of_forall
+      intro j hj
+      have hj_one : j = (⟨1, by norm_num⟩ : Fin (1 + 1)) := by
+        have hjpos : i.val < j.val := (Finset.mem_filter.mp hj).2
+        fin_cases j
+        · norm_num [i] at hjpos
+        · rfl
+      subst hj_one
+      rw [storedDiagDominantComparisonCounterexample_concreteStoredMatrixSeq_one]
+      norm_num [i, storedDiagDominantComparisonCounterexampleSeq,
+        storedDiagDominantComparisonCounterexampleA1,
+        qrLeadingBlock, qrLeadingRow, qrLeadingColumn]
+    rw [hsup]
+  have hstage :
+      (3 : ℝ) ≤ storedHouseholderQRFrobStageBudget
+        exactHouseholderQRDiagDominanceCounterexampleFP (by omega : 2 ≤ 2)
+        activeMaxPivotRowMaxComparisonCounterexampleA0 1 := by
+    rw [storedHouseholderQRFrobStageBudget_succ_of_lt
+      exactHouseholderQRDiagDominanceCounterexampleFP (by omega : 2 ≤ 2)
+      activeMaxPivotRowMaxComparisonCounterexampleA0 0 (by norm_num)]
+    simp only [storedHouseholderQRFrobStageBudget_zero]
+    have hfrob_ge :
+        (3 : ℝ) ≤ frobNormRect activeMaxPivotRowMaxComparisonCounterexampleA0 := by
+      let r0 : Fin 2 := ⟨0, by norm_num⟩
+      let c0 : Fin 2 := ⟨0, by norm_num⟩
+      have hentry :=
+        abs_entry_le_frobNormRect activeMaxPivotRowMaxComparisonCounterexampleA0 r0 c0
+      norm_num [r0, c0, activeMaxPivotRowMaxComparisonCounterexampleA0] at hentry
+      exact hentry
+    have hfrob_nonneg :
+        0 ≤ frobNormRect activeMaxPivotRowMaxComparisonCounterexampleA0 :=
+      frobNormRect_nonneg _
+    have hfactor : (1 : ℝ) ≤ coxHighamActiveRowGrowthFactor 2 :=
+      one_le_coxHighamActiveRowGrowthFactor 2
+    have hmul :
+        frobNormRect activeMaxPivotRowMaxComparisonCounterexampleA0 ≤
+          coxHighamActiveRowGrowthFactor 2 *
+            frobNormRect activeMaxPivotRowMaxComparisonCounterexampleA0 := by
+      nlinarith
+    have hterm_nonneg :
+        0 ≤ storedQRSignedStageGlobalCompactBudget (by omega : 2 ≤ 2)
+          exactHouseholderQRDiagDominanceCounterexampleFP
+          (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+            (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+          (storedHouseholderQRAlphaSeq exactHouseholderQRDiagDominanceCounterexampleFP
+            (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+          0 (by norm_num) :=
+      storedQRSignedStageGlobalCompactBudget_nonneg (by omega : 2 ≤ 2)
+        exactHouseholderQRDiagDominanceCounterexampleFP
+        (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+          (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+        (storedHouseholderQRAlphaSeq exactHouseholderQRDiagDominanceCounterexampleFP
+          (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+        0 (by norm_num)
+        (by
+          norm_num [exactHouseholderQRDiagDominanceCounterexampleFP,
+            FPModel.exactWithUnitRoundoff, gammaValid])
+    linarith
+  have hterm :
+      (1 : ℝ) ≤
+        storedHouseholderQRFrobStageBudget exactHouseholderQRDiagDominanceCounterexampleFP
+          (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0 1 -
+        qrLeadingStrictUpperRowMaxBudget (by omega : 2 ≤ 2)
+          (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+            (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+          1 (by norm_num) i := by
+    rw [hrow]
+    linarith
+  have hbudget :
+      (1 : ℝ) ≤ storedQRStageRowMaxComparisonDefectBudget (by omega : 2 ≤ 2)
+        (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+          (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+        (storedHouseholderQRFrobStageBudget exactHouseholderQRDiagDominanceCounterexampleFP
+          (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0) :=
+    hterm.trans hle
+  linarith
+
+/-- Route elimination for the current canonical Frobenius-stage Theorem 20.3
+    surface.
+
+Local diagonal dominance, the concrete active-max-pivot choice, and a small
+declared unit roundoff do not force the scalar comparison defect needed by the
+stored-lower Frobenius-budget wrapper.  Thus that remaining hypothesis is an
+independent domain/algorithm invariant unless a different budget or pivoted
+stored-loop model is supplied. -/
+theorem not_forall_diagDominant_activeMaxPivot_concreteStoredFrobStageBudget_implies_stageRowMaxComparisonDefectBudget_nonpos :
+    ¬ (∀ (fp : FPModel) (A : Fin 2 → Fin 2 → ℝ),
+      (2 : ℝ) * fp.u < 1 →
+      (∀ k (hk : k < 2),
+        IsDiagDominantUpper (k + 1)
+          (qrLeadingBlock (storedHouseholderQRMatrixSeq fp (by omega : 2 ≤ 2) A k)
+            (Nat.succ_le_iff.mpr hk) hk)) →
+      (∀ t (ht : t < 2),
+        (⟨t, ht⟩ : Fin 2) =
+          householderActiveMaxPivotColumn
+            (⟨t, lt_of_lt_of_le ht (by omega : 2 ≤ 2)⟩ : Fin 2)
+            (⟨t, ht⟩ : Fin 2)
+            (storedHouseholderQRMatrixSeq fp (by omega : 2 ≤ 2) A t)) →
+      storedQRStageRowMaxComparisonDefectBudget (by omega : 2 ≤ 2)
+        (storedHouseholderQRMatrixSeq fp (by omega : 2 ≤ 2) A)
+        (storedHouseholderQRFrobStageBudget fp (by omega : 2 ≤ 2) A) ≤ 0) := by
+  intro h
+  have hDD : ∀ k (hk : k < 2),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock
+          (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+            (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0 k)
+          (Nat.succ_le_iff.mpr hk) hk) := by
+    intro k hk
+    interval_cases k
+    · simpa [storedDiagDominantComparisonCounterexampleSeq,
+        activeMaxPivotRowMaxComparisonCounterexampleA0] using
+        storedDiagDominantComparisonCounterexample_diagDominant 0
+          (by norm_num : 0 < 2)
+    · rw [storedDiagDominantComparisonCounterexample_concreteStoredMatrixSeq_one]
+      exact storedDiagDominantComparisonCounterexample_diagDominant 1
+        (by norm_num : 1 < 2)
+  have hpivot : ∀ t (ht : t < 2),
+      (⟨t, ht⟩ : Fin 2) =
+        householderActiveMaxPivotColumn
+          (⟨t, lt_of_lt_of_le ht (by omega : 2 ≤ 2)⟩ : Fin 2)
+          (⟨t, ht⟩ : Fin 2)
+          (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+            (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0 t) := by
+    intro t ht
+    interval_cases t
+    · simpa [storedDiagDominantComparisonCounterexampleSeq,
+        activeMaxPivotRowMaxComparisonCounterexampleA0] using
+        storedDiagDominantComparisonCounterexample_activeMaxPivotChoice 0
+          (by norm_num : 0 < 2)
+    · rw [storedDiagDominantComparisonCounterexample_concreteStoredMatrixSeq_one]
+      exact storedDiagDominantComparisonCounterexample_activeMaxPivotChoice 1
+        (by norm_num : 1 < 2)
+  have hnonpos := h exactHouseholderQRDiagDominanceCounterexampleFP
+    activeMaxPivotRowMaxComparisonCounterexampleA0
+    (by
+      norm_num [exactHouseholderQRDiagDominanceCounterexampleFP,
+        FPModel.exactWithUnitRoundoff])
+    hDD hpivot
+  exact not_lt_of_ge hnonpos
+    storedDiagDominantComparisonCounterexample_concreteFrobStageBudget_stageRowMaxComparisonDefectBudget_pos
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.3, stored-Householder QR
     source-facing compact-budget wrapper.
 
@@ -65694,6 +68356,526 @@ theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDomina
       fp hmn A b A_hat b_hat alpha stageBudget huSmall hInitA hInitb
       hStepA hStepb hAlphaDef hDD hinit hinitBlock hglobalBudget
       hBudget_nonneg hcomparison hpivotChoice hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, stored-Householder QR
+    source-facing compact-budget wrapper with initial stage-budget
+    nonnegativity.
+
+    This strengthens
+    `theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_storedLower_activePivot_actualUnitRoundoff_horizonBudget`
+    by deriving finite-horizon nonnegativity from `0 <= stageBudget 0` and the
+    global compact-step recurrence.  The direct rectangular perturbation
+    conclusion and the remaining genuine stored-Householder side conditions are
+    unchanged. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_storedLower_activePivot_actualUnitRoundoff_initialBudget_horizonBudget
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (b_hat : ℕ → Fin m → ℝ)
+    (alpha : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hInitA : A_hat 0 = A)
+    (hInitb : b_hat 0 = b)
+    (hStepA : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (hStepb : ∀ k (hk : k < n),
+      b_hat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (b_hat k))
+    (hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩)))
+          (A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩))
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hinit : ∀ k (hk : k < n), ∀ i j : Fin (k + 1), ∀ _hij : i.val < j.val,
+      |A_hat 0
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          (qrLeadingColumn n k hk j)| ≤
+        stageBudget 0)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn A_hat stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩ (A_hat t))
+    (hsmall :
+      let Dcap := storedQRDiagDominantInvFactorBudget hmn A_hat
+      let Ncap := storedQRPivotColumnNormBudget hmn A_hat
+      let Gcap := ((m : ℝ) * fp.u) / (1 - (m : ℝ) * fp.u)
+      let Fcap :=
+        fp.u * (1 + Gcap) * (1 + fp.u) +
+          fp.u * (1 + Gcap) +
+          Gcap +
+          fp.u * (1 + Gcap) * (1 + fp.u) ^ 2
+      2 * Dcap *
+          ((m : ℝ) *
+            ((((n : ℝ) * ((n : ℝ) + 1) * (fp.u + 2 * Fcap)) *
+                Ncap) ^ 2)) <
+        1) :
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  have hm : gammaValid fp m :=
+    gammaValid_of_u_le_cap fp m fp.u (le_rfl : fp.u ≤ fp.u) huSmall
+  have hγ : gammaValid fp n :=
+    gammaValid_mono fp hmn hm
+  exact
+    exists_perturbed_ls_minimizer_of_stored_trailing_householder_sequence_topBlock_fl_backSub_gamma_bound_explicitCompactBudget_of_signed_alpha_sourceOffDiagonalControl
+      fp hmn A b A_hat b_hat alpha hm hγ hInitA hInitb hStepA hStepb
+      hAlphaDef
+      (StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominant_signedStageUniformBudget_globalCompactBudget_activeMaxPivot_completedColumns_finiteMaxSourceDenURationalGammaCanonicalBounds_stageRowMaxComparisonDefect_offdiag_rows_of_horizonBudget_of_initial_nonneg
+        hmn fp A_hat b_hat alpha stageBudget fp.u hm hStepA hAlphaDef hDD
+        hinit hinitBlock hglobalBudget hBudget0_nonneg hcomparison
+        hpivotChoice fp.u_nonneg
+        (storedQRSourceDenominator_ne_zero_of_diagDominant_signedAlphaDef_stored_trailing_sequence
+          fp hmn A_hat alpha hStepA hAlphaDef hDD)
+        (le_rfl : fp.u ≤ fp.u) huSmall hsmall)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, stored-Householder QR
+    concrete-loop compact-budget wrapper.
+
+This specializes
+`theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_storedLower_activePivot_actualUnitRoundoff_initialBudget_horizonBudget`
+to the concrete recursive stored-Householder matrix, right-hand-side, and
+signed-`alpha` sequences.  The loop recurrence, initial equations, and signed
+`alpha` definition are discharged by the sequence definitions; the genuine
+diagonal-dominance, active-pivot, scalar-comparison, initial-budget, and
+finite-max smallness side conditions remain visible. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_concreteStoredLower_activePivot_actualUnitRoundoff_initialBudget_horizonBudget
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hinit : ∀ k (hk : k < n), ∀ i j : Fin (k + 1), ∀ _hij : i.val < j.val,
+      |A
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          (qrLeadingColumn n k hk j)| ≤
+        stageBudget 0)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn
+        (storedHouseholderQRMatrixSeq fp hmn A) stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩
+          (storedHouseholderQRMatrixSeq fp hmn A t))
+    (hsmall :
+      let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+      let Dcap := storedQRDiagDominantInvFactorBudget hmn A_hat
+      let Ncap := storedQRPivotColumnNormBudget hmn A_hat
+      let Gcap := ((m : ℝ) * fp.u) / (1 - (m : ℝ) * fp.u)
+      let Fcap :=
+        fp.u * (1 + Gcap) * (1 + fp.u) +
+          fp.u * (1 + Gcap) +
+          Gcap +
+          fp.u * (1 + Gcap) * (1 + fp.u) ^ 2
+      2 * Dcap *
+          ((m : ℝ) *
+            ((((n : ℝ) * ((n : ℝ) + 1) * (fp.u + 2 * Fcap)) *
+                Ncap) ^ 2)) <
+        1) :
+    let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+    let b_hat := storedHouseholderQRRhsSeq fp hmn A b
+    let alpha := storedHouseholderQRAlphaSeq fp hmn A
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  let A_hat : ℕ → Fin m → Fin n → ℝ := storedHouseholderQRMatrixSeq fp hmn A
+  let b_hat : ℕ → Fin m → ℝ := storedHouseholderQRRhsSeq fp hmn A b
+  let alpha : ℕ → ℝ := storedHouseholderQRAlphaSeq fp hmn A
+  have hInitA : A_hat 0 = A := by
+    simp [A_hat]
+  have hInitb : b_hat 0 = b := by
+    simp [b_hat]
+  have hStepA : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k) := by
+    intro k hk
+    simpa [A_hat, alpha] using
+      storedHouseholderQRMatrixSeq_succ_of_lt fp hmn A k hk
+  have hStepb : ∀ k (hk : k < n),
+      b_hat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (b_hat k) := by
+    intro k hk
+    simpa [A_hat, b_hat, alpha] using
+      storedHouseholderQRRhsSeq_succ_of_lt fp hmn A b k hk
+  have hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩)))
+          (A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩) := by
+    intro k hk
+    simpa [A_hat, alpha] using
+      storedHouseholderQRAlphaSeq_eq_signed fp hmn A k hk
+  have hDD' : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk) := by
+    intro k hk
+    simpa [A_hat] using hDD k hk
+  have hinit' : ∀ k (hk : k < n), ∀ i j : Fin (k + 1),
+      ∀ _hij : i.val < j.val,
+        |A_hat 0
+            (qrLeadingRow m k
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+            (qrLeadingColumn n k hk j)| ≤
+          stageBudget 0 := by
+    intro k hk i j hij
+    simpa [A_hat] using hinit k hk i j hij
+  have hinitBlock' : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget 0 := by
+    intro r l
+    simpa [A_hat] using hinitBlock r l
+  have hglobalBudget' : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1) := by
+    intro t ht
+    simpa [A_hat, alpha] using hglobalBudget t ht
+  have hcomparison' :
+      storedQRStageRowMaxComparisonDefectBudget hmn A_hat stageBudget ≤ 0 := by
+    simpa [A_hat] using hcomparison
+  have hpivotChoice' : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩ (A_hat t) := by
+    intro t ht
+    simpa [A_hat] using hpivotChoice t ht
+  have hsmall' :
+      let Dcap := storedQRDiagDominantInvFactorBudget hmn A_hat
+      let Ncap := storedQRPivotColumnNormBudget hmn A_hat
+      let Gcap := ((m : ℝ) * fp.u) / (1 - (m : ℝ) * fp.u)
+      let Fcap :=
+        fp.u * (1 + Gcap) * (1 + fp.u) +
+          fp.u * (1 + Gcap) +
+          Gcap +
+          fp.u * (1 + Gcap) * (1 + fp.u) ^ 2
+      2 * Dcap *
+          ((m : ℝ) *
+            ((((n : ℝ) * ((n : ℝ) + 1) * (fp.u + 2 * Fcap)) *
+                Ncap) ^ 2)) <
+        1 := by
+    simpa [A_hat, b_hat, alpha] using hsmall
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_storedLower_activePivot_actualUnitRoundoff_initialBudget_horizonBudget
+      fp hmn A b A_hat b_hat alpha stageBudget huSmall hInitA hInitb
+      hStepA hStepb hAlphaDef hDD' hinit' hinitBlock' hglobalBudget'
+      hBudget0_nonneg hcomparison' hpivotChoice' hsmall'
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, concrete stored-Householder QR
+    wrapper with nonempty source dimensions.
+
+For a nonempty least-squares problem, the full initial block bound
+`|A r l| <= stageBudget 0` supplies both initial side conditions consumed by
+the concrete stored-lower route: the displayed strict-upper initial field and
+`0 <= stageBudget 0`. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_concreteStoredLower_activePivot_actualUnitRoundoff_horizonBudget_of_nonempty
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m) (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        stageBudget (t + 1))
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn
+        (storedHouseholderQRMatrixSeq fp hmn A) stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩
+          (storedHouseholderQRMatrixSeq fp hmn A t))
+    (hsmall :
+      let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+      let Dcap := storedQRDiagDominantInvFactorBudget hmn A_hat
+      let Ncap := storedQRPivotColumnNormBudget hmn A_hat
+      let Gcap := ((m : ℝ) * fp.u) / (1 - (m : ℝ) * fp.u)
+      let Fcap :=
+        fp.u * (1 + Gcap) * (1 + fp.u) +
+          fp.u * (1 + Gcap) +
+          Gcap +
+          fp.u * (1 + Gcap) * (1 + fp.u) ^ 2
+      2 * Dcap *
+          ((m : ℝ) *
+            ((((n : ℝ) * ((n : ℝ) + 1) * (fp.u + 2 * Fcap)) *
+                Ncap) ^ 2)) <
+        1) :
+    let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+    let b_hat := storedHouseholderQRRhsSeq fp hmn A b
+    let alpha := storedHouseholderQRAlphaSeq fp hmn A
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  have hm_pos : 0 < m := lt_of_lt_of_le hn hmn
+  let r0 : Fin m := ⟨0, hm_pos⟩
+  let l0 : Fin n := ⟨0, hn⟩
+  have hBudget0_nonneg : 0 ≤ stageBudget 0 :=
+    le_trans (abs_nonneg (A r0 l0)) (hinitBlock r0 l0)
+  have hinit : ∀ k (hk : k < n), ∀ i j : Fin (k + 1),
+      ∀ _hij : i.val < j.val,
+        |A
+          (qrLeadingRow m k
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          (qrLeadingColumn n k hk j)| ≤
+        stageBudget 0 := by
+    intro k hk i j _hij
+    exact hinitBlock
+      (qrLeadingRow m k
+        (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+      (qrLeadingColumn n k hk j)
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_concreteStoredLower_activePivot_actualUnitRoundoff_initialBudget_horizonBudget
+      fp hmn A b stageBudget huSmall hDD hinit hinitBlock hglobalBudget
+      hBudget0_nonneg hcomparison hpivotChoice hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, concrete stored-Householder QR
+    wrapper with a Frobenius-size initial budget.
+
+For nonempty source dimensions, the single normwise assumption
+`frobNormRect A <= stageBudget 0` implies the full entrywise initial block
+bound required by the concrete stored-lower route. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_concreteStoredLower_activePivot_actualUnitRoundoff_horizonBudget_of_nonempty_frobInitial
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m) (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hinitFrob : frobNormRect A ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        stageBudget (t + 1))
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn
+        (storedHouseholderQRMatrixSeq fp hmn A) stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩
+          (storedHouseholderQRMatrixSeq fp hmn A t))
+    (hsmall :
+      let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+      let Dcap := storedQRDiagDominantInvFactorBudget hmn A_hat
+      let Ncap := storedQRPivotColumnNormBudget hmn A_hat
+      let Gcap := ((m : ℝ) * fp.u) / (1 - (m : ℝ) * fp.u)
+      let Fcap :=
+        fp.u * (1 + Gcap) * (1 + fp.u) +
+          fp.u * (1 + Gcap) +
+          Gcap +
+          fp.u * (1 + Gcap) * (1 + fp.u) ^ 2
+      2 * Dcap *
+          ((m : ℝ) *
+            ((((n : ℝ) * ((n : ℝ) + 1) * (fp.u + 2 * Fcap)) *
+                Ncap) ^ 2)) <
+        1) :
+    let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+    let b_hat := storedHouseholderQRRhsSeq fp hmn A b
+    let alpha := storedHouseholderQRAlphaSeq fp hmn A
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  have hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A r l| ≤ stageBudget 0 := by
+    intro r l
+    exact (abs_entry_le_frobNormRect A r l).trans hinitFrob
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_concreteStoredLower_activePivot_actualUnitRoundoff_horizonBudget_of_nonempty
+      fp hmn hn A b stageBudget huSmall hDD hinitBlock hglobalBudget
+      hcomparison hpivotChoice hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, concrete stored-Householder QR
+    wrapper using the canonical Frobenius-starting stage budget.
+
+The public surface no longer asks for an initial entrywise block budget or a
+separate proof of the signed-stage compact recurrence: both are supplied by
+`storedHouseholderQRFrobStageBudget`. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_concreteStoredLower_activePivot_actualUnitRoundoff_horizonBudget_of_nonempty_frobStageBudget
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m) (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn
+        (storedHouseholderQRMatrixSeq fp hmn A)
+        (storedHouseholderQRFrobStageBudget fp hmn A) ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩
+          (storedHouseholderQRMatrixSeq fp hmn A t))
+    (hsmall :
+      let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+      let Dcap := storedQRDiagDominantInvFactorBudget hmn A_hat
+      let Ncap := storedQRPivotColumnNormBudget hmn A_hat
+      let Gcap := ((m : ℝ) * fp.u) / (1 - (m : ℝ) * fp.u)
+      let Fcap :=
+        fp.u * (1 + Gcap) * (1 + fp.u) +
+          fp.u * (1 + Gcap) +
+          Gcap +
+          fp.u * (1 + Gcap) * (1 + fp.u) ^ 2
+      2 * Dcap *
+          ((m : ℝ) *
+            ((((n : ℝ) * ((n : ℝ) + 1) * (fp.u + 2 * Fcap)) *
+                Ncap) ^ 2)) <
+        1) :
+    let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+    let b_hat := storedHouseholderQRRhsSeq fp hmn A b
+    let alpha := storedHouseholderQRAlphaSeq fp hmn A
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  let stageBudget : ℕ → ℝ := storedHouseholderQRFrobStageBudget fp hmn A
+  have hinitFrob : frobNormRect A ≤ stageBudget 0 := by
+    simp [stageBudget]
+  have hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        stageBudget (t + 1) := by
+    intro t ht
+    change
+      coxHighamActiveRowGrowthFactor m *
+            storedHouseholderQRFrobStageBudget fp hmn A t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        storedHouseholderQRFrobStageBudget fp hmn A (t + 1)
+    rw [storedHouseholderQRFrobStageBudget_succ_of_lt fp hmn A t ht]
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_concreteStoredLower_activePivot_actualUnitRoundoff_horizonBudget_of_nonempty_frobInitial
+      fp hmn hn A b stageBudget huSmall hDD hinitFrob hglobalBudget
+      hcomparison hpivotChoice hsmall
 
 /-- Solver-facing active-max-pivot QR certificate using row-max scalar defect
     plus an explicit stage-budget/row-max comparison.
@@ -66829,6 +70011,666 @@ theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivo
       hStepA hStepb hAlphaDef hdetLead hK hκ hκbudget hbudgetDual
       hinitBlock hglobalBudget hBudget0_nonneg hstageDiagDefect
       hpivotChoice hglobalProduct
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, concrete stored-loop
+    active-pivot stage-diagonal/dual-budget wrapper.
+
+This specializes
+`theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_stageDiag_dualBudget_horizonBudget_finiteMaxSmallness_actualUnitRoundoff`
+to `storedHouseholderQRMatrixSeq`, `storedHouseholderQRRhsSeq`, and
+`storedHouseholderQRAlphaSeq`.  The stored-loop recurrence, initial equations,
+and signed-`alpha` definition are discharged definitionally; the determinant,
+conditioning, dual-budget, active-pivot, stage-diagonal, initial-budget, and
+finite-max smallness hypotheses remain visible. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_stageDiag_dualBudget_concreteStored_horizonBudget_finiteMaxSmallness_actualUnitRoundoff
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (κ K : ℕ → ℝ) (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hK : ∀ k (_hk : k < n), 0 < K k)
+    (hκ : ∀ k (hk : k < n),
+      kappaInf (k + 1) (Nat.succ_pos k)
+          (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+          (nonsingInv (k + 1)
+            (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ≤
+        κ k)
+    (hκbudget : ∀ k (hk : k < n),
+      ((k + 1 : ℕ) : ℝ) *
+          (κ k /
+            infNorm
+              (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+                (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ^ 2 ≤
+        K k)
+    (hbudgetDual : ∀ k (hk : k < n),
+      (m : ℝ) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a =>
+                storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hmn A k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a =>
+                  storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+                (storedHouseholderQRAlphaSeq fp hmn A k)))
+            (fun a =>
+              storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hmn⟩) ^ 2 <
+        1 / K k)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
+    (hstageDiagDefect :
+      storedQRStageDiagLowerDefectBudget hmn
+        (storedHouseholderQRMatrixSeq fp hmn A) stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩
+          (storedHouseholderQRMatrixSeq fp hmn A t))
+    (hsmall :
+      2 * storedQRDiagDominantInvFactorBudget hmn
+            (storedHouseholderQRMatrixSeq fp hmn A) *
+          ((m : ℝ) *
+            (storedQRCompactSequenceRelativeBudget hmn fp
+                (storedHouseholderQRMatrixSeq fp hmn A)
+                (storedHouseholderQRRhsSeq fp hmn A b)
+                (storedHouseholderQRAlphaSeq fp hmn A) *
+              storedQRPivotColumnNormBudget hmn
+                (storedHouseholderQRMatrixSeq fp hmn A)) ^ 2) <
+        1) :
+    let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+    let b_hat := storedHouseholderQRRhsSeq fp hmn A b
+    let alpha := storedHouseholderQRAlphaSeq fp hmn A
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  let A_hat : ℕ → Fin m → Fin n → ℝ := storedHouseholderQRMatrixSeq fp hmn A
+  let b_hat : ℕ → Fin m → ℝ := storedHouseholderQRRhsSeq fp hmn A b
+  let alpha : ℕ → ℝ := storedHouseholderQRAlphaSeq fp hmn A
+  have hInitA : A_hat 0 = A := by
+    simp [A_hat]
+  have hInitb : b_hat 0 = b := by
+    simp [b_hat]
+  have hStepA : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k) := by
+    intro k hk
+    simpa [A_hat, alpha] using
+      storedHouseholderQRMatrixSeq_succ_of_lt fp hmn A k hk
+  have hStepb : ∀ k (hk : k < n),
+      b_hat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (b_hat k) := by
+    intro k hk
+    simpa [A_hat, b_hat, alpha] using
+      storedHouseholderQRRhsSeq_succ_of_lt fp hmn A b k hk
+  have hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩)))
+          (A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩) := by
+    intro k hk
+    simpa [A_hat, alpha] using
+      storedHouseholderQRAlphaSeq_eq_signed fp hmn A k hk
+  have hdetLead' : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0 := by
+    intro k hk
+    simpa [A_hat] using hdetLead k hk
+  have hDD' : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk) := by
+    intro k hk
+    simpa [A_hat] using hDD k hk
+  have hκ' : ∀ k (hk : k < n),
+      kappaInf (k + 1) (Nat.succ_pos k)
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+          (nonsingInv (k + 1)
+            (qrLeadingBlock (A_hat k)
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ≤
+        κ k := by
+    intro k hk
+    simpa [A_hat] using hκ k hk
+  have hκbudget' : ∀ k (hk : k < n),
+      ((k + 1 : ℕ) : ℝ) *
+          (κ k /
+            infNorm
+              (qrLeadingBlock (A_hat k)
+                (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ^ 2 ≤
+        K k := by
+    intro k hk
+    simpa [A_hat] using hκbudget k hk
+  have hbudgetDual' : ∀ k (hk : k < n),
+      (m : ℝ) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+            (fun a => A_hat k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hmn⟩) ^ 2 <
+        1 / K k := by
+    intro k hk
+    simpa [A_hat, alpha] using hbudgetDual k hk
+  have hinitBlock' : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget 0 := by
+    intro r l
+    simpa [A_hat] using hinitBlock r l
+  have hglobalBudget' : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1) := by
+    intro t ht
+    simpa [A_hat, alpha] using hglobalBudget t ht
+  have hstageDiagDefect' :
+      storedQRStageDiagLowerDefectBudget hmn A_hat stageBudget ≤ 0 := by
+    simpa [A_hat] using hstageDiagDefect
+  have hpivotChoice' : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩ (A_hat t) := by
+    intro t ht
+    simpa [A_hat] using hpivotChoice t ht
+  have hsmall' :
+      2 * storedQRDiagDominantInvFactorBudget hmn A_hat *
+          ((m : ℝ) *
+            (storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha *
+              storedQRPivotColumnNormBudget hmn A_hat) ^ 2) <
+        1 := by
+    simpa [A_hat, b_hat, alpha] using hsmall
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_stageDiag_dualBudget_horizonBudget_finiteMaxSmallness_actualUnitRoundoff
+      fp hmn A b A_hat b_hat alpha κ K stageBudget huSmall hInitA hInitb
+      hStepA hStepb hAlphaDef hdetLead' hDD' hK hκ' hκbudget'
+      hbudgetDual' hinitBlock' hglobalBudget' hBudget0_nonneg
+      hstageDiagDefect' hpivotChoice' hsmall'
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, concrete stored-loop
+    active-pivot scalar-comparison/dual-budget wrapper.
+
+This specializes the finite-max scalar-comparison route to the concrete stored
+Householder loop.  The scalar comparison defect is converted to the
+stage-diagonal defect using local diagonal dominance, then the concrete
+stage-diagonal/dual-budget wrapper supplies the final perturbed least-squares
+minimizer statement. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_diagDominant_stageRowMaxComparison_dualBudget_concreteStored_horizonBudget_finiteMaxSmallness_actualUnitRoundoff
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (κ K : ℕ → ℝ) (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hK : ∀ k (_hk : k < n), 0 < K k)
+    (hκ : ∀ k (hk : k < n),
+      kappaInf (k + 1) (Nat.succ_pos k)
+          (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+          (nonsingInv (k + 1)
+            (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ≤
+        κ k)
+    (hκbudget : ∀ k (hk : k < n),
+      ((k + 1 : ℕ) : ℝ) *
+          (κ k /
+            infNorm
+              (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+                (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ^ 2 ≤
+        K k)
+    (hbudgetDual : ∀ k (hk : k < n),
+      (m : ℝ) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a =>
+                storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hmn A k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a =>
+                  storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+                (storedHouseholderQRAlphaSeq fp hmn A k)))
+            (fun a =>
+              storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hmn⟩) ^ 2 <
+        1 / K k)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn
+        (storedHouseholderQRMatrixSeq fp hmn A) stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩
+          (storedHouseholderQRMatrixSeq fp hmn A t))
+    (hsmall :
+      2 * storedQRDiagDominantInvFactorBudget hmn
+            (storedHouseholderQRMatrixSeq fp hmn A) *
+          ((m : ℝ) *
+            (storedQRCompactSequenceRelativeBudget hmn fp
+                (storedHouseholderQRMatrixSeq fp hmn A)
+                (storedHouseholderQRRhsSeq fp hmn A b)
+                (storedHouseholderQRAlphaSeq fp hmn A) *
+              storedQRPivotColumnNormBudget hmn
+                (storedHouseholderQRMatrixSeq fp hmn A)) ^ 2) <
+        1) :
+    let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+    let b_hat := storedHouseholderQRRhsSeq fp hmn A b
+    let alpha := storedHouseholderQRAlphaSeq fp hmn A
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  have hstageDiagDefect :
+      storedQRStageDiagLowerDefectBudget hmn
+          (storedHouseholderQRMatrixSeq fp hmn A) stageBudget ≤ 0 :=
+    storedQRStageDiagLowerDefectBudget_nonpos_of_diagDominant_stageRowMaxComparisonDefectBudget_nonpos
+      hmn (storedHouseholderQRMatrixSeq fp hmn A) stageBudget hDD
+      hcomparison
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_stageDiag_dualBudget_concreteStored_horizonBudget_finiteMaxSmallness_actualUnitRoundoff
+      fp hmn A b κ K stageBudget huSmall hdetLead hDD hK hκ hκbudget
+      hbudgetDual hinitBlock hglobalBudget hBudget0_nonneg hstageDiagDefect
+      hpivotChoice hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, concrete stored-loop
+    scalar-comparison/dual-budget wrapper with nonempty source dimensions.
+
+For a nonempty least-squares problem, the initial block bound
+`|A r l| <= stageBudget 0` already forces `0 <= stageBudget 0`; this wrapper
+therefore removes the separate initial-budget nonnegativity hypothesis from
+the concrete scalar-comparison route. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_diagDominant_stageRowMaxComparison_dualBudget_concreteStored_horizonBudget_finiteMaxSmallness_actualUnitRoundoff_of_nonempty
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m) (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (κ K : ℕ → ℝ) (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hK : ∀ k (_hk : k < n), 0 < K k)
+    (hκ : ∀ k (hk : k < n),
+      kappaInf (k + 1) (Nat.succ_pos k)
+          (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+          (nonsingInv (k + 1)
+            (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ≤
+        κ k)
+    (hκbudget : ∀ k (hk : k < n),
+      ((k + 1 : ℕ) : ℝ) *
+          (κ k /
+            infNorm
+              (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+                (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ^ 2 ≤
+        K k)
+    (hbudgetDual : ∀ k (hk : k < n),
+      (m : ℝ) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a =>
+                storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hmn A k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a =>
+                  storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+                (storedHouseholderQRAlphaSeq fp hmn A k)))
+            (fun a =>
+              storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hmn⟩) ^ 2 <
+        1 / K k)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        stageBudget (t + 1))
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn
+        (storedHouseholderQRMatrixSeq fp hmn A) stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩
+          (storedHouseholderQRMatrixSeq fp hmn A t))
+    (hsmall :
+      2 * storedQRDiagDominantInvFactorBudget hmn
+            (storedHouseholderQRMatrixSeq fp hmn A) *
+          ((m : ℝ) *
+            (storedQRCompactSequenceRelativeBudget hmn fp
+                (storedHouseholderQRMatrixSeq fp hmn A)
+                (storedHouseholderQRRhsSeq fp hmn A b)
+                (storedHouseholderQRAlphaSeq fp hmn A) *
+              storedQRPivotColumnNormBudget hmn
+                (storedHouseholderQRMatrixSeq fp hmn A)) ^ 2) <
+        1) :
+    let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+    let b_hat := storedHouseholderQRRhsSeq fp hmn A b
+    let alpha := storedHouseholderQRAlphaSeq fp hmn A
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  have hm_pos : 0 < m := lt_of_lt_of_le hn hmn
+  let r0 : Fin m := ⟨0, hm_pos⟩
+  let l0 : Fin n := ⟨0, hn⟩
+  have hBudget0_nonneg : 0 ≤ stageBudget 0 :=
+    le_trans (abs_nonneg (A r0 l0)) (hinitBlock r0 l0)
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_diagDominant_stageRowMaxComparison_dualBudget_concreteStored_horizonBudget_finiteMaxSmallness_actualUnitRoundoff
+      fp hmn A b κ K stageBudget huSmall hdetLead hDD hK hκ hκbudget
+      hbudgetDual hinitBlock hglobalBudget hBudget0_nonneg hcomparison
+      hpivotChoice hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, concrete stored-loop
+    scalar-comparison/dual-budget wrapper with nonempty dimensions and
+    determinant hypotheses derived from diagonal dominance.
+
+This removes two proof-artifact side conditions from the concrete
+scalar-comparison route: initial-budget nonnegativity follows from the
+nonempty initial-block bound, and leading-block determinant nonzeroness follows
+from `IsDiagDominantUpper`. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_diagDominant_stageRowMaxComparison_dualBudget_concreteStored_horizonBudget_finiteMaxSmallness_actualUnitRoundoff_of_nonempty_det_from_diagDominant
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m) (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (κ K : ℕ → ℝ) (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hK : ∀ k (_hk : k < n), 0 < K k)
+    (hκ : ∀ k (hk : k < n),
+      kappaInf (k + 1) (Nat.succ_pos k)
+          (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+          (nonsingInv (k + 1)
+            (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ≤
+        κ k)
+    (hκbudget : ∀ k (hk : k < n),
+      ((k + 1 : ℕ) : ℝ) *
+          (κ k /
+            infNorm
+              (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+                (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ^ 2 ≤
+        K k)
+    (hbudgetDual : ∀ k (hk : k < n),
+      (m : ℝ) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a =>
+                storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hmn A k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a =>
+                  storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+                (storedHouseholderQRAlphaSeq fp hmn A k)))
+            (fun a =>
+              storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hmn⟩) ^ 2 <
+        1 / K k)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        stageBudget (t + 1))
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn
+        (storedHouseholderQRMatrixSeq fp hmn A) stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩
+          (storedHouseholderQRMatrixSeq fp hmn A t))
+    (hsmall :
+      2 * storedQRDiagDominantInvFactorBudget hmn
+            (storedHouseholderQRMatrixSeq fp hmn A) *
+          ((m : ℝ) *
+            (storedQRCompactSequenceRelativeBudget hmn fp
+                (storedHouseholderQRMatrixSeq fp hmn A)
+                (storedHouseholderQRRhsSeq fp hmn A b)
+                (storedHouseholderQRAlphaSeq fp hmn A) *
+              storedQRPivotColumnNormBudget hmn
+                (storedHouseholderQRMatrixSeq fp hmn A)) ^ 2) <
+        1) :
+    let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+    let b_hat := storedHouseholderQRRhsSeq fp hmn A b
+    let alpha := storedHouseholderQRAlphaSeq fp hmn A
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  have hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0 := by
+    intro k hk
+    exact
+      det_ne_zero_of_diagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+        (hDD k hk)
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_diagDominant_stageRowMaxComparison_dualBudget_concreteStored_horizonBudget_finiteMaxSmallness_actualUnitRoundoff_of_nonempty
+      fp hmn hn A b κ K stageBudget huSmall hdetLead hDD hK hκ
+      hκbudget hbudgetDual hinitBlock hglobalBudget hcomparison hpivotChoice
+      hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, concrete stored-loop
+    scalar-comparison/dual-budget wrapper with a Frobenius initial budget.
+
+This is the determinant-derived nonempty concrete scalar-comparison route with
+the full entrywise initial block bound replaced by the normwise source-facing
+assumption `frobNormRect A <= stageBudget 0`. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_diagDominant_stageRowMaxComparison_dualBudget_concreteStored_horizonBudget_finiteMaxSmallness_actualUnitRoundoff_of_nonempty_det_from_diagDominant_frobInitial
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m) (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (κ K : ℕ → ℝ) (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hK : ∀ k (_hk : k < n), 0 < K k)
+    (hκ : ∀ k (hk : k < n),
+      kappaInf (k + 1) (Nat.succ_pos k)
+          (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+          (nonsingInv (k + 1)
+            (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ≤
+        κ k)
+    (hκbudget : ∀ k (hk : k < n),
+      ((k + 1 : ℕ) : ℝ) *
+          (κ k /
+            infNorm
+              (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+                (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ^ 2 ≤
+        K k)
+    (hbudgetDual : ∀ k (hk : k < n),
+      (m : ℝ) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a =>
+                storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hmn A k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a =>
+                  storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+                (storedHouseholderQRAlphaSeq fp hmn A k)))
+            (fun a =>
+              storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hmn⟩) ^ 2 <
+        1 / K k)
+    (hinitFrob : frobNormRect A ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        stageBudget (t + 1))
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn
+        (storedHouseholderQRMatrixSeq fp hmn A) stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩
+          (storedHouseholderQRMatrixSeq fp hmn A t))
+    (hsmall :
+      2 * storedQRDiagDominantInvFactorBudget hmn
+            (storedHouseholderQRMatrixSeq fp hmn A) *
+          ((m : ℝ) *
+            (storedQRCompactSequenceRelativeBudget hmn fp
+                (storedHouseholderQRMatrixSeq fp hmn A)
+                (storedHouseholderQRRhsSeq fp hmn A b)
+                (storedHouseholderQRAlphaSeq fp hmn A) *
+              storedQRPivotColumnNormBudget hmn
+                (storedHouseholderQRMatrixSeq fp hmn A)) ^ 2) <
+        1) :
+    let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+    let b_hat := storedHouseholderQRRhsSeq fp hmn A b
+    let alpha := storedHouseholderQRAlphaSeq fp hmn A
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  have hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A r l| ≤ stageBudget 0 := by
+    intro r l
+    exact (abs_entry_le_frobNormRect A r l).trans hinitFrob
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_diagDominant_stageRowMaxComparison_dualBudget_concreteStored_horizonBudget_finiteMaxSmallness_actualUnitRoundoff_of_nonempty_det_from_diagDominant
+      fp hmn hn A b κ K stageBudget huSmall hDD hK hκ hκbudget
+      hbudgetDual hinitBlock hglobalBudget hcomparison hpivotChoice hsmall
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.3, active-pivot
     horizon-budget compact wrapper with scalar comparison and finite-max
