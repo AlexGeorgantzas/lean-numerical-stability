@@ -988,6 +988,7 @@ theorem higham10_7_normwise_backward_error (n : ℕ)
   · exact opNorm2Le_smul n _ _ ε hε
       (higham10_7_absRT_absR_opNorm2Le n R c hc hR)
 
+
 /-- **Theorem 10.7, spectral success form** (Higham §10.1): if the minimum
 eigenvalue of the symmetric scaled matrix `H` — stated through the
 repository's `finiteHermitianEigenvalues` — exceeds the scaled
@@ -1228,6 +1229,94 @@ theorem higham10_7_onesMatrix_opNorm2Le (n : ℕ) :
         Real.sqrt_le_sqrt hbound
     _ = (n : ℝ) * Real.sqrt (∑ i : Fin n, x i ^ 2) := by
         rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq hn0]
+
+/-- **Entrywise bound to quadratic-form bound** (Theorem 10.7 induction,
+Higham p. 200): a uniform entrywise bound `|E i j| ≤ ε` gives
+`|xᵀEx| ≤ ε n ‖x‖₂²`, through the `‖eeᵀ‖₂ ≤ n` certificate. -/
+theorem quadForm_abs_le_of_entrywise_le (n : ℕ)
+    (E : Fin n → Fin n → ℝ) (ε : ℝ) (hε : 0 ≤ ε)
+    (hE : ∀ i j, |E i j| ≤ ε) (x : Fin n → ℝ) :
+    |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤
+      ε * n * ∑ i : Fin n, x i ^ 2 := by
+  have h2 := opNorm2Le_smul n (fun _ _ : Fin n => (1:ℝ)) n ε hε
+    (higham10_7_onesMatrix_opNorm2Le n)
+  have h3 := opNorm2Le_of_abs_le n E (fun _ _ : Fin n => ε * 1)
+    (fun i j => by rw [mul_one]; exact hE i j) (ε * n) h2
+  exact quadForm_abs_le_of_opNorm2Le n E (ε * n) h3 x
+
+/-- **Certificate diagonal control** (Higham p. 198, the `‖r̂_i‖₂²` step in
+the proof of Theorem 10.5): the backward-error certificate bounds each
+computed column's squared norm by `(1−ε)⁻¹ a_ii`. -/
+theorem chol_cert_colNormSq_le (n : ℕ) (A R : Fin n → Fin n → ℝ)
+    (ε : ℝ) (hChol : CholeskyBackwardError n A R ε) (i : Fin n) :
+    (1 - ε) * ∑ k : Fin n, R k i ^ 2 ≤ A i i := by
+  have hcert := hChol.backward_bound i i
+  rw [show ∑ k : Fin n, R k i * R k i = ∑ k : Fin n, R k i ^ 2 from
+      Finset.sum_congr rfl fun k _ => by ring,
+    show ∑ k : Fin n, |R k i| * |R k i| = ∑ k : Fin n, R k i ^ 2 from
+      Finset.sum_congr rfl fun k _ => by
+        rw [← abs_mul, abs_of_nonneg (mul_self_nonneg _)]; ring] at hcert
+  have := abs_le.mp hcert
+  linarith [this.1]
+
+/-- **Scaled entrywise backward-error bound** (Theorem 10.7 induction,
+Higham p. 200): the Theorem 10.3 certificate implies the perturbation of
+the diagonally scaled matrix is uniformly small entrywise,
+`|ΔA_ij| ≤ ε/(1−ε) · √a_ii √a_jj`. -/
+theorem chol_cert_scaled_entrywise_le (n : ℕ) (A R : Fin n → Fin n → ℝ)
+    (ε : ℝ) (hε0 : 0 ≤ ε) (hε1 : ε < 1)
+    (hChol : CholeskyBackwardError n A R ε)
+    (hAnn : ∀ l : Fin n, 0 ≤ A l l) (i j : Fin n) :
+    |(∑ k : Fin n, R k i * R k j) - A i j| ≤
+      ε / (1 - ε) * (Real.sqrt (A i i) * Real.sqrt (A j j)) := by
+  have h1ε : (0:ℝ) < 1 - ε := by linarith
+  have hcert := hChol.backward_bound i j
+  have hcs : ∑ k : Fin n, |R k i| * |R k j| ≤
+      Real.sqrt (∑ k : Fin n, R k i ^ 2) *
+      Real.sqrt (∑ k : Fin n, R k j ^ 2) := by
+    have h := abs_vecInnerProduct_le_vecNorm2_mul
+      (fun k => |R k i|) (fun k => |R k j|)
+    have hnn : 0 ≤ ∑ k : Fin n, |R k i| * |R k j| :=
+      Finset.sum_nonneg fun k _ =>
+        mul_nonneg (abs_nonneg _) (abs_nonneg _)
+    rw [abs_of_nonneg hnn] at h
+    calc ∑ k : Fin n, |R k i| * |R k j|
+        ≤ vecNorm2 (fun k => |R k i|) * vecNorm2 (fun k => |R k j|) := h
+      _ = Real.sqrt (∑ k : Fin n, R k i ^ 2) *
+          Real.sqrt (∑ k : Fin n, R k j ^ 2) := by
+          unfold vecNorm2 vecNorm2Sq
+          congr 2 <;> exact Finset.sum_congr rfl fun k _ => sq_abs _
+  have hcol : ∀ l : Fin n, Real.sqrt (∑ k : Fin n, R k l ^ 2) ≤
+      Real.sqrt (A l l) / Real.sqrt (1 - ε) := by
+    intro l
+    rw [show Real.sqrt (A l l) / Real.sqrt (1 - ε) =
+        Real.sqrt (A l l / (1 - ε)) from
+      (Real.sqrt_div (hAnn l) _).symm]
+    apply Real.sqrt_le_sqrt
+    rw [le_div_iff₀ h1ε]
+    linarith [chol_cert_colNormSq_le n A R ε hChol l]
+  have hmulself : Real.sqrt (1 - ε) * Real.sqrt (1 - ε) = 1 - ε :=
+    Real.mul_self_sqrt h1ε.le
+  have hsne : Real.sqrt (1 - ε) ≠ 0 := by
+    intro h0
+    rw [h0, mul_zero] at hmulself
+    linarith
+  calc |(∑ k : Fin n, R k i * R k j) - A i j|
+      ≤ ε * ∑ k : Fin n, |R k i| * |R k j| := hcert
+    _ ≤ ε * (Real.sqrt (∑ k : Fin n, R k i ^ 2) *
+        Real.sqrt (∑ k : Fin n, R k j ^ 2)) :=
+        mul_le_mul_of_nonneg_left hcs hε0
+    _ ≤ ε * ((Real.sqrt (A i i) / Real.sqrt (1 - ε)) *
+        (Real.sqrt (A j j) / Real.sqrt (1 - ε))) := by
+        apply mul_le_mul_of_nonneg_left _ hε0
+        exact mul_le_mul (hcol i) (hcol j) (Real.sqrt_nonneg _)
+          (div_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+    _ = ε / (1 - ε) * (Real.sqrt (A i i) * Real.sqrt (A j j)) := by
+        field_simp
+        linear_combination
+          (-(ε * Real.sqrt (A i i) * Real.sqrt (A j j))) *
+            (Real.sq_sqrt h1ε.le)
+
 
 
 /-! ## §10.2 Sensitivity of the Cholesky Factorization -/

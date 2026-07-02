@@ -2690,6 +2690,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_matSub_id_nonsingInv_isInverse_of_spectralRadius_lt_one`
 - `higham9_15_nonnegative_solution_of_spectralRadius_lt_one`
 - `higham9_15_nonnegative_resolvent_nonsingInv_of_spectralRadius_lt_one`
+- `higham9_15_matSub_id_nonsingInv_matMulVec_eq_of_spectralRadius_lt_one`
+- `higham9_15_nonsingInv_matSub_id_matMulVec_nonneg_of_spectralRadius_lt_one`
+- `higham9_15_nonnegative_resolvent_action_of_spectralRadius_lt_one`
 - `higham9_15_irreducible_nonneg_subeigen_spectralRadius_ge`
 - `higham9_15_irreducible_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt_one`
 - `higham9_15_exists_matMulVec_lt_of_irreducible_nonzero_nonneg_spectralRadius_lt_one`
@@ -3539,6 +3542,9 @@ Source-facing Chapter 10 wrappers:
 - `sum_sq_zero_pad_eq`
 - `finiteMinEigenvalue_leading_principal_ge`
 - `quadForm_abs_le_of_opNorm2Le`
+- `quadForm_abs_le_of_entrywise_le`
+- `chol_cert_colNormSq_le`
+- `chol_cert_scaled_entrywise_le`
 - `higham10_7_success_factorization_spectral`
 - `higham10_7_failure_no_factorization_spectral`
 - `finiteMinEigenvalue`
@@ -3569,6 +3575,9 @@ Source-facing Chapter 10 wrappers:
 - `fl_sub_fold_local_factors`
 - `fl_cholEntry_leading_principal`
 - `fl_cholesky_leading_principal`
+- `fl_cholSubFold_pivot_lower`
+- `fl_sqrt_pos`
+- `upperTriangular_solve_exists`
 - `fl_chol_offdiag_solve_form`
 - `fl_chol_diag_solve_form`
 - `fl_cholPivot`

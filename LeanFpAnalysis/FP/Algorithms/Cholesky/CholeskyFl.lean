@@ -18,6 +18,8 @@ import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
+import Mathlib.LinearAlgebra.Matrix.Block
+import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
 import LeanFpAnalysis.FP.Analysis.SubtractionFold
@@ -323,6 +325,76 @@ theorem fl_cholesky_leading_principal (fp : FPModel) {n k : ℕ}
       (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩) i j =
     fl_cholesky fp n A ⟨i.val, by omega⟩ ⟨j.val, by omega⟩ :=
   (fl_cholEntry_leading_principal fp hk A i.val j.val i.isLt j.isLt).symm
+
+/-- **Diagonal pivot lower bound** (Theorem 10.7 induction, real-model
+    form of the "stage `k` can be completed" step): the rounded partial
+    pivot is at least the exact partial pivot minus the accumulated
+    rounding mass `γ_{m+1}(|c| + ∑ x_k²)`.  When the exact pivot exceeds
+    that mass — which the `λ_min` threshold guarantees — the rounded pivot
+    is positive and the stage's square root is real. -/
+theorem fl_cholSubFold_pivot_lower (fp : FPModel) (m : ℕ)
+    (x : Fin m → ℝ) (c : ℝ) (hm1 : gammaValid fp (m + 1)) :
+    c - (∑ k : Fin m, x k ^ 2) -
+      gamma fp (m + 1) * (|c| + ∑ k : Fin m, x k ^ 2) ≤
+    fl_cholSubFold fp m x x c := by
+  obtain ⟨Θ, θ, hΘ, hθ, heq⟩ := fl_cholSubFold_error fp m x x c hm1
+  rw [heq]
+  have hγnn : 0 ≤ gamma fp (m + 1) := gamma_nonneg fp hm1
+  have hγm : gamma fp m ≤ gamma fp (m + 1) :=
+    gamma_mono fp (Nat.le_succ m) hm1
+  have h1 : c - |c| * gamma fp (m + 1) ≤ c * (1 + Θ) := by
+    have habs : |c * Θ| ≤ |c| * gamma fp (m + 1) := by
+      rw [abs_mul]
+      exact mul_le_mul_of_nonneg_left (le_trans hΘ hγm) (abs_nonneg c)
+    have h := (abs_le.mp habs).1
+    nlinarith
+  have h2 : ∑ k : Fin m, x k * x k * (1 + θ k) ≤
+      (∑ k : Fin m, x k ^ 2) + gamma fp (m + 1) * ∑ k : Fin m, x k ^ 2 := by
+    calc ∑ k : Fin m, x k * x k * (1 + θ k)
+        ≤ ∑ k : Fin m, x k ^ 2 * (1 + gamma fp (m + 1)) := by
+          apply Finset.sum_le_sum
+          intro k _
+          have hθk := (abs_le.mp (hθ k)).2
+          nlinarith [sq_nonneg (x k)]
+      _ = (∑ k : Fin m, x k ^ 2) +
+          gamma fp (m + 1) * ∑ k : Fin m, x k ^ 2 := by
+          rw [← Finset.sum_mul, Finset.sum_mul]
+          rw [Finset.mul_sum, ← Finset.sum_add_distrib]
+          exact Finset.sum_congr rfl fun k _ => by ring
+  nlinarith [h1, h2]
+
+/-- A rounded square root of a positive number is positive (`u < 1`). -/
+theorem fl_sqrt_pos (fp : FPModel) (hu : fp.u < 1) (s : ℝ) (hs : 0 < s) :
+    0 < fp.fl_sqrt s := by
+  obtain ⟨δ, hδ, heq⟩ := fp.model_sqrt s hs.le
+  rw [heq]
+  have h1 : 0 < 1 + δ := by
+    have := (abs_le.mp hδ).1
+    linarith
+  exact mul_pos (Real.sqrt_pos_of_pos hs) h1
+
+/-- **Exact upper-triangular solvability** (Theorem 10.7 induction,
+    "producing a nonsingular R̂" step): an upper-triangular matrix with
+    nonzero diagonal solves every right-hand side, via the determinant of
+    a block-triangular matrix. -/
+theorem upperTriangular_solve_exists (k : ℕ) (U : Fin k → Fin k → ℝ)
+    (hupper : ∀ i j : Fin k, j.val < i.val → U i j = 0)
+    (hdiag : ∀ i, U i i ≠ 0) (b : Fin k → ℝ) :
+    ∃ y : Fin k → ℝ, ∀ i : Fin k, ∑ j : Fin k, U i j * y j = b i := by
+  let M : Matrix (Fin k) (Fin k) ℝ := Matrix.of U
+  have hBT : M.BlockTriangular id := fun i j hij => hupper i j hij
+  have hdet_unit : IsUnit M.det := by
+    rw [Matrix.det_of_upperTriangular hBT]
+    exact isUnit_iff_ne_zero.mpr
+      (Finset.prod_ne_zero_iff.mpr fun i _ => hdiag i)
+  refine ⟨M⁻¹.mulVec b, ?_⟩
+  intro i
+  have hsolve : M.mulVec (M⁻¹.mulVec b) = b := by
+    rw [Matrix.mulVec_mulVec, Matrix.mul_nonsing_inv M hdet_unit,
+      Matrix.one_mulVec]
+  calc ∑ j : Fin k, U i j * (M⁻¹.mulVec b) j
+      = M.mulVec (M⁻¹.mulVec b) i := rfl
+    _ = b i := congrFun hsolve i
 
 -- ============================================================
 -- §10.1  Sharp solve forms for the Algorithm 10.2 recurrences
