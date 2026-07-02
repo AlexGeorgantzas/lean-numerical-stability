@@ -2829,6 +2829,48 @@ theorem stage_interior_mass_from_full {n : ℕ}
   rw [hq, hs] at hpad
   exact hpad
 
+/-- **Per-stage border mass from full-column certificates** (Theorem
+    10.7 sharp route): a scaled column-norm certificate on each full
+    defect column restricts monotonically to every leading segment, so
+    the border-mass hypothesis of the sharpened stage step follows for
+    all stages from `n` column certificates. -/
+theorem stage_border_mass_from_full {n : ℕ}
+    (Δ : Fin n → Fin n → ℝ) (a : Fin n → ℝ) (ha : ∀ i, 0 ≤ a i)
+    (ε : ℝ) (hε0 : 0 ≤ ε)
+    (t : Fin n → ℝ) (ht0 : ∀ j, 0 ≤ t j)
+    (hnz : ∀ i j : Fin n, a i = 0 → Δ i j = 0)
+    (hcertB : ∀ j : Fin n, ∑ i : Fin n,
+      (if a i = 0 then 0 else Δ i j ^ 2 / a i) ≤ ε ^ 2 * t j)
+    (j : Fin n) (y : Fin j.val → ℝ) :
+    |2 * ∑ i : Fin j.val, y i * Δ ⟨i.val, by omega⟩ j| ≤
+      ε * (t j + ∑ i : Fin j.val, a ⟨i.val, by omega⟩ * y i ^ 2) := by
+  refine scaled_border_mass_normwise
+    (fun i : Fin j.val => Δ ⟨i.val, by omega⟩ j)
+    (fun i : Fin j.val => a ⟨i.val, by omega⟩) (fun i => ha _)
+    ε (t j) hε0 (ht0 j) (fun i h => hnz _ _ h) ?_ y
+  -- restrict the full column certificate to the leading segment
+  refine le_trans ?_ (hcertB j)
+  have hemb : Function.Injective
+      (fun i : Fin j.val => (⟨i.val, by omega⟩ : Fin n)) := by
+    intro p q hpq
+    simpa [Fin.ext_iff] using hpq
+  calc ∑ i : Fin j.val,
+      (if a ⟨i.val, by omega⟩ = 0 then 0
+        else Δ ⟨i.val, by omega⟩ j ^ 2 / a ⟨i.val, by omega⟩)
+      = ∑ i ∈ Finset.univ.map ⟨fun i : Fin j.val =>
+          (⟨i.val, by omega⟩ : Fin n), hemb⟩,
+        (if a i = 0 then 0 else Δ i j ^ 2 / a i) := by
+        rw [Finset.sum_map]
+        simp only [Function.Embedding.coeFn_mk]
+    _ ≤ ∑ i : Fin n, (if a i = 0 then 0 else Δ i j ^ 2 / a i) := by
+        refine Finset.sum_le_sum_of_subset_of_nonneg
+          (Finset.subset_univ _) fun i _ _ => ?_
+        by_cases hi : a i = 0
+        · rw [if_pos hi]
+        · rw [if_neg hi]
+          have := lt_of_le_of_ne (ha i) (Ne.symm hi)
+          positivity
+
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
 `‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
 an `r × r` upper-triangular block `U` with positive diagonal whose rows

@@ -3842,6 +3842,7 @@ Source-facing Chapter 10 wrappers:
 - `fl_cholesky_pivots_pos_sharp` (whole-run induction: all pivots positive at the source-shaped threshold)
 - `finiteMaxEigenvalue_leading_principal_le` (interlacing upper direction: lambda_max of leading principal block <= lambda_max of full)
 - `scaled_interior_mass_normwise_quad` / `stage_interior_mass_from_full` (one full scaled certificate restricts to ALL leading blocks by zero-padding - per-stage mass discharge)
+- `stage_border_mass_from_full` (per-stage border mass from n full-column certificates, monotone segment restriction)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)
