@@ -488,6 +488,133 @@ theorem wedinLemma20_11_fullColumn_pinvNorm_le_of_injective_sub_rectOpNorm2Le
       A hAinj hAplus_sigma)
     heta hsmall hDelta hAplus_sigma hBplus_sigma
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    any proved full-column lower action radius is bounded above by the
+    repository's column-side `sigma_min`. -/
+theorem wedinLemma20_11_lowerActionBound_le_sigmaMinCol
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ) {sigma : ℝ}
+    (hlower : ∀ x : Fin (k + 1) → ℝ,
+      sigma * vecNorm2 x ≤ vecNorm2 (rectMatMulVec A x)) :
+    sigma ≤ wedinLemma20_11_sigmaMinCol A := by
+  by_cases hsigma_nonneg : 0 ≤ sigma
+  · obtain ⟨x, hx_ne, hsq⟩ :=
+      realRectToCMatrix_last_singularValue_exists_real_attaining_vector_sq A
+    have hx_norm_ne : vecNorm2 x ≠ 0 := by
+      intro hx_norm
+      apply hx_ne
+      ext j
+      exact (vecNorm2_eq_zero_iff x).mp hx_norm j
+    have hx_norm_pos : 0 < vecNorm2 x :=
+      lt_of_le_of_ne (vecNorm2_nonneg x) (Ne.symm hx_norm_ne)
+    have hA_norm_eq :
+        vecNorm2 (rectMatMulVec A x) =
+          wedinLemma20_11_sigmaMinCol A * vecNorm2 x := by
+      apply (sq_eq_sq₀
+        (vecNorm2_nonneg (rectMatMulVec A x))
+        (mul_nonneg (wedinLemma20_11_sigmaMinCol_nonneg A)
+          (vecNorm2_nonneg x))).mp
+      calc
+        vecNorm2 (rectMatMulVec A x) ^ 2 =
+            vecNorm2Sq (rectMatMulVec A x) := vecNorm2_sq _
+        _ = (wedinLemma20_11_sigmaMinCol A) ^ 2 * vecNorm2Sq x := by
+            simpa [wedinLemma20_11_sigmaMinCol] using hsq
+        _ = (wedinLemma20_11_sigmaMinCol A) ^ 2 * vecNorm2 x ^ 2 := by
+            rw [← vecNorm2_sq x]
+        _ = (wedinLemma20_11_sigmaMinCol A * vecNorm2 x) ^ 2 := by
+            ring
+    have hmul :
+        sigma * vecNorm2 x ≤
+          wedinLemma20_11_sigmaMinCol A * vecNorm2 x := by
+      simpa [hA_norm_eq] using hlower x
+    nlinarith
+  · have hA_nonneg := wedinLemma20_11_sigmaMinCol_nonneg A
+    linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    an explicit left inverse `Aplus A = I` and an operator-norm bound on
+    `Aplus` give the lower action radius `1 / Aplus_norm` for `A`. -/
+theorem wedinLemma20_11_lowerActionBound_of_left_inverse_rectOpNorm2Le
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    {Aplus_norm : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (hleft : rectMatMul Aplus A = idMatrix n)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm) :
+    ∀ x : Fin n → ℝ,
+      (1 / Aplus_norm) * vecNorm2 x ≤ vecNorm2 (rectMatMulVec A x) := by
+  intro x
+  have hleft_vec :
+      rectMatMulVec Aplus (rectMatMulVec A x) = x := by
+    rw [← rectMatMulVec_rectMatMul Aplus A x]
+    rw [hleft]
+    rw [rectMatMulVec_idMatrix]
+  have hbound := hAplus (rectMatMulVec A x)
+  have hx_bound :
+      vecNorm2 x ≤ Aplus_norm * vecNorm2 (rectMatMulVec A x) := by
+    simpa [hleft_vec] using hbound
+  have hrec_nonneg : 0 ≤ 1 / Aplus_norm :=
+    le_of_lt (one_div_pos.mpr hAplus_pos)
+  calc
+    (1 / Aplus_norm) * vecNorm2 x
+        ≤ (1 / Aplus_norm) *
+            (Aplus_norm * vecNorm2 (rectMatMulVec A x)) :=
+          mul_le_mul_of_nonneg_left hx_bound hrec_nonneg
+    _ = vecNorm2 (rectMatMulVec A x) := by
+          field_simp [ne_of_gt hAplus_pos]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    source-shaped singular-value lower bound obtained from an explicit left
+    inverse of `A` and a perturbation bound for `B - A`. -/
+theorem wedinLemma20_11_recip_sub_le_sigmaMinCol_of_left_inverse_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus : Fin (k + 1) → Fin m → ℝ) {Aplus_norm delta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (hleft : rectMatMul Aplus A = idMatrix (k + 1))
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta) :
+    1 / Aplus_norm - delta ≤ wedinLemma20_11_sigmaMinCol B := by
+  have hlowerA :
+      ∀ x : Fin (k + 1) → ℝ,
+        (1 / Aplus_norm) * vecNorm2 x ≤
+          vecNorm2 (rectMatMulVec A x) :=
+    wedinLemma20_11_lowerActionBound_of_left_inverse_rectOpNorm2Le
+      A Aplus hAplus_pos hleft hAplus
+  have hlowerB :
+      ∀ x : Fin (k + 1) → ℝ,
+        (1 / Aplus_norm - delta) * vecNorm2 x ≤
+          vecNorm2 (rectMatMulVec B x) :=
+    wedinLemma20_11_lowerActionBound_of_sub_rectOpNorm2Le
+      A B hlowerA hDelta
+  exact wedinLemma20_11_lowerActionBound_le_sigmaMinCol B hlowerB
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column pseudoinverse norm perturbation from an explicit left inverse
+    of `A` and an operator-norm bound on that left inverse.
+
+    This removes the separate assumption
+    `sigma_min(A) = 1 / ||Aplus||_2`; the remaining reciprocal identification
+    is the perturbed-side norm identity for `Bplus`. -/
+theorem wedinLemma20_11_fullColumn_pinvNorm_le_of_left_inverse_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus : Fin (k + 1) → Fin m → ℝ)
+    {Aplus_norm Bplus_norm delta eta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleft : rectMatMul Aplus A = idMatrix (k + 1))
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBplus_sigma :
+      Bplus_norm = 1 / wedinLemma20_11_sigmaMinCol B) :
+    Bplus_norm ≤ Aplus_norm / (1 - eta) :=
+  wedinLemma20_11_pinvNorm_le_of_singularValue_gap
+    (Aplus_norm := Aplus_norm) (Bplus_norm := Bplus_norm)
+    (delta := delta) (eta := eta)
+    (sigmaA := 1 / Aplus_norm)
+    (sigmaB := wedinLemma20_11_sigmaMinCol B)
+    hAplus_pos heta hsmall rfl hBplus_sigma
+    (wedinLemma20_11_recip_sub_le_sigmaMinCol_of_left_inverse_rectOpNorm2Le
+      A B Aplus hAplus_pos hleft hAplus hDelta)
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
