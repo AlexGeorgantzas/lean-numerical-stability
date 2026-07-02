@@ -98,6 +98,16 @@ end-to-end stability rebuild is tagged as
   This removes another proof-artifact layer from the Problem 13.4 route; the
   all-tail inverse-entry/source comparisons, source-strength BDD
   product-update data, and Theorem 13.6 estimates remain open.
+- 2026-07-01 Problem 13.4 active-suffix determinant-table product witnesses:
+  added
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_det_tables`
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_det_tables`.
+  These feed the determinant-table first-Schur-tail active-suffix constructor
+  directly into the Eq.13.22/Eq.13.23 first-split product-witness APIs.  They
+  remove caller-supplied active-suffix invertibility instances from the product
+  surface while still keeping the source inverse-entry comparison table, ambient
+  right-inverse certificate, and Eq.13.23 `rho <= 2` theorem explicit.
 - 2026-07-01 Problem 13.4 first-split active-suffix Eq.13.23 product-update
   wrappers: added
   `higham13_algorithm13_3_firstSplitStageHistoryGrowthFactor_le_two_of_product_bound_diag_update`,
