@@ -1396,9 +1396,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_2_permutedRectRoundedLoopStageTrace`
 - `higham9_2_permutedRectRoundedLoop_to_rectAbsBudgetCertificate`
 - `higham9_2_permutedRectRoundedLoop_to_rectDenseLoopCertificate`
+- `higham9_2_permutedRectRoundedLoop_square_to_DoolittleLU`
 - `higham9_2_completePermutedRectRoundedLoopStageTrace`
 - `higham9_2_completePermutedRectRoundedLoop_to_rectAbsBudgetCertificate`
 - `higham9_2_completePermutedRectRoundedLoop_to_rectDenseLoopCertificate`
+- `higham9_2_completePermutedRectRoundedLoop_square_to_DoolittleLU`
 - `higham9_2_rectRoundedStageTrace_to_prefixTrace`
 - `higham9_2_rectRoundedPrefixTrace_complete_to_stageTrace`
 - `higham9_2_rectRoundedPrefixTrace_zero`
