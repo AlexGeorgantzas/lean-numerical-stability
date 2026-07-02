@@ -494,6 +494,125 @@ theorem psd_cholesky_existence (n : ℕ) (A : Fin n → Fin n → ℝ)
             rw [div_mul_div_comm, hsa_sq]
           linarith
 
+/-- **Theorem 10.9(b), constructive core** (Higham §10.3, equation
+    (10.11)): every real PSD matrix admits a pivoted Cholesky
+    factorization `Πᵀ A Π = RᵀR` in the displayed rank-truncated form,
+    with the permutation produced by greedy complete pivoting and `r`
+    the number of positive pivots encountered.  Identification of `r`
+    with the matrix rank is left as a separate row over Mathlib's rank. -/
+theorem psd_pivoted_cholesky_exists (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) :
+    ∃ (r : ℕ) (σ : Fin n → Fin n) (R : Fin n → Fin n → ℝ),
+      PivotedCholeskySpec n A R σ r := by
+  induction n with
+  | zero =>
+    exact ⟨0, id, fun i => Fin.elim0 i,
+      Function.bijective_id, fun i => Fin.elim0 i, fun i => Fin.elim0 i,
+      fun i => Fin.elim0 i, fun i => Fin.elim0 i⟩
+  | succ m ih =>
+    by_cases hall : ∀ i, A i i = 0
+    · have hzero := psd_all_diag_zero A hPSD hall
+      refine ⟨0, id, fun _ _ => 0, Function.bijective_id,
+        fun i j _ => rfl, fun i hi => absurd hi (Nat.not_lt_zero _),
+        fun i j _ => rfl, fun i j => ?_⟩
+      show ∑ k : Fin (m + 1), (0:ℝ) * 0 = A i j
+      rw [hzero i j]
+      simp
+    · push_neg at hall
+      obtain ⟨w, hw⟩ := hall
+      have hw_pos : 0 < A w w :=
+        lt_of_le_of_ne (psd_diag_nonneg hPSD w) (Ne.symm hw)
+      obtain ⟨τ, hτ_perm, hτ_pos, _⟩ :=
+        psd_pivot_selection A ⟨w, hw_pos⟩
+      set B : Fin (m + 1) → Fin (m + 1) → ℝ :=
+        fun i j => A (τ i) (τ j) with hBdef
+      have hB_psd : IsPosSemiDef (m + 1) B :=
+        isPosSemiDef_perm (m + 1) A τ hτ_perm hPSD
+      have hB00 : 0 < B 0 0 := hτ_pos
+      set S : Fin m → Fin m → ℝ := fun i j =>
+        B i.succ j.succ - B 0 i.succ * B 0 j.succ / B 0 0 with hSdef
+      have hS_psd := schur_psd hB_psd hB00
+      obtain ⟨r', σ', R₁, hspec⟩ := ih S hS_psd
+      set sa := Real.sqrt (B 0 0) with hsadef
+      have hsa_pos : 0 < sa := Real.sqrt_pos_of_pos hB00
+      have hsa_ne : sa ≠ 0 := ne_of_gt hsa_pos
+      have hsa_sq : sa * sa = B 0 0 :=
+        Real.mul_self_sqrt (le_of_lt hB00)
+      set R : Fin (m + 1) → Fin (m + 1) → ℝ := (fun i j =>
+        if hi : i = 0 then
+          (if j = 0 then sa else B 0 (extendPerm σ' j) / sa)
+        else
+          if hj : j = 0 then 0 else R₁ (i.pred hi) (j.pred hj))
+        with hRdef
+      have hR0 : ∀ p : Fin (m + 1), R 0 p =
+          if p = 0 then sa else B 0 (extendPerm σ' p) / sa := by
+        intro p; simp [hRdef]
+      have hRs : ∀ (k : Fin m) (p : Fin (m + 1)), R k.succ p =
+          if hp : p = 0 then 0 else R₁ k (p.pred hp) := by
+        intro k p; simp [hRdef, Fin.succ_ne_zero, Fin.pred_succ]
+      have hext : ∀ (p : Fin (m + 1)) (hp : p ≠ 0),
+          extendPerm σ' p = (σ' (p.pred hp)).succ := by
+        intro p hp
+        conv_lhs => rw [← Fin.succ_pred p hp]
+        rw [extendPerm_succ]
+      refine ⟨r' + 1, fun i => τ (extendPerm σ' i), R,
+        hτ_perm.comp (extendPerm_isPermutation σ' hspec.perm),
+        fun i j hij => ?_, fun i hir => ?_, fun i j hri => ?_,
+        fun i j => ?_⟩
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi; exact absurd hij (Nat.not_lt_zero _)
+        · by_cases hj : j = 0
+          · simp [hi, hj]
+          · simp only [dif_neg hi, dif_neg hj]
+            exact hspec.R_upper _ _ (by
+              have hiv : i.val ≠ 0 := fun h => hi (Fin.ext h)
+              have hjv : j.val ≠ 0 := fun h => hj (Fin.ext h)
+              have := Fin.val_pred i hi
+              have := Fin.val_pred j hj
+              omega)
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi; simp [hsa_pos]
+        · simp only [dif_neg hi]
+          exact hspec.R_diag_pos _ (by
+            have hiv : i.val ≠ 0 := fun h => hi (Fin.ext h)
+            have := Fin.val_pred i hi
+            omega)
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi
+          exact absurd hri (by simp)
+        · simp only [dif_neg hi]
+          by_cases hj : j = 0
+          · simp [hj]
+          · simp only [dif_neg hj]
+            exact hspec.R_rank_zero _ _ (by
+              have := Fin.val_pred i hi
+              omega)
+      · show ∑ k : Fin (m + 1), R k i * R k j =
+          B (extendPerm σ' i) (extendPerm σ' j)
+        rw [Fin.sum_univ_succ]
+        simp only [hR0, hRs]
+        by_cases hi : i = 0 <;> by_cases hj : j = 0
+        · subst hi; subst hj
+          simp [hsa_sq]
+        · subst hi
+          simp [hj, mul_div_cancel₀, hsa_ne]
+        · subst hj
+          simp [hi, hsa_ne, hB_psd.1 (extendPerm σ' i) 0]
+        · simp only [if_neg hi, if_neg hj, dif_neg hi, dif_neg hj]
+          have hih := hspec.product_eq (i.pred hi) (j.pred hj)
+          rw [hext i hi, hext j hj, hih]
+          have h1 : B 0 (σ' (i.pred hi)).succ / sa *
+              (B 0 (σ' (j.pred hj)).succ / sa) =
+              B 0 (σ' (i.pred hi)).succ *
+                B 0 (σ' (j.pred hj)).succ / B 0 0 := by
+            rw [div_mul_div_comm, hsa_sq]
+          rw [h1]
+          simp only [hSdef]
+          ring
+
 -- ============================================================
 -- §10.3  Theorem 10.9(b): SPD → PivotedCholeskySpec (full rank)
 -- ============================================================
