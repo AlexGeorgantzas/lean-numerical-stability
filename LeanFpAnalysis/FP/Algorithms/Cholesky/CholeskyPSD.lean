@@ -2799,6 +2799,193 @@ theorem fl_cpPivotFactor_sequence_agrees (fp : FPModel) {n : ℕ}
       · subst h'
         rw [hpivF]
 
+/-- **Computed factor rows are pivot-dominated** (the `c`-discharge for
+    Theorem 10.14's domination hypothesis, one stage): if the exact
+    working matrix is PSD with maximal pivot and floor `ρ`, and the
+    computed working matrix is `ht`-close (`ht ≤ ρ/4`), then every
+    computed off-pivot factor entry `fl(S̃_pj / √S̃_pp)` is bounded by
+    `(1 + 4ht/ρ)(1+u)/(1−u)²` times the computed pivot entry
+    `fl(√S̃_pp)` — the computed form of the (10.13) invariant, with the
+    domination constant explicit. -/
+theorem fl_factor_row_dominated (fp : FPModel) {n : ℕ}
+    (S Stilde : Fin n → Fin n → ℝ) (p : Fin n) (ρ ht : ℝ)
+    (hPSD : IsPosSemiDef n S)
+    (hmax : ∀ j : Fin n, S j j ≤ S p p)
+    (hfloorS : ρ ≤ S p p) (hρ : 0 < ρ)
+    (hht : 0 ≤ ht) (hht2 : ht ≤ ρ / 4)
+    (hclose : ∀ i j : Fin n, |S i j - Stilde i j| ≤ ht)
+    (hu1 : fp.u < 1) :
+    ∀ j : Fin n,
+      |fp.fl_div (Stilde p j) (fp.fl_sqrt (Stilde p p))| ≤
+      (1 + 4 * ht / ρ) * ((1 + fp.u) / (1 - fp.u) ^ 2) *
+        |fp.fl_sqrt (Stilde p p)| := by
+  intro j
+  have hu0 := fp.u_nonneg
+  have h1u : (0:ℝ) < 1 - fp.u := by linarith
+  -- the computed pivot is well above zero
+  have hSpp : ρ ≤ S p p := hfloorS
+  have hStpp : ρ / 2 ≤ Stilde p p := by
+    have h1 := abs_le.mp (hclose p p)
+    linarith [h1.2]
+  have hStpp0 : (0:ℝ) < Stilde p p := by linarith
+  have hsq0 : (0:ℝ) < Real.sqrt (Stilde p p) :=
+    Real.sqrt_pos.mpr hStpp0
+  obtain ⟨δa, hδa, hsqrt⟩ := fp.model_sqrt (Stilde p p) hStpp0.le
+  have ha := abs_le.mp hδa
+  have h1a : (0:ℝ) < 1 + δa := by linarith [ha.1]
+  have hfs0 : fp.fl_sqrt (Stilde p p) ≠ 0 := by
+    rw [hsqrt]; positivity
+  obtain ⟨δb, hδb, hdiv⟩ := fp.model_div (Stilde p j)
+    (fp.fl_sqrt (Stilde p p)) hfs0
+  have hb := abs_le.mp hδb
+  -- numerator control through the exact PSD structure
+  have hnum : |Stilde p j| ≤ Stilde p p * (1 + 4 * ht / ρ) := by
+    have h1 : |Stilde p j| ≤ |S p j| + ht := by
+      have h := hclose p j
+      have h2 := abs_sub_abs_le_abs_sub (Stilde p j) (S p j)
+      rw [abs_sub_comm (Stilde p j) (S p j)] at h2
+      linarith
+    have h2 : |S p j| ≤ S p p := by
+      calc |S p j| ≤ Real.sqrt (S p p) * Real.sqrt (S j j) :=
+            psd_abs_entry_le_sqrt_diag S hPSD p j
+        _ ≤ Real.sqrt (S p p) * Real.sqrt (S p p) :=
+            mul_le_mul_of_nonneg_left
+              (Real.sqrt_le_sqrt (hmax j)) (Real.sqrt_nonneg _)
+        _ = S p p := Real.mul_self_sqrt (by linarith)
+    have h3 : S p p ≤ Stilde p p + ht := by
+      have h := abs_le.mp (hclose p p)
+      linarith [h.1]
+    have h4 : Stilde p p + 2 * ht ≤
+        Stilde p p * (1 + 4 * ht / ρ) := by
+      rw [mul_add, mul_one]
+      have : Stilde p p * (4 * ht / ρ) ≥ 2 * ht := by
+        rw [ge_iff_le, show Stilde p p * (4 * ht / ρ) =
+          Stilde p p * 4 * ht / ρ by ring, le_div_iff₀ hρ]
+        nlinarith
+      linarith
+    linarith
+  -- assemble through the model factors
+  rw [hdiv, hsqrt]
+  rw [abs_mul, abs_div, abs_mul, abs_of_pos hsq0, abs_of_pos h1a]
+  have h1b : |1 + δb| ≤ 1 + fp.u := by
+    rw [abs_le]; constructor <;> linarith [hb.1, hb.2]
+  have hda : (1:ℝ) - fp.u ≤ 1 + δa := by linarith [ha.1]
+  have hsqSt : Real.sqrt (Stilde p p) * Real.sqrt (Stilde p p) =
+      Stilde p p := Real.mul_self_sqrt hStpp0.le
+  -- |S̃ p j| / (√·(1+δa)) · |1+δb| ≤ target
+  calc |Stilde p j| / (Real.sqrt (Stilde p p) * (1 + δa)) *
+        |1 + δb|
+      ≤ (Stilde p p * (1 + 4 * ht / ρ)) /
+          (Real.sqrt (Stilde p p) * (1 - fp.u)) * (1 + fp.u) := by
+        refine mul_le_mul ?_ h1b (abs_nonneg _) (by positivity)
+        refine div_le_div₀ (by positivity) hnum (by positivity) ?_
+        exact mul_le_mul_of_nonneg_left hda (Real.sqrt_nonneg _)
+    _ = (1 + 4 * ht / ρ) * ((1 + fp.u) / (1 - fp.u) ^ 2) *
+          (Real.sqrt (Stilde p p) * (1 - fp.u)) := by
+        field_simp
+        nlinarith [hsqSt]
+    _ ≤ (1 + 4 * ht / ρ) * ((1 + fp.u) / (1 - fp.u) ^ 2) *
+          (Real.sqrt (Stilde p p) * (1 + δa)) := by
+        refine mul_le_mul_of_nonneg_left
+          (mul_le_mul_of_nonneg_left hda (Real.sqrt_nonneg _)) ?_
+        positivity
+
+/-- **All computed factor rows are pivot-dominated across the run**
+    (Theorem 10.14 `c`-discharge, composed): under the no-tie data and
+    the rounding budget (bounded by `ρ/4`), at every stage `t < r` of
+    the factor-form floating-point run, every computed off-pivot factor
+    entry is at most `(1 + 4·h t/ρ)(1+u)/(1−u)²` times the computed
+    pivot entry — the computed (10.13) invariant for the whole run,
+    with per-stage explicit constants. -/
+theorem fl_cpFactor_rows_dominated (fp : FPModel) {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (r : ℕ)
+    (δ ρ c : ℝ) (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (h5 : gammaValid fp 5)
+    (h : ℕ → ℝ) (hh0 : h 0 = 0)
+    (hhstep : ∀ t : ℕ, t < r →
+      h t + (3 * c ^ 2 * h t + c * h t ^ 2) / (ρ / 2) ^ 2 +
+        (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+          (1 + fp.u) * gamma fp 5 * ((c + δ / 2) ^ 2 / (ρ / 2))) ≤
+        h (t + 1))
+    (hhhalf : ∀ t : ℕ, t < r → h t < δ / 2)
+    (hht4 : ∀ t : ℕ, t < r → h t ≤ ρ / 4)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c) :
+    ∀ t : ℕ, t < r → ∀ j : Fin n,
+      |fp.fl_div (fl_cpStateFactor fp hn A t (cpPivot hn A t) j)
+        (fp.fl_sqrt (fl_cpStateFactor fp hn A t
+          (cpPivot hn A t) (cpPivot hn A t)))| ≤
+      (1 + 4 * h t / ρ) * ((1 + fp.u) / (1 - fp.u) ^ 2) *
+        |fp.fl_sqrt (fl_cpStateFactor fp hn A t
+          (cpPivot hn A t) (cpPivot hn A t))| := by
+  intro t htr j
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  have hu1 : fp.u < 1 := by
+    unfold gammaValid at h5
+    push_cast at h5
+    nlinarith [fp.u_nonneg]
+  -- stage data from the agreement induction and the exact invariants
+  have hagree := fl_cpPivotFactor_sequence_agrees fp hn A r δ ρ c
+    hδ hδρ hc h5 h hh0 hhstep hhhalf hgap hfloor hcap t
+    (Nat.le_of_lt htr)
+  have hclose := hagree.1
+  have hSPSD : IsPosSemiDef n (cpState hn A t) :=
+    cpState_isPosSemiDef hn A hPSD t fun s hs =>
+      lt_of_lt_of_le hρ0 (hfloor s (lt_trans hs htr))
+  have hht0 : 0 ≤ h t := by
+    rcases Nat.eq_zero_or_pos t with rfl | ht0
+    · rw [hh0]
+    · have h1 := hhhalf t htr
+      -- nonnegativity via the budget recurrence from stage t-1
+      obtain ⟨t', rfl⟩ := Nat.exists_eq_succ_of_ne_zero ht0.ne'
+      have ht'r : t' < r := lt_trans (Nat.lt_succ_self t') htr
+      have hstep := hhstep t' ht'r
+      have haux : ∀ s : ℕ, s ≤ t' → 0 ≤ h s := by
+        intro s
+        induction s with
+        | zero => intro _; rw [hh0]
+        | succ s ihs =>
+          intro hsr
+          have hs' : s < r := by omega
+          have h0 := ihs (by omega)
+          have hst := hhstep s hs'
+          have h1' : (0:ℝ) ≤
+              (3 * c ^ 2 * h s + c * h s ^ 2) / (ρ / 2) ^ 2 := by
+            positivity
+          have h2' : (0:ℝ) ≤
+              fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+              (1 + fp.u) * gamma fp 5 *
+                ((c + δ / 2) ^ 2 / (ρ / 2)) := by
+            have hγ := gamma_nonneg fp h5
+            have hu0 := fp.u_nonneg
+            refine add_nonneg (by positivity)
+              (mul_nonneg (mul_nonneg (by positivity) hγ)
+                (by positivity))
+          linarith
+      have h0 := haux t' le_rfl
+      have h1' : (0:ℝ) ≤
+          (3 * c ^ 2 * h t' + c * h t' ^ 2) / (ρ / 2) ^ 2 := by
+        positivity
+      have h2' : (0:ℝ) ≤
+          fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+          (1 + fp.u) * gamma fp 5 * ((c + δ / 2) ^ 2 / (ρ / 2)) := by
+        have hγ := gamma_nonneg fp h5
+        have hu0 := fp.u_nonneg
+        refine add_nonneg (by positivity)
+          (mul_nonneg (mul_nonneg (by positivity) hγ)
+            (by positivity))
+      linarith
+  exact fl_factor_row_dominated fp (cpState hn A t)
+    (fl_cpStateFactor fp hn A t) (cpPivot hn A t) ρ (h t)
+    hSPSD (cpPivot_max hn A t) (hfloor t htr) hρ0 hht0
+    (hht4 t htr) hclose hu1 j
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
