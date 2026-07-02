@@ -1892,6 +1892,54 @@ theorem higham10_13_complete_pivoting_w_bound {r m : ℕ}
       (m : ℝ) * (((4 : ℝ) ^ r - 1) / 3) :=
   complete_pivoting_w_bound U B W hupper hdiag_pos hentry hB hsolve
 
+/-- **Lemma 10.13 instantiated on the complete-pivoting factor**: for any
+    pivoted Cholesky factor `R` satisfying the (10.13) column-tail
+    invariant (as produced by `psd_pivoted_cholesky_exists_tail`), the
+    implicit matrix `W = R₁₁⁻¹ R₁₂` exists — each border column of `R₁₂`
+    is solved exactly against the leading `r × r` block — and satisfies
+    Higham's bound `‖W‖_F² ≤ (n − r)(4^r − 1)/3`. -/
+theorem higham10_13_pivoted_w_frobenius_bound {n : ℕ}
+    {A R : Fin n → Fin n → ℝ} {σ : Fin n → Fin n} {r : ℕ}
+    (spec : PivotedCholeskySpec n A R σ r) (hr : r ≤ n)
+    (htail : ∀ k j : Fin n, k.val ≤ j.val →
+      (∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+        R i j ^ 2) ≤ R k k ^ 2) :
+    ∃ W : Fin r → Fin (n - r) → ℝ,
+      (∀ (i : Fin r) (j : Fin (n - r)),
+        ∑ k : Fin r, R (Fin.castLE hr i) (Fin.castLE hr k) * W k j =
+          R (Fin.castLE hr i) ⟨r + j.val, by omega⟩) ∧
+      ∑ j : Fin (n - r), ∑ i : Fin r, W i j ^ 2 ≤
+        ((n - r : ℕ) : ℝ) * (((4 : ℝ) ^ r - 1) / 3) := by
+  have hdiag_nonneg : ∀ i : Fin n, 0 ≤ R i i := by
+    intro i
+    rcases Nat.lt_or_ge i.val r with hlt | hge
+    · exact (spec.R_diag_pos i hlt).le
+    · rw [spec.R_rank_zero i i hge]
+  have hdom := tail_invariant_entry_le hdiag_nonneg htail
+  set U : Fin r → Fin r → ℝ :=
+    fun i k => R (Fin.castLE hr i) (Fin.castLE hr k) with hU
+  set B : Fin r → Fin (n - r) → ℝ :=
+    fun i j => R (Fin.castLE hr i) ⟨r + j.val, by omega⟩ with hB
+  have hupper : ∀ i j : Fin r, j.val < i.val → U i j = 0 :=
+    fun i j hij => spec.R_upper _ _ hij
+  have hdiag_pos : ∀ i : Fin r, 0 < U i i :=
+    fun i => spec.R_diag_pos _ i.isLt
+  have hentry : ∀ i j : Fin r, i.val ≤ j.val → |U i j| ≤ U i i :=
+    fun i j hij => hdom _ _ hij
+  have hBdom : ∀ (i : Fin r) (j : Fin (n - r)), |B i j| ≤ U i i :=
+    fun i j => hdom _ _ (by
+      show i.val ≤ r + j.val
+      exact le_trans i.isLt.le (Nat.le_add_right r j.val))
+  have hsol : ∀ j : Fin (n - r), ∃ y : Fin r → ℝ,
+      ∀ i : Fin r, ∑ k : Fin r, U i k * y k = B i j :=
+    fun j => upperTriangular_solve_exists r U hupper
+      (fun i => (hdiag_pos i).ne') (fun i => B i j)
+  choose Wcol hWcol using hsol
+  refine ⟨fun i j => Wcol j i, fun i j => hWcol j i, ?_⟩
+  exact complete_pivoting_w_bound U B (fun i j => Wcol j i)
+    hupper hdiag_pos hentry hBdom (fun i j => hWcol j i)
+
+
 /-- **Theorem 10.14 / equation (10.22)**: PSD Cholesky backward-error
 interface after `r` stages. -/
 theorem higham10_14_psd_cholesky_backward_error (n : ℕ) (fp : FPModel)

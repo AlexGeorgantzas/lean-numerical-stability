@@ -3708,6 +3708,7 @@ Source-facing Chapter 10 wrappers:
 - `higham10_10_schur_complement_perturbation`
 - `higham10_12_w_norm_bound_from_cond`
 - `higham10_13_complete_pivoting_w_bound`
+- `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
 - `higham10_26_nonpositivePivotCriterion`
 - `higham10_27_residualStopCriterion`
