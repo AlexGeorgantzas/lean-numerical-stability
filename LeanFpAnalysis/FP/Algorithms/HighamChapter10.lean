@@ -1187,6 +1187,169 @@ theorem finiteMinEigenvalue_leading_principal_ge (n : ℕ) (hn : 0 < n)
   rw [hpadquad] at hray
   exact hray
 
+/-- Splitting a double sum over `Fin (m+1)` into interior, two borders,
+and corner. -/
+theorem sum_sum_castSucc_split (m : ℕ) (F : Fin (m + 1) → Fin (m + 1) → ℝ) :
+    ∑ i : Fin (m + 1), ∑ l : Fin (m + 1), F i l =
+      (∑ i : Fin m, ∑ l : Fin m, F i.castSucc l.castSucc) +
+      (∑ i : Fin m, F i.castSucc (Fin.last m)) +
+      (∑ l : Fin m, F (Fin.last m) l.castSucc) +
+      F (Fin.last m) (Fin.last m) := by
+  rw [Fin.sum_univ_castSucc]
+  rw [show ∑ i : Fin m, ∑ l : Fin (m + 1), F i.castSucc l =
+      ∑ i : Fin m, ((∑ l : Fin m, F i.castSucc l.castSucc) +
+        F i.castSucc (Fin.last m)) from
+    Finset.sum_congr rfl fun i _ => Fin.sum_univ_castSucc _]
+  rw [Fin.sum_univ_castSucc (f := fun l => F (Fin.last m) l)]
+  rw [Finset.sum_add_distrib]
+  ring
+
+/-- **Theorem 10.7 (Demmel), success direction for the concrete
+Algorithm 10.2** (Higham p. 200): if the minimum eigenvalue of the scaled
+matrix `H = D⁻¹AD⁻¹` (`D = diag(√a_ii)`) exceeds
+`(2n+3)·γ_{n+1}/(1−γ_{n+1})`, the concrete floating-point Cholesky
+algorithm runs to completion: every rounded pivot is positive.  Per-stage
+Rayleigh floors come from `λ_min(H)` by interlacing on the bordered
+leading blocks and the substitution `z = (√a_i·y_i, √a_jj)`.  The
+threshold constant is coarser than the source `n·γ_{n+1}/(1−γ_{n+1})`;
+sharpening is open. -/
+theorem higham10_7_fl_cholesky_success (fp : FPModel) (n : ℕ)
+    (hn0 : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hn1 : gammaValid fp (n + 1))
+    (hγ1 : gamma fp (n + 1) < 1)
+    (hH_sym : IsSymmetricFiniteMatrix (fun i l : Fin n =>
+      A i l / (Real.sqrt (A i i) * Real.sqrt (A l l))))
+    (hthresh : (2 * (n : ℝ) + 3) *
+      (gamma fp (n + 1) / (1 - gamma fp (n + 1))) <
+      finiteMinEigenvalue hn0 (fun i l : Fin n =>
+        A i l / (Real.sqrt (A i i) * Real.sqrt (A l l))) hH_sym) :
+    ∀ j : Fin n, 0 < fl_cholPivot fp n A j := by
+  apply fl_cholesky_pivots_pos fp A hsym hAdiag hn1 hγ1
+    (finiteMinEigenvalue hn0 _ hH_sym) _ hthresh
+  intro j y
+  have hm1n : j.val + 1 ≤ n := j.isLt
+  have hHb_sym : IsSymmetricFiniteMatrix (fun i l : Fin (j.val + 1) =>
+      (fun i l : Fin n => A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+        ⟨i.val, by omega⟩ ⟨l.val, by omega⟩) :=
+    fun i l => hH_sym _ _
+  have hinterlace := finiteMinEigenvalue_leading_principal_ge n hn0 _
+    hH_sym (j.val + 1) (Nat.succ_pos j.val) hm1n hHb_sym
+  set z : Fin (j.val + 1) → ℝ := Fin.snoc
+    (fun i : Fin j.val =>
+      Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) * y i)
+    (Real.sqrt (A j j)) with hz
+  have hray := finiteMinEigenvalue_rayleigh (Nat.succ_pos j.val)
+    (fun i l : Fin (j.val + 1) =>
+      (fun i l : Fin n => A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+        ⟨i.val, by omega⟩ ⟨l.val, by omega⟩) hHb_sym z
+  have hlast_eq : (⟨(Fin.last j.val).val, by omega⟩ : Fin n) = j :=
+    Fin.ext (by simp)
+  have hcancel : ∀ (i l : Fin n) (u v : ℝ),
+      (Real.sqrt (A i i) * u) *
+        (A i l / (Real.sqrt (A i i) * Real.sqrt (A l l))) *
+        (Real.sqrt (A l l) * v) = u * A i l * v := by
+    intro i l u v
+    have hi := (Real.sqrt_pos.mpr (hAdiag i)).ne'
+    have hl := (Real.sqrt_pos.mpr (hAdiag l)).ne'
+    field_simp
+  have hnorm : ∑ i : Fin (j.val + 1), z i ^ 2 =
+      (∑ i : Fin j.val,
+        A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2) + A j j := by
+    rw [Fin.sum_univ_castSucc]
+    congr 1
+    · apply Finset.sum_congr rfl
+      intro i _
+      rw [hz, Fin.snoc_castSucc, mul_pow, Real.sq_sqrt (hAdiag _).le]
+    · rw [hz, Fin.snoc_last, Real.sq_sqrt (hAdiag j).le]
+  have hz_nonneg_sq : 0 ≤ ∑ i : Fin (j.val + 1), z i ^ 2 :=
+    Finset.sum_nonneg fun i _ => sq_nonneg _
+  have hquad : ∑ i : Fin (j.val + 1), ∑ l : Fin (j.val + 1),
+      z i * ((fun i l : Fin n =>
+        A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+        ⟨i.val, by omega⟩ ⟨l.val, by omega⟩) * z l =
+      (∑ i : Fin j.val, ∑ l : Fin j.val,
+        y i * A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ * y l) +
+      2 * (∑ i : Fin j.val, y i * A ⟨i.val, by omega⟩ j) + A j j := by
+    rw [sum_sum_castSucc_split j.val]
+    have hp1 : ∑ i : Fin j.val, ∑ l : Fin j.val,
+        z i.castSucc * ((fun i l : Fin n =>
+          A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+          ⟨(i.castSucc).val, by omega⟩ ⟨(l.castSucc).val, by omega⟩) *
+          z l.castSucc =
+        ∑ i : Fin j.val, ∑ l : Fin j.val,
+          y i * A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ * y l := by
+      apply Finset.sum_congr rfl
+      intro i _
+      apply Finset.sum_congr rfl
+      intro l _
+      rw [hz, Fin.snoc_castSucc, Fin.snoc_castSucc]
+      exact hcancel _ _ (y i) (y l)
+    have hp2 : ∑ i : Fin j.val,
+        z i.castSucc * ((fun i l : Fin n =>
+          A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+          ⟨(i.castSucc).val, by omega⟩
+          ⟨(Fin.last j.val).val, by omega⟩) * z (Fin.last j.val) =
+        ∑ i : Fin j.val, y i * A ⟨i.val, by omega⟩ j := by
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [hz, Fin.snoc_castSucc, Fin.snoc_last, hlast_eq]
+      have hthis := hcancel ⟨i.val, by omega⟩ j (y i) 1
+      simp only [mul_one] at hthis
+      exact hthis
+    have hp3 : ∑ l : Fin j.val,
+        z (Fin.last j.val) * ((fun i l : Fin n =>
+          A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+          ⟨(Fin.last j.val).val, by omega⟩
+          ⟨(l.castSucc).val, by omega⟩) * z l.castSucc =
+        ∑ l : Fin j.val, y l * A ⟨l.val, by omega⟩ j := by
+      apply Finset.sum_congr rfl
+      intro l _
+      rw [hz, Fin.snoc_castSucc, Fin.snoc_last, hlast_eq]
+      have hthis := hcancel j ⟨l.val, by omega⟩ 1 (y l)
+      simp only [one_mul, mul_one] at hthis
+      have hfin : Real.sqrt (A j j) *
+          (A j ⟨l.val, by omega⟩ /
+            (Real.sqrt (A j j) *
+             Real.sqrt (A ⟨l.val, by omega⟩ ⟨l.val, by omega⟩))) *
+          (Real.sqrt (A ⟨l.val, by omega⟩ ⟨l.val, by omega⟩) * y l) =
+          y l * A ⟨l.val, by omega⟩ j := by
+        rw [hthis, hsym j ⟨l.val, by omega⟩]
+        ring
+      exact hfin
+    have hp4 : z (Fin.last j.val) * ((fun i l : Fin n =>
+        A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+        ⟨(Fin.last j.val).val, by omega⟩
+        ⟨(Fin.last j.val).val, by omega⟩) * z (Fin.last j.val) =
+        A j j := by
+      rw [hz, Fin.snoc_last, hlast_eq]
+      have hthis := hcancel j j 1 1
+      simp only [one_mul, mul_one] at hthis
+      exact hthis
+    rw [hp1, hp2, hp3, hp4]
+    ring
+  have hmono : finiteMinEigenvalue hn0 _ hH_sym *
+      ∑ i : Fin (j.val + 1), z i ^ 2 ≤
+      finiteMinEigenvalue (Nat.succ_pos j.val) _ hHb_sym *
+      ∑ i : Fin (j.val + 1), z i ^ 2 :=
+    mul_le_mul_of_nonneg_right hinterlace hz_nonneg_sq
+  calc finiteMinEigenvalue hn0 _ hH_sym *
+      ((∑ i : Fin j.val,
+        A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2) + A j j)
+      = finiteMinEigenvalue hn0 _ hH_sym *
+        ∑ i : Fin (j.val + 1), z i ^ 2 := by rw [hnorm]
+    _ ≤ finiteMinEigenvalue (Nat.succ_pos j.val) _ hHb_sym *
+        ∑ i : Fin (j.val + 1), z i ^ 2 := hmono
+    _ ≤ ∑ i : Fin (j.val + 1), ∑ l : Fin (j.val + 1),
+        z i * ((fun i l : Fin n =>
+          A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+          ⟨i.val, by omega⟩ ⟨l.val, by omega⟩) * z l := hray
+    _ = (∑ i : Fin j.val, ∑ l : Fin j.val,
+          y i * A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ * y l) +
+        2 * (∑ i : Fin j.val, y i * A ⟨i.val, by omega⟩ j) + A j j := hquad
+
+
 
 
 /-- **Theorem 10.7 foundation** (Higham §10.1, proof of Theorem 10.7): the
