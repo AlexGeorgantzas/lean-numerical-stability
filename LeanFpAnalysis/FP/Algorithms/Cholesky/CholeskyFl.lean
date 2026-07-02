@@ -1036,6 +1036,293 @@ theorem fl_cholesky_truncated_bound (fp : FPModel) {n : ℕ}
           fl_cholesky fp n A ⟨p.val, by omega⟩ w ^ 2) := by
         rw [Real.sqrt_mul (Finset.sum_nonneg fun p _ => sq_nonneg _)]
 
+/-- **Demmel-form certificate for the computed block of a truncated run**
+    (Theorem 10.14 leading block, display (10.22) engine): if the first
+    `r` stages of Algorithm 10.2 ran to completion (nonzero computed
+    pivot diagonals, nonnegative rounded pivots), then every Gram entry
+    of the computed factor over columns `i, j < r` is Demmel-stable:
+    `|R̂ᵀR̂ − A|_{ij} ≤ γ_{n+1}/(1−γ_{n+1}) √(a_ii a_jj)` — no hypothesis
+    on stages `≥ r`, so this survives early termination of the PSD
+    pivoted algorithm. -/
+theorem fl_cholesky_truncated_demmel (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hn1 : gammaValid fp (n + 1))
+    (hγlt : gamma fp (n + 1) < 1)
+    (hsymm : ∀ i j : Fin n, A i j = A j i) (r : ℕ)
+    (hdz : ∀ i : Fin n, i.val < r → fl_cholesky fp n A i i ≠ 0)
+    (hpiv : ∀ i : Fin n, i.val < r → 0 ≤ fl_cholPivot fp n A i) :
+    ∀ i j : Fin n, i.val < r → j.val < r →
+      |∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k j -
+        A i j| ≤
+      gamma fp (n + 1) / (1 - gamma fp (n + 1)) *
+        (Real.sqrt (A i i) * Real.sqrt (A j j)) := by
+  have hγ0 : 0 ≤ gamma fp (n + 1) := gamma_nonneg fp hn1
+  have h1γ : 0 < 1 - gamma fp (n + 1) := by linarith
+  -- the ordered case i ≤ j
+  have haux : ∀ i j : Fin n, i.val < r → i.val ≤ j.val →
+      0 ≤ fl_cholPivot fp n A j →
+      |∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k j -
+        A i j| ≤
+      gamma fp (n + 1) / (1 - gamma fp (n + 1)) *
+        (Real.sqrt (A i i) * Real.sqrt (A j j)) := by
+    intro i j hir hij hpivj
+    have hstage := fl_cholesky_entry_bound_stage fp n A hn1 i j hij
+      (fun _ => hdz i hir) (fun _ => hpiv i hir)
+    have hcs := colNorm_cauchy_schwarz n (fl_cholesky fp n A) i j
+    -- column-norm control for both columns
+    have hcol : ∀ w : Fin n, 0 ≤ fl_cholPivot fp n A w →
+        colNorm n (fl_cholesky fp n A) w ≤
+          Real.sqrt (A w w / (1 - gamma fp (n + 1))) := by
+      intro w hw
+      have h := fl_cholesky_colNormSq_le_stage fp n A hn1 w hw
+      have hsq : colNormSq n (fl_cholesky fp n A) w ≤
+          A w w / (1 - gamma fp (n + 1)) := by
+        rw [le_div_iff₀ h1γ, mul_comm]
+        exact h
+      exact Real.sqrt_le_sqrt hsq
+    have hAii : 0 ≤ A i i := by
+      have h := fl_cholesky_colNormSq_le_stage fp n A hn1 i (hpiv i hir)
+      have hnn : 0 ≤ ∑ k : Fin n, fl_cholesky fp n A k i ^ 2 :=
+        Finset.sum_nonneg fun k _ => sq_nonneg _
+      nlinarith
+    have hAjj : 0 ≤ A j j := by
+      have h := fl_cholesky_colNormSq_le_stage fp n A hn1 j hpivj
+      have hnn : 0 ≤ ∑ k : Fin n, fl_cholesky fp n A k j ^ 2 :=
+        Finset.sum_nonneg fun k _ => sq_nonneg _
+      nlinarith
+    have hprod : colNorm n (fl_cholesky fp n A) i *
+        colNorm n (fl_cholesky fp n A) j ≤
+        Real.sqrt (A i i) * Real.sqrt (A j j) /
+          (1 - gamma fp (n + 1)) := by
+      have hmul := mul_le_mul (hcol i (hpiv i hir)) (hcol j hpivj)
+        (colNorm_nonneg n _ j) (Real.sqrt_nonneg _)
+      calc colNorm n (fl_cholesky fp n A) i *
+          colNorm n (fl_cholesky fp n A) j
+          ≤ Real.sqrt (A i i / (1 - gamma fp (n + 1))) *
+            Real.sqrt (A j j / (1 - gamma fp (n + 1))) := hmul
+        _ = Real.sqrt (A i i) * Real.sqrt (A j j) /
+              (1 - gamma fp (n + 1)) := by
+            rw [← Real.sqrt_mul (by positivity : (0:ℝ) ≤
+              A i i / (1 - gamma fp (n + 1)))]
+            rw [show A i i / (1 - gamma fp (n + 1)) *
+                (A j j / (1 - gamma fp (n + 1))) =
+                A i i * A j j / (1 - gamma fp (n + 1)) ^ 2 by
+              field_simp]
+            have h2 : (Real.sqrt (A i i) * Real.sqrt (A j j) /
+                (1 - gamma fp (n + 1))) ^ 2 =
+                A i i * A j j / (1 - gamma fp (n + 1)) ^ 2 := by
+              rw [div_pow, mul_pow, Real.sq_sqrt hAii,
+                Real.sq_sqrt hAjj]
+            rw [← h2, Real.sqrt_sq (by positivity)]
+    calc |∑ k : Fin n, fl_cholesky fp n A k i *
+          fl_cholesky fp n A k j - A i j|
+        ≤ gamma fp (n + 1) * ∑ k : Fin n,
+            |fl_cholesky fp n A k i| * |fl_cholesky fp n A k j| := hstage
+      _ ≤ gamma fp (n + 1) * (colNorm n (fl_cholesky fp n A) i *
+            colNorm n (fl_cholesky fp n A) j) :=
+          mul_le_mul_of_nonneg_left hcs hγ0
+      _ ≤ gamma fp (n + 1) * (Real.sqrt (A i i) * Real.sqrt (A j j) /
+            (1 - gamma fp (n + 1))) :=
+          mul_le_mul_of_nonneg_left hprod hγ0
+      _ = gamma fp (n + 1) / (1 - gamma fp (n + 1)) *
+            (Real.sqrt (A i i) * Real.sqrt (A j j)) := by ring
+  intro i j hir hjr
+  rcases le_total i.val j.val with hij | hji
+  · exact haux i j hir hij (hpiv j hjr)
+  · have h := haux j i hjr hji (hpiv i hir)
+    have hgram : ∑ k : Fin n, fl_cholesky fp n A k i *
+        fl_cholesky fp n A k j =
+        ∑ k : Fin n, fl_cholesky fp n A k j *
+          fl_cholesky fp n A k i :=
+      Finset.sum_congr rfl fun k _ => mul_comm _ _
+    rw [hgram, hsymm i j]
+    calc |∑ k : Fin n, fl_cholesky fp n A k j *
+          fl_cholesky fp n A k i - A j i|
+        ≤ gamma fp (n + 1) / (1 - gamma fp (n + 1)) *
+            (Real.sqrt (A j j) * Real.sqrt (A i i)) := h
+      _ = gamma fp (n + 1) / (1 - gamma fp (n + 1)) *
+            (Real.sqrt (A i i) * Real.sqrt (A j j)) := by ring
+
+/-- **Border-block certificate for a truncated run under computed-pivot
+    domination** (Theorem 10.14 border block): for `i < r ≤ j`, if the
+    computed border entries are dominated by their row pivots up to a
+    factor `c` (the computed-factor form of the complete-pivoting
+    invariant (10.13)), the Gram defect is bounded by
+    `γ_{n+1} c/(1−γ_{n+1}) √(a_ii) √(∑_{k<r} a_kk)` — trace-controlled,
+    matching the row-sum shape of display (10.22). -/
+theorem fl_cholesky_truncated_border_demmel (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hn1 : gammaValid fp (n + 1))
+    (hγlt : gamma fp (n + 1) < 1) (r : ℕ)
+    (hdz : ∀ i : Fin n, i.val < r → fl_cholesky fp n A i i ≠ 0)
+    (hpiv : ∀ i : Fin n, i.val < r → 0 ≤ fl_cholPivot fp n A i)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hdom : ∀ j : Fin n, r ≤ j.val → ∀ k : Fin n, k.val < r →
+      |fl_cholesky fp n A k j| ≤ c * |fl_cholesky fp n A k k|) :
+    ∀ i j : Fin n, i.val < r → r ≤ j.val →
+      |∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k j -
+        A i j| ≤
+      gamma fp (n + 1) * c / (1 - gamma fp (n + 1)) *
+        (Real.sqrt (A i i) *
+          Real.sqrt (∑ k ∈ Finset.univ.filter
+            (fun k : Fin n => k.val < r), A k k)) := by
+  intro i j hir hjr
+  have hγ0 : 0 ≤ gamma fp (n + 1) := gamma_nonneg fp hn1
+  have h1γ : 0 < 1 - gamma fp (n + 1) := by linarith
+  have hij : i.val ≤ j.val := le_trans (Nat.le_of_lt hir) hjr
+  have hstage := fl_cholesky_entry_bound_stage fp n A hn1 i j hij
+    (fun _ => hdz i hir) (fun _ => hpiv i hir)
+  -- diagonal nonnegativity on computed stages
+  have hAkk : ∀ k : Fin n, k.val < r → 0 ≤ A k k := by
+    intro k hk
+    have h := fl_cholesky_colNormSq_le_stage fp n A hn1 k (hpiv k hk)
+    have hnn : 0 ≤ ∑ p : Fin n, fl_cholesky fp n A p k ^ 2 :=
+      Finset.sum_nonneg fun p _ => sq_nonneg _
+    nlinarith
+  have hAii : 0 ≤ A i i := hAkk i hir
+  -- step 1: dominate the border factors by pivot entries
+  have hsum1 : ∑ k : Fin n,
+      |fl_cholesky fp n A k i| * |fl_cholesky fp n A k j| ≤
+      c * ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+        |fl_cholesky fp n A k i| * |fl_cholesky fp n A k k| := by
+    rw [Finset.mul_sum]
+    rw [show (∑ k : Fin n,
+        |fl_cholesky fp n A k i| * |fl_cholesky fp n A k j|) =
+        ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+          |fl_cholesky fp n A k i| * |fl_cholesky fp n A k j| from
+      (Finset.sum_subset (Finset.filter_subset _ _) fun k _ hk => by
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and,
+          Nat.not_lt] at hk
+        rw [fl_cholesky_strict_lower fp n A k i
+          (lt_of_lt_of_le hir hk), abs_zero, zero_mul]).symm]
+    refine Finset.sum_le_sum fun k hk => ?_
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+    rw [show c * (|fl_cholesky fp n A k i| *
+        |fl_cholesky fp n A k k|) =
+        |fl_cholesky fp n A k i| *
+          (c * |fl_cholesky fp n A k k|) by ring]
+    exact mul_le_mul_of_nonneg_left (hdom j hjr k hk) (abs_nonneg _)
+  -- step 2: Cauchy–Schwarz over the computed rows
+  have hcs : ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+      |fl_cholesky fp n A k i| * |fl_cholesky fp n A k k| ≤
+      Real.sqrt (∑ k ∈ Finset.univ.filter
+          (fun k : Fin n => k.val < r), fl_cholesky fp n A k i ^ 2) *
+      Real.sqrt (∑ k ∈ Finset.univ.filter
+          (fun k : Fin n => k.val < r), fl_cholesky fp n A k k ^ 2) := by
+    have h := Finset.sum_mul_sq_le_sq_mul_sq
+      (Finset.univ.filter (fun k : Fin n => k.val < r))
+      (fun k => |fl_cholesky fp n A k i|)
+      (fun k => |fl_cholesky fp n A k k|)
+    have hL : ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+        |fl_cholesky fp n A k i| ^ 2 =
+        ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+          fl_cholesky fp n A k i ^ 2 :=
+      Finset.sum_congr rfl fun k _ => sq_abs _
+    have hR : ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+        |fl_cholesky fp n A k k| ^ 2 =
+        ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+          fl_cholesky fp n A k k ^ 2 :=
+      Finset.sum_congr rfl fun k _ => sq_abs _
+    rw [hL, hR] at h
+    have hnn : 0 ≤ ∑ k ∈ Finset.univ.filter
+        (fun k : Fin n => k.val < r),
+        |fl_cholesky fp n A k i| * |fl_cholesky fp n A k k| :=
+      Finset.sum_nonneg fun k _ =>
+        mul_nonneg (abs_nonneg _) (abs_nonneg _)
+    calc ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+        |fl_cholesky fp n A k i| * |fl_cholesky fp n A k k|
+        = Real.sqrt ((∑ k ∈ Finset.univ.filter
+            (fun k : Fin n => k.val < r),
+            |fl_cholesky fp n A k i| * |fl_cholesky fp n A k k|) ^ 2) :=
+          (Real.sqrt_sq hnn).symm
+      _ ≤ Real.sqrt ((∑ k ∈ Finset.univ.filter
+            (fun k : Fin n => k.val < r),
+            fl_cholesky fp n A k i ^ 2) *
+          ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+            fl_cholesky fp n A k k ^ 2) := Real.sqrt_le_sqrt h
+      _ = _ := Real.sqrt_mul (Finset.sum_nonneg fun k _ =>
+            sq_nonneg _) _
+  -- step 3: column-i partial sum ≤ full column sum ≤ a_ii/(1−γ)
+  have hcolI : ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+      fl_cholesky fp n A k i ^ 2 ≤ A i i / (1 - gamma fp (n + 1)) := by
+    have hfull := fl_cholesky_colNormSq_le_stage fp n A hn1 i
+      (hpiv i hir)
+    have hsub : ∑ k ∈ Finset.univ.filter
+        (fun k : Fin n => k.val < r), fl_cholesky fp n A k i ^ 2 ≤
+        ∑ k : Fin n, fl_cholesky fp n A k i ^ 2 :=
+      Finset.sum_le_sum_of_subset_of_nonneg
+        (Finset.filter_subset _ _) fun k _ _ => sq_nonneg _
+    rw [le_div_iff₀ h1γ]
+    nlinarith
+  -- step 4: pivot squares dominated by column sums, then by trace
+  have hdiagS : ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+      fl_cholesky fp n A k k ^ 2 ≤
+      (∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r), A k k) /
+        (1 - gamma fp (n + 1)) := by
+    rw [le_div_iff₀ h1γ, Finset.sum_mul]
+    refine Finset.sum_le_sum fun k hk => ?_
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+    have hcol := fl_cholesky_colNormSq_le_stage fp n A hn1 k
+      (hpiv k hk)
+    have hsingle : fl_cholesky fp n A k k ^ 2 ≤
+        ∑ p : Fin n, fl_cholesky fp n A p k ^ 2 :=
+      Finset.single_le_sum
+        (f := fun p => fl_cholesky fp n A p k ^ 2)
+        (fun p _ => sq_nonneg _) (Finset.mem_univ k)
+    nlinarith
+  -- assemble
+  have htr0 : 0 ≤ ∑ k ∈ Finset.univ.filter
+      (fun k : Fin n => k.val < r), A k k :=
+    Finset.sum_nonneg fun k hk => hAkk k (by
+      simpa using (Finset.mem_filter.mp hk).2)
+  calc |∑ k : Fin n, fl_cholesky fp n A k i *
+        fl_cholesky fp n A k j - A i j|
+      ≤ gamma fp (n + 1) * ∑ k : Fin n,
+          |fl_cholesky fp n A k i| * |fl_cholesky fp n A k j| := hstage
+    _ ≤ gamma fp (n + 1) * (c * ∑ k ∈ Finset.univ.filter
+          (fun k : Fin n => k.val < r),
+          |fl_cholesky fp n A k i| * |fl_cholesky fp n A k k|) :=
+        mul_le_mul_of_nonneg_left hsum1 hγ0
+    _ ≤ gamma fp (n + 1) * (c *
+          (Real.sqrt (∑ k ∈ Finset.univ.filter
+            (fun k : Fin n => k.val < r),
+            fl_cholesky fp n A k i ^ 2) *
+           Real.sqrt (∑ k ∈ Finset.univ.filter
+            (fun k : Fin n => k.val < r),
+            fl_cholesky fp n A k k ^ 2))) := by
+        refine mul_le_mul_of_nonneg_left
+          (mul_le_mul_of_nonneg_left hcs hc) hγ0
+    _ ≤ gamma fp (n + 1) * (c *
+          (Real.sqrt (A i i / (1 - gamma fp (n + 1))) *
+           Real.sqrt ((∑ k ∈ Finset.univ.filter
+              (fun k : Fin n => k.val < r), A k k) /
+            (1 - gamma fp (n + 1))))) := by
+        refine mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left
+          (mul_le_mul (Real.sqrt_le_sqrt hcolI)
+            (Real.sqrt_le_sqrt hdiagS) (Real.sqrt_nonneg _)
+            (Real.sqrt_nonneg _)) hc) hγ0
+    _ = gamma fp (n + 1) * c / (1 - gamma fp (n + 1)) *
+          (Real.sqrt (A i i) *
+           Real.sqrt (∑ k ∈ Finset.univ.filter
+            (fun k : Fin n => k.val < r), A k k)) := by
+        rw [← Real.sqrt_mul (by positivity : (0:ℝ) ≤
+            A i i / (1 - gamma fp (n + 1)))]
+        rw [show A i i / (1 - gamma fp (n + 1)) *
+            ((∑ k ∈ Finset.univ.filter
+              (fun k : Fin n => k.val < r), A k k) /
+              (1 - gamma fp (n + 1))) =
+            A i i * (∑ k ∈ Finset.univ.filter
+              (fun k : Fin n => k.val < r), A k k) /
+              (1 - gamma fp (n + 1)) ^ 2 by field_simp]
+        have h2 : (Real.sqrt (A i i) *
+            Real.sqrt (∑ k ∈ Finset.univ.filter
+              (fun k : Fin n => k.val < r), A k k) /
+            (1 - gamma fp (n + 1))) ^ 2 =
+            A i i * (∑ k ∈ Finset.univ.filter
+              (fun k : Fin n => k.val < r), A k k) /
+              (1 - gamma fp (n + 1)) ^ 2 := by
+          rw [div_pow, mul_pow, Real.sq_sqrt hAii, Real.sq_sqrt htr0]
+        rw [← h2, Real.sqrt_sq (by positivity)]
+        ring
+
 /-- **Border-column entry bound**: the `w = j` instance of
     `fl_cholesky_truncated_bound`. -/
 theorem fl_cholesky_border_bound (fp : FPModel) {n : ℕ}
