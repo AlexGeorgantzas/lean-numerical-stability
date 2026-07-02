@@ -1423,6 +1423,57 @@ theorem fl_choleskyTrunc_backward_error (fp : FPModel) (n : ℕ)
   · rw [fl_choleskyTrunc_gram]
     exact htrail i j hi hj
 
+/-- **Normwise bordered perturbation floor** (Theorem 10.7 constant
+    sharpening route): when the interior and border perturbation masses
+    are controlled *normwise* — `|yᵀΔy| ≤ ε·W` and
+    `|2yᵀδ| ≤ ε(t + W)` directly, as the (10.7) operator-norm
+    certificates provide — the exact pivot floor loses the dimension
+    factor: `lam·a_jj + (lam − ε)W − εt ≤ a_jj − t` replaces the
+    componentwise route's `lam − 2εm` weight. This is the engine for a
+    stage step with the source's `n`-shaped threshold. -/
+theorem bordered_perturbation_floor_normwise (m : ℕ)
+    (Gint : Fin m → Fin m → ℝ) (gb : Fin m → ℝ)
+    (Bint : Fin m → Fin m → ℝ) (bb : Fin m → ℝ)
+    (a : Fin m → ℝ) (ajj t : ℝ) (y : Fin m → ℝ) (ε lam : ℝ)
+    (hε0 : 0 ≤ ε) (ht0 : 0 ≤ t)
+    (hgram : (∑ i : Fin m, ∑ l : Fin m, y i * Gint i l * y l) +
+      2 * (∑ i : Fin m, y i * gb i) + t = 0)
+    (hint : |∑ i : Fin m, ∑ l : Fin m,
+      y i * (Gint i l - Bint i l) * y l| ≤
+      ε * (∑ i : Fin m, a i * y i ^ 2))
+    (hbord : |2 * ∑ i : Fin m, y i * (gb i - bb i)| ≤
+      ε * (t + ∑ i : Fin m, a i * y i ^ 2))
+    (hfloor : lam * ((∑ i : Fin m, a i * y i ^ 2) + ajj) ≤
+      (∑ i : Fin m, ∑ l : Fin m, y i * Bint i l * y l) +
+      2 * (∑ i : Fin m, y i * bb i) + ajj) :
+    lam * ajj + (lam - 2 * ε) * (∑ i : Fin m, a i * y i ^ 2) -
+      ε * t ≤ ajj - t := by
+  set W : ℝ := ∑ i : Fin m, a i * y i ^ 2 with hW
+  have hdecomp : (∑ i : Fin m, ∑ l : Fin m, y i * Bint i l * y l) +
+      2 * (∑ i : Fin m, y i * bb i) + ajj =
+      -(∑ i : Fin m, ∑ l : Fin m,
+        y i * (Gint i l - Bint i l) * y l) -
+      2 * (∑ i : Fin m, y i * (gb i - bb i)) + (ajj - t) := by
+    have hsplitI : ∑ i : Fin m, ∑ l : Fin m,
+        y i * (Gint i l - Bint i l) * y l =
+        (∑ i : Fin m, ∑ l : Fin m, y i * Gint i l * y l) -
+        ∑ i : Fin m, ∑ l : Fin m, y i * Bint i l * y l := by
+      rw [← Finset.sum_sub_distrib]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun l _ => by ring
+    have hsplitB : ∑ i : Fin m, y i * (gb i - bb i) =
+        (∑ i : Fin m, y i * gb i) - ∑ i : Fin m, y i * bb i := by
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun i _ => by ring
+    rw [hsplitI, hsplitB]
+    linarith [hgram]
+  have hfloor2 := hfloor
+  rw [hdecomp] at hfloor2
+  have h1 := abs_le.mp hint
+  have h2 := abs_le.mp hbord
+  linarith [h1.1, h1.2, h2.1, h2.2]
+
 /-- **Border-column entry bound**: the `w = j` instance of
     `fl_cholesky_truncated_bound`. -/
 theorem fl_cholesky_border_bound (fp : FPModel) {n : ℕ}
