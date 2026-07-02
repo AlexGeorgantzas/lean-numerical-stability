@@ -17424,6 +17424,40 @@ theorem
     (storedSignedSequenceTailNormalizedLoopRawFacts_of_sourceFaithfulNormalizations
       fp r p A_hat alpha hsrcs)
 
+/-- Tail-local vector equalities assemble the raw normalized-loop facts under
+any model satisfying the source-faithful normalization predicate. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha :=
+  storedSignedSequenceTailNormalizedLoopRawFacts_of_sourceFaithfulNormalizations
+    fp r p A_hat alpha
+    (storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_of_normalizationModel
+      fp hmodel r p A_hat alpha hvecs)
+
+/-- Tail-local vector equalities assemble the named tail-normalized record
+package under any model satisfying the source-faithful normalization predicate. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRecords_of_tailVectorEqLoopFacts_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha :=
+  storedSignedSequenceTailNormalizedLoopRecords_of_sourceFaithfulNormalizations
+    fp r p A_hat alpha
+    (storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_of_normalizationModel
+      fp hmodel r p A_hat alpha hvecs)
+
 /-- The named recursive tail-normalized record package also assembles the raw
 source-facing normalized-loop package.
 
@@ -17574,6 +17608,23 @@ theorem
     (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
     (storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
       u0 hu0 r p A_hat alpha hvecs)
+
+/-- Tail-local vector equalities assemble the full-stage normalized-loop facts
+under any model satisfying the source-faithful normalization predicate. -/
+theorem
+    storedSignedSequenceFullStageNormalizedLoopFacts_of_tailVectorEqLoopFacts_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceFullStageNormalizedLoopFacts fp r p A_hat alpha :=
+  storedSignedSequenceFullStageNormalizedLoopFacts_of_tailNormalizedLoopRawFacts
+    fp r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_of_normalizationModel
+      fp hmodel r p A_hat alpha hvecs)
 
 /-- Odd recursive-tail normalized loop facts from current first-two full-stage
 data and absolute stage-four facts. -/
@@ -18294,6 +18345,23 @@ theorem
     (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
     (storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
       u0 hu0 r p A_hat alpha hvecs)
+
+/-- Tail-local vector equalities assemble raw source-closure data under any
+model satisfying the source-faithful normalization predicate. -/
+theorem
+    storedSignedSequenceTwiceTrailingSourceClosureData_of_tailVectorEqLoopFacts_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTwiceTrailingSourceClosureData fp r p A_hat alpha :=
+  storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRawFacts
+    fp r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_of_normalizationModel
+      fp hmodel r p A_hat alpha hvecs)
 
 /-- Raw source-tail closure facts imply the recursive closure-data contract. -/
 theorem storedSignedSequenceTwiceTrailingClosureData_of_sourceClosureData
@@ -19577,6 +19645,27 @@ theorem
     fp r p A_hat alpha
     (storedSignedSequenceTailNormalizedLoopRawFacts_of_sourceFaithfulNormalizations
       fp r p A_hat alpha hsrcs)
+    hcopy
+
+/-- Tail-local vector equalities imply the twice-trailing final-closure
+predicate under any model satisfying the source-faithful normalization
+predicate. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_sourceFaithfulNormalizations
+    fp r p A_hat alpha
+    (storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_of_normalizationModel
+      fp hmodel r p A_hat alpha hvecs)
     hcopy
 
 /-- Exact-arithmetic tail-vector loop facts imply the twice-trailing
