@@ -1310,6 +1310,27 @@ lemma backsub_growth {r : ℕ} (w : Fin r → ℝ)
   intro i
   exact H (r - 1 - i.val) i rfl
 
+/-- **Entry domination from the column-tail invariant** (Lemma 10.13
+    wiring): under the (10.13) invariant, every entry on or right of the
+    diagonal is dominated in absolute value by its row pivot. -/
+lemma tail_invariant_entry_le {n : ℕ} {R : Fin n → Fin n → ℝ}
+    (hdiag_nonneg : ∀ i : Fin n, 0 ≤ R i i)
+    (htail : ∀ k j : Fin n, k.val ≤ j.val →
+      (∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+        R i j ^ 2) ≤ R k k ^ 2)
+    (k j : Fin n) (hkj : k.val ≤ j.val) :
+    |R k j| ≤ R k k := by
+  have hmem : k ∈ Finset.univ.filter
+      (fun i : Fin n => k.val ≤ i.val) := by
+    simp
+  have hsingle : R k j ^ 2 ≤
+      ∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+        R i j ^ 2 :=
+    Finset.single_le_sum (fun i _ => sq_nonneg (R i j)) hmem
+  have hsq : R k j ^ 2 ≤ R k k ^ 2 :=
+    le_trans hsingle (htail k j hkj)
+  nlinarith [abs_nonneg (R k j), sq_abs (R k j), hdiag_nonneg k]
+
 -- ============================================================
 -- §10.3  Lemma 10.13: Complete pivoting bound
 -- ============================================================
