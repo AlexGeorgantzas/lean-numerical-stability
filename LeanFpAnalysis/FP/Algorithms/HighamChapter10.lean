@@ -2224,6 +2224,68 @@ theorem higham10_12_w_action_trace_bound {k m : ℕ} (hk : 0 < k)
     (isPosSemiDef_trailing_block A hPSD) w
   simpa [vecNorm2Sq] using h
 
+/-- **Spectral bounds for unit-diagonal PSD matrices** (the van der
+    Sluis (10.9) route ingredient): the scaled matrix `H = D⁻¹AD⁻¹`
+    with `D = diag(√a_ii)` has unit diagonal, and any unit-diagonal PSD
+    matrix has `1 ≤ λ_max ≤ n` — the upper bound from the trace, the
+    lower from the Rayleigh quotient at a coordinate vector. -/
+theorem unit_diag_psd_maxEigenvalue_bounds {n : ℕ} (hn : 0 < n)
+    (H : Fin n → Fin n → ℝ) (hPSD : IsPosSemiDef n H)
+    (hdiag : ∀ i : Fin n, H i i = 1)
+    (hSym : IsSymmetricFiniteMatrix H) :
+    1 ≤ finiteMaxEigenvalue hn H hSym ∧
+      finiteMaxEigenvalue hn H hSym ≤ (n : ℝ) := by
+  constructor
+  · -- Rayleigh at a coordinate vector
+    set e : Fin n → ℝ := fun k => if k = ⟨0, hn⟩ then 1 else 0 with he
+    have hray := finiteMaxEigenvalue_rayleigh hn H hSym e
+    have hquad : ∑ i : Fin n, ∑ j : Fin n, e i * H i j * e j =
+        H ⟨0, hn⟩ ⟨0, hn⟩ := by
+      simp [he, Finset.sum_ite_eq', Finset.mul_sum]
+    have hnorm : ∑ i : Fin n, e i ^ 2 = 1 := by
+      simp [he, Finset.sum_ite_eq']
+    rw [hquad, hnorm, mul_one, hdiag] at hray
+    exact hray
+  · -- trace bound at the top eigenvector
+    obtain ⟨a, ha⟩ := exists_finiteMaxEigenvalue_eq hn H hSym
+    have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one
+      H hSym a
+    have hq :=
+      finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+        H hSym a
+    rw [hnorm, mul_one] at hq
+    set v : Fin n → ℝ :=
+      ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian H
+        hSym).eigenvectorBasis a) with hv
+    have hvsq : ∑ i : Fin n, v i ^ 2 = 1 := by
+      have := hnorm
+      unfold finiteVecNorm2Sq at this
+      exact this
+    have hqv : ∑ i : Fin n, ∑ j : Fin n, v i * H i j * v j =
+        finiteMaxEigenvalue hn H hSym := by
+      rw [← ha, ← hq, finiteQuadraticForm_eq_sum_sum]
+    have htr := psd_quadForm_le_trace H hPSD v
+    have htrace : ∑ i : Fin n, H i i = (n : ℝ) := by
+      simp [hdiag]
+    rw [hqv, htrace, hvsq, mul_one] at htr
+    exact htr
+
+/-- **Condition-number certificate for the scaled matrix** (van der
+    Sluis route, display (10.9) fragment): a unit-diagonal PSD matrix
+    with positive smallest eigenvalue has
+    `κ₂(H) = λ_max/λ_min ≤ n/λ_min`. -/
+theorem higham10_9_unit_diag_cond_bound {n : ℕ} (hn : 0 < n)
+    (H : Fin n → Fin n → ℝ) (hPSD : IsPosSemiDef n H)
+    (hdiag : ∀ i : Fin n, H i i = 1)
+    (hSym : IsSymmetricFiniteMatrix H)
+    (hmin : 0 < finiteMinEigenvalue hn H hSym) :
+    finiteMaxEigenvalue hn H hSym / finiteMinEigenvalue hn H hSym ≤
+      (n : ℝ) / finiteMinEigenvalue hn H hSym := by
+  have h := (unit_diag_psd_maxEigenvalue_bounds hn H hPSD hdiag
+    hSym).2
+  gcongr
+
+
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
 `‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
 an `r × r` upper-triangular block `U` with positive diagonal whose rows
