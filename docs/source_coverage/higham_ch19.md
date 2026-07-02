@@ -714,7 +714,7 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 ## Git and Local-Only Notes
 
 - Work is on shared local `main`, synchronized with `origin/main` before theorem design and fetched/merged again before push.
-- Latest Split 3B proof milestone before this report update: `8392b703` (`Split 3B: route exact tail source-faithful package through certificates`), integrated locally with later `origin/main` through `32bd94b9`.
-- Latest `origin/main` integrated before this report update: `25c03d62`, via merge commit `32bd94b9`; repeated main pushes were rejected because new remote work arrived during post-merge verification, while the verified work was pushed to `origin/codex/split3b-ch19-formalization`.
+- Latest Split 3B proof milestone before this report update: `8392b703` (`Split 3B: route exact tail source-faithful package through certificates`), followed by the documentation update `cdc88231`.
+- Latest `origin/main` integrated before the refreshed branch push: `eca88ffd`, via merge commit `e2203c49`; repeated main pushes were rejected because new remote work arrived during post-merge verification, while the verified work was pushed to `origin/codex/split3b-ch19-formalization`.
 - `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, is absent from the refreshed `origin/main`, and must not be pushed.
 - Remaining local untracked file at this point: `.codex/config.toml`.
