@@ -864,6 +864,51 @@ private lemma fl_cholesky_entry_bound (fp : FPModel) (n : ℕ)
   fl_cholesky_entry_bound_stage fp n A hn1 i j hij
     (fun _ => hdz i) (fun h => h ▸ hpiv i)
 
+/-- **Gram-sum truncation to a leading block** (Theorem 10.7 induction):
+    for column indices below `m`, the full certificate sum runs only over
+    the first `m` rows, since the computed factor is upper triangular. -/
+theorem gram_sum_truncate (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (m : ℕ) (hm : m ≤ n) (i l : Fin n) (hi : i.val < m) :
+    ∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k l =
+    ∑ p : Fin m, fl_cholesky fp n A ⟨p.val, by omega⟩ i *
+      fl_cholesky fp n A ⟨p.val, by omega⟩ l := by
+  have hzero : ∀ k : Fin n,
+      k ∉ Finset.univ.filter (fun k : Fin n => k.val < m) →
+      fl_cholesky fp n A k i * fl_cholesky fp n A k l = 0 := by
+    intro k hk
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and,
+      Nat.not_lt] at hk
+    rw [fl_cholesky_strict_lower fp n A k i (by omega), zero_mul]
+  calc ∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k l
+      = ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < m),
+          fl_cholesky fp n A k i * fl_cholesky fp n A k l :=
+        (Finset.sum_subset (Finset.filter_subset _ _)
+          (fun k _ hk => hzero k hk)).symm
+    _ = ∑ p : Fin m, fl_cholesky fp n A ⟨p.val, by omega⟩ i *
+          fl_cholesky fp n A ⟨p.val, by omega⟩ l :=
+        (sum_fin_eq_sum_filter_lt' hm _).symm
+
+/-- **Stage-local column-norm control** (Theorem 10.7 induction): once the
+    `i`-th pivot is known nonnegative, the certificate at `(i, i)` bounds
+    the computed column's squared norm by `(1 − γ_{n+1})⁻¹ a_ii`. -/
+theorem fl_cholesky_colNormSq_le_stage (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hn1 : gammaValid fp (n + 1)) (i : Fin n)
+    (hpiv_i : 0 ≤ fl_cholPivot fp n A i) :
+    (1 - gamma fp (n + 1)) *
+      ∑ k : Fin n, fl_cholesky fp n A k i ^ 2 ≤ A i i := by
+  have h := fl_cholesky_entry_bound_stage fp n A hn1 i i le_rfl
+    (fun h => absurd h (lt_irrefl _)) (fun _ => hpiv_i)
+  rw [show ∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k i =
+      ∑ k : Fin n, fl_cholesky fp n A k i ^ 2 from
+      Finset.sum_congr rfl fun k _ => by ring,
+    show ∑ k : Fin n,
+        |fl_cholesky fp n A k i| * |fl_cholesky fp n A k i| =
+      ∑ k : Fin n, fl_cholesky fp n A k i ^ 2 from
+      Finset.sum_congr rfl fun k _ => by
+        rw [← abs_mul, abs_of_nonneg (mul_self_nonneg _)]; ring] at h
+  have := abs_le.mp h
+  linarith [this.1]
+
 /-- **Theorem 10.3 (Higham §10.1, equations (10.4)–(10.5))**: the concrete
     floating-point Cholesky factorization of Algorithm 10.2, when it runs to
     completion (every rounded pivot nonnegative, every computed diagonal
