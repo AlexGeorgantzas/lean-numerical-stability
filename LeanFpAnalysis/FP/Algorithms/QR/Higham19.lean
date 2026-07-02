@@ -5068,6 +5068,32 @@ theorem sourceFaithfulHouseholderNormalization_of_vector_eq_of_normalizationMode
   · rw [hvec]
     exact hmodel hn sourceColumn hx
 
+/-- Sufficient condition for the source-faithful normalization model.
+
+If the computed normalized Householder vector agrees with Higham's exact
+normalized vector on every nonzero source column, then its source self-dot is
+`2`.  This keeps the stronger model boundary explicit rather than asserting it
+for every `FPModel`. -/
+theorem sourceFaithfulHouseholderNormalizationModel_of_fl_householderNormalizedVector_eq
+    (fp : FPModel)
+    (hvec :
+      forall {n : Nat} (hn : 0 < n) (sourceColumn : Fin n -> Real),
+        Ne sourceColumn 0 ->
+          fl_householderNormalizedVector fp hn sourceColumn =
+            householderNormalizedVector n
+              (LeanFpAnalysis.FP.householderVector hn sourceColumn)
+              (householderBetaFromScale hn sourceColumn)) :
+    sourceFaithfulHouseholderNormalizationModel fp := by
+  intro n hn sourceColumn hx
+  rw [hvec hn sourceColumn hx]
+  exact
+    householderNormalizedVector_norm_sq n
+      (LeanFpAnalysis.FP.householderVector hn sourceColumn)
+      (householderBetaFromScale hn sourceColumn)
+      (le_of_lt
+        (householderBetaFromScale_pos_of_ne_zero hn sourceColumn hx))
+      (householderBetaFromScale_mul_norm_sq hn sourceColumn hx)
+
 /-- Exact left-to-right addition over `Fin.foldl` is the initial value plus the
 source finite sum.  This is the small arithmetic support fact needed to expose
 the exact dot product hidden inside the compact Householder update. -/
