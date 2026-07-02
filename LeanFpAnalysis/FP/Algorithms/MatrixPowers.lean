@@ -14,6 +14,7 @@ import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
+import Mathlib.Analysis.SpecificLimits.Basic
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Analysis.Rounding
 namespace LeanFpAnalysis.FP
@@ -448,5 +449,32 @@ theorem higham_knight_17_1 (n : ℕ) (hn : 0 < n)
     mul_nonneg (infNorm_nonneg S) (infNorm_nonneg S_inv),
     hq0, hq1, fun m =>
     similarity_normwise_bound n hn A S S_inv hSr v c hComp q hq0 hAbsorb m⟩
+
+-- ============================================================
+-- §18.2  Limit form of the convergence conclusion
+-- ============================================================
+
+/-- **Computed powers tend to zero from a geometric decay bound**.
+
+    Higham states the conclusion of Theorems 18.1 and 18.2 as the *limit*
+    `fl(A^m) → 0` as `m → ∞`, whereas the results above establish only the
+    geometric *bound* `‖v_m‖∞ ≤ C · q^m · ‖v_0‖∞` with `q < 1`.  This lemma
+    supplies the missing step: any such geometric bound forces
+    `‖v_m‖∞ → 0`.
+
+    Reusable for both the Higham–Knight matrix-power theorem (18.1) and its
+    diagonalizable/pseudospectral corollary (18.2): apply it to the existential
+    output `⟨C, q, _, _, hq1, hbound⟩` of the convergence theorem. Purely a
+    real-analysis squeeze; introduces no assumption about `A`. -/
+theorem computedMatPow_tendsto_zero_of_geometric (n : ℕ)
+    (v : ℕ → (Fin n → ℝ)) (C q : ℝ) (hq0 : 0 ≤ q) (hq1 : q < 1)
+    (hbound : ∀ m, infNormVec (v m) ≤ C * q ^ m * infNormVec (v 0)) :
+    Filter.Tendsto (fun m => infNormVec (v m)) Filter.atTop (nhds 0) := by
+  have hpow : Filter.Tendsto (fun m : ℕ => q ^ m) Filter.atTop (nhds 0) :=
+    tendsto_pow_atTop_nhds_zero_of_lt_one hq0 hq1
+  have htop : Filter.Tendsto (fun m => C * q ^ m * infNormVec (v 0))
+      Filter.atTop (nhds 0) := by
+    simpa using (hpow.const_mul C).mul_const (infNormVec (v 0))
+  exact squeeze_zero (fun m => infNormVec_nonneg _) hbound htop
 
 end LeanFpAnalysis.FP
