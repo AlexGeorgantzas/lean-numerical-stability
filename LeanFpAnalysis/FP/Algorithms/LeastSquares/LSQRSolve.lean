@@ -68164,6 +68164,91 @@ theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDomina
       hStepA hStepb hAlphaDef hDD' hinit' hinitBlock' hglobalBudget'
       hBudget0_nonneg hcomparison' hpivotChoice' hsmall'
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, concrete stored-Householder QR
+    wrapper with nonempty source dimensions.
+
+For a nonempty least-squares problem, the full initial block bound
+`|A r l| <= stageBudget 0` supplies both initial side conditions consumed by
+the concrete stored-lower route: the displayed strict-upper initial field and
+`0 <= stageBudget 0`. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_concreteStoredLower_activePivot_actualUnitRoundoff_horizonBudget_of_nonempty
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m) (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        stageBudget (t + 1))
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn
+        (storedHouseholderQRMatrixSeq fp hmn A) stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩
+          (storedHouseholderQRMatrixSeq fp hmn A t))
+    (hsmall :
+      let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+      let Dcap := storedQRDiagDominantInvFactorBudget hmn A_hat
+      let Ncap := storedQRPivotColumnNormBudget hmn A_hat
+      let Gcap := ((m : ℝ) * fp.u) / (1 - (m : ℝ) * fp.u)
+      let Fcap :=
+        fp.u * (1 + Gcap) * (1 + fp.u) +
+          fp.u * (1 + Gcap) +
+          Gcap +
+          fp.u * (1 + Gcap) * (1 + fp.u) ^ 2
+      2 * Dcap *
+          ((m : ℝ) *
+            ((((n : ℝ) * ((n : ℝ) + 1) * (fp.u + 2 * Fcap)) *
+                Ncap) ^ 2)) <
+        1) :
+    let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+    let b_hat := storedHouseholderQRRhsSeq fp hmn A b
+    let alpha := storedHouseholderQRAlphaSeq fp hmn A
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  have hm_pos : 0 < m := lt_of_lt_of_le hn hmn
+  let r0 : Fin m := ⟨0, hm_pos⟩
+  let l0 : Fin n := ⟨0, hn⟩
+  have hBudget0_nonneg : 0 ≤ stageBudget 0 :=
+    le_trans (abs_nonneg (A r0 l0)) (hinitBlock r0 l0)
+  have hinit : ∀ k (hk : k < n), ∀ i j : Fin (k + 1),
+      ∀ _hij : i.val < j.val,
+        |A
+          (qrLeadingRow m k
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          (qrLeadingColumn n k hk j)| ≤
+        stageBudget 0 := by
+    intro k hk i j _hij
+    exact hinitBlock
+      (qrLeadingRow m k
+        (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+      (qrLeadingColumn n k hk j)
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_concreteStoredLower_activePivot_actualUnitRoundoff_initialBudget_horizonBudget
+      fp hmn A b stageBudget huSmall hDD hinit hinitBlock hglobalBudget
+      hBudget0_nonneg hcomparison hpivotChoice hsmall
+
 /-- Solver-facing active-max-pivot QR certificate using row-max scalar defect
     plus an explicit stage-budget/row-max comparison.
 
