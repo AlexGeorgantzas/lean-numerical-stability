@@ -188,6 +188,7 @@
     Higham13Eq1322GlobalTableauSourceChain.activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound,
     Higham13Eq1322GlobalTableauSourceChain.activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound_of_det_tables,
     Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa,
+    Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_parent_inverse_entry_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound,
     Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound_of_det_tables,
     Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa,
@@ -210,6 +211,8 @@
     higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update_reciprocal,
     higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update_of_det_ne_zero,
     higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero,
+    higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_parent_inverse_entry,
+    higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_parent_inverse_entry,
     higham13_eq13_22_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa,
     higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa,
     higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update,
@@ -43150,6 +43153,116 @@ theorem
   simpa [hStage, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using hcert
 
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equations (13.22)--(13.23):
+    first Schur-tail source chain with parent inverse-entry handoff.
+
+    This is the source-facing first-split inverse-entry propagation step.  A
+    parent first-split inverse-entry comparison implies the first Schur-tail
+    comparison by the block inverse formula, and the existing active-suffix
+    recursion then propagates the comparison through all later tails.  Thus the
+    first Schur-tail inverse-entry table is derived rather than supplied as a
+    separate premise. -/
+theorem
+    Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_parent_inverse_entry_exact_kappa
+    {m r N n : ℕ} (hr : 0 < r) (hN : 0 < N)
+    (Aglob AinvGlob : Fin N → Fin N → ℝ)
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+      Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm hN Aglob)
+    (hA_le_G :
+      maxEntryNorm hN Aglob ≤
+        maxEntryNorm hN
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN (Nat.succ_pos (m + 1)) hr A pivotInv))
+    [Invertible (blockMatrixFirstSplitA11 A)]
+    [Invertible (blockMatrixFirstSplitA22 A -
+      blockMatrixFirstSplitA21 A * ⅟(blockMatrixFirstSplitA11 A) *
+        blockMatrixFirstSplitA12 A)]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 A)
+      (blockMatrixFirstSplitA12 A)
+      (blockMatrixFirstSplitA21 A)
+      (blockMatrixFirstSplitA22 A))]
+    (hpivot : pivotInv 0 = ⅟(blockMatrixFirstSplitA11 A))
+    (hsnAll : ∀ {q k : ℕ} (_ : k + (q + 1) ≤ (m + 1) + 1),
+      (((q + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvA11 : ∀ {q k : ℕ} (hkq : k + ((q + 1) + 1) ≤ (m + 1) + 1),
+      Invertible
+        (blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k
+            (q + 1) hkq)))
+    (hInvSchur : ∀ {q k : ℕ} (hkq : k + ((q + 1) + 1) ≤ (m + 1) + 1),
+      Invertible
+        (blockMatrixFirstSplitA22
+            (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k
+              (q + 1) hkq) -
+          blockMatrixFirstSplitA21
+              (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k
+                (q + 1) hkq) *
+            ⅟(blockMatrixFirstSplitA11
+                (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k
+                  (q + 1) hkq)) *
+              blockMatrixFirstSplitA12
+                (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k
+                  (q + 1) hkq)))
+    (hpivotAll : ∀ {q k : ℕ} (hkq : k + ((q + 1) + 1) ≤ (m + 1) + 1),
+      pivotInv k =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k
+            (q + 1) hkq)))
+    (hAinv_parent :
+      ∀ i j : Fin r ⊕ Fin ((m + 1) * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11 A)
+            (blockMatrixFirstSplitA12 A)
+            (blockMatrixFirstSplitA21 A)
+            (blockMatrixFirstSplitA22 A)) :
+          Matrix (Fin r ⊕ Fin ((m + 1) * r))
+            (Fin r ⊕ Fin ((m + 1) * r)) ℝ) i j| ≤
+          maxEntryNormRect hN hN AinvGlob) :
+    Higham13Eq1322GlobalTableauSourceChain hr hN Aglob
+      (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+        hN (Nat.succ_pos (m + 1)) hr A pivotInv)
+      AinvGlob hApos n m
+      (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) := by
+  classical
+  letI : Invertible
+      (blockMatrixFirstSplitA22 A -
+        blockMatrixFirstSplitA21 A * pivotInv 0 *
+          blockMatrixFirstSplitA12 A) := by
+    simpa [hpivot] using
+      (inferInstance : Invertible (blockMatrixFirstSplitA22 A -
+        blockMatrixFirstSplitA21 A * ⅟(blockMatrixFirstSplitA11 A) *
+          blockMatrixFirstSplitA12 A))
+  letI : Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 (blockSchur A (pivotInv 0)))
+      (blockMatrixFirstSplitA12 (blockSchur A (pivotInv 0)))
+      (blockMatrixFirstSplitA21 (blockSchur A (pivotInv 0)))
+      (blockMatrixFirstSplitA22 (blockSchur A (pivotInv 0)))) :=
+    higham13_problem13_4_schurTail_fromBlocks_invertible_of_schur_invertible
+      (Ablk := A) (A11_inv := pivotInv 0)
+      (Atail := blockSchur A (pivotInv 0)) rfl
+  have hAinv_tail :
+      ∀ i j : Fin r ⊕ Fin (m * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11 (blockSchur A (pivotInv 0)))
+            (blockMatrixFirstSplitA12 (blockSchur A (pivotInv 0)))
+            (blockMatrixFirstSplitA21 (blockSchur A (pivotInv 0)))
+            (blockMatrixFirstSplitA22 (blockSchur A (pivotInv 0)))) :
+          Matrix (Fin r ⊕ Fin (m * r)) (Fin r ⊕ Fin (m * r)) ℝ) i j| ≤
+          maxEntryNormRect hN hN AinvGlob := by
+    simpa [hpivot] using
+      (higham13_problem13_4_firstSplit_schurTail_inverse_entry_bound_from_block_inverse
+        (Ablk := A) (A11_inv := pivotInv 0)
+        (hA11_inv := hpivot)
+        (normAinv := maxEntryNormRect hN hN AinvGlob)
+        (by simpa using hAinv_parent))
+  exact
+    Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa
+      hr hN Aglob AinvGlob A pivotInv hApos hA_le_G
+      hsnAll hInvA11 hInvSchur hpivotAll hAinv_tail
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equations (13.22)--(13.23):
     first Schur-tail source chain from one first-split dimension bound.
 
     This wrapper derives the active-suffix per-tail dimension table from the
@@ -46921,6 +47034,117 @@ theorem
       hr hN Ablk pivotInv hpivot hApos hRight hsn hNn hTail
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    first-split product witness with parent inverse-entry handoff.
+
+    This refines
+    `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa`:
+    the visible first Schur-tail inverse-entry premise is derived internally
+    from the parent first-split inverse-entry comparison by the block inverse
+    formula.  The remaining inverse-entry comparison is the source-level parent
+    comparison for the current split. -/
+theorem
+    higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_parent_inverse_entry
+    {m r n : ℕ} (hr : 0 < r) (hN : 0 < r + (m + 1) * r)
+    (Ablk : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+      Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFirstSplitA11 Ablk)]
+    [Invertible (blockMatrixFirstSplitA22 Ablk -
+      blockMatrixFirstSplitA21 Ablk * ⅟(blockMatrixFirstSplitA11 Ablk) *
+        blockMatrixFirstSplitA12 Ablk)]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Ablk)
+      (blockMatrixFirstSplitA12 Ablk)
+      (blockMatrixFirstSplitA21 Ablk)
+      (blockMatrixFirstSplitA22 Ablk))]
+    (hpivot : pivotInv 0 = ⅟(blockMatrixFirstSplitA11 Ablk))
+    (hApos : 0 < maxEntryNorm hN (blockMatrixFirstSplitFlat Ablk))
+    (hRight :
+      IsRightInverse (r + (m + 1) * r) (blockMatrixFirstSplitFlat Ablk)
+        (nonsingInv (r + (m + 1) * r) (blockMatrixFirstSplitFlat Ablk)))
+    (hsn : (((m + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hNn : ((r + (m + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hsnAll : ∀ {q k : ℕ} (_ : k + (q + 1) ≤ (m + 1) + 1),
+      (((q + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvA11 : ∀ {q k : ℕ} (hkq : k + ((q + 1) + 1) ≤ (m + 1) + 1),
+      Invertible
+        (blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv k
+            (q + 1) hkq)))
+    (hInvSchur : ∀ {q k : ℕ} (hkq : k + ((q + 1) + 1) ≤ (m + 1) + 1),
+      Invertible
+        (blockMatrixFirstSplitA22
+            (higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv k
+              (q + 1) hkq) -
+          blockMatrixFirstSplitA21
+              (higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv k
+                (q + 1) hkq) *
+            ⅟(blockMatrixFirstSplitA11
+                (higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv k
+                  (q + 1) hkq)) *
+              blockMatrixFirstSplitA12
+                (higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv k
+                  (q + 1) hkq)))
+    (hpivotAll : ∀ {q k : ℕ} (hkq : k + ((q + 1) + 1) ≤ (m + 1) + 1),
+      pivotInv k =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv k
+            (q + 1) hkq)))
+    (hAinv_parent :
+      ∀ i j : Fin r ⊕ Fin ((m + 1) * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11 Ablk)
+            (blockMatrixFirstSplitA12 Ablk)
+            (blockMatrixFirstSplitA21 Ablk)
+            (blockMatrixFirstSplitA22 Ablk)) :
+          Matrix (Fin r ⊕ Fin ((m + 1) * r))
+            (Fin r ⊕ Fin ((m + 1) * r)) ℝ) i j| ≤
+          maxEntryNormRect hN hN
+            (nonsingInv (r + (m + 1) * r) (blockMatrixFirstSplitFlat Ablk))) :
+    ∃ L U : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+        Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec ((m + 1) + 1) r Ablk L U ∧
+        blockMaxNorm (Nat.succ_pos (m + 1)) hr L *
+            blockMaxNorm (Nat.succ_pos (m + 1)) hr U ≤
+          (n : ℝ) *
+            (growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+              (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+                hN (Nat.succ_pos (m + 1)) hr Ablk pivotInv) hApos) ^ 3 *
+            (maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) *
+              maxEntryNormRect hN hN
+                (nonsingInv (r + (m + 1) * r)
+                  (blockMatrixFirstSplitFlat Ablk))) *
+            maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) := by
+  classical
+  let hmFull : 0 < (m + 1) + 1 := Nat.succ_pos (m + 1)
+  let A0 : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+    blockMatrixFirstSplitFlat Ablk
+  let G : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hmFull hr Ablk pivotInv
+  let Ainv : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+    nonsingInv (r + (m + 1) * r) A0
+  have hA_le_G : maxEntryNorm hN A0 ≤ maxEntryNorm hN G := by
+    exact le_trans
+      (by
+        simpa [A0] using
+          maxEntryNorm_blockMatrixFirstSplitFlat_le_blockMaxNorm_of_hN
+            hN (Nat.succ_pos m) hr Ablk)
+      (by
+        simpa [G, hmFull] using
+          higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_contains_initial
+            hN hmFull hr Ablk pivotInv)
+  have hTail :
+      Higham13Eq1322GlobalTableauSourceChain hr hN A0 G Ainv
+        hApos n m (blockSchur Ablk (pivotInv 0)) (fun q => pivotInv (q + 1)) := by
+    simpa [A0, G, Ainv, hmFull] using
+      Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_parent_inverse_entry_exact_kappa
+        hr hN A0 Ainv Ablk pivotInv hApos hA_le_G
+        hpivot hsnAll hInvA11 hInvSchur hpivotAll hAinv_parent
+  exact
+    higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa
+      hr hN Ablk pivotInv hpivot hApos hRight hsn hNn hTail
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
     determinant-table first-split product witness from canonical active-suffix
     source obligations.
 
@@ -47239,6 +47463,116 @@ theorem
       Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa
         hr hN A0 Ainv Ablk pivotInv hApos hA_le_G
         hsnAll hInvA11 hInvSchur hpivotAll hAinv_tail
+  exact
+    higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa
+      hr hN Ablk pivotInv hpivot hApos hRight hsn hNn hRho_le_two hTail
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    first-split point-row product witness with parent inverse-entry handoff.
+
+    This is the Eq.13.23 companion of
+    `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_parent_inverse_entry`.
+    It keeps the source-side `rho <= 2` theorem explicit while deriving the
+    first Schur-tail inverse-entry comparison from the parent block inverse. -/
+theorem
+    higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_parent_inverse_entry
+    {m r n : ℕ} (hr : 0 < r) (hN : 0 < r + (m + 1) * r)
+    (Ablk : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+      Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFirstSplitA11 Ablk)]
+    [Invertible (blockMatrixFirstSplitA22 Ablk -
+      blockMatrixFirstSplitA21 Ablk * ⅟(blockMatrixFirstSplitA11 Ablk) *
+        blockMatrixFirstSplitA12 Ablk)]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Ablk)
+      (blockMatrixFirstSplitA12 Ablk)
+      (blockMatrixFirstSplitA21 Ablk)
+      (blockMatrixFirstSplitA22 Ablk))]
+    (hpivot : pivotInv 0 = ⅟(blockMatrixFirstSplitA11 Ablk))
+    (hApos : 0 < maxEntryNorm hN (blockMatrixFirstSplitFlat Ablk))
+    (hRight :
+      IsRightInverse (r + (m + 1) * r) (blockMatrixFirstSplitFlat Ablk)
+        (nonsingInv (r + (m + 1) * r) (blockMatrixFirstSplitFlat Ablk)))
+    (hsn : (((m + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hNn : ((r + (m + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hRho_le_two :
+      growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+        (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+          hN (Nat.succ_pos (m + 1)) hr Ablk pivotInv) hApos ≤ 2)
+    (hsnAll : ∀ {q k : ℕ} (_ : k + (q + 1) ≤ (m + 1) + 1),
+      (((q + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvA11 : ∀ {q k : ℕ} (hkq : k + ((q + 1) + 1) ≤ (m + 1) + 1),
+      Invertible
+        (blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv k
+            (q + 1) hkq)))
+    (hInvSchur : ∀ {q k : ℕ} (hkq : k + ((q + 1) + 1) ≤ (m + 1) + 1),
+      Invertible
+        (blockMatrixFirstSplitA22
+            (higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv k
+              (q + 1) hkq) -
+          blockMatrixFirstSplitA21
+              (higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv k
+                (q + 1) hkq) *
+            ⅟(blockMatrixFirstSplitA11
+                (higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv k
+                  (q + 1) hkq)) *
+              blockMatrixFirstSplitA12
+                (higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv k
+                  (q + 1) hkq)))
+    (hpivotAll : ∀ {q k : ℕ} (hkq : k + ((q + 1) + 1) ≤ (m + 1) + 1),
+      pivotInv k =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv k
+            (q + 1) hkq)))
+    (hAinv_parent :
+      ∀ i j : Fin r ⊕ Fin ((m + 1) * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11 Ablk)
+            (blockMatrixFirstSplitA12 Ablk)
+            (blockMatrixFirstSplitA21 Ablk)
+            (blockMatrixFirstSplitA22 Ablk)) :
+          Matrix (Fin r ⊕ Fin ((m + 1) * r))
+            (Fin r ⊕ Fin ((m + 1) * r)) ℝ) i j| ≤
+          maxEntryNormRect hN hN
+            (nonsingInv (r + (m + 1) * r) (blockMatrixFirstSplitFlat Ablk))) :
+    ∃ L U : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+        Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec ((m + 1) + 1) r Ablk L U ∧
+        blockMaxNorm (Nat.succ_pos (m + 1)) hr L *
+            blockMaxNorm (Nat.succ_pos (m + 1)) hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) *
+              maxEntryNormRect hN hN
+                (nonsingInv (r + (m + 1) * r)
+                  (blockMatrixFirstSplitFlat Ablk))) *
+            maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) := by
+  classical
+  let hmFull : 0 < (m + 1) + 1 := Nat.succ_pos (m + 1)
+  let A0 : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+    blockMatrixFirstSplitFlat Ablk
+  let G : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hmFull hr Ablk pivotInv
+  let Ainv : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+    nonsingInv (r + (m + 1) * r) A0
+  have hA_le_G : maxEntryNorm hN A0 ≤ maxEntryNorm hN G := by
+    exact le_trans
+      (by
+        simpa [A0] using
+          maxEntryNorm_blockMatrixFirstSplitFlat_le_blockMaxNorm_of_hN
+            hN (Nat.succ_pos m) hr Ablk)
+      (by
+        simpa [G, hmFull] using
+          higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_contains_initial
+            hN hmFull hr Ablk pivotInv)
+  have hTail :
+      Higham13Eq1322GlobalTableauSourceChain hr hN A0 G Ainv
+        hApos n m (blockSchur Ablk (pivotInv 0)) (fun q => pivotInv (q + 1)) := by
+    simpa [A0, G, Ainv, hmFull] using
+      Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_parent_inverse_entry_exact_kappa
+        hr hN A0 Ainv Ablk pivotInv hApos hA_le_G
+        hpivot hsnAll hInvA11 hInvSchur hpivotAll hAinv_parent
   exact
     higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa
       hr hN Ablk pivotInv hpivot hApos hRight hsn hNn hRho_le_two hTail
