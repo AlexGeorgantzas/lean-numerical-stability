@@ -1323,6 +1323,106 @@ theorem fl_cholesky_truncated_border_demmel (fp : FPModel) (n : ℕ)
         rw [← h2, Real.sqrt_sq (by positivity)]
         ring
 
+/-- **The r-row truncated computed factor**: rows `≥ r` zeroed — the
+    factor actually produced when the pivoted PSD algorithm terminates
+    after `r` stages (Higham §10.3, Theorem 10.14). -/
+noncomputable def fl_choleskyTrunc (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (r : ℕ) : Fin n → Fin n → ℝ :=
+  fun k j => if k.val < r then fl_cholesky fp n A k j else 0
+
+/-- The truncated Gram is the row-filtered Gram of the full recursion. -/
+lemma fl_choleskyTrunc_gram (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (r : ℕ) (i j : Fin n) :
+    ∑ k : Fin n, fl_choleskyTrunc fp n A r k i *
+      fl_choleskyTrunc fp n A r k j =
+    ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+      fl_cholesky fp n A k i * fl_cholesky fp n A k j := by
+  rw [Finset.sum_filter]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  unfold fl_choleskyTrunc
+  by_cases hk : k.val < r
+  · simp [hk]
+  · simp [hk]
+
+/-- For a computed column (`i < r`), the truncated Gram equals the full
+    Gram: rows `≥ r` never meet column `i` (strict lower zeros). -/
+lemma fl_choleskyTrunc_gram_computed (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (r : ℕ) (i j : Fin n) (hi : i.val < r) :
+    ∑ k : Fin n, fl_choleskyTrunc fp n A r k i *
+      fl_choleskyTrunc fp n A r k j =
+    ∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k j := by
+  rw [fl_choleskyTrunc_gram]
+  refine Finset.sum_subset (Finset.filter_subset _ _)
+    fun k _ hk => ?_
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and,
+    Nat.not_lt] at hk
+  rw [fl_cholesky_strict_lower fp n A k i (lt_of_lt_of_le hi hk),
+    zero_mul]
+
+/-- **Theorem 10.14, three-block backward-error certificate for the
+    truncated computed factor** (display (10.22) shape): after `r`
+    completed stages of Algorithm 10.2,
+    * the computed `r × r` block is Demmel-stable,
+    * the border block is trace-controlled under the computed-pivot
+      domination `c` (the computed form of the (10.13) invariant),
+    * the trailing block carries the terminal Schur residual `η`
+      (what the termination criterion (10.24)/(10.25) certifies),
+    all stated for the truncated factor `R̃ = fl_choleskyTrunc`. -/
+theorem fl_choleskyTrunc_backward_error (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hn1 : gammaValid fp (n + 1))
+    (hγlt : gamma fp (n + 1) < 1)
+    (hsymm : ∀ i j : Fin n, A i j = A j i) (r : ℕ)
+    (hdz : ∀ i : Fin n, i.val < r → fl_cholesky fp n A i i ≠ 0)
+    (hpiv : ∀ i : Fin n, i.val < r → 0 ≤ fl_cholPivot fp n A i)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hdom : ∀ j : Fin n, r ≤ j.val → ∀ k : Fin n, k.val < r →
+      |fl_cholesky fp n A k j| ≤ c * |fl_cholesky fp n A k k|)
+    (η : ℝ)
+    (htrail : ∀ i j : Fin n, r ≤ i.val → r ≤ j.val →
+      |∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+        fl_cholesky fp n A k i * fl_cholesky fp n A k j - A i j| ≤ η) :
+    (∀ i j : Fin n, i.val < r → j.val < r →
+      |∑ k : Fin n, fl_choleskyTrunc fp n A r k i *
+        fl_choleskyTrunc fp n A r k j - A i j| ≤
+      gamma fp (n + 1) / (1 - gamma fp (n + 1)) *
+        (Real.sqrt (A i i) * Real.sqrt (A j j))) ∧
+    (∀ i j : Fin n, i.val < r → r ≤ j.val →
+      |∑ k : Fin n, fl_choleskyTrunc fp n A r k i *
+        fl_choleskyTrunc fp n A r k j - A i j| ≤
+      gamma fp (n + 1) * c / (1 - gamma fp (n + 1)) *
+        (Real.sqrt (A i i) *
+         Real.sqrt (∑ k ∈ Finset.univ.filter
+          (fun k : Fin n => k.val < r), A k k))) ∧
+    (∀ i j : Fin n, r ≤ i.val → j.val < r →
+      |∑ k : Fin n, fl_choleskyTrunc fp n A r k i *
+        fl_choleskyTrunc fp n A r k j - A i j| ≤
+      gamma fp (n + 1) * c / (1 - gamma fp (n + 1)) *
+        (Real.sqrt (A j j) *
+         Real.sqrt (∑ k ∈ Finset.univ.filter
+          (fun k : Fin n => k.val < r), A k k))) ∧
+    (∀ i j : Fin n, r ≤ i.val → r ≤ j.val →
+      |∑ k : Fin n, fl_choleskyTrunc fp n A r k i *
+        fl_choleskyTrunc fp n A r k j - A i j| ≤ η) := by
+  refine ⟨fun i j hi hj => ?_, fun i j hi hj => ?_,
+    fun i j hi hj => ?_, fun i j hi hj => ?_⟩
+  · rw [fl_choleskyTrunc_gram_computed fp n A r i j hi]
+    exact fl_cholesky_truncated_demmel fp n A hn1 hγlt hsymm r
+      hdz hpiv i j hi hj
+  · rw [fl_choleskyTrunc_gram_computed fp n A r i j hi]
+    exact fl_cholesky_truncated_border_demmel fp n A hn1 hγlt r
+      hdz hpiv c hc hdom i j hi hj
+  · -- transpose of the border case
+    have hgram : ∑ k : Fin n, fl_choleskyTrunc fp n A r k i *
+        fl_choleskyTrunc fp n A r k j =
+        ∑ k : Fin n, fl_choleskyTrunc fp n A r k j *
+          fl_choleskyTrunc fp n A r k i :=
+      Finset.sum_congr rfl fun k _ => mul_comm _ _
+    rw [hgram, hsymm i j, fl_choleskyTrunc_gram_computed fp n A r j i hj]
+    exact fl_cholesky_truncated_border_demmel fp n A hn1 hγlt r
+      hdz hpiv c hc hdom j i hj hi
+  · rw [fl_choleskyTrunc_gram]
+    exact htrail i j hi hj
+
 /-- **Border-column entry bound**: the `w = j` instance of
     `fl_cholesky_truncated_bound`. -/
 theorem fl_cholesky_border_bound (fp : FPModel) {n : ℕ}
