@@ -1768,6 +1768,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_10_hessenbergGEPPUTraceGrowth_le_sup`
 - `higham9_10_hessenbergGEPPUTraceGrowthValues_nonempty`
 - `higham9_10_hessenbergGEPPUTraceGrowthSup_le_card`
+- `higham9_10_hessenbergGEPPUTraceGrowthValues_subset_partialPivotingUTraceGrowthValues`
+- `higham9_10_hessenbergGEPPUTraceGrowthValues_subset_pivotingGrowthValues_partial`
+- `higham9_10_hessenbergGEPPUTraceGrowthValues_subset_tracePivotingGrowthValues_partial`
+- `higham9_10_hessenbergGEPPUTraceGrowthSup_le_partialPivotingUTraceGrowthSup`
+- `higham9_10_hessenbergGEPPUTraceGrowthSup_le_pivotingGrowthSup_partial`
+- `higham9_10_hessenbergGEPPUTraceGrowthSup_le_tracePivotingGrowthSup_partial`
 - `higham9_5_wilkinson_normwise_infNorm_tight`
 - `higham9_5_wilkinson_source_bound_of_growth_bridge`
 - `higham9_5_wilkinson_source_bound_of_entry_growth`

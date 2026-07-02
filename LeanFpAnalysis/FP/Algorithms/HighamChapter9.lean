@@ -66560,6 +66560,73 @@ theorem higham9_10_hessenbergGEPPUTraceGrowthSup_le_card {n : ℕ}
   intro r hr
   exact higham9_10_hessenbergGEPPUTraceGrowthValues_le_card hr
 
+/-- **Theorem 9.10 / growth-factor source family**, every upper-Hessenberg
+GEPP `U` trace-growth value is an ordinary partial-pivoting trace-growth
+value after forgetting the Hessenberg invariant. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthValues_subset_partialPivotingUTraceGrowthValues
+    (n : ℕ) :
+    higham9_10_hessenbergGEPPUTraceGrowthValues n ⊆
+      higham9_partialPivotingUTraceGrowthValues n := by
+  intro r hr
+  rcases hr with ⟨hn, A, U, hApos, _hH, htrace, rfl⟩
+  exact
+    ⟨hn, A, U, hApos,
+      higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace htrace, rfl⟩
+
+/-- **Theorem 9.10 / growth-factor source family**, upper-Hessenberg GEPP
+trace-growth values embed into the indexed partial-pivoting source family. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthValues_subset_pivotingGrowthValues_partial
+    (n : ℕ) :
+    higham9_10_hessenbergGEPPUTraceGrowthValues n ⊆
+      higham9_pivotingGrowthValues
+        higham9_PivotingGrowthKind.partialPivoting n := by
+  simpa [higham9_pivotingGrowthValues] using
+    higham9_10_hessenbergGEPPUTraceGrowthValues_subset_partialPivotingUTraceGrowthValues n
+
+/-- **Theorem 9.10 / growth-factor source family**, upper-Hessenberg GEPP
+trace-growth values embed into the trace-only partial-pivoting source family. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthValues_subset_tracePivotingGrowthValues_partial
+    (n : ℕ) :
+    higham9_10_hessenbergGEPPUTraceGrowthValues n ⊆
+      higham9_tracePivotingGrowthValues
+        higham9_TracePivotingGrowthKind.partialPivoting n := by
+  simpa [higham9_tracePivotingGrowthValues] using
+    higham9_10_hessenbergGEPPUTraceGrowthValues_subset_partialPivotingUTraceGrowthValues n
+
+/-- **Theorem 9.10 / growth-factor source family**, the upper-Hessenberg GEPP
+trace-growth supremum is bounded by the ordinary partial-pivoting trace-growth
+supremum. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthSup_le_partialPivotingUTraceGrowthSup
+    {n : ℕ} (hn : 0 < n) :
+    higham9_10_hessenbergGEPPUTraceGrowthSup n ≤
+      higham9_partialPivotingUTraceGrowthSup n := by
+  apply csSup_le (higham9_10_hessenbergGEPPUTraceGrowthValues_nonempty hn)
+  intro r hr
+  exact higham9_partialPivotingUTraceGrowth_le_sup
+    (higham9_10_hessenbergGEPPUTraceGrowthValues_subset_partialPivotingUTraceGrowthValues
+      n hr)
+
+/-- **Theorem 9.10 / growth-factor source family**, source-indexed supremum
+comparison from upper-Hessenberg GEPP traces to the partial-pivoting family. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthSup_le_pivotingGrowthSup_partial
+    {n : ℕ} (hn : 0 < n) :
+    higham9_10_hessenbergGEPPUTraceGrowthSup n ≤
+      higham9_pivotingGrowthSup
+        higham9_PivotingGrowthKind.partialPivoting n := by
+  simpa [higham9_pivotingGrowthSup, higham9_pivotingGrowthValues] using
+    higham9_10_hessenbergGEPPUTraceGrowthSup_le_partialPivotingUTraceGrowthSup hn
+
+/-- **Theorem 9.10 / growth-factor source family**, trace-only supremum
+comparison from upper-Hessenberg GEPP traces to the partial-pivoting trace
+family. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthSup_le_tracePivotingGrowthSup_partial
+    {n : ℕ} (hn : 0 < n) :
+    higham9_10_hessenbergGEPPUTraceGrowthSup n ≤
+      higham9_tracePivotingGrowthSup
+        higham9_TracePivotingGrowthKind.partialPivoting n := by
+  simpa [higham9_tracePivotingGrowthSup, higham9_tracePivotingGrowthValues] using
+    higham9_10_hessenbergGEPPUTraceGrowthSup_le_partialPivotingUTraceGrowthSup hn
+
 /-- **Theorem 9.9**, column diagonally dominant nonsingular matrices have an
 exact no-pivot LU factorization whose unit-lower factor has entries bounded by
 one in absolute value.  This closes the source local claim that column diagonal
