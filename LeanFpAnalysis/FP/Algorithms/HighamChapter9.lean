@@ -46385,6 +46385,90 @@ theorem higham9_15_componentwise_source_bound_of_G_split_local_majorant_of_sourc
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse U Uinv hUright)
     hfact hXtri hYtri
 
+/-- **Theorem 9.15**, split-level componentwise `G` local-majorant endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_local_majorant_of_inverse_identities_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv i j| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j)) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (fun i j : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv i j| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_local_majorant_of_inverse_identities
+      L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri
+
+/-- **Theorem 9.15**, source-oriented componentwise `G` split local-majorant
+endpoint with normalized triangular support discharged from ordinary
+triangularity of `L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_local_majorant_of_source_inverse_identities_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv i j| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j)) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (fun i j : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv i j| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_local_majorant_of_source_inverse_identities
+      L U Linv Uinv ΔA ΔL ΔU hLleft hUright hfact hXtri hYtri
+
 /-- **Theorem 9.15**, componentwise `G` resolvent-majorant endpoint.
 
 The normalized split supplies the local majorant
@@ -49460,6 +49544,94 @@ theorem higham9_15_componentwise_source_bound_of_Gtilde_split_local_majorant_of_
     (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse Lhat LhatInv hLleft)
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse Uhat UhatInv hUright)
     hfact hXtri hYtri
+
+/-- **Theorem 9.15**, split-level componentwise `Gtilde` local-majorant
+endpoint with normalized triangular support discharged from ordinary
+triangularity of `Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_local_majorant_of_inverse_identities_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n =>
+              |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j)) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (fun i j : Fin n =>
+              |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_local_majorant_of_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLright hUleft hfact hXtri hYtri
+
+/-- **Theorem 9.15**, source-oriented componentwise `Gtilde` split
+local-majorant endpoint with normalized triangular support discharged from
+ordinary triangularity of `Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_local_majorant_of_source_inverse_identities_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n =>
+              |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j)) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (fun i j : Fin n =>
+              |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_local_majorant_of_source_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLleft hUright hfact hXtri hYtri
 
 /-- **Theorem 9.15**, componentwise `Gtilde` resolvent-majorant endpoint.
 
