@@ -262,6 +262,68 @@ theorem fl_sub_fold_local_factors (fp : FPModel) (m : ℕ)
         rw [hsum]
         ring
 
+/-- **Algorithm 10.2 locality**: entries of the computed factor with both
+    indices below `k` depend only on the leading `k × k` block of `A`.
+    This is the formal content of "consider Algorithm 10.2 with `n`
+    replaced by `k`" in the Theorem 10.7 induction (Higham p. 200). -/
+theorem fl_cholEntry_leading_principal (fp : FPModel) {n k : ℕ}
+    (hk : k ≤ n) (A : Fin n → Fin n → ℝ) :
+    ∀ i j : ℕ, i < k → j < k →
+      fl_cholEntry fp n A i j =
+        fl_cholEntry fp k
+          (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩) i j := by
+  intro i j
+  induction i, j using fl_cholEntry.induct (n := n) with
+  | case1 i j h hij ihx ihy ihd =>
+      intro hi hj
+      have hx : (fun k' : Fin i => fl_cholEntry fp n A k'.val i) =
+          (fun k' : Fin i => fl_cholEntry fp k
+            (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩)
+            k'.val i) :=
+        funext fun k' => ihx k' (Nat.lt_trans k'.isLt hi) hi
+      have hy : (fun k' : Fin i => fl_cholEntry fp n A k'.val j) =
+          (fun k' : Fin i => fl_cholEntry fp k
+            (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩)
+            k'.val j) :=
+        funext fun k' => ihy k' (Nat.lt_trans k'.isLt hi) hj
+      have hd := ihd hi hi
+      conv_lhs => rw [fl_cholEntry.eq_1]
+      conv_rhs => rw [fl_cholEntry.eq_1]
+      simp only [dif_pos h, dif_pos (⟨hi, hj⟩ : i < k ∧ j < k),
+        dif_pos hij]
+      simp only [hx, hy, hd]
+  | case2 j h hjj ih =>
+      intro hj _
+      have hx : (fun k' : Fin j => fl_cholEntry fp n A k'.val j) =
+          (fun k' : Fin j => fl_cholEntry fp k
+            (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩)
+            k'.val j) :=
+        funext fun k' => ih k' (Nat.lt_trans k'.isLt hj) hj
+      conv_lhs => rw [fl_cholEntry.eq_1]
+      conv_rhs => rw [fl_cholEntry.eq_1]
+      simp only [dif_pos h, dif_pos (⟨hj, hj⟩ : j < k ∧ j < k),
+        dif_neg hjj]
+      simp only [hx]
+  | case3 i j h hij hji =>
+      intro hi hj
+      conv_lhs => rw [fl_cholEntry.eq_1]
+      conv_rhs => rw [fl_cholEntry.eq_1]
+      simp only [dif_pos h, dif_pos (⟨hi, hj⟩ : i < k ∧ j < k),
+        dif_neg hij, dif_neg hji]
+  | case4 i j h =>
+      intro hi hj
+      exact absurd ⟨by omega, by omega⟩ h
+
+/-- **Algorithm 10.2 locality, matrix form**: the computed factor of the
+    leading principal block is the leading principal block of the computed
+    factor. -/
+theorem fl_cholesky_leading_principal (fp : FPModel) {n k : ℕ}
+    (hk : k ≤ n) (A : Fin n → Fin n → ℝ) (i j : Fin k) :
+    fl_cholesky fp k
+      (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩) i j =
+    fl_cholesky fp n A ⟨i.val, by omega⟩ ⟨j.val, by omega⟩ :=
+  (fl_cholEntry_leading_principal fp hk A i.val j.val i.isLt j.isLt).symm
+
 -- ============================================================
 -- §10.1  Sharp solve forms for the Algorithm 10.2 recurrences
 --        (Higham Theorem 10.3 per-entry equations, Stewart counters)
