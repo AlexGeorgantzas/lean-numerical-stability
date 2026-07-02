@@ -5160,6 +5160,29 @@ theorem fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
       (le_of_lt (householderBetaFromScale_pos_of_ne_zero hn x hx))
       (householderBetaFromScale_mul_norm_sq hn x hx)
 
+/-- Exact-arithmetic constructor for a one-stage source-faithful
+normalization certificate.
+
+If the stored stage vector is identified with the computed normalized
+Householder vector and the source column is nonzero, then `exactWithUnitRoundoff`
+supplies the self-dot field of `sourceFaithfulHouseholderNormalization`.  This
+is the reusable one-stage certificate form of
+`fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff`. -/
+theorem sourceFaithfulHouseholderNormalization_of_vector_eq_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) {n : Nat} (hn : 0 < n)
+    (sourceColumn v : Fin n -> Real)
+    (hvec :
+      v = fl_householderNormalizedVector
+        (FPModel.exactWithUnitRoundoff u0 hu0) hn sourceColumn)
+    (hsource : Ne sourceColumn 0) :
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0) hn sourceColumn v := by
+  refine { vector_eq := hvec, self_dot := ?_ }
+  rw [hvec]
+  exact
+    fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
+      u0 hu0 hn sourceColumn hsource
+
 /-- Exact-arithmetic self-dot after adding two leading zeroes.
 
 This is the shape needed by the full pivot-2 normalized-loop facts: once the
@@ -19344,12 +19367,10 @@ theorem
             A_hat 0 a
               (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
           (alpha 0)) := by
-    refine { vector_eq := hvec0, self_dot := ?_ }
-    rw [hvec0]
     exact
-      fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
+      sourceFaithfulHouseholderNormalization_of_vector_eq_exactWithUnitRoundoff
         u0 hu0 (Nat.succ_pos (r + p + 1))
-        (panelFirstColumn (Nat.succ_pos (p + 1)) A) hx0
+        (panelFirstColumn (Nat.succ_pos (p + 1)) A) _ hvec0 hx0
   have hxTail :
       Ne
         (let v0 := fl_householderNormalizedVector
@@ -19383,10 +19404,8 @@ theorem
             (alpha 1))) := by
     dsimp only
     dsimp only at hvecTail
-    refine { vector_eq := hvecTail, self_dot := ?_ }
-    rw [hvecTail]
     exact
-      fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
+      sourceFaithfulHouseholderNormalization_of_vector_eq_exactWithUnitRoundoff
         u0 hu0 (Nat.succ_pos (r + p))
         (let v0 := fl_householderNormalizedVector
             (FPModel.exactWithUnitRoundoff u0 hu0)
@@ -19396,7 +19415,7 @@ theorem
             (FPModel.exactWithUnitRoundoff u0 hu0)
             (r + p + 2) (p + 2) 0 v0 1 A
          panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
-        hxTail
+        _ hvecTail hxTail
   exact
     storedSignedSequence_final_panel_eq_qrPanel_R_of_sourceFaithfulNormalizations
       (FPModel.exactWithUnitRoundoff u0 hu0) r p A A_hat alpha
