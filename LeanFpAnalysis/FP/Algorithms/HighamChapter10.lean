@@ -746,6 +746,36 @@ theorem higham10_6_scaled_forward_error_assembled (n : ℕ)
     hInv hHDx hHDxhat c hc hc1
   exact hmain
 
+/-- **Quadratic-form bound from an operator-norm certificate** (the
+Rayleigh–Weyl step of the Theorem 10.7 induction, Higham p. 200):
+`opNorm2Le E c` gives `|xᵀEx| ≤ c ‖x‖₂²` — precisely the perturbation
+hypothesis consumed by the Theorem 10.7 threshold theorems, so any
+operator-norm certificate for the scaled backward error feeds them
+directly. -/
+theorem quadForm_abs_le_of_opNorm2Le (n : ℕ) (E : Fin n → Fin n → ℝ)
+    (c : ℝ) (hE : opNorm2Le E c) (x : Fin n → ℝ) :
+    |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤
+      c * ∑ i : Fin n, x i ^ 2 := by
+  have hform : ∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j =
+      ∑ i : Fin n, x i * matMulVec n E x i := by
+    apply Finset.sum_congr rfl
+    intro i _
+    unfold matMulVec
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun j _ => by ring
+  rw [hform]
+  have hxnn := vecNorm2_nonneg x
+  have hsq : vecNorm2 x * vecNorm2 x = ∑ i : Fin n, x i ^ 2 := by
+    rw [← sq, vecNorm2_sq]
+    rfl
+  calc |∑ i : Fin n, x i * matMulVec n E x i|
+      ≤ vecNorm2 x * vecNorm2 (matMulVec n E x) :=
+        abs_vecInnerProduct_le_vecNorm2_mul x (matMulVec n E x)
+    _ ≤ vecNorm2 x * (c * vecNorm2 x) :=
+        mul_le_mul_of_nonneg_left (hE x) hxnn
+    _ = c * (vecNorm2 x * vecNorm2 x) := by ring
+    _ = c * ∑ i : Fin n, x i ^ 2 := by rw [hsq]
+
 /-- **Componentwise domination transfers operator-2-norm certificates**
 (used for the normwise equation (10.7) reading of Theorem 10.3): if
 `|M| ≤ B` entrywise and `B` satisfies the vector-action certificate
