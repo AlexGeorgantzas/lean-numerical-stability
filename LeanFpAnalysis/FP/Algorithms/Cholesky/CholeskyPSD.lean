@@ -613,6 +613,19 @@ theorem psd_pivoted_cholesky_exists (n : ℕ) (A : Fin n → Fin n → ℝ)
           simp only [hSdef]
           ring
 
+/-- **Schur diagonal domination** (equation (10.13) foundation): each
+    Schur-complement diagonal entry is at most the corresponding original
+    diagonal entry, hence — under the complete-pivoting choice — at most
+    the current pivot.  This is the monotonicity that propagates the
+    per-stage maximality into the (10.13) display. -/
+lemma schur_diag_le_pivot {m : ℕ} (B : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hB00 : 0 < B 0 0)
+    (hmax : ∀ i : Fin (m + 1), B i i ≤ B 0 0) (i : Fin m) :
+    B i.succ i.succ - B 0 i.succ * B 0 i.succ / B 0 0 ≤ B 0 0 := by
+  have hsub : 0 ≤ B 0 i.succ * B 0 i.succ / B 0 0 :=
+    div_nonneg (mul_self_nonneg _) hB00.le
+  linarith [hmax i.succ]
+
 -- ============================================================
 -- §10.3  Theorem 10.9(b): SPD → PivotedCholeskySpec (full rank)
 -- ============================================================
