@@ -2081,6 +2081,96 @@ theorem cpPivot_sequence_stable {n : ℕ} (hn : 0 < n)
       · subst h'
         rw [hpivB]
 
+/-- **Lemma 10.11, source form**: a matrix whose complete-pivoting run
+    has no ties (gap `δ`, floor `ρ`, cap `c` through `r` stages) admits
+    a positive perturbation radius within which every matrix selects
+    the same pivot sequence — the "for sufficiently small `E`"
+    statement, instantiating `cpPivot_sequence_stable` with the
+    geometric budget `g t = ε₀ K^t`, `K = 1 + (3c² + c)/(ρ/2)²`. -/
+theorem cpPivot_sequence_stable_small {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (r : ℕ)
+    (δ ρ c : ℝ) (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c) :
+    ∃ ε₀ : ℝ, 0 < ε₀ ∧
+      ∀ B : Fin n → Fin n → ℝ,
+        (∀ i j : Fin n, |A i j - B i j| ≤ ε₀) →
+        ∀ s : ℕ, s < r → cpPivot hn A s = cpPivot hn B s := by
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  set K : ℝ := 1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2 with hK
+  have hK1 : (1:ℝ) ≤ K := by
+    have : (0:ℝ) ≤ (3 * c ^ 2 + c) / (ρ / 2) ^ 2 := by positivity
+    linarith
+  have hK0 : (0:ℝ) < K := lt_of_lt_of_le one_pos hK1
+  have hKr : (0:ℝ) < K ^ r := pow_pos hK0 r
+  set ε₀ : ℝ := min 1 (δ / 2) / (2 * K ^ r) with hε₀def
+  have hmin0 : (0:ℝ) < min 1 (δ / 2) :=
+    lt_min one_pos (by linarith)
+  have hε₀pos : 0 < ε₀ := by
+    rw [hε₀def]
+    positivity
+  refine ⟨ε₀, hε₀pos, ?_⟩
+  intro B hAB
+  set g : ℕ → ℝ := fun t => ε₀ * K ^ t with hg
+  -- geometric budget stays below both 1 and δ/2 through the run
+  have hgle : ∀ t : ℕ, t ≤ r → g t ≤ min 1 (δ / 2) / 2 := by
+    intro t htr
+    have hpow : K ^ t ≤ K ^ r := pow_le_pow_right₀ hK1 htr
+    have : g t = ε₀ * K ^ t := rfl
+    rw [this, hε₀def]
+    rw [div_mul_eq_mul_div, div_le_div_iff₀ (by positivity)
+      (by norm_num : (0:ℝ) < 2)]
+    calc min 1 (δ / 2) * K ^ t * 2
+        ≤ min 1 (δ / 2) * K ^ r * 2 := by
+          have := hmin0.le
+          nlinarith
+      _ = min 1 (δ / 2) * (2 * K ^ r) := by ring
+  have hg1 : ∀ t : ℕ, t < r → g t ≤ 1 := by
+    intro t htr
+    have h := hgle t (Nat.le_of_lt htr)
+    have h1 : min 1 (δ / 2) ≤ 1 := min_le_left _ _
+    linarith
+  have hghalf : ∀ t : ℕ, t < r → g t < δ / 2 := by
+    intro t htr
+    have h := hgle t (Nat.le_of_lt htr)
+    have h1 : min 1 (δ / 2) ≤ δ / 2 := min_le_right _ _
+    linarith [hmin0]
+  have hg_nonneg : ∀ t : ℕ, 0 ≤ g t := by
+    intro t
+    have : g t = ε₀ * K ^ t := rfl
+    rw [this]
+    positivity
+  -- the geometric budget absorbs the one-stage growth
+  have hgstep : ∀ t : ℕ, t < r →
+      g t + (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 ≤
+        g (t + 1) := by
+    intro t htr
+    have hgt1 := hg1 t htr
+    have hgt0 := hg_nonneg t
+    have hstep : g (t + 1) = g t * K := by
+      show ε₀ * K ^ (t + 1) = ε₀ * K ^ t * K
+      ring
+    rw [hstep, hK]
+    have hexp : g t * (1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2) =
+        g t + (3 * c ^ 2 * g t + c * g t) / (ρ / 2) ^ 2 := by
+      field_simp
+    rw [hexp]
+    gcongr
+    nlinarith
+  have hmain := cpPivot_sequence_stable hn A B r ε₀ δ ρ c
+    hε₀pos.le hδ hδρ hc g
+    (by
+      show ε₀ ≤ ε₀ * K ^ 0
+      simp)
+    hgstep hghalf hAB hgap hfloor hcap
+  intro s hs
+  exact (hmain r le_rfl).2 s hs
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
