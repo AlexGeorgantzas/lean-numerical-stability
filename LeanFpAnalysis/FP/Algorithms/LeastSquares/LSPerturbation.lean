@@ -831,6 +831,142 @@ theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_Apenrose1_rank_Bpenrose1_small_re
     (ch7_rectMatMulVec_injective_of_matrix_rank_eq_width A hArank)
     hAplus hDelta hBpenrose1 hSymB
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    applying the complement of a square projection is the vector residual
+    `x - P*x`. -/
+theorem wedinLemma20_12_rectMatMulVec_projectionComplement
+    {m : ℕ} (P : Fin m → Fin m → ℝ) (x : Fin m → ℝ) :
+    rectMatMulVec (fun i j => idMatrix m i j - P i j) x =
+      fun i => x i - rectMatMulVec P x i := by
+  ext i
+  unfold rectMatMulVec
+  calc
+    (∑ j : Fin m, (idMatrix m i j - P i j) * x j)
+        = (∑ j : Fin m, idMatrix m i j * x j) -
+            ∑ j : Fin m, P i j * x j := by
+          rw [← Finset.sum_sub_distrib]
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
+    _ = x i - ∑ j : Fin m, P i j * x j := by
+          have hid :
+              (∑ j : Fin m, idMatrix m i j * x j) = x i := by
+            simpa [rectMatMulVec] using
+              congrFun (rectMatMulVec_idMatrix x) i
+          rw [hid]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    a symmetric Moore-Penrose range projection has a nonexpansive complement
+    `I - A Aplus`. -/
+theorem wedinLemma20_12_rectOpNorm2Le_projectionComplement_of_symmetric_left_inverse
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hleft : rectMatMul Aplus A = idMatrix n)
+    (hSym : IsSymmetricFiniteMatrix (rectMatMul A Aplus)) :
+    rectOpNorm2Le (fun i j => idMatrix m i j - rectMatMul A Aplus i j) 1 := by
+  intro y
+  have hbest :=
+    rectMatMulVec_rangeProjection_residual_norm_le_range_residual_of_symmetric_left_inverse
+      A Aplus hleft hSym y (fun _ : Fin n => 0)
+  have hzero :
+      (fun i : Fin m => y i - rectMatMulVec A (fun _ : Fin n => 0) i) = y := by
+    ext i
+    simp [rectMatMulVec]
+  simpa [wedinLemma20_12_rectMatMulVec_projectionComplement, hzero] using hbest
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
+    one-sided projection perturbation bound from the source proof.
+
+    This proves the elementary half
+    `||(I - P_A) P_B||_2 <= ||A - B||_2 ||Bplus||_2` in the repository's
+    predicate API.  The nontrivial CS-decomposition equality
+    `||P_A(I-P_B)||_2 = ||P_B(I-P_A)||_2` is not claimed here. -/
+theorem wedinLemma20_12_rectOpNorm2Le_complement_rangeProjection_mul_rangeProjection
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {delta Bplus_norm : ℝ}
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBplus : rectOpNorm2Le Bplus Bplus_norm) :
+    rectOpNorm2Le
+      (rectMatMul
+        (fun i j => idMatrix m i j - rectMatMul A Aplus i j)
+        (rectMatMul B Bplus))
+      (delta * Bplus_norm) := by
+  let IPA : Fin m → Fin m → ℝ :=
+    fun i j => idMatrix m i j - rectMatMul A Aplus i j
+  have hIPA :
+      rectOpNorm2Le IPA 1 :=
+    wedinLemma20_12_rectOpNorm2Le_projectionComplement_of_symmetric_left_inverse
+      A Aplus hleftA hSymA
+  have hIPA_A_zero : ∀ z : Fin (k + 1) → ℝ,
+      rectMatMulVec IPA (rectMatMulVec A z) = 0 := by
+    intro z
+    have hfix :=
+      rectMatMulVec_rangeProjection_apply_range_of_left_inverse A Aplus
+        hleftA z
+    rw [wedinLemma20_12_rectMatMulVec_projectionComplement]
+    rw [hfix]
+    ext i
+    simp
+  have hdelta_nonneg : 0 ≤ delta :=
+    rectOpNorm2Le_radius_nonneg (M := fun i j => B i j - A i j) hDelta
+  intro y
+  let z : Fin (k + 1) → ℝ := rectMatMulVec Bplus y
+  have hB_decomp :
+      rectMatMulVec B z =
+        fun i : Fin m =>
+          rectMatMulVec (fun i j => B i j - A i j) z i +
+            rectMatMulVec A z i := by
+    ext i
+    unfold rectMatMulVec
+    rw [← Finset.sum_add_distrib]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  have hvec :
+      rectMatMulVec
+          (rectMatMul IPA (rectMatMul B Bplus)) y =
+        rectMatMulVec IPA
+          (rectMatMulVec (fun i j => B i j - A i j) z) := by
+    calc
+      rectMatMulVec (rectMatMul IPA (rectMatMul B Bplus)) y
+          = rectMatMulVec IPA (rectMatMulVec (rectMatMul B Bplus) y) := by
+              rw [rectMatMulVec_rectMatMul]
+      _ = rectMatMulVec IPA (rectMatMulVec B z) := by
+              rw [rectMatMulVec_rectMatMul]
+      _ = rectMatMulVec IPA
+            (fun i : Fin m =>
+              rectMatMulVec (fun i j => B i j - A i j) z i +
+                rectMatMulVec A z i) := by
+              rw [hB_decomp]
+      _ = fun i : Fin m =>
+            rectMatMulVec IPA
+                (rectMatMulVec (fun i j => B i j - A i j) z) i +
+              rectMatMulVec IPA (rectMatMulVec A z) i := by
+              rw [rectMatMulVec_add]
+      _ = rectMatMulVec IPA
+            (rectMatMulVec (fun i j => B i j - A i j) z) := by
+              rw [hIPA_A_zero z]
+              ext i
+              simp
+  have hproj :=
+    hIPA (rectMatMulVec (fun i j => B i j - A i j) z)
+  have hDelta_y := hDelta z
+  have hBplus_y := hBplus y
+  calc
+    vecNorm2 (rectMatMulVec (rectMatMul IPA (rectMatMul B Bplus)) y)
+        = vecNorm2
+            (rectMatMulVec IPA
+              (rectMatMulVec (fun i j => B i j - A i j) z)) := by
+            rw [hvec]
+    _ ≤ vecNorm2 (rectMatMulVec (fun i j => B i j - A i j) z) := by
+            simpa using hproj
+    _ ≤ delta * vecNorm2 z := hDelta_y
+    _ ≤ delta * (Bplus_norm * vecNorm2 y) :=
+            mul_le_mul_of_nonneg_left hBplus_y hdelta_nonneg
+    _ = (delta * Bplus_norm) * vecNorm2 y := by ring
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
