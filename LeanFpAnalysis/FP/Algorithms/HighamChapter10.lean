@@ -2753,6 +2753,82 @@ theorem finiteMaxEigenvalue_leading_principal_le (n : ℕ) (hn : 0 < n)
   rw [hpadquad] at hray
   exact hray
 
+/-- Quadratic-form-certificate variant of the scaled interior mass
+    (composes with zero-pad restriction, unlike the `opNorm2Le`
+    form). -/
+lemma scaled_interior_mass_normwise_quad {m : ℕ}
+    (Δ : Fin m → Fin m → ℝ) (a : Fin m → ℝ) (ha : ∀ i, 0 ≤ a i)
+    (ε : ℝ)
+    (hcert : ∀ z : Fin m → ℝ,
+      |∑ i : Fin m, ∑ j : Fin m, z i *
+        (Δ i j / (Real.sqrt (a i) * Real.sqrt (a j))) * z j| ≤
+      ε * ∑ i : Fin m, z i ^ 2)
+    (y : Fin m → ℝ)
+    (hnz : ∀ i j : Fin m, a i = 0 ∨ a j = 0 → Δ i j = 0) :
+    |∑ i : Fin m, ∑ j : Fin m, y i * Δ i j * y j| ≤
+      ε * ∑ i : Fin m, a i * y i ^ 2 := by
+  set z : Fin m → ℝ := fun i => y i * Real.sqrt (a i) with hz
+  have habs := hcert z
+  have hquad : ∑ i : Fin m, ∑ j : Fin m,
+      z i * (Δ i j / (Real.sqrt (a i) * Real.sqrt (a j))) * z j =
+      ∑ i : Fin m, ∑ j : Fin m, y i * Δ i j * y j := by
+    refine Finset.sum_congr rfl fun i _ =>
+      Finset.sum_congr rfl fun j _ => ?_
+    by_cases hi : a i = 0
+    · rw [hnz i j (Or.inl hi)]
+      simp
+    by_cases hj : a j = 0
+    · rw [hnz i j (Or.inr hj)]
+      simp
+    · have hi' := lt_of_le_of_ne (ha i) (Ne.symm hi)
+      have hj' := lt_of_le_of_ne (ha j) (Ne.symm hj)
+      have hsi := Real.sqrt_pos.mpr hi'
+      have hsj := Real.sqrt_pos.mpr hj'
+      show y i * Real.sqrt (a i) *
+        (Δ i j / (Real.sqrt (a i) * Real.sqrt (a j))) *
+        (y j * Real.sqrt (a j)) = y i * Δ i j * y j
+      field_simp
+  have hnorm : ∑ i : Fin m, z i ^ 2 =
+      ∑ i : Fin m, a i * y i ^ 2 := by
+    refine Finset.sum_congr rfl fun i _ => ?_
+    show (y i * Real.sqrt (a i)) ^ 2 = a i * y i ^ 2
+    rw [mul_pow, Real.sq_sqrt (ha i)]
+    ring
+  rw [hquad, hnorm] at habs
+  exact habs
+
+/-- **Per-stage interior mass from the full scaled certificate**
+    (Theorem 10.7 sharp route, certificate restriction): a single
+    quadratic-form certificate `ε` on the full scaled defect restricts
+    to every leading block by zero-padding — the stage-`k` interior
+    mass hypothesis of `fl_cholesky_pivot_pos_step_sharp` follows for
+    all stages at once. -/
+theorem stage_interior_mass_from_full {n : ℕ}
+    (Δ : Fin n → Fin n → ℝ) (a : Fin n → ℝ) (ha : ∀ i, 0 ≤ a i)
+    (ε : ℝ)
+    (hcert : ∀ z : Fin n → ℝ,
+      |∑ i : Fin n, ∑ j : Fin n, z i *
+        (Δ i j / (Real.sqrt (a i) * Real.sqrt (a j))) * z j| ≤
+      ε * ∑ i : Fin n, z i ^ 2)
+    (hnz : ∀ i j : Fin n, a i = 0 ∨ a j = 0 → Δ i j = 0)
+    (k : ℕ) (hk : k ≤ n) (y : Fin k → ℝ) :
+    |∑ i : Fin k, ∑ j : Fin k, y i *
+      Δ ⟨i.val, by omega⟩ ⟨j.val, by omega⟩ * y j| ≤
+      ε * ∑ i : Fin k, a ⟨i.val, by omega⟩ * y i ^ 2 := by
+  refine scaled_interior_mass_normwise_quad
+    (fun i j : Fin k => Δ ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+    (fun i : Fin k => a ⟨i.val, by omega⟩) (fun i => ha _) ε
+    ?_ y (fun i j h => hnz _ _ h)
+  intro z
+  have hpad := hcert
+    (fun i : Fin n => if h : i.val < k then z ⟨i.val, h⟩ else 0)
+  have hq := quadForm_zero_pad_eq
+    (fun i j : Fin n => Δ i j /
+      (Real.sqrt (a i) * Real.sqrt (a j))) k hk z
+  have hs := sum_sq_zero_pad_eq k hk z
+  rw [hq, hs] at hpad
+  exact hpad
+
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
 `‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
 an `r × r` upper-triangular block `U` with positive diagonal whose rows
