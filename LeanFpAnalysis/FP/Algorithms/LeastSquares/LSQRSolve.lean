@@ -16372,6 +16372,157 @@ theorem householderQRRhsPanelBackwardBound_uniform_f_source_witness_of_growthCoe
     householderQRRhsPanelBackwardBound_uniform_f_source_witness_of_scalar_infNorm_dom
       fp A f g hn (householderQRRhsPanelGrowthCoeff fp (n + k) n) heta hInfDom
 
+/-- Uniform-column `H_1` source witness for any nonnegative scalar
+    infinity-norm domination of the sharpened Householder QR RHS recursion.
+
+    This is the sqrt-bound analogue of
+    `householderQRRhsPanelBackwardBound_uniform_f_source_witness_of_scalar_infNorm_dom`.
+    If the sharpened implementation-backed RHS perturbation is bounded by
+    `eta * infNormVec f`, the same max-component construction yields the
+    Theorem 20.4 source-majorant shape with coefficient `sqrt(n+k) * eta`. -/
+theorem householderQRRhsPanelSqrtBackwardBound_uniform_f_source_witness_of_scalar_infNorm_dom
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n) (eta : ℝ) (heta : 0 ≤ eta)
+    (hInfDom :
+      householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+        eta * infNormVec f) :
+    ∃ H1 H2 : Fin (n + k) → Fin (n + k) → ℝ,
+      (∀ i j, 0 ≤ H1 i j) ∧
+      (∀ i j, 0 ≤ H2 i j) ∧
+      frobNorm H1 = 1 ∧
+      frobNorm H2 = 1 ∧
+      (let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+        fl_householderQRPanel_Q fp (n + k) n A
+      let Rhat : Fin (n + k) → Fin n → ℝ :=
+        fl_householderQRPanel_R fp (n + k) n A
+      let R : Fin n → Fin n → ℝ :=
+        fun i j => Rhat (Fin.castAdd k i) j
+      let c_hat : Fin (n + k) → ℝ :=
+        fl_householderQRPanel_rhs fp (n + k) n A f
+      let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+      let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+      let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+      ∀ i : Fin (n + k),
+        householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+          (Real.sqrt (n + k : ℝ) * eta) *
+            lsTheorem20_4DeltafMajorant H1 H2 f rhat i) := by
+  have hm : 0 < n + k := Nat.lt_of_lt_of_le hn (Nat.le_add_right n k)
+  obtain ⟨j0, hmax_eq⟩ := infNormVec_exists_abs_eq hm f
+  let H1 : Fin (n + k) → Fin (n + k) → ℝ :=
+    lsTheorem20_4UniformColumnMajorant j0
+  let H2 : Fin (n + k) → Fin (n + k) → ℝ :=
+    lsTheorem20_4OneHotMajorant j0 j0
+  have hmax : infNormVec f ≤ |f j0| := le_of_eq hmax_eq
+  have hH1nonneg : ∀ i j, 0 ≤ H1 i j := by
+    simpa [H1] using lsTheorem20_4UniformColumnMajorant_nonneg j0
+  have hH2nonneg : ∀ i j, 0 ≤ H2 i j := by
+    simpa [H2] using lsTheorem20_4OneHotMajorant_nonneg j0 j0
+  have hH1norm : frobNorm H1 = 1 := by
+    simpa [H1] using lsTheorem20_4UniformColumnMajorant_frobNorm hm j0
+  have hH2norm : frobNorm H2 = 1 := by
+    simpa [H2] using lsTheorem20_4OneHotMajorant_frobNorm j0 j0
+  have hDeltafDom :
+      let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+        fl_householderQRPanel_Q fp (n + k) n A
+      let Rhat : Fin (n + k) → Fin n → ℝ :=
+        fl_householderQRPanel_R fp (n + k) n A
+      let R : Fin n → Fin n → ℝ :=
+        fun i j => Rhat (Fin.castAdd k i) j
+      let c_hat : Fin (n + k) → ℝ :=
+        fl_householderQRPanel_rhs fp (n + k) n A f
+      let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+      let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+      let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+      ∀ i : Fin (n + k),
+        householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+          (Real.sqrt (n + k : ℝ) * eta) *
+            lsTheorem20_4DeltafMajorant H1 H2 f rhat i := by
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    have hc : 0 ≤ Real.sqrt (n + k : ℝ) * eta := by
+      exact mul_nonneg (Real.sqrt_nonneg _) heta
+    apply
+      lsTheorem20_4DeltafMajorant_dom_of_f_term_dom H1 H2 f rhat
+        (householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f)
+        (Real.sqrt (n + k : ℝ) * eta) hc hH1nonneg hH2nonneg j0
+    intro i
+    have hscale : eta * infNormVec f ≤ eta * |f j0| := by
+      exact mul_le_mul_of_nonneg_left hmax heta
+    have hbase :
+        householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+          eta * |f j0| :=
+      hInfDom.trans hscale
+    have hmR : 0 < (n + k : ℝ) := by exact_mod_cast hm
+    have hsqrt_pos : 0 < Real.sqrt (n + k : ℝ) := Real.sqrt_pos.2 hmR
+    have hsimpl :
+        eta * |f j0| =
+          (Real.sqrt (n + k : ℝ) * eta) * (H1 i j0 * |f j0|) := by
+      simp [H1, lsTheorem20_4UniformColumnMajorant]
+      field_simp [ne_of_gt hsqrt_pos]
+    simpa [hsimpl] using hbase
+  exact ⟨H1, H2, hH1nonneg, hH2nonneg, hH1norm, hH2norm, hDeltafDom⟩
+
+/-- Implementation-backed uniform-column `H_1` source witness for Theorem
+    20.4's `Delta f` bound using the sharpened recursive RHS growth
+    coefficient.
+
+    This removes the abstract scalar `hInfDom` obligation by applying
+    `householderQRRhsPanelSqrtBackwardBound_le_sqrtGrowthCoeff`.  The resulting
+    coefficient is conservative and implementation-derived; it is a sharpened
+    bound for the current fixed-`Q` RHS transport path, not Higham's printed
+    `n * gamma` constant. -/
+theorem householderQRRhsPanelSqrtBackwardBound_uniform_f_source_witness_of_sqrtGrowthCoeff
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid : gammaValid fp (11 * (n + k) + 23))
+    (hready : HouseholderQRPanelReady fp (n + k) n A) :
+    ∃ H1 H2 : Fin (n + k) → Fin (n + k) → ℝ,
+      (∀ i j, 0 ≤ H1 i j) ∧
+      (∀ i j, 0 ≤ H2 i j) ∧
+      frobNorm H1 = 1 ∧
+      frobNorm H2 = 1 ∧
+      (let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+        fl_householderQRPanel_Q fp (n + k) n A
+      let Rhat : Fin (n + k) → Fin n → ℝ :=
+        fl_householderQRPanel_R fp (n + k) n A
+      let R : Fin n → Fin n → ℝ :=
+        fun i j => Rhat (Fin.castAdd k i) j
+      let c_hat : Fin (n + k) → ℝ :=
+        fl_householderQRPanel_rhs fp (n + k) n A f
+      let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+      let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+      let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+      ∀ i : Fin (n + k),
+        householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+          (Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n) *
+            lsTheorem20_4DeltafMajorant H1 H2 f rhat i) := by
+  have heta :
+      0 ≤ householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n :=
+    householderQRRhsPanelSqrtGrowthCoeff_nonneg fp (n + k) n hvalid
+  have hInfDom :
+      householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f ≤
+        householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n * infNormVec f :=
+    householderQRRhsPanelSqrtBackwardBound_le_sqrtGrowthCoeff fp
+      (n + k) n A f hvalid hready
+  simpa using
+    householderQRRhsPanelSqrtBackwardBound_uniform_f_source_witness_of_scalar_infNorm_dom
+      fp A f g hn (householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n)
+      heta hInfDom
+
 /-- Implementation-backed uniform-column `H_1` source witness for Theorem
     20.4's `Delta f` bound using the nonrecursive closed RHS growth
     coefficient.
@@ -16802,6 +16953,126 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQR
       |Deltaf i| ≤
         (Real.sqrt (n + k : ℝ) *
           householderQRRhsPanelGrowthCoeff fp (n + k) n) *
+          lsTheorem20_4DeltafMajorant H1 H2 f rhat i := by
+    intro i
+    exact le_trans (hDeltaf i)
+      (by simpa [Q, Rhat, R, c_hat, cBot, h, rhat] using hDeltafDom i)
+  refine ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2,
+    hDeltaA, hGnonneg, hGnorm, hDeltaAcomp, hDeltafSrc, hDeltag,
+    hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm,
+    hDeltaR1, hDeltaR2, ?_⟩
+  simpa [Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    handoff with implementation-backed uniform `Delta f` source witnesses and
+    the sharpened fixed-`Q` RHS growth coefficient.
+
+    Compared with
+    `exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_growth_source_rhs_bound`,
+    this theorem uses the `householderQRRhsPanelSqrtBackwardBound` path and
+    the corresponding `householderQRRhsPanelSqrtGrowthCoeff` in the source-side
+    `Delta f` coefficient.  The matrix-side and `Delta g` coefficients remain
+    the printed Theorem 20.4 shapes. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_sqrt_growth_source_rhs_bound
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0)
+    (hγ : gammaValid fp n) :
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤
+        gamma fp (n * householderConstructApplyGammaIndex (n + k)) *
+          frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) *
+          householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let R : Fin n → Fin n → ℝ :=
+    fun i j => Rhat (Fin.castAdd k i) j
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+  let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+  let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+  let K : ℕ := householderConstructApplyGammaIndex (n + k)
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * (n + k) + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * (n + k) + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) (by
+      simpa [K] using hvalid)
+  have hready : HouseholderQRPanelReady fp (n + k) n A :=
+    HouseholderQRPanelReady_of_global_gammaValid fp (n + k) n (n + k) A
+      (le_refl (n + k)) hbase_valid
+  rcases
+    householderQRRhsPanelSqrtBackwardBound_uniform_f_source_witness_of_sqrtGrowthCoeff
+      fp A f g hn hbase_valid hready with
+    ⟨H1, H2, hH1nonneg, hH2nonneg, hH1norm, hH2norm, hDeltafDom⟩
+  rcases
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_zero_deltag_bound_sqrt
+      fp A f g hn hvalid hdiag hγ with
+    ⟨DeltaA, G, Deltaf, Deltag, H3, DeltaR1, DeltaR2, hDeltaA,
+      hGnonneg, hGnorm, hDeltaAcomp, hDeltaf, hDeltag, hH3nonneg,
+      hH3norm, hDeltaR1, hDeltaR2, hsys⟩
+  have hDeltafSrc : ∀ i : Fin (n + k),
+      |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) *
+          householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n) *
           lsTheorem20_4DeltafMajorant H1 H2 f rhat i := by
     intro i
     exact le_trans (hDeltaf i)
