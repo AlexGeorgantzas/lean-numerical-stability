@@ -1622,6 +1622,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_pivotingGrowthValues_rook_le_fosterBound_of_eq_one`
 - `higham9_pivotingGrowthValues_rook_le_fosterBound_of_le_two`
 - `higham9_pivotingGrowthValues_rook_le_fosterBound_of_trace_bound`
+- `higham9_pivotingGrowthValues_le_pow_two_of_ne_noPivot`
 - `higham9_pivotingGrowthValues_bddAbove_partial`
 - `higham9_pivotingGrowthValues_bddAbove_complete_wilkinsonBound_of_eq_one`
 - `higham9_pivotingGrowthValues_bddAbove_complete_wilkinsonBound_of_le_two`
@@ -1629,6 +1630,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_pivotingGrowthValues_bddAbove_rook_fosterBound_of_eq_one`
 - `higham9_pivotingGrowthValues_bddAbove_rook_fosterBound_of_le_two`
 - `higham9_pivotingGrowthValues_bddAbove_rook_fosterBound_of_trace_bound`
+- `higham9_pivotingGrowthValues_bddAbove_of_ne_noPivot`
 - `higham9_pivotingGrowthSup_partial_le_pow_two`
 - `higham9_pivotingGrowthSup_complete_le_wilkinsonBound_of_eq_one`
 - `higham9_pivotingGrowthSup_complete_le_wilkinsonBound_of_le_two`
@@ -1636,6 +1638,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_pivotingGrowthSup_rook_le_fosterBound_of_eq_one`
 - `higham9_pivotingGrowthSup_rook_le_fosterBound_of_le_two`
 - `higham9_pivotingGrowthSup_rook_le_fosterBound_of_trace_bound`
+- `higham9_pivotingGrowthSup_le_pow_two_of_ne_noPivot`
 - `higham9_TracePivotingGrowthKind`
 - `higham9_tracePivotingGrowthValues`
 - `higham9_tracePivotingGrowthSup`
