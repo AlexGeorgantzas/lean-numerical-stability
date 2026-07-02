@@ -9,8 +9,10 @@
 -- Theorem 20.2: Componentwise perturbation via the augmented system
 --   [I A; Aᵀ 0][r; x] = [b; 0].
 --
--- These results are axiomatized as structures since they require SVD,
--- pseudo-inverse, and rectangular matrix operations not in the library.
+-- The full Wedin theorem still requires the project-local SVD, pseudoinverse,
+-- and projector perturbation route.  The scalar source right-hand sides below
+-- are proved infrastructure, while the older structures remain only as legacy
+-- contract packages.
 
 import Mathlib.Data.Real.Basic
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
@@ -22,6 +24,122 @@ open scoped BigOperators
 -- ============================================================
 -- §20.1  Theorem 20.1 (Wedin): Normwise LS perturbation
 -- ============================================================
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1):
+    scalar right-hand side of Wedin's relative solution perturbation bound. -/
+noncomputable def wedinTheorem20_1SolutionRelativeRHS
+    (kappa eps A_norm x_norm r_norm : ℝ) : ℝ :=
+  (kappa * eps) / (1 - kappa * eps) *
+    (2 + (kappa + 1) * r_norm / (A_norm * x_norm))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2):
+    scalar right-hand side of Wedin's relative residual perturbation bound. -/
+def wedinTheorem20_1ResidualRelativeRHS (kappa eps : ℝ) : ℝ :=
+  (1 + 2 * kappa) * eps
+
+/-- The small-perturbation condition in Theorem 20.1 makes the denominator in
+    equation (20.1) positive. -/
+theorem wedinTheorem20_1_denominator_pos {kappa eps : ℝ}
+    (hsmall : kappa * eps < 1) :
+    0 < 1 - kappa * eps := by
+  linarith
+
+/-- The denominator in Wedin's equation (20.1) is nonzero under the printed
+    small-perturbation hypothesis. -/
+theorem wedinTheorem20_1_denominator_ne_zero {kappa eps : ℝ}
+    (hsmall : kappa * eps < 1) :
+    1 - kappa * eps ≠ 0 :=
+  (wedinTheorem20_1_denominator_pos hsmall).ne'
+
+/-- Under the natural norm-domain assumptions, Wedin's equation (20.1)
+    right-hand side is a nonnegative scalar bound. -/
+theorem wedinTheorem20_1_solutionRelativeRHS_nonneg {kappa eps A_norm x_norm r_norm : ℝ}
+    (hkappa : 0 ≤ kappa) (heps : 0 ≤ eps) (hsmall : kappa * eps < 1)
+    (hA : 0 < A_norm) (hx : 0 < x_norm) (hr : 0 ≤ r_norm) :
+    0 ≤ wedinTheorem20_1SolutionRelativeRHS kappa eps A_norm x_norm r_norm := by
+  unfold wedinTheorem20_1SolutionRelativeRHS
+  have hnum : 0 ≤ kappa * eps := mul_nonneg hkappa heps
+  have hden_pos : 0 < 1 - kappa * eps :=
+    wedinTheorem20_1_denominator_pos hsmall
+  have hfrac : 0 ≤ (kappa * eps) / (1 - kappa * eps) :=
+    div_nonneg hnum (le_of_lt hden_pos)
+  have hAx_pos : 0 < A_norm * x_norm := mul_pos hA hx
+  have hkappa_one_nonneg : 0 ≤ kappa + 1 := by linarith
+  have hterm : 0 ≤ (kappa + 1) * r_norm / (A_norm * x_norm) :=
+    div_nonneg (mul_nonneg hkappa_one_nonneg hr) (le_of_lt hAx_pos)
+  have hparen : 0 ≤ 2 + (kappa + 1) * r_norm / (A_norm * x_norm) := by
+    linarith
+  exact mul_nonneg hfrac hparen
+
+/-- Under the natural condition-number and roundoff-domain assumptions,
+    Wedin's equation (20.2) right-hand side is nonnegative. -/
+theorem wedinTheorem20_1_residualRelativeRHS_nonneg {kappa eps : ℝ}
+    (hkappa : 0 ≤ kappa) (heps : 0 ≤ eps) :
+    0 ≤ wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+  unfold wedinTheorem20_1ResidualRelativeRHS
+  have hfactor : 0 ≤ 1 + 2 * kappa := by nlinarith
+  exact mul_nonneg hfactor heps
+
+/-- With zero data perturbation budget, the scalar RHS of Wedin's equation
+    (20.1) vanishes. -/
+@[simp] theorem wedinTheorem20_1_solutionRelativeRHS_zero_eps
+    (kappa A_norm x_norm r_norm : ℝ) :
+    wedinTheorem20_1SolutionRelativeRHS kappa 0 A_norm x_norm r_norm = 0 := by
+  simp [wedinTheorem20_1SolutionRelativeRHS]
+
+/-- With zero data perturbation budget, the scalar RHS of Wedin's equation
+    (20.2) vanishes. -/
+@[simp] theorem wedinTheorem20_1_residualRelativeRHS_zero_eps (kappa : ℝ) :
+    wedinTheorem20_1ResidualRelativeRHS kappa 0 = 0 := by
+  simp [wedinTheorem20_1ResidualRelativeRHS]
+
+/-- In the zero-residual case, Wedin's equation (20.1) loses the residual
+    amplification term and reduces to the `2 κ ε / (1 - κ ε)` factor. -/
+theorem wedinTheorem20_1_solutionRelativeRHS_of_zero_residual
+    (kappa eps A_norm x_norm : ℝ) :
+    wedinTheorem20_1SolutionRelativeRHS kappa eps A_norm x_norm 0 =
+      2 * ((kappa * eps) / (1 - kappa * eps)) := by
+  simp [wedinTheorem20_1SolutionRelativeRHS, mul_comm]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    the smallness hypothesis `η < 1` makes the reciprocal denominator positive. -/
+theorem wedinLemma20_11_denominator_pos {eta : ℝ} (hsmall : eta < 1) :
+    0 < 1 - eta := by
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    scalar rearrangement step from the singular-value perturbation lower bound.
+
+    The missing spectral input is the hypothesis `sigmaA - delta <= sigmaB`,
+    where `delta = ||A - B||₂`, `sigmaA = ||A⁺||₂⁻¹`, and
+    `sigmaB = ||B⁺||₂⁻¹`.  This theorem proves only the source's final
+    reciprocal algebra, not the singular-value perturbation theorem itself. -/
+theorem wedinLemma20_11_pinvNorm_le_of_singularValue_gap
+    {Aplus_norm Bplus_norm delta eta sigmaA sigmaB : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hsigmaA : sigmaA = 1 / Aplus_norm)
+    (hBplus : Bplus_norm = 1 / sigmaB)
+    (hgap : sigmaA - delta ≤ sigmaB) :
+    Bplus_norm ≤ Aplus_norm / (1 - eta) := by
+  subst eta
+  have hden_pos : 0 < 1 - Aplus_norm * delta :=
+    wedinLemma20_11_denominator_pos hsmall
+  have hdelta_lt : delta < 1 / Aplus_norm := by
+    rw [lt_div_iff₀ hAplus_pos]
+    simpa [mul_comm] using hsmall
+  have hgap_pos : 0 < sigmaA - delta := by
+    rw [hsigmaA]
+    linarith
+  have hrecip : 1 / sigmaB ≤ 1 / (sigmaA - delta) :=
+    one_div_le_one_div_of_le hgap_pos hgap
+  rw [hBplus]
+  calc
+    1 / sigmaB ≤ 1 / (sigmaA - delta) := hrecip
+    _ = Aplus_norm / (1 - Aplus_norm * delta) := by
+      rw [hsigmaA]
+      field_simp [ne_of_gt hAplus_pos, ne_of_gt hden_pos]
 
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
@@ -36,7 +154,9 @@ open scoped BigOperators
     The bound shows sensitivity is κ₂(A) when the residual is small
     (nearly consistent system) and κ₂(A)² when the residual is large.
 
-    Axiomatized since the proof requires SVD and pseudo-inverse. -/
+    Legacy contract package only: the source-exact Wedin theorem still remains
+    open until the SVD, pseudoinverse, and projector perturbation foundations
+    are closed. -/
 structure WedinPerturbationBound (n : ℕ)
     (x y : Fin n → ℝ) (kappa eps : ℝ)
     (sol_bound res_bound : ℝ) : Prop where
