@@ -15669,6 +15669,139 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQR
   simpa [Q, Rhat, c_hat, K, H3] using hbase
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    handoff with source-shaped matrix perturbation, an explicit zero `Delta g`
+    package, and the sharpened fixed-`Q` RHS perturbation bound.
+
+    This is the sqrt-budget analogue of
+    `exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_zero_deltag_bound`.
+    The only changed component is the `Delta f` radius, which is now
+    `householderQRRhsPanelSqrtBackwardBound`. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_zero_deltag_bound_sqrt
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0)
+    (hγ : gammaValid fp n) :
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤
+        gamma fp (n * householderConstructApplyGammaIndex (n + k)) *
+          frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i,
+        |Deltaf i| ≤
+          householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let K : ℕ := householderConstructApplyGammaIndex (n + k)
+  let row0 : Fin (n + k) := ⟨0, by omega⟩
+  let H3 : Fin (n + k) → Fin (n + k) → ℝ :=
+    fun i j => if row0 = i ∧ row0 = j then 1 else 0
+  have hH3nonneg : ∀ i j, 0 ≤ H3 i j := by
+    intro i j
+    by_cases hij : row0 = i ∧ row0 = j
+    · have hij_eq : i = j := hij.1.symm.trans hij.2
+      simp [H3, hij, hij_eq]
+    · simp [H3, hij]
+  have hH3norm : frobNorm H3 = 1 := by
+    calc
+      frobNorm H3 = frobNormRect H3 := (frobNormRect_eq_frobNormFn H3).symm
+      _ = |(1 : ℝ)| := by
+          simpa [H3] using frobNormRect_single_left row0 row0 (1 : ℝ)
+      _ = 1 := by norm_num
+  have hn_le_rows : n ≤ n + k := Nat.le_add_right n k
+  have hsteps : 0 < Nat.min (n + k) n := by
+    simpa [Nat.min_eq_right hn_le_rows] using hn
+  have hQR :
+      StructuredHouseholderQRPanelHighamBackwardError (n + k) n A Q Rhat
+        (gamma fp (n * K) * frobNorm A)
+        ((n + k : ℝ) * gamma fp (n * K)) := by
+    have hraw :=
+      fl_householderQRPanel_R_higham_backward_error_gammaHigham_of_global_gammaValid
+        fp (n + k) n A hsteps
+        (by simpa [K, Nat.min_eq_right hn_le_rows] using hvalid)
+    simpa [Q, Rhat, K, Nat.min_eq_right hn_le_rows] using hraw
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * (n + k) + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * (n + k) + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) (by
+      simpa [K] using hvalid)
+  have hready : HouseholderQRPanelReady fp (n + k) n A :=
+    HouseholderQRPanelReady_of_global_gammaValid fp (n + k) n (n + k) A
+      (le_refl (n + k)) hbase_valid
+  have hRhs :
+      HouseholderQRRhsPanelExplicitBackwardError (n + k) n A f Q c_hat
+        (householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f) := by
+    simpa [Q, c_hat] using
+      fl_householderQRPanel_rhs_explicit_backward_error_sqrt
+        fp (n + k) n A f hready
+  have hcG :
+      0 ≤ Real.sqrt (n + k : ℝ) * (n : ℝ) * gamma fp (n * K) := by
+    exact mul_nonneg
+      (mul_nonneg (Real.sqrt_nonneg _) (by positivity))
+      (gamma_nonneg fp (by simpa [K] using hvalid))
+  have hbase :=
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_forwardSub_fl_backSub_of_higham_qr_and_rhs_explicit_backward_error_with_zero_deltag_bound
+      fp Q A Rhat f c_hat g
+      (gamma fp (n * K) * frobNorm A)
+      ((n + k : ℝ) * gamma fp (n * K))
+      (householderQRRhsPanelSqrtBackwardBound fp (n + k) n A f)
+      (Real.sqrt (n + k : ℝ) * (n : ℝ) * gamma fp (n * K))
+      H3 hQR hRhs hcG hH3nonneg hH3norm
+      (by simpa [Rhat] using hdiag) hγ
+  simpa [Q, Rhat, c_hat, K, H3] using hbase
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
     handoff with all printed perturbation slots exposed, conditional on the
     remaining `Delta f` source-majorant domination.
 
