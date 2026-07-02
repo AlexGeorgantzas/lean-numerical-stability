@@ -5022,6 +5022,54 @@ theorem householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
     householderBetaSpec_eq_one_of_inner_self_eq_two n
       (householderTrailingActiveVector n p x alpha) hself
 
+/-- Pivot-zero signed active vector equals the exact unnormalized Householder
+vector when the signed alpha is Higham's exact `-s`.
+
+This is the source-side bridge for the unnormalized route: the stored signed
+vector is naturally the unnormalized Householder vector, not the normalized
+`sqrt(beta) * v` vector. -/
+theorem
+    householderTrailingActiveVector_zero_eq_householderVector_of_alpha_eq_householderAlpha
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) (alpha : Real)
+    (halpha : alpha = householderAlpha hn x) :
+    householderTrailingActiveVector n (Fin.mk 0 hn) x alpha =
+      LeanFpAnalysis.FP.householderVector hn x := by
+  funext i
+  by_cases hi : i = Fin.mk 0 hn
+  case pos =>
+    subst i
+    simp [householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, LeanFpAnalysis.FP.householderVector,
+      householderAlpha, halpha]
+  case neg =>
+    simp [householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, LeanFpAnalysis.FP.householderVector, hi]
+
+/-- Pivot-zero signed active vector equals the computed unnormalized
+Householder vector when the stored alpha is the rounded Householder alpha and
+the first-component addition is exact.
+
+This keeps the unnormalized stored-loop bridge separate from the stronger
+source-faithful normalized-vector/self-dot route. -/
+theorem
+    householderTrailingActiveVector_zero_eq_fl_householderVector_of_alpha_eq_fl_householderAlpha
+    (fp : FPModel) {n : Nat} (hn : 0 < n)
+    (x : Fin n -> Real) (alpha : Real)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (halpha : alpha = fl_householderAlpha fp hn x) :
+    householderTrailingActiveVector n (Fin.mk 0 hn) x alpha =
+      fl_householderVector fp hn x := by
+  funext i
+  by_cases hi : i = Fin.mk 0 hn
+  case pos =>
+    subst i
+    simp [householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, fl_householderVector, fl_householderAlpha,
+      halpha, hadd]
+  case neg =>
+    simp [householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, fl_householderVector, hi]
+
 /-- Source-faithful rounded normalization data for one Householder stage.
 
 The record names the exact missing premise left by the arbitrary-`FPModel`
@@ -5256,6 +5304,29 @@ theorem fl_householderVector_eq_of_exact_add_mul_sqrt
   by_cases hi : i = ⟨0, hn⟩
   · simp [hi, hadd]
   · simp [hi]
+
+/-- Exact add/mul/sqrt operations identify the exact signed active vector with
+the computed unnormalized Householder vector.
+
+This is the operation-level version of the source-alpha bridge: exact primitive
+operations make the computed vector collapse to the exact Householder vector,
+while the stored alpha convention supplies the signed active-vector equality. -/
+theorem
+    householderTrailingActiveVector_zero_eq_fl_householderVector_of_alpha_eq_householderAlpha_of_exact_add_mul_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) (alpha : Real)
+    (halpha : alpha = householderAlpha hn x) :
+    householderTrailingActiveVector n (Fin.mk 0 hn) x alpha =
+      fl_householderVector fp hn x := by
+  rw [
+    householderTrailingActiveVector_zero_eq_householderVector_of_alpha_eq_householderAlpha
+      hn x alpha halpha]
+  exact
+    (fl_householderVector_eq_of_exact_add_mul_sqrt
+      fp hadd hmul hsqrt hn x).symm
 
 /-- Exact add/mul/div/sqrt operations make the computed Higham-order
 Householder beta agree with the exact scale-based beta. -/
