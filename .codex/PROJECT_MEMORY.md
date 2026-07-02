@@ -10864,3 +10864,17 @@ These compile, but should not be treated as fully derived stability results:
   Eq.13.22/Eq.13.23 active-suffix product surfaces.  The all-tail
   parent/source comparison theorem, source-strength BDD table construction, and
   Theorem 13.6 cited implementation estimates remain open.
+- 2026-07-02 Problem 13.4 canonical-parent Eq.13.23 product-update packaging:
+  added
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_canonical_parent_inverse_entry`,
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_canonical_parent_inverse_entry`,
+  and determinant-nonzero companions ending in
+  `_of_canonical_parent_inverse_entry_of_det_ne_zero`.
+  These compose the existing first-split product/update or reciprocal-table
+  `rho <= 2` bridge with the canonical parent inverse-entry handoff, so the
+  source-strength Eq.13.23 active-suffix product-update surfaces no longer
+  expose a first-Schur-tail inverse-entry comparison; the determinant variants
+  also derive the ambient `nonsingInv` right-inverse from `det A != 0`.  This is
+  dependency/interface cleanup only: the structured max-entry product estimate,
+  source table data, all-tail source comparisons, and Theorem 13.6 cited
+  implementation estimates remain open.
