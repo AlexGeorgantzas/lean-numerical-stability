@@ -10848,3 +10848,33 @@ These compile, but should not be treated as fully derived stability results:
   first-Schur-tail inverse-entry premise from the Eq.13.22/Eq.13.23
   active-suffix product surfaces while keeping the genuine parent inverse-entry
   source comparison and, for Eq.13.23, the source `rho <= 2` theorem explicit.
+
+- 2026-07-02 Problem 13.4 canonical parent inverse-entry packaging: added
+  `higham13_problem13_4_firstSplit_parent_inverse_entry_bound_from_nonsingInv`,
+  `Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_canonical_parent_inverse_entry_exact_kappa`,
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_canonical_parent_inverse_entry`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_canonical_parent_inverse_entry`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  The helper reuses the
+  reindexing bridge from the displayed first-split `Matrix.fromBlocks` inverse
+  to the canonical ambient `nonsingInv` of `blockMatrixFirstSplitFlat`; the
+  source-chain and product wrappers now derive the parent inverse-entry
+  comparison internally under the parent `Matrix.fromBlocks` invertibility
+  instance.  This removes another proof-artifact hypothesis from the
+  Eq.13.22/Eq.13.23 active-suffix product surfaces.  The all-tail
+  parent/source comparison theorem, source-strength BDD table construction, and
+  Theorem 13.6 cited implementation estimates remain open.
+- 2026-07-02 Problem 13.4 canonical-parent Eq.13.23 product-update packaging:
+  added
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_canonical_parent_inverse_entry`,
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_canonical_parent_inverse_entry`,
+  and determinant-nonzero companions ending in
+  `_of_canonical_parent_inverse_entry_of_det_ne_zero`.
+  These compose the existing first-split product/update or reciprocal-table
+  `rho <= 2` bridge with the canonical parent inverse-entry handoff, so the
+  source-strength Eq.13.23 active-suffix product-update surfaces no longer
+  expose a first-Schur-tail inverse-entry comparison; the determinant variants
+  also derive the ambient `nonsingInv` right-inverse from `det A != 0`.  This is
+  dependency/interface cleanup only: the structured max-entry product estimate,
+  source table data, all-tail source comparisons, and Theorem 13.6 cited
+  implementation estimates remain open.

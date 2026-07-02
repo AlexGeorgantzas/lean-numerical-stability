@@ -2986,6 +2986,193 @@ theorem fl_cpFactor_rows_dominated (fp : FPModel) {n : ℕ}
     hSPSD (cpPivot_max hn A t) (hfloor t htr) hρ0 hht0
     (hht4 t htr) hclose hu1 j
 
+/-- The exact scaled pivot row extracted at one elimination stage:
+    `√(a_pp)` at the pivot, `a_pj/√(a_pp)` elsewhere. -/
+noncomputable def schurRow {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (p : Fin n) : Fin n → ℝ :=
+  fun i => if i = p then Real.sqrt (A p p)
+    else A p i / Real.sqrt (A p p)
+
+/-- **One elimination step subtracts the scaled pivot-row outer
+    product** — entrywise, at every position including the zeroed
+    pivot row and column. -/
+lemma schurStep_decompose {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (p : Fin n) (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hp : 0 < A p p) :
+    ∀ i j : Fin n, schurStep A p i j =
+      A i j - schurRow A p i * schurRow A p j := by
+  intro i j
+  have hsq : Real.sqrt (A p p) * Real.sqrt (A p p) = A p p :=
+    Real.mul_self_sqrt hp.le
+  have hsq0 : Real.sqrt (A p p) ≠ 0 :=
+    (Real.sqrt_pos.mpr hp).ne'
+  unfold schurStep schurRow
+  by_cases hi : i = p
+  · by_cases hj : j = p
+    · rw [hi, hj, if_pos (Or.inl rfl), if_pos rfl, hsq]
+      ring
+    · rw [hi, if_pos (Or.inl rfl), if_pos rfl, if_neg hj,
+        show Real.sqrt (A p p) * (A p j / Real.sqrt (A p p)) =
+          A p j * (Real.sqrt (A p p) / Real.sqrt (A p p)) by ring,
+        div_self hsq0]
+      ring
+  · by_cases hj : j = p
+    · rw [hj, if_pos (Or.inr rfl), if_neg hi, if_pos rfl,
+        show A p i / Real.sqrt (A p p) * Real.sqrt (A p p) =
+          A p i * (Real.sqrt (A p p) / Real.sqrt (A p p)) by ring,
+        div_self hsq0, hsym p i]
+      ring
+    · rw [if_neg (by simp [hi, hj]), if_neg hi, if_neg hj,
+        show A p i / Real.sqrt (A p p) *
+          (A p j / Real.sqrt (A p p)) =
+          A p i * A p j / (Real.sqrt (A p p) * Real.sqrt (A p p))
+          by ring, hsq, hsym p i]
+
+/-- **The exact run telescopes**: after `r` stages,
+    `A = ∑_{t<r} row_tᵀ row_t + S_r` entrywise — the Gram assembly of
+    the exact pivoted factorization, with `S_r` the stage-`r` Schur
+    complement (Theorem 10.14 / (10.22) exact skeleton). -/
+theorem cpState_telescope {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (hsym : ∀ i j : Fin n, A i j = A j i)
+    (r : ℕ)
+    (hfloor : ∀ t : ℕ, t < r →
+      0 < cpState hn A t (cpPivot hn A t) (cpPivot hn A t)) :
+    ∀ i j : Fin n,
+      A i j = (∑ t ∈ Finset.range r,
+        schurRow (cpState hn A t) (cpPivot hn A t) i *
+        schurRow (cpState hn A t) (cpPivot hn A t) j) +
+        cpState hn A r i j := by
+  induction r with
+  | zero =>
+    intro i j
+    simp [cpState]
+  | succ r ih =>
+    intro i j
+    have hfloor' : ∀ t : ℕ, t < r →
+        0 < cpState hn A t (cpPivot hn A t) (cpPivot hn A t) :=
+      fun t ht => hfloor t (Nat.lt_succ_of_lt ht)
+    have hsymr : ∀ i j : Fin n,
+        cpState hn A r i j = cpState hn A r j i :=
+      cpState_symm hn A hsym r
+    have hstep := schurStep_decompose (cpState hn A r)
+      (cpPivot hn A r) hsymr (hfloor r (Nat.lt_succ_self r)) i j
+    have hS : cpState hn A (r + 1) i j =
+        cpState hn A r i j -
+        schurRow (cpState hn A r) (cpPivot hn A r) i *
+        schurRow (cpState hn A r) (cpPivot hn A r) j := hstep
+    have hih := ih hfloor' i j
+    rw [Finset.sum_range_succ, hS]
+    linarith [hih]
+
+/-- **The fl pivot-agreement hypotheses are non-vacuous** (instantiated
+    budget): with `U` the one-stage rounding contribution and
+    `K = 1 + (3c² + c)/(ρ/2)²` the exact-growth rate, the explicit
+    budget `g t = U·t·Kᵗ` satisfies the recurrence, so a single scalar
+    smallness condition `U·r·Kʳ < min(min 1 (δ/2)) (ρ/4)` — which holds
+    for all sufficiently small `u`, since `U` is a polynomial in `u`
+    vanishing at `0` — yields pivot agreement and state closeness
+    outright. -/
+theorem fl_cpPivot_sequence_agrees_small (fp : FPModel) {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ) (r : ℕ)
+    (δ ρ c : ℝ) (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c)
+    (hsmall :
+      (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+        ((c + δ / 2) ^ 2 / (ρ / 2)) * (2 * fp.u + fp.u ^ 2) *
+          (1 + fp.u)) * r *
+        (1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2) ^ r <
+      min (min 1 (δ / 2)) (ρ / 4)) :
+    ∀ t : ℕ, t ≤ r →
+      (∀ i j : Fin n,
+        |cpState hn A t i j - fl_cpState fp hn A t i j| ≤
+        (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+          ((c + δ / 2) ^ 2 / (ρ / 2)) * (2 * fp.u + fp.u ^ 2) *
+            (1 + fp.u)) * t *
+          (1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2) ^ t) ∧
+      (∀ s : ℕ, s < t → cpPivot hn A s = fl_cpPivot fp hn A s) := by
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  have hu0 := fp.u_nonneg
+  set U : ℝ := fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+    ((c + δ / 2) ^ 2 / (ρ / 2)) * (2 * fp.u + fp.u ^ 2) *
+      (1 + fp.u) with hU
+  set K : ℝ := 1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2 with hK
+  have hU0 : 0 ≤ U := by rw [hU]; positivity
+  have hK1 : (1:ℝ) ≤ K := by
+    rw [hK]
+    have : (0:ℝ) ≤ (3 * c ^ 2 + c) / (ρ / 2) ^ 2 := by positivity
+    linarith
+  have hK0 : (0:ℝ) < K := lt_of_lt_of_le one_pos hK1
+  set g : ℕ → ℝ := fun t => U * t * K ^ t with hg
+  -- the budget is capped along the run by the smallness scalar
+  have hgle : ∀ t : ℕ, t ≤ r →
+      g t ≤ U * r * K ^ r := by
+    intro t htr
+    show U * t * K ^ t ≤ U * r * K ^ r
+    have h1 : (t:ℝ) ≤ (r:ℝ) := by exact_mod_cast htr
+    have h2 : K ^ t ≤ K ^ r := pow_le_pow_right₀ hK1 htr
+    calc U * t * K ^ t ≤ U * r * K ^ t := by
+          have := mul_le_mul_of_nonneg_left h1 hU0
+          exact mul_le_mul_of_nonneg_right this (by positivity)
+      _ ≤ U * r * K ^ r := by
+          exact mul_le_mul_of_nonneg_left h2
+            (mul_nonneg hU0 (Nat.cast_nonneg r))
+  have hM := hsmall
+  have hmin1 : min (min 1 (δ / 2)) (ρ / 4) ≤ 1 :=
+    le_trans (min_le_left _ _) (min_le_left _ _)
+  have hminδ : min (min 1 (δ / 2)) (ρ / 4) ≤ δ / 2 :=
+    le_trans (min_le_left _ _) (min_le_right _ _)
+  -- the explicit budget satisfies all three conditions
+  have hg0 : g 0 = 0 := by
+    show U * (0:ℕ) * K ^ 0 = 0
+    norm_num
+  have hg1 : ∀ t : ℕ, t < r → g t ≤ 1 := fun t htr =>
+    le_trans (hgle t (Nat.le_of_lt htr)) (le_of_lt
+      (lt_of_lt_of_le hM hmin1))
+  have hghalf : ∀ t : ℕ, t < r → g t < δ / 2 := fun t htr =>
+    lt_of_le_of_lt (hgle t (Nat.le_of_lt htr))
+      (lt_of_lt_of_le hM hminδ)
+  have hg_nonneg : ∀ t : ℕ, 0 ≤ g t := by
+    intro t
+    show (0:ℝ) ≤ U * t * K ^ t
+    positivity
+  have hgstep : ∀ t : ℕ, t < r →
+      g t + (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 + U ≤
+        g (t + 1) := by
+    intro t htr
+    have hgt1 := hg1 t htr
+    have hgt0 := hg_nonneg t
+    -- quadratic absorbed at g ≤ 1, then the K-recurrence
+    have habs : 3 * c ^ 2 * g t + c * g t ^ 2 ≤
+        (3 * c ^ 2 + c) * g t := by
+      nlinarith [mul_nonneg (mul_nonneg hc hgt0)
+        (sub_nonneg.mpr hgt1)]
+    have hKrec : g t * K + U ≤ g (t + 1) := by
+      show U * t * K ^ t * K + U ≤ U * ((t + 1 : ℕ) : ℝ) * K ^ (t + 1)
+      push_cast
+      have h1 : (1:ℝ) ≤ K ^ (t + 1) := one_le_pow₀ hK1
+      have h2 : U * (t:ℝ) * K ^ t * K = U * (t:ℝ) * K ^ (t + 1) := by
+        rw [pow_succ]; ring
+      nlinarith [h2, mul_nonneg hU0 (sub_nonneg.mpr h1)]
+    have hexp : g t + (3 * c ^ 2 + c) * g t / (ρ / 2) ^ 2 =
+        g t * K := by
+      rw [hK]
+      field_simp
+    have hdiv : (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 ≤
+        (3 * c ^ 2 + c) * g t / (ρ / 2) ^ 2 := by gcongr
+    calc g t + (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 + U
+        ≤ g t + (3 * c ^ 2 + c) * g t / (ρ / 2) ^ 2 + U := by
+          linarith [hdiv]
+      _ = g t * K + U := by rw [hexp]
+      _ ≤ g (t + 1) := hKrec
+  exact fl_cpPivot_sequence_agrees fp hn A r δ ρ c hδ hδρ hc
+    g hg0 hgstep hghalf hgap hfloor hcap
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================

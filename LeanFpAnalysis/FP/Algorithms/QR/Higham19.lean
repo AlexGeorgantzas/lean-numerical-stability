@@ -20009,6 +20009,215 @@ theorem
         fp hmodel r p A_hat alpha htailVecs)
       hcopy
 
+/-- Exact add/mul/div/sqrt operations assemble the recursive source-faithful
+normalization package from tail-local vector equalities.
+
+This exposes the primitive-operation sufficient condition at the recursive
+package boundary; it remains conditional on the all-stage tail-vector
+equalities. -/
+theorem
+    storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTailSourceFaithfulNormalizations fp r p
+      A_hat alpha :=
+  storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_of_normalizationModel
+    fp
+    (sourceFaithfulHouseholderNormalizationModel_of_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt)
+    r p A_hat alpha hvecs
+
+/-- Exact add/mul/div/sqrt operations assemble raw all-stage
+tail-normalized facts from tail-local vector equalities.
+
+This is a stronger-model endpoint adapter, not a rounded stored-loop proof. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha :=
+  storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_of_normalizationModel
+    fp
+    (sourceFaithfulHouseholderNormalizationModel_of_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt)
+    r p A_hat alpha hvecs
+
+/-- Exact add/mul/div/sqrt operations assemble the named all-stage
+tail-normalized record package from tail-local vector equalities. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRecords_of_tailVectorEqLoopFacts_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha :=
+  storedSignedSequenceTailNormalizedLoopRecords_of_tailVectorEqLoopFacts_of_normalizationModel
+    fp
+    (sourceFaithfulHouseholderNormalizationModel_of_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt)
+    r p A_hat alpha hvecs
+
+/-- Exact add/mul/div/sqrt operations assemble twice-trailing source-closure
+data from tail-local vector equalities. -/
+theorem
+    storedSignedSequenceTwiceTrailingSourceClosureData_of_tailVectorEqLoopFacts_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTwiceTrailingSourceClosureData fp r p
+      A_hat alpha :=
+  storedSignedSequenceTwiceTrailingSourceClosureData_of_tailVectorEqLoopFacts_of_normalizationModel
+    fp
+    (sourceFaithfulHouseholderNormalizationModel_of_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt)
+    r p A_hat alpha hvecs
+
+/-- Exact add/mul/div/sqrt operations assemble the twice-trailing
+final-closure predicate from tail-local vector equalities and the existing
+zero-subtraction convention. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_of_normalizationModel
+    fp
+    (sourceFaithfulHouseholderNormalizationModel_of_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt)
+    r p A_hat alpha hvecs hcopy
+
+/-- Exact add/mul/div/sqrt operations feed the stronger-model final-panel
+bridge from the same tail-vector loop facts.
+
+The theorem keeps the existing first-reflector vector-equality,
+leading-block nonbreakdown, recursive tail-vector, and zero-subtraction
+premises explicit; it only discharges the
+`sourceFaithfulHouseholderNormalizationModel` premise. -/
+theorem
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_sourceFaithful_tailVectorEqLoopFacts_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    (r p : Nat)
+    (A : Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrows : 2 <= r + p + 2)
+    (hcols : 2 <= p + 2)
+    (hinit : A_hat 0 = A)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + p + 2) (p + 2) k
+          (householderTrailingActiveVector (r + p + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + p + 2)
+            (householderTrailingActiveVector (r + p + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hvec0 :
+      householderTrailingActiveVector (r + p + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0) =
+        fl_householderNormalizedVector fp (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A))
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (r + p + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp
+              (Nat.succ_pos (r + p + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp
+              (r + p + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le (r + p)))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      (let v0 := fl_householderNormalizedVector fp
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp
+          (r + p + 2) (p + 2) 0 v0 1 A
+       householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) (alpha 1) =
+          fl_householderNormalizedVector fp (Nat.succ_pos (r + p))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))))
+    (htailVecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    A_hat (p + 2) =
+      fl_householderQRPanel_R fp (r + p + 2) (p + 2) A :=
+  storedSignedSequence_final_panel_eq_qrPanel_R_of_sourceFaithful_tailVectorEqLoopFacts_of_normalizationModel
+    fp
+    (sourceFaithfulHouseholderNormalizationModel_of_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt)
+    r p A A_hat alpha hrows hcols hinit hStep hvec0 hdetFirst hdetTail
+    hvecTail htailVecs hcopy
+
 /-- Exact-arithmetic tail-vector loop facts imply the twice-trailing
 final-closure predicate.
 
