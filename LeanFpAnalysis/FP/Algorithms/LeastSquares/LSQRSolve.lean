@@ -44608,6 +44608,20 @@ theorem qrStageHorizonBudget_nonneg
   · simpa [qrStageHorizonBudget, ht] using hBudget_nonneg t
   · simpa [qrStageHorizonBudget, ht] using hBudget_nonneg n
 
+/-- The QR-horizon clamp is globally nonnegative when the original stage budget
+    is nonnegative on the finite algorithmic horizon. -/
+theorem qrStageHorizonBudget_nonneg_of_nonneg_on_stages
+    (n : ℕ) (stageBudget : ℕ → ℝ)
+    (hBudget_nonneg_on_stages :
+      ∀ t : ℕ, t ≤ n → 0 ≤ stageBudget t) :
+    ∀ t : ℕ, 0 ≤ qrStageHorizonBudget n stageBudget t := by
+  intro t
+  by_cases ht : t ≤ n
+  · simpa [qrStageHorizonBudget, ht] using
+      hBudget_nonneg_on_stages t ht
+  · simpa [qrStageHorizonBudget, ht] using
+      hBudget_nonneg_on_stages n le_rfl
+
 theorem qrStageHorizonBudget_mono_of_mono_on_stages
     (n : ℕ) (stageBudget : ℕ → ℝ)
     (hBudget_mono_on_stages :
@@ -53315,6 +53329,144 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominan
   have hBudget'_nonneg : ∀ t : ℕ, 0 ≤ stageBudget' t := by
     simpa [stageBudget'] using
       qrStageHorizonBudget_nonneg n stageBudget hBudget_nonneg
+  have hglobalBudget' : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget' t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget' (t + 1) := by
+    intro t ht
+    have ht_le : t ≤ n := Nat.le_of_lt ht
+    have hsucc_le : t + 1 ≤ n := Nat.succ_le_iff.mpr ht
+    simpa [stageBudget', qrStageHorizonBudget, ht_le, hsucc_le] using
+      hglobalBudget t ht
+  have hinit' : ∀ k (hk : k < n), ∀ i j : Fin (k + 1),
+      ∀ _hij : i.val < j.val,
+        |A_hat 0
+            (qrLeadingRow m k
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+            (qrLeadingColumn n k hk j)| ≤
+          stageBudget' 0 := by
+    intro k hk i j hij
+    have h0 : 0 ≤ n := Nat.zero_le n
+    simpa [stageBudget', qrStageHorizonBudget, h0] using
+      hinit k hk i j hij
+  have hinitBlock' : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget' 0 := by
+    intro r l
+    have h0 : 0 ≤ n := Nat.zero_le n
+    simpa [stageBudget', qrStageHorizonBudget, h0] using hinitBlock r l
+  have hcomparison' :
+      storedQRStageRowMaxComparisonDefectBudget hmn A_hat stageBudget' ≤ 0 := by
+    simpa [stageBudget'] using
+      storedQRStageRowMaxComparisonDefectBudget_nonpos_of_horizonBudget
+        hmn A_hat stageBudget hcomparison
+  exact
+    StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominant_signedStageUniformBudget_globalCompactBudget_activeMaxPivot_completedColumns_finiteMaxSourceDenURationalGammaCanonicalBounds_stageRowMaxComparisonDefect_offdiag_rows
+      hmn fp A_hat b_hat alpha stageBudget' Ucap hm hStepA hAlphaDef
+      hDD hinit' hinitBlock' hglobalBudget' hBudget'_nonneg
+      hBudget'_mono hcomparison' hpivotChoice hUcap_nonneg hden hu huCap
+      hsmall
+
+/-- Horizon-clamped source-denominator/cap source-control handoff from only
+    initial stage-budget nonnegativity.
+
+The finite global compact-step recurrence propagates nonnegativity and
+monotonicity on the QR horizon.  After clamping the budget after `n`, that
+finite-horizon information is enough for the older globally quantified
+source-control surface. -/
+theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominant_signedStageUniformBudget_globalCompactBudget_activeMaxPivot_completedColumns_finiteMaxSourceDenURationalGammaCanonicalBounds_stageRowMaxComparisonDefect_offdiag_rows_of_horizonBudget_of_initial_nonneg
+    {m n : ℕ} (hmn : n ≤ m)
+    (fp : FPModel)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (b_hat : ℕ → Fin m → ℝ)
+    (alpha : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (Ucap : ℝ)
+    (hm : gammaValid fp m)
+    (hStepA : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩)))
+          (A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩))
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hinit : ∀ k (hk : k < n), ∀ i j : Fin (k + 1), ∀ _hij : i.val < j.val,
+      |A_hat 0
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          (qrLeadingColumn n k hk j)| ≤
+        stageBudget 0)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn A_hat stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩ (A_hat t))
+    (hUcap_nonneg : 0 ≤ Ucap)
+    (hden : ∀ k (hk : k < n),
+      (∑ i : Fin m,
+        householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k) i *
+          householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k) i) ≠ 0)
+    (hu : fp.u ≤ Ucap)
+    (huCap : (m : ℝ) * Ucap < 1)
+    (hsmall :
+      let Dcap := storedQRDiagDominantInvFactorBudget hmn A_hat
+      let Ncap := storedQRPivotColumnNormBudget hmn A_hat
+      let Gcap := ((m : ℝ) * Ucap) / (1 - (m : ℝ) * Ucap)
+      let Fcap :=
+        Ucap * (1 + Gcap) * (1 + Ucap) +
+          Ucap * (1 + Gcap) +
+          Gcap +
+          Ucap * (1 + Gcap) * (1 + Ucap) ^ 2
+      2 * Dcap *
+          ((m : ℝ) *
+            ((((n : ℝ) * ((n : ℝ) + 1) * (Ucap + 2 * Fcap)) *
+                Ncap) ^ 2)) <
+        1) :
+    StoredQRSourceOffDiagonalControl hmn fp A_hat b_hat alpha := by
+  let stageBudget' := qrStageHorizonBudget n stageBudget
+  have hBudget_nonneg_on_stages :
+      ∀ t : ℕ, t ≤ n → 0 ≤ stageBudget t :=
+    storedQRSignedStageBudget_nonneg_on_stages_of_globalCompactBudget
+      hmn fp A_hat alpha stageBudget hm hglobalBudget hBudget0_nonneg
+  have hBudget_mono_on_stages :
+      ∀ a b : ℕ, a ≤ b → b ≤ n → stageBudget a ≤ stageBudget b :=
+    storedQRSignedStageBudget_mono_on_stages_of_globalCompactBudget_of_initial_nonneg
+      hmn fp A_hat alpha stageBudget hm hglobalBudget hBudget0_nonneg
+  have hBudget'_mono :
+      ∀ a b : ℕ, a ≤ b → stageBudget' a ≤ stageBudget' b := by
+    simpa [stageBudget'] using
+      qrStageHorizonBudget_mono_of_mono_on_stages
+        n stageBudget hBudget_mono_on_stages
+  have hBudget'_nonneg : ∀ t : ℕ, 0 ≤ stageBudget' t := by
+    simpa [stageBudget'] using
+      qrStageHorizonBudget_nonneg_of_nonneg_on_stages
+        n stageBudget hBudget_nonneg_on_stages
   have hglobalBudget' : ∀ t (ht : t < n),
       coxHighamActiveRowGrowthFactor m * stageBudget' t +
           storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
@@ -66467,6 +66619,121 @@ theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDomina
       fp hmn A b A_hat b_hat alpha stageBudget huSmall hInitA hInitb
       hStepA hStepb hAlphaDef hDD hinit hinitBlock hglobalBudget
       hBudget_nonneg hcomparison hpivotChoice hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, stored-Householder QR
+    source-facing compact-budget wrapper with initial stage-budget
+    nonnegativity.
+
+    This strengthens
+    `theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_storedLower_activePivot_actualUnitRoundoff_horizonBudget`
+    by deriving finite-horizon nonnegativity from `0 <= stageBudget 0` and the
+    global compact-step recurrence.  The direct rectangular perturbation
+    conclusion and the remaining genuine stored-Householder side conditions are
+    unchanged. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_storedLower_activePivot_actualUnitRoundoff_initialBudget_horizonBudget
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (b_hat : ℕ → Fin m → ℝ)
+    (alpha : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hInitA : A_hat 0 = A)
+    (hInitb : b_hat 0 = b)
+    (hStepA : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (hStepb : ∀ k (hk : k < n),
+      b_hat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (b_hat k))
+    (hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩)))
+          (A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩))
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hinit : ∀ k (hk : k < n), ∀ i j : Fin (k + 1), ∀ _hij : i.val < j.val,
+      |A_hat 0
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          (qrLeadingColumn n k hk j)| ≤
+        stageBudget 0)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn A_hat stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩ (A_hat t))
+    (hsmall :
+      let Dcap := storedQRDiagDominantInvFactorBudget hmn A_hat
+      let Ncap := storedQRPivotColumnNormBudget hmn A_hat
+      let Gcap := ((m : ℝ) * fp.u) / (1 - (m : ℝ) * fp.u)
+      let Fcap :=
+        fp.u * (1 + Gcap) * (1 + fp.u) +
+          fp.u * (1 + Gcap) +
+          Gcap +
+          fp.u * (1 + Gcap) * (1 + fp.u) ^ 2
+      2 * Dcap *
+          ((m : ℝ) *
+            ((((n : ℝ) * ((n : ℝ) + 1) * (fp.u + 2 * Fcap)) *
+                Ncap) ^ 2)) <
+        1) :
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  have hm : gammaValid fp m :=
+    gammaValid_of_u_le_cap fp m fp.u (le_rfl : fp.u ≤ fp.u) huSmall
+  have hγ : gammaValid fp n :=
+    gammaValid_mono fp hmn hm
+  exact
+    exists_perturbed_ls_minimizer_of_stored_trailing_householder_sequence_topBlock_fl_backSub_gamma_bound_explicitCompactBudget_of_signed_alpha_sourceOffDiagonalControl
+      fp hmn A b A_hat b_hat alpha hm hγ hInitA hInitb hStepA hStepb
+      hAlphaDef
+      (StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominant_signedStageUniformBudget_globalCompactBudget_activeMaxPivot_completedColumns_finiteMaxSourceDenURationalGammaCanonicalBounds_stageRowMaxComparisonDefect_offdiag_rows_of_horizonBudget_of_initial_nonneg
+        hmn fp A_hat b_hat alpha stageBudget fp.u hm hStepA hAlphaDef hDD
+        hinit hinitBlock hglobalBudget hBudget0_nonneg hcomparison
+        hpivotChoice fp.u_nonneg
+        (storedQRSourceDenominator_ne_zero_of_diagDominant_signedAlphaDef_stored_trailing_sequence
+          fp hmn A_hat alpha hStepA hAlphaDef hDD)
+        (le_rfl : fp.u ≤ fp.u) huSmall hsmall)
 
 /-- Solver-facing active-max-pivot QR certificate using row-max scalar defect
     plus an explicit stage-budget/row-max comparison.

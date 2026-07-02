@@ -1700,6 +1700,145 @@ theorem diagArgmax_stable {n : ℕ} (hn : 0 < n)
   · exact diagArgmax_eq_of_strict hn _ p fun i hip =>
       strict_argmax_diag_stable A E p δ hgap hE i hip
 
+/-- **One complete-pivoting elimination step** (Lemma 10.11 state
+    machine): eliminate pivot `p`, zeroing its row and column and
+    forming the Schur update on the rest. Dimension is preserved so the
+    stage recursion needs no dependent reindexing. -/
+noncomputable def schurStep {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (p : Fin n) : Fin n → Fin n → ℝ :=
+  fun i j => if i = p ∨ j = p then 0
+    else A i j - A i p * A p j / A p p
+
+/-- `schurStep` preserves symmetry. -/
+lemma schurStep_symm {n : ℕ} (A : Fin n → Fin n → ℝ) (p : Fin n)
+    (hsym : ∀ i j : Fin n, A i j = A j i) (i j : Fin n) :
+    schurStep A p i j = schurStep A p j i := by
+  unfold schurStep
+  by_cases hi : i = p
+  · by_cases hj : j = p <;> simp [hi, hj]
+  · by_cases hj : j = p
+    · simp [hi, hj]
+    · simp only [hi, hj, or_self, if_false]
+      rw [hsym i j, hsym i p, hsym p j]
+      ring
+
+/-- **`schurStep` preserves positive semidefiniteness** (the
+    completion-of-squares invariant of the Lemma 10.11 stage
+    recursion): with a positive pivot, the zeroed Schur update of a PSD
+    matrix is PSD — the quadratic form of the update at `x` equals the
+    quadratic form of `A` at `x` with the `p`-th coordinate replaced by
+    the minimizer `−(∑_{j≠p} a_pj x_j)/a_pp`. -/
+lemma schurStep_isPosSemiDef {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (p : Fin n) (hp : 0 < A p p) :
+    IsPosSemiDef n (schurStep A p) := by
+  refine ⟨schurStep_symm A p hPSD.1, ?_⟩
+  intro x
+  set d : ℝ := A p p with hd
+  set u : ℝ := ∑ j ∈ Finset.univ.erase p, A p j * x j with hu
+  set z : Fin n → ℝ := fun i => if i = p then -u / d else x i with hz
+  -- the quadratic form of the update, reduced to the erased square
+  have hSquad : ∑ i : Fin n, ∑ j : Fin n,
+      x i * schurStep A p i j * x j =
+      ∑ i ∈ Finset.univ.erase p, ∑ j ∈ Finset.univ.erase p,
+        x i * (A i j - A i p * A p j / d) * x j := by
+    rw [← Finset.add_sum_erase _ _ (Finset.mem_univ p)]
+    have hrow : ∑ j : Fin n, x p * schurStep A p p j * x j = 0 :=
+      Finset.sum_eq_zero fun j _ => by
+        unfold schurStep; simp
+    rw [hrow, zero_add]
+    refine Finset.sum_congr rfl fun i hi => ?_
+    have hip : i ≠ p := Finset.ne_of_mem_erase hi
+    rw [← Finset.add_sum_erase _ _ (Finset.mem_univ p)]
+    have hcol : x i * schurStep A p i p * x p = 0 := by
+      unfold schurStep; simp
+    rw [hcol, zero_add]
+    refine Finset.sum_congr rfl fun j hj => ?_
+    have hjp : j ≠ p := Finset.ne_of_mem_erase hj
+    unfold schurStep
+    simp [hip, hjp, ← hd]
+  -- the quadratic form of A at the completed vector z
+  have hAquad : ∑ i : Fin n, ∑ j : Fin n, z i * A i j * z j =
+      (-u / d) * d * (-u / d) + (-u / d) * u + u * (-u / d) +
+      ∑ i ∈ Finset.univ.erase p, ∑ j ∈ Finset.univ.erase p,
+        x i * A i j * x j := by
+    rw [← Finset.add_sum_erase _ _ (Finset.mem_univ p)]
+    have hrowp : ∑ j : Fin n, z p * A p j * z j =
+        (-u / d) * d * (-u / d) + (-u / d) * u := by
+      rw [← Finset.add_sum_erase _ _ (Finset.mem_univ p)]
+      have hzp : z p = -u / d := by simp [hz]
+      have htail : ∑ j ∈ Finset.univ.erase p, z p * A p j * z j =
+          (-u / d) * u := by
+        rw [hu, Finset.mul_sum]
+        refine Finset.sum_congr rfl fun j hj => ?_
+        have hjp : j ≠ p := Finset.ne_of_mem_erase hj
+        rw [hzp]
+        simp only [hz, hjp, if_false]
+        ring
+      rw [htail, hzp, hd]
+    rw [hrowp]
+    have hrest : ∑ i ∈ Finset.univ.erase p,
+        ∑ j : Fin n, z i * A i j * z j =
+        u * (-u / d) + ∑ i ∈ Finset.univ.erase p,
+          ∑ j ∈ Finset.univ.erase p, x i * A i j * x j := by
+      have hsw : ∀ i ∈ Finset.univ.erase p,
+          ∑ j : Fin n, z i * A i j * z j =
+          x i * A i p * (-u / d) +
+          ∑ j ∈ Finset.univ.erase p, x i * A i j * x j := by
+        intro i hi
+        have hip : i ≠ p := Finset.ne_of_mem_erase hi
+        rw [← Finset.add_sum_erase _ _ (Finset.mem_univ p)]
+        have hzi : z i = x i := by simp [hz, hip]
+        have hzp : z p = -u / d := by simp [hz]
+        rw [hzi, hzp]
+        congr 1
+        refine Finset.sum_congr rfl fun j hj => ?_
+        have hjp : j ≠ p := Finset.ne_of_mem_erase hj
+        simp [hz, hjp]
+      rw [Finset.sum_congr rfl hsw, Finset.sum_add_distrib]
+      congr 1
+      have : ∑ i ∈ Finset.univ.erase p, x i * A i p * (-u / d) =
+          (∑ i ∈ Finset.univ.erase p, A p i * x i) * (-u / d) := by
+        rw [Finset.sum_mul]
+        refine Finset.sum_congr rfl fun i hi => ?_
+        rw [hPSD.1 i p]
+        ring
+      rw [this]
+    rw [hrest]
+    ring
+  -- the cross term collapses: quadForm S x = quadForm A z
+  have hfactor : ∑ i ∈ Finset.univ.erase p,
+      ∑ j ∈ Finset.univ.erase p,
+        x i * (A i p * A p j / d) * x j = u * u / d := by
+    have hsep : ∀ i ∈ Finset.univ.erase p,
+        ∑ j ∈ Finset.univ.erase p,
+          x i * (A i p * A p j / d) * x j =
+        (A p i * x i / d) * u := by
+      intro i hi
+      rw [hu, Finset.mul_sum]
+      refine Finset.sum_congr rfl fun j hj => ?_
+      rw [hPSD.1 i p]
+      ring
+    rw [Finset.sum_congr rfl hsep, ← Finset.sum_mul,
+      ← Finset.sum_div, ← hu]
+    ring
+  have hkey : ∑ i : Fin n, ∑ j : Fin n,
+      x i * schurStep A p i j * x j =
+      ∑ i : Fin n, ∑ j : Fin n, z i * A i j * z j := by
+    rw [hSquad, hAquad]
+    have hsub : ∑ i ∈ Finset.univ.erase p, ∑ j ∈ Finset.univ.erase p,
+        x i * (A i j - A i p * A p j / d) * x j =
+        (∑ i ∈ Finset.univ.erase p, ∑ j ∈ Finset.univ.erase p,
+          x i * A i j * x j) - u * u / d := by
+      rw [← hfactor, ← Finset.sum_sub_distrib]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun j _ => by ring
+    rw [hsub]
+    field_simp
+    ring
+  rw [hkey]
+  exact hPSD.2 z
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
