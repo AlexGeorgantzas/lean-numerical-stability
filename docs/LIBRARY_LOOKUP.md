@@ -3094,6 +3094,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normwise_source_zero_bound_of_factorization_Gtilde_residual_zero_of_matrix_inverse_identities`
 - `higham9_15_normwise_source_zero_bound_of_factorization_Gtilde_residual_zero`
 - `higham9_15_componentwise_source_firstOrder_zero_bound_of_source_perturbations_zero`
+- `higham9_15_componentwise_source_firstOrder_zero_bound_of_inverse_normalized_zero`
+- `higham9_15_componentwise_source_firstOrder_zero_bound_of_inverse_normalized_zero_of_source_inverse_identities`
 - `higham9_15_componentwise_source_firstOrder_zero_bound_of_G_split_residual_zero_of_inverse_identities`
 - `higham9_15_componentwise_source_firstOrder_zero_bound_of_G_split_residual_zero_of_source_inverse_identities`
 - `higham9_15_componentwise_source_firstOrder_zero_bound_of_Gtilde_split_residual_zero_of_inverse_identities`
@@ -3661,6 +3663,9 @@ Source-facing Chapter 10 wrappers:
 - `higham10_8_sun_componentwise_perturbation`
 - `isPosSemiDef_perm`
 - `psd_pivot_selection`
+- `psd_all_diag_zero`
+- `extendPerm`
+- `extendPerm_isPermutation`
 - `higham10_9_PivotedCholeskySpec`
 - `higham10_9_psd_cholesky_existence`
 - `higham10_9_spd_pivoted_cholesky_full_rank`
