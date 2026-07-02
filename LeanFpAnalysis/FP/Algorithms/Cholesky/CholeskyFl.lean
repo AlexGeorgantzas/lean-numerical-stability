@@ -1517,6 +1517,106 @@ theorem normwise_stage_endgame (ajj t W lam ε γ s : ℝ)
   have hfinal := mul_lt_mul_of_pos_right hceil hAj
   nlinarith [hA, hfinal]
 
+/-- **Theorem 10.7 stage step with the source-shaped threshold**: if the
+    stage-`j` interior and border Gram defects carry *normwise* mass
+    bounds `ε` against the `A`-diagonal weights (as the (10.7)
+    operator-norm certificates provide, with `ε` carrying the
+    dimension), the `j`-th rounded pivot is positive whenever
+    `λ > ε + 2γ_{n+1}` (and `λ ≥ 2ε`) — Higham's `n`-shaped threshold,
+    replacing the componentwise `(2n+3)γ/(1−γ)`. -/
+theorem fl_cholesky_pivot_pos_step_sharp (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hn1 : gammaValid fp (n + 1))
+    (hγ1 : gamma fp (n + 1) < 1)
+    (j : Fin n)
+    (IH : ∀ l : Fin n, l.val < j.val → 0 < fl_cholPivot fp n A l)
+    (lam ε : ℝ) (hε0 : 0 ≤ ε) (hε1 : ε < 1)
+    (hfloor : ∀ y : Fin j.val → ℝ,
+      lam * ((∑ i : Fin j.val,
+          A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2) + A j j) ≤
+        (∑ i : Fin j.val, ∑ l : Fin j.val,
+          y i * A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ * y l) +
+        2 * (∑ i : Fin j.val, y i * A ⟨i.val, by omega⟩ j) + A j j)
+    (hmassI : ∀ y : Fin j.val → ℝ,
+      |∑ i : Fin j.val, ∑ l : Fin j.val, y i *
+        ((∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ *
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨l.val, by omega⟩) -
+          A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩) * y l| ≤
+      ε * ∑ i : Fin j.val,
+        A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2)
+    (hmassB : ∀ y : Fin j.val → ℝ,
+      |2 * ∑ i : Fin j.val, y i *
+        ((∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ *
+          fl_cholesky fp n A ⟨p.val, by omega⟩ j) -
+          A ⟨i.val, by omega⟩ j)| ≤
+      ε * ((∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ j ^ 2) +
+        ∑ i : Fin j.val,
+          A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2))
+    (hlam2ε : 2 * ε ≤ lam)
+    (hthresh : ε + 2 * gamma fp (n + 1) < lam) :
+    0 < fl_cholPivot fp n A j := by
+  by_contra hs
+  push_neg at hs
+  have hγ0 : 0 ≤ gamma fp (n + 1) := gamma_nonneg fp hn1
+  set γ : ℝ := gamma fp (n + 1) with hγdef
+  have hu : fp.u < 1 := u_lt_one_of_gammaValid_succ hn1
+  -- stage data
+  have hdiag_pos : ∀ i : Fin j.val,
+      0 < fl_cholesky fp n A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ := by
+    intro i
+    rw [fl_cholesky_diag_eq fp n A ⟨i.val, by omega⟩]
+    exact fl_sqrt_pos fp hu _ (IH ⟨i.val, by omega⟩ i.isLt)
+  set U : Fin j.val → Fin j.val → ℝ := fun p i =>
+    fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ with hUdef
+  set c : Fin j.val → ℝ := fun p =>
+    fl_cholesky fp n A ⟨p.val, by omega⟩ j with hcdef
+  obtain ⟨y, hy⟩ := upperTriangular_solve_exists j.val U
+    (fun p i hpi => fl_cholesky_strict_lower fp n A _ _ hpi)
+    (fun i => (hdiag_pos i).ne') (fun p => -(c p))
+  have hgram := bordered_gram_zero j.val U c y hy
+  set t : ℝ := ∑ p : Fin j.val, c p ^ 2 with htdef
+  have ht0 : 0 ≤ t := Finset.sum_nonneg fun p _ => sq_nonneg _
+  set W : ℝ := ∑ i : Fin j.val,
+    A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2 with hWdef
+  have hW0 : 0 ≤ W := Finset.sum_nonneg fun i _ =>
+    mul_nonneg (hAdiag _).le (sq_nonneg _)
+  -- the normwise perturbation floor at the solve vector
+  have hfloorN := bordered_perturbation_floor_normwise j.val
+    (fun i l => ∑ p : Fin j.val, U p i * U p l)
+    (fun i => ∑ p : Fin j.val, U p i * c p)
+    (fun i l => A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩)
+    (fun i => A ⟨i.val, by omega⟩ j)
+    (fun i => A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩)
+    (A j j) t y ε lam hε0 ht0 hgram (hmassI y) (hmassB y) (hfloor y)
+  -- the rounded-pivot lower bound
+  have hm1' : gammaValid fp (j.val + 1) :=
+    gammaValid_mono fp (by omega) hn1
+  have hlow := fl_cholSubFold_pivot_lower fp j.val c (A j j) hm1'
+  have hpiv_eq : fl_cholPivot fp n A j =
+      fl_cholSubFold fp j.val c c (A j j) := rfl
+  have hγm : gamma fp (j.val + 1) ≤ γ :=
+    gamma_mono fp (by omega) hn1
+  have hAj := hAdiag j
+  have habsAj : |A j j| = A j j := abs_of_pos hAj
+  have hlow2 : A j j - t - γ * (A j j + t) ≤ fl_cholPivot fp n A j := by
+    rw [hpiv_eq]
+    have hmass : gamma fp (j.val + 1) * (|A j j| + t) ≤
+        γ * (A j j + t) := by
+      rw [habsAj]
+      exact mul_le_mul_of_nonneg_right hγm (by linarith)
+    calc A j j - t - γ * (A j j + t)
+        ≤ A j j - t - gamma fp (j.val + 1) * (|A j j| + t) := by
+          linarith
+      _ ≤ fl_cholSubFold fp j.val c c (A j j) := hlow
+  -- contradiction via the source-shaped scalar endgame
+  exact normwise_stage_endgame (A j j) t W lam ε γ
+    (fl_cholPivot fp n A j) hAj ht0 hW0 hγ0 hγ1 hε0 hε1
+    hfloorN hlow2 hs hlam2ε hthresh
+
 /-- **Border-column entry bound**: the `w = j` instance of
     `fl_cholesky_truncated_bound`. -/
 theorem fl_cholesky_border_bound (fp : FPModel) {n : ℕ}
