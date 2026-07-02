@@ -45,7 +45,9 @@ exact Higham normalized vector and from exact computed Householder vector/beta
 agreement, plus an exact add/mul/div/sqrt operation route, the exact-arithmetic
 normalized-vector equality, and raw, record, full-stage, source-closure,
 final-closed, and final-panel endpoint wrappers from all-stage tail-vector
-equalities. The full rounded stored-loop proof remains open until the per-stage
+equalities. The exact primitive-operation route is now also threaded directly
+through the raw, record, source-closure, final-closed, and final-panel endpoint
+wrappers. The full rounded stored-loop proof remains open until the per-stage
 certificate fields are proved from a source-faithful model or replaced by a
 separate compatibility/perturbation theorem.
 
