@@ -1463,4 +1463,60 @@ theorem fl_cholesky_pivot_pos_step (fp : FPModel) {n : ℕ}
   nlinarith [hkey1, hkey2, hεγ, hAj, ht0, hγ0, hεsmall, hlam3, hγε,
     mul_pos hAj (by linarith : (0:ℝ) < 1 - ε)]
 
+/-- **Theorem 10.7, success direction for the concrete algorithm**
+    (Higham p. 200): if every bordered leading block of `A` has Rayleigh
+    floor `lam > (2n+3)·γ_{n+1}/(1−γ_{n+1})` in `D²`-weighted split form,
+    then Algorithm 10.2 runs to completion — every rounded pivot is
+    positive, hence every computed diagonal entry is real and positive. -/
+theorem fl_cholesky_pivots_pos (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hn1 : gammaValid fp (n + 1))
+    (hγ1 : gamma fp (n + 1) < 1)
+    (lam : ℝ)
+    (hfloor : ∀ j : Fin n, ∀ y : Fin j.val → ℝ,
+      lam * ((∑ i : Fin j.val,
+          A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2) + A j j) ≤
+        (∑ i : Fin j.val, ∑ l : Fin j.val,
+          y i * A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ * y l) +
+        2 * (∑ i : Fin j.val, y i * A ⟨i.val, by omega⟩ j) + A j j)
+    (hthresh : (2 * (n : ℝ) + 3) *
+      (gamma fp (n + 1) / (1 - gamma fp (n + 1))) < lam) :
+    ∀ j : Fin n, 0 < fl_cholPivot fp n A j := by
+  have H : ∀ k : ℕ, ∀ j : Fin n, j.val = k → 0 < fl_cholPivot fp n A j := by
+    intro k
+    induction k using Nat.strong_induction_on with
+    | _ k IHk =>
+      intro j hj
+      apply fl_cholesky_pivot_pos_step fp A hsym hAdiag hn1 hγ1 j _
+        lam (hfloor j) hthresh
+      intro l hl
+      exact IHk l.val (hj ▸ hl) l rfl
+  exact fun j => H j.val j rfl
+
+/-- **Run-to-completion, diagonal form**: under the same floor, every
+    computed diagonal entry of the factor is positive — the algorithm never
+    encounters a nonpositive pivot and all square roots are real. -/
+theorem fl_cholesky_diag_pos_of_floor (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hn1 : gammaValid fp (n + 1))
+    (hγ1 : gamma fp (n + 1) < 1)
+    (lam : ℝ)
+    (hfloor : ∀ j : Fin n, ∀ y : Fin j.val → ℝ,
+      lam * ((∑ i : Fin j.val,
+          A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2) + A j j) ≤
+        (∑ i : Fin j.val, ∑ l : Fin j.val,
+          y i * A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ * y l) +
+        2 * (∑ i : Fin j.val, y i * A ⟨i.val, by omega⟩ j) + A j j)
+    (hthresh : (2 * (n : ℝ) + 3) *
+      (gamma fp (n + 1) / (1 - gamma fp (n + 1))) < lam) :
+    ∀ j : Fin n, 0 < fl_cholesky fp n A j j := by
+  intro j
+  rw [fl_cholesky_diag_eq fp n A j]
+  exact fl_sqrt_pos fp (u_lt_one_of_gammaValid_succ hn1) _
+    (fl_cholesky_pivots_pos fp A hsym hAdiag hn1 hγ1 lam hfloor hthresh j)
+
 end LeanFpAnalysis.FP
