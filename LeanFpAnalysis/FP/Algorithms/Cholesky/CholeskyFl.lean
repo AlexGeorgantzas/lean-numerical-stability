@@ -706,7 +706,7 @@ noncomputable def fl_cholPivot (fp : FPModel) (n : ℕ)
     (fun k => fl_cholesky fp n A ⟨k.val, Nat.lt_trans k.isLt j.isLt⟩ j)
     (A j j)
 
-private lemma sum_fin_eq_sum_filter_lt' {n k : ℕ} (hk : k ≤ n)
+lemma sum_fin_eq_sum_filter_lt' {n k : ℕ} (hk : k ≤ n)
     (f : Fin n → ℝ) :
     (∑ t : Fin k, f ⟨t.val, by omega⟩) =
     Finset.sum (Finset.filter (fun j : Fin n => j.val < k) Finset.univ) f := by
@@ -1664,6 +1664,23 @@ theorem fl_cholesky_pivots_pos_sharp (fp : FPModel) {n : ℕ}
         (fun l hl => IHk l.val (hj ▸ hl) l rfl) lam ε hε0 hε1
         (hfloor j) (hmassI j) (hmassB j) hlam2ε hthresh
   exact fun j => H j.val j rfl
+
+/-- Leading-column Gram sums truncate to the stage square
+    (strict-lower zeros kill rows at and beyond the stage). -/
+lemma gram_sum_stage_trunc (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (j : Fin n) (x w : Fin n)
+    (hx : x.val < j.val) :
+    ∑ p : Fin n, fl_cholesky fp n A p x * fl_cholesky fp n A p w =
+    ∑ p : Fin j.val, fl_cholesky fp n A ⟨p.val, by omega⟩ x *
+      fl_cholesky fp n A ⟨p.val, by omega⟩ w := by
+  rw [sum_fin_eq_sum_filter_lt' j.isLt.le
+    (fun p => fl_cholesky fp n A p x * fl_cholesky fp n A p w)]
+  refine (Finset.sum_subset (Finset.filter_subset _ _)
+    fun p _ hp => ?_).symm
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and,
+    Nat.not_lt] at hp
+  rw [fl_cholesky_strict_lower fp n A p x (lt_of_lt_of_le hx hp),
+    zero_mul]
 
 /-- **Border-column entry bound**: the `w = j` instance of
     `fl_cholesky_truncated_bound`. -/
