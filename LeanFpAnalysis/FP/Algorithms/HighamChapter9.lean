@@ -25184,6 +25184,357 @@ theorem higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_rectRoundedLoop_squa
     hγ_lt_one hn hAB hB_growth hL_abs hU_abs hLU hdetA
     hU_budget_le hL_budget_le le_rfl
 
+/-- **Theorem 9.14**, nonnegative-LU executable rounded-loop
+model-consuming `f(γ_n)` bound.  The concrete loop supplies equation (9.20),
+while the caller supplies the explicit triangular-solve equation (9.21). -/
+theorem higham9_14_nonnegative_lu_source_f_bound_of_rectRoundedLoop_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hNonneg : HasNonnegLUFactors n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square_gamma
+        fp n A hn (hNonneg.1.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b 1 (gamma fp n) (gamma_nonneg fp hn)
+      (fun i j => by
+        simpa [one_mul] using
+          le_of_eq
+            (higham9_12_nonneg_lu_optimal_growth n A
+              (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+              (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+              hNonneg i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Theorem 9.14**, nonnegative-LU executable rounded-loop
+model-consuming final `h(γ_n)` bound. -/
+theorem higham9_14_nonnegative_lu_source_h_bound_of_rectRoundedLoop_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hNonneg : HasNonnegLUFactors n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square_gamma
+        fp n A hn (hNonneg.1.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b 1 (gamma fp n)
+      (by norm_num) (gamma_nonneg fp hn) hγ_lt_one
+      (fun i j => by
+        simpa [one_mul] using
+          le_of_eq
+            (higham9_12_nonneg_lu_optimal_growth n A
+              (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+              (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+              hNonneg i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Theorem 9.14**, M-matrix LU executable rounded-loop
+model-consuming `f(γ_n)` bound. -/
+theorem higham9_14_mmatrix_lu_source_f_bound_of_rectRoundedLoop_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hM : IsMMatrix n A)
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hL_nn : ∀ i k : Fin n,
+      0 ≤ higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k)
+    (hU_nn : ∀ k j : Fin n,
+      0 ≤ higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square_gamma
+        fp n A hn (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b 1 (gamma fp n) (gamma_nonneg fp hn)
+      (fun i j => by
+        simpa [one_mul] using
+          le_of_eq
+            (higham9_12_mmatrix_lu_optimal_growth n A
+              (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+              (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+              hM hLU hL_nn hU_nn i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Theorem 9.14**, M-matrix LU executable rounded-loop
+model-consuming final `h(γ_n)` bound. -/
+theorem higham9_14_mmatrix_lu_source_h_bound_of_rectRoundedLoop_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hM : IsMMatrix n A)
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hL_nn : ∀ i k : Fin n,
+      0 ≤ higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k)
+    (hU_nn : ∀ k j : Fin n,
+      0 ≤ higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square_gamma
+        fp n A hn (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b 1 (gamma fp n)
+      (by norm_num) (gamma_nonneg fp hn) hγ_lt_one
+      (fun i j => by
+        simpa [one_mul] using
+          le_of_eq
+            (higham9_12_mmatrix_lu_optimal_growth n A
+              (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+              (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+              hM hLU hL_nn hU_nn i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Theorem 9.14**, source-predicate sign-equivalent executable
+rounded-loop model-consuming `f(γ_n)` bound. -/
+theorem higham9_14_sign_equiv_source_f_bound_of_IsSignEquiv_rectRoundedLoop_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A B L_B U_B : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hAB : IsSignEquiv n A B)
+    (hB_growth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_B i k| * |U_B k j| = |B i j|)
+    (hL_abs : ∀ i k : Fin n,
+      |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k| = |L_B i k|)
+    (hU_abs : ∀ k j : Fin n,
+      |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j| = |U_B k j|)
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square_gamma
+        fp n A hn (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b 1 (gamma fp n) (gamma_nonneg fp hn)
+      (fun i j => by
+        simpa [one_mul] using
+          le_of_eq
+            (higham9_12_sign_equiv_optimal_growth_of_IsSignEquiv
+              n A B L_B U_B
+              (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+              (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+              hAB hB_growth hL_abs hU_abs i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Theorem 9.14**, source-predicate sign-equivalent executable
+rounded-loop model-consuming final `h(γ_n)` bound. -/
+theorem higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_rectRoundedLoop_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A B L_B U_B : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hAB : IsSignEquiv n A B)
+    (hB_growth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_B i k| * |U_B k j| = |B i j|)
+    (hL_abs : ∀ i k : Fin n,
+      |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k| = |L_B i k|)
+    (hU_abs : ∀ k j : Fin n,
+      |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j| = |U_B k j|)
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square_gamma
+        fp n A hn (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b 1 (gamma fp n)
+      (by norm_num) (gamma_nonneg fp hn) hγ_lt_one
+      (fun i j => by
+        simpa [one_mul] using
+          le_of_eq
+            (higham9_12_sign_equiv_optimal_growth_of_IsSignEquiv
+              n A B L_B U_B
+              (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+              (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+              hAB hB_growth hL_abs hU_abs i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
 /-- **Theorem 9.14**, column-dominant builder source-model `f(u)` bound.
 
 This is the equation-(9.22) analogue of
