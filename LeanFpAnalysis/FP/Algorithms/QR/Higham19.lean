@@ -5094,6 +5094,54 @@ theorem sourceFaithfulHouseholderNormalizationModel_of_fl_householderNormalizedV
         (householderBetaFromScale_pos_of_ne_zero hn sourceColumn hx))
       (householderBetaFromScale_mul_norm_sq hn sourceColumn hx)
 
+/-- Vector/beta equality is enough for exact normalized-vector agreement.
+
+This isolates the smaller operation-level route behind
+`sourceFaithfulHouseholderNormalizationModel_of_fl_householderNormalizedVector_eq`:
+the normalized vector is analysis-only, so once the computed Householder vector
+and beta agree with Higham's exact quantities, the normalized vectors agree by
+definition. -/
+theorem fl_householderNormalizedVector_eq_of_householderVector_beta_eq
+    (fp : FPModel) {n : Nat} (hn : 0 < n)
+    (sourceColumn : Fin n -> Real)
+    (hvector :
+      fl_householderVector fp hn sourceColumn =
+        LeanFpAnalysis.FP.householderVector hn sourceColumn)
+    (hbeta :
+      fl_householderBeta fp hn sourceColumn =
+        householderBetaFromScale hn sourceColumn) :
+    fl_householderNormalizedVector fp hn sourceColumn =
+      householderNormalizedVector n
+        (LeanFpAnalysis.FP.householderVector hn sourceColumn)
+        (householderBetaFromScale hn sourceColumn) := by
+  simp [fl_householderNormalizedVector, hvector, hbeta]
+
+/-- Sufficient condition for the source-faithful normalization model from exact
+computed vector and beta data.
+
+This keeps the stronger-model boundary closer to the operations that actually
+form the computed Householder pair, instead of requiring callers to state the
+normalized-vector equality directly. -/
+theorem sourceFaithfulHouseholderNormalizationModel_of_householderVector_beta_eq
+    (fp : FPModel)
+    (hvector :
+      forall {n : Nat} (hn : 0 < n) (sourceColumn : Fin n -> Real),
+        Ne sourceColumn 0 ->
+          fl_householderVector fp hn sourceColumn =
+            LeanFpAnalysis.FP.householderVector hn sourceColumn)
+    (hbeta :
+      forall {n : Nat} (hn : 0 < n) (sourceColumn : Fin n -> Real),
+        Ne sourceColumn 0 ->
+          fl_householderBeta fp hn sourceColumn =
+            householderBetaFromScale hn sourceColumn) :
+    sourceFaithfulHouseholderNormalizationModel fp :=
+  sourceFaithfulHouseholderNormalizationModel_of_fl_householderNormalizedVector_eq
+    fp
+    (fun hn sourceColumn hx =>
+      fl_householderNormalizedVector_eq_of_householderVector_beta_eq
+        fp hn sourceColumn (hvector hn sourceColumn hx)
+        (hbeta hn sourceColumn hx))
+
 /-- Exact left-to-right addition over `Fin.foldl` is the initial value plus the
 source finite sum.  This is the small arithmetic support fact needed to expose
 the exact dot product hidden inside the compact Householder update. -/
@@ -5190,6 +5238,24 @@ theorem fl_householderBeta_exactWithUnitRoundoff_eq
     fl_householderVector_exactWithUnitRoundoff_eq u0 hu0 hn x]
   simp [FPModel.exactWithUnitRoundoff]
 
+/-- Under `exactWithUnitRoundoff`, the computed normalized Householder vector is
+Higham's exact normalized vector.
+
+This instantiates the vector/beta sufficient condition for the exact-arithmetic
+subcase: no rounded normalization fact is assumed. -/
+theorem fl_householderNormalizedVector_exactWithUnitRoundoff_eq
+    (u0 : Real) (hu0 : 0 <= u0) {n : Nat} (hn : 0 < n)
+    (x : Fin n -> Real) :
+    fl_householderNormalizedVector (FPModel.exactWithUnitRoundoff u0 hu0)
+        hn x =
+      householderNormalizedVector n
+        (LeanFpAnalysis.FP.householderVector hn x)
+        (householderBetaFromScale hn x) :=
+  fl_householderNormalizedVector_eq_of_householderVector_beta_eq
+    (FPModel.exactWithUnitRoundoff u0 hu0) hn x
+    (fl_householderVector_exactWithUnitRoundoff_eq u0 hu0 hn x)
+    (fl_householderBeta_exactWithUnitRoundoff_eq u0 hu0 hn x)
+
 /-- Positive exact-arithmetic route for the normalized-loop self-dot premise.
 
 The previous rounded-model audit shows that `fl_householderNormalizedVector`
@@ -5220,10 +5286,13 @@ theorem sourceFaithfulHouseholderNormalizationModel_exactWithUnitRoundoff
     (u0 : Real) (hu0 : 0 <= u0) :
     sourceFaithfulHouseholderNormalizationModel
       (FPModel.exactWithUnitRoundoff u0 hu0) := by
-  intro n hn sourceColumn hx
   exact
-    fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
-      u0 hu0 hn sourceColumn hx
+    sourceFaithfulHouseholderNormalizationModel_of_householderVector_beta_eq
+      (FPModel.exactWithUnitRoundoff u0 hu0)
+      (fun hn sourceColumn _hx =>
+        fl_householderVector_exactWithUnitRoundoff_eq u0 hu0 hn sourceColumn)
+      (fun hn sourceColumn _hx =>
+        fl_householderBeta_exactWithUnitRoundoff_eq u0 hu0 hn sourceColumn)
 
 /-- Exact-arithmetic constructor for a one-stage source-faithful
 normalization certificate.
