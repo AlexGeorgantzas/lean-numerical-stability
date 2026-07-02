@@ -1775,6 +1775,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_literalSourceBudgets_of_eq_one`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_literalSourceBudgets_of_le_two`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_componentDominance`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_componentDominance_of_eq_one`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_componentDominance_of_le_two`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductMargins`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductMargins_of_le_two`
@@ -3737,6 +3738,7 @@ Source-facing Chapter 10 wrappers:
 - `higham10_14_psd_cholesky_backward_error`
 - `fl_cholesky_truncated_demmel` (Th10.14 leading-block engine: computed block Demmel-stable under early termination)
 - `fl_cholesky_truncated_border_demmel` (Th10.14 border block: trace-controlled under computed-pivot domination)
+- `fl_choleskyTrunc` / `fl_choleskyTrunc_gram(_computed)` / `fl_choleskyTrunc_backward_error` / `higham10_14_fl_psd_cholesky_backward_error` (Th10.14 three-block certificate for the truncated computed factor)
 - `higham10_26_nonpositivePivotCriterion`
 - `higham10_27_residualStopCriterion`
 - `higham10_27_nonpositiveDiagonalCriterion`
