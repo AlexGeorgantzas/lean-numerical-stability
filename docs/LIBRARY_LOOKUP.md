@@ -3240,6 +3240,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_left_zero`
 - `higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_right_zero`
 - `higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant`
+- `higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant_right_zero`
 - `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities`
 - `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_left_zero`
 - `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_right_zero`
@@ -3247,6 +3249,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_left_zero`
 - `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_right_zero`
 - `higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant`
+- `higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant_right_zero`
 - `higham9_2_danger_shift_count_bound`
 - `higham9_2_charpolyDangerSet`
 - `higham9_2_mem_charpolyDangerSet_iff_isRoot`
@@ -3586,6 +3590,9 @@ Source-facing Chapter 10 wrappers:
 - `le_finiteMaxEigenvalue`
 - `exists_finiteMaxEigenvalue_eq`
 - `finiteMaxEigenvalue_rayleigh`
+- `gram_quadForm_eq_sq_norm`
+- `opNorm2Le_sqrt_maxEigenvalue_gram`
+- `maxEigenvalue_gram_le_sq_of_opNorm2Le`
 - `higham10_7_success_factorization_min_eig`
 - `higham10_7_failure_no_factorization_min_eig`
 - `quadForm_add_pos_of_perturbation`
