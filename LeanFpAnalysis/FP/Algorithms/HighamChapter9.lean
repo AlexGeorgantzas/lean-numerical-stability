@@ -75782,6 +75782,281 @@ theorem higham9_14_checkerboard_totalNonnegative_source_h_bound_of_rectRoundedLo
     fp n A b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn
     hTNJ hdetJ hineqJ hLU hU_budget_le hL_budget_le le_rfl
 
+/-- **Problem 9.8 / Theorem 9.14**, checkerboard total-nonnegative
+rounded-stage model-consuming `f(γ_n)` bound. -/
+theorem higham9_14_checkerboard_totalNonnegative_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  have hdetA_pos :
+      0 < Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) := by
+    simpa [higham9_8_checkerboardConjugate_det_eq A] using hdetJ
+  have hOpt :=
+    higham9_8_checkerboard_totalNonnegative_LUFactSpec_abs_product_eq_abs_of_principalBlock_inequalities
+      A L_hat U_hat hTNJ hdetJ hineqJ hLU
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleRoundedStageTrace_square_gamma
+        fp n A L_hat U_hat hn hT
+        (hLU.det_ne_zero_iff_U_diag_ne_zero.mp (ne_of_gt hdetA_pos))
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A L_hat U_hat y_hat x_hat b 1 (gamma fp n)
+      (gamma_nonneg fp hn)
+      (fun i j => by simpa [one_mul] using le_of_eq (hOpt i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Problem 9.8 / Theorem 9.14**, checkerboard total-nonnegative
+rounded-stage model-consuming final `h(γ_n)` bound. -/
+theorem higham9_14_checkerboard_totalNonnegative_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  have hdetA_pos :
+      0 < Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) := by
+    simpa [higham9_8_checkerboardConjugate_det_eq A] using hdetJ
+  have hOpt :=
+    higham9_8_checkerboard_totalNonnegative_LUFactSpec_abs_product_eq_abs_of_principalBlock_inequalities
+      A L_hat U_hat hTNJ hdetJ hineqJ hLU
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleRoundedStageTrace_square_gamma
+        fp n A L_hat U_hat hn hT
+        (hLU.det_ne_zero_iff_U_diag_ne_zero.mp (ne_of_gt hdetA_pos))
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A L_hat U_hat y_hat x_hat b 1 (gamma fp n)
+      (by norm_num) (gamma_nonneg fp hn) hγ_lt_one
+      (fun i j => by simpa [one_mul] using le_of_eq (hOpt i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Problem 9.8 / Theorem 9.14**, checkerboard total-nonnegative executable
+rounded-loop model-consuming `f(γ_n)` bound. -/
+theorem higham9_14_checkerboard_totalNonnegative_source_f_bound_of_rectRoundedLoop_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  have hdetA_pos :
+      0 < Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) := by
+    simpa [higham9_8_checkerboardConjugate_det_eq A] using hdetJ
+  have hOpt :=
+    higham9_8_checkerboard_totalNonnegative_LUFactSpec_abs_product_eq_abs_of_principalBlock_inequalities
+      A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      hTNJ hdetJ hineqJ hLU
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square_gamma
+        fp n A hn
+        (hLU.det_ne_zero_iff_U_diag_ne_zero.mp (ne_of_gt hdetA_pos))
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b 1 (gamma fp n) (gamma_nonneg fp hn)
+      (fun i j => by simpa [one_mul] using le_of_eq (hOpt i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Problem 9.8 / Theorem 9.14**, checkerboard total-nonnegative executable
+rounded-loop model-consuming final `h(γ_n)` bound. -/
+theorem higham9_14_checkerboard_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  have hdetA_pos :
+      0 < Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) := by
+    simpa [higham9_8_checkerboardConjugate_det_eq A] using hdetJ
+  have hOpt :=
+    higham9_8_checkerboard_totalNonnegative_LUFactSpec_abs_product_eq_abs_of_principalBlock_inequalities
+      A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      hTNJ hdetJ hineqJ hLU
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square_gamma
+        fp n A hn
+        (hLU.det_ne_zero_iff_U_diag_ne_zero.mp (ne_of_gt hdetA_pos))
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      y_hat x_hat b 1 (gamma fp n) (by norm_num)
+      (gamma_nonneg fp hn) hγ_lt_one
+      (fun i j => by simpa [one_mul] using le_of_eq (hOpt i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
 /-- **Problem 9.8 / Theorem 9.14**, explicit-model final `h(u)` source
 bound for the checkerboard total-nonnegative class.
 
@@ -76638,6 +76913,221 @@ theorem higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_rectRoundedLoop
   higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
     fp n A b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn
     hTN hdet hLU hU_budget_le hL_budget_le le_rfl
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+rounded-stage model-consuming `f(γ_n)` bound. -/
+theorem higham9_14_nonsingInv_totalNonnegative_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) (nonsingInv n A) L_hat U_hat fp)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hLU : LUFactSpec n (nonsingInv n A) L_hat U_hat)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (nonsingInv n A) L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp (nonsingInv n A)
+          L_hat U_hat i k ≤ gamma fp n * |L_hat i k * U_hat k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |nonsingInv n A i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (nonsingInv n A i j + DeltaA i j) * x_hat j = b i) := by
+  have hdetInv :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 :=
+    higham9_nonsingInv_det_ne_zero_of_det_ne_zero A hdet
+  have hOpt :=
+    higham9_8_nonsingInv_totalNonnegative_LUFactSpec_abs_product_eq_abs
+      A L_hat U_hat hTN hdet hLU
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleRoundedStageTrace_square_gamma
+        fp n (nonsingInv n A) L_hat U_hat hn hT
+        (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetInv)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n (nonsingInv n A) L_hat U_hat y_hat x_hat b 1 (gamma fp n)
+      (gamma_nonneg fp hn)
+      (fun i j => by simpa [one_mul] using le_of_eq (hOpt i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+rounded-stage model-consuming final `h(γ_n)` bound. -/
+theorem higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) (nonsingInv n A) L_hat U_hat fp)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hLU : LUFactSpec n (nonsingInv n A) L_hat U_hat)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (nonsingInv n A) L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp (nonsingInv n A)
+          L_hat U_hat i k ≤ gamma fp n * |L_hat i k * U_hat k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |nonsingInv n A i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (nonsingInv n A i j + DeltaA i j) * x_hat j = b i) := by
+  have hdetInv :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 :=
+    higham9_nonsingInv_det_ne_zero_of_det_ne_zero A hdet
+  have hOpt :=
+    higham9_8_nonsingInv_totalNonnegative_LUFactSpec_abs_product_eq_abs
+      A L_hat U_hat hTN hdet hLU
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleRoundedStageTrace_square_gamma
+        fp n (nonsingInv n A) L_hat U_hat hn hT
+        (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetInv)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n (nonsingInv n A) L_hat U_hat y_hat x_hat b 1 (gamma fp n)
+      (by norm_num) (gamma_nonneg fp hn) hγ_lt_one
+      (fun i j => by simpa [one_mul] using le_of_eq (hOpt i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+executable rounded-loop model-consuming `f(γ_n)` bound. -/
+theorem higham9_14_nonsingInv_totalNonnegative_source_f_bound_of_rectRoundedLoop_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hLU : LUFactSpec n (nonsingInv n A)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) (nonsingInv n A)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp (nonsingInv n A)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A) k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A))
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |nonsingInv n A i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (nonsingInv n A i j + DeltaA i j) * x_hat j = b i) := by
+  have hdetInv :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 :=
+    higham9_nonsingInv_det_ne_zero_of_det_ne_zero A hdet
+  have hOpt :=
+    higham9_8_nonsingInv_totalNonnegative_LUFactSpec_abs_product_eq_abs
+      A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A))
+      hTN hdet hLU
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square_gamma
+        fp n (nonsingInv n A) hn
+        (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetInv)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n (nonsingInv n A)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A))
+      y_hat x_hat b 1 (gamma fp n) (gamma_nonneg fp hn)
+      (fun i j => by simpa [one_mul] using le_of_eq (hOpt i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+executable rounded-loop model-consuming final `h(γ_n)` bound. -/
+theorem higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hLU : LUFactSpec n (nonsingInv n A)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) (nonsingInv n A)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp (nonsingInv n A)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A) k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A))
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |nonsingInv n A i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (nonsingInv n A i j + DeltaA i j) * x_hat j = b i) := by
+  have hdetInv :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 :=
+    higham9_nonsingInv_det_ne_zero_of_det_ne_zero A hdet
+  have hOpt :=
+    higham9_8_nonsingInv_totalNonnegative_LUFactSpec_abs_product_eq_abs
+      A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A))
+      hTN hdet hLU
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square_gamma
+        fp n (nonsingInv n A) hn
+        (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetInv)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  simpa [one_mul] using
+    (higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n (nonsingInv n A)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A))
+      y_hat x_hat b 1 (gamma fp n) (by norm_num)
+      (gamma_nonneg fp hn) hγ_lt_one
+      (fun i j => by simpa [one_mul] using le_of_eq (hOpt i j))
+      DeltaA_LU DeltaL DeltaU h20 h21)
 
 /-- **Problem 9.8 / Theorem 9.14**, explicit-model final `h(u)` source bound
 for the nonsingular-inverse total-nonnegative class.
