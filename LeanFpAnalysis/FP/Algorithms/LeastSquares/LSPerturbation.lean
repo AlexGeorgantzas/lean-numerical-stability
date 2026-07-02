@@ -108,6 +108,75 @@ theorem wedinLemma20_11_denominator_pos {eta : ℝ} (hsmall : eta < 1) :
   linarith
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    triangle-inequality core behind the singular-value perturbation step.
+
+    If `A` has lower action radius `sigma` and the perturbation `Delta` has
+    rectangular operator-2 radius `delta`, then `A + Delta` has lower action
+    radius `sigma - delta`.  This is a proved local adapter toward the source
+    line `sigma_r(B) >= sigma_r(A) - ||A-B||_2`; it does not by itself identify
+    `sigma` with a singular value or prove rank preservation. -/
+theorem wedinLemma20_11_lowerActionBound_of_rectOpNorm2Le
+    {m n : ℕ} (A Delta : Fin m → Fin n → ℝ) {sigma delta : ℝ}
+    (hlower : ∀ x : Fin n → ℝ,
+      sigma * vecNorm2 x ≤ vecNorm2 (rectMatMulVec A x))
+    (hDelta : rectOpNorm2Le Delta delta) :
+    ∀ x : Fin n → ℝ,
+      (sigma - delta) * vecNorm2 x ≤
+        vecNorm2 (rectMatMulVec (fun i j => A i j + Delta i j) x) := by
+  intro x
+  have hsplit :
+      rectMatMulVec (fun i j => A i j + Delta i j) x =
+        fun i => rectMatMulVec A x i + rectMatMulVec Delta x i :=
+    rectMatMulVec_mat_add A Delta x
+  have hA_decomp :
+      rectMatMulVec A x =
+        fun i =>
+          rectMatMulVec (fun i j => A i j + Delta i j) x i -
+            rectMatMulVec Delta x i := by
+    ext i
+    rw [congrFun hsplit i]
+    ring
+  have htri :
+      vecNorm2 (rectMatMulVec A x) ≤
+        vecNorm2 (rectMatMulVec (fun i j => A i j + Delta i j) x) +
+          vecNorm2 (rectMatMulVec Delta x) := by
+    calc
+      vecNorm2 (rectMatMulVec A x)
+          = vecNorm2
+              (fun i =>
+                rectMatMulVec (fun i j => A i j + Delta i j) x i -
+                  rectMatMulVec Delta x i) := by
+            rw [hA_decomp]
+      _ ≤ vecNorm2 (rectMatMulVec (fun i j => A i j + Delta i j) x) +
+            vecNorm2 (fun i => -rectMatMulVec Delta x i) := by
+            have h := vecNorm2_add_le
+              (rectMatMulVec (fun i j => A i j + Delta i j) x)
+              (fun i => -rectMatMulVec Delta x i)
+            simpa [sub_eq_add_neg] using h
+      _ = vecNorm2 (rectMatMulVec (fun i j => A i j + Delta i j) x) +
+            vecNorm2 (rectMatMulVec Delta x) := by
+            rw [vecNorm2_neg]
+  have hlower_x := hlower x
+  have hDelta_x := hDelta x
+  have hleft :
+      sigma * vecNorm2 x - delta * vecNorm2 x ≤
+        vecNorm2 (rectMatMulVec A x) -
+          vecNorm2 (rectMatMulVec Delta x) := by
+    linarith
+  have hright :
+      vecNorm2 (rectMatMulVec A x) -
+          vecNorm2 (rectMatMulVec Delta x) ≤
+        vecNorm2 (rectMatMulVec (fun i j => A i j + Delta i j) x) := by
+    linarith
+  calc
+    (sigma - delta) * vecNorm2 x =
+        sigma * vecNorm2 x - delta * vecNorm2 x := by
+          ring
+    _ ≤ vecNorm2 (rectMatMulVec A x) -
+          vecNorm2 (rectMatMulVec Delta x) := hleft
+    _ ≤ vecNorm2 (rectMatMulVec (fun i j => A i j + Delta i j) x) := hright
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
     scalar rearrangement step from the singular-value perturbation lower bound.
 
     The missing spectral input is the hypothesis `sigmaA - delta <= sigmaB`,
