@@ -3739,6 +3739,7 @@ Source-facing Chapter 10 wrappers:
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
+- `psd_abs_entry_le_maxdiag` / `psd_quadForm_le_card_maxdiag` ((10.23)/(10.24) termination engine: PSD entries/quadform dominated by max diagonal)
 - `fl_cholesky_truncated_demmel` (Th10.14 leading-block engine: computed block Demmel-stable under early termination)
 - `fl_cholesky_truncated_border_demmel` (Th10.14 border block: trace-controlled under computed-pivot domination)
 - `fl_choleskyTrunc` / `fl_choleskyTrunc_gram(_computed)` / `fl_choleskyTrunc_backward_error` / `higham10_14_fl_psd_cholesky_backward_error` (Th10.14 three-block certificate for the truncated computed factor)

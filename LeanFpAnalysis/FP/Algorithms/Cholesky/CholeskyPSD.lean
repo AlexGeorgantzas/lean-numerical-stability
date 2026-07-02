@@ -1528,6 +1528,49 @@ lemma psd_quadForm_le_trace {n : ℕ} (A : Fin n → Fin n → ℝ)
     _ ≤ (∑ i : Fin n, x i ^ 2) * ∑ i : Fin n, A i i := hcs
     _ = (∑ i : Fin n, A i i) * ∑ i : Fin n, x i ^ 2 := mul_comm _ _
 
+/-- **PSD entries are dominated by the largest diagonal entry**
+    (Higham §10.3, the (10.23)/(10.24) termination engine): if every
+    diagonal entry of a PSD matrix is at most `d`, every entry is at
+    most `d` in absolute value. Applied to the exact trailing Schur
+    complement at termination, this converts the pivoted algorithm's
+    stopping test `max diag ≤ tol` into the entrywise trailing residual
+    bound. -/
+lemma psd_abs_entry_le_maxdiag {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (d : ℝ)
+    (hd : ∀ i : Fin n, A i i ≤ d) (i j : Fin n) :
+    |A i j| ≤ d := by
+  have hdi := isPosSemiDef_diag_nonneg A hPSD i
+  have hd0 : 0 ≤ d := le_trans hdi (hd i)
+  calc |A i j| ≤ Real.sqrt (A i i) * Real.sqrt (A j j) :=
+        psd_abs_entry_le_sqrt_diag A hPSD i j
+    _ ≤ Real.sqrt d * Real.sqrt d :=
+        mul_le_mul (Real.sqrt_le_sqrt (hd i))
+          (Real.sqrt_le_sqrt (hd j)) (Real.sqrt_nonneg _)
+          (Real.sqrt_nonneg _)
+    _ = d := Real.mul_self_sqrt hd0
+
+/-- **PSD quadratic form bounded by dimension times the largest
+    diagonal** (the normwise reading of the same engine):
+    `xᵀAx ≤ n·d·‖x‖₂²` when every `a_ii ≤ d`. -/
+lemma psd_quadForm_le_card_maxdiag {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (d : ℝ)
+    (hd : ∀ i : Fin n, A i i ≤ d) (x : Fin n → ℝ) :
+    ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j ≤
+      (n : ℝ) * d * ∑ i : Fin n, x i ^ 2 := by
+  have htr : (∑ i : Fin n, A i i) ≤ (n : ℝ) * d := by
+    calc ∑ i : Fin n, A i i ≤ ∑ _i : Fin n, d :=
+          Finset.sum_le_sum fun i _ => hd i
+      _ = (n : ℝ) * d := by
+          rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+            nsmul_eq_mul]
+  have hx : 0 ≤ ∑ i : Fin n, x i ^ 2 :=
+    Finset.sum_nonneg fun i _ => sq_nonneg _
+  calc ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j
+      ≤ (∑ i : Fin n, A i i) * ∑ i : Fin n, x i ^ 2 :=
+        psd_quadForm_le_trace A hPSD x
+    _ ≤ (n : ℝ) * d * ∑ i : Fin n, x i ^ 2 :=
+        mul_le_mul_of_nonneg_right htr hx
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
