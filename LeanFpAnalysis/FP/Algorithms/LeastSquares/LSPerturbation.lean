@@ -16,6 +16,7 @@
 
 import Mathlib.Data.Real.Basic
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
+import LeanFpAnalysis.FP.Analysis.Norms
 
 namespace LeanFpAnalysis.FP
 
@@ -106,6 +107,37 @@ theorem wedinTheorem20_1_solutionRelativeRHS_of_zero_residual
 theorem wedinLemma20_11_denominator_pos {eta : ℝ} (hsmall : eta < 1) :
     0 < 1 - eta := by
   linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    column-side least singular value for a real rectangular matrix with
+    nonempty column dimension, viewed through the repository's complexified
+    singular-value API. -/
+noncomputable def wedinLemma20_11_sigmaMinCol
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ) : ℝ :=
+  complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    the column-side least singular value is nonnegative. -/
+theorem wedinLemma20_11_sigmaMinCol_nonneg
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ) :
+    0 ≤ wedinLemma20_11_sigmaMinCol A := by
+  simpa [wedinLemma20_11_sigmaMinCol] using
+    complexMatrixSingularValue_nonneg (realRectToCMatrix A) (Fin.last k)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    the least singular value gives the lower vector-action radius for a real
+    rectangular matrix with nonempty column dimension. -/
+theorem wedinLemma20_11_sigmaMinCol_mul_vecNorm2_le_rectMatMulVec
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ)
+    (x : Fin (k + 1) → ℝ) :
+    wedinLemma20_11_sigmaMinCol A * vecNorm2 x ≤
+      vecNorm2 (rectMatMulVec A x) := by
+  have h :=
+    complexMatrixSingularValue_last_mul_norm_le_norm_euclideanLin
+      (realRectToCMatrix A) (realVecToEuclidean x)
+  rw [realVecToEuclidean_norm] at h
+  rw [realRectToCMatrix_euclideanLin_realVecToEuclidean_norm] at h
+  simpa [wedinLemma20_11_sigmaMinCol] using h
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
     triangle-inequality core behind the singular-value perturbation step.
