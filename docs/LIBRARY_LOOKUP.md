@@ -3762,6 +3762,7 @@ Source-facing Chapter 10 wrappers:
 - `fl_schurStep` / `fl_schurStep_close` (fl elimination step; one-stage fl-vs-exact proximity u(c + c^2/rho) + (c^2/rho)(2u + u^2)(1+u) - pivoted fl-trace seed)
 - `fl_cpState` / `fl_cpPivot` / `fl_cpPivot_sequence_agrees` (the fl complete-pivoting run follows the exact pivot sequence under no-tie gaps + rounding budget)
 - `fl_cp_termination_trailing_bound` ((10.23)/(10.24) as-run: computed stopping test => exact trailing Schur entrywise <= tol + h r)
+- `fl_schurStepFactor` / `fl_schurStepFactor_close` (sqrt-scaled factor-form fl step; proximity u(c + c^2/rho) + (1+u) gamma_5 (c^2/rho) via a 5-factor Stewart counter)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
