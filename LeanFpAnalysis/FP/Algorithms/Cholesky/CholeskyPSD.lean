@@ -1571,6 +1571,135 @@ lemma psd_quadForm_le_card_maxdiag {n : ℕ} (A : Fin n → Fin n → ℝ)
     _ ≤ (n : ℝ) * d * ∑ i : Fin n, x i ^ 2 :=
         mul_le_mul_of_nonneg_right htr hx
 
+/-- **Entrywise bound on Higham's first-order term**: with entrywise
+    data `|E| ≤ ε`, `|A₂₁|, |A₁₂| ≤ α`, `|M| ≤ μ`, the first-order term
+    of (10.16) satisfies `|Ē i j| ≤ ε (1 + k²αμ)²` — the source's
+    `(1 + ‖W‖)²` shape with `k²αμ` the entrywise scale of
+    `W = M A₁₂`. -/
+lemma schur_first_order_entrywise_bound {k m : ℕ}
+    (A21 E21 : Matrix (Fin m) (Fin k) ℝ)
+    (A12 E12 : Matrix (Fin k) (Fin m) ℝ)
+    (E22 : Matrix (Fin m) (Fin m) ℝ)
+    (M E11 : Matrix (Fin k) (Fin k) ℝ)
+    (α μ ε : ℝ) (hα : 0 ≤ α) (hμ : 0 ≤ μ) (hε : 0 ≤ ε)
+    (hA21 : ∀ i j, |A21 i j| ≤ α) (hA12 : ∀ i j, |A12 i j| ≤ α)
+    (hE21 : ∀ i j, |E21 i j| ≤ ε) (hE12 : ∀ i j, |E12 i j| ≤ ε)
+    (hE11 : ∀ i j, |E11 i j| ≤ ε) (hE22 : ∀ i j, |E22 i j| ≤ ε)
+    (hM : ∀ i j, |M i j| ≤ μ) :
+    ∀ (i j : Fin m),
+      |(E22 - E21 * M * A12 - A21 * M * E12
+          + A21 * (M * E11 * M) * A12) i j| ≤
+      ε * (1 + (k : ℝ) ^ 2 * α * μ) ^ 2 := by
+  intro i j
+  have hk : (0 : ℝ) ≤ (k : ℝ) := Nat.cast_nonneg k
+  have hT1 : ∀ (p : Fin m) (q : Fin k), |(E21 * M) p q| ≤
+      (k : ℝ) * ε * μ := entrywise_matMul_le E21 M ε μ hε hE21 hM
+  have hT1' : ∀ (p q : Fin m), |((E21 * M) * A12) p q| ≤
+      (k : ℝ) * ((k : ℝ) * ε * μ) * α :=
+    entrywise_matMul_le (E21 * M) A12 _ α (by positivity) hT1 hA12
+  have hT2 : ∀ (p : Fin m) (q : Fin k), |(A21 * M) p q| ≤
+      (k : ℝ) * α * μ := entrywise_matMul_le A21 M α μ hα hA21 hM
+  have hT2' : ∀ (p q : Fin m), |((A21 * M) * E12) p q| ≤
+      (k : ℝ) * ((k : ℝ) * α * μ) * ε :=
+    entrywise_matMul_le (A21 * M) E12 _ ε (by positivity) hT2 hE12
+  have hME : ∀ (p q : Fin k), |(M * E11) p q| ≤ (k : ℝ) * μ * ε :=
+    entrywise_matMul_le M E11 μ ε hμ hM hE11
+  have hMEM : ∀ (p q : Fin k), |((M * E11) * M) p q| ≤
+      (k : ℝ) * ((k : ℝ) * μ * ε) * μ :=
+    entrywise_matMul_le (M * E11) M _ μ (by positivity) hME hM
+  have hT3 : ∀ (p : Fin m) (q : Fin k),
+      |(A21 * ((M * E11) * M)) p q| ≤
+      (k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) * μ) :=
+    entrywise_matMul_le A21 _ α _ hα hA21 hMEM
+  have hT3' : ∀ (p q : Fin m),
+      |((A21 * ((M * E11) * M)) * A12) p q| ≤
+      (k : ℝ) * ((k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) * μ)) * α :=
+    entrywise_matMul_le _ A12 _ α (by positivity) hT3 hA12
+  have h22 := abs_le.mp (hE22 i j)
+  have h1 := abs_le.mp (hT1' i j)
+  have h2 := abs_le.mp (hT2' i j)
+  have h3 := abs_le.mp (hT3' i j)
+  have hgoal : ε * (1 + (k : ℝ) ^ 2 * α * μ) ^ 2 =
+      ε + (k : ℝ) * ((k : ℝ) * ε * μ) * α
+      + (k : ℝ) * ((k : ℝ) * α * μ) * ε
+      + (k : ℝ) * ((k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) * μ)) * α
+      := by ring
+  rw [hgoal]
+  simp only [Matrix.add_apply, Matrix.sub_apply]
+  rw [abs_le]
+  constructor <;> linarith [h22.1, h22.2, h1.1, h1.2, h2.1, h2.2,
+    h3.1, h3.2]
+
+/-- **Strict diagonal argmax is stable under small perturbations**
+    (Lemma 10.11 stage engine): if the pivot choice has gap `δ` and the
+    diagonal perturbation is below `δ/2`, the perturbed matrix selects
+    the same pivot. -/
+lemma strict_argmax_diag_stable {n : ℕ} (A E : Fin n → Fin n → ℝ)
+    (p : Fin n) (δ : ℝ)
+    (hgap : ∀ i : Fin n, i ≠ p → A i i + δ ≤ A p p)
+    (hE : ∀ i : Fin n, |E i i| < δ / 2) :
+    ∀ i : Fin n, i ≠ p → A i i + E i i < A p p + E p p := by
+  intro i hip
+  have h1 := abs_lt.mp (hE i)
+  have h2 := abs_lt.mp (hE p)
+  have h3 := hgap i hip
+  linarith [h1.2, h2.1]
+
+/-- **Deterministic complete-pivoting choice**: the least-index
+    maximizer of the diagonal (Lemma 10.11 pivot-sequence
+    foundation). -/
+noncomputable def diagArgmax {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) : Fin n :=
+  (Finset.univ.filter (fun i : Fin n => ∀ j : Fin n, A j j ≤ A i i)).min'
+    (by
+      obtain ⟨i, _, hi⟩ := Finset.exists_max_image Finset.univ
+        (fun i : Fin n => A i i)
+        (Finset.univ_nonempty_iff.mpr (Fin.pos_iff_nonempty.mp hn))
+      exact ⟨i, Finset.mem_filter.mpr ⟨Finset.mem_univ i,
+        fun j => hi j (Finset.mem_univ j)⟩⟩)
+
+/-- The deterministic pivot maximizes the diagonal. -/
+lemma diagArgmax_max {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (j : Fin n) : A j j ≤ A (diagArgmax hn A) (diagArgmax hn A) := by
+  have hmem := Finset.min'_mem
+    (Finset.univ.filter (fun i : Fin n => ∀ j : Fin n, A j j ≤ A i i))
+    (by
+      obtain ⟨i, _, hi⟩ := Finset.exists_max_image Finset.univ
+        (fun i : Fin n => A i i)
+        (Finset.univ_nonempty_iff.mpr (Fin.pos_iff_nonempty.mp hn))
+      exact ⟨i, Finset.mem_filter.mpr ⟨Finset.mem_univ i,
+        fun j => hi j (Finset.mem_univ j)⟩⟩)
+  exact (Finset.mem_filter.mp hmem).2 j
+
+/-- A strict maximizer is the deterministic pivot. -/
+lemma diagArgmax_eq_of_strict {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (p : Fin n)
+    (hstrict : ∀ i : Fin n, i ≠ p → A i i < A p p) :
+    diagArgmax hn A = p := by
+  by_contra hne
+  have hmax := diagArgmax_max hn A p
+  exact absurd hmax (not_le.mpr (hstrict _ hne))
+
+/-- **Pivot-choice stability** (Lemma 10.11, single stage, packaged):
+    a gap-`δ` complete-pivoting choice is preserved by any diagonal
+    perturbation below `δ/2` — both matrices select the same
+    deterministic pivot. -/
+theorem diagArgmax_stable {n : ℕ} (hn : 0 < n)
+    (A E : Fin n → Fin n → ℝ) (p : Fin n) (δ : ℝ)
+    (hgap : ∀ i : Fin n, i ≠ p → A i i + δ ≤ A p p)
+    (hE : ∀ i : Fin n, |E i i| < δ / 2) :
+    diagArgmax hn A = p ∧
+    diagArgmax hn (fun i j => A i j + E i j) = p := by
+  have hδpos : 0 < δ := by
+    have := abs_nonneg (E p p)
+    linarith [hE p]
+  constructor
+  · exact diagArgmax_eq_of_strict hn A p fun i hip => by
+      have := hgap i hip
+      linarith
+  · exact diagArgmax_eq_of_strict hn _ p fun i hip =>
+      strict_argmax_diag_stable A E p δ hgap hE i hip
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
