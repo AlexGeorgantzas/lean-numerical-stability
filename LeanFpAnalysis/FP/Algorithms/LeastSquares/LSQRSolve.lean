@@ -67855,6 +67855,217 @@ theorem storedHouseholderQRRhsSeq_succ_of_lt (fp : FPModel)
         (storedHouseholderQRRhsSeq fp hmn A b k) := by
   simp [storedHouseholderQRRhsSeq, storedHouseholderQRAlphaSeq, hk]
 
+/-- The first concrete stored-Householder matrix state agrees with the
+    diagonally dominant scalar-comparison counterexample. -/
+theorem storedDiagDominantComparisonCounterexample_concreteStoredMatrixSeq_one :
+    storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+      (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0 1 =
+    storedDiagDominantComparisonCounterexampleSeq 1 := by
+  rw [storedHouseholderQRMatrixSeq_succ_of_lt
+    exactHouseholderQRDiagDominanceCounterexampleFP (by omega : 2 ≤ 2)
+    activeMaxPivotRowMaxComparisonCounterexampleA0 0 (by norm_num)]
+  have hstep :=
+    storedDiagDominantComparisonCounterexample_stored_step 0
+      (by norm_num : 0 < 2)
+  rw [hstep]
+  have hA0 :
+      storedDiagDominantComparisonCounterexampleSeq 0 =
+        activeMaxPivotRowMaxComparisonCounterexampleA0 := rfl
+  have halpha0 :
+      storedHouseholderQRAlphaSeq exactHouseholderQRDiagDominanceCounterexampleFP
+        (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0 0 =
+      storedDiagDominantComparisonCounterexampleAlpha 0 := by
+    rw [storedHouseholderQRAlphaSeq_eq_signed
+      exactHouseholderQRDiagDominanceCounterexampleFP (by omega : 2 ≤ 2)
+      activeMaxPivotRowMaxComparisonCounterexampleA0 0 (by norm_num)]
+    symm
+    simpa [hA0] using
+      storedDiagDominantComparisonCounterexample_signed_alpha_def 0
+        (by norm_num : 0 < 2)
+  simp [hA0, halpha0]
+
+/-- The canonical Frobenius-starting budget does not remove the scalar
+    stage-budget/row-max comparison obstruction.
+
+For the exact `2 x 2` diagonally dominant active-pivot witness, stage one has
+strict-upper row maximum `2`, while the canonical Frobenius-starting stage
+budget is at least `3`.  Hence the finite comparison defect is positive. -/
+theorem storedDiagDominantComparisonCounterexample_concreteFrobStageBudget_stageRowMaxComparisonDefectBudget_pos :
+    0 < storedQRStageRowMaxComparisonDefectBudget (by omega : 2 ≤ 2)
+      (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+        (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+      (storedHouseholderQRFrobStageBudget exactHouseholderQRDiagDominanceCounterexampleFP
+        (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0) := by
+  let i : Fin (1 + 1) := ⟨0, by norm_num⟩
+  have hle :=
+    storedQRStageRowMaxComparisonDefect_le_budget
+      (by omega : 2 ≤ 2)
+      (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+        (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+      (storedHouseholderQRFrobStageBudget exactHouseholderQRDiagDominanceCounterexampleFP
+        (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+      (k := 1) (hk := by norm_num) i (by norm_num)
+  have hrow :
+      qrLeadingStrictUpperRowMaxBudget (by omega : 2 ≤ 2)
+        (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+          (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+        1 (by norm_num) i = 2 := by
+    rw [qrLeadingStrictUpperRowMaxBudget]
+    rw [dif_pos (by norm_num : i.val < 1)]
+    have hsup :
+        (Finset.univ.filter (fun j : Fin (1 + 1) => i.val < j.val)).sup'
+            (by
+              refine ⟨(⟨1, by norm_num⟩ : Fin (1 + 1)), ?_⟩
+              simp [i])
+            (fun j =>
+              |qrLeadingBlock
+                ((storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+                  (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0) 1)
+                (Nat.succ_le_iff.mpr
+                  (lt_of_lt_of_le (by norm_num : 1 < 2) (by omega : 2 ≤ 2)))
+                (by norm_num : 1 < 2) i j|) = 2 := by
+      apply Finset.sup'_eq_of_forall
+      intro j hj
+      have hj_one : j = (⟨1, by norm_num⟩ : Fin (1 + 1)) := by
+        have hjpos : i.val < j.val := (Finset.mem_filter.mp hj).2
+        fin_cases j
+        · norm_num [i] at hjpos
+        · rfl
+      subst hj_one
+      rw [storedDiagDominantComparisonCounterexample_concreteStoredMatrixSeq_one]
+      norm_num [i, storedDiagDominantComparisonCounterexampleSeq,
+        storedDiagDominantComparisonCounterexampleA1,
+        qrLeadingBlock, qrLeadingRow, qrLeadingColumn]
+    rw [hsup]
+  have hstage :
+      (3 : ℝ) ≤ storedHouseholderQRFrobStageBudget
+        exactHouseholderQRDiagDominanceCounterexampleFP (by omega : 2 ≤ 2)
+        activeMaxPivotRowMaxComparisonCounterexampleA0 1 := by
+    rw [storedHouseholderQRFrobStageBudget_succ_of_lt
+      exactHouseholderQRDiagDominanceCounterexampleFP (by omega : 2 ≤ 2)
+      activeMaxPivotRowMaxComparisonCounterexampleA0 0 (by norm_num)]
+    simp only [storedHouseholderQRFrobStageBudget_zero]
+    have hfrob_ge :
+        (3 : ℝ) ≤ frobNormRect activeMaxPivotRowMaxComparisonCounterexampleA0 := by
+      let r0 : Fin 2 := ⟨0, by norm_num⟩
+      let c0 : Fin 2 := ⟨0, by norm_num⟩
+      have hentry :=
+        abs_entry_le_frobNormRect activeMaxPivotRowMaxComparisonCounterexampleA0 r0 c0
+      norm_num [r0, c0, activeMaxPivotRowMaxComparisonCounterexampleA0] at hentry
+      exact hentry
+    have hfrob_nonneg :
+        0 ≤ frobNormRect activeMaxPivotRowMaxComparisonCounterexampleA0 :=
+      frobNormRect_nonneg _
+    have hfactor : (1 : ℝ) ≤ coxHighamActiveRowGrowthFactor 2 :=
+      one_le_coxHighamActiveRowGrowthFactor 2
+    have hmul :
+        frobNormRect activeMaxPivotRowMaxComparisonCounterexampleA0 ≤
+          coxHighamActiveRowGrowthFactor 2 *
+            frobNormRect activeMaxPivotRowMaxComparisonCounterexampleA0 := by
+      nlinarith
+    have hterm_nonneg :
+        0 ≤ storedQRSignedStageGlobalCompactBudget (by omega : 2 ≤ 2)
+          exactHouseholderQRDiagDominanceCounterexampleFP
+          (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+            (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+          (storedHouseholderQRAlphaSeq exactHouseholderQRDiagDominanceCounterexampleFP
+            (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+          0 (by norm_num) :=
+      storedQRSignedStageGlobalCompactBudget_nonneg (by omega : 2 ≤ 2)
+        exactHouseholderQRDiagDominanceCounterexampleFP
+        (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+          (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+        (storedHouseholderQRAlphaSeq exactHouseholderQRDiagDominanceCounterexampleFP
+          (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+        0 (by norm_num)
+        (by
+          norm_num [exactHouseholderQRDiagDominanceCounterexampleFP,
+            FPModel.exactWithUnitRoundoff, gammaValid])
+    linarith
+  have hterm :
+      (1 : ℝ) ≤
+        storedHouseholderQRFrobStageBudget exactHouseholderQRDiagDominanceCounterexampleFP
+          (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0 1 -
+        qrLeadingStrictUpperRowMaxBudget (by omega : 2 ≤ 2)
+          (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+            (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+          1 (by norm_num) i := by
+    rw [hrow]
+    linarith
+  have hbudget :
+      (1 : ℝ) ≤ storedQRStageRowMaxComparisonDefectBudget (by omega : 2 ≤ 2)
+        (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+          (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0)
+        (storedHouseholderQRFrobStageBudget exactHouseholderQRDiagDominanceCounterexampleFP
+          (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0) :=
+    hterm.trans hle
+  linarith
+
+/-- Route elimination for the current canonical Frobenius-stage Theorem 20.3
+    surface.
+
+Local diagonal dominance, the concrete active-max-pivot choice, and a small
+declared unit roundoff do not force the scalar comparison defect needed by the
+stored-lower Frobenius-budget wrapper.  Thus that remaining hypothesis is an
+independent domain/algorithm invariant unless a different budget or pivoted
+stored-loop model is supplied. -/
+theorem not_forall_diagDominant_activeMaxPivot_concreteStoredFrobStageBudget_implies_stageRowMaxComparisonDefectBudget_nonpos :
+    ¬ (∀ (fp : FPModel) (A : Fin 2 → Fin 2 → ℝ),
+      (2 : ℝ) * fp.u < 1 →
+      (∀ k (hk : k < 2),
+        IsDiagDominantUpper (k + 1)
+          (qrLeadingBlock (storedHouseholderQRMatrixSeq fp (by omega : 2 ≤ 2) A k)
+            (Nat.succ_le_iff.mpr hk) hk)) →
+      (∀ t (ht : t < 2),
+        (⟨t, ht⟩ : Fin 2) =
+          householderActiveMaxPivotColumn
+            (⟨t, lt_of_lt_of_le ht (by omega : 2 ≤ 2)⟩ : Fin 2)
+            (⟨t, ht⟩ : Fin 2)
+            (storedHouseholderQRMatrixSeq fp (by omega : 2 ≤ 2) A t)) →
+      storedQRStageRowMaxComparisonDefectBudget (by omega : 2 ≤ 2)
+        (storedHouseholderQRMatrixSeq fp (by omega : 2 ≤ 2) A)
+        (storedHouseholderQRFrobStageBudget fp (by omega : 2 ≤ 2) A) ≤ 0) := by
+  intro h
+  have hDD : ∀ k (hk : k < 2),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock
+          (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+            (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0 k)
+          (Nat.succ_le_iff.mpr hk) hk) := by
+    intro k hk
+    interval_cases k
+    · simpa [storedDiagDominantComparisonCounterexampleSeq,
+        activeMaxPivotRowMaxComparisonCounterexampleA0] using
+        storedDiagDominantComparisonCounterexample_diagDominant 0
+          (by norm_num : 0 < 2)
+    · rw [storedDiagDominantComparisonCounterexample_concreteStoredMatrixSeq_one]
+      exact storedDiagDominantComparisonCounterexample_diagDominant 1
+        (by norm_num : 1 < 2)
+  have hpivot : ∀ t (ht : t < 2),
+      (⟨t, ht⟩ : Fin 2) =
+        householderActiveMaxPivotColumn
+          (⟨t, lt_of_lt_of_le ht (by omega : 2 ≤ 2)⟩ : Fin 2)
+          (⟨t, ht⟩ : Fin 2)
+          (storedHouseholderQRMatrixSeq exactHouseholderQRDiagDominanceCounterexampleFP
+            (by omega : 2 ≤ 2) activeMaxPivotRowMaxComparisonCounterexampleA0 t) := by
+    intro t ht
+    interval_cases t
+    · simpa [storedDiagDominantComparisonCounterexampleSeq,
+        activeMaxPivotRowMaxComparisonCounterexampleA0] using
+        storedDiagDominantComparisonCounterexample_activeMaxPivotChoice 0
+          (by norm_num : 0 < 2)
+    · rw [storedDiagDominantComparisonCounterexample_concreteStoredMatrixSeq_one]
+      exact storedDiagDominantComparisonCounterexample_activeMaxPivotChoice 1
+        (by norm_num : 1 < 2)
+  have hnonpos := h exactHouseholderQRDiagDominanceCounterexampleFP
+    activeMaxPivotRowMaxComparisonCounterexampleA0
+    (by
+      norm_num [exactHouseholderQRDiagDominanceCounterexampleFP,
+        FPModel.exactWithUnitRoundoff])
+    hDD hpivot
+  exact not_lt_of_ge hnonpos
+    storedDiagDominantComparisonCounterexample_concreteFrobStageBudget_stageRowMaxComparisonDefectBudget_pos
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.3, stored-Householder QR
     source-facing compact-budget wrapper.
 
