@@ -1757,10 +1757,13 @@ Source-facing Chapter 9 wrappers:
 - `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactTargetGaps`
 - `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace_LUFactSpec`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_of_eq_one`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_of_le_two`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_denseLoop`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_denseLoop_of_eq_one`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_denseLoop_of_le_two`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget_of_eq_one`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget_of_le_two`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedStageTrace`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedStageTrace_of_le_two`
@@ -3722,10 +3725,14 @@ Source-facing Chapter 10 wrappers:
 - `higham10_14_schurComplement`
 - `higham10_10_schur_complement_perturbation`
 - `higham10_12_w_norm_bound_from_cond`
+- `higham10_6_fl_scaled_forward_error_source` (source gamma_{3n+1} constant) / `eps_tot_le_gamma_3n1`
+- `higham10_12_psd_w_action_bound` / `higham10_12_w_action_norm_bound` (honest: PSD block quadratic form + Rayleigh)
+- `quadForm_append_split`
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
+- `fl_cholesky_truncated_demmel` (Th10.14 leading-block engine: computed block Demmel-stable under early termination)
 - `higham10_26_nonpositivePivotCriterion`
 - `higham10_27_residualStopCriterion`
 - `higham10_27_nonpositiveDiagonalCriterion`
