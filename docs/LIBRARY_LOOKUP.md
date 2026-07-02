@@ -2766,6 +2766,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_chi_condition_chain_min_of_inverse_product_bounds`
 - `higham9_15_chi_condition_chain_of_inverse_products`
 - `higham9_15_chi_condition_chain_min_of_inverse_products`
+- `higham9_15_lu_inverse_product_identities_of_source_inverse_identities`
+- `higham9_15_chi_condition_chain_of_lu_inverse_identities`
+- `higham9_15_chi_condition_chain_min_of_lu_inverse_identities`
 - `higham9_15_normalized_G_factorization_matrix`
 - `higham9_15_normalized_Gtilde_factorization_matrix`
 - `higham9_15_strilPart`
