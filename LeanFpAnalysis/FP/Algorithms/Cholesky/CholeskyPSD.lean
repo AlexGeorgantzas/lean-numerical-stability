@@ -1223,24 +1223,202 @@ noncomputable def schurComplement (n k : ℕ) (A A11_inv : Fin n → Fin n → �
 -- §10.3  Lemma 10.10: Schur complement perturbation
 -- ============================================================
 
-/-- **Abstract Schur complement perturbation interface**
-    (Higham §10.3, Lemma 10.10).
 
-    The perturbation estimate is supplied as `hbound`; the theorem gives it a
-    named interface for later PSD Cholesky results. -/
-theorem schur_complement_perturbation (n k : ℕ)
-    (A E A11_inv : Fin n → Fin n → ℝ)
-    (W_norm : ℝ) (_hW_norm : 0 ≤ W_norm)
-    (E_norm : ℝ) (_hE_norm : 0 ≤ E_norm)
-    (hbound : ∀ i j : Fin n, k ≤ i.val → k ≤ j.val →
-      |schurComplement n k (fun i' j' => A i' j' + E i' j') A11_inv i j -
-       schurComplement n k A A11_inv i j| ≤
-      (1 + W_norm) ^ 2 * E_norm) :
-    ∀ i j : Fin n, k ≤ i.val → k ≤ j.val →
-      |schurComplement n k (fun i' j' => A i' j' + E i' j') A11_inv i j -
-       schurComplement n k A A11_inv i j| ≤
-      (1 + W_norm) ^ 2 * E_norm :=
-  hbound
+/-- **Resolvent identity for the perturbed leading block** (Lemma 10.10
+    setup): if `M` is a left inverse of `A₁₁` and `X` a right... — more
+    precisely, if `M * A₁₁ = 1` and `(A₁₁ + E₁₁) * X = 1`, then
+    `X = M − M E₁₁ X` exactly. This is the identity that makes the
+    Schur-complement perturbation expansion pure algebra. -/
+lemma schur_resolvent_from_inverses {k : ℕ}
+    (M X A11 E11 : Matrix (Fin k) (Fin k) ℝ)
+    (hM : M * A11 = 1) (hXi : (A11 + E11) * X = 1) :
+    X = M - M * E11 * X := by
+  have h : M * ((A11 + E11) * X) = M := by rw [hXi, mul_one]
+  rw [Matrix.add_mul, Matrix.mul_add, ← Matrix.mul_assoc, hM,
+    Matrix.one_mul, ← Matrix.mul_assoc] at h
+  linear_combination (norm := abel) h
+
+/-- **First-order split of the perturbed Schur complement** (Lemma 10.10
+    engine): with the perturbed leading-block inverse written as
+    `X = M − Y`, the perturbed Schur complement decomposes exactly into
+    the unperturbed one, the `E`-linear part, and a remainder carrying
+    `Y` (which is second order once `Y = M E₁₁ X`). -/
+lemma schur_perturbation_split {k m : ℕ}
+    (A21 E21 : Matrix (Fin m) (Fin k) ℝ)
+    (A12 E12 : Matrix (Fin k) (Fin m) ℝ)
+    (A22 E22 : Matrix (Fin m) (Fin m) ℝ)
+    (M X Y : Matrix (Fin k) (Fin k) ℝ) (hX : X = M - Y) :
+    (A22 + E22) - (A21 + E21) * X * (A12 + E12) =
+      ((A22 - A21 * M * A12)
+        + (E22 - E21 * M * A12 - A21 * M * E12)
+        + (-(E21 * M * E12) + (A21 + E21) * Y * (A12 + E12))) := by
+  subst hX
+  simp only [Matrix.add_mul, Matrix.mul_add, Matrix.sub_mul,
+    Matrix.mul_sub, Matrix.mul_assoc]
+  abel
+
+/-- **One re-expansion of the resolvent inside the remainder**: the
+    leading remainder term regains Higham's second-order form. -/
+lemma schur_remainder_reexpand {k m : ℕ}
+    (A21 : Matrix (Fin m) (Fin k) ℝ) (A12 : Matrix (Fin k) (Fin m) ℝ)
+    (M X E11 : Matrix (Fin k) (Fin k) ℝ)
+    (hX : X = M - M * E11 * X) :
+    A21 * (M * E11 * X) * A12 =
+      A21 * (M * E11 * M) * A12
+        - A21 * (M * E11 * (M * E11 * X)) * A12 := by
+  conv_lhs => rw [hX]
+  simp only [Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_assoc]
+
+/-- **Lemma 10.10, exact form (display (10.16))**: for the perturbed
+    block matrix `A + E` with leading-block inverses related by the
+    resolvent identity (`schur_resolvent_from_inverses`), the perturbed
+    Schur complement equals the unperturbed one plus Higham's
+    first-order term
+    `Ē = E₂₂ − E₂₁ M A₁₂ − A₂₁ M E₁₂ + A₂₁ M E₁₁ M A₁₂`
+    (with `W = M A₁₂`, `Wᵀ = A₂₁ M` for symmetric `A` this is
+    `E₂₂ − E₂₁ W − Wᵀ E₁₂ + Wᵀ E₁₁ W`) plus an explicit remainder in
+    which every term carries two `E`-factors — the `O(‖E‖²)` of the
+    source, here exact rather than asymptotic. -/
+theorem schur_perturbation_exact {k m : ℕ}
+    (A21 E21 : Matrix (Fin m) (Fin k) ℝ)
+    (A12 E12 : Matrix (Fin k) (Fin m) ℝ)
+    (A22 E22 : Matrix (Fin m) (Fin m) ℝ)
+    (M X E11 : Matrix (Fin k) (Fin k) ℝ)
+    (hX : X = M - M * E11 * X) :
+    (A22 + E22) - (A21 + E21) * X * (A12 + E12) =
+      (A22 - A21 * M * A12)
+      + (E22 - E21 * M * A12 - A21 * M * E12
+          + A21 * (M * E11 * M) * A12)
+      + (-(E21 * M * E12)
+          - A21 * (M * E11 * (M * E11 * X)) * A12
+          + E21 * (M * E11 * X) * A12
+          + A21 * (M * E11 * X) * E12
+          + E21 * (M * E11 * X) * E12) := by
+  rw [schur_perturbation_split A21 E21 A12 E12 A22 E22 M X
+    (M * E11 * X) hX]
+  have hre := schur_remainder_reexpand A21 A12 M X E11 hX
+  simp only [Matrix.add_mul, Matrix.mul_add] at *
+  rw [hre]
+  abel
+
+/-- Entrywise bound for a matrix product from entrywise bounds on the
+    factors. -/
+lemma entrywise_matMul_le {a b c : ℕ}
+    (F : Matrix (Fin a) (Fin b) ℝ) (G : Matrix (Fin b) (Fin c) ℝ)
+    (f g : ℝ) (hf : 0 ≤ f)
+    (hF : ∀ i j, |F i j| ≤ f) (hG : ∀ i j, |G i j| ≤ g) :
+    ∀ (i : Fin a) (j : Fin c), |(F * G) i j| ≤ (b : ℝ) * f * g := by
+  intro i j
+  rw [Matrix.mul_apply]
+  calc |∑ s : Fin b, F i s * G s j|
+      ≤ ∑ s : Fin b, |F i s * G s j| := Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ _s : Fin b, f * g := Finset.sum_le_sum fun s _ => by
+        rw [abs_mul]
+        exact mul_le_mul (hF i s) (hG s j) (abs_nonneg _) hf
+    _ = (b : ℝ) * (f * g) := by
+        rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+          nsmul_eq_mul]
+    _ = (b : ℝ) * f * g := by ring
+
+/-- **Lemma 10.10, second-order remainder bound**: the exact remainder of
+    `schur_perturbation_exact` is entrywise `O(ε²)` — bounded by an
+    explicit polynomial in the entrywise bounds `α` (of the off-diagonal
+    blocks of `A`), `μ` (of `M = A₁₁⁻¹`), `χ` (of the perturbed inverse
+    `X`), times `ε²`. This is the honest content of the source's
+    `O(‖E‖²)`. -/
+theorem schur_perturbation_remainder_bound {k m : ℕ}
+    (A21 E21 : Matrix (Fin m) (Fin k) ℝ)
+    (A12 E12 : Matrix (Fin k) (Fin m) ℝ)
+    (M X E11 : Matrix (Fin k) (Fin k) ℝ)
+    (α μ χ ε : ℝ) (hα : 0 ≤ α) (hμ : 0 ≤ μ) (hχ : 0 ≤ χ) (hε : 0 ≤ ε)
+    (hA21 : ∀ i j, |A21 i j| ≤ α) (hA12 : ∀ i j, |A12 i j| ≤ α)
+    (hE21 : ∀ i j, |E21 i j| ≤ ε) (hE12 : ∀ i j, |E12 i j| ≤ ε)
+    (hE11 : ∀ i j, |E11 i j| ≤ ε)
+    (hM : ∀ i j, |M i j| ≤ μ) (hX : ∀ i j, |X i j| ≤ χ) :
+    ∀ (i j : Fin m),
+      |(-(E21 * M * E12)
+          - A21 * (M * E11 * (M * E11 * X)) * A12
+          + E21 * (M * E11 * X) * A12
+          + A21 * (M * E11 * X) * E12
+          + E21 * (M * E11 * X) * E12) i j| ≤
+      ((k : ℝ) ^ 2 * μ + (k : ℝ) ^ 6 * α ^ 2 * μ ^ 2 * χ
+        + 2 * ((k : ℝ) ^ 4 * α * μ * χ) + (k : ℝ) ^ 4 * μ * χ * ε)
+        * ε ^ 2 := by
+  intro i j
+  have hk : (0 : ℝ) ≤ (k : ℝ) := Nat.cast_nonneg k
+  -- entrywise bounds on the building blocks
+  have hME : ∀ (p q : Fin k), |(M * E11) p q| ≤ (k : ℝ) * μ * ε :=
+    entrywise_matMul_le M E11 μ ε hμ hM hE11
+  have hMEnn : (0 : ℝ) ≤ (k : ℝ) * μ * ε := by positivity
+  have hMEX : ∀ (p q : Fin k), |((M * E11) * X) p q| ≤
+      (k : ℝ) * ((k : ℝ) * μ * ε) * χ :=
+    entrywise_matMul_le (M * E11) X _ χ hMEnn hME hX
+  have hMEXnn : (0 : ℝ) ≤ (k : ℝ) * ((k : ℝ) * μ * ε) * χ := by
+    positivity
+  -- term 1 : E21 * M * E12
+  have hT1a : ∀ (p : Fin m) (q : Fin k), |(E21 * M) p q| ≤
+      (k : ℝ) * ε * μ := entrywise_matMul_le E21 M ε μ hε hE21 hM
+  have hT1 : ∀ (p q : Fin m), |((E21 * M) * E12) p q| ≤
+      (k : ℝ) * ((k : ℝ) * ε * μ) * ε :=
+    entrywise_matMul_le (E21 * M) E12 _ ε (by positivity) hT1a hE12
+  -- term 2 : A21 * (M*E11*(M*E11*X)) * A12
+  have hInner : ∀ (p q : Fin k), |((M * E11) * ((M * E11) * X)) p q| ≤
+      (k : ℝ) * ((k : ℝ) * μ * ε) * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ) :=
+    entrywise_matMul_le (M * E11) ((M * E11) * X) _ _ hMEnn hME hMEX
+  have hT2a : ∀ (p : Fin m) (q : Fin k),
+      |(A21 * ((M * E11) * ((M * E11) * X))) p q| ≤
+      (k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) *
+        ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) :=
+    entrywise_matMul_le A21 _ α _ hα hA21 hInner
+  have hT2 : ∀ (p q : Fin m),
+      |((A21 * ((M * E11) * ((M * E11) * X))) * A12) p q| ≤
+      (k : ℝ) * ((k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) *
+        ((k : ℝ) * ((k : ℝ) * μ * ε) * χ))) * α :=
+    entrywise_matMul_le _ A12 _ α (by positivity) hT2a hA12
+  -- term 3 : E21 * (M*E11*X) * A12
+  have hT3a : ∀ (p : Fin m) (q : Fin k),
+      |(E21 * ((M * E11) * X)) p q| ≤
+      (k : ℝ) * ε * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ) :=
+    entrywise_matMul_le E21 _ ε _ hε hE21 hMEX
+  have hT3 : ∀ (p q : Fin m),
+      |((E21 * ((M * E11) * X)) * A12) p q| ≤
+      (k : ℝ) * ((k : ℝ) * ε * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) * α :=
+    entrywise_matMul_le _ A12 _ α (by positivity) hT3a hA12
+  -- term 4 : A21 * (M*E11*X) * E12
+  have hT4a : ∀ (p : Fin m) (q : Fin k),
+      |(A21 * ((M * E11) * X)) p q| ≤
+      (k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ) :=
+    entrywise_matMul_le A21 _ α _ hα hA21 hMEX
+  have hT4 : ∀ (p q : Fin m),
+      |((A21 * ((M * E11) * X)) * E12) p q| ≤
+      (k : ℝ) * ((k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) * ε :=
+    entrywise_matMul_le _ E12 _ ε (by positivity) hT4a hE12
+  -- term 5 : E21 * (M*E11*X) * E12
+  have hT5 : ∀ (p q : Fin m),
+      |((E21 * ((M * E11) * X)) * E12) p q| ≤
+      (k : ℝ) * ((k : ℝ) * ε * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) * ε :=
+    entrywise_matMul_le _ E12 _ ε (by positivity) hT3a hE12
+  -- assemble by the triangle inequality
+  have h1 := abs_le.mp (hT1 i j)
+  have h2 := abs_le.mp (hT2 i j)
+  have h3 := abs_le.mp (hT3 i j)
+  have h4 := abs_le.mp (hT4 i j)
+  have h5 := abs_le.mp (hT5 i j)
+  have hsum : ((k : ℝ) ^ 2 * μ + (k : ℝ) ^ 6 * α ^ 2 * μ ^ 2 * χ
+      + 2 * ((k : ℝ) ^ 4 * α * μ * χ) + (k : ℝ) ^ 4 * μ * χ * ε)
+      * ε ^ 2 =
+      (k : ℝ) * ((k : ℝ) * ε * μ) * ε
+      + (k : ℝ) * ((k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) *
+          ((k : ℝ) * ((k : ℝ) * μ * ε) * χ))) * α
+      + (k : ℝ) * ((k : ℝ) * ε * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) * α
+      + (k : ℝ) * ((k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) * ε
+      + (k : ℝ) * ((k : ℝ) * ε * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) * ε
+      := by ring
+  rw [hsum]
+  simp only [Matrix.add_apply, Matrix.sub_apply, Matrix.neg_apply]
+  rw [abs_le]
+  constructor <;> linarith [h1.1, h1.2, h2.1, h2.2, h3.1, h3.2,
+    h4.1, h4.2, h5.1, h5.2]
 
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
