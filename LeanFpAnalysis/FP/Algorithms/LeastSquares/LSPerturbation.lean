@@ -101,6 +101,46 @@ theorem wedinTheorem20_1_solutionRelativeRHS_of_zero_residual
       2 * ((kappa * eps) / (1 - kappa * eps)) := by
   simp [wedinTheorem20_1SolutionRelativeRHS, mul_comm]
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    the smallness hypothesis `η < 1` makes the reciprocal denominator positive. -/
+theorem wedinLemma20_11_denominator_pos {eta : ℝ} (hsmall : eta < 1) :
+    0 < 1 - eta := by
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    scalar rearrangement step from the singular-value perturbation lower bound.
+
+    The missing spectral input is the hypothesis `sigmaA - delta <= sigmaB`,
+    where `delta = ||A - B||₂`, `sigmaA = ||A⁺||₂⁻¹`, and
+    `sigmaB = ||B⁺||₂⁻¹`.  This theorem proves only the source's final
+    reciprocal algebra, not the singular-value perturbation theorem itself. -/
+theorem wedinLemma20_11_pinvNorm_le_of_singularValue_gap
+    {Aplus_norm Bplus_norm delta eta sigmaA sigmaB : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hsigmaA : sigmaA = 1 / Aplus_norm)
+    (hBplus : Bplus_norm = 1 / sigmaB)
+    (hgap : sigmaA - delta ≤ sigmaB) :
+    Bplus_norm ≤ Aplus_norm / (1 - eta) := by
+  subst eta
+  have hden_pos : 0 < 1 - Aplus_norm * delta :=
+    wedinLemma20_11_denominator_pos hsmall
+  have hdelta_lt : delta < 1 / Aplus_norm := by
+    rw [lt_div_iff₀ hAplus_pos]
+    simpa [mul_comm] using hsmall
+  have hgap_pos : 0 < sigmaA - delta := by
+    rw [hsigmaA]
+    linarith
+  have hrecip : 1 / sigmaB ≤ 1 / (sigmaA - delta) :=
+    one_div_le_one_div_of_le hgap_pos hgap
+  rw [hBplus]
+  calc
+    1 / sigmaB ≤ 1 / (sigmaA - delta) := hrecip
+    _ = Aplus_norm / (1 - Aplus_norm * delta) := by
+      rw [hsigmaA]
+      field_simp [ne_of_gt hAplus_pos, ne_of_gt hden_pos]
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
