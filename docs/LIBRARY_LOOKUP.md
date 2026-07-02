@@ -2265,6 +2265,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_9_rowDiagDominant_fin_two_exists_LUFactSpec_growthFactorEntry_le_two`
 - `higham9_9_colDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_le_two`
 - `higham9_9_rowDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_le_two`
+- `higham9_9_colDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_eq_one`
+- `higham9_9_rowDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_eq_one`
 - `higham9_9_colDiagDominant_transpose_iff_rowDiagDominant`
 - `higham9_9_rowDiagDominant_transpose_iff_colDiagDominant`
 - `higham9_10_hessenberg_growth_backward_error`
@@ -3758,6 +3760,8 @@ Source-facing Chapter 10 wrappers:
 - `cpPivot_sequence_stable` (Lemma 10.11 CLOSED: no-tie gap-delta pivot sequence preserved through r stages for entrywise-eps-close matrices)
 - `cpPivot_sequence_stable_small` (Lemma 10.11 source form: positive perturbation radius exists, geometric budget instantiation)
 - `fl_schurStep` / `fl_schurStep_close` (fl elimination step; one-stage fl-vs-exact proximity u(c + c^2/rho) + (c^2/rho)(2u + u^2)(1+u) - pivoted fl-trace seed)
+- `fl_cpState` / `fl_cpPivot` / `fl_cpPivot_sequence_agrees` (the fl complete-pivoting run follows the exact pivot sequence under no-tie gaps + rounding budget)
+- `fl_cp_termination_trailing_bound` ((10.23)/(10.24) as-run: computed stopping test => exact trailing Schur entrywise <= tol + h r)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
