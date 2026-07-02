@@ -29755,6 +29755,137 @@ theorem higham9_15_chi_condition_chain_min_of_inverse_products {n : ℕ}
   exact higham9_15_chi_condition_chain_min_of_inverse_product_bounds
     A Ainv L U Linv Uinv hAinv_cert hUinv_cert hLinv_cert
 
+/-- **Theorem 9.15**, LU/inverse-identity bridge for the source
+condition-number chain.  From `A = L U` and the two-sided inverse identities
+for `A`, `L`, and `U`, derive the three product identities used in Higham's
+displayed chain: `A⁻¹ = U⁻¹L⁻¹`, `U⁻¹ = A⁻¹L`, and `L⁻¹ = U A⁻¹`. -/
+theorem higham9_15_lu_inverse_product_identities_of_source_inverse_identities {n : ℕ}
+    (A Ainv L U Linv Uinv : Fin n → Fin n → ℝ)
+    (hLU : A = rectMatMul L U)
+    (hAleft : rectMatMul Ainv A = idMatrix n)
+    (hAright : rectMatMul A Ainv = idMatrix n)
+    (hLleft : rectMatMul Linv L = idMatrix n)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUright : rectMatMul U Uinv = idMatrix n) :
+    Ainv = rectMatMul Uinv Linv ∧
+      Uinv = rectMatMul Ainv L ∧
+      Linv = rectMatMul U Ainv := by
+  have hA_candidate :
+      rectMatMul A (rectMatMul Uinv Linv) = idMatrix n := by
+    calc
+      rectMatMul A (rectMatMul Uinv Linv)
+          = rectMatMul (rectMatMul L U) (rectMatMul Uinv Linv) := by
+            rw [hLU]
+      _ = rectMatMul L (rectMatMul U (rectMatMul Uinv Linv)) := by
+            rw [rectMatMul_assoc]
+      _ = rectMatMul L (rectMatMul (rectMatMul U Uinv) Linv) := by
+            exact congrArg (rectMatMul L) (Eq.symm (rectMatMul_assoc U Uinv Linv))
+      _ = rectMatMul L (rectMatMul (idMatrix n) Linv) := by
+            rw [hUright]
+      _ = rectMatMul L Linv := by
+            rw [rectMatMul_id_left]
+      _ = idMatrix n := hLright
+  have hAinv_prod : Ainv = rectMatMul Uinv Linv := by
+    calc
+      Ainv = rectMatMul Ainv (idMatrix n) := by
+        symm
+        exact rectMatMul_id_right Ainv
+      _ = rectMatMul Ainv (rectMatMul A (rectMatMul Uinv Linv)) := by
+        rw [hA_candidate]
+      _ = rectMatMul (rectMatMul Ainv A) (rectMatMul Uinv Linv) := by
+        rw [← rectMatMul_assoc]
+      _ = rectMatMul (idMatrix n) (rectMatMul Uinv Linv) := by
+        rw [hAleft]
+      _ = rectMatMul Uinv Linv := by
+        rw [rectMatMul_id_left]
+  have hU_candidate :
+      rectMatMul (rectMatMul Ainv L) U = idMatrix n := by
+    calc
+      rectMatMul (rectMatMul Ainv L) U
+          = rectMatMul Ainv (rectMatMul L U) := by
+            rw [rectMatMul_assoc]
+      _ = rectMatMul Ainv A := by
+            rw [← hLU]
+      _ = idMatrix n := hAleft
+  have hUinv_prod : Uinv = rectMatMul Ainv L := by
+    calc
+      Uinv = rectMatMul (idMatrix n) Uinv := by
+        symm
+        exact rectMatMul_id_left Uinv
+      _ = rectMatMul (rectMatMul (rectMatMul Ainv L) U) Uinv := by
+        rw [hU_candidate]
+      _ = rectMatMul (rectMatMul Ainv L) (rectMatMul U Uinv) := by
+        rw [rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul Ainv L) (idMatrix n) := by
+        rw [hUright]
+      _ = rectMatMul Ainv L := by
+        rw [rectMatMul_id_right]
+  have hL_candidate :
+      rectMatMul L (rectMatMul U Ainv) = idMatrix n := by
+    calc
+      rectMatMul L (rectMatMul U Ainv)
+          = rectMatMul (rectMatMul L U) Ainv := by
+            rw [← rectMatMul_assoc]
+      _ = rectMatMul A Ainv := by
+            rw [← hLU]
+      _ = idMatrix n := hAright
+  have hLinv_prod : Linv = rectMatMul U Ainv := by
+    calc
+      Linv = rectMatMul Linv (idMatrix n) := by
+        symm
+        exact rectMatMul_id_right Linv
+      _ = rectMatMul Linv (rectMatMul L (rectMatMul U Ainv)) := by
+        rw [hL_candidate]
+      _ = rectMatMul (rectMatMul Linv L) (rectMatMul U Ainv) := by
+        rw [← rectMatMul_assoc]
+      _ = rectMatMul (idMatrix n) (rectMatMul U Ainv) := by
+        rw [hLleft]
+      _ = rectMatMul U Ainv := by
+        rw [rectMatMul_id_left]
+  exact ⟨hAinv_prod, hUinv_prod, hLinv_prod⟩
+
+/-- **Theorem 9.15**, source condition-number chain from the LU factorization
+and two-sided inverse identities.  This is the source-facing form of
+`κ₂(A) <= χ(A) <= κ₂(L)κ₂(A)` and
+`χ(A) <= κ₂(U)κ₂(A)` without requiring the product identities as separate
+input hypotheses. -/
+theorem higham9_15_chi_condition_chain_of_lu_inverse_identities {n : ℕ}
+    (A Ainv L U Linv Uinv : Fin n → Fin n → ℝ)
+    (hLU : A = rectMatMul L U)
+    (hAleft : rectMatMul Ainv A = idMatrix n)
+    (hAright : rectMatMul A Ainv = idMatrix n)
+    (hLleft : rectMatMul Linv L = idMatrix n)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUright : rectMatMul U Uinv = idMatrix n) :
+    kappa2 A Ainv ≤ higham9_15_chi A Linv Uinv ∧
+      higham9_15_chi A Linv Uinv ≤ kappa2 L Linv * kappa2 A Ainv ∧
+      higham9_15_chi A Linv Uinv ≤ kappa2 U Uinv * kappa2 A Ainv := by
+  obtain ⟨hAinv_prod, hUinv_prod, hLinv_prod⟩ :=
+    higham9_15_lu_inverse_product_identities_of_source_inverse_identities
+      A Ainv L U Linv Uinv hLU hAleft hAright hLleft hLright hUright
+  exact higham9_15_chi_condition_chain_of_inverse_products
+    A Ainv L U Linv Uinv hAinv_prod hUinv_prod hLinv_prod
+
+/-- **Theorem 9.15**, source-shaped min condition-number chain from the LU
+factorization and two-sided inverse identities:
+`κ₂(A) <= χ(A) <= min{κ₂(L), κ₂(U)} κ₂(A)`. -/
+theorem higham9_15_chi_condition_chain_min_of_lu_inverse_identities {n : ℕ}
+    (A Ainv L U Linv Uinv : Fin n → Fin n → ℝ)
+    (hLU : A = rectMatMul L U)
+    (hAleft : rectMatMul Ainv A = idMatrix n)
+    (hAright : rectMatMul A Ainv = idMatrix n)
+    (hLleft : rectMatMul Linv L = idMatrix n)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUright : rectMatMul U Uinv = idMatrix n) :
+    kappa2 A Ainv ≤ higham9_15_chi A Linv Uinv ∧
+      higham9_15_chi A Linv Uinv ≤
+        min (kappa2 L Linv) (kappa2 U Uinv) * kappa2 A Ainv := by
+  obtain ⟨hAinv_prod, hUinv_prod, hLinv_prod⟩ :=
+    higham9_15_lu_inverse_product_identities_of_source_inverse_identities
+      A Ainv L U Linv Uinv hLU hAleft hAright hLleft hLright hUright
+  exact higham9_15_chi_condition_chain_min_of_inverse_products
+    A Ainv L U Linv Uinv hAinv_prod hUinv_prod hLinv_prod
+
 /-- **Theorem 9.15**, normalized algebraic identity for the normwise
 perturbation theorem.  With
 `G = L⁻¹ ΔA U⁻¹`, `X = L⁻¹ ΔL`, and `Y = ΔU U⁻¹`, the two exact
