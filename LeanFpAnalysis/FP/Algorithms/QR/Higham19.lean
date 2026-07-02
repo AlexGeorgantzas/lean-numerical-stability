@@ -18825,6 +18825,31 @@ theorem
       u0 hu0 r p A_hat alpha hvecs)
     (subtractZeroExact_exactWithUnitRoundoff u0 hu0)
 
+/-- Exact-arithmetic tail-vector loop facts imply final closure through the
+source-faithful certificate endpoint.
+
+This is the source-faithful counterpart of
+`storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_exactWithUnitRoundoff`:
+the all-stage exact tail-vector equalities first assemble the recursive
+source-faithful certificate package, then reuse the source-faithful final-closed
+endpoint. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_sourceFaithful_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed
+      (FPModel.exactWithUnitRoundoff u0 hu0)
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_sourceFaithfulNormalizations
+    (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
+    (storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hvecs)
+    (subtractZeroExact_exactWithUnitRoundoff u0 hu0)
+
 /-- Full-stage source-closure data implies the twice-trailing final-closure
 predicate.
 
