@@ -3532,6 +3532,9 @@ Source-facing Chapter 10 wrappers:
 - `matMulVec_neg`
 - `higham10_6_perturbed_solve_forward_error`
 - `higham10_6_scaled_forward_error_assembled`
+- `quadForm_zero_pad_eq`
+- `sum_sq_zero_pad_eq`
+- `finiteMinEigenvalue_leading_principal_ge`
 - `higham10_7_success_factorization_spectral`
 - `higham10_7_failure_no_factorization_spectral`
 - `finiteMinEigenvalue`
