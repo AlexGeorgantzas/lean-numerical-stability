@@ -42,12 +42,12 @@ exact-arithmetic all-stage tail-vector bridge that feeds the Theorem 19.13
 final-panel pipeline through those certificates. The stronger-model boundary
 now also exposes sufficient-condition constructors from agreement with the
 exact Higham normalized vector and from exact computed Householder vector/beta
-agreement, plus the exact-arithmetic normalized-vector equality and raw,
-record, full-stage, source-closure, final-closed, and final-panel endpoint
-wrappers from all-stage tail-vector equalities. The full rounded stored-loop
-proof remains open until the per-stage certificate fields are proved from a
-source-faithful model or replaced by a separate compatibility/perturbation
-theorem.
+agreement, plus an exact add/mul/div/sqrt operation route, the exact-arithmetic
+normalized-vector equality, and raw, record, full-stage, source-closure,
+final-closed, and final-panel endpoint wrappers from all-stage tail-vector
+equalities. The full rounded stored-loop proof remains open until the per-stage
+certificate fields are proved from a source-faithful model or replaced by a
+separate compatibility/perturbation theorem.
 
 For a searchable map from stability-analysis goals to files, definitions, and
 theorem names, see [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).  For a
