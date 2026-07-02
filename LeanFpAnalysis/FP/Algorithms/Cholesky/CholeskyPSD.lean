@@ -3173,6 +3173,108 @@ theorem fl_cpPivot_sequence_agrees_small (fp : FPModel) {n : ℕ}
   exact fl_cpPivot_sequence_agrees fp hn A r δ ρ c hδ hδρ hc
     g hg0 hgstep hghalf hgap hfloor hcap
 
+/-- **Factor-form fl agreement, non-vacuous form**: the explicit budget
+    `g t = U·t·Kᵗ` with the `γ₅` rounding contribution — one scalar
+    smallness condition, holding for all sufficiently small `u`. -/
+theorem fl_cpPivotFactor_sequence_agrees_small (fp : FPModel)
+    {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) (r : ℕ)
+    (δ ρ c : ℝ) (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (h5 : gammaValid fp 5)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c)
+    (hsmall :
+      (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+        (1 + fp.u) * gamma fp 5 * ((c + δ / 2) ^ 2 / (ρ / 2))) * r *
+        (1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2) ^ r <
+      min (min 1 (δ / 2)) (ρ / 4)) :
+    ∀ t : ℕ, t ≤ r →
+      (∀ i j : Fin n,
+        |cpState hn A t i j - fl_cpStateFactor fp hn A t i j| ≤
+        (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+          (1 + fp.u) * gamma fp 5 * ((c + δ / 2) ^ 2 / (ρ / 2))) * t *
+          (1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2) ^ t) ∧
+      (∀ s : ℕ, s < t →
+        cpPivot hn A s = fl_cpPivotFactor fp hn A s) := by
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  have hu0 := fp.u_nonneg
+  have hγ5 : 0 ≤ gamma fp 5 := gamma_nonneg fp h5
+  set U : ℝ := fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+    (1 + fp.u) * gamma fp 5 * ((c + δ / 2) ^ 2 / (ρ / 2)) with hU
+  set K : ℝ := 1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2 with hK
+  have hU0 : 0 ≤ U := by
+    rw [hU]
+    refine add_nonneg (by positivity)
+      (mul_nonneg (mul_nonneg (by positivity) hγ5) (by positivity))
+  have hK1 : (1:ℝ) ≤ K := by
+    rw [hK]
+    have : (0:ℝ) ≤ (3 * c ^ 2 + c) / (ρ / 2) ^ 2 := by positivity
+    linarith
+  have hK0 : (0:ℝ) < K := lt_of_lt_of_le one_pos hK1
+  set g : ℕ → ℝ := fun t => U * t * K ^ t with hg
+  have hgle : ∀ t : ℕ, t ≤ r → g t ≤ U * r * K ^ r := by
+    intro t htr
+    show U * t * K ^ t ≤ U * r * K ^ r
+    have h1 : (t:ℝ) ≤ (r:ℝ) := by exact_mod_cast htr
+    have h2 : K ^ t ≤ K ^ r := pow_le_pow_right₀ hK1 htr
+    calc U * t * K ^ t ≤ U * r * K ^ t := by
+          have := mul_le_mul_of_nonneg_left h1 hU0
+          exact mul_le_mul_of_nonneg_right this (by positivity)
+      _ ≤ U * r * K ^ r :=
+          mul_le_mul_of_nonneg_left h2
+            (mul_nonneg hU0 (Nat.cast_nonneg r))
+  have hmin1 : min (min 1 (δ / 2)) (ρ / 4) ≤ 1 :=
+    le_trans (min_le_left _ _) (min_le_left _ _)
+  have hminδ : min (min 1 (δ / 2)) (ρ / 4) ≤ δ / 2 :=
+    le_trans (min_le_left _ _) (min_le_right _ _)
+  have hg0 : g 0 = 0 := by
+    show U * (0:ℕ) * K ^ 0 = 0
+    norm_num
+  have hg1 : ∀ t : ℕ, t < r → g t ≤ 1 := fun t htr =>
+    le_trans (hgle t (Nat.le_of_lt htr))
+      (le_of_lt (lt_of_lt_of_le hsmall hmin1))
+  have hghalf : ∀ t : ℕ, t < r → g t < δ / 2 := fun t htr =>
+    lt_of_le_of_lt (hgle t (Nat.le_of_lt htr))
+      (lt_of_lt_of_le hsmall hminδ)
+  have hg_nonneg : ∀ t : ℕ, 0 ≤ g t := by
+    intro t
+    show (0:ℝ) ≤ U * t * K ^ t
+    positivity
+  have hgstep : ∀ t : ℕ, t < r →
+      g t + (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 + U ≤
+        g (t + 1) := by
+    intro t htr
+    have hgt1 := hg1 t htr
+    have hgt0 := hg_nonneg t
+    have habs : 3 * c ^ 2 * g t + c * g t ^ 2 ≤
+        (3 * c ^ 2 + c) * g t := by
+      nlinarith [mul_nonneg (mul_nonneg hc hgt0)
+        (sub_nonneg.mpr hgt1)]
+    have hKrec : g t * K + U ≤ g (t + 1) := by
+      show U * t * K ^ t * K + U ≤ U * ((t + 1 : ℕ) : ℝ) * K ^ (t + 1)
+      push_cast
+      have h1 : (1:ℝ) ≤ K ^ (t + 1) := one_le_pow₀ hK1
+      have h2 : U * (t:ℝ) * K ^ t * K = U * (t:ℝ) * K ^ (t + 1) := by
+        rw [pow_succ]; ring
+      nlinarith [h2, mul_nonneg hU0 (sub_nonneg.mpr h1)]
+    have hexp : g t + (3 * c ^ 2 + c) * g t / (ρ / 2) ^ 2 =
+        g t * K := by
+      rw [hK]
+      field_simp
+    have hdiv : (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 ≤
+        (3 * c ^ 2 + c) * g t / (ρ / 2) ^ 2 := by gcongr
+    calc g t + (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 + U
+        ≤ g t + (3 * c ^ 2 + c) * g t / (ρ / 2) ^ 2 + U := by
+          linarith [hdiv]
+      _ = g t * K + U := by rw [hexp]
+      _ ≤ g (t + 1) := hKrec
+  exact fl_cpPivotFactor_sequence_agrees fp hn A r δ ρ c hδ hδρ hc
+    h5 g hg0 hgstep hghalf hgap hfloor hcap
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================

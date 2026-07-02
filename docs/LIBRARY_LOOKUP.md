@@ -1622,6 +1622,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_pivotingGrowthValues_rook_le_fosterBound_of_eq_one`
 - `higham9_pivotingGrowthValues_rook_le_fosterBound_of_le_two`
 - `higham9_pivotingGrowthValues_rook_le_fosterBound_of_trace_bound`
+- `higham9_pivotingGrowthValues_le_pow_two_of_ne_noPivot`
 - `higham9_pivotingGrowthValues_bddAbove_partial`
 - `higham9_pivotingGrowthValues_bddAbove_complete_wilkinsonBound_of_eq_one`
 - `higham9_pivotingGrowthValues_bddAbove_complete_wilkinsonBound_of_le_two`
@@ -1629,6 +1630,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_pivotingGrowthValues_bddAbove_rook_fosterBound_of_eq_one`
 - `higham9_pivotingGrowthValues_bddAbove_rook_fosterBound_of_le_two`
 - `higham9_pivotingGrowthValues_bddAbove_rook_fosterBound_of_trace_bound`
+- `higham9_pivotingGrowthValues_bddAbove_of_ne_noPivot`
 - `higham9_pivotingGrowthSup_partial_le_pow_two`
 - `higham9_pivotingGrowthSup_complete_le_wilkinsonBound_of_eq_one`
 - `higham9_pivotingGrowthSup_complete_le_wilkinsonBound_of_le_two`
@@ -1636,6 +1638,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_pivotingGrowthSup_rook_le_fosterBound_of_eq_one`
 - `higham9_pivotingGrowthSup_rook_le_fosterBound_of_le_two`
 - `higham9_pivotingGrowthSup_rook_le_fosterBound_of_trace_bound`
+- `higham9_pivotingGrowthSup_le_pow_two_of_ne_noPivot`
 - `higham9_TracePivotingGrowthKind`
 - `higham9_tracePivotingGrowthValues`
 - `higham9_tracePivotingGrowthSup`
@@ -3817,6 +3820,7 @@ Source-facing Chapter 10 wrappers:
 - `fl_cpFactor_rows_dominated` (hdom discharged across the whole run: per-stage explicit domination constants for the as-run factor)
 - `schurRow` / `schurStep_decompose` / `cpState_telescope` (exact Gram assembly: A = sum row^T row + S_r entrywise)
 - `fl_cpPivot_sequence_agrees_small` (non-vacuous fl agreement: explicit budget U t K^t under one scalar smallness condition, U -> 0 as u -> 0)
+- `fl_cpPivotFactor_sequence_agrees_small` (factor-form analogue, gamma_5 rounding contribution)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
