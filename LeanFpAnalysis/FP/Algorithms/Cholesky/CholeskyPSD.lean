@@ -1097,6 +1097,89 @@ theorem pivoted_leading_block_isUnit_det {n : ℕ}
   intro i _
   exact (hspec.R_diag_pos ⟨i.val, by omega⟩ i.isLt).ne'
 
+/-- **Triangular rank count** (Theorem 10.9(b), `r = rank` bridge,
+    part 2): the pivoted factor has matrix rank exactly `r` — the zero
+    rows give `≤` and the unit leading block gives `≥`, both through
+    selection-matrix factorizations and `rank_mul_le`. -/
+theorem pivoted_spec_rank_R {n : ℕ} {A R : Fin n → Fin n → ℝ}
+    {σ : Fin n → Fin n} {r : ℕ}
+    (hspec : PivotedCholeskySpec n A R σ r) (hr : r ≤ n) :
+    (Matrix.of R).rank = r := by
+  set Rtop : Matrix (Fin r) (Fin n) ℝ :=
+    Matrix.of (fun k j => R ⟨k.val, by omega⟩ j) with hRtop
+  set E : Matrix (Fin n) (Fin r) ℝ :=
+    Matrix.of (fun i k => if i.val = k.val then (1:ℝ) else 0) with hE
+  set E' : Matrix (Fin r) (Fin n) ℝ :=
+    Matrix.of (fun k i => if k.val = i.val then (1:ℝ) else 0) with hE'
+  set F : Matrix (Fin n) (Fin r) ℝ :=
+    Matrix.of (fun j k => if j.val = k.val then (1:ℝ) else 0) with hF
+  have hfac1 : Matrix.of R = E * Rtop := by
+    ext i j
+    show R i j = ∑ k : Fin r,
+      (if i.val = k.val then (1:ℝ) else 0) * R ⟨k.val, by omega⟩ j
+    by_cases hi : i.val < r
+    · rw [Finset.sum_eq_single (⟨i.val, hi⟩ : Fin r)]
+      · rw [if_pos rfl, one_mul]
+      · intro b _ hb
+        rw [if_neg (fun hbe => hb (Fin.ext hbe.symm)), zero_mul]
+      · intro h
+        exact absurd (Finset.mem_univ _) h
+    · rw [hspec.R_rank_zero i j (by omega)]
+      symm
+      apply Finset.sum_eq_zero
+      intro k _
+      rw [if_neg (by omega), zero_mul]
+  have hfac2 : Rtop = E' * Matrix.of R := by
+    ext k j
+    show R ⟨k.val, by omega⟩ j = ∑ i : Fin n,
+      (if k.val = i.val then (1:ℝ) else 0) * R i j
+    rw [Finset.sum_eq_single (⟨k.val, by omega⟩ : Fin n)]
+    · rw [if_pos rfl, one_mul]
+    · intro b _ hb
+      rw [if_neg (fun hbe => hb (Fin.ext hbe.symm)), zero_mul]
+    · intro h
+      exact absurd (Finset.mem_univ _) h
+  have hfac3 : Matrix.of (fun i j : Fin r =>
+      R ⟨i.val, by omega⟩ ⟨j.val, by omega⟩) = Rtop * F := by
+    ext k k'
+    show R ⟨k.val, by omega⟩ ⟨k'.val, by omega⟩ = ∑ j : Fin n,
+      R ⟨k.val, by omega⟩ j * (if j.val = k'.val then (1:ℝ) else 0)
+    rw [Finset.sum_eq_single (⟨k'.val, by omega⟩ : Fin n)]
+    · rw [if_pos rfl, mul_one]
+    · intro b _ hb
+      rw [if_neg (fun hbe => hb (Fin.ext hbe)), mul_zero]
+    · intro h
+      exact absurd (Finset.mem_univ _) h
+  have hMrank : (Matrix.of (fun i j : Fin r =>
+      R ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)).rank = r := by
+    rw [Matrix.rank_of_isUnit _
+      ((Matrix.isUnit_iff_isUnit_det _).mpr
+        (pivoted_leading_block_isUnit_det hspec hr))]
+    simp
+  have h1 : (Matrix.of R).rank ≤ Rtop.rank := by
+    rw [hfac1]
+    exact Matrix.rank_mul_le_right E Rtop
+  have h2 : Rtop.rank ≤ (Matrix.of R).rank := by
+    rw [hfac2]
+    exact Matrix.rank_mul_le_right E' (Matrix.of R)
+  have h3 : r ≤ Rtop.rank := by
+    have hle := Matrix.rank_mul_le_left Rtop F
+    rw [← hfac3, hMrank] at hle
+    exact hle
+  have h4 : Rtop.rank ≤ r := by
+    have := Matrix.rank_le_card_height Rtop
+    simpa using this
+  omega
+
+/-- **Theorem 10.9(b), rank identification**: for any pivoted certificate
+    with `r ≤ n`, the parameter `r` is the matrix rank of `A` — closing
+    the "positive semidefinite of rank r" reading of the source row. -/
+theorem pivoted_spec_rank_eq_r {n : ℕ} {A R : Fin n → Fin n → ℝ}
+    {σ : Fin n → Fin n} {r : ℕ}
+    (hspec : PivotedCholeskySpec n A R σ r) (hr : r ≤ n) :
+    (Matrix.of A).rank = r := by
+  rw [pivoted_spec_rank_eq hspec, pivoted_spec_rank_R hspec hr]
+
 -- ============================================================
 -- §10.3  Theorem 10.9(b): SPD → PivotedCholeskySpec (full rank)
 -- ============================================================
