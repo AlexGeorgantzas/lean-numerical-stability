@@ -66417,6 +66417,132 @@ theorem higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_of_models {n : �
     n A L_hat U_hat y_hat x_hat b 3 u (by norm_num) hu hu_lt_one hGrowth
     DeltaA_LU DeltaL DeltaU h20 h21
 
+/-- **Theorem 9.14**, column-dominant source-data exact-LU explicit-model
+package specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_colDiagDom_exists_LUFactSpec_source_f_bound_of_models_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 3 * |A i j|) ∧
+      (∀ fp : FPModel, ∀ y_hat x_hat b : Fin n → ℝ,
+        gammaValid fp n →
+        ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+          higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+            DeltaA_LU (gamma fp n) →
+          higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+            y_hat x_hat b DeltaL DeltaU (gamma fp n) →
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j, |DeltaA i j| ≤
+              3 * higham9_14_f (gamma fp n) * |A i j|) ∧
+            (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hL_bound, hGrowth, hModel⟩ :=
+    higham9_14_colDiagDom_exists_LUFactSpec_source_f_bound_of_models
+      A hdetA hA_tridiag hColDom
+  refine ⟨L_hat, U_hat, hLU, hL_bound, hGrowth, ?_⟩
+  intro fp y_hat x_hat b hn DeltaA_LU DeltaL DeltaU h20 h21
+  exact hModel y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, row-dominant source-data exact-LU explicit-model
+package specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_rowDiagDom_exists_LUFactSpec_source_f_bound_of_models_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 3 * |A i j|) ∧
+      (∀ fp : FPModel, ∀ y_hat x_hat b : Fin n → ℝ,
+        gammaValid fp n →
+        ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+          higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+            DeltaA_LU (gamma fp n) →
+          higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+            y_hat x_hat b DeltaL DeltaU (gamma fp n) →
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j, |DeltaA i j| ≤
+              3 * higham9_14_f (gamma fp n) * |A i j|) ∧
+            (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hGrowth, hModel⟩ :=
+    higham9_14_rowDiagDom_exists_LUFactSpec_source_f_bound_of_models
+      A hdetA hA_tridiag hRowDom
+  refine ⟨L_hat, U_hat, hLU, hGrowth, ?_⟩
+  intro fp y_hat x_hat b hn DeltaA_LU DeltaL DeltaU h20 h21
+  exact hModel y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, column-dominant source-data exact-LU explicit-model
+package with final `h(γ_n)` coefficient. -/
+theorem higham9_14_colDiagDom_exists_LUFactSpec_source_h_bound_of_models_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 3 * |A i j|) ∧
+      (∀ fp : FPModel, ∀ y_hat x_hat b : Fin n → ℝ,
+        gammaValid fp n → gamma fp n < 1 →
+        ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+          higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+            DeltaA_LU (gamma fp n) →
+          higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+            y_hat x_hat b DeltaL DeltaU (gamma fp n) →
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j, |DeltaA i j| ≤
+              3 * higham9_14_h (gamma fp n) * |A i j|) ∧
+            (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hL_bound, hGrowth, hModel⟩ :=
+    higham9_14_colDiagDom_exists_LUFactSpec_source_h_bound_of_models
+      A hdetA hA_tridiag hColDom
+  refine ⟨L_hat, U_hat, hLU, hL_bound, hGrowth, ?_⟩
+  intro fp y_hat x_hat b hn hγ_lt_one DeltaA_LU DeltaL DeltaU h20 h21
+  exact hModel y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, row-dominant source-data exact-LU explicit-model
+package with final `h(γ_n)` coefficient. -/
+theorem higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_of_models_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 3 * |A i j|) ∧
+      (∀ fp : FPModel, ∀ y_hat x_hat b : Fin n → ℝ,
+        gammaValid fp n → gamma fp n < 1 →
+        ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+          higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+            DeltaA_LU (gamma fp n) →
+          higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+            y_hat x_hat b DeltaL DeltaU (gamma fp n) →
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j, |DeltaA i j| ≤
+              3 * higham9_14_h (gamma fp n) * |A i j|) ∧
+            (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hGrowth, hModel⟩ :=
+    higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_of_models
+      A hdetA hA_tridiag hRowDom
+  refine ⟨L_hat, U_hat, hLU, hGrowth, ?_⟩
+  intro fp y_hat x_hat b hn hγ_lt_one DeltaA_LU DeltaL DeltaU h20 h21
+  exact hModel y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one DeltaA_LU DeltaL DeltaU h20 h21
+
 /-- **Theorem 9.14**, column-dominant source-data exact-LU factors with
 actual triangular solves.
 
