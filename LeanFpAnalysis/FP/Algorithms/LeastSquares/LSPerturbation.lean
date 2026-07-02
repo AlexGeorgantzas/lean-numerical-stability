@@ -16,6 +16,7 @@
 
 import Mathlib.Data.Real.Basic
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
+import LeanFpAnalysis.FP.Analysis.Norms
 
 namespace LeanFpAnalysis.FP
 
@@ -106,6 +107,37 @@ theorem wedinTheorem20_1_solutionRelativeRHS_of_zero_residual
 theorem wedinLemma20_11_denominator_pos {eta : ℝ} (hsmall : eta < 1) :
     0 < 1 - eta := by
   linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    column-side least singular value for a real rectangular matrix with
+    nonempty column dimension, viewed through the repository's complexified
+    singular-value API. -/
+noncomputable def wedinLemma20_11_sigmaMinCol
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ) : ℝ :=
+  complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    the column-side least singular value is nonnegative. -/
+theorem wedinLemma20_11_sigmaMinCol_nonneg
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ) :
+    0 ≤ wedinLemma20_11_sigmaMinCol A := by
+  simpa [wedinLemma20_11_sigmaMinCol] using
+    complexMatrixSingularValue_nonneg (realRectToCMatrix A) (Fin.last k)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    the least singular value gives the lower vector-action radius for a real
+    rectangular matrix with nonempty column dimension. -/
+theorem wedinLemma20_11_sigmaMinCol_mul_vecNorm2_le_rectMatMulVec
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ)
+    (x : Fin (k + 1) → ℝ) :
+    wedinLemma20_11_sigmaMinCol A * vecNorm2 x ≤
+      vecNorm2 (rectMatMulVec A x) := by
+  have h :=
+    complexMatrixSingularValue_last_mul_norm_le_norm_euclideanLin
+      (realRectToCMatrix A) (realVecToEuclidean x)
+  rw [realVecToEuclidean_norm] at h
+  rw [realRectToCMatrix_euclideanLin_realVecToEuclidean_norm] at h
+  simpa [wedinLemma20_11_sigmaMinCol] using h
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
     triangle-inequality core behind the singular-value perturbation step.
@@ -199,6 +231,57 @@ theorem wedinLemma20_11_lowerActionBound_of_sub_rectOpNorm2Le
   simpa [hmat] using h
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column singular-value perturbation line.
+
+    For real rectangular matrices with nonempty column dimension, a rectangular
+    operator-2 bound on `B - A` gives
+    `sigma_min(A) - delta <= sigma_min(B)`.  This is the source line
+    `sigma_r(B) >= sigma_r(A) - ||A-B||_2` specialized to the full-column-rank
+    indexing surface used by least-squares applications. -/
+theorem wedinLemma20_11_sigmaMinCol_sub_le_sigmaMinCol_of_sub_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta) :
+    wedinLemma20_11_sigmaMinCol A - delta ≤
+      wedinLemma20_11_sigmaMinCol B := by
+  by_cases hnonneg : 0 ≤ wedinLemma20_11_sigmaMinCol A - delta
+  · obtain ⟨x, hx_ne, hsq⟩ :=
+      realRectToCMatrix_last_singularValue_exists_real_attaining_vector_sq B
+    have hx_norm_ne : vecNorm2 x ≠ 0 := by
+      intro hx_norm
+      apply hx_ne
+      ext j
+      exact (vecNorm2_eq_zero_iff x).mp hx_norm j
+    have hx_norm_pos : 0 < vecNorm2 x :=
+      lt_of_le_of_ne (vecNorm2_nonneg x) (Ne.symm hx_norm_ne)
+    have hB_lower :=
+      wedinLemma20_11_lowerActionBound_of_sub_rectOpNorm2Le
+        A B (wedinLemma20_11_sigmaMinCol_mul_vecNorm2_le_rectMatMulVec A)
+        hDelta x
+    have hB_norm_eq :
+        vecNorm2 (rectMatMulVec B x) =
+          wedinLemma20_11_sigmaMinCol B * vecNorm2 x := by
+      apply (sq_eq_sq₀
+        (vecNorm2_nonneg (rectMatMulVec B x))
+        (mul_nonneg (wedinLemma20_11_sigmaMinCol_nonneg B)
+          (vecNorm2_nonneg x))).mp
+      calc
+        vecNorm2 (rectMatMulVec B x) ^ 2 =
+            vecNorm2Sq (rectMatMulVec B x) := vecNorm2_sq _
+        _ = (wedinLemma20_11_sigmaMinCol B) ^ 2 * vecNorm2Sq x := by
+            simpa [wedinLemma20_11_sigmaMinCol] using hsq
+        _ = (wedinLemma20_11_sigmaMinCol B) ^ 2 * vecNorm2 x ^ 2 := by
+            rw [← vecNorm2_sq x]
+        _ = (wedinLemma20_11_sigmaMinCol B * vecNorm2 x) ^ 2 := by
+            ring
+    have hmul :
+        (wedinLemma20_11_sigmaMinCol A - delta) * vecNorm2 x ≤
+          wedinLemma20_11_sigmaMinCol B * vecNorm2 x := by
+      simpa [hB_norm_eq] using hB_lower
+    nlinarith
+  · have hB_nonneg := wedinLemma20_11_sigmaMinCol_nonneg B
+    linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
     strict perturbations below a lower action radius preserve injectivity.
 
     This is a full-column-rank consequence of the source singular-value
@@ -254,6 +337,35 @@ theorem wedinLemma20_11_pinvNorm_le_of_singularValue_gap
     _ = Aplus_norm / (1 - Aplus_norm * delta) := by
       rw [hsigmaA]
       field_simp [ne_of_gt hAplus_pos, ne_of_gt hden_pos]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column specialization of the pseudoinverse norm bound.
+
+    Compared with `wedinLemma20_11_pinvNorm_le_of_singularValue_gap`, this
+    theorem proves the singular-value perturbation step locally for real
+    rectangular matrices with nonempty column dimension.  The remaining
+    assumptions are exactly the reciprocal identifications between the
+    column-side `sigma_min` values and the displayed pseudoinverse norms. -/
+theorem wedinLemma20_11_fullColumn_pinvNorm_le_of_sub_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    {Aplus_norm Bplus_norm delta eta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus_sigma :
+      wedinLemma20_11_sigmaMinCol A = 1 / Aplus_norm)
+    (hBplus_sigma :
+      Bplus_norm = 1 / wedinLemma20_11_sigmaMinCol B) :
+    Bplus_norm ≤ Aplus_norm / (1 - eta) :=
+  wedinLemma20_11_pinvNorm_le_of_singularValue_gap
+    (Aplus_norm := Aplus_norm) (Bplus_norm := Bplus_norm)
+    (delta := delta) (eta := eta)
+    (sigmaA := wedinLemma20_11_sigmaMinCol A)
+    (sigmaB := wedinLemma20_11_sigmaMinCol B)
+    hAplus_pos heta hsmall hAplus_sigma hBplus_sigma
+    (wedinLemma20_11_sigmaMinCol_sub_le_sigmaMinCol_of_sub_rectOpNorm2Le
+      A B hDelta)
 
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
