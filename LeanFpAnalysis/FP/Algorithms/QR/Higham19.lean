@@ -6341,6 +6341,48 @@ theorem fl_householderNormalizedVector_self_dot_not_forall_FPModel :
   have hbad : (4 : Real) = 2 := hleft.symm.trans h
   norm_num at hbad
 
+/-- The stronger source-faithful normalization model is a genuine extra model
+assumption, not a consequence of the base `FPModel` interface.
+
+The same one-entry model used by
+`fl_householderNormalizedVector_self_dot_not_forall_FPModel` has a computed
+Householder normalized vector whose self-dot is `4`, so it cannot satisfy
+`sourceFaithfulHouseholderNormalizationModel`. -/
+theorem sourceFaithfulHouseholderNormalizationModel_not_forall_FPModel :
+    Not (forall fp : FPModel, sourceFaithfulHouseholderNormalizationModel fp) := by
+  intro hmodel
+  let x : Fin 1 -> Real := fun _ => (1 : Real)
+  have hx : Ne x 0 := by
+    intro hzero
+    have hentry := congrFun hzero 0
+    norm_num [x] at hentry
+  have h :
+      (Finset.univ : Finset (Fin 1)).sum
+        (fun i =>
+          fl_householderNormalizedVector divDoubledFPModel
+              (Nat.succ_pos 0) x i *
+            fl_householderNormalizedVector divDoubledFPModel
+              (Nat.succ_pos 0) x i) =
+        2 :=
+    hmodel divDoubledFPModel (Nat.succ_pos 0) x hx
+  norm_num [x, divDoubledFPModel, fl_householderNormalizedVector,
+    householderNormalizedVector, fl_householderVector, fl_householderScale,
+    fl_householderBeta, fl_norm2, fl_norm2Sq, fl_dotProduct,
+    householderSign] at h
+  have hsqrt_sq :
+      Real.sqrt (1 : Real) * Real.sqrt (1 : Real) = 1 := by
+    exact Real.mul_self_sqrt (by norm_num)
+  have hsqrt_pow : Real.sqrt (1 : Real) ^ 2 = 1 := by
+    rw [pow_two]
+    exact hsqrt_sq
+  ring_nf at h
+  have hleft :
+      Real.sqrt (1 : Real) ^ 2 * 4 = (4 : Real) := by
+    rw [hsqrt_pow]
+    norm_num
+  have hbad : (4 : Real) = 2 := hleft.symm.trans h
+  norm_num at hbad
+
 /-- Route audit for the stored-loop normalization bottleneck.
 
 The source nonbreakdown hypotheses used by the stored loop, namely
