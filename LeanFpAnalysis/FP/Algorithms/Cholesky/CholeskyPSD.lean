@@ -1310,17 +1310,164 @@ lemma backsub_growth {r : ℕ} (w : Fin r → ℝ)
   intro i
   exact H (r - 1 - i.val) i rfl
 
+/-- **Entry domination from the column-tail invariant** (Lemma 10.13
+    wiring): under the (10.13) invariant, every entry on or right of the
+    diagonal is dominated in absolute value by its row pivot. -/
+lemma tail_invariant_entry_le {n : ℕ} {R : Fin n → Fin n → ℝ}
+    (hdiag_nonneg : ∀ i : Fin n, 0 ≤ R i i)
+    (htail : ∀ k j : Fin n, k.val ≤ j.val →
+      (∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+        R i j ^ 2) ≤ R k k ^ 2)
+    (k j : Fin n) (hkj : k.val ≤ j.val) :
+    |R k j| ≤ R k k := by
+  have hmem : k ∈ Finset.univ.filter
+      (fun i : Fin n => k.val ≤ i.val) := by
+    simp
+  have hsingle : R k j ^ 2 ≤
+      ∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+        R i j ^ 2 :=
+    Finset.single_le_sum (fun i _ => sq_nonneg (R i j)) hmem
+  have hsq : R k j ^ 2 ≤ R k k ^ 2 :=
+    le_trans hsingle (htail k j hkj)
+  nlinarith [abs_nonneg (R k j), sq_abs (R k j), hdiag_nonneg k]
+
+/-- **Normalized triangular-solve growth** (Lemma 10.13 core): a solve
+    `Uw = b` against an upper-triangular matrix whose every row is
+    pivot-dominated (`|U i j| ≤ U i i`, `|b i| ≤ U i i` — supplied by the
+    (10.13) invariant through `tail_invariant_entry_le`) has solution
+    entries bounded by `2^{r-1-i}`. -/
+theorem normalized_solve_growth {r : ℕ} (U : Fin r → Fin r → ℝ)
+    (b w : Fin r → ℝ)
+    (hupper : ∀ i j : Fin r, j.val < i.val → U i j = 0)
+    (hdiag_pos : ∀ i : Fin r, 0 < U i i)
+    (hentry : ∀ i j : Fin r, i.val ≤ j.val → |U i j| ≤ U i i)
+    (hb : ∀ i : Fin r, |b i| ≤ U i i)
+    (hsolve : ∀ i : Fin r, ∑ j : Fin r, U i j * w j = b i) :
+    ∀ i : Fin r, |w i| ≤ 2 ^ (r - 1 - i.val) := by
+  apply backsub_growth
+  intro i
+  have hpos := hdiag_pos i
+  -- split the solve row at the diagonal: below-diagonal entries vanish
+  have hle_part : ∑ j ∈ Finset.univ.filter
+      (fun j : Fin r => ¬ i.val < j.val), U i j * w j =
+      U i i * w i := by
+    refine Finset.sum_eq_single_of_mem i (by simp) ?_
+    intro j hj hji
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and,
+      Nat.not_lt] at hj
+    have hjlt : j.val < i.val := by
+      rcases Nat.lt_or_eq_of_le hj with h' | h'
+      · exact h'
+      · exact absurd (Fin.ext h') hji
+    rw [hupper i j hjlt, zero_mul]
+  have hsplit : U i i * w i +
+      ∑ j ∈ Finset.univ.filter (fun j : Fin r => i.val < j.val),
+        U i j * w j = b i := by
+    have h := hsolve i
+    rw [← Finset.sum_filter_add_sum_filter_not Finset.univ
+      (fun j : Fin r => i.val < j.val) (fun j => U i j * w j),
+      hle_part] at h
+    linarith [h]
+  -- bound the absolute tail sum by pivot-scaled solution magnitudes
+  have hsum_abs : |∑ j ∈ Finset.univ.filter
+      (fun j : Fin r => i.val < j.val), U i j * w j| ≤
+      ∑ j ∈ Finset.univ.filter (fun j : Fin r => i.val < j.val),
+        U i i * |w j| := by
+    refine (Finset.abs_sum_le_sum_abs _ _).trans
+      (Finset.sum_le_sum ?_)
+    intro j hj
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
+    rw [abs_mul]
+    exact mul_le_mul_of_nonneg_right (hentry i j hj.le) (abs_nonneg _)
+  -- triangle inequality on the rearranged pivot equation
+  have htri : |U i i * w i| ≤ |b i| + |∑ j ∈ Finset.univ.filter
+      (fun j : Fin r => i.val < j.val), U i j * w j| := by
+    have heq : U i i * w i = b i - ∑ j ∈ Finset.univ.filter
+        (fun j : Fin r => i.val < j.val), U i j * w j := by
+      linarith [hsplit]
+    rw [heq]
+    have h1 := abs_add_le (b i) (-(∑ j ∈ Finset.univ.filter
+      (fun j : Fin r => i.val < j.val), U i j * w j))
+    rw [abs_neg, ← sub_eq_add_neg] at h1
+    exact h1
+  -- assemble and divide by the positive pivot
+  have hwi : U i i * |w i| ≤ U i i * (1 +
+      ∑ j ∈ Finset.univ.filter (fun j : Fin r => i.val < j.val),
+        |w j|) := by
+    have habs : U i i * |w i| = |U i i * w i| := by
+      rw [abs_mul, abs_of_pos hpos]
+    rw [habs, mul_add, mul_one, Finset.mul_sum]
+    calc |U i i * w i|
+        ≤ |b i| + |∑ j ∈ Finset.univ.filter
+          (fun j : Fin r => i.val < j.val), U i j * w j| := htri
+      _ ≤ U i i + ∑ j ∈ Finset.univ.filter
+          (fun j : Fin r => i.val < j.val), U i i * |w j| :=
+          add_le_add (hb i) hsum_abs
+  exact le_of_mul_le_mul_left hwi hpos
+
 -- ============================================================
 -- §10.3  Lemma 10.13: Complete pivoting bound
 -- ============================================================
 
-/-- **Abstract complete-pivoting bound on ‖W‖²**
-    (Higham §10.3, Lemma 10.13). -/
-theorem complete_pivoting_w_bound (n r : ℕ) (_hr : r ≤ n)
-    (W_norm_sq : ℝ)
-    (_hW : W_norm_sq ≤ (↑(n - r) : ℝ) * ((4 : ℝ) ^ r - 1) / 3) :
-    W_norm_sq ≤ (↑(n - r) : ℝ) * ((4 : ℝ) ^ r - 1) / 3 :=
-  _hW
+/-- **Squared-sum of the growth bounds**: entries bounded by `2^{r-1-i}`
+    have squared sum at most `(4^r − 1)/3` (geometric sum, Higham
+    §10.3, proof of Lemma 10.13). -/
+lemma sq_sum_pow_two_bound {r : ℕ} (w : Fin r → ℝ)
+    (h : ∀ i : Fin r, |w i| ≤ 2 ^ (r - 1 - i.val)) :
+    ∑ i : Fin r, w i ^ 2 ≤ ((4 : ℝ) ^ r - 1) / 3 := by
+  have hterm : ∀ i : Fin r, w i ^ 2 ≤ (4 : ℝ) ^ (r - 1 - i.val) := by
+    intro i
+    obtain ⟨hlo, hhi⟩ := abs_le.mp (h i)
+    have hsq : w i ^ 2 ≤ ((2 : ℝ) ^ (r - 1 - i.val)) ^ 2 :=
+      sq_le_sq' hlo hhi
+    calc w i ^ 2 ≤ ((2 : ℝ) ^ (r - 1 - i.val)) ^ 2 := hsq
+      _ = ((2 : ℝ) ^ 2) ^ (r - 1 - i.val) := by
+          rw [← pow_mul, ← pow_mul, Nat.mul_comm]
+      _ = (4 : ℝ) ^ (r - 1 - i.val) := by norm_num
+  have hrev : ∑ i : Fin r, (4 : ℝ) ^ (r - 1 - i.val) =
+      ∑ i : Fin r, (4 : ℝ) ^ i.val := by
+    apply Fintype.sum_bijective (Fin.rev) (Fin.rev_involutive.bijective)
+    intro i
+    rw [Fin.val_rev]
+    congr 1
+    omega
+  have hgeom : ∑ i : Fin r, (4 : ℝ) ^ i.val = ((4 : ℝ) ^ r - 1) / 3 := by
+    rw [Fin.sum_univ_eq_sum_range (fun t => (4 : ℝ) ^ t) r,
+      geom_sum_eq (by norm_num : (4 : ℝ) ≠ 1) r,
+      show (4 : ℝ) - 1 = 3 by norm_num]
+  calc ∑ i : Fin r, w i ^ 2
+      ≤ ∑ i : Fin r, (4 : ℝ) ^ (r - 1 - i.val) :=
+        Finset.sum_le_sum fun i _ => hterm i
+    _ = ((4 : ℝ) ^ r - 1) / 3 := by rw [hrev, hgeom]
+
+/-- **Complete-pivoting bound on ‖W‖_F²** (Higham §10.3, Lemma 10.13,
+    display (10.19)): if the `r × r` upper-triangular block `U` has
+    positive diagonal and every row pivot-dominated on and right of the
+    diagonal (as `tail_invariant_entry_le` extracts from the (10.13)
+    column-tail invariant of complete pivoting), and `W` solves
+    `U W = B` column-by-column with `|B i j| ≤ U i i`, then
+    `‖W‖_F² ≤ m (4^r − 1)/3` — Higham's `(n − r)(4^r − 1)/3` with
+    `m = n − r` border columns. -/
+theorem complete_pivoting_w_bound {r m : ℕ} (U : Fin r → Fin r → ℝ)
+    (B W : Fin r → Fin m → ℝ)
+    (hupper : ∀ i j : Fin r, j.val < i.val → U i j = 0)
+    (hdiag_pos : ∀ i : Fin r, 0 < U i i)
+    (hentry : ∀ i j : Fin r, i.val ≤ j.val → |U i j| ≤ U i i)
+    (hB : ∀ (i : Fin r) (j : Fin m), |B i j| ≤ U i i)
+    (hsolve : ∀ (i : Fin r) (j : Fin m),
+      ∑ k : Fin r, U i k * W k j = B i j) :
+    ∑ j : Fin m, ∑ i : Fin r, W i j ^ 2 ≤
+      (m : ℝ) * (((4 : ℝ) ^ r - 1) / 3) := by
+  have hcol : ∀ j : Fin m, ∑ i : Fin r, W i j ^ 2 ≤
+      ((4 : ℝ) ^ r - 1) / 3 := fun j =>
+    sq_sum_pow_two_bound (fun i => W i j)
+      (normalized_solve_growth U (fun i => B i j) (fun i => W i j)
+        hupper hdiag_pos hentry (fun i => hB i j) (fun i => hsolve i j))
+  calc ∑ j : Fin m, ∑ i : Fin r, W i j ^ 2
+      ≤ ∑ _j : Fin m, ((4 : ℝ) ^ r - 1) / 3 :=
+        Finset.sum_le_sum fun j _ => hcol j
+    _ = (m : ℝ) * (((4 : ℝ) ^ r - 1) / 3) := by
+        simp [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
 
 -- ============================================================
 -- §10.3  Theorem 10.14: PSD Cholesky error analysis
