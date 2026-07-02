@@ -1889,6 +1889,149 @@ theorem higham10_12_w_norm_bound_from_cond
     W_norm ^ 2 ≤ κ_A11 :=
   w_norm_bound_from_cond W_norm κ_A11 hκ hW
 
+/-- **Block split of the quadratic form** under a `Fin.append`
+    partition: the (k+m)-dimensional quadratic form decomposes into the
+    four block forms. -/
+lemma quadForm_append_split {k m : ℕ}
+    (A : Fin (k + m) → Fin (k + m) → ℝ)
+    (u : Fin k → ℝ) (v : Fin m → ℝ) :
+    ∑ i : Fin (k + m), ∑ j : Fin (k + m),
+      Fin.append u v i * A i j * Fin.append u v j =
+    (∑ i : Fin k, ∑ j : Fin k,
+      u i * A (Fin.castAdd m i) (Fin.castAdd m j) * u j)
+    + (∑ i : Fin k, ∑ j : Fin m,
+      u i * A (Fin.castAdd m i) (Fin.natAdd k j) * v j)
+    + (∑ i : Fin m, ∑ j : Fin k,
+      v i * A (Fin.natAdd k i) (Fin.castAdd m j) * u j)
+    + (∑ i : Fin m, ∑ j : Fin m,
+      v i * A (Fin.natAdd k i) (Fin.natAdd k j) * v j) := by
+  rw [Fin.sum_univ_add]
+  simp only [Fin.sum_univ_add, Fin.append_left, Fin.append_right,
+    Finset.sum_add_distrib]
+  ring
+
+/-- **Lemma 10.12 core (Higham §10.3)**: for a positive semidefinite
+    block matrix with leading block `A₁₁` inverted in action by `M`, the
+    solve vector `Wv = M A₁₂ v` satisfies
+    `λ_min(A₁₁) ‖Wv‖₂² ≤ vᵀ A₂₂ v` — the quadratic-form content of
+    `Wᵀ A₁₁ W ⪯ A₂₂`, sharpened through the Rayleigh bound. Choosing
+    `u = −Wv` in the block-split quadratic form gives
+    `(Wv)ᵀA₁₁(Wv) ≤ vᵀA₂₂v`; Rayleigh converts the left side. -/
+theorem higham10_12_psd_w_action_bound {k m : ℕ} (hk : 0 < k)
+    (A : Fin (k + m) → Fin (k + m) → ℝ)
+    (hPSD : IsPosSemiDef (k + m) A)
+    (M : Fin k → Fin k → ℝ)
+    (hSym : IsSymmetricFiniteMatrix
+      (fun i j : Fin k => A (Fin.castAdd m i) (Fin.castAdd m j)))
+    (hMinv : ∀ (w : Fin k → ℝ) (i : Fin k),
+      ∑ j : Fin k, A (Fin.castAdd m i) (Fin.castAdd m j) *
+        (∑ t : Fin k, M j t * w t) = w i)
+    (v : Fin m → ℝ) :
+    finiteMinEigenvalue hk
+        (fun i j : Fin k => A (Fin.castAdd m i) (Fin.castAdd m j))
+        hSym *
+      vecNorm2Sq (fun i : Fin k => ∑ t : Fin k, M i t *
+        (∑ j : Fin m, A (Fin.castAdd m t) (Fin.natAdd k j) * v j)) ≤
+    ∑ i : Fin m, ∑ j : Fin m,
+      v i * A (Fin.natAdd k i) (Fin.natAdd k j) * v j := by
+  set b : Fin k → ℝ := fun t =>
+    ∑ j : Fin m, A (Fin.castAdd m t) (Fin.natAdd k j) * v j with hb
+  set u : Fin k → ℝ := fun i => ∑ t : Fin k, M i t * b t with hu
+  -- the inverse action at b: A₁₁ u = b
+  have hA11u : ∀ i : Fin k,
+      ∑ j : Fin k, A (Fin.castAdd m i) (Fin.castAdd m j) * u j = b i :=
+    fun i => hMinv b i
+  -- key PSD inequality with the appended vector (-u, v)
+  have hquad := hPSD.2 (Fin.append (fun i => -(u i)) v)
+  rw [quadForm_append_split A (fun i => -(u i)) v] at hquad
+  -- identify the four blocks
+  have hT1 : ∑ i : Fin k, ∑ j : Fin k,
+      (-(u i)) * A (Fin.castAdd m i) (Fin.castAdd m j) * (-(u j)) =
+      ∑ i : Fin k, u i * b i := by
+    calc ∑ i : Fin k, ∑ j : Fin k,
+        (-(u i)) * A (Fin.castAdd m i) (Fin.castAdd m j) * (-(u j))
+        = ∑ i : Fin k, ∑ j : Fin k,
+          u i * (A (Fin.castAdd m i) (Fin.castAdd m j) * u j) :=
+          Finset.sum_congr rfl fun i _ =>
+            Finset.sum_congr rfl fun j _ => by ring
+      _ = ∑ i : Fin k, u i * b i := by
+          refine Finset.sum_congr rfl fun i _ => ?_
+          rw [← Finset.mul_sum, hA11u i]
+  have hT2 : ∑ i : Fin k, ∑ j : Fin m,
+      (-(u i)) * A (Fin.castAdd m i) (Fin.natAdd k j) * v j =
+      -(∑ i : Fin k, u i * b i) := by
+    rw [← Finset.sum_neg_distrib]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [hb]
+    simp only [Finset.mul_sum, ← Finset.sum_neg_distrib]
+    refine Finset.sum_congr rfl fun j _ => by ring
+  have hT3 : ∑ i : Fin m, ∑ j : Fin k,
+      v i * A (Fin.natAdd k i) (Fin.castAdd m j) * (-(u j)) =
+      -(∑ i : Fin k, u i * b i) := by
+    rw [Finset.sum_comm]
+    rw [← Finset.sum_neg_distrib]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    have hsymA : ∀ i : Fin m,
+        A (Fin.natAdd k i) (Fin.castAdd m j) =
+        A (Fin.castAdd m j) (Fin.natAdd k i) :=
+      fun i => hPSD.1 _ _
+    rw [hb]
+    simp only [Finset.mul_sum, ← Finset.sum_neg_distrib]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [hsymA i]; ring
+  rw [hT1, hT2, hT3] at hquad
+  -- so uᵀ b ≤ vᵀ A₂₂ v, and uᵀ b = uᵀA₁₁u ≥ λ_min ‖u‖²
+  have hub : ∑ i : Fin k, u i * b i ≤
+      ∑ i : Fin m, ∑ j : Fin m,
+        v i * A (Fin.natAdd k i) (Fin.natAdd k j) * v j := by
+    linarith [hquad]
+  have hray := finiteMinEigenvalue_rayleigh hk
+    (fun i j : Fin k => A (Fin.castAdd m i) (Fin.castAdd m j)) hSym u
+  have huAu : ∑ i : Fin k, ∑ j : Fin k,
+      u i * A (Fin.castAdd m i) (Fin.castAdd m j) * u j =
+      ∑ i : Fin k, u i * b i := by
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [← hA11u i, Finset.mul_sum]
+    refine Finset.sum_congr rfl fun j _ => by ring
+  rw [huAu] at hray
+  calc finiteMinEigenvalue hk _ hSym * vecNorm2Sq u
+      ≤ ∑ i : Fin k, u i * b i := by
+        simpa [vecNorm2Sq] using hray
+    _ ≤ _ := hub
+
+/-- **Lemma 10.12, norm form**: with a positive Rayleigh floor
+    `λ_min(A₁₁) > 0` and a quadratic-form certificate `c₂₂` for `A₂₂`,
+    the solve action `W v = M A₁₂ v` is norm-bounded:
+    `‖Wv‖₂² ≤ (c₂₂/λ_min) ‖v‖₂²` — the source's
+    `‖A₁₁⁻¹A₁₂‖₂² ≤ ‖A₂₂‖₂/λ_min(A₁₁)` in vector-action certificate
+    form. -/
+theorem higham10_12_w_action_norm_bound {k m : ℕ} (hk : 0 < k)
+    (A : Fin (k + m) → Fin (k + m) → ℝ)
+    (hPSD : IsPosSemiDef (k + m) A)
+    (M : Fin k → Fin k → ℝ)
+    (hSym : IsSymmetricFiniteMatrix
+      (fun i j : Fin k => A (Fin.castAdd m i) (Fin.castAdd m j)))
+    (hMinv : ∀ (w : Fin k → ℝ) (i : Fin k),
+      ∑ j : Fin k, A (Fin.castAdd m i) (Fin.castAdd m j) *
+        (∑ t : Fin k, M j t * w t) = w i)
+    (hlampos : 0 < finiteMinEigenvalue hk
+      (fun i j : Fin k => A (Fin.castAdd m i) (Fin.castAdd m j)) hSym)
+    (c22 : ℝ)
+    (hc22 : ∀ v : Fin m → ℝ,
+      ∑ i : Fin m, ∑ j : Fin m,
+        v i * A (Fin.natAdd k i) (Fin.natAdd k j) * v j ≤
+      c22 * vecNorm2Sq v)
+    (v : Fin m → ℝ) :
+    vecNorm2Sq (fun i : Fin k => ∑ t : Fin k, M i t *
+      (∑ j : Fin m, A (Fin.castAdd m t) (Fin.natAdd k j) * v j)) ≤
+    (c22 / finiteMinEigenvalue hk
+      (fun i j : Fin k => A (Fin.castAdd m i) (Fin.castAdd m j)) hSym)
+      * vecNorm2Sq v := by
+  have hcore := higham10_12_psd_w_action_bound hk A hPSD M hSym hMinv v
+  have hchain := le_trans hcore (hc22 v)
+  rw [div_mul_eq_mul_div, le_div_iff₀ hlampos, mul_comm]
+  linarith [hchain]
+
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
 `‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
 an `r × r` upper-triangular block `U` with positive diagonal whose rows

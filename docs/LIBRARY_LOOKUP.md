@@ -3716,6 +3716,8 @@ Source-facing Chapter 10 wrappers:
 - `higham10_14_schurComplement`
 - `higham10_10_schur_complement_perturbation`
 - `higham10_12_w_norm_bound_from_cond`
+- `higham10_12_psd_w_action_bound` / `higham10_12_w_action_norm_bound` (honest: PSD block quadratic form + Rayleigh)
+- `quadForm_append_split`
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
