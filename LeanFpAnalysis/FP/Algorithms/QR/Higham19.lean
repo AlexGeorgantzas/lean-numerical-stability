@@ -5201,6 +5201,107 @@ theorem fl_dotProduct_eq_sum_of_exact_add_mul
       rw [fin_foldl_add_eq_add_sum]
       rw [Fin.sum_univ_succ]
 
+/-- Exact add/mul/sqrt operations make the computed 2-norm equal to the
+mathematical source 2-norm.
+
+This is the operation-level form of the exact norm path used by Householder
+normalization: it does not require an `FPModel.exactWithUnitRoundoff` instance,
+only exactness of the primitives that the norm computation actually calls. -/
+theorem fl_norm2_eq_sqrt_sum_of_exact_add_mul_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    (n : Nat) (x : Fin n -> Real) :
+    fl_norm2 fp n x =
+      Real.sqrt ((Finset.univ : Finset (Fin n)).sum (fun i => x i * x i)) := by
+  rw [fl_norm2, fl_norm2Sq]
+  rw [fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul n x x]
+  rw [hsqrt]
+
+/-- Exact add/mul/sqrt operations make the computed Householder scale agree
+with Higham's exact scale. -/
+theorem fl_householderScale_eq_of_exact_add_mul_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) :
+    fl_householderScale fp hn x = householderScale hn x := by
+  rw [fl_householderScale, householderScale]
+  rw [fl_norm2_eq_sqrt_sum_of_exact_add_mul_sqrt fp hadd hmul hsqrt n x]
+
+/-- Exact add/mul/sqrt operations plus exact head addition make the computed
+Householder vector agree with Higham's exact Householder vector. -/
+theorem fl_householderVector_eq_of_exact_add_mul_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) :
+    fl_householderVector fp hn x =
+      LeanFpAnalysis.FP.householderVector hn x := by
+  funext i
+  rw [fl_householderVector, LeanFpAnalysis.FP.householderVector]
+  rw [fl_householderScale_eq_of_exact_add_mul_sqrt fp hadd hmul hsqrt hn x]
+  by_cases hi : i = ⟨0, hn⟩
+  · simp [hi, hadd]
+  · simp [hi]
+
+/-- Exact add/mul/div/sqrt operations make the computed Higham-order
+Householder beta agree with the exact scale-based beta. -/
+theorem fl_householderBeta_eq_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) :
+    fl_householderBeta fp hn x = householderBetaFromScale hn x := by
+  rw [fl_householderBeta, householderBetaFromScale]
+  rw [fl_householderScale_eq_of_exact_add_mul_sqrt fp hadd hmul hsqrt hn x,
+    fl_householderVector_eq_of_exact_add_mul_sqrt fp hadd hmul hsqrt hn x]
+  simp [hmul, hdiv]
+
+/-- Exact add/mul/div/sqrt operations make the computed normalized
+Householder vector agree with Higham's exact normalized vector. -/
+theorem fl_householderNormalizedVector_eq_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) :
+    fl_householderNormalizedVector fp hn x =
+      householderNormalizedVector n
+        (LeanFpAnalysis.FP.householderVector hn x)
+        (householderBetaFromScale hn x) :=
+  fl_householderNormalizedVector_eq_of_householderVector_beta_eq fp hn x
+    (fl_householderVector_eq_of_exact_add_mul_sqrt fp hadd hmul hsqrt hn x)
+    (fl_householderBeta_eq_of_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt hn x)
+
+/-- Exact add/mul/div/sqrt operations are sufficient for the stronger
+source-faithful Householder normalization model.
+
+This is weaker than requiring the whole `FPModel` to be
+`exactWithUnitRoundoff`; it isolates exactly the primitive operations used by
+the Householder normalization construction. -/
+theorem sourceFaithfulHouseholderNormalizationModel_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x) :
+    sourceFaithfulHouseholderNormalizationModel fp :=
+  sourceFaithfulHouseholderNormalizationModel_of_householderVector_beta_eq fp
+    (fun hn sourceColumn _hx =>
+      fl_householderVector_eq_of_exact_add_mul_sqrt
+        fp hadd hmul hsqrt hn sourceColumn)
+    (fun hn sourceColumn _hx =>
+      fl_householderBeta_eq_of_exact_add_mul_div_sqrt
+        fp hadd hmul hdiv hsqrt hn sourceColumn)
+
 /-- Under `exactWithUnitRoundoff`, the computed Householder scale is the
 mathematical Householder scale. -/
 theorem fl_householderScale_exactWithUnitRoundoff_eq
