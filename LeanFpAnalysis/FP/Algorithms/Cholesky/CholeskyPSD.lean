@@ -1884,6 +1884,99 @@ lemma cpPivot_max {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
       cpState hn A t (cpPivot hn A t) (cpPivot hn A t) :=
   diagArgmax_max hn (cpState hn A t) j
 
+/-- **Entrywise perturbation of one elimination step** (Lemma 10.11
+    propagation engine): if `A` and `B` agree entrywise to `ε`, `A` has
+    entry cap `c`, and both share the pivot floor `ρ > 0` at `p`, the
+    eliminated matrices agree to `ε + (3c²ε + cε²)/ρ²`. Iterating this
+    bound across stages propagates a diagonal gap through the
+    complete-pivoting recursion. -/
+lemma schurStep_entrywise_perturbation {n : ℕ}
+    (A B : Fin n → Fin n → ℝ) (p : Fin n) (ε c ρ : ℝ)
+    (hε : 0 ≤ ε) (hc : 0 ≤ c) (hρ : 0 < ρ)
+    (hAB : ∀ i j : Fin n, |A i j - B i j| ≤ ε)
+    (hcap : ∀ i j : Fin n, |A i j| ≤ c)
+    (hdA : ρ ≤ A p p) (hdB : ρ ≤ B p p) :
+    ∀ i j : Fin n, |schurStep A p i j - schurStep B p i j| ≤
+      ε + (3 * c ^ 2 * ε + c * ε ^ 2) / ρ ^ 2 := by
+  intro i j
+  have hrhs0 : (0:ℝ) ≤ ε + (3 * c ^ 2 * ε + c * ε ^ 2) / ρ ^ 2 := by
+    positivity
+  by_cases hij : i = p ∨ j = p
+  · unfold schurStep
+    rw [if_pos hij, if_pos hij, sub_zero, abs_zero]
+    exact hrhs0
+  · unfold schurStep
+    rw [if_neg hij, if_neg hij]
+    have hdA0 : (0:ℝ) < A p p := lt_of_lt_of_le hρ hdA
+    have hdB0 : (0:ℝ) < B p p := lt_of_lt_of_le hρ hdB
+    -- common-denominator form of the update difference
+    have hkey : A i p * A p j / A p p - B i p * B p j / B p p =
+        (A i p * A p j * (B p p - A p p)
+          + A p p * (A i p * (A p j - B p j)
+            + (A i p - B i p) * B p j)) / (A p p * B p p) := by
+      field_simp
+      ring
+    -- numerator and denominator bounds
+    have hBpj : |B p j| ≤ c + ε := by
+      have h1 := hAB p j
+      have h2 := hcap p j
+      have := abs_sub_abs_le_abs_sub (B p j) (A p j)
+      rw [abs_sub_comm (B p j) (A p j)] at this
+      linarith [this, h1, h2]
+    have hnum : |A i p * A p j * (B p p - A p p)
+        + A p p * (A i p * (A p j - B p j)
+          + (A i p - B i p) * B p j)| ≤
+        3 * c ^ 2 * ε + c * ε ^ 2 := by
+      have h1 : |A i p * A p j * (B p p - A p p)| ≤ c * c * ε := by
+        rw [abs_mul, abs_mul, abs_sub_comm]
+        exact mul_le_mul (mul_le_mul (hcap i p) (hcap p j)
+          (abs_nonneg _) hc) (hAB p p)
+          (abs_nonneg _) (by positivity)
+      have h2 : |A i p * (A p j - B p j)| ≤ c * ε := by
+        rw [abs_mul]
+        exact mul_le_mul (hcap i p) (hAB p j) (abs_nonneg _) hc
+      have h3 : |(A i p - B i p) * B p j| ≤ ε * (c + ε) := by
+        rw [abs_mul]
+        exact mul_le_mul (hAB i p) hBpj (abs_nonneg _) hε
+      have h4 : |A p p * (A i p * (A p j - B p j)
+          + (A i p - B i p) * B p j)| ≤ c * (c * ε + ε * (c + ε)) := by
+        rw [abs_mul]
+        refine mul_le_mul (hcap p p) ?_ (abs_nonneg _) hc
+        calc |A i p * (A p j - B p j) + (A i p - B i p) * B p j|
+            ≤ |A i p * (A p j - B p j)| + |(A i p - B i p) * B p j| :=
+              abs_add_le _ _
+          _ ≤ c * ε + ε * (c + ε) := add_le_add h2 h3
+      calc |A i p * A p j * (B p p - A p p)
+          + A p p * (A i p * (A p j - B p j)
+            + (A i p - B i p) * B p j)|
+          ≤ |A i p * A p j * (B p p - A p p)|
+            + |A p p * (A i p * (A p j - B p j)
+              + (A i p - B i p) * B p j)| := abs_add_le _ _
+        _ ≤ c * c * ε + c * (c * ε + ε * (c + ε)) := add_le_add h1 h4
+        _ = 3 * c ^ 2 * ε + c * ε ^ 2 := by ring
+    have hden : ρ ^ 2 ≤ A p p * B p p := by nlinarith
+    have hquot : |A i p * A p j / A p p - B i p * B p j / B p p| ≤
+        (3 * c ^ 2 * ε + c * ε ^ 2) / ρ ^ 2 := by
+      rw [hkey, abs_div, abs_of_pos (mul_pos hdA0 hdB0)]
+      calc |A i p * A p j * (B p p - A p p)
+            + A p p * (A i p * (A p j - B p j)
+              + (A i p - B i p) * B p j)| / (A p p * B p p)
+          ≤ (3 * c ^ 2 * ε + c * ε ^ 2) / (A p p * B p p) := by
+            gcongr
+        _ ≤ (3 * c ^ 2 * ε + c * ε ^ 2) / ρ ^ 2 := by
+            gcongr
+
+    -- assemble with the direct entry difference
+    have hsplit : A i j - A i p * A p j / A p p -
+        (B i j - B i p * B p j / B p p) =
+        (A i j - B i j) -
+        (A i p * A p j / A p p - B i p * B p j / B p p) := by ring
+    rw [hsplit]
+    have h1 := abs_le.mp (hAB i j)
+    have h2 := abs_le.mp hquot
+    rw [abs_le]
+    constructor <;> linarith [h1.1, h1.2, h2.1, h2.2]
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
