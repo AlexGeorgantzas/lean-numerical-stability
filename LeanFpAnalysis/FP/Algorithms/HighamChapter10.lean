@@ -1480,6 +1480,133 @@ theorem chol_cert_scaled_entrywise_le (n : ℕ) (A R : Fin n → Fin n → ℝ)
           (-(ε * Real.sqrt (A i i) * Real.sqrt (A j j))) *
             (Real.sq_sqrt h1ε.le)
 
+/-- **Scaled operator-norm certificate for factor-shaped perturbations**
+(Theorem 10.6 assembly, steps 1–2): any perturbation bounded
+componentwise by `ε_tot·|R̂ᵀ||R̂|`, with `R̂` carrying the Theorem 10.3
+certificate at `γ`, has a `D⁻¹·D⁻¹`-scaled operator-2-norm certificate
+`n·ε_tot/(1−γ)` — via the certificate's column-norm control,
+Cauchy–Schwarz, and the ones-matrix bound. -/
+theorem scaled_opNorm2Le_of_factor_bound (fp : FPModel) (n : ℕ)
+    (A R : Fin n → Fin n → ℝ)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hγ1 : gamma fp (n + 1) < 1)
+    (hChol : CholeskyBackwardError n A R (gamma fp (n + 1)))
+    (M : Fin n → Fin n → ℝ) (εtot : ℝ) (hε : 0 ≤ εtot)
+    (hM : ∀ i j : Fin n, |M i j| ≤
+      εtot * ∑ k : Fin n, |R k i| * |R k j|) :
+    opNorm2Le (fun i j =>
+      M i j / (Real.sqrt (A i i) * Real.sqrt (A j j)))
+      ((n : ℝ) * (εtot / (1 - gamma fp (n + 1)))) := by
+  set γ : ℝ := gamma fp (n + 1) with hγdef
+  have h1γ : (0:ℝ) < 1 - γ := by linarith
+  -- uniform entrywise bound on the scaled perturbation
+  have hcol : ∀ l : Fin n, Real.sqrt (∑ k : Fin n, R k l ^ 2) ≤
+      Real.sqrt (A l l) / Real.sqrt (1 - γ) := by
+    intro l
+    rw [show Real.sqrt (A l l) / Real.sqrt (1 - γ) =
+        Real.sqrt (A l l / (1 - γ)) from
+      (Real.sqrt_div (hAdiag l).le _).symm]
+    apply Real.sqrt_le_sqrt
+    rw [le_div_iff₀ h1γ]
+    linarith [chol_cert_colNormSq_le n A R γ hChol l]
+  have hcs : ∀ i j : Fin n, ∑ k : Fin n, |R k i| * |R k j| ≤
+      Real.sqrt (∑ k : Fin n, R k i ^ 2) *
+      Real.sqrt (∑ k : Fin n, R k j ^ 2) := by
+    intro i j
+    have h := abs_vecInnerProduct_le_vecNorm2_mul
+      (fun k => |R k i|) (fun k => |R k j|)
+    have hnn : 0 ≤ ∑ k : Fin n, |R k i| * |R k j| :=
+      Finset.sum_nonneg fun k _ =>
+        mul_nonneg (abs_nonneg _) (abs_nonneg _)
+    rw [abs_of_nonneg hnn] at h
+    calc ∑ k : Fin n, |R k i| * |R k j|
+        ≤ vecNorm2 (fun k => |R k i|) * vecNorm2 (fun k => |R k j|) := h
+      _ = Real.sqrt (∑ k : Fin n, R k i ^ 2) *
+          Real.sqrt (∑ k : Fin n, R k j ^ 2) := by
+          unfold vecNorm2 vecNorm2Sq
+          congr 2 <;> exact Finset.sum_congr rfl fun k _ => sq_abs _
+  have hsqrt1γ : Real.sqrt (1 - γ) * Real.sqrt (1 - γ) = 1 - γ :=
+    Real.mul_self_sqrt h1γ.le
+  have hentry : ∀ i j : Fin n,
+      |M i j / (Real.sqrt (A i i) * Real.sqrt (A j j))| ≤
+      εtot / (1 - γ) := by
+    intro i j
+    have hsi := Real.sqrt_pos.mpr (hAdiag i)
+    have hsj := Real.sqrt_pos.mpr (hAdiag j)
+    rw [abs_div, abs_of_pos (mul_pos hsi hsj),
+      div_le_iff₀ (mul_pos hsi hsj)]
+    calc |M i j|
+        ≤ εtot * ∑ k : Fin n, |R k i| * |R k j| := hM i j
+      _ ≤ εtot * (Real.sqrt (∑ k : Fin n, R k i ^ 2) *
+          Real.sqrt (∑ k : Fin n, R k j ^ 2)) :=
+          mul_le_mul_of_nonneg_left (hcs i j) hε
+      _ ≤ εtot * ((Real.sqrt (A i i) / Real.sqrt (1 - γ)) *
+          (Real.sqrt (A j j) / Real.sqrt (1 - γ))) := by
+          apply mul_le_mul_of_nonneg_left _ hε
+          exact mul_le_mul (hcol i) (hcol j) (Real.sqrt_nonneg _)
+            (div_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+      _ = εtot / (1 - γ) * (Real.sqrt (A i i) * Real.sqrt (A j j)) := by
+          field_simp
+          linear_combination (-εtot) * (Real.sq_sqrt h1γ.le)
+  -- entrywise → operator certificate through the ones matrix
+  have hones := opNorm2Le_smul n (fun _ _ : Fin n => (1:ℝ)) n
+    (εtot / (1 - γ)) (div_nonneg hε h1γ.le)
+    (higham10_7_onesMatrix_opNorm2Le n)
+  have habs := opNorm2Le_of_abs_le n
+    (fun i j => M i j / (Real.sqrt (A i i) * Real.sqrt (A j j)))
+    (fun _ _ : Fin n => εtot / (1 - γ) * 1)
+    (fun i j => by rw [mul_one]; exact hentry i j)
+    (εtot / (1 - γ) * n) hones
+  intro x
+  calc vecNorm2 (matMulVec n (fun i j =>
+      M i j / (Real.sqrt (A i i) * Real.sqrt (A j j))) x)
+      ≤ εtot / (1 - γ) * n * vecNorm2 x := habs x
+    _ = (n : ℝ) * (εtot / (1 - γ)) * vecNorm2 x := by ring
+
+/-- **Theorem 10.6 (Demmel–Wilkinson) for the concrete solve chain**
+(Higham §10.1, equation (10.10)): with the Theorem 10.3 certificate for
+`R̂`, a solve-chain perturbation `ΔA` bounded by `ε_tot·|R̂ᵀ||R̂|`
+(supplied by `cholesky_solve_backward_error_expanded`), an inverse-action
+certificate for `H = D⁻¹AD⁻¹` and a `κ₂(H)`-style operator certificate
+for `H⁻¹`, the `D`-scaled forward error satisfies
+`‖D(x̂−x)‖₂ ≤ c/(1−c)·‖Dx‖₂` with the explicit
+`c = κ·n·ε_tot/(1−γ_{n+1})` — the source display (10.10) with
+`ε_tot = γ_{n+1} + 2γ_n + γ_n²` in place of `γ_{3n+1}`. -/
+theorem higham10_6_fl_scaled_forward_error (fp : FPModel) (n : ℕ)
+    (A R Hinv ΔA : Fin n → Fin n → ℝ) (x xhat b : Fin n → ℝ)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hγ1 : gamma fp (n + 1) < 1)
+    (hChol : CholeskyBackwardError n A R (gamma fp (n + 1)))
+    (εtot : ℝ) (hε : 0 ≤ εtot)
+    (hΔA : ∀ i j : Fin n, |ΔA i j| ≤
+      εtot * ∑ k : Fin n, |R k i| * |R k j|)
+    (hInv : ∀ v : Fin n → ℝ,
+      matMulVec n Hinv (matMulVec n (fun i l : Fin n =>
+        A i l / (Real.sqrt (A i i) * Real.sqrt (A l l))) v) = v)
+    (κ : ℝ) (hκ0 : 0 ≤ κ) (hκ : opNorm2Le Hinv κ)
+    (hAx : matMulVec n A x = b)
+    (hAhat : ∀ i : Fin n,
+      matMulVec n A xhat i + matMulVec n ΔA xhat i = b i)
+    (hc1 : κ * ((n : ℝ) * (εtot / (1 - gamma fp (n + 1)))) < 1) :
+    vecNorm2 (fun i => Real.sqrt (A i i) * xhat i -
+        Real.sqrt (A i i) * x i) ≤
+      κ * ((n : ℝ) * (εtot / (1 - gamma fp (n + 1)))) /
+        (1 - κ * ((n : ℝ) * (εtot / (1 - gamma fp (n + 1))))) *
+      vecNorm2 (fun i => Real.sqrt (A i i) * x i) := by
+  have hscaled := scaled_opNorm2Le_of_factor_bound fp n A R hAdiag hγ1
+    hChol ΔA εtot hε hΔA
+  have hcomp := opNorm2Le_matMul n Hinv
+    (fun i j => ΔA i j / (Real.sqrt (A i i) * Real.sqrt (A j j)))
+    κ ((n : ℝ) * (εtot / (1 - gamma fp (n + 1)))) hκ0 hκ hscaled
+  exact higham10_6_scaled_forward_error_assembled n A ΔA
+    (fun i l : Fin n => A i l / (Real.sqrt (A i i) * Real.sqrt (A l l)))
+    Hinv (fun i => Real.sqrt (A i i)) x xhat b
+    (fun i => (Real.sqrt_pos.mpr (hAdiag i)).ne')
+    (fun i j => rfl) hInv hAx hAhat
+    (κ * ((n : ℝ) * (εtot / (1 - gamma fp (n + 1))))) hcomp hc1
+
+
+
 
 
 /-! ## §10.2 Sensitivity of the Cholesky Factorization -/
