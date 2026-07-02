@@ -30284,6 +30284,59 @@ theorem higham9_15_abs_matrix_mul_le_abs_mul_abs {n : ℕ}
           intro k _
           rw [abs_mul]
 
+/-- **Theorem 9.15 support**, product-shape bridge for normalized lower
+perturbations: lower triangular times strictly lower triangular is strictly
+lower triangular.  This supplies the `hXtri` side condition for
+`X = L⁻¹ ΔL` from ordinary triangular support assumptions. -/
+theorem higham9_15_rectMatMul_lower_strictLower_is_strictLower {n : ℕ}
+    (A B : Matrix (Fin n) (Fin n) ℝ)
+    (hA_lower : ∀ i j : Fin n, i.val < j.val → A i j = 0)
+    (hB_strict : ∀ i j : Fin n, i.val ≤ j.val → B i j = 0) :
+    ∀ i j : Fin n, i.val ≤ j.val → rectMatMul A B i j = 0 := by
+  intro i j hij
+  unfold rectMatMul
+  apply Finset.sum_eq_zero
+  intro k _hk
+  by_cases hki : k.val ≤ i.val
+  · have hkj : k.val ≤ j.val := by omega
+    simp [hB_strict k j hkj]
+  · have hik : i.val < k.val := by omega
+    simp [hA_lower i k hik]
+
+/-- **Theorem 9.15 support**, product-shape bridge for normalized upper
+perturbations: upper triangular times upper triangular is upper triangular.
+This supplies the `hYtri` side condition for `Y = ΔU U⁻¹` from ordinary
+triangular support assumptions. -/
+theorem higham9_15_rectMatMul_upper_upper_is_upper {n : ℕ}
+    (A B : Matrix (Fin n) (Fin n) ℝ)
+    (hA_upper : ∀ i j : Fin n, j.val < i.val → A i j = 0)
+    (hB_upper : ∀ i j : Fin n, j.val < i.val → B i j = 0) :
+    ∀ i j : Fin n, j.val < i.val → rectMatMul A B i j = 0 := by
+  intro i j hji
+  unfold rectMatMul
+  apply Finset.sum_eq_zero
+  intro k _hk
+  by_cases hki : k.val < i.val
+  · simp [hA_upper i k hki]
+  · have hjk : j.val < k.val := by omega
+    simp [hB_upper k j hjk]
+
+/-- **Theorem 9.15 support**, packaged triangular-support discharge for the
+normalized Barrlund--Sun factors `L⁻¹ΔL` and `ΔU U⁻¹`. -/
+theorem higham9_15_normalized_triangular_support_of_factor_triangularity
+    {n : ℕ}
+    (Linv Uinv ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0) :
+    (∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0) ∧
+      (∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0) :=
+  ⟨higham9_15_rectMatMul_lower_strictLower_is_strictLower
+      Linv ΔL hLinv_lower hΔL_strict,
+    higham9_15_rectMatMul_upper_upper_is_upper
+      ΔU Uinv hΔU_upper hUinv_upper⟩
+
 /-- **Theorem 9.15**, the strictly lower projection of a strict-lower plus
 upper split recovers the strict-lower summand. -/
 theorem higham9_15_strilPart_add_strictLower_upper {n : ℕ}

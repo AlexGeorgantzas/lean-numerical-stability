@@ -13295,6 +13295,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_15_rectMatMul_strilPart_add_right
 #check higham9_15_rectMatMul_triuPart_add_left
 #check higham9_15_abs_matrix_mul_le_abs_mul_abs
+#check higham9_15_rectMatMul_lower_strictLower_is_strictLower
+#check higham9_15_rectMatMul_upper_upper_is_upper
+#check higham9_15_normalized_triangular_support_of_factor_triangularity
 #check higham9_15_strilPart_add_strictLower_upper
 #check higham9_15_triuPart_add_strictLower_upper
 #check higham9_15_normalized_G_split_matrix
