@@ -3678,6 +3678,181 @@ theorem fl_cpFactor_gram_backward_error (fp : FPModel) {n : ℕ}
           push_cast
           ring
 
+/-- **Theorem 10.14 for the algorithm as run, fully composed**: under
+    the exact trace's no-tie data, the rounding budget (capped at
+    `ρ/4`), `u ≤ 1/8`, commutative rounded multiplication, and `A` PSD
+    symmetric, the computed pivoted factorization satisfies the
+    componentwise backward-error bound
+    `|∑_{t<r} r̃ᵗᵢr̃ᵗⱼ + S̃ᵣᵢⱼ − aᵢⱼ| ≤ r(u·cS + (2u+u²)·cR²)` with the
+    explicit caps `cS = c + δ/2` and
+    `cR = 2(1+u)²/(1−u)²·√(c + δ/2)` discharged from the agreement
+    machinery — no cap hypotheses remain. -/
+theorem higham10_14_as_run_backward_error (fp : FPModel) {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ) (r : ℕ)
+    (δ ρ c : ℝ) (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (h5 : gammaValid fp 5) (hu8 : fp.u ≤ 1 / 8)
+    (hmul : ∀ x y : ℝ, fp.fl_mul x y = fp.fl_mul y x)
+    (hPSD : IsPosSemiDef n A)
+    (h : ℕ → ℝ) (hh0 : h 0 = 0)
+    (hhstep : ∀ t : ℕ, t < r →
+      h t + (3 * c ^ 2 * h t + c * h t ^ 2) / (ρ / 2) ^ 2 +
+        (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+          (1 + fp.u) * gamma fp 5 * ((c + δ / 2) ^ 2 / (ρ / 2))) ≤
+        h (t + 1))
+    (hhhalf : ∀ t : ℕ, t < r → h t < δ / 2)
+    (hht4 : ∀ t : ℕ, t < r → h t ≤ ρ / 4)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c) :
+    ∀ i j : Fin n,
+      |(∑ t ∈ Finset.range r,
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) i *
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) j) +
+        fl_cpStateFactor fp hn A r i j - A i j| ≤
+      (r : ℝ) * (fp.u * (c + δ / 2) + (2 * fp.u + fp.u ^ 2) *
+        (2 * (1 + fp.u) ^ 2 / (1 - fp.u) ^ 2 *
+          Real.sqrt (c + δ / 2)) ^ 2) := by
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  have hu0 := fp.u_nonneg
+  have hu1 : fp.u < 1 := by linarith
+  have h1u : (0:ℝ) < 1 - fp.u := by linarith
+  have hcδ : (0:ℝ) ≤ c + δ / 2 := by linarith
+  -- stage data shared by all discharges
+  have hagree := fl_cpPivotFactor_sequence_agrees fp hn A r δ ρ c
+    hδ hδρ hc h5 h hh0 hhstep hhhalf hgap hfloor hcap
+  have hstage : ∀ t : ℕ, t < r →
+      fl_cpPivotFactor fp hn A t = cpPivot hn A t := by
+    intro t htr
+    exact ((hagree (t + 1) (Nat.succ_le_of_lt htr)).2 t
+      (Nat.lt_succ_self t)).symm
+  have hclose : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j - fl_cpStateFactor fp hn A t i j| ≤ h t :=
+    fun t htr => (hagree t (Nat.le_of_lt htr)).1
+  have hSfloor : ∀ t : ℕ, t < r → ρ / 2 ≤
+      fl_cpStateFactor fp hn A t (cpPivot hn A t) (cpPivot hn A t) := by
+    intro t htr
+    have h1 := abs_le.mp (hclose t htr (cpPivot hn A t)
+      (cpPivot hn A t))
+    have h2 := hfloor t htr
+    have h3 := hhhalf t htr
+    linarith [h1.1, hδρ]
+  -- pivot positivity for the fl states
+  have hpos : ∀ t : ℕ, t < r →
+      0 < fl_cpStateFactor fp hn A t (fl_cpPivotFactor fp hn A t)
+        (fl_cpPivotFactor fp hn A t) := by
+    intro t htr
+    rw [hstage t htr]
+    linarith [hSfloor t htr]
+  -- state cap
+  have hcapS : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |fl_cpStateFactor fp hn A t i j| ≤ c + δ / 2 := by
+    intro t htr i j
+    have h1 := hclose t htr i j
+    have h2 := hcap t htr i j
+    have h3 := abs_sub_abs_le_abs_sub
+      (fl_cpStateFactor fp hn A t i j) (cpState hn A t i j)
+    rw [abs_sub_comm (fl_cpStateFactor fp hn A t i j)
+      (cpState hn A t i j)] at h3
+    have h4 := hhhalf t htr
+    linarith
+  -- row cap: pivot entry via the sqrt model, off-pivot via domination
+  have hcapR : ∀ t : ℕ, t < r → ∀ i : Fin n,
+      |fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+        (fl_cpPivotFactor fp hn A t) i| ≤
+      2 * (1 + fp.u) ^ 2 / (1 - fp.u) ^ 2 *
+        Real.sqrt (c + δ / 2) := by
+    intro t htr i
+    have hp := hstage t htr
+    have hSp := hSfloor t htr
+    have hSpos : (0:ℝ) < fl_cpStateFactor fp hn A t
+        (cpPivot hn A t) (cpPivot hn A t) := by linarith
+    -- the computed pivot entry
+    obtain ⟨δa, hδa, hsqrt⟩ := fp.model_sqrt
+      (fl_cpStateFactor fp hn A t (cpPivot hn A t) (cpPivot hn A t))
+      hSpos.le
+    have ha := abs_le.mp hδa
+    have hsqle : Real.sqrt (fl_cpStateFactor fp hn A t
+        (cpPivot hn A t) (cpPivot hn A t)) ≤
+        Real.sqrt (c + δ / 2) := by
+      apply Real.sqrt_le_sqrt
+      have := hcapS t htr (cpPivot hn A t) (cpPivot hn A t)
+      calc fl_cpStateFactor fp hn A t (cpPivot hn A t)
+            (cpPivot hn A t)
+          ≤ |fl_cpStateFactor fp hn A t (cpPivot hn A t)
+            (cpPivot hn A t)| := le_abs_self _
+        _ ≤ c + δ / 2 := this
+    have hpivot_cap : |fp.fl_sqrt (fl_cpStateFactor fp hn A t
+        (cpPivot hn A t) (cpPivot hn A t))| ≤
+        (1 + fp.u) * Real.sqrt (c + δ / 2) := by
+      rw [hsqrt, abs_mul, abs_of_nonneg (Real.sqrt_nonneg _)]
+      have h1a : |1 + δa| ≤ 1 + fp.u := by
+        rw [abs_le]
+        constructor <;> linarith [ha.1, ha.2]
+      calc Real.sqrt _ * |1 + δa|
+          ≤ Real.sqrt (c + δ / 2) * (1 + fp.u) :=
+            mul_le_mul hsqle h1a (abs_nonneg _) (Real.sqrt_nonneg _)
+        _ = (1 + fp.u) * Real.sqrt (c + δ / 2) := mul_comm _ _
+    -- exact-state invariants at stage t for the domination lemma
+    have hSPSD : IsPosSemiDef n (cpState hn A t) :=
+      cpState_isPosSemiDef hn A hPSD t fun s hs =>
+        lt_of_lt_of_le hρ0 (hfloor s (lt_trans hs htr))
+    have hht0 : 0 ≤ h t := by
+      have h1 := abs_nonneg (cpState hn A t (cpPivot hn A t)
+        (cpPivot hn A t) - fl_cpStateFactor fp hn A t
+        (cpPivot hn A t) (cpPivot hn A t))
+      exact le_trans h1 (hclose t htr _ _)
+    have hdom := fl_factor_row_dominated fp (cpState hn A t)
+      (fl_cpStateFactor fp hn A t) (cpPivot hn A t) ρ (h t)
+      hSPSD (cpPivot_max hn A t) (hfloor t htr) hρ0 hht0
+      (hht4 t htr) (hclose t htr) hu1 i
+    have hconst : (1 + 4 * h t / ρ) * ((1 + fp.u) / (1 - fp.u) ^ 2) ≤
+        2 * (1 + fp.u) / (1 - fp.u) ^ 2 := by
+      have h1 : 4 * h t / ρ ≤ 1 := by
+        rw [div_le_one hρ0]
+        linarith [hht4 t htr]
+      have h2 : (0:ℝ) ≤ (1 + fp.u) / (1 - fp.u) ^ 2 := by positivity
+      have h1' : 1 + 4 * h t / ρ ≤ 2 := by linarith
+      calc (1 + 4 * h t / ρ) * ((1 + fp.u) / (1 - fp.u) ^ 2)
+          ≤ 2 * ((1 + fp.u) / (1 - fp.u) ^ 2) :=
+            mul_le_mul_of_nonneg_right h1' h2
+        _ = 2 * (1 + fp.u) / (1 - fp.u) ^ 2 := by ring
+    unfold fl_cpRowOf
+    rw [hp]
+    by_cases hip : i = cpPivot hn A t
+    · rw [if_pos hip]
+      refine hpivot_cap.trans ?_
+      have hge1 : (1:ℝ) ≤ 2 * (1 + fp.u) / (1 - fp.u) ^ 2 := by
+        rw [le_div_iff₀ (by positivity)]
+        nlinarith
+      calc (1 + fp.u) * Real.sqrt (c + δ / 2)
+          ≤ (2 * (1 + fp.u) / (1 - fp.u) ^ 2) *
+            ((1 + fp.u) * Real.sqrt (c + δ / 2)) := by
+            nlinarith [mul_nonneg (by linarith : (0:ℝ) ≤ 1 + fp.u)
+              (Real.sqrt_nonneg (c + δ / 2)), hge1]
+        _ = 2 * (1 + fp.u) ^ 2 / (1 - fp.u) ^ 2 *
+            Real.sqrt (c + δ / 2) := by ring
+    · rw [if_neg hip]
+      refine (hdom).trans ?_
+      calc (1 + 4 * h t / ρ) * ((1 + fp.u) / (1 - fp.u) ^ 2) *
+            |fp.fl_sqrt (fl_cpStateFactor fp hn A t
+              (cpPivot hn A t) (cpPivot hn A t))|
+          ≤ (2 * (1 + fp.u) / (1 - fp.u) ^ 2) *
+            ((1 + fp.u) * Real.sqrt (c + δ / 2)) := by
+            refine mul_le_mul hconst hpivot_cap (abs_nonneg _) ?_
+            positivity
+        _ = 2 * (1 + fp.u) ^ 2 / (1 - fp.u) ^ 2 *
+            Real.sqrt (c + δ / 2) := by ring
+  exact fl_cpFactor_gram_backward_error fp hn A r hmul hPSD.1 hu8
+    hpos (c + δ / 2)
+    (2 * (1 + fp.u) ^ 2 / (1 - fp.u) ^ 2 * Real.sqrt (c + δ / 2))
+    hcapS hcapR
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
