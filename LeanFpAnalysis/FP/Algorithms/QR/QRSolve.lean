@@ -2067,6 +2067,73 @@ theorem householderQRRhsPanelSqrtResidualGrowthCoeff_nonneg (fp : FPModel) :
           simpa [householderQRRhsPanelSqrtResidualGrowthCoeff, tail, C,
             srows] using add_nonneg htail hstep
 
+/-- The residual-sharpened dimension-only QR RHS growth coefficient is positive
+    for every nonempty panel when the unit roundoff is positive.
+
+    This exposes the irreducible extra term in the current residual-sharpened
+    Theorem 20.4 RHS model: even after the square-root residual improvement, the
+    verified recurrence contributes a strictly positive addend beyond the base
+    Householder gamma. -/
+theorem householderQRRhsPanelSqrtResidualGrowthCoeff_pos (fp : FPModel) :
+    ∀ {m p : ℕ}, 0 < m → 0 < p → 0 < fp.u →
+      gammaValid fp (11 * m + 23) →
+      0 < householderQRRhsPanelSqrtResidualGrowthCoeff fp m p := by
+  intro m
+  induction m with
+  | zero =>
+      intro p hm _hp _hu _hvalid
+      cases hm
+  | succ m ih =>
+      intro p _hm hp hu hvalid
+      cases p with
+      | zero =>
+          cases hp
+      | succ p =>
+          let tail : ℝ :=
+            householderQRRhsPanelSqrtResidualGrowthCoeff fp m p
+          let C : ℝ := householderConstructApplyBound fp (m + 1)
+          let srows : ℝ := Real.sqrt (m + 1 : ℝ)
+          have hvalid_tail : gammaValid fp (11 * m + 23) :=
+            gammaValid_mono fp (by omega) hvalid
+          have htail_nonneg : 0 ≤ tail := by
+            simpa [tail] using
+              householderQRRhsPanelSqrtResidualGrowthCoeff_nonneg fp m p
+                hvalid_tail
+          have hm1_real : 0 < ((m + 1 : ℕ) : ℝ) := by
+            exact_mod_cast Nat.succ_pos m
+          have hC_pos : 0 < C := by
+            unfold C householderConstructApplyBound
+            have hu_sq : 0 < fp.u ^ 2 := sq_pos_of_pos hu
+            have hprod : 0 < ((m + 1 : ℕ) : ℝ) * fp.u ^ 2 :=
+              mul_pos hm1_real hu_sq
+            have hsqrt : 0 < Real.sqrt (((m + 1 : ℕ) : ℝ) * fp.u ^ 2) :=
+              Real.sqrt_pos.2 hprod
+            have hgamma_nonneg : 0 ≤ gamma fp (11 * (m + 1) + 23) :=
+              gamma_nonneg fp hvalid
+            exact add_pos_of_pos_of_nonneg hsqrt
+              (mul_nonneg (by norm_num) hgamma_nonneg)
+          have hsrows_pos : 0 < srows := by
+            dsimp [srows]
+            exact Real.sqrt_pos.2 (by
+              simpa [Nat.cast_add, Nat.cast_one] using hm1_real)
+          have htail_part_nonneg :
+              0 ≤ tail * (srows * (1 + C)) := by
+            have hC_nonneg : 0 ≤ C := le_of_lt hC_pos
+            have hsrows_nonneg : 0 ≤ srows := le_of_lt hsrows_pos
+            have hone_add_C_nonneg : 0 ≤ 1 + C := by linarith
+            exact mul_nonneg htail_nonneg
+              (mul_nonneg hsrows_nonneg hone_add_C_nonneg)
+          have hinside_pos :
+              0 < srows * C + tail * (srows * (1 + C)) :=
+            add_pos_of_pos_of_nonneg
+              (mul_pos hsrows_pos hC_pos) htail_part_nonneg
+          have hstep_pos :
+              0 < srows *
+                (srows * C + tail * (srows * (1 + C))) :=
+            mul_pos hsrows_pos hinside_pos
+          simpa [householderQRRhsPanelSqrtResidualGrowthCoeff, tail, C,
+            srows] using add_pos_of_nonneg_of_pos htail_nonneg hstep_pos
+
 /-- Square specialization: the QR RHS growth coefficient is nonnegative. -/
 theorem householderQRRhsGrowthCoeff_nonneg (fp : FPModel) (n : ℕ)
     (hvalid : gammaValid fp (11 * n + 23)) :

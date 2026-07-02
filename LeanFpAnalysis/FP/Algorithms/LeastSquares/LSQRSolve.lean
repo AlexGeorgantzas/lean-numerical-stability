@@ -19076,6 +19076,57 @@ theorem theorem20_4_printed_deltaf_coefficient_lt_conservative_gammaFactor_coeff
     hsqrt_pos
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.4, residual-sharpened coefficient
+    obstruction for the printed `Delta f` route in every nonempty panel.
+
+    The residual-sharpened unified coefficient is
+    `gamma + householderQRRhsPanelSqrtResidualGrowthCoeff`.  The residual-growth
+    addend is strictly positive under positive unit roundoff for any nonempty
+    panel, so the current implementation-backed `gammaTilde` coefficient is
+    still strictly larger than Higham's printed `gamma` coefficient after the
+    common `sqrt(n+k)*n` source factor is restored. -/
+theorem theorem20_4_printed_deltaf_coefficient_lt_concrete_gammaTildeSqrtResidual
+    (fp : FPModel) {n k : ℕ} (hn : 0 < n) (hu : 0 < fp.u)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k))) :
+    Real.sqrt (n + k : ℝ) *
+        ((n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) <
+      Real.sqrt (n + k : ℝ) *
+        ((n : ℝ) *
+          lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n) := by
+  have hm : 0 < n + k := Nat.lt_of_lt_of_le hn (Nat.le_add_right n k)
+  have hm_real : 0 < (n + k : ℝ) := by
+    exact_mod_cast hm
+  have hn_real : 0 < (n : ℝ) := by
+    exact_mod_cast hn
+  have hsqrt_pos : 0 < Real.sqrt (n + k : ℝ) :=
+    Real.sqrt_pos.2 hm_real
+  have hbase_valid : gammaValid fp (11 * (n + k) + 23) :=
+    lsTheorem20_4ConcreteGammaTildeSqrtResidual_base_gammaValid fp
+      (m := n + k) (n := n) hn hvalid
+  have htail_pos :
+      0 <
+        householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n :=
+    householderQRRhsPanelSqrtResidualGrowthCoeff_pos fp hm hn hu
+      hbase_valid
+  have htilde_gt_gamma :
+      gamma fp (n * householderConstructApplyGammaIndex (n + k)) <
+        lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n := by
+    have hadd :
+        gamma fp (n * householderConstructApplyGammaIndex (n + k)) <
+          gamma fp (n * householderConstructApplyGammaIndex (n + k)) +
+            householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n :=
+      lt_add_of_pos_right _ htail_pos
+    simpa [lsTheorem20_4ConcreteGammaTildeSqrtResidual] using hadd
+  have hinner :
+      (n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k)) <
+        (n : ℝ) *
+          lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n :=
+    mul_lt_mul_of_pos_left htilde_gt_gamma hn_real
+  exact mul_lt_mul_of_pos_left hinner hsqrt_pos
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4, residual-sharpened coefficient
     obstruction for the printed `Delta f` route in the one-column panel case.
 
     The latest residual-sharpened unified coefficient is
