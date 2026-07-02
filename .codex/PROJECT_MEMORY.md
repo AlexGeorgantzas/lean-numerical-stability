@@ -88,6 +88,16 @@ end-to-end stability rebuild is tagged as
   proof artifact from the all-tail route; the active pivot/Schur invertibility
   data, inverse-entry/source comparisons, source-strength BDD product-update
   data, and Theorem 13.6 estimates remain open.
+- 2026-07-01 Problem 13.4 active-suffix determinant-table cleanup: added
+  `Higham13Eq1322GlobalTableauSourceChain.activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound_of_det_tables`
+  and
+  `Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound_of_det_tables`.
+  These derive the current-tail, pivot-block, and Schur-complement
+  invertibility instances for the canonical active-suffix global-tableau chain
+  from determinant-nonzero tables plus the existing global dimension bound.
+  This removes another proof-artifact layer from the Problem 13.4 route; the
+  all-tail inverse-entry/source comparisons, source-strength BDD
+  product-update data, and Theorem 13.6 estimates remain open.
 - 2026-07-01 Problem 13.4 first-split active-suffix Eq.13.23 product-update
   wrappers: added
   `higham13_algorithm13_3_firstSplitStageHistoryGrowthFactor_le_two_of_product_bound_diag_update`,
