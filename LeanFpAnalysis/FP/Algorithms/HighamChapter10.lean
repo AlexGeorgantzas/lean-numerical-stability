@@ -652,6 +652,182 @@ theorem opNorm2Le_of_abs_le (n : ℕ) (M B : Fin n → Fin n → ℝ)
     _ ≤ c * vecNorm2 (absVec n x) := hB (absVec n x)
     _ = c * vecNorm2 x := by rw [h5]
 
+/-- **Lemma 6.6 chain, step 1** (used by equation (10.7)): a vector-action
+operator-2-norm certificate bounds the squared Frobenius norm by `n c²`,
+since each column is the image of a standard basis vector. -/
+theorem frobNormSq_le_of_opNorm2Le (n : ℕ) (M : Fin n → Fin n → ℝ)
+    (c : ℝ) (h : opNorm2Le M c) :
+    frobNormSq M ≤ n * c ^ 2 := by
+  have hcol : ∀ j : Fin n, matMulVec n M (fun k => if k = j then 1 else 0) =
+      fun i => M i j := by
+    intro j
+    funext i
+    unfold matMulVec
+    rw [Finset.sum_eq_single j (by intro b _ hb; simp [hb]) (by simp)]
+    simp
+  have hbasis_norm : ∀ j : Fin n,
+      vecNorm2 (fun k : Fin n => if k = j then (1:ℝ) else 0) = 1 := by
+    intro j
+    unfold vecNorm2 vecNorm2Sq
+    rw [Finset.sum_eq_single j (by intro b _ hb; simp [hb]) (by simp)]
+    simp
+  have hcolsq : ∀ j : Fin n, ∑ i : Fin n, M i j ^ 2 ≤ c ^ 2 := by
+    intro j
+    have h1 := h (fun k => if k = j then 1 else 0)
+    rw [hcol j, hbasis_norm j, mul_one] at h1
+    have h2 : vecNorm2 (fun i => M i j) ^ 2 ≤ c ^ 2 := by
+      have hnn : 0 ≤ vecNorm2 (fun i => M i j) := vecNorm2_nonneg _
+      nlinarith
+    rw [vecNorm2_sq] at h2
+    exact h2
+  unfold frobNormSq
+  rw [Finset.sum_comm]
+  calc ∑ j : Fin n, ∑ i : Fin n, M i j ^ 2
+      ≤ ∑ _j : Fin n, c ^ 2 := Finset.sum_le_sum fun j _ => hcolsq j
+    _ = n * c ^ 2 := by simp
+
+/-- **Lemma 6.6 chain, step 2** (Higham Lemma 6.6, `‖|A|‖₂ ≤ √n ‖A‖₂`, in
+vector-action form): the componentwise absolute value of a matrix carries
+an operator-2-norm certificate inflated by `√n`, through the Frobenius
+norm (which is invariant under componentwise absolute value). -/
+theorem opNorm2Le_abs_of_opNorm2Le (n : ℕ) (M : Fin n → Fin n → ℝ)
+    (c : ℝ) (hc : 0 ≤ c) (h : opNorm2Le M c) :
+    opNorm2Le (fun i j => |M i j|) (Real.sqrt n * c) := by
+  intro x
+  have habs_frob : frobNormSq (fun i j => |M i j|) = frobNormSq M := by
+    unfold frobNormSq
+    exact Finset.sum_congr rfl fun i _ =>
+      Finset.sum_congr rfl fun j _ => sq_abs (M i j)
+  calc vecNorm2 (matMulVec n (fun i j => |M i j|) x)
+      ≤ frobNorm (fun i j => |M i j|) * vecNorm2 x :=
+        vecNorm2_matMulVec_le_frobNorm_mul _ x
+    _ ≤ Real.sqrt n * c * vecNorm2 x := by
+        apply mul_le_mul_of_nonneg_right _ (vecNorm2_nonneg x)
+        rw [frobNorm_eq_sqrt_frobNormSq, habs_frob]
+        calc Real.sqrt (frobNormSq M)
+            ≤ Real.sqrt (n * c ^ 2) :=
+              Real.sqrt_le_sqrt (frobNormSq_le_of_opNorm2Le n M c h)
+          _ = Real.sqrt n * c := by
+              rw [Real.sqrt_mul (Nat.cast_nonneg n), Real.sqrt_sq hc]
+
+/-- Vector-action operator-2-norm certificates compose across the
+repository matrix product. -/
+theorem opNorm2Le_matMul (n : ℕ) (A B : Fin n → Fin n → ℝ) (a b : ℝ)
+    (ha : 0 ≤ a) (hA : opNorm2Le A a) (hB : opNorm2Le B b) :
+    opNorm2Le (matMul n A B) (a * b) := by
+  intro x
+  have hcomp : matMulVec n (matMul n A B) x =
+      matMulVec n A (matMulVec n B x) := by
+    funext i
+    unfold matMulVec matMul
+    calc ∑ j : Fin n, (∑ k : Fin n, A i k * B k j) * x j
+        = ∑ j : Fin n, ∑ k : Fin n, A i k * B k j * x j := by
+          exact Finset.sum_congr rfl fun j _ => Finset.sum_mul _ _ _
+      _ = ∑ k : Fin n, ∑ j : Fin n, A i k * B k j * x j :=
+          Finset.sum_comm
+      _ = ∑ k : Fin n, A i k * ∑ j : Fin n, B k j * x j := by
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [Finset.mul_sum]
+          exact Finset.sum_congr rfl fun j _ => by ring
+  rw [hcomp]
+  calc vecNorm2 (matMulVec n A (matMulVec n B x))
+      ≤ a * vecNorm2 (matMulVec n B x) := hA _
+    _ ≤ a * (b * vecNorm2 x) := mul_le_mul_of_nonneg_left (hB x) ha
+    _ = a * b * vecNorm2 x := by ring
+
+/-- Nonnegative scaling of a vector-action operator-2-norm certificate. -/
+theorem opNorm2Le_smul (n : ℕ) (B : Fin n → Fin n → ℝ) (c ε : ℝ)
+    (hε : 0 ≤ ε) (hB : opNorm2Le B c) :
+    opNorm2Le (fun i j => ε * B i j) (ε * c) := by
+  intro x
+  have hvec : matMulVec n (fun i j => ε * B i j) x =
+      fun i => ε * matMulVec n B x i := by
+    funext i
+    unfold matMulVec
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun j _ => by ring
+  rw [hvec]
+  have hnorm : vecNorm2 (fun i => ε * matMulVec n B x i) =
+      ε * vecNorm2 (matMulVec n B x) := by
+    unfold vecNorm2 vecNorm2Sq
+    rw [show ∑ i : Fin n, (ε * matMulVec n B x i) ^ 2 =
+        ε ^ 2 * ∑ i : Fin n, matMulVec n B x i ^ 2 by
+      rw [Finset.mul_sum]; exact Finset.sum_congr rfl fun i _ => by ring]
+    rw [Real.sqrt_mul (sq_nonneg ε), Real.sqrt_sq hε]
+  rw [hnorm]
+  calc ε * vecNorm2 (matMulVec n B x)
+      ≤ ε * (c * vecNorm2 x) := mul_le_mul_of_nonneg_left (hB x) hε
+    _ = ε * c * vecNorm2 x := by ring
+
+/-- **Lemma 6.6 chain, transpose form**: `‖|Rᵀ|‖₂ ≤ √n c` from an
+operator-2-norm certificate on `R`, via the transpose-invariant Frobenius
+norm. -/
+theorem opNorm2Le_abs_transpose_of_opNorm2Le (n : ℕ)
+    (R : Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c) (h : opNorm2Le R c) :
+    opNorm2Le (fun i j => |R j i|) (Real.sqrt n * c) := by
+  intro x
+  have hfrob : frobNormSq (fun i j : Fin n => |R j i|) = frobNormSq R := by
+    unfold frobNormSq
+    rw [Finset.sum_comm]
+    exact Finset.sum_congr rfl fun i _ =>
+      Finset.sum_congr rfl fun j _ => sq_abs (R i j)
+  calc vecNorm2 (matMulVec n (fun i j => |R j i|) x)
+      ≤ frobNorm (fun i j => |R j i|) * vecNorm2 x :=
+        vecNorm2_matMulVec_le_frobNorm_mul _ x
+    _ ≤ Real.sqrt n * c * vecNorm2 x := by
+        apply mul_le_mul_of_nonneg_right _ (vecNorm2_nonneg x)
+        rw [frobNorm_eq_sqrt_frobNormSq, hfrob]
+        calc Real.sqrt (frobNormSq R)
+            ≤ Real.sqrt (n * c ^ 2) :=
+              Real.sqrt_le_sqrt (frobNormSq_le_of_opNorm2Le n R c h)
+          _ = Real.sqrt n * c := by
+              rw [Real.sqrt_mul (Nat.cast_nonneg n), Real.sqrt_sq hc]
+
+/-- **Equation (10.7), key inequality in certificate form** (Higham §10.1,
+p. 198): `‖|R̂ᵀ||R̂|‖₂ ≤ n c²` whenever `‖R̂‖₂ ≤ c`, the analogue of
+`‖|Rᵀ||R|‖₂ ≤ n ‖A‖₂` from Lemma 6.6. -/
+theorem higham10_7_absRT_absR_opNorm2Le (n : ℕ)
+    (R : Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c) (h : opNorm2Le R c) :
+    opNorm2Le
+      (matMul n (fun i j => |R j i|) (fun i j => |R i j|))
+      ((n : ℝ) * c ^ 2) := by
+  have hprod := opNorm2Le_matMul n _ _ _ _
+    (mul_nonneg (Real.sqrt_nonneg _) hc)
+    (opNorm2Le_abs_transpose_of_opNorm2Le n R c hc h)
+    (opNorm2Le_abs_of_opNorm2Le n R c hc h)
+  have heq : Real.sqrt n * c * (Real.sqrt n * c) = (n : ℝ) * c ^ 2 := by
+    have hs : Real.sqrt n * Real.sqrt n = (n : ℝ) :=
+      Real.mul_self_sqrt (Nat.cast_nonneg n)
+    nlinarith [hs]
+  rwa [heq] at hprod
+
+/-- **Equation (10.7), normwise backward error in certificate form**
+(Higham §10.1, p. 198): from the componentwise Theorem 10.3 certificate
+and an operator-norm certificate `‖R̂‖₂ ≤ c`, the residual
+`ΔA = R̂ᵀR̂ − A` satisfies `‖ΔA‖₂ ≤ ε n c²`.  The source display continues
+`≤ γ_{3n+1} n (1 − nγ_{n+1})^{-1} ‖A‖₂` by converting `c²` to `‖A‖₂`
+through the spectral identity `‖R̂ᵀR̂‖₂ = ‖R̂‖₂²`, which remains open. -/
+theorem higham10_7_normwise_backward_error (n : ℕ)
+    (A R : Fin n → Fin n → ℝ) (ε : ℝ) (hε : 0 ≤ ε)
+    (hChol : CholeskyBackwardError n A R ε)
+    (c : ℝ) (hc : 0 ≤ c) (hR : opNorm2Le R c) :
+    opNorm2Le
+      (fun i j => (∑ k : Fin n, R k i * R k j) - A i j)
+      (ε * ((n : ℝ) * c ^ 2)) := by
+  apply opNorm2Le_of_abs_le n _
+    (fun i j => ε * matMul n (fun i' j' => |R j' i'|)
+      (fun i' j' => |R i' j'|) i j)
+  · intro i j
+    have hcert := hChol.backward_bound i j
+    have hmm : matMul n (fun i' j' => |R j' i'|)
+        (fun i' j' => |R i' j'|) i j =
+        ∑ k : Fin n, |R k i| * |R k j| := rfl
+    rw [hmm]
+    exact hcert
+  · exact opNorm2Le_smul n _ _ ε hε
+      (higham10_7_absRT_absR_opNorm2Le n R c hc hR)
+
 /-- **Theorem 10.7, spectral success form** (Higham §10.1): if the minimum
 eigenvalue of the symmetric scaled matrix `H` — stated through the
 repository's `finiteHermitianEigenvalues` — exceeds the scaled
@@ -731,6 +907,77 @@ theorem higham10_7_failure_no_factorization_spectral (n : ℕ)
       exact this
     rw [hsum, mul_one]
     exact hlam_le
+
+/-- **Minimum eigenvalue** of a symmetric real matrix, through the
+repository's `finiteHermitianEigenvalues` (Higham §10.1, the `λ_min`
+of Theorem 10.7). -/
+noncomputable def finiteMinEigenvalue {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M) : ℝ :=
+  Finset.univ.inf' (Finset.univ_nonempty_iff.mpr
+    (Fin.pos_iff_nonempty.mp hn)) (finiteHermitianEigenvalues M hM)
+
+/-- The minimum eigenvalue is a lower bound for every eigenvalue. -/
+theorem finiteMinEigenvalue_le {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M) (a : Fin n) :
+    finiteMinEigenvalue hn M hM ≤ finiteHermitianEigenvalues M hM a :=
+  Finset.inf'_le _ (Finset.mem_univ a)
+
+/-- The minimum eigenvalue is attained. -/
+theorem exists_finiteMinEigenvalue_eq {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M) :
+    ∃ a : Fin n, finiteHermitianEigenvalues M hM a =
+      finiteMinEigenvalue hn M hM := by
+  obtain ⟨a, _, ha⟩ := Finset.exists_mem_eq_inf' (Finset.univ_nonempty_iff.mpr
+    (Fin.pos_iff_nonempty.mp hn)) (finiteHermitianEigenvalues M hM)
+  exact ⟨a, ha.symm⟩
+
+/-- **Rayleigh lower bound from `λ_min`** (Higham §10.1, the spectral
+inequality behind Theorem 10.7): `λ_min(M) ‖x‖₂² ≤ xᵀMx`. -/
+theorem finiteMinEigenvalue_rayleigh {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M)
+    (x : Fin n → ℝ) :
+    finiteMinEigenvalue hn M hM * ∑ i : Fin n, x i ^ 2 ≤
+      ∑ i : Fin n, ∑ j : Fin n, x i * M i j * x j := by
+  have h := finiteLoewnerLe_smul_id_of_le_finiteHermitianEigenvalues
+    M hM (finiteMinEigenvalue_le hn M hM) x
+  rw [finiteQuadraticForm_smul_finiteIdMatrix,
+    finiteQuadraticForm_eq_sum_sum] at h
+  simpa [finiteVecNorm2Sq] using h
+
+/-- **Theorem 10.7 success threshold, `λ_min` form** (Higham §10.1): if
+`λ_min(H) > t`, the perturbed scaled matrix `D (H + E) D` has a genuine
+Cholesky factorization. -/
+theorem higham10_7_success_factorization_min_eig (n : ℕ) (hn : 0 < n)
+    (D : Fin n → ℝ) (H E : Fin n → Fin n → ℝ) (t : ℝ)
+    (hD_pos : ∀ i, 0 < D i)
+    (hH_sym : IsSymmetricFiniteMatrix H)
+    (hE_sym : ∀ i j, E i j = E j i)
+    (hE : ∀ x : Fin n → ℝ,
+        |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤
+          t * ∑ i : Fin n, x i ^ 2)
+    (hlt : t < finiteMinEigenvalue hn H hH_sym) :
+    ∃ R : Fin n → Fin n → ℝ,
+      CholeskyFactSpec n (fun i j => D i * (H i j + E i j) * D j) R :=
+  higham10_7_success_factorization_spectral n D H E
+    (finiteMinEigenvalue hn H hH_sym) t hD_pos hH_sym hE_sym
+    (finiteMinEigenvalue_le hn H hH_sym) hE hlt
+
+/-- **Theorem 10.7 failure threshold, `λ_min` form** (Higham §10.1): if
+`λ_min(H) < −t`, the perturbed scaled matrix `H + E` admits no Cholesky
+factorization. -/
+theorem higham10_7_failure_no_factorization_min_eig (n : ℕ) (hn : 0 < n)
+    (H E : Fin n → Fin n → ℝ) (t : ℝ)
+    (hH_sym : IsSymmetricFiniteMatrix H)
+    (hE : ∀ x : Fin n → ℝ,
+        |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤
+          t * ∑ i : Fin n, x i ^ 2)
+    (hlt : finiteMinEigenvalue hn H hH_sym < -t) :
+    ¬ ∃ R : Fin n → Fin n → ℝ,
+        CholeskyFactSpec n (fun i j => H i j + E i j) R := by
+  obtain ⟨a, ha⟩ := exists_finiteMinEigenvalue_eq hn H hH_sym
+  exact higham10_7_failure_no_factorization_spectral n H E
+    (finiteMinEigenvalue hn H hH_sym) t hH_sym a (le_of_eq ha) hE hlt
+
 
 /-- **Theorem 10.7 foundation** (Higham §10.1, proof of Theorem 10.7): the
 all-ones rank-one matrix `e eᵀ` has operator 2-norm at most `n`, in the
