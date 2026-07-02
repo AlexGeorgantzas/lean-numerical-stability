@@ -1640,8 +1640,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_pivotingGrowthSup_rook_le_fosterBound_of_trace_bound`
 - `higham9_pivotingGrowthSup_le_pow_two_of_ne_noPivot`
 - `higham9_TracePivotingGrowthKind`
+- `higham9_TracePivotingGrowthKind.toPivotingGrowthKind`
 - `higham9_tracePivotingGrowthValues`
 - `higham9_tracePivotingGrowthSup`
+- `higham9_tracePivotingGrowthValues_eq_pivotingGrowthValues`
+- `higham9_tracePivotingGrowthSup_eq_pivotingGrowthSup`
 - `higham9_tracePivotingGrowthValues_nonempty`
 - `higham9_tracePivotingGrowthValues_le_pow_two`
 - `higham9_tracePivotingGrowthValues_complete_le_wilkinsonBound_of_eq_one`
