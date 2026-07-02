@@ -6116,6 +6116,143 @@ theorem
   firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_exact_dotProduct_and_mul
     fp (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul v A
 
+/-- First-pivot storage handoff from the computed normalized Householder
+vector to the signed unnormalized stored vector, under the explicit
+normalized-beta update compatibility predicate.
+
+This composes the betaSpec-normalization bridge with the existing
+normalized-to-`householderBetaSpec` stored-panel handoff.  The raw signed
+active vector remains unnormalized; only its betaSpec-normalization is
+identified with the computed normalized vector. -/
+theorem
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat} (x : Fin (m + 1) -> Real) (alpha : Real)
+    (hx : Ne x 0)
+    (halpha : alpha = fl_householderAlpha fp (Nat.succ_pos m) x)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m) x) 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+      (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha)
+      (householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha))
+      A := by
+  let v : Fin (m + 1) -> Real :=
+    householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha
+  have hnorm :
+      householderNormalizedVector (m + 1) v
+          (householderBetaSpec (m + 1) v) =
+        fl_householderNormalizedVector fp (Nat.succ_pos m) x := by
+    exact
+      householderTrailingActiveVector_zero_normalized_eq_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+        fp hadd hmul hdiv hsqrt (Nat.succ_pos m) x alpha hx halpha
+  rw [← hnorm]
+  exact
+    firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_updateCompatible
+      fp hcompat v A
+
+/-- First-pivot storage handoff from the computed normalized Householder
+vector to the exact-alpha signed unnormalized stored vector, under the
+explicit normalized-beta update compatibility predicate. -/
+theorem
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat} (x : Fin (m + 1) -> Real) (alpha : Real)
+    (hx : Ne x 0)
+    (halpha : alpha = householderAlpha (Nat.succ_pos m) x)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m) x) 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+      (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha)
+      (householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha))
+      A := by
+  let v : Fin (m + 1) -> Real :=
+    householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha
+  have hnorm :
+      householderNormalizedVector (m + 1) v
+          (householderBetaSpec (m + 1) v) =
+        fl_householderNormalizedVector fp (Nat.succ_pos m) x := by
+    exact
+      householderTrailingActiveVector_zero_normalized_eq_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+        fp hadd hmul hdiv hsqrt (Nat.succ_pos m) x alpha hx halpha
+  rw [← hnorm]
+  exact
+    firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_updateCompatible
+      fp hcompat v A
+
+/-- Exact add/mul operations discharge the update compatibility in the
+computed-alpha first-pivot signed-active handoff. -/
+theorem
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat} (x : Fin (m + 1) -> Real) (alpha : Real)
+    (hx : Ne x 0)
+    (halpha : alpha = fl_householderAlpha fp (Nat.succ_pos m) x)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m) x) 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+      (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha)
+      (householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha))
+      A :=
+  firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
+    hadd hmul hdiv hsqrt x alpha hx halpha A
+
+/-- Exact add/mul operations discharge the update compatibility in the
+exact-alpha first-pivot signed-active handoff. -/
+theorem
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat} (x : Fin (m + 1) -> Real) (alpha : Real)
+    (hx : Ne x 0)
+    (halpha : alpha = householderAlpha (Nat.succ_pos m) x)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m) x) 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+      (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha)
+      (householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha))
+      A :=
+  firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
+    hadd hmul hdiv hsqrt x alpha hx halpha A
+
 /-- Exact arithmetic satisfies the explicit normalized-beta update
 compatibility surface. -/
 theorem normalizedBetaSpecCompactUpdateCompatible_exactWithUnitRoundoff
