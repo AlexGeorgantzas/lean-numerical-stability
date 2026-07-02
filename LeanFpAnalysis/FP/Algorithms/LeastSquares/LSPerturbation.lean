@@ -774,6 +774,63 @@ theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_penrose1_small_rectOpNorm2Le
       A B Aplus Bplus hAplus_pos heta hsmall hleftA hAplus hDelta
       hBpenrose1 hBinj hSymB
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column predicate-form pseudoinverse perturbation bound with both
+    rectangular left-inverse fields derived from Penrose1 data.
+
+    On the `A` side, Penrose1 plus injectivity gives `Aplus A = I`; the
+    smallness condition then preserves injectivity for `B`, and Penrose1 plus
+    the Chapter 7 bridge gives `Bplus B = I`. -/
+theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_Apenrose1_Bpenrose1_small_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {Aplus_norm delta eta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hApenrose1 : rectMatMul (rectMatMul A Aplus) A = A)
+    (hAinj : Function.Injective (rectMatMulVec A))
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBpenrose1 : rectMatMul (rectMatMul B Bplus) B = B)
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus)) :
+    rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)) := by
+  have hleftA : rectMatMul Aplus A = idMatrix (k + 1) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using
+      theorem7_5_rect_left_inverse_of_penrose1_rectMatMulVec_injective
+        A Aplus hApenrose1 hAinj i j
+  exact
+    wedinLemma20_11_rectOpNorm2Le_Bplus_of_penrose1_small_rectOpNorm2Le
+      A B Aplus Bplus hAplus_pos heta hsmall hleftA hAplus hDelta
+      hBpenrose1 hSymB
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    matrix-rank source wrapper for the full-column predicate-form
+    pseudoinverse perturbation bound.
+
+    Full column rank of `A` is represented by `(Matrix.of A).rank = k + 1`;
+    Chapter 7 turns that rank hypothesis and A-side Penrose1 into the explicit
+    left inverse needed by the operator-bound route. -/
+theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_Apenrose1_rank_Bpenrose1_small_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {Aplus_norm delta eta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hApenrose1 : rectMatMul (rectMatMul A Aplus) A = A)
+    (hArank : (Matrix.of A).rank = k + 1)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBpenrose1 : rectMatMul (rectMatMul B Bplus) B = B)
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus)) :
+    rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)) :=
+  wedinLemma20_11_rectOpNorm2Le_Bplus_of_Apenrose1_Bpenrose1_small_rectOpNorm2Le
+    A B Aplus Bplus hAplus_pos heta hsmall hApenrose1
+    (ch7_rectMatMulVec_injective_of_matrix_rank_eq_width A hArank)
+    hAplus hDelta hBpenrose1 hSymB
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
