@@ -1884,6 +1884,293 @@ lemma cpPivot_max {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
       cpState hn A t (cpPivot hn A t) (cpPivot hn A t) :=
   diagArgmax_max hn (cpState hn A t) j
 
+/-- **Entrywise perturbation of one elimination step** (Lemma 10.11
+    propagation engine): if `A` and `B` agree entrywise to `ε`, `A` has
+    entry cap `c`, and both share the pivot floor `ρ > 0` at `p`, the
+    eliminated matrices agree to `ε + (3c²ε + cε²)/ρ²`. Iterating this
+    bound across stages propagates a diagonal gap through the
+    complete-pivoting recursion. -/
+lemma schurStep_entrywise_perturbation {n : ℕ}
+    (A B : Fin n → Fin n → ℝ) (p : Fin n) (ε c ρ : ℝ)
+    (hε : 0 ≤ ε) (hc : 0 ≤ c) (hρ : 0 < ρ)
+    (hAB : ∀ i j : Fin n, |A i j - B i j| ≤ ε)
+    (hcap : ∀ i j : Fin n, |A i j| ≤ c)
+    (hdA : ρ ≤ A p p) (hdB : ρ ≤ B p p) :
+    ∀ i j : Fin n, |schurStep A p i j - schurStep B p i j| ≤
+      ε + (3 * c ^ 2 * ε + c * ε ^ 2) / ρ ^ 2 := by
+  intro i j
+  have hrhs0 : (0:ℝ) ≤ ε + (3 * c ^ 2 * ε + c * ε ^ 2) / ρ ^ 2 := by
+    positivity
+  by_cases hij : i = p ∨ j = p
+  · unfold schurStep
+    rw [if_pos hij, if_pos hij, sub_zero, abs_zero]
+    exact hrhs0
+  · unfold schurStep
+    rw [if_neg hij, if_neg hij]
+    have hdA0 : (0:ℝ) < A p p := lt_of_lt_of_le hρ hdA
+    have hdB0 : (0:ℝ) < B p p := lt_of_lt_of_le hρ hdB
+    -- common-denominator form of the update difference
+    have hkey : A i p * A p j / A p p - B i p * B p j / B p p =
+        (A i p * A p j * (B p p - A p p)
+          + A p p * (A i p * (A p j - B p j)
+            + (A i p - B i p) * B p j)) / (A p p * B p p) := by
+      field_simp
+      ring
+    -- numerator and denominator bounds
+    have hBpj : |B p j| ≤ c + ε := by
+      have h1 := hAB p j
+      have h2 := hcap p j
+      have := abs_sub_abs_le_abs_sub (B p j) (A p j)
+      rw [abs_sub_comm (B p j) (A p j)] at this
+      linarith [this, h1, h2]
+    have hnum : |A i p * A p j * (B p p - A p p)
+        + A p p * (A i p * (A p j - B p j)
+          + (A i p - B i p) * B p j)| ≤
+        3 * c ^ 2 * ε + c * ε ^ 2 := by
+      have h1 : |A i p * A p j * (B p p - A p p)| ≤ c * c * ε := by
+        rw [abs_mul, abs_mul, abs_sub_comm]
+        exact mul_le_mul (mul_le_mul (hcap i p) (hcap p j)
+          (abs_nonneg _) hc) (hAB p p)
+          (abs_nonneg _) (by positivity)
+      have h2 : |A i p * (A p j - B p j)| ≤ c * ε := by
+        rw [abs_mul]
+        exact mul_le_mul (hcap i p) (hAB p j) (abs_nonneg _) hc
+      have h3 : |(A i p - B i p) * B p j| ≤ ε * (c + ε) := by
+        rw [abs_mul]
+        exact mul_le_mul (hAB i p) hBpj (abs_nonneg _) hε
+      have h4 : |A p p * (A i p * (A p j - B p j)
+          + (A i p - B i p) * B p j)| ≤ c * (c * ε + ε * (c + ε)) := by
+        rw [abs_mul]
+        refine mul_le_mul (hcap p p) ?_ (abs_nonneg _) hc
+        calc |A i p * (A p j - B p j) + (A i p - B i p) * B p j|
+            ≤ |A i p * (A p j - B p j)| + |(A i p - B i p) * B p j| :=
+              abs_add_le _ _
+          _ ≤ c * ε + ε * (c + ε) := add_le_add h2 h3
+      calc |A i p * A p j * (B p p - A p p)
+          + A p p * (A i p * (A p j - B p j)
+            + (A i p - B i p) * B p j)|
+          ≤ |A i p * A p j * (B p p - A p p)|
+            + |A p p * (A i p * (A p j - B p j)
+              + (A i p - B i p) * B p j)| := abs_add_le _ _
+        _ ≤ c * c * ε + c * (c * ε + ε * (c + ε)) := add_le_add h1 h4
+        _ = 3 * c ^ 2 * ε + c * ε ^ 2 := by ring
+    have hden : ρ ^ 2 ≤ A p p * B p p := by nlinarith
+    have hquot : |A i p * A p j / A p p - B i p * B p j / B p p| ≤
+        (3 * c ^ 2 * ε + c * ε ^ 2) / ρ ^ 2 := by
+      rw [hkey, abs_div, abs_of_pos (mul_pos hdA0 hdB0)]
+      calc |A i p * A p j * (B p p - A p p)
+            + A p p * (A i p * (A p j - B p j)
+              + (A i p - B i p) * B p j)| / (A p p * B p p)
+          ≤ (3 * c ^ 2 * ε + c * ε ^ 2) / (A p p * B p p) := by
+            gcongr
+        _ ≤ (3 * c ^ 2 * ε + c * ε ^ 2) / ρ ^ 2 := by
+            gcongr
+
+    -- assemble with the direct entry difference
+    have hsplit : A i j - A i p * A p j / A p p -
+        (B i j - B i p * B p j / B p p) =
+        (A i j - B i j) -
+        (A i p * A p j / A p p - B i p * B p j / B p p) := by ring
+    rw [hsplit]
+    have h1 := abs_le.mp (hAB i j)
+    have h2 := abs_le.mp hquot
+    rw [abs_le]
+    constructor <;> linarith [h1.1, h1.2, h2.1, h2.2]
+
+/-- **Lemma 10.11 (no-tie pivot-sequence stability), full stage
+    induction**: if every stage `t < r` of the exact complete-pivoting
+    recursion on `A` has diagonal gap `δ`, pivot floor `ρ ≥ δ`, and
+    entry cap `c`, and the error budget `g` absorbs the one-stage
+    growth `ε ↦ ε + (3c²ε + cε²)/(ρ/2)²` while staying below `δ/2`,
+    then a perturbed matrix `B` within `ε₀ ≤ g 0` of `A` selects the
+    SAME pivot sequence through `r` stages, with stage states
+    `g`-close. -/
+theorem cpPivot_sequence_stable {n : ℕ} (hn : 0 < n)
+    (A B : Fin n → Fin n → ℝ) (r : ℕ)
+    (ε₀ δ ρ c : ℝ) (hε₀ : 0 ≤ ε₀) (hδ : 0 < δ) (hδρ : δ ≤ ρ)
+    (hc : 0 ≤ c) (g : ℕ → ℝ) (hg0 : ε₀ ≤ g 0)
+    (hgstep : ∀ t : ℕ, t < r →
+      g t + (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 ≤ g (t + 1))
+    (hghalf : ∀ t : ℕ, t < r → g t < δ / 2)
+    (hAB : ∀ i j : Fin n, |A i j - B i j| ≤ ε₀)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c) :
+    ∀ t : ℕ, t ≤ r →
+      (∀ i j : Fin n,
+        |cpState hn A t i j - cpState hn B t i j| ≤ g t) ∧
+      (∀ s : ℕ, s < t → cpPivot hn A s = cpPivot hn B s) := by
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  -- the budget is nonnegative along the run
+  have hg_nonneg : ∀ t : ℕ, t ≤ r → 0 ≤ g t := by
+    intro t
+    induction t with
+    | zero => intro _; linarith
+    | succ t iht =>
+      intro htr
+      have ht' : t < r := Nat.lt_of_succ_le htr
+      have h0 := iht (Nat.le_of_lt ht')
+      have hstep := hgstep t ht'
+      have hadd : (0:ℝ) ≤
+          (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 := by
+        positivity
+      linarith
+  intro t
+  induction t with
+  | zero =>
+    intro _
+    exact ⟨fun i j => (hAB i j).trans hg0,
+      fun s hs => absurd hs (Nat.not_lt_zero s)⟩
+  | succ t ih =>
+    intro htr
+    have ht' : t < r := Nat.lt_of_succ_le htr
+    obtain ⟨hdiff, hpiv⟩ := ih (Nat.le_of_lt ht')
+    set p : Fin n := cpPivot hn A t with hp
+    -- perturbed stage selects the same pivot
+    set Et : Fin n → Fin n → ℝ :=
+      fun i j => cpState hn B t i j - cpState hn A t i j with hEt
+    have hEdiag : ∀ i : Fin n, |Et i i| < δ / 2 := by
+      intro i
+      have h := hdiff i i
+      rw [abs_sub_comm] at h
+      exact lt_of_le_of_lt h (hghalf t ht')
+    have hstable := diagArgmax_stable hn (cpState hn A t) Et p δ
+      (hgap t ht') hEdiag
+    have hBfun : (fun i j => cpState hn A t i j + Et i j) =
+        cpState hn B t := by
+      funext i j
+      simp [hEt]
+    have hpivB : cpPivot hn B t = p := by
+      show diagArgmax hn (cpState hn B t) = p
+      rw [← hBfun]
+      exact hstable.2
+    -- one-stage error growth at the shared pivot
+    have hAfloor : ρ / 2 ≤ cpState hn A t p p := by
+      have := hfloor t ht'
+      linarith
+    have hBfloor : ρ / 2 ≤ cpState hn B t p p := by
+      have h1 := hEdiag p
+      have h2 := abs_lt.mp h1
+      have h3 := hfloor t ht'
+      have h4 : cpState hn B t p p =
+          cpState hn A t p p + Et p p := by simp [hEt]
+      rw [h4]
+      linarith [h2.1, hδρ]
+    have hstep := schurStep_entrywise_perturbation
+      (cpState hn A t) (cpState hn B t) p (g t) c (ρ / 2)
+      (hg_nonneg t (Nat.le_of_lt ht')) hc (by linarith)
+      hdiff (hcap t ht') hAfloor hBfloor
+    constructor
+    · intro i j
+      have hSA : cpState hn A (t + 1) =
+          schurStep (cpState hn A t) p := rfl
+      have hSB : cpState hn B (t + 1) =
+          schurStep (cpState hn B t) p := by
+        show schurStep (cpState hn B t) (cpPivot hn B t) =
+          schurStep (cpState hn B t) p
+        rw [hpivB]
+      rw [hSA, hSB]
+      exact (hstep i j).trans (hgstep t ht')
+    · intro s hs
+      rcases Nat.lt_or_eq_of_le (Nat.le_of_lt_succ hs) with h' | h'
+      · exact hpiv s h'
+      · subst h'
+        rw [hpivB]
+
+/-- **Lemma 10.11, source form**: a matrix whose complete-pivoting run
+    has no ties (gap `δ`, floor `ρ`, cap `c` through `r` stages) admits
+    a positive perturbation radius within which every matrix selects
+    the same pivot sequence — the "for sufficiently small `E`"
+    statement, instantiating `cpPivot_sequence_stable` with the
+    geometric budget `g t = ε₀ K^t`, `K = 1 + (3c² + c)/(ρ/2)²`. -/
+theorem cpPivot_sequence_stable_small {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (r : ℕ)
+    (δ ρ c : ℝ) (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c) :
+    ∃ ε₀ : ℝ, 0 < ε₀ ∧
+      ∀ B : Fin n → Fin n → ℝ,
+        (∀ i j : Fin n, |A i j - B i j| ≤ ε₀) →
+        ∀ s : ℕ, s < r → cpPivot hn A s = cpPivot hn B s := by
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  set K : ℝ := 1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2 with hK
+  have hK1 : (1:ℝ) ≤ K := by
+    have : (0:ℝ) ≤ (3 * c ^ 2 + c) / (ρ / 2) ^ 2 := by positivity
+    linarith
+  have hK0 : (0:ℝ) < K := lt_of_lt_of_le one_pos hK1
+  have hKr : (0:ℝ) < K ^ r := pow_pos hK0 r
+  set ε₀ : ℝ := min 1 (δ / 2) / (2 * K ^ r) with hε₀def
+  have hmin0 : (0:ℝ) < min 1 (δ / 2) :=
+    lt_min one_pos (by linarith)
+  have hε₀pos : 0 < ε₀ := by
+    rw [hε₀def]
+    positivity
+  refine ⟨ε₀, hε₀pos, ?_⟩
+  intro B hAB
+  set g : ℕ → ℝ := fun t => ε₀ * K ^ t with hg
+  -- geometric budget stays below both 1 and δ/2 through the run
+  have hgle : ∀ t : ℕ, t ≤ r → g t ≤ min 1 (δ / 2) / 2 := by
+    intro t htr
+    have hpow : K ^ t ≤ K ^ r := pow_le_pow_right₀ hK1 htr
+    have : g t = ε₀ * K ^ t := rfl
+    rw [this, hε₀def]
+    rw [div_mul_eq_mul_div, div_le_div_iff₀ (by positivity)
+      (by norm_num : (0:ℝ) < 2)]
+    calc min 1 (δ / 2) * K ^ t * 2
+        ≤ min 1 (δ / 2) * K ^ r * 2 := by
+          have := hmin0.le
+          nlinarith
+      _ = min 1 (δ / 2) * (2 * K ^ r) := by ring
+  have hg1 : ∀ t : ℕ, t < r → g t ≤ 1 := by
+    intro t htr
+    have h := hgle t (Nat.le_of_lt htr)
+    have h1 : min 1 (δ / 2) ≤ 1 := min_le_left _ _
+    linarith
+  have hghalf : ∀ t : ℕ, t < r → g t < δ / 2 := by
+    intro t htr
+    have h := hgle t (Nat.le_of_lt htr)
+    have h1 : min 1 (δ / 2) ≤ δ / 2 := min_le_right _ _
+    linarith [hmin0]
+  have hg_nonneg : ∀ t : ℕ, 0 ≤ g t := by
+    intro t
+    have : g t = ε₀ * K ^ t := rfl
+    rw [this]
+    positivity
+  -- the geometric budget absorbs the one-stage growth
+  have hgstep : ∀ t : ℕ, t < r →
+      g t + (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 ≤
+        g (t + 1) := by
+    intro t htr
+    have hgt1 := hg1 t htr
+    have hgt0 := hg_nonneg t
+    have hstep : g (t + 1) = g t * K := by
+      show ε₀ * K ^ (t + 1) = ε₀ * K ^ t * K
+      ring
+    rw [hstep, hK]
+    have hexp : g t * (1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2) =
+        g t + (3 * c ^ 2 * g t + c * g t) / (ρ / 2) ^ 2 := by
+      field_simp
+    rw [hexp]
+    gcongr
+    nlinarith
+  have hmain := cpPivot_sequence_stable hn A B r ε₀ δ ρ c
+    hε₀pos.le hδ hδρ hc g
+    (by
+      show ε₀ ≤ ε₀ * K ^ 0
+      simp)
+    hgstep hghalf hAB hgap hfloor hcap
+  intro s hs
+  exact (hmain r le_rfl).2 s hs
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================

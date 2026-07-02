@@ -3754,6 +3754,9 @@ Source-facing Chapter 10 wrappers:
 - `diagArgmax` / `diagArgmax_max` / `diagArgmax_eq_of_strict` / `diagArgmax_stable` (deterministic complete-pivoting choice + single-stage stability)
 - `schurStep` / `schurStep_symm` / `schurStep_isPosSemiDef` (dimension-preserving elimination step; completion-of-squares PSD invariant)
 - `cpState` / `cpPivot` / `cpState_symm` / `cpState_isPosSemiDef` / `cpPivot_max` (complete-pivoting state machine + stage invariants)
+- `schurStep_entrywise_perturbation` (one-stage error growth eps -> eps + (3c^2 eps + c eps^2)/rho^2, the L10.11 gap-propagation engine)
+- `cpPivot_sequence_stable` (Lemma 10.11 CLOSED: no-tie gap-delta pivot sequence preserved through r stages for entrywise-eps-close matrices)
+- `cpPivot_sequence_stable_small` (Lemma 10.11 source form: positive perturbation radius exists, geometric budget instantiation)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
