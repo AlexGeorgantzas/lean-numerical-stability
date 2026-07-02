@@ -3819,6 +3819,8 @@ Source-facing Chapter 10 wrappers:
 - `higham10_12_psd_w_action_bound` / `higham10_12_w_action_norm_bound` (honest: PSD block quadratic form + Rayleigh)
 - `higham10_12_w_action_trace_bound` (computable trace certificate) / `psd_quadForm_le_trace` / `psd_abs_entry_le_sqrt_diag` / `isPosSemiDef_diag_nonneg` / `isPosSemiDef_trailing_block`
 - `unit_diag_psd_maxEigenvalue_bounds` / `higham10_9_unit_diag_cond_bound` (van der Sluis route: 1 <= lambda_max(H) <= n for unit-diagonal PSD; kappa_2(H) <= n/lambda_min)
+- `scaled_matrix_unit_diag` / `scaled_matrix_isPosSemiDef` / `higham10_9_scaled_cond_bound` ((10.9) fragment instantiated on the concrete H = D^-1 A D^-1)
+- `finiteMaxEigenvalue_ge_diag` / `diag_congruence_minEigenvalue_ge` (van der Sluis spectral engines: lambda_max >= diag; lambda_min(EME) >= m lambda_min(M))
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)

@@ -615,6 +615,92 @@ theorem wedinLemma20_11_fullColumn_pinvNorm_le_of_left_inverse_rectOpNorm2Le
     (wedinLemma20_11_recip_sub_le_sigmaMinCol_of_left_inverse_rectOpNorm2Le
       A B Aplus hAplus_pos hleft hAplus hDelta)
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    a lower action radius for `B`, together with the Moore-Penrose range-side
+    projection conditions, bounds the rectangular operator norm of `Bplus`.
+
+    The hypotheses `Bplus B = I` and symmetry of `B Bplus` are exactly the
+    full-column Penrose fields needed to make the range projection
+    nonexpansive. -/
+theorem wedinLemma20_11_rectOpNorm2Le_left_inverse_of_lowerActionBound
+    {m n : ℕ} (B : Fin m → Fin n → ℝ) (Bplus : Fin n → Fin m → ℝ)
+    {sigma : ℝ}
+    (hsigma_pos : 0 < sigma)
+    (hlower : ∀ x : Fin n → ℝ,
+      sigma * vecNorm2 x ≤ vecNorm2 (rectMatMulVec B x))
+    (hleft : rectMatMul Bplus B = idMatrix n)
+    (hSym : IsSymmetricFiniteMatrix (rectMatMul B Bplus)) :
+    rectOpNorm2Le Bplus (1 / sigma) := by
+  intro y
+  have hproj :=
+    rectOpNorm2Le_rangeProjection_of_symmetric_left_inverse B Bplus
+      hleft hSym y
+  have hproj' :
+      vecNorm2 (rectMatMulVec B (rectMatMulVec Bplus y)) ≤ vecNorm2 y := by
+    simpa [rectMatMulVec_rectMatMul] using hproj
+  have hlower_y := hlower (rectMatMulVec Bplus y)
+  have hbound :
+      sigma * vecNorm2 (rectMatMulVec Bplus y) ≤ vecNorm2 y :=
+    le_trans hlower_y hproj'
+  have hrec_nonneg : 0 ≤ 1 / sigma :=
+    le_of_lt (one_div_pos.mpr hsigma_pos)
+  calc
+    vecNorm2 (rectMatMulVec Bplus y)
+        = (1 / sigma) * (sigma * vecNorm2 (rectMatMulVec Bplus y)) := by
+            field_simp [ne_of_gt hsigma_pos]
+    _ ≤ (1 / sigma) * vecNorm2 y :=
+            mul_le_mul_of_nonneg_left hbound hrec_nonneg
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column predicate-form pseudoinverse norm perturbation bound.
+
+    This is the source Lemma 20.11 route in the repository's
+    `rectOpNorm2Le` API: an explicit left inverse for `A`, the perturbation
+    bound for `B - A`, and the full-column Penrose range-projection fields for
+    `Bplus` imply `||Bplus||₂ <= ||Aplus||₂ / (1 - eta)`. -/
+theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_left_inverse_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {Aplus_norm delta eta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus)) :
+    rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)) := by
+  subst eta
+  have hden_pos : 0 < 1 - Aplus_norm * delta :=
+    wedinLemma20_11_denominator_pos hsmall
+  have hdelta_lt : delta < 1 / Aplus_norm := by
+    rw [lt_div_iff₀ hAplus_pos]
+    simpa [mul_comm] using hsmall
+  have hmu_pos : 0 < 1 / Aplus_norm - delta := by
+    linarith
+  have hlowerA :
+      ∀ x : Fin (k + 1) → ℝ,
+        (1 / Aplus_norm) * vecNorm2 x ≤
+          vecNorm2 (rectMatMulVec A x) :=
+    wedinLemma20_11_lowerActionBound_of_left_inverse_rectOpNorm2Le
+      A Aplus hAplus_pos hleftA hAplus
+  have hlowerB :
+      ∀ x : Fin (k + 1) → ℝ,
+        (1 / Aplus_norm - delta) * vecNorm2 x ≤
+          vecNorm2 (rectMatMulVec B x) :=
+    wedinLemma20_11_lowerActionBound_of_sub_rectOpNorm2Le
+      A B hlowerA hDelta
+  have hBplus :
+      rectOpNorm2Le Bplus (1 / (1 / Aplus_norm - delta)) :=
+    wedinLemma20_11_rectOpNorm2Le_left_inverse_of_lowerActionBound
+      B Bplus hmu_pos hlowerB hleftB hSymB
+  have hcoeff :
+      (Aplus_norm⁻¹ - delta)⁻¹ =
+        Aplus_norm / (1 - Aplus_norm * delta) := by
+    field_simp [ne_of_gt hAplus_pos, ne_of_gt hmu_pos, ne_of_gt hden_pos]
+  simpa [one_div, hcoeff] using hBplus
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
