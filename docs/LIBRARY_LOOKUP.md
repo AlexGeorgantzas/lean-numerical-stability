@@ -3595,6 +3595,9 @@ Source-facing Chapter 10 wrappers:
 - `fl_cholPivot_leading_principal`
 - `fl_cholesky_block_certificate`
 - `bordered_perturbation_floor`
+- `fl_cholesky_pivot_pos_step`
+- `fl_cholesky_pivots_pos`
+- `fl_cholesky_diag_pos_of_floor`
 - `fl_cholesky_truncated_bound`
 - `fl_cholesky_border_bound`
 - `fl_chol_offdiag_solve_form`
