@@ -9,6 +9,7 @@
 -- Theorem 10.14: Error analysis for PSD Cholesky with complete pivoting.
 
 import Mathlib.Data.Real.Basic
+import Mathlib.LinearAlgebra.Matrix.Rank
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Field
@@ -1050,6 +1051,30 @@ theorem psd_pivoted_cholesky_exists_tail (n : ℕ)
             have := Fin.val_pred j hj0
             have := Fin.val_pred k hk
             omega)
+
+/-- **Rank invariance of the pivoted certificate** (Theorem 10.9(b),
+    `r = rank` bridge, part 1): the matrix rank of `A` equals the rank of
+    the pivoted factor `R` — `rank A = rank(ΠᵀAΠ) = rank(RᵀR) = rank R`.
+    The remaining identification `rank R = r` (triangular rank count) is
+    a separate row. -/
+theorem pivoted_spec_rank_eq {n : ℕ} {A R : Fin n → Fin n → ℝ}
+    {σ : Fin n → Fin n} {r : ℕ}
+    (hspec : PivotedCholeskySpec n A R σ r) :
+    (Matrix.of A).rank = (Matrix.of R).rank := by
+  let eσ : Fin n ≃ Fin n := Equiv.ofBijective σ hspec.perm
+  have hsub : (Matrix.of A).submatrix ⇑eσ ⇑eσ =
+      (Matrix.of R).transpose * Matrix.of R := by
+    ext i j
+    simp only [Matrix.submatrix_apply, Matrix.mul_apply,
+      Matrix.transpose_apply, Matrix.of_apply]
+    show A (σ i) (σ j) = ∑ k : Fin n, R k i * R k j
+    rw [← hspec.product_eq i j]
+  calc (Matrix.of A).rank
+      = ((Matrix.of A).submatrix ⇑eσ ⇑eσ).rank :=
+        (Matrix.rank_submatrix (Matrix.of A) eσ eσ).symm
+    _ = ((Matrix.of R).transpose * Matrix.of R).rank := by rw [hsub]
+    _ = (Matrix.of R).rank :=
+        Matrix.rank_transpose_mul_self (Matrix.of R)
 
 -- ============================================================
 -- §10.3  Theorem 10.9(b): SPD → PivotedCholeskySpec (full rank)
