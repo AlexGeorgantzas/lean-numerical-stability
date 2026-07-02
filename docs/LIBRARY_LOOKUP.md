@@ -2225,6 +2225,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_9_colDiagDominant_lu_exists_unit_lower_of_det_ne_zero`
 - `higham9_9_colDiagDominant_lu_exists_unique_unit_lower_of_det_ne_zero`
 - `higham9_9_colDiagDominant_fin_two_exists_LUFactSpec_growthFactorEntry_le_two`
+- `higham9_9_rowDiagDominant_fin_two_exists_LUFactSpec_growthFactorEntry_le_two`
 - `higham9_9_colDiagDominant_transpose_iff_rowDiagDominant`
 - `higham9_9_rowDiagDominant_transpose_iff_colDiagDominant`
 - `higham9_10_hessenberg_growth_backward_error`
