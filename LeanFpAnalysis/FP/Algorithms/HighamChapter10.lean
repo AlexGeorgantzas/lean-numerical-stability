@@ -685,6 +685,67 @@ theorem higham10_6_perturbed_solve_forward_error (n : ℕ)
   rw [div_mul_eq_mul_div, le_div_iff₀ h1c]
   linarith [hkey]
 
+/-- **Theorem 10.6 (Demmel–Wilkinson), certificate assembly** (Higham
+§10.1, equation (10.10)): scaling the perturbed Cholesky solve by
+`D = diag(a_ii^{1/2})` and applying the standard perturbation bound.  With
+`H = D⁻¹AD⁻¹`, exact solve `A x = b`, perturbed solve `(A + ΔA) x̂ = b`,
+an inverse-action certificate for `H`, and an operator-2-norm certificate
+`c < 1` for `H⁻¹ (D⁻¹ ΔA D⁻¹)` — the `κ₂(H) ε` of the source display —
+the `D`-scaled error satisfies `‖D(x̂ − x)‖₂ ≤ c/(1−c) ‖Dx‖₂`.  This
+replaces the previously assumed-hypothesis interface
+`higham10_6_scaled_forward_error` with a proved assembly; the remaining
+source gap is producing the `c` certificate from `κ₂(H)` and the concrete
+`fl_cholesky` solve (Theorem 10.4 + equation (10.8) + `‖eeᵀ‖₂ = n`). -/
+theorem higham10_6_scaled_forward_error_assembled (n : ℕ)
+    (A ΔA H Hinv : Fin n → Fin n → ℝ) (D : Fin n → ℝ)
+    (x xhat b : Fin n → ℝ)
+    (hD : ∀ i, D i ≠ 0)
+    (hH : ∀ i j, H i j = A i j / (D i * D j))
+    (hInv : ∀ v : Fin n → ℝ, matMulVec n Hinv (matMulVec n H v) = v)
+    (hAx : matMulVec n A x = b)
+    (hAhat : ∀ i : Fin n,
+      matMulVec n A xhat i + matMulVec n ΔA xhat i = b i)
+    (c : ℝ)
+    (hc : opNorm2Le (matMul n Hinv
+      (fun i j => ΔA i j / (D i * D j))) c)
+    (hc1 : c < 1) :
+    vecNorm2 (fun i => D i * xhat i - D i * x i) ≤
+      c / (1 - c) * vecNorm2 (fun i => D i * x i) := by
+  have hscale : ∀ (M : Fin n → Fin n → ℝ) (v : Fin n → ℝ) (i : Fin n),
+      matMulVec n (fun i' j' => M i' j' / (D i' * D j'))
+        (fun k => D k * v k) i = matMulVec n M v i / D i := by
+    intro M v i
+    unfold matMulVec
+    rw [Finset.sum_div]
+    apply Finset.sum_congr rfl
+    intro j _
+    field_simp [hD i, hD j]
+  have hHDx : matMulVec n H (fun k => D k * x k) =
+      fun i => b i / D i := by
+    funext i
+    have hHs : matMulVec n H (fun k => D k * x k) i =
+        matMulVec n (fun i' j' => A i' j' / (D i' * D j'))
+          (fun k => D k * x k) i := by
+      unfold matMulVec
+      exact Finset.sum_congr rfl fun j _ => by rw [hH i j]
+    rw [hHs, hscale A x i, congrFun hAx i]
+  have hHDxhat : ∀ i : Fin n,
+      matMulVec n H (fun k => D k * xhat k) i +
+        matMulVec n (fun i' j' => ΔA i' j' / (D i' * D j'))
+          (fun k => D k * xhat k) i = b i / D i := by
+    intro i
+    have hHs : matMulVec n H (fun k => D k * xhat k) i =
+        matMulVec n (fun i' j' => A i' j' / (D i' * D j'))
+          (fun k => D k * xhat k) i := by
+      unfold matMulVec
+      exact Finset.sum_congr rfl fun j _ => by rw [hH i j]
+    rw [hHs, hscale A xhat i, hscale ΔA xhat i, ← add_div, hAhat i]
+  have hmain := higham10_6_perturbed_solve_forward_error n H Hinv
+    (fun i' j' => ΔA i' j' / (D i' * D j'))
+    (fun k => D k * x k) (fun k => D k * xhat k) (fun i => b i / D i)
+    hInv hHDx hHDxhat c hc hc1
+  exact hmain
+
 /-- **Componentwise domination transfers operator-2-norm certificates**
 (used for the normwise equation (10.7) reading of Theorem 10.3): if
 `|M| ≤ B` entrywise and `B` satisfies the vector-action certificate

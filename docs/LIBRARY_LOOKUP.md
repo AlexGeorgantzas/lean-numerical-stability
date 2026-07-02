@@ -3529,6 +3529,7 @@ Source-facing Chapter 10 wrappers:
 - `higham10_7_normwise_backward_error`
 - `matMulVec_neg`
 - `higham10_6_perturbed_solve_forward_error`
+- `higham10_6_scaled_forward_error_assembled`
 - `higham10_7_success_factorization_spectral`
 - `higham10_7_failure_no_factorization_spectral`
 - `finiteMinEigenvalue`
