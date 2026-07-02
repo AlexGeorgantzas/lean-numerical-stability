@@ -3822,6 +3822,7 @@ Source-facing Chapter 10 wrappers:
 - `schurRow` / `schurStep_decompose` / `cpState_telescope` (exact Gram assembly: A = sum row^T row + S_r entrywise)
 - `fl_cpPivot_sequence_agrees_small` (non-vacuous fl agreement: explicit budget U t K^t under one scalar smallness condition, U -> 0 as u -> 0)
 - `fl_cpPivotFactor_sequence_agrees_small` (factor-form analogue, gamma_5 rounding contribution)
+- `fl_cpRowOf` / `fl_schurStepFactor_defect_bound` (R-hat Gram bridge engine: per-stage defect u|a_ij| + (2u+u^2)|r_i||r_j|; exact sqrt cancellation on the pivot row/column)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
