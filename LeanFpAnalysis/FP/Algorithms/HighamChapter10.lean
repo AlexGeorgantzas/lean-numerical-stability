@@ -1292,6 +1292,88 @@ theorem opNorm2Le_sqrt_maxEigenvalue_gram (n : ℕ) (hn : 0 < n)
       (fun i l : Fin n => ∑ p : Fin n, R p i * R p l) hG_sym))
       (vecNorm2_nonneg x), hboth]
 
+/-- **Display (10.7) closed by self-bounding** (the recorded open tail):
+    from the componentwise certificate and the spectral reading of the
+    Gram norm, the residual obeys the source display
+    `‖ΔA‖₂ ≤ εn/(1−εn) ‖A‖₂` with no free factor certificate: taking
+    `c² = λ_max(R̂ᵀR̂)` and evaluating the Gram quadratic form at the top
+    eigenvector gives `λ_max ≤ ‖A‖₂ + εn λ_max`, so `λ_max` self-bounds
+    by `‖A‖₂/(1−εn)`. -/
+theorem higham10_7_normwise_backward_error_selfbound (n : ℕ)
+    (hn : 0 < n) (A R : Fin n → Fin n → ℝ) (ε : ℝ) (hε : 0 ≤ ε)
+    (hChol : CholeskyBackwardError n A R ε)
+    (hG_sym : IsSymmetricFiniteMatrix
+      (fun i l : Fin n => ∑ p : Fin n, R p i * R p l))
+    (cA : ℝ) (hcA : opNorm2Le A cA)
+    (hsmall : ε * (n : ℝ) < 1) :
+    opNorm2Le
+      (fun i j => (∑ k : Fin n, R k i * R k j) - A i j)
+      (ε * (n : ℝ) * cA / (1 - ε * (n : ℝ))) := by
+  set G : Fin n → Fin n → ℝ :=
+    fun i l => ∑ p : Fin n, R p i * R p l with hG
+  set lam : ℝ := finiteMaxEigenvalue hn G hG_sym with hlam
+  have h1εn : (0:ℝ) < 1 - ε * (n : ℝ) := by linarith
+  -- λ_max ≥ 0 via the top eigenvector and the Gram form
+  obtain ⟨a, ha⟩ := exists_finiteMaxEigenvalue_eq hn G hG_sym
+  have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one
+    G hG_sym a
+  have hq :=
+    finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+      G hG_sym a
+  rw [hnorm, mul_one] at hq
+  set v : Fin n → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian G
+      hG_sym).eigenvectorBasis a) with hv
+  have hvsq : ∑ i : Fin n, v i ^ 2 = 1 := by
+    have := hnorm
+    unfold finiteVecNorm2Sq at this
+    exact this
+  have hqv : ∑ i : Fin n, ∑ j : Fin n, v i * G i j * v j = lam := by
+    rw [hlam, ← ha, ← hq, finiteQuadraticForm_eq_sum_sum]
+  have hlam0 : 0 ≤ lam := by
+    rw [← hqv, hG]
+    rw [gram_quadForm_eq_sq_norm]
+    exact vecNorm2Sq_nonneg _
+  -- residual certificate at c = √λ_max
+  have hR := opNorm2Le_sqrt_maxEigenvalue_gram n hn R hG_sym
+  have hΔ := higham10_7_normwise_backward_error n A R ε hε hChol
+    (Real.sqrt lam) (Real.sqrt_nonneg _) hR
+  rw [Real.sq_sqrt hlam0] at hΔ
+  -- self-bounding: λ_max ≤ cA + εn·λ_max
+  have hsplit : ∑ i : Fin n, ∑ j : Fin n, v i * G i j * v j =
+      (∑ i : Fin n, ∑ j : Fin n, v i * A i j * v j) +
+      ∑ i : Fin n, ∑ j : Fin n,
+        v i * (G i j - A i j) * v j := by
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun j _ => by ring
+  have hA_abs := quadForm_abs_le_of_opNorm2Le n A cA hcA v
+  have hΔ_abs := quadForm_abs_le_of_opNorm2Le n
+    (fun i j => G i j - A i j) (ε * ((n : ℝ) * lam)) hΔ v
+  rw [hvsq, mul_one] at hA_abs hΔ_abs
+  have hlam_le : lam ≤ cA + ε * (n : ℝ) * lam := by
+    have h1 := (abs_le.mp hA_abs).2
+    have h2 := (abs_le.mp hΔ_abs).2
+    have := hqv
+    rw [hsplit] at this
+    nlinarith
+  have hlam_bound : lam ≤ cA / (1 - ε * (n : ℝ)) := by
+    rw [le_div_iff₀ h1εn]
+    nlinarith
+  -- upgrade the certificate constant
+  intro x
+  calc vecNorm2 (matMulVec n
+        (fun i j => (∑ k : Fin n, R k i * R k j) - A i j) x)
+      ≤ ε * ((n : ℝ) * lam) * vecNorm2 x := hΔ x
+    _ ≤ ε * (n : ℝ) * cA / (1 - ε * (n : ℝ)) * vecNorm2 x := by
+        refine mul_le_mul_of_nonneg_right ?_ (vecNorm2_nonneg x)
+        have hεn : (0:ℝ) ≤ ε * (n : ℝ) :=
+          mul_nonneg hε (Nat.cast_nonneg n)
+        rw [le_div_iff₀ h1εn] at hlam_bound
+        rw [le_div_iff₀ h1εn]
+        nlinarith [hεn, hlam_bound]
+
 /-- **Spectral reading, converse direction**: an operator-2-norm
 certificate `c` bounds the Gram matrix's largest eigenvalue by `c²` —
 together with the forward direction this is the honest certificate form
