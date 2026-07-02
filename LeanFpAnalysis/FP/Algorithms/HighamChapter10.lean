@@ -1847,21 +1847,40 @@ noncomputable def higham10_14_schurComplement (n k : ℕ)
     (A A11_inv : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   schurComplement n k A A11_inv
 
-/-- **Lemma 10.10 / equation (10.16)**: Schur-complement perturbation
-interface. -/
-theorem higham10_10_schur_complement_perturbation (n k : ℕ)
-    (A E A11_inv : Fin n → Fin n → ℝ)
-    (W_norm : ℝ) (hW_norm : 0 ≤ W_norm)
-    (E_norm : ℝ) (hE_norm : 0 ≤ E_norm)
-    (hbound : ∀ i j : Fin n, k ≤ i.val → k ≤ j.val →
-      |higham10_14_schurComplement n k (fun i' j' => A i' j' + E i' j') A11_inv i j -
-       higham10_14_schurComplement n k A A11_inv i j| ≤
-      (1 + W_norm) ^ 2 * E_norm) :
-    ∀ i j : Fin n, k ≤ i.val → k ≤ j.val →
-      |higham10_14_schurComplement n k (fun i' j' => A i' j' + E i' j') A11_inv i j -
-       higham10_14_schurComplement n k A A11_inv i j| ≤
-      (1 + W_norm) ^ 2 * E_norm :=
-  schur_complement_perturbation n k A E A11_inv W_norm hW_norm E_norm hE_norm hbound
+/-- **Lemma 10.10 / equation (10.16)** in honest form: the perturbed
+Schur complement equals the unperturbed one plus Higham's first-order
+term `Ē = E₂₂ − E₂₁MA₁₂ − A₂₁ME₁₂ + A₂₁ME₁₁MA₁₂` plus a remainder that
+is entrywise bounded by an explicit polynomial times `ε²` — the exact
+statement behind the source's `S(A+E) = S(A) + Ē + O(‖E‖²)`. The
+leading-block inverses enter through genuine inverse equations
+(`M A₁₁ = 1` up to the resolvent identity), not assumed bounds on the
+conclusion. -/
+theorem higham10_10_schur_complement_perturbation {k m : ℕ}
+    (A11 E11 M X : Matrix (Fin k) (Fin k) ℝ)
+    (A21 E21 : Matrix (Fin m) (Fin k) ℝ)
+    (A12 E12 : Matrix (Fin k) (Fin m) ℝ)
+    (A22 E22 : Matrix (Fin m) (Fin m) ℝ)
+    (hM : M * A11 = 1) (hXi : (A11 + E11) * X = 1)
+    (α μ χ ε : ℝ) (hα : 0 ≤ α) (hμ : 0 ≤ μ) (hχ : 0 ≤ χ) (hε : 0 ≤ ε)
+    (hA21 : ∀ i j, |A21 i j| ≤ α) (hA12 : ∀ i j, |A12 i j| ≤ α)
+    (hE21 : ∀ i j, |E21 i j| ≤ ε) (hE12 : ∀ i j, |E12 i j| ≤ ε)
+    (hE11 : ∀ i j, |E11 i j| ≤ ε)
+    (hMb : ∀ i j, |M i j| ≤ μ) (hXb : ∀ i j, |X i j| ≤ χ) :
+    ∃ R : Matrix (Fin m) (Fin m) ℝ,
+      (A22 + E22) - (A21 + E21) * X * (A12 + E12) =
+        (A22 - A21 * M * A12)
+        + (E22 - E21 * M * A12 - A21 * M * E12
+            + A21 * (M * E11 * M) * A12)
+        + R ∧
+      ∀ i j : Fin m, |R i j| ≤
+        ((k : ℝ) ^ 2 * μ + (k : ℝ) ^ 6 * α ^ 2 * μ ^ 2 * χ
+          + 2 * ((k : ℝ) ^ 4 * α * μ * χ) + (k : ℝ) ^ 4 * μ * χ * ε)
+          * ε ^ 2 := by
+  have hres := schur_resolvent_from_inverses M X A11 E11 hM hXi
+  refine ⟨_, schur_perturbation_exact A21 E21 A12 E12 A22 E22 M X E11
+    hres, ?_⟩
+  exact schur_perturbation_remainder_bound A21 E21 A12 E12 M X E11
+    α μ χ ε hα hμ hχ hε hA21 hA12 hE21 hE12 hE11 hMb hXb
 
 /-- **Lemma 10.12**: abstract `W = A11^{-1} A12` norm bound. -/
 theorem higham10_12_w_norm_bound_from_cond
@@ -1891,6 +1910,54 @@ theorem higham10_13_complete_pivoting_w_bound {r m : ℕ}
     ∑ j : Fin m, ∑ i : Fin r, W i j ^ 2 ≤
       (m : ℝ) * (((4 : ℝ) ^ r - 1) / 3) :=
   complete_pivoting_w_bound U B W hupper hdiag_pos hentry hB hsolve
+
+/-- **Lemma 10.13 instantiated on the complete-pivoting factor**: for any
+    pivoted Cholesky factor `R` satisfying the (10.13) column-tail
+    invariant (as produced by `psd_pivoted_cholesky_exists_tail`), the
+    implicit matrix `W = R₁₁⁻¹ R₁₂` exists — each border column of `R₁₂`
+    is solved exactly against the leading `r × r` block — and satisfies
+    Higham's bound `‖W‖_F² ≤ (n − r)(4^r − 1)/3`. -/
+theorem higham10_13_pivoted_w_frobenius_bound {n : ℕ}
+    {A R : Fin n → Fin n → ℝ} {σ : Fin n → Fin n} {r : ℕ}
+    (spec : PivotedCholeskySpec n A R σ r) (hr : r ≤ n)
+    (htail : ∀ k j : Fin n, k.val ≤ j.val →
+      (∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+        R i j ^ 2) ≤ R k k ^ 2) :
+    ∃ W : Fin r → Fin (n - r) → ℝ,
+      (∀ (i : Fin r) (j : Fin (n - r)),
+        ∑ k : Fin r, R (Fin.castLE hr i) (Fin.castLE hr k) * W k j =
+          R (Fin.castLE hr i) ⟨r + j.val, by omega⟩) ∧
+      ∑ j : Fin (n - r), ∑ i : Fin r, W i j ^ 2 ≤
+        ((n - r : ℕ) : ℝ) * (((4 : ℝ) ^ r - 1) / 3) := by
+  have hdiag_nonneg : ∀ i : Fin n, 0 ≤ R i i := by
+    intro i
+    rcases Nat.lt_or_ge i.val r with hlt | hge
+    · exact (spec.R_diag_pos i hlt).le
+    · rw [spec.R_rank_zero i i hge]
+  have hdom := tail_invariant_entry_le hdiag_nonneg htail
+  set U : Fin r → Fin r → ℝ :=
+    fun i k => R (Fin.castLE hr i) (Fin.castLE hr k) with hU
+  set B : Fin r → Fin (n - r) → ℝ :=
+    fun i j => R (Fin.castLE hr i) ⟨r + j.val, by omega⟩ with hB
+  have hupper : ∀ i j : Fin r, j.val < i.val → U i j = 0 :=
+    fun i j hij => spec.R_upper _ _ hij
+  have hdiag_pos : ∀ i : Fin r, 0 < U i i :=
+    fun i => spec.R_diag_pos _ i.isLt
+  have hentry : ∀ i j : Fin r, i.val ≤ j.val → |U i j| ≤ U i i :=
+    fun i j hij => hdom _ _ hij
+  have hBdom : ∀ (i : Fin r) (j : Fin (n - r)), |B i j| ≤ U i i :=
+    fun i j => hdom _ _ (by
+      show i.val ≤ r + j.val
+      exact le_trans i.isLt.le (Nat.le_add_right r j.val))
+  have hsol : ∀ j : Fin (n - r), ∃ y : Fin r → ℝ,
+      ∀ i : Fin r, ∑ k : Fin r, U i k * y k = B i j :=
+    fun j => upperTriangular_solve_exists r U hupper
+      (fun i => (hdiag_pos i).ne') (fun i => B i j)
+  choose Wcol hWcol using hsol
+  refine ⟨fun i j => Wcol j i, fun i j => hWcol j i, ?_⟩
+  exact complete_pivoting_w_bound U B (fun i j => Wcol j i)
+    hupper hdiag_pos hentry hBdom (fun i j => hWcol j i)
+
 
 /-- **Theorem 10.14 / equation (10.22)**: PSD Cholesky backward-error
 interface after `r` stages. -/
