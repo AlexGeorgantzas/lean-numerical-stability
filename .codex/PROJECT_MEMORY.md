@@ -77,6 +77,17 @@ end-to-end stability rebuild is tagged as
 	  wires the raw first-split Eq.13.22/Eq.13.23 product-witness layer; follow-up
 	  work should continue the source-strength BDD/product-update and Theorem 13.6
 	  rows.
+- 2026-07-01 Problem 13.4 active-suffix dimension-budget cleanup: added
+  `higham13_activeSuffix_dimension_budget_of_global_bound`,
+  `Higham13Eq1322GlobalTableauSourceChain.activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound`,
+  and
+  `Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound`.
+  These derive the per-tail `(m+1)*r <= n` budget table for canonical
+  active-suffix source chains from one ambient bound `M*r <= n` (or the
+  first-split specialization `((m+1)+1)*r <= n`).  This removes a bookkeeping
+  proof artifact from the all-tail route; the active pivot/Schur invertibility
+  data, inverse-entry/source comparisons, source-strength BDD product-update
+  data, and Theorem 13.6 estimates remain open.
 - 2026-07-01 Problem 13.4 first-split active-suffix Eq.13.23 product-update
   wrappers: added
   `higham13_algorithm13_3_firstSplitStageHistoryGrowthFactor_le_two_of_product_bound_diag_update`,
