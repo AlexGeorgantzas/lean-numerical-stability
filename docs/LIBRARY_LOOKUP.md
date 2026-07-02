@@ -3822,6 +3822,7 @@ Source-facing Chapter 10 wrappers:
 - `scaled_matrix_unit_diag` / `scaled_matrix_isPosSemiDef` / `higham10_9_scaled_cond_bound` ((10.9) fragment instantiated on the concrete H = D^-1 A D^-1)
 - `finiteMaxEigenvalue_ge_diag` / `diag_congruence_minEigenvalue_ge` (van der Sluis spectral engines: lambda_max >= diag; lambda_min(EME) >= m lambda_min(M))
 - `higham10_9_van_der_sluis` ((10.9) PROVED: kappa_2(H) <= n kappa_2(DAD) for every positive diagonal D)
+- `bordered_perturbation_floor_normwise` (Th10.7 sharpening route: normwise mass, no dimension factor - lam - 2eps weight)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)
