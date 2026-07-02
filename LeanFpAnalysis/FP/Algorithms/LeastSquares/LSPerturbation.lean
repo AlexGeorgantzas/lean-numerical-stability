@@ -140,6 +140,35 @@ theorem wedinLemma20_11_sigmaMinCol_mul_vecNorm2_le_rectMatMulVec
   simpa [wedinLemma20_11_sigmaMinCol] using h
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    injectivity of the real rectangular action makes the full-column
+    `sigma_min` positive. -/
+theorem wedinLemma20_11_sigmaMinCol_pos_of_rectMatMulVec_injective
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ)
+    (hinj : Function.Injective (rectMatMulVec A)) :
+    0 < wedinLemma20_11_sigmaMinCol A := by
+  by_contra hnot
+  have hsigma_zero : wedinLemma20_11_sigmaMinCol A = 0 :=
+    le_antisymm (le_of_not_gt hnot) (wedinLemma20_11_sigmaMinCol_nonneg A)
+  obtain ⟨x, hx_ne, hsq⟩ :=
+    realRectToCMatrix_last_singularValue_exists_real_attaining_vector_sq A
+  have hsing_zero :
+      complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k) = 0 := by
+    simpa [wedinLemma20_11_sigmaMinCol] using hsigma_zero
+  have hx_action_zero : rectMatMulVec A x = 0 := by
+    apply funext
+    apply (vecNorm2_eq_zero_iff (rectMatMulVec A x)).1
+    apply (sq_eq_zero_iff).1
+    rw [vecNorm2_sq, hsq, hsing_zero]
+    ring
+  have hx_zero : x = 0 := by
+    have h0 : rectMatMulVec A x = rectMatMulVec A (fun _j => 0) := by
+      rw [hx_action_zero]
+      ext i
+      simp [rectMatMulVec]
+    exact hinj h0
+  exact hx_ne hx_zero
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
     triangle-inequality core behind the singular-value perturbation step.
 
     If `A` has lower action radius `sigma` and the perturbation `Delta` has
@@ -282,6 +311,21 @@ theorem wedinLemma20_11_sigmaMinCol_sub_le_sigmaMinCol_of_sub_rectOpNorm2Le
     linarith
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    a strict full-column perturbation below `sigma_min(A)` makes
+    `sigma_min(B)` positive. -/
+theorem wedinLemma20_11_sigmaMinCol_pos_of_sub_rectOpNorm2Le_lt
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hsmall : delta < wedinLemma20_11_sigmaMinCol A) :
+    0 < wedinLemma20_11_sigmaMinCol B := by
+  have hgap :=
+    wedinLemma20_11_sigmaMinCol_sub_le_sigmaMinCol_of_sub_rectOpNorm2Le
+      A B hDelta
+  have hpos : 0 < wedinLemma20_11_sigmaMinCol A - delta := by
+    linarith
+  exact lt_of_lt_of_le hpos hgap
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
     strict perturbations below a lower action radius preserve injectivity.
 
     This is a full-column-rank consequence of the source singular-value
@@ -366,6 +410,83 @@ theorem wedinLemma20_11_fullColumn_pinvNorm_le_of_sub_rectOpNorm2Le
     hAplus_pos heta hsmall hAplus_sigma hBplus_sigma
     (wedinLemma20_11_sigmaMinCol_sub_le_sigmaMinCol_of_sub_rectOpNorm2Le
       A B hDelta)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column injectivity and the reciprocal identification make the
+    displayed pseudoinverse norm positive. -/
+theorem wedinLemma20_11_Aplus_norm_pos_of_injective_sigmaMinCol_recip
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ) {Aplus_norm : ℝ}
+    (hAinj : Function.Injective (rectMatMulVec A))
+    (hAplus_sigma :
+      wedinLemma20_11_sigmaMinCol A = 1 / Aplus_norm) :
+    0 < Aplus_norm := by
+  apply one_div_pos.mp
+  rw [← hAplus_sigma]
+  exact wedinLemma20_11_sigmaMinCol_pos_of_rectMatMulVec_injective A hAinj
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    under the full-column reciprocal identification, `η = ||A⁺||₂ delta`
+    and `η < 1` imply `delta < sigma_min(A)`. -/
+theorem wedinLemma20_11_delta_lt_sigmaMinCol_of_injective_eta_lt_one
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta : ℝ}
+    (hAinj : Function.Injective (rectMatMulVec A))
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hAplus_sigma :
+      wedinLemma20_11_sigmaMinCol A = 1 / Aplus_norm) :
+    delta < wedinLemma20_11_sigmaMinCol A := by
+  have hAplus_pos :
+      0 < Aplus_norm :=
+    wedinLemma20_11_Aplus_norm_pos_of_injective_sigmaMinCol_recip
+      A hAinj hAplus_sigma
+  have hdelta_lt : delta < 1 / Aplus_norm := by
+    rw [lt_div_iff₀ hAplus_pos]
+    rw [heta] at hsmall
+    simpa [mul_comm] using hsmall
+  simpa [hAplus_sigma] using hdelta_lt
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    the source smallness condition preserves positivity of the perturbed
+    full-column lower singular value. -/
+theorem wedinLemma20_11_sigmaMinCol_B_pos_of_injective_eta_lt_one
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta : ℝ}
+    (hAinj : Function.Injective (rectMatMulVec A))
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus_sigma :
+      wedinLemma20_11_sigmaMinCol A = 1 / Aplus_norm) :
+    0 < wedinLemma20_11_sigmaMinCol B :=
+  wedinLemma20_11_sigmaMinCol_pos_of_sub_rectOpNorm2Le_lt A B hDelta
+    (wedinLemma20_11_delta_lt_sigmaMinCol_of_injective_eta_lt_one
+      A hAinj heta hsmall hAplus_sigma)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column source-shaped pseudoinverse norm perturbation wrapper.
+
+    This version derives the pseudoinverse-norm positivity side condition from
+    full-column injectivity of `A` and the reciprocal `sigma_min(A)` identity.
+    The still-open pseudoinverse foundations remain explicit as the reciprocal
+    norm/singular-value identifications for `A` and `B`. -/
+theorem wedinLemma20_11_fullColumn_pinvNorm_le_of_injective_sub_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    {Aplus_norm Bplus_norm delta eta : ℝ}
+    (hAinj : Function.Injective (rectMatMulVec A))
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus_sigma :
+      wedinLemma20_11_sigmaMinCol A = 1 / Aplus_norm)
+    (hBplus_sigma :
+      Bplus_norm = 1 / wedinLemma20_11_sigmaMinCol B) :
+    Bplus_norm ≤ Aplus_norm / (1 - eta) :=
+  wedinLemma20_11_fullColumn_pinvNorm_le_of_sub_rectOpNorm2Le
+    A B
+    (wedinLemma20_11_Aplus_norm_pos_of_injective_sigmaMinCol_recip
+      A hAinj hAplus_sigma)
+    heta hsmall hDelta hAplus_sigma hBplus_sigma
 
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
