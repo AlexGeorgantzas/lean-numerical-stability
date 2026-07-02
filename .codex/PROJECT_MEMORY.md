@@ -125,6 +125,18 @@ end-to-end stability rebuild is tagged as
   removes an all-pivot proof-artifact table from the global-tableau route, but
   the all-tail source comparison/nonsingularity data, source-strength BDD
   product/update data, and Theorem 13.6 cited estimates remain open.
+- 2026-07-01 Problem 13.4 global-tableau determinant variants: added
+  `Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain_of_det_ne_zero`,
+  `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa_of_det_ne_zero`,
+  and
+  `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_det_ne_zero`.
+  These specialize the generic fixed-ambient global-tableau source-chain
+  surfaces to the canonical ambient inverse `nonsingInv N Aglob` under
+  `det Aglob != 0`, deriving the ambient right-inverse certificate internally.
+  This removes the raw ambient right-inverse proof artifact from the reusable
+  source-chain boundary; Eq.13.23 still keeps the source-side `rho <= 2` theorem
+  explicit, and the all-tail source comparisons, source-strength BDD data, and
+  Theorem 13.6 estimates remain open.
 - 2026-07-01 Problem 13.4 derived active-tail Eq.13.23 product-update
   wrappers: added
   `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update`,
