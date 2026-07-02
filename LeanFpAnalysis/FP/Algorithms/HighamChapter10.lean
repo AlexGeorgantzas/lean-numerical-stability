@@ -2189,6 +2189,50 @@ theorem higham10_14_psd_cholesky_backward_error (n : ℕ) (fp : FPModel)
         ∑ k : Fin n, |A i k| * (if k.val < r then 1 else 0)) :=
   psd_cholesky_backward_error n fp A r hr hr_pos hPSD hn_r hγ_lt W_norm hW hbackward
 
+/-- **Theorem 10.14 for the concrete algorithm** (display (10.22)
+    shape): the three-block backward-error certificate of the truncated
+    computed factor `R̃ = fl_choleskyTrunc` after `r` completed stages —
+    Demmel-stable computed block, trace-controlled border under the
+    computed-pivot domination `c`, terminal Schur residual `η` on the
+    trailing block. -/
+theorem higham10_14_fl_psd_cholesky_backward_error (fp : FPModel)
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (hn1 : gammaValid fp (n + 1))
+    (hγlt : gamma fp (n + 1) < 1)
+    (hsymm : ∀ i j : Fin n, A i j = A j i) (r : ℕ)
+    (hdz : ∀ i : Fin n, i.val < r → fl_cholesky fp n A i i ≠ 0)
+    (hpiv : ∀ i : Fin n, i.val < r → 0 ≤ fl_cholPivot fp n A i)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hdom : ∀ j : Fin n, r ≤ j.val → ∀ k : Fin n, k.val < r →
+      |fl_cholesky fp n A k j| ≤ c * |fl_cholesky fp n A k k|)
+    (η : ℝ)
+    (htrail : ∀ i j : Fin n, r ≤ i.val → r ≤ j.val →
+      |∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < r),
+        fl_cholesky fp n A k i * fl_cholesky fp n A k j - A i j| ≤ η) :
+    (∀ i j : Fin n, i.val < r → j.val < r →
+      |∑ k : Fin n, fl_choleskyTrunc fp n A r k i *
+        fl_choleskyTrunc fp n A r k j - A i j| ≤
+      gamma fp (n + 1) / (1 - gamma fp (n + 1)) *
+        (Real.sqrt (A i i) * Real.sqrt (A j j))) ∧
+    (∀ i j : Fin n, i.val < r → r ≤ j.val →
+      |∑ k : Fin n, fl_choleskyTrunc fp n A r k i *
+        fl_choleskyTrunc fp n A r k j - A i j| ≤
+      gamma fp (n + 1) * c / (1 - gamma fp (n + 1)) *
+        (Real.sqrt (A i i) *
+         Real.sqrt (∑ k ∈ Finset.univ.filter
+          (fun k : Fin n => k.val < r), A k k))) ∧
+    (∀ i j : Fin n, r ≤ i.val → j.val < r →
+      |∑ k : Fin n, fl_choleskyTrunc fp n A r k i *
+        fl_choleskyTrunc fp n A r k j - A i j| ≤
+      gamma fp (n + 1) * c / (1 - gamma fp (n + 1)) *
+        (Real.sqrt (A j j) *
+         Real.sqrt (∑ k ∈ Finset.univ.filter
+          (fun k : Fin n => k.val < r), A k k))) ∧
+    (∀ i j : Fin n, r ≤ i.val → r ≤ j.val →
+      |∑ k : Fin n, fl_choleskyTrunc fp n A r k i *
+        fl_choleskyTrunc fp n A r k j - A i j| ≤ η) :=
+  fl_choleskyTrunc_backward_error fp n A hn1 hγlt hsymm r hdz hpiv
+    c hc hdom η htrail
+
 /-- **Equation (10.26)**: stop after the first nonpositive remaining pivot. -/
 def higham10_26_nonpositivePivotCriterion {n : ℕ}
     (Astage : Fin n → Fin n → ℝ) (k : ℕ) : Prop :=
