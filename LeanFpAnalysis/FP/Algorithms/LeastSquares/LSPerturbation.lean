@@ -177,6 +177,51 @@ theorem wedinLemma20_11_lowerActionBound_of_rectOpNorm2Le
     _ ≤ vecNorm2 (rectMatMulVec (fun i j => A i j + Delta i j) x) := hright
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    source-shaped lower action perturbation with `B - A` as the perturbation.
+
+    This is the same triangle-inequality step as
+    `wedinLemma20_11_lowerActionBound_of_rectOpNorm2Le`, rewritten in the
+    orientation used in the source proof of Lemma 20.11. -/
+theorem wedinLemma20_11_lowerActionBound_of_sub_rectOpNorm2Le
+    {m n : ℕ} (A B : Fin m → Fin n → ℝ) {sigma delta : ℝ}
+    (hlower : ∀ x : Fin n → ℝ,
+      sigma * vecNorm2 x ≤ vecNorm2 (rectMatMulVec A x))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta) :
+    ∀ x : Fin n → ℝ,
+      (sigma - delta) * vecNorm2 x ≤ vecNorm2 (rectMatMulVec B x) := by
+  intro x
+  have h :=
+    wedinLemma20_11_lowerActionBound_of_rectOpNorm2Le
+      A (fun i j => B i j - A i j) hlower hDelta x
+  have hmat : (fun i j => A i j + (B i j - A i j)) = B := by
+    ext i j
+    ring
+  simpa [hmat] using h
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    strict perturbations below a lower action radius preserve injectivity.
+
+    This is a full-column-rank consequence of the source singular-value
+    perturbation line.  It is not the general equal-rank pseudoinverse theorem,
+    but it gives the rank-preservation bridge needed by full-rank LS uses of
+    Wedin's theorem. -/
+theorem wedinLemma20_11_rectMatMulVec_injective_of_sub_rectOpNorm2Le_lt
+    {m n : ℕ} (A B : Fin m → Fin n → ℝ) {sigma delta : ℝ}
+    (hlower : ∀ x : Fin n → ℝ,
+      sigma * vecNorm2 x ≤ vecNorm2 (rectMatMulVec A x))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hsmall : delta < sigma) :
+    Function.Injective (rectMatMulVec B) := by
+  have h :=
+    rectMatMulVec_injective_of_lower_bound_and_rectOpNorm2Le_lt
+      (M := A) (Delta := fun i j => B i j - A i j)
+      hlower hDelta hsmall
+  have hmat : (fun i j => A i j + (B i j - A i j)) = B := by
+    ext i j
+    ring
+  simpa [hmat] using h
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
     scalar rearrangement step from the singular-value perturbation lower bound.
 
     The missing spectral input is the hypothesis `sigmaA - delta <= sigmaB`,
