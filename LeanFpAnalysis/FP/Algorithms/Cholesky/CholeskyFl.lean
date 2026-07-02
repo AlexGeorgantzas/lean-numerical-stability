@@ -1236,4 +1236,231 @@ theorem bordered_perturbation_floor (m : ℕ)
   have hQW := hQsq
   nlinarith [habs1.1, habs1.2, habs2.1, habs2.2, hε0, hQ0, hW0]
 
+set_option maxHeartbeats 1600000 in
+/-- **Theorem 10.7, success direction for the concrete algorithm — stage
+    step** (Higham p. 200, real-model form): if every pivot below stage `j`
+    is positive and the bordered leading block of `A` has Rayleigh floor
+    `lam > (2n+3)·γ_{n+1}/(1−γ_{n+1})` in `D²`-weighted split form, then
+    the `j`-th rounded pivot is positive.  Test vector `z = (y, 1)` with
+    `Uy = −c`; the computed Gram form vanishes (`bordered_gram_zero`), the
+    perturbation mass is controlled by `bordered_perturbation_floor` fed
+    with the truncated certificate bounds, and `fl_cholSubFold_pivot_lower`
+    converts exact positivity into floating-point positivity.  The
+    threshold constant is coarser than the source display
+    `n γ_{n+1}/(1−γ_{n+1})`; sharpening is left open. -/
+theorem fl_cholesky_pivot_pos_step (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hn1 : gammaValid fp (n + 1))
+    (hγ1 : gamma fp (n + 1) < 1)
+    (j : Fin n)
+    (IH : ∀ l : Fin n, l.val < j.val → 0 < fl_cholPivot fp n A l)
+    (lam : ℝ)
+    (hfloor : ∀ y : Fin j.val → ℝ,
+      lam * ((∑ i : Fin j.val,
+          A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2) + A j j) ≤
+        (∑ i : Fin j.val, ∑ l : Fin j.val,
+          y i * A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ * y l) +
+        2 * (∑ i : Fin j.val, y i * A ⟨i.val, by omega⟩ j) + A j j)
+    (hthresh : (2 * (n : ℝ) + 3) *
+      (gamma fp (n + 1) / (1 - gamma fp (n + 1))) < lam) :
+    0 < fl_cholPivot fp n A j := by
+  by_contra hs
+  push_neg at hs
+  have hγ0 : 0 ≤ gamma fp (n + 1) := gamma_nonneg fp hn1
+  have h1γ : (0:ℝ) < 1 - gamma fp (n + 1) := by linarith
+  set γ : ℝ := gamma fp (n + 1) with hγdef
+  set ε : ℝ := γ / (1 - γ) with hεdef
+  have hε0 : 0 ≤ ε := div_nonneg hγ0 h1γ.le
+  have hεγ : ε * (1 - γ) = γ := div_mul_cancel₀ γ h1γ.ne'
+  have hγε : γ ≤ ε := by nlinarith
+  have hu : fp.u < 1 := u_lt_one_of_gammaValid_succ hn1
+  have hcast : (j.val : ℝ) ≤ (n : ℝ) := by
+    exact_mod_cast (j.isLt).le
+  have hlam3 : 3 * ε < lam := by
+    nlinarith [(Nat.cast_nonneg n : (0:ℝ) ≤ (n:ℝ)), hε0]
+  -- lam ≤ 1 from the floor at y = 0
+  have hlam1 : lam ≤ 1 := by
+    have h0 := hfloor (fun _ => 0)
+    simp at h0
+    nlinarith [hAdiag j, h0]
+  have hεsmall : ε < 1 / 3 := by nlinarith
+  -- stage data
+  have hdiag_pos : ∀ i : Fin j.val,
+      0 < fl_cholesky fp n A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ := by
+    intro i
+    rw [fl_cholesky_diag_eq fp n A ⟨i.val, by omega⟩]
+    exact fl_sqrt_pos fp hu _ (IH ⟨i.val, by omega⟩ i.isLt)
+  set U : Fin j.val → Fin j.val → ℝ := fun p i =>
+    fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ with hUdef
+  set c : Fin j.val → ℝ := fun p =>
+    fl_cholesky fp n A ⟨p.val, by omega⟩ j with hcdef
+  obtain ⟨y, hy⟩ := upperTriangular_solve_exists j.val U
+    (fun p i hpi => fl_cholesky_strict_lower fp n A _ _ hpi)
+    (fun i => (hdiag_pos i).ne') (fun p => -(c p))
+  have hgram := bordered_gram_zero j.val U c y hy
+  set t : ℝ := ∑ p : Fin j.val, c p ^ 2 with htdef
+  have ht0 : 0 ≤ t := Finset.sum_nonneg fun p _ => sq_nonneg _
+  -- column-norm control and √-forms
+  have hcolsq : ∀ i : Fin j.val,
+      ∑ p : Fin j.val, U p i ^ 2 ≤
+        A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ / (1 - γ) := by
+    intro i
+    have h1 := fl_cholesky_colNormSq_le_stage fp n A hn1
+      ⟨i.val, by omega⟩ (IH ⟨i.val, by omega⟩ i.isLt).le
+    have htr : ∑ k : Fin n,
+        fl_cholesky fp n A k ⟨i.val, by omega⟩ ^ 2 =
+        ∑ p : Fin j.val, U p i ^ 2 := by
+      rw [show ∑ k : Fin n,
+          fl_cholesky fp n A k ⟨i.val, by omega⟩ ^ 2 =
+        ∑ k : Fin n, fl_cholesky fp n A k ⟨i.val, by omega⟩ *
+          fl_cholesky fp n A k ⟨i.val, by omega⟩ from
+        Finset.sum_congr rfl fun k _ => by ring]
+      rw [gram_sum_truncate fp n A j.val j.isLt.le ⟨i.val, by omega⟩
+        ⟨i.val, by omega⟩ i.isLt]
+      exact Finset.sum_congr rfl fun p _ => by ring
+    rw [htr] at h1
+    rw [le_div_iff₀ h1γ]
+    linarith
+  have hsqrt1γ : Real.sqrt (1 - γ) * Real.sqrt (1 - γ) = 1 - γ :=
+    Real.mul_self_sqrt h1γ.le
+  have hsqrt1γ_pos : 0 < Real.sqrt (1 - γ) := Real.sqrt_pos.mpr h1γ
+  have hsqrt1γ_ge : 1 - γ ≤ Real.sqrt (1 - γ) := by
+    have hle1 : Real.sqrt (1 - γ) ≤ 1 :=
+      Real.sqrt_le_one.mpr (by linarith)
+    nlinarith [hle1, hsqrt1γ_pos.le, hsqrt1γ]
+  have hγ'' : γ / Real.sqrt (1 - γ) ≤ ε := by
+    rw [hεdef]
+    exact div_le_div_of_nonneg_left hγ0 h1γ hsqrt1γ_ge
+  have hsqrt_col : ∀ i : Fin j.val,
+      Real.sqrt (∑ p : Fin j.val, U p i ^ 2) ≤
+      Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) /
+        Real.sqrt (1 - γ) := by
+    intro i
+    rw [show Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) /
+        Real.sqrt (1 - γ) =
+      Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ / (1 - γ)) from
+      (Real.sqrt_div (hAdiag _).le _).symm]
+    exact Real.sqrt_le_sqrt (hcolsq i)
+  -- interior perturbation bound in ε-form
+  have hint : ∀ i l : Fin j.val,
+      |(∑ p : Fin j.val, U p i * U p l) -
+        A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩| ≤
+      ε * (Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) *
+        Real.sqrt (A ⟨l.val, by omega⟩ ⟨l.val, by omega⟩)) := by
+    have hkey : ∀ i l : Fin j.val, i.val ≤ l.val →
+        |(∑ p : Fin j.val, U p i * U p l) -
+          A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩| ≤
+        ε * (Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) *
+          Real.sqrt (A ⟨l.val, by omega⟩ ⟨l.val, by omega⟩)) := by
+      intro i l hil
+      have h1 := fl_cholesky_truncated_bound fp A hn1 j i
+        ⟨l.val, by omega⟩ hil
+        (fun _ => (hdiag_pos i).ne')
+        (fun _ => (IH ⟨i.val, by omega⟩ i.isLt).le)
+      refine le_trans h1 ?_
+      have hsl := hsqrt_col i
+      have hsr := hsqrt_col l
+      have hprod : Real.sqrt (∑ p : Fin j.val, U p i ^ 2) *
+          Real.sqrt (∑ p : Fin j.val, U p l ^ 2) ≤
+          (Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) /
+            Real.sqrt (1 - γ)) *
+          (Real.sqrt (A ⟨l.val, by omega⟩ ⟨l.val, by omega⟩) /
+            Real.sqrt (1 - γ)) :=
+        mul_le_mul hsl hsr (Real.sqrt_nonneg _)
+          (div_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+      calc γ * (Real.sqrt (∑ p : Fin j.val, U p i ^ 2) *
+            Real.sqrt (∑ p : Fin j.val, U p l ^ 2))
+          ≤ γ * ((Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) /
+              Real.sqrt (1 - γ)) *
+            (Real.sqrt (A ⟨l.val, by omega⟩ ⟨l.val, by omega⟩) /
+              Real.sqrt (1 - γ))) :=
+            mul_le_mul_of_nonneg_left hprod hγ0
+        _ = ε * (Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) *
+            Real.sqrt (A ⟨l.val, by omega⟩ ⟨l.val, by omega⟩)) := by
+            rw [hεdef]
+            field_simp
+            linear_combination (-(γ *
+              Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) *
+              Real.sqrt (A ⟨l.val, by omega⟩ ⟨l.val, by omega⟩))) *
+              (Real.sq_sqrt h1γ.le)
+    intro i l
+    rcases le_or_gt i.val l.val with hil | hli
+    · exact hkey i l hil
+    · have hswap1 : (∑ p : Fin j.val, U p i * U p l) =
+          ∑ p : Fin j.val, U p l * U p i :=
+        Finset.sum_congr rfl fun p _ => mul_comm _ _
+      have hswap2 : A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ =
+          A ⟨l.val, by omega⟩ ⟨i.val, by omega⟩ := hsym _ _
+      rw [hswap1, hswap2, mul_comm (Real.sqrt _)]
+      exact hkey l i hli.le
+  -- border perturbation bound in ε-form
+  have hbord : ∀ i : Fin j.val,
+      |(∑ p : Fin j.val, U p i * c p) - A ⟨i.val, by omega⟩ j| ≤
+      ε * (Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) *
+        Real.sqrt t) := by
+    intro i
+    have h1 := fl_cholesky_border_bound fp A hn1 j i (hdiag_pos i).ne'
+    refine le_trans h1 ?_
+    have hsl := hsqrt_col i
+    calc γ * (Real.sqrt (∑ p : Fin j.val, U p i ^ 2) * Real.sqrt t)
+        ≤ γ * ((Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) /
+            Real.sqrt (1 - γ)) * Real.sqrt t) := by
+          apply mul_le_mul_of_nonneg_left _ hγ0
+          exact mul_le_mul_of_nonneg_right hsl (Real.sqrt_nonneg _)
+      _ = (γ / Real.sqrt (1 - γ)) *
+          (Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) *
+            Real.sqrt t) := by ring
+      _ ≤ ε * (Real.sqrt (A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩) *
+            Real.sqrt t) :=
+          mul_le_mul_of_nonneg_right hγ''
+            (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+  -- the perturbation floor
+  have hmain := bordered_perturbation_floor j.val
+    (fun i l => ∑ p : Fin j.val, U p i * U p l)
+    (fun i => ∑ p : Fin j.val, U p i * c p)
+    (fun i l => A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩)
+    (fun i => A ⟨i.val, by omega⟩ j)
+    (fun i => A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩)
+    (A j j) t y ε lam
+    (fun i => (hAdiag _).le) hε0 ht0 hgram hint hbord (hfloor y)
+  set W : ℝ := ∑ i : Fin j.val,
+    A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2 with hWdef
+  have hW0 : 0 ≤ W := Finset.sum_nonneg fun i _ =>
+    mul_nonneg (hAdiag _).le (sq_nonneg _)
+  -- rounded pivot lower bound
+  have hm1' : gammaValid fp (j.val + 1) :=
+    gammaValid_mono fp (by omega) hn1
+  have hlow := fl_cholSubFold_pivot_lower fp j.val c (A j j) hm1'
+  have hpiv_eq : fl_cholPivot fp n A j =
+      fl_cholSubFold fp j.val c c (A j j) := rfl
+  have hγm : gamma fp (j.val + 1) ≤ γ :=
+    gamma_mono fp (by omega) hn1
+  have hAj := hAdiag j
+  have habsAj : |A j j| = A j j := abs_of_pos hAj
+  -- s ≥ (A jj − t) − γ (A jj + t)
+  have hlow2 : A j j - t - γ * (A j j + t) ≤ fl_cholPivot fp n A j := by
+    rw [hpiv_eq]
+    have hmass : gamma fp (j.val + 1) * (|A j j| + t) ≤
+        γ * (A j j + t) := by
+      rw [habsAj]
+      exact mul_le_mul_of_nonneg_right hγm (by linarith)
+    calc A j j - t - γ * (A j j + t)
+        ≤ A j j - t - gamma fp (j.val + 1) * (|A j j| + t) := by
+          linarith
+      _ ≤ fl_cholSubFold fp j.val c c (A j j) := hlow
+  -- scalar end-game
+  have hthresh_m : 2 * ε * (j.val : ℝ) + 3 * ε < lam := by
+    nlinarith
+  have hWterm : (2 * ε * (j.val : ℝ) + 3 * ε) * W ≤ lam * W :=
+    mul_le_mul_of_nonneg_right hthresh_m.le hW0
+  -- from the floor: lam·ajj ≤ ajj − t(1−ε) (after absorbing W-terms)
+  have hkey1 : lam * A j j ≤ A j j - t * (1 - ε) := by nlinarith
+  -- from the pivot bound and hs: (1−γ)ajj ≤ (1+γ)t
+  have hkey2 : (1 - γ) * A j j ≤ (1 + γ) * t := by nlinarith
+  -- contradiction
+  nlinarith [hkey1, hkey2, hεγ, hAj, ht0, hγ0, hεsmall, hlam3, hγε,
+    mul_pos hAj (by linarith : (0:ℝ) < 1 - ε)]
+
 end LeanFpAnalysis.FP
