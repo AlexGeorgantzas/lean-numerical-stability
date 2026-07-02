@@ -947,4 +947,49 @@ theorem fl_cholesky_backward_error (fp : FPModel) (n : ℕ)
     rw [h1, h2, hsym i j]
     exact h
 
+/-- **Pivot locality**: the `l`-th pivot of the algorithm run on a leading
+    `m × m` block equals the `l`-th pivot of the full run, `l < m ≤ n`. -/
+theorem fl_cholPivot_leading_principal (fp : FPModel) {n m : ℕ}
+    (hm : m ≤ n) (A : Fin n → Fin n → ℝ) (l : Fin m) :
+    fl_cholPivot fp m
+      (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩) l =
+    fl_cholPivot fp n A ⟨l.val, by omega⟩ := by
+  unfold fl_cholPivot
+  congr 1
+  · funext k
+    exact fl_cholesky_leading_principal fp hm A
+      ⟨k.val, Nat.lt_trans k.isLt l.isLt⟩ l
+  · funext k
+    exact fl_cholesky_leading_principal fp hm A
+      ⟨k.val, Nat.lt_trans k.isLt l.isLt⟩ l
+
+/-- **Stage-`m` block certificate** (Theorem 10.7 induction): once every
+    pivot below `m` is positive, the leading `m × m` block of `A` satisfies
+    the full Theorem 10.3 certificate at level `γ_{m+1}`, via Algorithm 10.2
+    locality. -/
+theorem fl_cholesky_block_certificate (fp : FPModel) {n m : ℕ}
+    (hm : m ≤ n) (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hu : fp.u < 1)
+    (hm1 : gammaValid fp (m + 1))
+    (IH : ∀ l : Fin n, l.val < m → 0 < fl_cholPivot fp n A l) :
+    CholeskyBackwardError m
+      (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩)
+      (fl_cholesky fp m
+        (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩))
+      (gamma fp (m + 1)) := by
+  apply fl_cholesky_backward_error fp m _
+    (fun i j => hsym _ _) hm1
+  · intro l
+    rw [fl_cholPivot_leading_principal fp hm A l]
+    exact (IH ⟨l.val, by omega⟩ l.isLt).le
+  · intro l
+    rw [show fl_cholesky fp m
+        (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩) l l =
+      fl_cholesky fp n A ⟨l.val, by omega⟩ ⟨l.val, by omega⟩ from
+      fl_cholesky_leading_principal fp hm A l l]
+    rw [fl_cholesky_diag_eq fp n A ⟨l.val, by omega⟩]
+    exact (fl_sqrt_pos fp hu _ (IH ⟨l.val, by omega⟩ l.isLt)).ne'
+
+
 end LeanFpAnalysis.FP

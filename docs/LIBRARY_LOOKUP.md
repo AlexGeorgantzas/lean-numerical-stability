@@ -3584,6 +3584,8 @@ Source-facing Chapter 10 wrappers:
 - `bordered_gram_zero`
 - `gram_sum_truncate`
 - `fl_cholesky_colNormSq_le_stage`
+- `fl_cholPivot_leading_principal`
+- `fl_cholesky_block_certificate`
 - `fl_chol_offdiag_solve_form`
 - `fl_chol_diag_solve_form`
 - `fl_cholPivot`
