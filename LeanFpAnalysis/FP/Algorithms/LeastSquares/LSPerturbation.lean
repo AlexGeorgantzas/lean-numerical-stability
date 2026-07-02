@@ -17,6 +17,7 @@
 import Mathlib.Data.Real.Basic
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Analysis.Norms
+import LeanFpAnalysis.FP.Analysis.HighamChapter7
 
 namespace LeanFpAnalysis.FP
 
@@ -700,6 +701,37 @@ theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_left_inverse_rectOpNorm2Le
         Aplus_norm / (1 - Aplus_norm * delta) := by
     field_simp [ne_of_gt hAplus_pos, ne_of_gt hmu_pos, ne_of_gt hden_pos]
   simpa [one_div, hcoeff] using hBplus
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column predicate-form pseudoinverse perturbation bound with the
+    perturbed-side left inverse derived from the first Penrose equation.
+
+    The Chapter 7 Moore-Penrose bridge turns `B Bplus B = B` plus injectivity
+    of `x ↦ B*x` into `Bplus B = I`, leaving the same range-projection
+    symmetry condition used by the direct operator-bound theorem above. -/
+theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_penrose1_injective_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {Aplus_norm delta eta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBpenrose1 : rectMatMul (rectMatMul B Bplus) B = B)
+    (hBinj : Function.Injective (rectMatMulVec B))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus)) :
+    rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)) := by
+  have hleftB : rectMatMul Bplus B = idMatrix (k + 1) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using
+      theorem7_5_rect_left_inverse_of_penrose1_rectMatMulVec_injective
+        B Bplus hBpenrose1 hBinj i j
+  exact
+    wedinLemma20_11_rectOpNorm2Le_Bplus_of_left_inverse_rectOpNorm2Le
+      A B Aplus Bplus hAplus_pos heta hsmall hleftA hAplus hDelta
+      hleftB hSymB
 
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
