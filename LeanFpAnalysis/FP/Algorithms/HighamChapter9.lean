@@ -42610,6 +42610,70 @@ theorem higham9_15_local_majorant_le_nonsingInv_resolvent_of_row_sum_bound
     higham9_15_local_majorant_le_nonsingInv_resolvent_of_infNormBound
       hn G X Y c hc_nn hc_lt hbound hself
 
+/-- **Theorem 9.15 spectral-majorant support**.  Product-majorant form of the
+infinity-norm local-majorant handoff.  It is enough to bound the nonlinear
+product term by `|G|` times the local majorant; the additive `|G|` part is
+assembled here. -/
+theorem higham9_15_local_majorant_le_nonsingInv_resolvent_of_infNormBound_product_majorant
+    {n : ℕ} (hn : 0 < n)
+    (G X Y : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound : infNormBound n (absMatrix n G) c)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n X) (absMatrix n Y) i j ≤
+          rectMatMul (absMatrix n G)
+            (fun r c : Fin n =>
+              |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c)
+            i j) :
+    ∀ i j : Fin n,
+      |G i j| + rectMatMul (absMatrix n X) (absMatrix n Y) i j ≤
+        rectMatMul (nonsingInv n (matSub_id n (absMatrix n G)))
+          (absMatrix n G) i j := by
+  have hself :
+      ∀ i j : Fin n,
+        |G i j| + rectMatMul (absMatrix n X) (absMatrix n Y) i j ≤
+          absMatrix n G i j +
+            rectMatMul (absMatrix n G)
+              (fun r c : Fin n =>
+                |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c)
+              i j := by
+    intro i j
+    simpa [absMatrix] using add_le_add_left (hquad i j) |G i j|
+  exact
+    higham9_15_local_majorant_le_nonsingInv_resolvent_of_infNormBound
+      hn G X Y c hc_nn hc_lt hbound hself
+
+/-- **Theorem 9.15 spectral-majorant support**.  Product-majorant form of the
+row-sum local-majorant handoff. -/
+theorem higham9_15_local_majorant_le_nonsingInv_resolvent_of_row_sum_product_majorant
+    {n : ℕ} (hn : 0 < n)
+    (G X Y : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows : ∀ i : Fin n, ∑ j : Fin n, |G i j| ≤ c)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n X) (absMatrix n Y) i j ≤
+          rectMatMul (absMatrix n G)
+            (fun r c : Fin n =>
+              |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c)
+            i j) :
+    ∀ i j : Fin n,
+      |G i j| + rectMatMul (absMatrix n X) (absMatrix n Y) i j ≤
+        rectMatMul (nonsingInv n (matSub_id n (absMatrix n G)))
+          (absMatrix n G) i j := by
+  have hbound : infNormBound n (absMatrix n G) c := by
+    refine infNormBound_of_row_sum_le (absMatrix n G) ?_ hc_nn
+    intro i
+    simpa [absMatrix, abs_abs] using hrows i
+  exact
+    higham9_15_local_majorant_le_nonsingInv_resolvent_of_infNormBound_product_majorant
+      hn G X Y c hc_nn hc_lt hbound hquad
+
 /-- **Theorem 9.15 spectral-majorant support**.  Source-shaped normalized
 `G` local-majorant handoff: a supplied nonnegative resolvent for
 `I - |L⁻¹ ΔA U⁻¹|` bounds the local Barrlund--Sun majorant
@@ -42753,6 +42817,75 @@ theorem higham9_15_GMatrix_local_majorant_le_nonsingInv_resolvent_of_row_sum_bou
   higham9_15_local_majorant_le_nonsingInv_resolvent_of_row_sum_bound
     hn (higham9_27_GMatrix Linv ΔA Uinv)
     (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) c hc_nn hc_lt hrows hself
+
+/-- **Theorem 9.15 spectral-majorant support**.  Source-shaped normalized
+`G` local-majorant handoff from an infinity-norm contraction and a
+product-only nonlinear majorant. -/
+theorem higham9_15_GMatrix_local_majorant_le_nonsingInv_resolvent_of_infNormBound_product_majorant
+    {n : ℕ} (hn : 0 < n)
+    (Linv ΔA Uinv ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+            (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          rectMatMul (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) r c)
+            i j) :
+    ∀ i j : Fin n,
+      |higham9_27_GMatrix Linv ΔA Uinv i j| +
+          rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+            (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+        rectMatMul
+          (nonsingInv n
+            (matSub_id n
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) i j :=
+  higham9_15_local_majorant_le_nonsingInv_resolvent_of_infNormBound_product_majorant
+    hn (higham9_27_GMatrix Linv ΔA Uinv)
+    (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) c hc_nn hc_lt hbound hquad
+
+/-- **Theorem 9.15 spectral-majorant support**.  Source-shaped normalized
+`G` local-majorant handoff from row-sum bounds and a product-only nonlinear
+majorant. -/
+theorem higham9_15_GMatrix_local_majorant_le_nonsingInv_resolvent_of_row_sum_product_majorant
+    {n : ℕ} (hn : 0 < n)
+    (Linv ΔA Uinv ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+            (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          rectMatMul (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) r c)
+            i j) :
+    ∀ i j : Fin n,
+      |higham9_27_GMatrix Linv ΔA Uinv i j| +
+          rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+            (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+        rectMatMul
+          (nonsingInv n
+            (matSub_id n
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) i j :=
+  higham9_15_local_majorant_le_nonsingInv_resolvent_of_row_sum_product_majorant
+    hn (higham9_27_GMatrix Linv ΔA Uinv)
+    (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) c hc_nn hc_lt hrows hquad
 
 /-- **Theorem 9.15**, componentwise source-bound wrapper reducing the remaining
 Barrlund--Sun spectral theorem to normalized strict-lower/upper majorants. -/
