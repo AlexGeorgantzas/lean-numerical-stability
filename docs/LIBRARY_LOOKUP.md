@@ -1396,9 +1396,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_2_permutedRectRoundedLoopStageTrace`
 - `higham9_2_permutedRectRoundedLoop_to_rectAbsBudgetCertificate`
 - `higham9_2_permutedRectRoundedLoop_to_rectDenseLoopCertificate`
+- `higham9_2_permutedRectRoundedLoop_square_to_DoolittleLU`
 - `higham9_2_completePermutedRectRoundedLoopStageTrace`
 - `higham9_2_completePermutedRectRoundedLoop_to_rectAbsBudgetCertificate`
 - `higham9_2_completePermutedRectRoundedLoop_to_rectDenseLoopCertificate`
+- `higham9_2_completePermutedRectRoundedLoop_square_to_DoolittleLU`
 - `higham9_2_rectRoundedStageTrace_to_prefixTrace`
 - `higham9_2_rectRoundedPrefixTrace_complete_to_stageTrace`
 - `higham9_2_rectRoundedPrefixTrace_zero`
@@ -3821,6 +3823,7 @@ Source-facing Chapter 10 wrappers:
 - `unit_diag_psd_maxEigenvalue_bounds` / `higham10_9_unit_diag_cond_bound` (van der Sluis route: 1 <= lambda_max(H) <= n for unit-diagonal PSD; kappa_2(H) <= n/lambda_min)
 - `scaled_matrix_unit_diag` / `scaled_matrix_isPosSemiDef` / `higham10_9_scaled_cond_bound` ((10.9) fragment instantiated on the concrete H = D^-1 A D^-1)
 - `finiteMaxEigenvalue_ge_diag` / `diag_congruence_minEigenvalue_ge` (van der Sluis spectral engines: lambda_max >= diag; lambda_min(EME) >= m lambda_min(M))
+- `higham10_9_van_der_sluis` ((10.9) PROVED: kappa_2(H) <= n kappa_2(DAD) for every positive diagonal D)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)

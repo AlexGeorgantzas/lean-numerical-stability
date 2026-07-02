@@ -2426,6 +2426,153 @@ lemma diag_congruence_minEigenvalue_ge {n : ℕ} (hn : 0 < n)
           (fun i j : Fin n => e i * M i j * e j) hSymN := by
         rw [← hcong, hqv]
 
+/-- **van der Sluis / display (10.9)**: the √-scaling is within a
+    factor `n` of every diagonal scaling —
+    `κ₂(H) ≤ n·κ₂(DAD)` for every positive diagonal `D`, hence
+    `κ₂(H) ≤ n·min_D κ₂(DAD)`. `B` names the largest `d_i²a_ii`
+    (supplied with its attainment witness). Chain:
+    `λ_max(H) ≤ n` (unit diagonal), `λ_min(H) ≥ λ_min(DAD)/B`
+    (diagonal congruence `H = E(DAD)E`, `e_i = 1/(d_i√a_ii)`), and
+    `B ≤ λ_max(DAD)` (a diagonal Rayleigh value). -/
+theorem higham10_9_van_der_sluis {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (hPSD : IsPosSemiDef n A)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (d : Fin n → ℝ) (hd : ∀ i : Fin n, 0 < d i)
+    (hSymH : IsSymmetricFiniteMatrix
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))))
+    (hSymM : IsSymmetricFiniteMatrix
+      (fun i j : Fin n => d i * A i j * d j))
+    (hminM : 0 < finiteMinEigenvalue hn
+      (fun i j : Fin n => d i * A i j * d j) hSymM)
+    (B : ℝ) (hB : ∀ i : Fin n, d i ^ 2 * A i i ≤ B)
+    (hattain : ∃ k : Fin n, d k ^ 2 * A k k = B) :
+    finiteMaxEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH /
+      finiteMinEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH ≤
+    (n : ℝ) * finiteMaxEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM /
+      finiteMinEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM := by
+  obtain ⟨k, hk⟩ := hattain
+  have hB0 : (0:ℝ) < B := by
+    rw [← hk]
+    have hdk := hd k
+    have hak := hAdiag k
+    positivity
+  -- B is a Rayleigh value of M
+  have hBmax : B ≤ finiteMaxEigenvalue hn
+      (fun i j : Fin n => d i * A i j * d j) hSymM := by
+    have h := finiteMaxEigenvalue_ge_diag hn
+      (fun i j : Fin n => d i * A i j * d j) hSymM k
+    have h2 : d k * A k k * d k = B := by rw [← hk]; ring
+    calc B = d k * A k k * d k := h2.symm
+      _ ≤ _ := h
+  -- H is the diagonal congruence of M by e = 1/(d√a)
+  have hHM : (fun i j : Fin n =>
+      (1 / (d i * Real.sqrt (A i i))) *
+        (d i * A i j * d j) *
+        (1 / (d j * Real.sqrt (A j j)))) =
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) := by
+    funext i j
+    have hi := Real.sqrt_pos.mpr (hAdiag i)
+    have hj := Real.sqrt_pos.mpr (hAdiag j)
+    have hdi := hd i
+    have hdj := hd j
+    field_simp
+  -- the congruence floor for λ_min(H)
+  have hmfloor : ∀ i : Fin n,
+      1 / B ≤ (1 / (d i * Real.sqrt (A i i))) ^ 2 := by
+    intro i
+    have hi := Real.sqrt_pos.mpr (hAdiag i)
+    have hdi := hd i
+    rw [div_pow, one_pow]
+    have hsq : (d i * Real.sqrt (A i i)) ^ 2 = d i ^ 2 * A i i := by
+      rw [mul_pow, Real.sq_sqrt (hAdiag i).le]
+    rw [hsq]
+    have hai := hAdiag i
+    have h1 : (0:ℝ) < d i ^ 2 * A i i := by positivity
+    exact one_div_le_one_div_of_le h1 (hB i)
+  have hSymH' : IsSymmetricFiniteMatrix
+      (fun i j : Fin n =>
+        (1 / (d i * Real.sqrt (A i i))) *
+          (d i * A i j * d j) *
+          (1 / (d j * Real.sqrt (A j j)))) := by
+    rw [hHM]; exact hSymH
+  have hcong := diag_congruence_minEigenvalue_ge hn
+    (fun i j : Fin n => d i * A i j * d j) hSymM
+    (fun i => 1 / (d i * Real.sqrt (A i i))) (1 / B)
+    (one_div_pos.mpr hB0).le hmfloor hSymH' hminM.le
+  -- transport across the congruence identity
+  have hminH_ge : (1 / B) * finiteMinEigenvalue hn
+      (fun i j : Fin n => d i * A i j * d j) hSymM ≤
+      finiteMinEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH := by
+    refine hcong.trans_eq ?_
+    congr 1
+  have hminH0 : 0 < finiteMinEigenvalue hn
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH := by
+    have : (0:ℝ) < (1 / B) * finiteMinEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM :=
+      mul_pos (one_div_pos.mpr hB0) hminM
+    linarith [hminH_ge]
+  -- assemble the condition-number comparison
+  have hmaxH : finiteMaxEigenvalue hn
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH ≤ (n : ℝ) :=
+    (unit_diag_psd_maxEigenvalue_bounds hn _
+      (scaled_matrix_isPosSemiDef A hPSD hAdiag)
+      (fun i => scaled_matrix_unit_diag A hAdiag i) hSymH).2
+  rw [div_le_div_iff₀ hminH0 hminM]
+  have h1 : finiteMaxEigenvalue hn
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH *
+      finiteMinEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM ≤
+      (n : ℝ) * finiteMinEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM :=
+    mul_le_mul_of_nonneg_right hmaxH hminM.le
+  have h2 : finiteMinEigenvalue hn
+      (fun i j : Fin n => d i * A i j * d j) hSymM ≤
+      B * finiteMinEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH := by
+    have := mul_le_mul_of_nonneg_left hminH_ge hB0.le
+    calc finiteMinEigenvalue hn
+          (fun i j : Fin n => d i * A i j * d j) hSymM
+        = B * ((1 / B) * finiteMinEigenvalue hn
+            (fun i j : Fin n => d i * A i j * d j) hSymM) := by
+          field_simp
+      _ ≤ B * finiteMinEigenvalue hn
+            (fun i l : Fin n => A i l /
+              (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH := this
+  have h3 : (n : ℝ) * B ≤ (n : ℝ) *
+      finiteMaxEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM :=
+    mul_le_mul_of_nonneg_left hBmax (Nat.cast_nonneg n)
+  have h4 : (n : ℝ) * finiteMinEigenvalue hn
+      (fun i j : Fin n => d i * A i j * d j) hSymM ≤
+      (n : ℝ) * (B * finiteMinEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH) :=
+    mul_le_mul_of_nonneg_left h2 (Nat.cast_nonneg n)
+  have h5 : ((n : ℝ) * B) * finiteMinEigenvalue hn
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH ≤
+      ((n : ℝ) * finiteMaxEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM) *
+      finiteMinEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH :=
+    mul_le_mul_of_nonneg_right h3 hminH0.le
+  nlinarith [h1, h4, h5]
+
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
 `‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
 an `r × r` upper-triangular block `U` with positive diagonal whose rows
