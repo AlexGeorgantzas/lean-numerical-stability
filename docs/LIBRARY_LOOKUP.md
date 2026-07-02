@@ -3097,6 +3097,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_resolvent_matrix_majorant_of_spectralRadius_lt_one`
 - `higham9_15_local_majorant_le_resolvent_of_self_majorant`
 - `higham9_15_local_majorant_le_nonsingInv_resolvent_of_spectralRadius_lt_one`
+- `higham9_15_GMatrix_local_majorant_le_resolvent_of_self_majorant`
+- `higham9_15_GMatrix_local_majorant_le_nonsingInv_resolvent_of_spectralRadius_lt_one`
 - `higham9_15_componentwise_source_bound_of_normalized_majorants`
 - `higham9_15_componentwise_source_bound_of_normalized_majorants_of_source_inverse_identities`
 - `higham9_15_componentwise_source_bound_of_G_split_majorant_of_inverse_identities`
@@ -3586,6 +3588,11 @@ Source-facing Chapter 10 wrappers:
 - `bordered_gram_zero`
 - `gram_sum_truncate`
 - `fl_cholesky_colNormSq_le_stage`
+- `fl_cholPivot_leading_principal`
+- `fl_cholesky_block_certificate`
+- `bordered_perturbation_floor`
+- `fl_cholesky_truncated_bound`
+- `fl_cholesky_border_bound`
 - `fl_chol_offdiag_solve_form`
 - `fl_chol_diag_solve_form`
 - `fl_cholPivot`

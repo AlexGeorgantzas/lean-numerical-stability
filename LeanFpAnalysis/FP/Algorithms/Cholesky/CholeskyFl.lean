@@ -947,4 +947,293 @@ theorem fl_cholesky_backward_error (fp : FPModel) (n : ℕ)
     rw [h1, h2, hsym i j]
     exact h
 
+/-- **Truncated certificate bound** (Theorem 10.7 induction, sub-increment
+    ii, generalized): at stage `j` with `m := j.val`, for any row `i < m`
+    and any column `w` with `i ≤ w`, the certificate entry bound holds with
+    all sums truncated to the first `m` rows —
+    `|Gram_iw − a_iw| ≤ γ_{n+1} ‖U_col i‖ ‖col w ↾ m‖`.  With `w` interior
+    (`w < m`) this bounds the bordered block's interior perturbation; with
+    `w = j` it bounds the border column, and no junk value from the
+    not-yet-established stage-`j` square root enters. -/
+theorem fl_cholesky_truncated_bound (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (hn1 : gammaValid fp (n + 1))
+    (j : Fin n) (i : Fin j.val) (w : Fin n) (hiw : i.val ≤ w.val)
+    (hdz_i : i.val < w.val →
+      fl_cholesky fp n A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ ≠ 0)
+    (hpiv_i : (⟨i.val, by omega⟩ : Fin n) = w →
+      0 ≤ fl_cholPivot fp n A ⟨i.val, by omega⟩) :
+    |(∑ p : Fin j.val,
+        fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ *
+        fl_cholesky fp n A ⟨p.val, by omega⟩ w) -
+      A ⟨i.val, by omega⟩ w| ≤
+      gamma fp (n + 1) *
+        (Real.sqrt (∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ ^ 2) *
+         Real.sqrt (∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ w ^ 2)) := by
+  set ihat : Fin n := ⟨i.val, by omega⟩ with hihat
+  have h1 := fl_cholesky_entry_bound_stage fp n A hn1 ihat w hiw
+    hdz_i hpiv_i
+  rw [gram_sum_truncate fp n A j.val j.isLt.le ihat w i.isLt] at h1
+  have habs_trunc : ∑ k : Fin n,
+      |fl_cholesky fp n A k ihat| * |fl_cholesky fp n A k w| =
+      ∑ p : Fin j.val,
+        |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
+        |fl_cholesky fp n A ⟨p.val, by omega⟩ w| := by
+    have hzero : ∀ k : Fin n,
+        k ∉ Finset.univ.filter (fun k : Fin n => k.val < j.val) →
+        |fl_cholesky fp n A k ihat| * |fl_cholesky fp n A k w| = 0 := by
+      intro k hk
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and,
+        Nat.not_lt] at hk
+      rw [fl_cholesky_strict_lower fp n A k ihat (by
+        simp only [hihat]; omega), abs_zero, zero_mul]
+    calc ∑ k : Fin n,
+        |fl_cholesky fp n A k ihat| * |fl_cholesky fp n A k w|
+        = ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < j.val),
+            |fl_cholesky fp n A k ihat| * |fl_cholesky fp n A k w| :=
+          (Finset.sum_subset (Finset.filter_subset _ _)
+            (fun k _ hk => hzero k hk)).symm
+      _ = ∑ p : Fin j.val,
+            |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
+            |fl_cholesky fp n A ⟨p.val, by omega⟩ w| :=
+          (sum_fin_eq_sum_filter_lt' j.isLt.le _).symm
+  rw [habs_trunc] at h1
+  refine le_trans h1 (mul_le_mul_of_nonneg_left ?_ (gamma_nonneg fp hn1))
+  have hcs := Finset.sum_mul_sq_le_sq_mul_sq
+    (Finset.univ : Finset (Fin j.val))
+    (fun p => |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat|)
+    (fun p => |fl_cholesky fp n A ⟨p.val, by omega⟩ w|)
+  have hsq1 : ∑ p : Fin j.val,
+      |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| ^ 2 =
+      ∑ p : Fin j.val,
+        fl_cholesky fp n A ⟨p.val, by omega⟩ ihat ^ 2 :=
+    Finset.sum_congr rfl fun p _ => sq_abs _
+  have hsq2 : ∑ p : Fin j.val,
+      |fl_cholesky fp n A ⟨p.val, by omega⟩ w| ^ 2 =
+      ∑ p : Fin j.val, fl_cholesky fp n A ⟨p.val, by omega⟩ w ^ 2 :=
+    Finset.sum_congr rfl fun p _ => sq_abs _
+  rw [hsq1, hsq2] at hcs
+  have hnn : 0 ≤ ∑ p : Fin j.val,
+      |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
+      |fl_cholesky fp n A ⟨p.val, by omega⟩ w| :=
+    Finset.sum_nonneg fun p _ =>
+      mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  calc ∑ p : Fin j.val,
+      |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
+      |fl_cholesky fp n A ⟨p.val, by omega⟩ w|
+      = Real.sqrt ((∑ p : Fin j.val,
+          |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
+          |fl_cholesky fp n A ⟨p.val, by omega⟩ w|) ^ 2) := by
+        rw [Real.sqrt_sq hnn]
+    _ ≤ Real.sqrt ((∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ihat ^ 2) *
+        ∑ p : Fin j.val, fl_cholesky fp n A ⟨p.val, by omega⟩ w ^ 2) :=
+        Real.sqrt_le_sqrt hcs
+    _ = Real.sqrt (∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ihat ^ 2) *
+        Real.sqrt (∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ w ^ 2) := by
+        rw [Real.sqrt_mul (Finset.sum_nonneg fun p _ => sq_nonneg _)]
+
+/-- **Border-column entry bound**: the `w = j` instance of
+    `fl_cholesky_truncated_bound`. -/
+theorem fl_cholesky_border_bound (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (hn1 : gammaValid fp (n + 1))
+    (j : Fin n) (i : Fin j.val)
+    (hdz_i : fl_cholesky fp n A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ ≠ 0) :
+    |(∑ p : Fin j.val,
+        fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ *
+        fl_cholesky fp n A ⟨p.val, by omega⟩ j) -
+      A ⟨i.val, by omega⟩ j| ≤
+      gamma fp (n + 1) *
+        (Real.sqrt (∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ ^ 2) *
+         Real.sqrt (∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ j ^ 2)) :=
+  fl_cholesky_truncated_bound fp A hn1 j i j (i.isLt).le
+    (fun _ => hdz_i)
+    (fun h => absurd (congrArg Fin.val h) (by simp; omega))
+
+/-- **Pivot locality**: the `l`-th pivot of the algorithm run on a leading
+    `m × m` block equals the `l`-th pivot of the full run, `l < m ≤ n`. -/
+theorem fl_cholPivot_leading_principal (fp : FPModel) {n m : ℕ}
+    (hm : m ≤ n) (A : Fin n → Fin n → ℝ) (l : Fin m) :
+    fl_cholPivot fp m
+      (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩) l =
+    fl_cholPivot fp n A ⟨l.val, by omega⟩ := by
+  unfold fl_cholPivot
+  congr 1
+  · funext k
+    exact fl_cholesky_leading_principal fp hm A
+      ⟨k.val, Nat.lt_trans k.isLt l.isLt⟩ l
+  · funext k
+    exact fl_cholesky_leading_principal fp hm A
+      ⟨k.val, Nat.lt_trans k.isLt l.isLt⟩ l
+
+/-- **Stage-`m` block certificate** (Theorem 10.7 induction): once every
+    pivot below `m` is positive, the leading `m × m` block of `A` satisfies
+    the full Theorem 10.3 certificate at level `γ_{m+1}`, via Algorithm 10.2
+    locality. -/
+theorem fl_cholesky_block_certificate (fp : FPModel) {n m : ℕ}
+    (hm : m ≤ n) (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hu : fp.u < 1)
+    (hm1 : gammaValid fp (m + 1))
+    (IH : ∀ l : Fin n, l.val < m → 0 < fl_cholPivot fp n A l) :
+    CholeskyBackwardError m
+      (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩)
+      (fl_cholesky fp m
+        (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩))
+      (gamma fp (m + 1)) := by
+  apply fl_cholesky_backward_error fp m _
+    (fun i j => hsym _ _) hm1
+  · intro l
+    rw [fl_cholPivot_leading_principal fp hm A l]
+    exact (IH ⟨l.val, by omega⟩ l.isLt).le
+  · intro l
+    rw [show fl_cholesky fp m
+        (fun i' j' => A ⟨i'.val, by omega⟩ ⟨j'.val, by omega⟩) l l =
+      fl_cholesky fp n A ⟨l.val, by omega⟩ ⟨l.val, by omega⟩ from
+      fl_cholesky_leading_principal fp hm A l l]
+    rw [fl_cholesky_diag_eq fp n A ⟨l.val, by omega⟩]
+    exact (fl_sqrt_pos fp hu _ (IH ⟨l.val, by omega⟩ l.isLt)).ne'
+
+
+/-- **Bordered perturbation floor** (Theorem 10.7 induction, abstract
+    scalar core): if the computed Gram form of the test vector vanishes,
+    the interior and border perturbations are `ε`-small against the
+    `D`-weights, and the bordered `A`-form has Rayleigh floor `lam`, then
+    the exact pivot `a_jj − t` is floored by
+    `lam·a_jj + (lam − 2εm)W − εt`.  All Cauchy–Schwarz and AM–GM steps
+    happen here, divorced from the algorithm. -/
+theorem bordered_perturbation_floor (m : ℕ)
+    (Gint : Fin m → Fin m → ℝ) (gb : Fin m → ℝ)
+    (Bint : Fin m → Fin m → ℝ) (bb : Fin m → ℝ)
+    (a : Fin m → ℝ) (ajj t : ℝ) (y : Fin m → ℝ) (ε lam : ℝ)
+    (ha : ∀ i, 0 ≤ a i) (hε0 : 0 ≤ ε) (ht0 : 0 ≤ t)
+    (hgram : (∑ i : Fin m, ∑ l : Fin m, y i * Gint i l * y l) +
+      2 * (∑ i : Fin m, y i * gb i) + t = 0)
+    (hint : ∀ i l : Fin m, |Gint i l - Bint i l| ≤
+      ε * (Real.sqrt (a i) * Real.sqrt (a l)))
+    (hbord : ∀ i : Fin m, |gb i - bb i| ≤
+      ε * (Real.sqrt (a i) * Real.sqrt t))
+    (hfloor : lam * ((∑ i : Fin m, a i * y i ^ 2) + ajj) ≤
+      (∑ i : Fin m, ∑ l : Fin m, y i * Bint i l * y l) +
+      2 * (∑ i : Fin m, y i * bb i) + ajj) :
+    lam * ajj + lam * (∑ i : Fin m, a i * y i ^ 2) -
+      2 * ε * m * (∑ i : Fin m, a i * y i ^ 2) - ε * t ≤ ajj - t := by
+  set W : ℝ := ∑ i : Fin m, a i * y i ^ 2 with hW
+  have hW0 : 0 ≤ W := Finset.sum_nonneg fun i _ =>
+    mul_nonneg (ha i) (sq_nonneg _)
+  set Q : ℝ := ∑ i : Fin m, |y i| * Real.sqrt (a i) with hQ
+  have hQ0 : 0 ≤ Q := Finset.sum_nonneg fun i _ =>
+    mul_nonneg (abs_nonneg _) (Real.sqrt_nonneg _)
+  -- Q² ≤ m·W by Cauchy–Schwarz with the ones vector
+  have hQsq : Q ^ 2 ≤ m * W := by
+    have h := Finset.sum_mul_sq_le_sq_mul_sq
+      (Finset.univ : Finset (Fin m))
+      (fun _ => (1:ℝ)) (fun i => |y i| * Real.sqrt (a i))
+    have h1 : ∑ i : Fin m, (1:ℝ) * (|y i| * Real.sqrt (a i)) = Q :=
+      Finset.sum_congr rfl fun i _ => one_mul _
+    have h2 : ∑ _i : Fin m, ((1:ℝ)) ^ 2 = (m : ℝ) := by simp
+    have h3 : ∑ i : Fin m, (|y i| * Real.sqrt (a i)) ^ 2 = W := by
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [mul_pow, sq_abs, Real.sq_sqrt (ha i)]
+      ring
+    rw [h1, h2, h3] at h
+    exact h
+  -- interior mass
+  have hImass : |∑ i : Fin m, ∑ l : Fin m,
+      y i * (Gint i l - Bint i l) * y l| ≤ ε * Q ^ 2 := by
+    calc |∑ i : Fin m, ∑ l : Fin m, y i * (Gint i l - Bint i l) * y l|
+        ≤ ∑ i : Fin m, |∑ l : Fin m, y i * (Gint i l - Bint i l) * y l| :=
+          Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ i : Fin m, ∑ l : Fin m,
+            |y i| * |Gint i l - Bint i l| * |y l| := by
+          apply Finset.sum_le_sum
+          intro i _
+          calc |∑ l : Fin m, y i * (Gint i l - Bint i l) * y l|
+              ≤ ∑ l : Fin m, |y i * (Gint i l - Bint i l) * y l| :=
+                Finset.abs_sum_le_sum_abs _ _
+            _ = ∑ l : Fin m, |y i| * |Gint i l - Bint i l| * |y l| := by
+                apply Finset.sum_congr rfl
+                intro l _
+                rw [abs_mul, abs_mul]
+      _ ≤ ∑ i : Fin m, ∑ l : Fin m,
+            |y i| * (ε * (Real.sqrt (a i) * Real.sqrt (a l))) * |y l| := by
+          apply Finset.sum_le_sum
+          intro i _
+          apply Finset.sum_le_sum
+          intro l _
+          apply mul_le_mul_of_nonneg_right _ (abs_nonneg _)
+          exact mul_le_mul_of_nonneg_left (hint i l) (abs_nonneg _)
+      _ = ε * Q ^ 2 := by
+          rw [hQ, sq, Finset.sum_mul_sum, Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro i _
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro l _
+          ring
+  -- border mass, with AM–GM
+  have hBmass : |2 * ∑ i : Fin m, y i * (gb i - bb i)| ≤ ε * (t + Q ^ 2) := by
+    have h1 : |∑ i : Fin m, y i * (gb i - bb i)| ≤
+        ε * Real.sqrt t * Q := by
+      calc |∑ i : Fin m, y i * (gb i - bb i)|
+          ≤ ∑ i : Fin m, |y i * (gb i - bb i)| :=
+            Finset.abs_sum_le_sum_abs _ _
+        _ = ∑ i : Fin m, |y i| * |gb i - bb i| := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [abs_mul]
+        _ ≤ ∑ i : Fin m, |y i| *
+              (ε * (Real.sqrt (a i) * Real.sqrt t)) := by
+            apply Finset.sum_le_sum
+            intro i _
+            exact mul_le_mul_of_nonneg_left (hbord i) (abs_nonneg _)
+        _ = ε * Real.sqrt t * Q := by
+            rw [hQ, Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+    have hamgm : 2 * (Real.sqrt t * Q) ≤ t + Q ^ 2 := by
+      have hsq := sq_nonneg (Real.sqrt t - Q)
+      have hts : Real.sqrt t ^ 2 = t := Real.sq_sqrt ht0
+      nlinarith
+    calc |2 * ∑ i : Fin m, y i * (gb i - bb i)|
+        = 2 * |∑ i : Fin m, y i * (gb i - bb i)| := by
+          rw [abs_mul]
+          norm_num
+      _ ≤ 2 * (ε * Real.sqrt t * Q) := by linarith [h1]
+      _ = ε * (2 * (Real.sqrt t * Q)) := by ring
+      _ ≤ ε * (t + Q ^ 2) := mul_le_mul_of_nonneg_left hamgm hε0
+  -- assemble: S_B = −ΔI − 2ΔM + (ajj − t)
+  have hdecomp : (∑ i : Fin m, ∑ l : Fin m, y i * Bint i l * y l) +
+      2 * (∑ i : Fin m, y i * bb i) + ajj =
+      -(∑ i : Fin m, ∑ l : Fin m, y i * (Gint i l - Bint i l) * y l) -
+      2 * (∑ i : Fin m, y i * (gb i - bb i)) + (ajj - t) := by
+    have hsplitI : ∑ i : Fin m, ∑ l : Fin m,
+        y i * (Gint i l - Bint i l) * y l =
+        (∑ i : Fin m, ∑ l : Fin m, y i * Gint i l * y l) -
+        ∑ i : Fin m, ∑ l : Fin m, y i * Bint i l * y l := by
+      rw [← Finset.sum_sub_distrib]
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun l _ => by ring
+    have hsplitB : ∑ i : Fin m, y i * (gb i - bb i) =
+        (∑ i : Fin m, y i * gb i) - ∑ i : Fin m, y i * bb i := by
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun i _ => by ring
+    rw [hsplitI, hsplitB]
+    linarith [hgram]
+  have hfloor2 := hfloor
+  rw [hdecomp] at hfloor2
+  have habs1 := abs_le.mp hImass
+  have habs2 := abs_le.mp hBmass
+  have hQW := hQsq
+  nlinarith [habs1.1, habs1.2, habs2.1, habs2.2, hε0, hQ0, hW0]
+
 end LeanFpAnalysis.FP
