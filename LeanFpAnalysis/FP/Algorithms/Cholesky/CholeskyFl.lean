@@ -1617,6 +1617,54 @@ theorem fl_cholesky_pivot_pos_step_sharp (fp : FPModel) {n : ℕ}
     (fl_cholPivot fp n A j) hAj ht0 hW0 hγ0 hγ1 hε0 hε1
     hfloorN hlow2 hs hlam2ε hthresh
 
+/-- **All rounded pivots positive at the source-shaped threshold**: the
+    whole-run induction over `fl_cholesky_pivot_pos_step_sharp` — every
+    pivot is positive whenever `λ > ε + 2γ_{n+1}` with per-stage
+    normwise mass certificates. -/
+theorem fl_cholesky_pivots_pos_sharp (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hn1 : gammaValid fp (n + 1))
+    (hγ1 : gamma fp (n + 1) < 1)
+    (lam ε : ℝ) (hε0 : 0 ≤ ε) (hε1 : ε < 1)
+    (hfloor : ∀ j : Fin n, ∀ y : Fin j.val → ℝ,
+      lam * ((∑ i : Fin j.val,
+          A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2) + A j j) ≤
+        (∑ i : Fin j.val, ∑ l : Fin j.val,
+          y i * A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ * y l) +
+        2 * (∑ i : Fin j.val, y i * A ⟨i.val, by omega⟩ j) + A j j)
+    (hmassI : ∀ j : Fin n, ∀ y : Fin j.val → ℝ,
+      |∑ i : Fin j.val, ∑ l : Fin j.val, y i *
+        ((∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ *
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨l.val, by omega⟩) -
+          A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩) * y l| ≤
+      ε * ∑ i : Fin j.val,
+        A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2)
+    (hmassB : ∀ j : Fin n, ∀ y : Fin j.val → ℝ,
+      |2 * ∑ i : Fin j.val, y i *
+        ((∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ *
+          fl_cholesky fp n A ⟨p.val, by omega⟩ j) -
+          A ⟨i.val, by omega⟩ j)| ≤
+      ε * ((∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ j ^ 2) +
+        ∑ i : Fin j.val,
+          A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2))
+    (hlam2ε : 2 * ε ≤ lam)
+    (hthresh : ε + 2 * gamma fp (n + 1) < lam) :
+    ∀ j : Fin n, 0 < fl_cholPivot fp n A j := by
+  have H : ∀ k : ℕ, ∀ j : Fin n, j.val = k →
+      0 < fl_cholPivot fp n A j := by
+    intro k
+    induction k using Nat.strong_induction_on with
+    | _ k IHk =>
+      intro j hj
+      refine fl_cholesky_pivot_pos_step_sharp fp A hAdiag hn1 hγ1 j
+        (fun l hl => IHk l.val (hj ▸ hl) l rfl) lam ε hε0 hε1
+        (hfloor j) (hmassI j) (hmassB j) hlam2ε hthresh
+  exact fun j => H j.val j rfl
+
 /-- **Border-column entry bound**: the `w = j` instance of
     `fl_cholesky_truncated_bound`. -/
 theorem fl_cholesky_border_bound (fp : FPModel) {n : ℕ}
