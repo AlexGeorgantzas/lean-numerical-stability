@@ -65203,6 +65203,29 @@ theorem higham9_pivotingGrowthValues_rook_le_fosterBound_of_trace_bound
   higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_trace_bound
     hsharp (by simpa [higham9_pivotingGrowthValues] using hr)
 
+/-- **Growth-factor source family**, every indexed source value for a pivoting
+family other than no-pivot exact LU satisfies the elementary `2^(n-1)` bound.
+
+The no-pivot exact-LU family is excluded because Chapter 9 does not give a
+uniform pivoting growth bound for arbitrary no-pivot LU factors. -/
+theorem higham9_pivotingGrowthValues_le_pow_two_of_ne_noPivot
+    (kind : higham9_PivotingGrowthKind)
+    (hkind : kind ≠ higham9_PivotingGrowthKind.noPivot)
+    {n : ℕ} {r : ℝ}
+    (hr : r ∈ higham9_pivotingGrowthValues kind n) :
+    r ≤ (2 : ℝ) ^ (n - 1) := by
+  cases kind with
+  | noPivot =>
+      exact (hkind rfl).elim
+  | partialPivoting =>
+      exact higham9_pivotingGrowthValues_partial_le_pow_two hr
+  | completePivoting =>
+      exact higham9_completePivotingUTraceGrowthValues_le_pow_two
+        (by simpa [higham9_pivotingGrowthValues] using hr)
+  | rookPivoting =>
+      exact higham9_16_rookPivotingUTraceGrowthValues_le_pow_two
+        (by simpa [higham9_pivotingGrowthValues] using hr)
+
 /-- **Growth-factor source family / Theorem 9.7**, boundedness of the indexed
 partial-pivoting source values at the elementary Wilkinson bound. -/
 theorem higham9_pivotingGrowthValues_bddAbove_partial (n : ℕ) :
@@ -65286,6 +65309,17 @@ theorem higham9_pivotingGrowthValues_bddAbove_rook_fosterBound_of_trace_bound
   simpa [higham9_pivotingGrowthValues] using
     higham9_16_rookPivotingUTraceGrowthValues_bddAbove_fosterBound_of_trace_bound
       hsharp
+
+/-- **Growth-factor source family**, boundedness at the elementary `2^(n-1)`
+bound for every indexed pivoting family other than no-pivot exact LU. -/
+theorem higham9_pivotingGrowthValues_bddAbove_of_ne_noPivot
+    (kind : higham9_PivotingGrowthKind)
+    (hkind : kind ≠ higham9_PivotingGrowthKind.noPivot) (n : ℕ) :
+    BddAbove (higham9_pivotingGrowthValues kind n) := by
+  refine ⟨(2 : ℝ) ^ (n - 1), ?_⟩
+  intro r hr
+  exact higham9_pivotingGrowthValues_le_pow_two_of_ne_noPivot
+    kind hkind hr
 
 /-- **Growth-factor source family / Theorem 9.7**, source-shaped elementary
 upper bound for the indexed partial-pivoting supremum. -/
@@ -65374,6 +65408,18 @@ theorem higham9_pivotingGrowthSup_rook_le_fosterBound_of_trace_bound
   simpa [higham9_pivotingGrowthSup, higham9_pivotingGrowthValues] using
     higham9_16_rookPivotingUTraceGrowthSup_le_fosterBound_of_trace_bound
       hn hsharp
+
+/-- **Growth-factor source family**, source-shaped elementary supremum bound
+for every indexed pivoting family other than no-pivot exact LU. -/
+theorem higham9_pivotingGrowthSup_le_pow_two_of_ne_noPivot
+    (kind : higham9_PivotingGrowthKind)
+    (hkind : kind ≠ higham9_PivotingGrowthKind.noPivot)
+    {n : ℕ} (hn : 0 < n) :
+    higham9_pivotingGrowthSup kind n ≤ (2 : ℝ) ^ (n - 1) := by
+  apply csSup_le (higham9_pivotingGrowthValues_nonempty kind hn)
+  intro r hr
+  exact higham9_pivotingGrowthValues_le_pow_two_of_ne_noPivot
+    kind hkind hr
 
 /-- **Growth-factor source family**, the pivoting trace families, excluding
 the no-pivot exact-LU family whose growth is not uniformly bounded by the
