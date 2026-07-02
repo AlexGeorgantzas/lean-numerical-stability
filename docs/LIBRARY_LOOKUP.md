@@ -1238,6 +1238,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_1_lu_unique_of_pivots_ne_zero`
 - `higham9_1_lu_unique_of_leadingPrincipalBlock_det_ne_zero`
 - `higham9_1_lu_exists_and_unique_of_leadingPrincipalBlock_det_ne_zero`
+- `higham9_1_LUFactSpec_one_explicit`
 - `higham9_1_lu_exists_one`
 - `higham9_1_firstSchurComplement_properLeadingPrincipalBlock_det_ne_zero`
 - `higham9_1_lu_exists_of_properLeadingPrincipalBlock_det_ne_zero`
@@ -2223,6 +2224,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_9_colDiagDominant_firstSchurComplement_det_ne_zero`
 - `higham9_9_colDiagDominant_lu_exists_unit_lower_of_det_ne_zero`
 - `higham9_9_colDiagDominant_lu_exists_unique_unit_lower_of_det_ne_zero`
+- `higham9_9_colDiagDominant_fin_two_exists_LUFactSpec_growthFactorEntry_le_two`
 - `higham9_9_colDiagDominant_transpose_iff_rowDiagDominant`
 - `higham9_9_rowDiagDominant_transpose_iff_colDiagDominant`
 - `higham9_10_hessenberg_growth_backward_error`
