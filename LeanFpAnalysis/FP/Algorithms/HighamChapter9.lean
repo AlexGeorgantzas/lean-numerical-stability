@@ -42434,6 +42434,32 @@ theorem higham9_15_resolvent_matrix_majorant_of_componentwise_inequality
         simpa [rectMatMul] using hineq k j)
   simpa [rectMatMul] using hcol i
 
+/-- **Theorem 9.15 spectral-majorant support**.  Source-facing
+spectral-radius form of the matrix resolvent majorant: if `M >= 0`,
+`rho(M) < 1`, and `W <= V + M W`, then `W` is bounded by the canonical
+nonnegative resolvent `(I - M)⁻¹ V`.
+
+This is the direct handoff used by the Barrlund--Sun componentwise route once
+the source spectral-radius contraction has been proved. -/
+theorem higham9_15_resolvent_matrix_majorant_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n)
+    (M V W : Matrix (Fin n) (Fin n) ℝ)
+    (hM_nonneg : ∀ i j : Fin n, 0 ≤ M i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)) < 1)
+    (hineq : ∀ i j : Fin n, W i j ≤ V i j + rectMatMul M W i j) :
+    ∀ i j : Fin n,
+      W i j ≤ rectMatMul (nonsingInv n (matSub_id n M)) V i j := by
+  have hR :
+      ch7NonnegativeResolvent n M (nonsingInv n (matSub_id n M)) :=
+    higham9_15_nonnegative_resolvent_nonsingInv_of_spectralRadius_lt_one
+      hn M hM_nonneg hrho
+  exact
+    higham9_15_resolvent_matrix_majorant_of_componentwise_inequality
+      M (nonsingInv n (matSub_id n M)) V W hR hineq
+
 /-- **Theorem 9.15**, componentwise source-bound wrapper reducing the remaining
 Barrlund--Sun spectral theorem to normalized strict-lower/upper majorants. -/
 theorem higham9_15_componentwise_source_bound_of_normalized_majorants {n : ℕ}

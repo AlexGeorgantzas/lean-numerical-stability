@@ -3094,6 +3094,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normwise_source_zero_bound_of_factorization_Gtilde_residual_zero_of_matrix_inverse_identities`
 - `higham9_15_normwise_source_zero_bound_of_factorization_Gtilde_residual_zero`
 - `higham9_15_resolvent_matrix_majorant_of_componentwise_inequality`
+- `higham9_15_resolvent_matrix_majorant_of_spectralRadius_lt_one`
 - `higham9_15_componentwise_source_bound_of_normalized_majorants`
 - `higham9_15_componentwise_source_bound_of_normalized_majorants_of_source_inverse_identities`
 - `higham9_15_componentwise_source_bound_of_G_split_majorant_of_inverse_identities`
@@ -3578,6 +3579,7 @@ Source-facing Chapter 10 wrappers:
 - `fl_cholSubFold_pivot_lower`
 - `fl_sqrt_pos`
 - `upperTriangular_solve_exists`
+- `fl_cholesky_entry_bound_stage`
 - `fl_chol_offdiag_solve_form`
 - `fl_chol_diag_solve_form`
 - `fl_cholPivot`
