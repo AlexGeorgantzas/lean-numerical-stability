@@ -1839,6 +1839,51 @@ lemma schurStep_isPosSemiDef {n : ℕ} (A : Fin n → Fin n → ℝ)
   rw [hkey]
   exact hPSD.2 z
 
+/-- **The complete-pivoting state machine** (Lemma 10.11): stage `t`'s
+    working matrix — `A` eliminated `t` times, each time at the
+    deterministic diagonal argmax. -/
+noncomputable def cpState {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) : ℕ → (Fin n → Fin n → ℝ)
+  | 0 => A
+  | t + 1 => schurStep (cpState hn A t)
+      (diagArgmax hn (cpState hn A t))
+
+/-- The pivot selected at stage `t`. -/
+noncomputable def cpPivot {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (t : ℕ) : Fin n :=
+  diagArgmax hn (cpState hn A t)
+
+/-- Every complete-pivoting stage is symmetric. -/
+lemma cpState_symm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i) :
+    ∀ t : ℕ, ∀ i j : Fin n, cpState hn A t i j = cpState hn A t j i := by
+  intro t
+  induction t with
+  | zero => exact hsym
+  | succ t ih => exact schurStep_symm (cpState hn A t) _ ih
+
+/-- **Every complete-pivoting stage is PSD** while the selected pivots
+    stay positive (Lemma 10.11 stage invariant). -/
+lemma cpState_isPosSemiDef {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (hPSD : IsPosSemiDef n A) (t : ℕ)
+    (hpiv : ∀ s : ℕ, s < t →
+      0 < cpState hn A s (cpPivot hn A s) (cpPivot hn A s)) :
+    IsPosSemiDef n (cpState hn A t) := by
+  induction t with
+  | zero => exact hPSD
+  | succ t ih =>
+    exact schurStep_isPosSemiDef (cpState hn A t)
+      (ih fun s hs => hpiv s (Nat.lt_succ_of_lt hs)) _
+      (hpiv t (Nat.lt_succ_self t))
+
+/-- **The selected pivot dominates the whole working diagonal** —
+    what complete pivoting means at each stage. -/
+lemma cpPivot_max {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (t : ℕ) (j : Fin n) :
+    cpState hn A t j j ≤
+      cpState hn A t (cpPivot hn A t) (cpPivot hn A t) :=
+  diagArgmax_max hn (cpState hn A t) j
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
