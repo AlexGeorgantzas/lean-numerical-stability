@@ -3531,6 +3531,153 @@ theorem fl_schurStepFactor_defect_bound (fp : FPModel) {n : ℕ}
               exact mul_le_mul_of_nonneg_right herr
                 (by positivity)
 
+/-- The fl elimination step preserves symmetry, given commutative
+    rounded multiplication (true for IEEE; the abstract model does not
+    assert it, so it is carried as a hypothesis). -/
+lemma fl_schurStepFactor_symm (fp : FPModel)
+    (hmul : ∀ x y : ℝ, fp.fl_mul x y = fp.fl_mul y x) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (p : Fin n)
+    (hsym : ∀ i j : Fin n, A i j = A j i) (i j : Fin n) :
+    fl_schurStepFactor fp A p i j = fl_schurStepFactor fp A p j i := by
+  unfold fl_schurStepFactor
+  by_cases hi : i = p
+  · by_cases hj : j = p <;> simp [hi, hj]
+  · by_cases hj : j = p
+    · simp [hi, hj]
+    · rw [if_neg (by simp [hi, hj]), if_neg (by simp [hi, hj])]
+      rw [hsym i j, hsym i p, hsym p j]
+      rw [hmul (fp.fl_div (A p i) (fp.fl_sqrt (A p p)))
+        (fp.fl_div (A j p) (fp.fl_sqrt (A p p)))]
+
+/-- The fl trace stays symmetric from a symmetric input. -/
+lemma fl_cpStateFactor_symm (fp : FPModel)
+    (hmul : ∀ x y : ℝ, fp.fl_mul x y = fp.fl_mul y x) {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i) :
+    ∀ t : ℕ, ∀ i j : Fin n,
+      fl_cpStateFactor fp hn A t i j = fl_cpStateFactor fp hn A t j i := by
+  intro t
+  induction t with
+  | zero => exact hsym
+  | succ t ih =>
+    exact fl_schurStepFactor_symm fp hmul
+      (fl_cpStateFactor fp hn A t) _ ih
+
+/-- **The as-run factorization telescopes with summable defects**
+    (Theorem 10.14 componentwise backward error for the pivoted
+    algorithm as actually executed): the Gram of the computed rows,
+    plus the terminal computed Schur state, reproduces `A` entrywise up
+    to `r` per-stage rounding defects —
+    `|∑_{t<r} r̃ᵗᵢ r̃ᵗⱼ + S̃ᵣ ᵢⱼ − aᵢⱼ| ≤ r(u·cS + (2u+u²)·cR²)`. -/
+theorem fl_cpFactor_gram_backward_error (fp : FPModel) {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ) (r : ℕ)
+    (hmul : ∀ x y : ℝ, fp.fl_mul x y = fp.fl_mul y x)
+    (hsymA : ∀ i j : Fin n, A i j = A j i)
+    (hu8 : fp.u ≤ 1 / 8)
+    (hpos : ∀ t : ℕ, t < r →
+      0 < fl_cpStateFactor fp hn A t (fl_cpPivotFactor fp hn A t)
+        (fl_cpPivotFactor fp hn A t))
+    (cS cR : ℝ)
+    (hcapS : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |fl_cpStateFactor fp hn A t i j| ≤ cS)
+    (hcapR : ∀ t : ℕ, t < r → ∀ i : Fin n,
+      |fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+        (fl_cpPivotFactor fp hn A t) i| ≤ cR) :
+    ∀ i j : Fin n,
+      |(∑ t ∈ Finset.range r,
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) i *
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) j) +
+        fl_cpStateFactor fp hn A r i j - A i j| ≤
+      (r : ℝ) * (fp.u * cS + (2 * fp.u + fp.u ^ 2) * cR ^ 2) := by
+  induction r with
+  | zero =>
+    intro i j
+    simp [fl_cpStateFactor]
+  | succ r ih =>
+    intro i j
+    have hpos' : ∀ t : ℕ, t < r →
+        0 < fl_cpStateFactor fp hn A t (fl_cpPivotFactor fp hn A t)
+          (fl_cpPivotFactor fp hn A t) :=
+      fun t ht => hpos t (Nat.lt_succ_of_lt ht)
+    have hcapS' : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+        |fl_cpStateFactor fp hn A t i j| ≤ cS :=
+      fun t ht => hcapS t (Nat.lt_succ_of_lt ht)
+    have hcapR' : ∀ t : ℕ, t < r → ∀ i : Fin n,
+        |fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+          (fl_cpPivotFactor fp hn A t) i| ≤ cR :=
+      fun t ht => hcapR t (Nat.lt_succ_of_lt ht)
+    have hih := ih hpos' hcapS' hcapR' i j
+    -- the stage-r defect
+    have hsymr := fl_cpStateFactor_symm fp hmul hn A hsymA r
+    have hdef := fl_schurStepFactor_defect_bound fp
+      (fl_cpStateFactor fp hn A r) (fl_cpPivotFactor fp hn A r)
+      hsymr (hpos r (Nat.lt_succ_self r)) hu8 i j
+    have hSsucc : fl_cpStateFactor fp hn A (r + 1) i j =
+        fl_schurStepFactor fp (fl_cpStateFactor fp hn A r)
+          (fl_cpPivotFactor fp hn A r) i j := rfl
+    -- bound the stage-r defect by the uniform constant
+    have hdef' : |fl_cpStateFactor fp hn A (r + 1) i j -
+        (fl_cpStateFactor fp hn A r i j -
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+            (fl_cpPivotFactor fp hn A r) i *
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+            (fl_cpPivotFactor fp hn A r) j)| ≤
+        fp.u * cS + (2 * fp.u + fp.u ^ 2) * cR ^ 2 := by
+      rw [hSsucc]
+      refine hdef.trans (add_le_add ?_ ?_)
+      · exact mul_le_mul_of_nonneg_left
+          (hcapS r (Nat.lt_succ_self r) i j) fp.u_nonneg
+      · have h1 := hcapR r (Nat.lt_succ_self r) i
+        have h2 := hcapR r (Nat.lt_succ_self r) j
+        have hcR0 : (0:ℝ) ≤ cR := le_trans (abs_nonneg _) h1
+        have : |fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+              (fl_cpPivotFactor fp hn A r) i| *
+            |fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+              (fl_cpPivotFactor fp hn A r) j| ≤ cR ^ 2 := by
+          calc _ ≤ cR * cR :=
+                mul_le_mul h1 h2 (abs_nonneg _) hcR0
+            _ = cR ^ 2 := by ring
+        refine mul_le_mul_of_nonneg_left this ?_
+        have := fp.u_nonneg
+        positivity
+    -- assemble
+    rw [Finset.sum_range_succ]
+    have hgoal : (∑ t ∈ Finset.range r,
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) i *
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) j) +
+        fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+          (fl_cpPivotFactor fp hn A r) i *
+        fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+          (fl_cpPivotFactor fp hn A r) j +
+        fl_cpStateFactor fp hn A (r + 1) i j - A i j =
+        ((∑ t ∈ Finset.range r,
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) i *
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) j) +
+          fl_cpStateFactor fp hn A r i j - A i j) +
+        (fl_cpStateFactor fp hn A (r + 1) i j -
+          (fl_cpStateFactor fp hn A r i j -
+            fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+              (fl_cpPivotFactor fp hn A r) i *
+            fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+              (fl_cpPivotFactor fp hn A r) j)) := by
+      ring
+    rw [hgoal]
+    calc |_ + _|
+        ≤ _ + _ := abs_add_le _ _
+      _ ≤ (r : ℝ) * (fp.u * cS + (2 * fp.u + fp.u ^ 2) * cR ^ 2) +
+          (fp.u * cS + (2 * fp.u + fp.u ^ 2) * cR ^ 2) :=
+          add_le_add hih hdef'
+      _ = ((r + 1 : ℕ) : ℝ) *
+          (fp.u * cS + (2 * fp.u + fp.u ^ 2) * cR ^ 2) := by
+          push_cast
+          ring
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
