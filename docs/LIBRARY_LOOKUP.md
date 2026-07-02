@@ -3610,6 +3610,8 @@ Source-facing Chapter 10 wrappers:
 - `fl_cholesky_pivot_pos_step`
 - `fl_cholesky_pivots_pos`
 - `fl_cholesky_diag_pos_of_floor`
+- `sum_sum_castSucc_split`
+- `higham10_7_fl_cholesky_success`
 - `fl_cholesky_truncated_bound`
 - `fl_cholesky_border_bound`
 - `fl_chol_offdiag_solve_form`
