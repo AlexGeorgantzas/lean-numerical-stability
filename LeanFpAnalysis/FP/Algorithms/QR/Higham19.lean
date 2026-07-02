@@ -7155,6 +7155,238 @@ theorem
     storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_subtractZeroExact_anyCols
       fp vtail (householderBetaSpec (m + 1) vtail) A hfirstTail hcopy
 
+/-- Pivot-1 stored-step handoff from signed active data with
+`householderBetaSpec` to the computed normalized trailing reflector.
+
+This is the successor-pivot analogue of the first-pivot betaSpec handoff: the
+full stored loop keeps the zero-prefixed signed active vector and its generic
+`householderBetaSpec`, while the once-shrunk recursive panel may use the
+computed normalized Householder vector with beta `1`.  The statement is still a
+stronger-model route, not an arbitrary rounded `FPModel` theorem. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A)
+    (hcopy : subtractZeroExact fp) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) := by
+  let x : Fin (m + 1) -> Real :=
+    panelFirstColumn (Nat.succ_pos p) (trailingPanel A)
+  let vtail : Fin (m + 1) -> Real :=
+    householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha
+  have hnorm :
+      householderNormalizedVector (m + 1) vtail
+          (householderBetaSpec (m + 1) vtail) =
+        fl_householderNormalizedVector fp (Nat.succ_pos m) x := by
+    exact
+      householderTrailingActiveVector_zero_normalized_eq_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+        fp hadd hmul hdiv hsqrt (Nat.succ_pos m) x alpha hx halpha
+  have htail :
+      fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          vtail (householderBetaSpec (m + 1) vtail) (trailingPanel A) =
+        fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m) x)
+          1 (trailingPanel A) := by
+    have hbase :=
+      fl_householderStoredPanelStep_normalized_betaSpec_eq_of_updateCompatible
+        fp hcompat (m + 1) (p + 1) 0 vtail (trailingPanel A)
+    rw [hnorm] at hbase
+    exact hbase.symm
+  have hsucc :=
+    storedPanelStep_succ_trailingActiveVector_eq_panelFromTopAndTrailing_of_subtractZeroExact_anyCols
+      fp A alpha hfirstTail hcopy
+  calc
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A
+        =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          vtail (householderBetaSpec (m + 1) vtail) (trailingPanel A)) := by
+        simpa [x, vtail] using hsucc
+    _ =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) := by
+        simpa [x] using congrArg
+          (fun T =>
+            panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A) T)
+          htail
+
+/-- Exact-alpha variant of the pivot-1 signed betaSpec handoff to the computed
+normalized trailing reflector. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A)
+    (hcopy : subtractZeroExact fp) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) := by
+  let x : Fin (m + 1) -> Real :=
+    panelFirstColumn (Nat.succ_pos p) (trailingPanel A)
+  let vtail : Fin (m + 1) -> Real :=
+    householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha
+  have hnorm :
+      householderNormalizedVector (m + 1) vtail
+          (householderBetaSpec (m + 1) vtail) =
+        fl_householderNormalizedVector fp (Nat.succ_pos m) x := by
+    exact
+      householderTrailingActiveVector_zero_normalized_eq_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+        fp hadd hmul hdiv hsqrt (Nat.succ_pos m) x alpha hx halpha
+  have htail :
+      fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          vtail (householderBetaSpec (m + 1) vtail) (trailingPanel A) =
+        fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m) x)
+          1 (trailingPanel A) := by
+    have hbase :=
+      fl_householderStoredPanelStep_normalized_betaSpec_eq_of_updateCompatible
+        fp hcompat (m + 1) (p + 1) 0 vtail (trailingPanel A)
+    rw [hnorm] at hbase
+    exact hbase.symm
+  have hsucc :=
+    storedPanelStep_succ_trailingActiveVector_eq_panelFromTopAndTrailing_of_subtractZeroExact_anyCols
+      fp A alpha hfirstTail hcopy
+  calc
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A
+        =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          vtail (householderBetaSpec (m + 1) vtail) (trailingPanel A)) := by
+        simpa [x, vtail] using hsucc
+    _ =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) := by
+        simpa [x] using congrArg
+          (fun T =>
+            panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A) T)
+          htail
+
+/-- Exact add/mul discharges update compatibility in the computed-alpha
+pivot-1 signed betaSpec handoff. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A)
+    (hcopy : subtractZeroExact fp) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
+    hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail hcopy
+
+/-- Exact add/mul discharges update compatibility in the exact-alpha pivot-1
+signed betaSpec handoff. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A)
+    (hcopy : subtractZeroExact fp) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
+    hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail hcopy
+
 /-- Successor-pivot stored-step reconstruction with beta-one data from the
 once-shrunk panel self-dot normalization.
 
