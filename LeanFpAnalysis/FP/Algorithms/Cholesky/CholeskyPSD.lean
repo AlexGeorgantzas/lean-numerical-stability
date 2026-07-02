@@ -2986,6 +2986,84 @@ theorem fl_cpFactor_rows_dominated (fp : FPModel) {n : ℕ}
     hSPSD (cpPivot_max hn A t) (hfloor t htr) hρ0 hht0
     (hht4 t htr) hclose hu1 j
 
+/-- The exact scaled pivot row extracted at one elimination stage:
+    `√(a_pp)` at the pivot, `a_pj/√(a_pp)` elsewhere. -/
+noncomputable def schurRow {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (p : Fin n) : Fin n → ℝ :=
+  fun i => if i = p then Real.sqrt (A p p)
+    else A p i / Real.sqrt (A p p)
+
+/-- **One elimination step subtracts the scaled pivot-row outer
+    product** — entrywise, at every position including the zeroed
+    pivot row and column. -/
+lemma schurStep_decompose {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (p : Fin n) (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hp : 0 < A p p) :
+    ∀ i j : Fin n, schurStep A p i j =
+      A i j - schurRow A p i * schurRow A p j := by
+  intro i j
+  have hsq : Real.sqrt (A p p) * Real.sqrt (A p p) = A p p :=
+    Real.mul_self_sqrt hp.le
+  have hsq0 : Real.sqrt (A p p) ≠ 0 :=
+    (Real.sqrt_pos.mpr hp).ne'
+  unfold schurStep schurRow
+  by_cases hi : i = p
+  · by_cases hj : j = p
+    · rw [hi, hj, if_pos (Or.inl rfl), if_pos rfl, hsq]
+      ring
+    · rw [hi, if_pos (Or.inl rfl), if_pos rfl, if_neg hj,
+        show Real.sqrt (A p p) * (A p j / Real.sqrt (A p p)) =
+          A p j * (Real.sqrt (A p p) / Real.sqrt (A p p)) by ring,
+        div_self hsq0]
+      ring
+  · by_cases hj : j = p
+    · rw [hj, if_pos (Or.inr rfl), if_neg hi, if_pos rfl,
+        show A p i / Real.sqrt (A p p) * Real.sqrt (A p p) =
+          A p i * (Real.sqrt (A p p) / Real.sqrt (A p p)) by ring,
+        div_self hsq0, hsym p i]
+      ring
+    · rw [if_neg (by simp [hi, hj]), if_neg hi, if_neg hj,
+        show A p i / Real.sqrt (A p p) *
+          (A p j / Real.sqrt (A p p)) =
+          A p i * A p j / (Real.sqrt (A p p) * Real.sqrt (A p p))
+          by ring, hsq, hsym p i]
+
+/-- **The exact run telescopes**: after `r` stages,
+    `A = ∑_{t<r} row_tᵀ row_t + S_r` entrywise — the Gram assembly of
+    the exact pivoted factorization, with `S_r` the stage-`r` Schur
+    complement (Theorem 10.14 / (10.22) exact skeleton). -/
+theorem cpState_telescope {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (hsym : ∀ i j : Fin n, A i j = A j i)
+    (r : ℕ)
+    (hfloor : ∀ t : ℕ, t < r →
+      0 < cpState hn A t (cpPivot hn A t) (cpPivot hn A t)) :
+    ∀ i j : Fin n,
+      A i j = (∑ t ∈ Finset.range r,
+        schurRow (cpState hn A t) (cpPivot hn A t) i *
+        schurRow (cpState hn A t) (cpPivot hn A t) j) +
+        cpState hn A r i j := by
+  induction r with
+  | zero =>
+    intro i j
+    simp [cpState]
+  | succ r ih =>
+    intro i j
+    have hfloor' : ∀ t : ℕ, t < r →
+        0 < cpState hn A t (cpPivot hn A t) (cpPivot hn A t) :=
+      fun t ht => hfloor t (Nat.lt_succ_of_lt ht)
+    have hsymr : ∀ i j : Fin n,
+        cpState hn A r i j = cpState hn A r j i :=
+      cpState_symm hn A hsym r
+    have hstep := schurStep_decompose (cpState hn A r)
+      (cpPivot hn A r) hsymr (hfloor r (Nat.lt_succ_self r)) i j
+    have hS : cpState hn A (r + 1) i j =
+        cpState hn A r i j -
+        schurRow (cpState hn A r) (cpPivot hn A r) i *
+        schurRow (cpState hn A r) (cpPivot hn A r) j := hstep
+    have hih := ih hfloor' i j
+    rw [Finset.sum_range_succ, hS]
+    linarith [hih]
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
