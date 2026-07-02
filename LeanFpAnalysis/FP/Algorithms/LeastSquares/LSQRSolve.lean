@@ -17083,6 +17083,220 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQR
     hDeltaR1, hDeltaR2, ?_⟩
   simpa [Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
 
+/-- Explicit conservative `γ̃` coefficient for the concrete Householder QR
+    augmented-system solve in Higham, Chapter 20, Theorem 20.4.
+
+    Higham states Theorem 20.4 with a tilde gamma `γ̃_m`, hiding a modest
+    implementation-dependent constant.  This repository-facing coefficient
+    makes that hidden constant explicit for the current model by dominating both
+    the matrix-side QR gamma and the sharpened fixed-`Q` RHS growth coefficient. -/
+noncomputable def lsTheorem20_4ConcreteGammaTilde (fp : FPModel)
+    (m n : ℕ) : ℝ :=
+  gamma fp (n * householderConstructApplyGammaIndex m) +
+    householderQRRhsPanelSqrtGrowthCoeff fp m n
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    handoff with an explicit conservative `γ̃` coefficient.
+
+    This is the source-shaped closure corresponding to Higham's printed
+    `mn γ̃_m`, `sqrt(m)n γ̃_m` bounds.  The `γ̃` is not identified with the
+    sharper printed-looking `gamma fp (n * householderConstructApplyGammaIndex
+    m)`; it is the explicit conservative coefficient
+    `lsTheorem20_4ConcreteGammaTilde`, which is large enough to cover the
+    verified fixed-`Q` RHS path. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTilde
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0)
+    (hγ : gammaValid fp n) :
+    let gammaTilde : ℝ :=
+      lsTheorem20_4ConcreteGammaTilde fp (n + k) n
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤
+        gamma fp (n * householderConstructApplyGammaIndex (n + k)) *
+          frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let gammaTilde : ℝ :=
+    lsTheorem20_4ConcreteGammaTilde fp (n + k) n
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let R : Fin n → Fin n → ℝ :=
+    fun i j => Rhat (Fin.castAdd k i) j
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+  let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+  let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+  let K : ℕ := householderConstructApplyGammaIndex (n + k)
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * (n + k) + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * (n + k) + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) (by
+      simpa [K] using hvalid)
+  have hgamma_nonneg :
+      0 ≤ gamma fp (n * householderConstructApplyGammaIndex (n + k)) :=
+    gamma_nonneg fp hvalid
+  have hsqrtCoeff_nonneg :
+      0 ≤ householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n :=
+    householderQRRhsPanelSqrtGrowthCoeff_nonneg fp (n + k) n hbase_valid
+  have hgamma_le_tilde :
+      gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+        gammaTilde := by
+    dsimp [gammaTilde, lsTheorem20_4ConcreteGammaTilde]
+    exact le_add_of_nonneg_right hsqrtCoeff_nonneg
+  have hsqrtCoeff_le_tilde :
+      householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n ≤ gammaTilde := by
+    dsimp [gammaTilde, lsTheorem20_4ConcreteGammaTilde]
+    exact le_add_of_nonneg_left hgamma_nonneg
+  have htilde_nonneg : 0 ≤ gammaTilde := by
+    exact le_trans hgamma_nonneg hgamma_le_tilde
+  have htilde_le_n_tilde : gammaTilde ≤ (n : ℝ) * gammaTilde := by
+    have hn1 : (1 : ℝ) ≤ (n : ℝ) := by
+      exact_mod_cast Nat.succ_le_of_lt hn
+    calc
+      gammaTilde = (1 : ℝ) * gammaTilde := by ring
+      _ ≤ (n : ℝ) * gammaTilde :=
+          mul_le_mul_of_nonneg_right hn1 htilde_nonneg
+  have hgamma_le_n_tilde :
+      gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+        (n : ℝ) * gammaTilde :=
+    le_trans hgamma_le_tilde htilde_le_n_tilde
+  have hsqrtCoeff_le_n_tilde :
+      householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n ≤
+        (n : ℝ) * gammaTilde :=
+    le_trans hsqrtCoeff_le_tilde htilde_le_n_tilde
+  rcases
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_sqrt_growth_source_rhs_bound
+      fp A f g hn hvalid hdiag hγ with
+    ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2, hDeltaA,
+      hGnonneg, hGnorm, hDeltaAcomp, hDeltaf, hDeltag, hH1nonneg,
+      hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm, hDeltaR1,
+      hDeltaR2, hsys⟩
+  have hDeltaAcomp_tilde : ∀ i j,
+      |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j := by
+    intro i j
+    have hmaj_nonneg :
+        0 ≤ matMulRect (n + k) (n + k) n G
+          (fun a b => |A a b|) i j := by
+      unfold matMulRect
+      exact Finset.sum_nonneg (by
+        intro t _
+        exact mul_nonneg (hGnonneg i t) (abs_nonneg _))
+    have hcoeff :
+        (n + k : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      calc
+        (n + k : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          (n + k : ℝ) * ((n : ℝ) * gammaTilde) :=
+            mul_le_mul_of_nonneg_left hgamma_le_n_tilde (by positivity)
+        _ = (n + k : ℝ) * (n : ℝ) * gammaTilde := by ring
+    exact le_trans (hDeltaAcomp i j)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  have hDeltaf_tilde : ∀ i,
+      |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1 H2 f rhat i := by
+    intro i
+    have hmaj_nonneg :
+        0 ≤ lsTheorem20_4DeltafMajorant H1 H2 f rhat i :=
+      lsTheorem20_4DeltafMajorant_nonneg H1 H2 f rhat
+        hH1nonneg hH2nonneg i
+    have hcoeff :
+        Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n ≤
+          Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      calc
+        Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtGrowthCoeff fp (n + k) n ≤
+          Real.sqrt (n + k : ℝ) * ((n : ℝ) * gammaTilde) :=
+            mul_le_mul_of_nonneg_left hsqrtCoeff_le_n_tilde
+              (Real.sqrt_nonneg _)
+        _ = Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by ring
+    exact le_trans (hDeltaf i)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  have hDeltag_tilde : ∀ j,
+      |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j := by
+    intro j
+    have hmaj_nonneg :
+        0 ≤ lsTheorem20_4DeltagMajorant A H3 rhat j :=
+      lsTheorem20_4DeltagMajorant_nonneg A H3 rhat hH3nonneg j
+    have hcoeff :
+        Real.sqrt (n + k : ℝ) * (n : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      have hleft_nonneg : 0 ≤ Real.sqrt (n + k : ℝ) * (n : ℝ) :=
+        mul_nonneg (Real.sqrt_nonneg _) (Nat.cast_nonneg n)
+      exact mul_le_mul_of_nonneg_left hgamma_le_tilde hleft_nonneg
+    exact le_trans (hDeltag j)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  refine ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2,
+    hDeltaA, hGnonneg, hGnorm, hDeltaAcomp_tilde, hDeltaf_tilde,
+    hDeltag_tilde, hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm,
+    hH3norm, hDeltaR1, hDeltaR2, ?_⟩
+  simpa [gammaTilde, Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
     handoff with implementation-backed uniform `Delta f` source witnesses and a
     nonrecursive closed RHS growth coefficient.
