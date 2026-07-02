@@ -140,6 +140,35 @@ theorem wedinLemma20_11_sigmaMinCol_mul_vecNorm2_le_rectMatMulVec
   simpa [wedinLemma20_11_sigmaMinCol] using h
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    injectivity of the real rectangular action makes the full-column
+    `sigma_min` positive. -/
+theorem wedinLemma20_11_sigmaMinCol_pos_of_rectMatMulVec_injective
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ)
+    (hinj : Function.Injective (rectMatMulVec A)) :
+    0 < wedinLemma20_11_sigmaMinCol A := by
+  by_contra hnot
+  have hsigma_zero : wedinLemma20_11_sigmaMinCol A = 0 :=
+    le_antisymm (le_of_not_gt hnot) (wedinLemma20_11_sigmaMinCol_nonneg A)
+  obtain ⟨x, hx_ne, hsq⟩ :=
+    realRectToCMatrix_last_singularValue_exists_real_attaining_vector_sq A
+  have hsing_zero :
+      complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k) = 0 := by
+    simpa [wedinLemma20_11_sigmaMinCol] using hsigma_zero
+  have hx_action_zero : rectMatMulVec A x = 0 := by
+    apply funext
+    apply (vecNorm2_eq_zero_iff (rectMatMulVec A x)).1
+    apply (sq_eq_zero_iff).1
+    rw [vecNorm2_sq, hsq, hsing_zero]
+    ring
+  have hx_zero : x = 0 := by
+    have h0 : rectMatMulVec A x = rectMatMulVec A (fun _j => 0) := by
+      rw [hx_action_zero]
+      ext i
+      simp [rectMatMulVec]
+    exact hinj h0
+  exact hx_ne hx_zero
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
     triangle-inequality core behind the singular-value perturbation step.
 
     If `A` has lower action radius `sigma` and the perturbation `Delta` has
@@ -280,6 +309,21 @@ theorem wedinLemma20_11_sigmaMinCol_sub_le_sigmaMinCol_of_sub_rectOpNorm2Le
     nlinarith
   · have hB_nonneg := wedinLemma20_11_sigmaMinCol_nonneg B
     linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    a strict full-column perturbation below `sigma_min(A)` makes
+    `sigma_min(B)` positive. -/
+theorem wedinLemma20_11_sigmaMinCol_pos_of_sub_rectOpNorm2Le_lt
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hsmall : delta < wedinLemma20_11_sigmaMinCol A) :
+    0 < wedinLemma20_11_sigmaMinCol B := by
+  have hgap :=
+    wedinLemma20_11_sigmaMinCol_sub_le_sigmaMinCol_of_sub_rectOpNorm2Le
+      A B hDelta
+  have hpos : 0 < wedinLemma20_11_sigmaMinCol A - delta := by
+    linarith
+  exact lt_of_lt_of_le hpos hgap
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
     strict perturbations below a lower action radius preserve injectivity.
