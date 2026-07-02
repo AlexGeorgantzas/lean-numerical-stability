@@ -1253,6 +1253,63 @@ theorem w_norm_bound_from_cond
     W_norm ^ 2 ≤ κ_A11 :=
   hW
 
+/-- **Abstract back-substitution growth** (Lemma 10.13 engine): if each
+    `|w i|` is bounded by `1` plus the sum of the later `|w j|` — the
+    pivot-normalized form of the triangular solve under the (10.13)
+    bounds — then `|w i| ≤ 2^{r-1-i}`, by downward induction with the
+    geometric sum `1 + (2^t − 1) = 2^t`. -/
+lemma backsub_growth {r : ℕ} (w : Fin r → ℝ)
+    (hrec : ∀ i : Fin r, |w i| ≤ 1 +
+      ∑ j ∈ Finset.univ.filter (fun j : Fin r => i.val < j.val), |w j|) :
+    ∀ i : Fin r, |w i| ≤ 2 ^ (r - 1 - i.val) := by
+  have H : ∀ (t : ℕ) (i : Fin r), r - 1 - i.val = t →
+      |w i| ≤ 2 ^ t := by
+    intro t
+    induction t using Nat.strong_induction_on with
+    | _ t IH =>
+      intro i hit
+      have himg : (Finset.univ.filter
+          (fun j : Fin r => i.val < j.val)).image
+          (fun j : Fin r => r - 1 - j.val) = Finset.range t := by
+        ext k
+        simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ,
+          true_and, Finset.mem_range]
+        constructor
+        · rintro ⟨j, hj, rfl⟩
+          have := j.isLt
+          omega
+        · intro hk
+          refine ⟨⟨r - 1 - k, by omega⟩, by simp; omega, by simp; omega⟩
+      have hinj : ∀ a ∈ Finset.univ.filter
+          (fun j : Fin r => i.val < j.val),
+          ∀ b ∈ Finset.univ.filter
+          (fun j : Fin r => i.val < j.val),
+          r - 1 - a.val = r - 1 - b.val → a = b := by
+        intro a ha b hb hab
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at ha hb
+        have := a.isLt
+        have := b.isLt
+        exact Fin.ext (by omega)
+      have hsum_exp : ∑ j ∈ Finset.univ.filter
+          (fun j : Fin r => i.val < j.val), (2:ℝ) ^ (r - 1 - j.val) =
+          ∑ k ∈ Finset.range t, (2:ℝ) ^ k := by
+        rw [← himg, Finset.sum_image hinj]
+      calc |w i| ≤ 1 + ∑ j ∈ Finset.univ.filter
+            (fun j : Fin r => i.val < j.val), |w j| := hrec i
+        _ ≤ 1 + ∑ j ∈ Finset.univ.filter
+            (fun j : Fin r => i.val < j.val),
+            (2:ℝ) ^ (r - 1 - j.val) := by
+            gcongr with j hj
+            simp only [Finset.mem_filter, Finset.mem_univ,
+              true_and] at hj
+            exact IH (r - 1 - j.val) (by have := j.isLt; omega) j rfl
+        _ = 1 + ∑ k ∈ Finset.range t, (2:ℝ) ^ k := by rw [hsum_exp]
+        _ = 2 ^ t := by
+            rw [geom_sum_eq (by norm_num : (2:ℝ) ≠ 1) t]
+            ring
+  intro i
+  exact H (r - 1 - i.val) i rfl
+
 -- ============================================================
 -- §10.3  Lemma 10.13: Complete pivoting bound
 -- ============================================================
