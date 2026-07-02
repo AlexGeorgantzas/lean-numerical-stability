@@ -58821,6 +58821,36 @@ theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_LUFactSpec_
         hn' hle A' U' hApos htrace')
     hU_diag hLU hn hn3 hL_bound
 
+/-- **Equation (9.14) / Theorem 9.5**, exact complete-permuted certificate
+complete-pivoting source bound at Wilkinson's sharp RHS in dimension one. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_LUFactSpec_of_eq_one
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hone : n = 1)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau hLU.1).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_LUFactSpec_of_le_two
+    fp n hn_pos (by omega) A L_hat U_hat sigma tau b hAmax htrace
+    hU_diag hLU hn hn3 hL_bound
+
 /-- **Theorem 9.5**, complete-pivoted exact-certificate source bound from a
 visible growth bound.
 
