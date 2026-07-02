@@ -3716,6 +3716,7 @@ Source-facing Chapter 10 wrappers:
 - `higham10_14_schurComplement`
 - `higham10_10_schur_complement_perturbation`
 - `higham10_12_w_norm_bound_from_cond`
+- `higham10_6_fl_scaled_forward_error_source` (source gamma_{3n+1} constant) / `eps_tot_le_gamma_3n1`
 - `higham10_12_psd_w_action_bound` / `higham10_12_w_action_norm_bound` (honest: PSD block quadratic form + Rayleigh)
 - `quadForm_append_split`
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)

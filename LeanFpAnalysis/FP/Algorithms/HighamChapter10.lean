@@ -1754,6 +1754,70 @@ theorem higham10_6_fl_scaled_forward_error (fp : FPModel) (n : ℕ)
 
 
 
+/-- **Absorption of the solve-chain constant into `γ_{3n+1}`**
+    (Higham §10.1, proof of Theorem 10.6):
+    `γ_{n+1} + 2γ_n + γ_n² ≤ γ_{3n+1}`, via
+    `2γ_n + γ_n² ≤ γ_{2n}` and `γ_{n+1} + γ_{2n} ≤ γ_{3n+1}`. -/
+lemma eps_tot_le_gamma_3n1 (fp : FPModel) (n : ℕ)
+    (hn3 : gammaValid fp (3 * n + 1)) :
+    gamma fp (n + 1) + 2 * gamma fp n + gamma fp n ^ 2 ≤
+      gamma fp (3 * n + 1) := by
+  have hn1 : gammaValid fp (n + 1) := gammaValid_mono fp (by omega) hn3
+  have hstep1 : gamma fp n + gamma fp n + gamma fp n * gamma fp n ≤
+      gamma fp (2 * n) := by
+    have heq : n + n = 2 * n := by omega
+    have h := gamma_sum_le fp n n (gammaValid_mono fp (by omega) hn3)
+    rw [heq] at h; exact h
+  have hstep2 : gamma fp (n + 1) + gamma fp (2 * n) ≤
+      gamma fp (3 * n + 1) := by
+    have heq : (n + 1) + 2 * n = 3 * n + 1 := by omega
+    have h := gamma_sum_le fp (n + 1) (2 * n) (heq ▸ hn3)
+    have hnn1 : 0 ≤ gamma fp (n + 1) := gamma_nonneg fp hn1
+    have hnn2 : 0 ≤ gamma fp (2 * n) :=
+      gamma_nonneg fp (gammaValid_mono fp (by omega) hn3)
+    rw [heq] at h
+    linarith [mul_nonneg hnn1 hnn2]
+  nlinarith [hstep1, hstep2]
+
+/-- **Theorem 10.6 / display (10.10) with the source constant**: the
+    scaled forward-error bound of `higham10_6_fl_scaled_forward_error`
+    with the composite solve-chain constant absorbed into Higham's
+    `γ_{3n+1}` — `c = κ n γ_{3n+1}/(1 − γ_{n+1})` exactly as printed. -/
+theorem higham10_6_fl_scaled_forward_error_source (fp : FPModel) (n : ℕ)
+    (A R Hinv ΔA : Fin n → Fin n → ℝ) (x xhat b : Fin n → ℝ)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hγ1 : gamma fp (n + 1) < 1)
+    (hn3 : gammaValid fp (3 * n + 1))
+    (hChol : CholeskyBackwardError n A R (gamma fp (n + 1)))
+    (hΔA : ∀ i j : Fin n, |ΔA i j| ≤
+      (gamma fp (n + 1) + 2 * gamma fp n + gamma fp n ^ 2) *
+        ∑ k : Fin n, |R k i| * |R k j|)
+    (hInv : ∀ v : Fin n → ℝ,
+      matMulVec n Hinv (matMulVec n (fun i l : Fin n =>
+        A i l / (Real.sqrt (A i i) * Real.sqrt (A l l))) v) = v)
+    (κ : ℝ) (hκ0 : 0 ≤ κ) (hκ : opNorm2Le Hinv κ)
+    (hAx : matMulVec n A x = b)
+    (hAhat : ∀ i : Fin n,
+      matMulVec n A xhat i + matMulVec n ΔA xhat i = b i)
+    (hc1 : κ * ((n : ℝ) *
+      (gamma fp (3 * n + 1) / (1 - gamma fp (n + 1)))) < 1) :
+    vecNorm2 (fun i => Real.sqrt (A i i) * xhat i -
+        Real.sqrt (A i i) * x i) ≤
+      κ * ((n : ℝ) * (gamma fp (3 * n + 1) / (1 - gamma fp (n + 1)))) /
+        (1 - κ * ((n : ℝ) *
+          (gamma fp (3 * n + 1) / (1 - gamma fp (n + 1))))) *
+      vecNorm2 (fun i => Real.sqrt (A i i) * x i) := by
+  have habsorb := eps_tot_le_gamma_3n1 fp n hn3
+  refine higham10_6_fl_scaled_forward_error fp n A R Hinv ΔA x xhat b
+    hAdiag hγ1 hChol (gamma fp (3 * n + 1))
+    (gamma_nonneg fp hn3) (fun i j => ?_) hInv κ hκ0 hκ hAx hAhat hc1
+  calc |ΔA i j|
+      ≤ (gamma fp (n + 1) + 2 * gamma fp n + gamma fp n ^ 2) *
+          ∑ k : Fin n, |R k i| * |R k j| := hΔA i j
+    _ ≤ gamma fp (3 * n + 1) * ∑ k : Fin n, |R k i| * |R k j| :=
+        mul_le_mul_of_nonneg_right habsorb
+          (absRT_R_product_nonneg n R i j)
+
 /-! ## §10.2 Sensitivity of the Cholesky Factorization -/
 
 /-- **Theorem 10.8**, Sun's normwise perturbation interface. -/
