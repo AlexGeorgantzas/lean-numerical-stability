@@ -10834,3 +10834,17 @@ These compile, but should not be treated as fully derived stability results:
   the structured dimension-free triple-product max-entry estimate,
   diagonal-update/source table data, Problem 13.4 source comparisons, and
   Theorem 13.6 cited estimates remain open.
+
+- 2026-07-01 Problem 13.4 parent inverse-entry handoff: added
+  `Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_parent_inverse_entry_exact_kappa`,
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_parent_inverse_entry`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_parent_inverse_entry`.
+  These use the Problem 13.8 block inverse formula, via
+  `higham13_problem13_4_firstSplit_schurTail_inverse_entry_bound_from_block_inverse`,
+  to derive the first Schur-tail inverse-entry certificate from the parent
+  first-split inverse-entry comparison, then reuse the active-suffix source
+  chain to propagate through later tails.  This removes the separate
+  first-Schur-tail inverse-entry premise from the Eq.13.22/Eq.13.23
+  active-suffix product surfaces while keeping the genuine parent inverse-entry
+  source comparison and, for Eq.13.23, the source `rho <= 2` theorem explicit.
