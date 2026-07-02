@@ -4906,6 +4906,63 @@ theorem higham9_2_permutedRectRoundedLoopStageTrace {n : ℕ}
     (higham9_2_rowPermutedMatrix A sigma)
 
 /-- **Algorithm 9.2 / Theorem 9.3**, executable row-pivoted rectangular
+rounded-loop absolute-budget certificate production.
+
+The concrete rectangular Doolittle loop run on the row-permuted matrix `PA`
+also supplies the absolute-budget certificate used by downstream compressed
+and dense-loop backward-error wrappers. -/
+theorem higham9_2_permutedRectRoundedLoop_to_rectAbsBudgetCertificate
+    {n : ℕ} (fp : FPModel)
+    (A : Fin n → Fin n → ℝ) (sigma : Fin n → Fin n)
+    (hU_diag : ∀ k : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma) k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowPermutedMatrix A sigma)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+              (higham9_2_rowPermutedMatrix A sigma) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+              (higham9_2_rowPermutedMatrix A sigma) k k|) :
+    higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) (higham9_2_rowPermutedMatrix A sigma)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+        (higham9_2_rowPermutedMatrix A sigma))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+        (higham9_2_rowPermutedMatrix A sigma)) fp
+      (higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+        (higham9_2_rowPermutedMatrix A sigma)
+        (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma))
+        (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma)))
+      (higham9_2_rectDoolittleLAbsBudget fp
+        (higham9_2_rowPermutedMatrix A sigma)
+        (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma))
+        (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma))) :=
+  higham9_2_rectRoundedLoop_to_rectAbsBudgetCertificate
+    fp (Nat.le_refl n) (higham9_2_rowPermutedMatrix A sigma)
+    hU_diag hn hU_budget_le hL_budget_le
+
+/-- **Algorithm 9.2 / Theorem 9.3**, executable row-pivoted rectangular
 rounded-loop dense-certificate production.
 
 This is the named dense-loop certificate produced by running the executable
@@ -5084,6 +5141,63 @@ theorem higham9_2_completePermutedRectRoundedLoopStageTrace {n : ℕ}
         (higham9_2_rowColPermutedMatrix A sigma tau)) fp :=
   higham9_2_rectRoundedLoopStageTrace fp (Nat.le_refl n)
     (higham9_2_rowColPermutedMatrix A sigma tau)
+
+/-- **Algorithm 9.2 / Theorem 9.3**, executable complete-pivoted rectangular
+rounded-loop absolute-budget certificate production.
+
+The concrete rectangular Doolittle loop run on `PAQ` supplies the absolute-
+budget certificate consumed before the complete-pivoted dense-loop
+backward-error surface. -/
+theorem higham9_2_completePermutedRectRoundedLoop_to_rectAbsBudgetCertificate
+    {n : ℕ} (fp : FPModel)
+    (A : Fin n → Fin n → ℝ) (sigma tau : Fin n → Fin n)
+    (hU_diag : ∀ k : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) k k|) :
+    higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) (higham9_2_rowColPermutedMatrix A sigma tau)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+        (higham9_2_rowColPermutedMatrix A sigma tau))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+        (higham9_2_rowColPermutedMatrix A sigma tau)) fp
+      (higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+        (higham9_2_rowColPermutedMatrix A sigma tau)
+        (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau))
+        (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau)))
+      (higham9_2_rectDoolittleLAbsBudget fp
+        (higham9_2_rowColPermutedMatrix A sigma tau)
+        (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau))
+        (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau))) :=
+  higham9_2_rectRoundedLoop_to_rectAbsBudgetCertificate
+    fp (Nat.le_refl n) (higham9_2_rowColPermutedMatrix A sigma tau)
+    hU_diag hn hU_budget_le hL_budget_le
 
 /-- **Algorithm 9.2 / Theorem 9.3**, executable complete-pivoted rectangular
 rounded-loop dense-certificate production.
