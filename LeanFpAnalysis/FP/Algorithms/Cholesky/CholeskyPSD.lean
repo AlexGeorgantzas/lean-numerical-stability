@@ -2171,6 +2171,121 @@ theorem cpPivot_sequence_stable_small {n : ℕ} (hn : 0 < n)
   intro s hs
   exact (hmain r le_rfl).2 s hs
 
+end LeanFpAnalysis.FP
+
+namespace LeanFpAnalysis.FP
+
+/-- **Floating-point elimination step** (Theorem 10.14 pivoted-trace
+    route): the fl-arithmetic analogue of `schurStep` — one Schur
+    update computed with rounded multiply, divide, and subtract. -/
+noncomputable def fl_schurStep (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (p : Fin n) : Fin n → Fin n → ℝ :=
+  fun i j => if i = p ∨ j = p then 0
+    else fp.fl_sub (A i j) (fp.fl_div (fp.fl_mul (A i p) (A p j)) (A p p))
+
+/-- **One-stage fl-vs-exact proximity**: with entry cap `c` and pivot
+    floor `ρ > 0`, the floating-point elimination step is entrywise
+    within `u(c + c²/ρ) + (c²/ρ)(2u + u²)(1 + u)` of the exact one —
+    the seed of the induction that transfers the exact complete-pivoting
+    invariants (pivot sequence via Lemma 10.11, tail domination via
+    (10.13)) to the computed factor. -/
+theorem fl_schurStep_close (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (p : Fin n) (c ρ : ℝ)
+    (hc : 0 ≤ c) (hρ : 0 < ρ)
+    (hcap : ∀ i j : Fin n, |A i j| ≤ c)
+    (hfloor : ρ ≤ A p p) :
+    ∀ i j : Fin n, |fl_schurStep fp A p i j - schurStep A p i j| ≤
+      fp.u * (c + c ^ 2 / ρ) +
+        (c ^ 2 / ρ) * (2 * fp.u + fp.u ^ 2) * (1 + fp.u) := by
+  intro i j
+  have hu0 := fp.u_nonneg
+  have hrhs0 : (0:ℝ) ≤ fp.u * (c + c ^ 2 / ρ) +
+      (c ^ 2 / ρ) * (2 * fp.u + fp.u ^ 2) * (1 + fp.u) := by
+    positivity
+  by_cases hij : i = p ∨ j = p
+  · unfold fl_schurStep schurStep
+    rw [if_pos hij, if_pos hij, sub_zero, abs_zero]
+    exact hrhs0
+  · unfold fl_schurStep schurStep
+    rw [if_neg hij, if_neg hij]
+    have hd0 : A p p ≠ 0 := (lt_of_lt_of_le hρ hfloor).ne'
+    have hdpos : (0:ℝ) < A p p := lt_of_lt_of_le hρ hfloor
+    obtain ⟨δ₁, hδ₁, hmul⟩ := fp.model_mul (A i p) (A p j)
+    obtain ⟨δ₂, hδ₂, hdiv⟩ := fp.model_div
+      (fp.fl_mul (A i p) (A p j)) (A p p) hd0
+    obtain ⟨δ₃, hδ₃, hsub⟩ := fp.model_sub (A i j)
+      (fp.fl_div (fp.fl_mul (A i p) (A p j)) (A p p))
+    rw [hsub, hdiv, hmul]
+    -- the quotient magnitude is capped by c²/ρ
+    have hquot : |A i p * A p j / A p p| ≤ c ^ 2 / ρ := by
+      rw [abs_div, abs_of_pos hdpos]
+      have hnum : |A i p * A p j| ≤ c ^ 2 := by
+        rw [abs_mul]
+        calc |A i p| * |A p j| ≤ c * c :=
+              mul_le_mul (hcap i p) (hcap p j) (abs_nonneg _) hc
+          _ = c ^ 2 := by ring
+      calc |A i p * A p j| / A p p ≤ c ^ 2 / A p p := by gcongr
+        _ ≤ c ^ 2 / ρ := by gcongr
+    have hS : |A i j - A i p * A p j / A p p| ≤ c + c ^ 2 / ρ := by
+      calc |A i j - A i p * A p j / A p p|
+          ≤ |A i j| + |A i p * A p j / A p p| := by
+            have h := abs_add_le (A i j) (-(A i p * A p j / A p p))
+            rw [abs_neg, ← sub_eq_add_neg] at h
+            exact h
+        _ ≤ c + c ^ 2 / ρ := add_le_add (hcap i j) hquot
+    -- algebraic form of the error
+    have hexpand : (A i j - A i p * A p j * (1 + δ₁) / A p p * (1 + δ₂))
+          * (1 + δ₃) - (A i j - A i p * A p j / A p p) =
+        (A i j - A i p * A p j / A p p) * δ₃ -
+        A i p * A p j / A p p *
+          ((1 + δ₁) * (1 + δ₂) * (1 + δ₃) - (1 + δ₃)) := by
+      field_simp
+      ring
+    rw [hexpand]
+    have herr : |(1 + δ₁) * (1 + δ₂) * (1 + δ₃) - (1 + δ₃)| ≤
+        (2 * fp.u + fp.u ^ 2) * (1 + fp.u) := by
+      have h1 : (1 + δ₁) * (1 + δ₂) * (1 + δ₃) - (1 + δ₃) =
+          (δ₁ + δ₂ + δ₁ * δ₂) * (1 + δ₃) := by ring
+      rw [h1, abs_mul]
+      have h2 : |δ₁ + δ₂ + δ₁ * δ₂| ≤ 2 * fp.u + fp.u ^ 2 := by
+        have ha := abs_le.mp hδ₁
+        have hb := abs_le.mp hδ₂
+        have hab : |δ₁ * δ₂| ≤ fp.u ^ 2 := by
+          rw [abs_mul]
+          calc |δ₁| * |δ₂| ≤ fp.u * fp.u :=
+                mul_le_mul hδ₁ hδ₂ (abs_nonneg _) hu0
+            _ = fp.u ^ 2 := by ring
+        have hab' := abs_le.mp hab
+        rw [abs_le]
+        constructor <;> linarith [ha.1, ha.2, hb.1, hb.2,
+          hab'.1, hab'.2]
+      have h3 : |1 + δ₃| ≤ 1 + fp.u := by
+        have := abs_le.mp hδ₃
+        rw [abs_le]
+        constructor <;> linarith [this.1, this.2, hu0]
+      exact mul_le_mul h2 h3 (abs_nonneg _) (by positivity)
+    calc |(A i j - A i p * A p j / A p p) * δ₃ -
+          A i p * A p j / A p p *
+            ((1 + δ₁) * (1 + δ₂) * (1 + δ₃) - (1 + δ₃))|
+        ≤ |(A i j - A i p * A p j / A p p) * δ₃| +
+          |A i p * A p j / A p p *
+            ((1 + δ₁) * (1 + δ₂) * (1 + δ₃) - (1 + δ₃))| := by
+          have h := abs_add_le
+            ((A i j - A i p * A p j / A p p) * δ₃)
+            (-(A i p * A p j / A p p *
+              ((1 + δ₁) * (1 + δ₂) * (1 + δ₃) - (1 + δ₃))))
+          rw [abs_neg, ← sub_eq_add_neg] at h
+          exact h
+      _ ≤ (c + c ^ 2 / ρ) * fp.u +
+          (c ^ 2 / ρ) * ((2 * fp.u + fp.u ^ 2) * (1 + fp.u)) := by
+          refine add_le_add ?_ ?_
+          · rw [abs_mul]
+            exact mul_le_mul hS hδ₃ (abs_nonneg _) (by positivity)
+          · rw [abs_mul]
+            exact mul_le_mul hquot herr (abs_nonneg _) (by positivity)
+      _ = fp.u * (c + c ^ 2 / ρ) +
+          (c ^ 2 / ρ) * (2 * fp.u + fp.u ^ 2) * (1 + fp.u) := by ring
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
