@@ -1420,6 +1420,157 @@ theorem schur_perturbation_remainder_bound {k m : ℕ}
   constructor <;> linarith [h1.1, h1.2, h2.1, h2.2, h3.1, h3.2,
     h4.1, h4.2, h5.1, h5.2]
 
+/-- PSD diagonal entries are nonnegative (general-`n` public form). -/
+lemma isPosSemiDef_diag_nonneg {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (i : Fin n) : 0 ≤ A i i := by
+  have h := hPSD.2 (fun k => if k = i then 1 else 0)
+  simpa [Finset.sum_ite_eq', Finset.mul_sum] using h
+
+/-- **PSD off-diagonal domination, non-strict form** (Problem 10.1 in
+    PSD strength): `|a_ij| ≤ √(a_ii) √(a_jj)`. -/
+lemma psd_abs_entry_le_sqrt_diag {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (i j : Fin n) :
+    |A i j| ≤ Real.sqrt (A i i) * Real.sqrt (A j j) := by
+  have hdi := isPosSemiDef_diag_nonneg A hPSD i
+  have hdj := isPosSemiDef_diag_nonneg A hPSD j
+  rcases eq_or_ne i j with rfl | hij
+  · rw [abs_of_nonneg hdi]
+    exact (Real.mul_self_sqrt hdi).ge
+  · set u : ℝ := Real.sqrt (A i i) with hu
+    set w : ℝ := Real.sqrt (A j j) with hw
+    have hu0 : 0 ≤ u := Real.sqrt_nonneg _
+    have hw0 : 0 ≤ w := Real.sqrt_nonneg _
+    have hu2 : u ^ 2 = A i i := Real.sq_sqrt hdi
+    have hw2 : w ^ 2 = A j j := Real.sq_sqrt hdj
+    have hsym := hPSD.1 i j
+    have hqf : ∀ t s : ℝ, 0 ≤ t ^ 2 * A i i + t * s * (2 * A i j) +
+        s ^ 2 * A j j := by
+      intro t s
+      have h := hPSD.2 (fun k => if k = i then t else
+        if k = j then s else 0)
+      rw [quadForm_two_point A i j hij t s] at h
+      have h2 : A i j + A j i = 2 * A i j := by rw [← hsym]; ring
+      rw [h2] at h
+      linarith [h]
+    -- zero-diagonal cases force a zero entry
+    by_cases hzi : A i i = 0
+    · have hAij : A i j = 0 := by
+        by_contra hne
+        have h := hqf (-(A j j + 1) / (2 * A i j)) 1
+        rw [hzi] at h
+        have h2 : (-(A j j + 1) / (2 * A i j)) * 1 * (2 * A i j) =
+            -(A j j + 1) := by
+          field_simp [hne]
+        nlinarith [h, h2]
+      rw [hAij, abs_zero]
+      positivity
+    by_cases hzj : A j j = 0
+    · have hAij : A i j = 0 := by
+        by_contra hne
+        have h := hqf 1 (-(A i i + 1) / (2 * A i j))
+        rw [hzj] at h
+        have h2 : (1 : ℝ) * (-(A i i + 1) / (2 * A i j)) *
+            (2 * A i j) = -(A i i + 1) := by
+          field_simp [hne]
+        nlinarith [h, h2]
+      rw [hAij, abs_zero]
+      positivity
+    -- positive-diagonal case: evaluate at (w, ±u)
+    have hupos : 0 < u := Real.sqrt_pos.mpr (lt_of_le_of_ne hdi
+      (Ne.symm hzi))
+    have hwpos : 0 < w := Real.sqrt_pos.mpr (lt_of_le_of_ne hdj
+      (Ne.symm hzj))
+    have hq1 := hqf w u
+    have hq2 := hqf w (-u)
+    rw [abs_le]
+    constructor
+    · nlinarith [hq1, hu2, hw2, mul_pos hupos hwpos]
+    · nlinarith [hq2, hu2, hw2, mul_pos hupos hwpos]
+
+/-- **PSD quadratic form is trace-bounded**:
+    `xᵀAx ≤ (∑ᵢ a_ii)(∑ᵢ xᵢ²)` — entrywise domination by
+    `√(a_ii a_jj)` plus Cauchy–Schwarz. This turns the trace into a
+    computable operator certificate for PSD matrices. -/
+lemma psd_quadForm_le_trace {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (x : Fin n → ℝ) :
+    ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j ≤
+      (∑ i : Fin n, A i i) * ∑ i : Fin n, x i ^ 2 := by
+  have hstep : ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j ≤
+      ∑ i : Fin n, ∑ j : Fin n,
+        (|x i| * Real.sqrt (A i i)) * (|x j| * Real.sqrt (A j j)) := by
+    refine Finset.sum_le_sum fun i _ => Finset.sum_le_sum fun j _ => ?_
+    have habs : x i * A i j * x j ≤ |x i| * |A i j| * |x j| := by
+      calc x i * A i j * x j ≤ |x i * A i j * x j| := le_abs_self _
+        _ = |x i| * |A i j| * |x j| := by rw [abs_mul, abs_mul]
+    calc x i * A i j * x j ≤ |x i| * |A i j| * |x j| := habs
+      _ ≤ |x i| * (Real.sqrt (A i i) * Real.sqrt (A j j)) * |x j| := by
+          refine mul_le_mul_of_nonneg_right
+            (mul_le_mul_of_nonneg_left
+              (psd_abs_entry_le_sqrt_diag A hPSD i j)
+              (abs_nonneg _)) (abs_nonneg _)
+      _ = (|x i| * Real.sqrt (A i i)) * (|x j| * Real.sqrt (A j j)) :=
+          by ring
+  have hsq : ∑ i : Fin n, ∑ j : Fin n,
+      (|x i| * Real.sqrt (A i i)) * (|x j| * Real.sqrt (A j j)) =
+      (∑ i : Fin n, |x i| * Real.sqrt (A i i)) ^ 2 := by
+    rw [sq, Finset.sum_mul_sum]
+  have hcs := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
+    (fun i => |x i|) (fun i => Real.sqrt (A i i))
+  have hL : ∑ i : Fin n, |x i| ^ 2 = ∑ i : Fin n, x i ^ 2 :=
+    Finset.sum_congr rfl fun i _ => sq_abs _
+  have hR : ∑ i : Fin n, Real.sqrt (A i i) ^ 2 = ∑ i : Fin n, A i i :=
+    Finset.sum_congr rfl fun i _ =>
+      Real.sq_sqrt (isPosSemiDef_diag_nonneg A hPSD i)
+  rw [hL, hR] at hcs
+  calc ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j
+      ≤ (∑ i : Fin n, |x i| * Real.sqrt (A i i)) ^ 2 :=
+        hstep.trans_eq hsq
+    _ ≤ (∑ i : Fin n, x i ^ 2) * ∑ i : Fin n, A i i := hcs
+    _ = (∑ i : Fin n, A i i) * ∑ i : Fin n, x i ^ 2 := mul_comm _ _
+
+/-- **PSD entries are dominated by the largest diagonal entry**
+    (Higham §10.3, the (10.23)/(10.24) termination engine): if every
+    diagonal entry of a PSD matrix is at most `d`, every entry is at
+    most `d` in absolute value. Applied to the exact trailing Schur
+    complement at termination, this converts the pivoted algorithm's
+    stopping test `max diag ≤ tol` into the entrywise trailing residual
+    bound. -/
+lemma psd_abs_entry_le_maxdiag {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (d : ℝ)
+    (hd : ∀ i : Fin n, A i i ≤ d) (i j : Fin n) :
+    |A i j| ≤ d := by
+  have hdi := isPosSemiDef_diag_nonneg A hPSD i
+  have hd0 : 0 ≤ d := le_trans hdi (hd i)
+  calc |A i j| ≤ Real.sqrt (A i i) * Real.sqrt (A j j) :=
+        psd_abs_entry_le_sqrt_diag A hPSD i j
+    _ ≤ Real.sqrt d * Real.sqrt d :=
+        mul_le_mul (Real.sqrt_le_sqrt (hd i))
+          (Real.sqrt_le_sqrt (hd j)) (Real.sqrt_nonneg _)
+          (Real.sqrt_nonneg _)
+    _ = d := Real.mul_self_sqrt hd0
+
+/-- **PSD quadratic form bounded by dimension times the largest
+    diagonal** (the normwise reading of the same engine):
+    `xᵀAx ≤ n·d·‖x‖₂²` when every `a_ii ≤ d`. -/
+lemma psd_quadForm_le_card_maxdiag {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (d : ℝ)
+    (hd : ∀ i : Fin n, A i i ≤ d) (x : Fin n → ℝ) :
+    ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j ≤
+      (n : ℝ) * d * ∑ i : Fin n, x i ^ 2 := by
+  have htr : (∑ i : Fin n, A i i) ≤ (n : ℝ) * d := by
+    calc ∑ i : Fin n, A i i ≤ ∑ _i : Fin n, d :=
+          Finset.sum_le_sum fun i _ => hd i
+      _ = (n : ℝ) * d := by
+          rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+            nsmul_eq_mul]
+  have hx : 0 ≤ ∑ i : Fin n, x i ^ 2 :=
+    Finset.sum_nonneg fun i _ => sq_nonneg _
+  calc ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j
+      ≤ (∑ i : Fin n, A i i) * ∑ i : Fin n, x i ^ 2 :=
+        psd_quadForm_le_trace A hPSD x
+    _ ≤ (n : ℝ) * d * ∑ i : Fin n, x i ^ 2 :=
+        mul_le_mul_of_nonneg_right htr hx
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================

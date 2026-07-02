@@ -2178,6 +2178,52 @@ theorem higham10_12_w_action_norm_bound {k m : ℕ} (hk : 0 < k)
   rw [div_mul_eq_mul_div, le_div_iff₀ hlampos, mul_comm]
   linarith [hchain]
 
+/-- The trailing block of a PSD matrix is PSD (zero-padded test
+    vectors through the block split). -/
+lemma isPosSemiDef_trailing_block {k m : ℕ}
+    (A : Fin (k + m) → Fin (k + m) → ℝ)
+    (hPSD : IsPosSemiDef (k + m) A) :
+    IsPosSemiDef m
+      (fun i j : Fin m => A (Fin.natAdd k i) (Fin.natAdd k j)) := by
+  constructor
+  · intro i j
+    exact hPSD.1 _ _
+  · intro x
+    have h := hPSD.2 (Fin.append (fun _ : Fin k => (0:ℝ)) x)
+    rw [quadForm_append_split A (fun _ : Fin k => (0:ℝ)) x] at h
+    simpa using h
+
+/-- **Lemma 10.12, trace form** (fully computable certificate): the
+    solve action `Wv = M A₁₂ v` of a PSD block matrix satisfies
+    `‖Wv‖₂² ≤ (tr A₂₂ / λ_min(A₁₁)) ‖v‖₂²` — the `c₂₂` certificate of
+    `higham10_12_w_action_norm_bound` discharged by
+    `psd_quadForm_le_trace` on the trailing block. -/
+theorem higham10_12_w_action_trace_bound {k m : ℕ} (hk : 0 < k)
+    (A : Fin (k + m) → Fin (k + m) → ℝ)
+    (hPSD : IsPosSemiDef (k + m) A)
+    (M : Fin k → Fin k → ℝ)
+    (hSym : IsSymmetricFiniteMatrix
+      (fun i j : Fin k => A (Fin.castAdd m i) (Fin.castAdd m j)))
+    (hMinv : ∀ (w : Fin k → ℝ) (i : Fin k),
+      ∑ j : Fin k, A (Fin.castAdd m i) (Fin.castAdd m j) *
+        (∑ t : Fin k, M j t * w t) = w i)
+    (hlampos : 0 < finiteMinEigenvalue hk
+      (fun i j : Fin k => A (Fin.castAdd m i) (Fin.castAdd m j)) hSym)
+    (v : Fin m → ℝ) :
+    vecNorm2Sq (fun i : Fin k => ∑ t : Fin k, M i t *
+      (∑ j : Fin m, A (Fin.castAdd m t) (Fin.natAdd k j) * v j)) ≤
+    ((∑ j : Fin m, A (Fin.natAdd k j) (Fin.natAdd k j)) /
+        finiteMinEigenvalue hk
+          (fun i j : Fin k => A (Fin.castAdd m i) (Fin.castAdd m j))
+          hSym)
+      * vecNorm2Sq v := by
+  refine higham10_12_w_action_norm_bound hk A hPSD M hSym hMinv
+    hlampos _ (fun w => ?_) v
+  have h := psd_quadForm_le_trace
+    (fun i j : Fin m => A (Fin.natAdd k i) (Fin.natAdd k j))
+    (isPosSemiDef_trailing_block A hPSD) w
+  simpa [vecNorm2Sq] using h
+
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
 `‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
 an `r × r` upper-triangular block `U` with positive diagonal whose rows
