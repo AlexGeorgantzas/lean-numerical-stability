@@ -947,12 +947,97 @@ theorem fl_cholesky_backward_error (fp : FPModel) (n : ℕ)
     rw [h1, h2, hsym i j]
     exact h
 
-/-- **Border-column entry bound** (Theorem 10.7 induction, sub-increment
-    ii): at stage `j` with `m := j.val`, each border entry `(i, j)` of the
-    bordered block satisfies the certificate bound with the truncated
-    column quantities — `|Gram_ij − a_ij| ≤ γ_{n+1} ‖U_col i‖ ‖c‖`, where
-    all sums run over the first `m` rows only, so no junk value from the
+/-- **Truncated certificate bound** (Theorem 10.7 induction, sub-increment
+    ii, generalized): at stage `j` with `m := j.val`, for any row `i < m`
+    and any column `w` with `i ≤ w`, the certificate entry bound holds with
+    all sums truncated to the first `m` rows —
+    `|Gram_iw − a_iw| ≤ γ_{n+1} ‖U_col i‖ ‖col w ↾ m‖`.  With `w` interior
+    (`w < m`) this bounds the bordered block's interior perturbation; with
+    `w = j` it bounds the border column, and no junk value from the
     not-yet-established stage-`j` square root enters. -/
+theorem fl_cholesky_truncated_bound (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (hn1 : gammaValid fp (n + 1))
+    (j : Fin n) (i : Fin j.val) (w : Fin n) (hiw : i.val ≤ w.val)
+    (hdz_i : i.val < w.val →
+      fl_cholesky fp n A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ ≠ 0)
+    (hpiv_i : (⟨i.val, by omega⟩ : Fin n) = w →
+      0 ≤ fl_cholPivot fp n A ⟨i.val, by omega⟩) :
+    |(∑ p : Fin j.val,
+        fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ *
+        fl_cholesky fp n A ⟨p.val, by omega⟩ w) -
+      A ⟨i.val, by omega⟩ w| ≤
+      gamma fp (n + 1) *
+        (Real.sqrt (∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ ^ 2) *
+         Real.sqrt (∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ w ^ 2)) := by
+  set ihat : Fin n := ⟨i.val, by omega⟩ with hihat
+  have h1 := fl_cholesky_entry_bound_stage fp n A hn1 ihat w hiw
+    hdz_i hpiv_i
+  rw [gram_sum_truncate fp n A j.val j.isLt.le ihat w i.isLt] at h1
+  have habs_trunc : ∑ k : Fin n,
+      |fl_cholesky fp n A k ihat| * |fl_cholesky fp n A k w| =
+      ∑ p : Fin j.val,
+        |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
+        |fl_cholesky fp n A ⟨p.val, by omega⟩ w| := by
+    have hzero : ∀ k : Fin n,
+        k ∉ Finset.univ.filter (fun k : Fin n => k.val < j.val) →
+        |fl_cholesky fp n A k ihat| * |fl_cholesky fp n A k w| = 0 := by
+      intro k hk
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and,
+        Nat.not_lt] at hk
+      rw [fl_cholesky_strict_lower fp n A k ihat (by
+        simp only [hihat]; omega), abs_zero, zero_mul]
+    calc ∑ k : Fin n,
+        |fl_cholesky fp n A k ihat| * |fl_cholesky fp n A k w|
+        = ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < j.val),
+            |fl_cholesky fp n A k ihat| * |fl_cholesky fp n A k w| :=
+          (Finset.sum_subset (Finset.filter_subset _ _)
+            (fun k _ hk => hzero k hk)).symm
+      _ = ∑ p : Fin j.val,
+            |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
+            |fl_cholesky fp n A ⟨p.val, by omega⟩ w| :=
+          (sum_fin_eq_sum_filter_lt' j.isLt.le _).symm
+  rw [habs_trunc] at h1
+  refine le_trans h1 (mul_le_mul_of_nonneg_left ?_ (gamma_nonneg fp hn1))
+  have hcs := Finset.sum_mul_sq_le_sq_mul_sq
+    (Finset.univ : Finset (Fin j.val))
+    (fun p => |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat|)
+    (fun p => |fl_cholesky fp n A ⟨p.val, by omega⟩ w|)
+  have hsq1 : ∑ p : Fin j.val,
+      |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| ^ 2 =
+      ∑ p : Fin j.val,
+        fl_cholesky fp n A ⟨p.val, by omega⟩ ihat ^ 2 :=
+    Finset.sum_congr rfl fun p _ => sq_abs _
+  have hsq2 : ∑ p : Fin j.val,
+      |fl_cholesky fp n A ⟨p.val, by omega⟩ w| ^ 2 =
+      ∑ p : Fin j.val, fl_cholesky fp n A ⟨p.val, by omega⟩ w ^ 2 :=
+    Finset.sum_congr rfl fun p _ => sq_abs _
+  rw [hsq1, hsq2] at hcs
+  have hnn : 0 ≤ ∑ p : Fin j.val,
+      |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
+      |fl_cholesky fp n A ⟨p.val, by omega⟩ w| :=
+    Finset.sum_nonneg fun p _ =>
+      mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  calc ∑ p : Fin j.val,
+      |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
+      |fl_cholesky fp n A ⟨p.val, by omega⟩ w|
+      = Real.sqrt ((∑ p : Fin j.val,
+          |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
+          |fl_cholesky fp n A ⟨p.val, by omega⟩ w|) ^ 2) := by
+        rw [Real.sqrt_sq hnn]
+    _ ≤ Real.sqrt ((∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ihat ^ 2) *
+        ∑ p : Fin j.val, fl_cholesky fp n A ⟨p.val, by omega⟩ w ^ 2) :=
+        Real.sqrt_le_sqrt hcs
+    _ = Real.sqrt (∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ihat ^ 2) *
+        Real.sqrt (∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ w ^ 2) := by
+        rw [Real.sqrt_mul (Finset.sum_nonneg fun p _ => sq_nonneg _)]
+
+/-- **Border-column entry bound**: the `w = j` instance of
+    `fl_cholesky_truncated_bound`. -/
 theorem fl_cholesky_border_bound (fp : FPModel) {n : ℕ}
     (A : Fin n → Fin n → ℝ) (hn1 : gammaValid fp (n + 1))
     (j : Fin n) (i : Fin j.val)
@@ -965,76 +1050,10 @@ theorem fl_cholesky_border_bound (fp : FPModel) {n : ℕ}
         (Real.sqrt (∑ p : Fin j.val,
           fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ ^ 2) *
          Real.sqrt (∑ p : Fin j.val,
-          fl_cholesky fp n A ⟨p.val, by omega⟩ j ^ 2)) := by
-  set ihat : Fin n := ⟨i.val, by omega⟩ with hihat
-  have hij : ihat.val ≤ j.val := (i.isLt).le
-  have h1 := fl_cholesky_entry_bound_stage fp n A hn1 ihat j hij
+          fl_cholesky fp n A ⟨p.val, by omega⟩ j ^ 2)) :=
+  fl_cholesky_truncated_bound fp A hn1 j i j (i.isLt).le
     (fun _ => hdz_i)
-    (fun h => absurd (congrArg Fin.val h) (by simp [hihat]; omega))
-  -- truncate the signed certificate sum
-  rw [gram_sum_truncate fp n A j.val j.isLt.le ihat j i.isLt] at h1
-  -- truncate the absolute certificate sum
-  have habs_trunc : ∑ k : Fin n,
-      |fl_cholesky fp n A k ihat| * |fl_cholesky fp n A k j| =
-      ∑ p : Fin j.val,
-        |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
-        |fl_cholesky fp n A ⟨p.val, by omega⟩ j| := by
-    have hzero : ∀ k : Fin n,
-        k ∉ Finset.univ.filter (fun k : Fin n => k.val < j.val) →
-        |fl_cholesky fp n A k ihat| * |fl_cholesky fp n A k j| = 0 := by
-      intro k hk
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and,
-        Nat.not_lt] at hk
-      rw [fl_cholesky_strict_lower fp n A k ihat (by
-        simp only [hihat]; omega), abs_zero, zero_mul]
-    calc ∑ k : Fin n,
-        |fl_cholesky fp n A k ihat| * |fl_cholesky fp n A k j|
-        = ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < j.val),
-            |fl_cholesky fp n A k ihat| * |fl_cholesky fp n A k j| :=
-          (Finset.sum_subset (Finset.filter_subset _ _)
-            (fun k _ hk => hzero k hk)).symm
-      _ = ∑ p : Fin j.val,
-            |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
-            |fl_cholesky fp n A ⟨p.val, by omega⟩ j| :=
-          (sum_fin_eq_sum_filter_lt' j.isLt.le _).symm
-  rw [habs_trunc] at h1
-  refine le_trans h1 (mul_le_mul_of_nonneg_left ?_ (gamma_nonneg fp hn1))
-  -- Cauchy–Schwarz over the truncated column vectors
-  have hcs := Finset.sum_mul_sq_le_sq_mul_sq
-    (Finset.univ : Finset (Fin j.val))
-    (fun p => |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat|)
-    (fun p => |fl_cholesky fp n A ⟨p.val, by omega⟩ j|)
-  have hsq1 : ∑ p : Fin j.val,
-      |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| ^ 2 =
-      ∑ p : Fin j.val,
-        fl_cholesky fp n A ⟨p.val, by omega⟩ ihat ^ 2 :=
-    Finset.sum_congr rfl fun p _ => sq_abs _
-  have hsq2 : ∑ p : Fin j.val,
-      |fl_cholesky fp n A ⟨p.val, by omega⟩ j| ^ 2 =
-      ∑ p : Fin j.val, fl_cholesky fp n A ⟨p.val, by omega⟩ j ^ 2 :=
-    Finset.sum_congr rfl fun p _ => sq_abs _
-  rw [hsq1, hsq2] at hcs
-  have hnn : 0 ≤ ∑ p : Fin j.val,
-      |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
-      |fl_cholesky fp n A ⟨p.val, by omega⟩ j| :=
-    Finset.sum_nonneg fun p _ =>
-      mul_nonneg (abs_nonneg _) (abs_nonneg _)
-  calc ∑ p : Fin j.val,
-      |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
-      |fl_cholesky fp n A ⟨p.val, by omega⟩ j|
-      = Real.sqrt ((∑ p : Fin j.val,
-          |fl_cholesky fp n A ⟨p.val, by omega⟩ ihat| *
-          |fl_cholesky fp n A ⟨p.val, by omega⟩ j|) ^ 2) := by
-        rw [Real.sqrt_sq hnn]
-    _ ≤ Real.sqrt ((∑ p : Fin j.val,
-          fl_cholesky fp n A ⟨p.val, by omega⟩ ihat ^ 2) *
-        ∑ p : Fin j.val, fl_cholesky fp n A ⟨p.val, by omega⟩ j ^ 2) :=
-        Real.sqrt_le_sqrt hcs
-    _ = Real.sqrt (∑ p : Fin j.val,
-          fl_cholesky fp n A ⟨p.val, by omega⟩ ihat ^ 2) *
-        Real.sqrt (∑ p : Fin j.val,
-          fl_cholesky fp n A ⟨p.val, by omega⟩ j ^ 2) := by
-        rw [Real.sqrt_mul (Finset.sum_nonneg fun p _ => sq_nonneg _)]
+    (fun h => absurd (congrArg Fin.val h) (by simp; omega))
 
 /-- **Pivot locality**: the `l`-th pivot of the algorithm run on a leading
     `m × m` block equals the `l`-th pivot of the full run, `l < m ≤ n`. -/

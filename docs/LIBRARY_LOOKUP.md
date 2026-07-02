@@ -3588,6 +3588,7 @@ Source-facing Chapter 10 wrappers:
 - `fl_cholesky_colNormSq_le_stage`
 - `fl_cholPivot_leading_principal`
 - `fl_cholesky_block_certificate`
+- `fl_cholesky_truncated_bound`
 - `fl_cholesky_border_bound`
 - `fl_chol_offdiag_solve_form`
 - `fl_chol_diag_solve_form`
