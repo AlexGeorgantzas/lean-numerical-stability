@@ -21886,6 +21886,173 @@ theorem higham9_14_tridiag_rowDiagDom_source_h_bound_of_RectDoolittleRoundedStag
     fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
     hn hT hLU hdetA hA_tridiag hRowDom hU_budget_le hL_budget_le le_rfl
 
+/-- **Theorem 9.14**, column-dominant tridiagonal rounded-stage
+model-consuming `f(γ_n)` bound.
+
+The rounded-stage trace supplies equation (9.20) at the natural coefficient,
+while the caller supplies the explicit equation (9.21) triangular-solve model.
+This keeps solve correctness visible but discharges the tridiagonal
+`3|A|` growth comparison from the existing exact `LUFactSpec`. -/
+theorem higham9_14_tridiag_colDiagDom_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleRoundedStageTrace_square_gamma
+        fp n A L_hat U_hat hn hT
+        (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  exact
+    higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A L_hat U_hat y_hat x_hat b 3 (gamma fp n)
+      (gamma_nonneg fp hn)
+      (higham9_13_colDiagDom_tridiag_growth_bound_3_of_LUFactSpec
+        A L_hat U_hat hLU hdetA hA_tridiag hColDom)
+      DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, row-dominant tridiagonal rounded-stage
+model-consuming `f(γ_n)` bound. -/
+theorem higham9_14_tridiag_rowDiagDom_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleRoundedStageTrace_square_gamma
+        fp n A L_hat U_hat hn hT
+        (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  exact
+    higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A L_hat U_hat y_hat x_hat b 3 (gamma fp n)
+      (gamma_nonneg fp hn)
+      (higham9_13_rowDiagDom_tridiag_growth_bound_3_of_LUFactSpec
+        A L_hat U_hat hLU hdetA hA_tridiag hRowDom)
+      DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, column-dominant tridiagonal rounded-stage
+model-consuming final `h(γ_n)` bound. -/
+theorem higham9_14_tridiag_colDiagDom_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleRoundedStageTrace_square_gamma
+        fp n A L_hat U_hat hn hT
+        (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  exact
+    higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A L_hat U_hat y_hat x_hat b 3 (gamma fp n) (by norm_num)
+      (gamma_nonneg fp hn) hγ_lt_one
+      (higham9_13_colDiagDom_tridiag_growth_bound_3_of_LUFactSpec
+        A L_hat U_hat hLU hdetA hA_tridiag hColDom)
+      DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, row-dominant tridiagonal rounded-stage
+model-consuming final `h(γ_n)` bound. -/
+theorem higham9_14_tridiag_rowDiagDom_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  rcases
+      higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleRoundedStageTrace_square_gamma
+        fp n A L_hat U_hat hn hT
+        (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+        hU_budget_le hL_budget_le with
+    ⟨DeltaA_LU, h20⟩
+  exact
+    higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A L_hat U_hat y_hat x_hat b 3 (gamma fp n) (by norm_num)
+      (gamma_nonneg fp hn) hγ_lt_one
+      (higham9_13_rowDiagDom_tridiag_growth_bound_3_of_LUFactSpec
+        A L_hat U_hat hLU hdetA hA_tridiag hRowDom)
+      DeltaA_LU DeltaL DeltaU h20 h21
+
 /-- **Theorem 9.14**, SPD positive-`D L^T` rounded-stage source `f(u)` bound.
 
 The rounded-stage trace supplies the Algorithm 9.2 source certificate, while
