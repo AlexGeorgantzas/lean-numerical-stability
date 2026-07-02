@@ -10,6 +10,8 @@
 
 import Mathlib.Data.Real.Basic
 import Mathlib.LinearAlgebra.Matrix.Rank
+import Mathlib.LinearAlgebra.Matrix.Block
+import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Field
@@ -1075,6 +1077,25 @@ theorem pivoted_spec_rank_eq {n : ℕ} {A R : Fin n → Fin n → ℝ}
     _ = ((Matrix.of R).transpose * Matrix.of R).rank := by rw [hsub]
     _ = (Matrix.of R).rank :=
         Matrix.rank_transpose_mul_self (Matrix.of R)
+
+/-- **The leading `r × r` block of a pivoted factor is a determinant
+    unit** (Theorem 10.9(b), `rank R = r` bridge, `≥` side): upper
+    triangular with positive diagonal, so its determinant is the product
+    of the positive pivots. -/
+theorem pivoted_leading_block_isUnit_det {n : ℕ}
+    {A R : Fin n → Fin n → ℝ} {σ : Fin n → Fin n} {r : ℕ}
+    (hspec : PivotedCholeskySpec n A R σ r) (hr : r ≤ n) :
+    IsUnit (Matrix.of (fun i j : Fin r =>
+      R ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)).det := by
+  have hBT : (Matrix.of (fun i j : Fin r =>
+      R ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)).BlockTriangular id := by
+    intro i j hij
+    exact hspec.R_upper _ _ hij
+  rw [Matrix.det_of_upperTriangular hBT]
+  apply isUnit_iff_ne_zero.mpr
+  apply Finset.prod_ne_zero_iff.mpr
+  intro i _
+  exact (hspec.R_diag_pos ⟨i.val, by omega⟩ i.isLt).ne'
 
 -- ============================================================
 -- §10.3  Theorem 10.9(b): SPD → PivotedCholeskySpec (full rank)
