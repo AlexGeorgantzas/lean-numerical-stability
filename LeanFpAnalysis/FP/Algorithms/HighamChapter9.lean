@@ -5007,6 +5007,45 @@ theorem higham9_2_permutedRectRoundedLoop_to_rectDenseLoopCertificate
     fp (Nat.le_refl n) (higham9_2_rowPermutedMatrix A sigma)
     hU_diag hn hU_budget_le hL_budget_le
 
+/-- **Algorithm 9.2**, executable row-pivoted rectangular loop as a compact
+`DoolittleLU` recurrence certificate for the row-permuted matrix `PA`. -/
+theorem higham9_2_permutedRectRoundedLoop_square_to_DoolittleLU {n : ℕ}
+    (fp : FPModel) (A : Fin n → Fin n → ℝ) (sigma : Fin n → Fin n)
+    (hU_diag : ∀ k : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma) k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowPermutedMatrix A sigma)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+              (higham9_2_rowPermutedMatrix A sigma) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+              (higham9_2_rowPermutedMatrix A sigma) k k|) :
+    higham9_2_DoolittleLU n (higham9_2_rowPermutedMatrix A sigma)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+        (higham9_2_rowPermutedMatrix A sigma))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+        (higham9_2_rowPermutedMatrix A sigma)) fp :=
+  higham9_2_rectRoundedLoop_square_to_DoolittleLU
+    fp (higham9_2_rowPermutedMatrix A sigma)
+    hU_diag hn hU_budget_le hL_budget_le
+
 /-- **Algorithm 9.2 / Theorem 9.3**, executable row-pivoted rectangular loop
 handoff.
 
@@ -5242,6 +5281,47 @@ theorem higham9_2_completePermutedRectRoundedLoop_to_rectDenseLoopCertificate
         (higham9_2_rowColPermutedMatrix A sigma tau)) fp :=
   higham9_2_rectRoundedLoop_to_rectDenseLoopCertificate
     fp (Nat.le_refl n) (higham9_2_rowColPermutedMatrix A sigma tau)
+    hU_diag hn hU_budget_le hL_budget_le
+
+/-- **Algorithm 9.2**, executable complete-pivoted rectangular loop as a
+compact `DoolittleLU` recurrence certificate for the row/column-permuted matrix
+`PAQ`. -/
+theorem higham9_2_completePermutedRectRoundedLoop_square_to_DoolittleLU
+    {n : ℕ} (fp : FPModel)
+    (A : Fin n → Fin n → ℝ) (sigma tau : Fin n → Fin n)
+    (hU_diag : ∀ k : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) k k|) :
+    higham9_2_DoolittleLU n (higham9_2_rowColPermutedMatrix A sigma tau)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+        (higham9_2_rowColPermutedMatrix A sigma tau))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+        (higham9_2_rowColPermutedMatrix A sigma tau)) fp :=
+  higham9_2_rectRoundedLoop_square_to_DoolittleLU
+    fp (higham9_2_rowColPermutedMatrix A sigma tau)
     hU_diag hn hU_budget_le hL_budget_le
 
 /-- **Algorithm 9.2 / Theorem 9.3**, executable complete-pivoted rectangular
