@@ -47,9 +47,11 @@ normalized-vector equality, and raw, record, full-stage, source-closure,
 final-closed, and final-panel endpoint wrappers from all-stage tail-vector
 equalities. The exact primitive-operation route is now also threaded directly
 through the raw, record, source-closure, final-closed, and final-panel endpoint
-wrappers. The full rounded stored-loop proof remains open until the per-stage
-certificate fields are proved from a source-faithful model or replaced by a
-separate compatibility/perturbation theorem.
+wrappers, and exact subtraction now discharges the remaining subtract-zero copy
+premise on the final-closed and final-panel variants. The full rounded
+stored-loop proof remains open until the per-stage certificate fields are
+proved from a source-faithful model or replaced by a separate
+compatibility/perturbation theorem.
 
 For a searchable map from stability-analysis goals to files, definitions, and
 theorem names, see [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).  For a

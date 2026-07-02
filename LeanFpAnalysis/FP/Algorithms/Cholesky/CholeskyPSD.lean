@@ -3333,6 +3333,204 @@ lemma resolvent_entry_cap {k : ℕ} (hk : 0 < k)
     nlinarith
   exact fun i j => le_trans (hbound i j) hχle
 
+/-- The computed factor row extracted at one fl elimination stage:
+    `fl(√a_pp)` at the pivot, `fl(a_pj/fl(√a_pp))` off it. -/
+noncomputable def fl_cpRowOf (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (p : Fin n) : Fin n → ℝ :=
+  fun j => if j = p then fp.fl_sqrt (A p p)
+    else fp.fl_div (A p j) (fp.fl_sqrt (A p p))
+
+/-- **Per-stage defect of the fl factorization step** (R̂-Gram bridge
+    engine): the fl update differs from
+    `A − (computed row)ᵀ(computed row)` entrywise by at most
+    `u|a_ij| + (2u+u²)|r̃_i||r̃_j|`. On the pivot row and column the
+    computed square root cancels *exactly* as a real number, so only
+    the divide's single rounding survives; on the diagonal the
+    `(1+δ)²` of the square root is absorbed for `u ≤ 1/8`. -/
+theorem fl_schurStepFactor_defect_bound (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (p : Fin n)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hApp : 0 < A p p) (hu8 : fp.u ≤ 1 / 8) :
+    ∀ i j : Fin n,
+      |fl_schurStepFactor fp A p i j -
+        (A i j - fl_cpRowOf fp A p i * fl_cpRowOf fp A p j)| ≤
+      fp.u * |A i j| + (2 * fp.u + fp.u ^ 2) *
+        (|fl_cpRowOf fp A p i| * |fl_cpRowOf fp A p j|) := by
+  intro i j
+  have hu0 := fp.u_nonneg
+  obtain ⟨δa, hδa, hsqrt⟩ := fp.model_sqrt (A p p) hApp.le
+  have ha := abs_le.mp hδa
+  have h1a : (0:ℝ) < 1 + δa := by nlinarith [ha.1]
+  have hsq0 : (0:ℝ) < Real.sqrt (A p p) := Real.sqrt_pos.mpr hApp
+  have hfs0 : fp.fl_sqrt (A p p) ≠ 0 := by
+    rw [hsqrt]; positivity
+  have hsqsq : Real.sqrt (A p p) * Real.sqrt (A p p) = A p p :=
+    Real.mul_self_sqrt hApp.le
+  by_cases hi : i = p
+  · -- pivot row: exact real cancellation of the square root
+    obtain ⟨δb, hδb, hdiv⟩ := fp.model_div (A p j)
+      (fp.fl_sqrt (A p p)) hfs0
+    by_cases hj : j = p
+    · -- diagonal: (1+δa)² absorbed at u ≤ 1/8
+      unfold fl_schurStepFactor fl_cpRowOf
+      rw [hi, hj, if_pos (Or.inl rfl), if_pos rfl, hsqrt]
+      have hkey : (0:ℝ) - (A p p - Real.sqrt (A p p) * (1 + δa) *
+          (Real.sqrt (A p p) * (1 + δa))) =
+          A p p * ((1 + δa) * (1 + δa) - 1) := by
+        nlinarith [hsqsq]
+      rw [hkey, abs_mul, abs_of_pos hApp]
+      have herr : |(1 + δa) * (1 + δa) - 1| ≤ 2 * fp.u + fp.u ^ 2 := by
+        have h1 : (1 + δa) * (1 + δa) - 1 = 2 * δa + δa ^ 2 := by ring
+        rw [h1]
+        have h2 : |δa ^ 2| ≤ fp.u ^ 2 := by
+          rw [abs_pow]
+          exact pow_le_pow_left₀ (abs_nonneg _) hδa 2
+        have h3 := abs_le.mp h2
+        rw [abs_le]
+        constructor <;> nlinarith [ha.1, ha.2, h3.1, h3.2]
+      have hrow2 : |Real.sqrt (A p p) * (1 + δa)| *
+          |Real.sqrt (A p p) * (1 + δa)| =
+          A p p * ((1 + δa) * (1 + δa)) := by
+        rw [abs_mul, abs_of_pos hsq0, abs_of_pos h1a]
+        nlinarith [hsqsq]
+      calc A p p * |(1 + δa) * (1 + δa) - 1|
+          ≤ A p p * (2 * fp.u + fp.u ^ 2) :=
+            mul_le_mul_of_nonneg_left herr hApp.le
+        _ ≤ fp.u * A p p + (2 * fp.u + fp.u ^ 2) *
+              (A p p * ((1 + δa) * (1 + δa))) := by
+            have hge : (1 - fp.u) * (1 - fp.u) ≤
+                (1 + δa) * (1 + δa) := by
+              nlinarith [ha.1, hu8, hu0]
+            have h5 : A p p * ((2 * fp.u + fp.u ^ 2) *
+                ((1 - fp.u) * (1 - fp.u))) ≤
+                A p p * ((2 * fp.u + fp.u ^ 2) *
+                ((1 + δa) * (1 + δa))) := by
+              refine mul_le_mul_of_nonneg_left ?_ hApp.le
+              exact mul_le_mul_of_nonneg_left hge (by positivity)
+            have hcoef : 2 * fp.u + fp.u ^ 2 ≤ fp.u +
+                (2 * fp.u + fp.u ^ 2) *
+                  ((1 - fp.u) * (1 - fp.u)) := by
+              nlinarith [mul_nonneg hu0
+                (by linarith : (0:ℝ) ≤ 1 - 4 * fp.u),
+                pow_nonneg hu0 4, sq_nonneg fp.u]
+            nlinarith [h5, mul_le_mul_of_nonneg_left hcoef hApp.le]
+        _ = fp.u * A p p + (2 * fp.u + fp.u ^ 2) *
+              (|Real.sqrt (A p p) * (1 + δa)| *
+               |Real.sqrt (A p p) * (1 + δa)|) := by
+            rw [hrow2]
+    · unfold fl_schurStepFactor fl_cpRowOf
+      rw [hi, if_pos (Or.inl rfl), if_pos rfl, if_neg hj, hdiv, hsqrt]
+      have hcancel : (0:ℝ) - (A p j - Real.sqrt (A p p) * (1 + δa) *
+          (A p j / (Real.sqrt (A p p) * (1 + δa)) * (1 + δb))) =
+          A p j * δb := by
+        field_simp
+        ring
+      rw [hcancel, abs_mul]
+      have h1 : |A p j| * |δb| ≤ fp.u * |A p j| := by
+        rw [mul_comm]
+        exact mul_le_mul_of_nonneg_right hδb (abs_nonneg _)
+      have h2 : (0:ℝ) ≤ (2 * fp.u + fp.u ^ 2) *
+          (|Real.sqrt (A p p) * (1 + δa)| *
+           |A p j / (Real.sqrt (A p p) * (1 + δa)) * (1 + δb)|) := by
+        positivity
+      linarith
+  · by_cases hj : j = p
+    · -- pivot column: same exact cancellation, via symmetry
+      obtain ⟨δb, hδb, hdiv⟩ := fp.model_div (A p i)
+        (fp.fl_sqrt (A p p)) hfs0
+      unfold fl_schurStepFactor fl_cpRowOf
+      rw [hj, if_pos (Or.inr rfl), if_neg hi, if_pos rfl, hdiv, hsqrt]
+      have hcancel : (0:ℝ) - (A i p -
+          A p i / (Real.sqrt (A p p) * (1 + δa)) * (1 + δb) *
+            (Real.sqrt (A p p) * (1 + δa))) =
+          A i p * δb := by
+        rw [hsym p i]
+        field_simp
+        ring
+      rw [hcancel, abs_mul]
+      have h1 : |A i p| * |δb| ≤ fp.u * |A i p| := by
+        rw [mul_comm]
+        exact mul_le_mul_of_nonneg_right hδb (abs_nonneg _)
+      have h2 : (0:ℝ) ≤ (2 * fp.u + fp.u ^ 2) *
+          (|A p i / (Real.sqrt (A p p) * (1 + δa)) * (1 + δb)| *
+           |Real.sqrt (A p p) * (1 + δa)|) := by
+        positivity
+      linarith
+    · -- off-pivot: the multiply and subtract roundings
+      obtain ⟨δb, hδb, hdivb⟩ := fp.model_div (A i p)
+        (fp.fl_sqrt (A p p)) hfs0
+      obtain ⟨δc, hδc, hdivc⟩ := fp.model_div (A p j)
+        (fp.fl_sqrt (A p p)) hfs0
+      obtain ⟨δm, hδm, hmul⟩ := fp.model_mul
+        (fp.fl_div (A i p) (fp.fl_sqrt (A p p)))
+        (fp.fl_div (A p j) (fp.fl_sqrt (A p p)))
+      obtain ⟨δs, hδs, hsub⟩ := fp.model_sub (A i j)
+        (fp.fl_mul (fp.fl_div (A i p) (fp.fl_sqrt (A p p)))
+          (fp.fl_div (A p j) (fp.fl_sqrt (A p p))))
+      unfold fl_schurStepFactor fl_cpRowOf
+      rw [if_neg (by simp [hi, hj]), if_neg hi, if_neg hj,
+        hsub, hmul, hdivb, hdivc]
+      have hrow_i : fp.fl_div (A p i) (fp.fl_sqrt (A p p)) =
+          A i p / fp.fl_sqrt (A p p) * (1 + δb) := by
+        rw [hsym p i]
+        exact hdivb
+      rw [hrow_i]
+      have hexp : (A i j - A i p / fp.fl_sqrt (A p p) * (1 + δb) *
+            (A p j / fp.fl_sqrt (A p p) * (1 + δc)) * (1 + δm)) *
+            (1 + δs) -
+          (A i j - A i p / fp.fl_sqrt (A p p) * (1 + δb) *
+            (A p j / fp.fl_sqrt (A p p) * (1 + δc))) =
+          A i j * δs -
+          (A i p / fp.fl_sqrt (A p p) * (1 + δb)) *
+            (A p j / fp.fl_sqrt (A p p) * (1 + δc)) *
+            ((1 + δm) * (1 + δs) - 1) := by
+        ring
+      rw [hexp]
+      have herr : |(1 + δm) * (1 + δs) - 1| ≤
+          2 * fp.u + fp.u ^ 2 := by
+        have h1 : (1 + δm) * (1 + δs) - 1 =
+            δm + δs + δm * δs := by ring
+        rw [h1]
+        have hab : |δm * δs| ≤ fp.u ^ 2 := by
+          rw [abs_mul]
+          calc |δm| * |δs| ≤ fp.u * fp.u :=
+                mul_le_mul hδm hδs (abs_nonneg _) hu0
+            _ = fp.u ^ 2 := by ring
+        have h2 := abs_le.mp hab
+        have h3 := abs_le.mp hδm
+        have h4 := abs_le.mp hδs
+        rw [abs_le]
+        constructor <;> linarith [h2.1, h2.2, h3.1, h3.2, h4.1, h4.2]
+      calc |A i j * δs -
+            (A i p / fp.fl_sqrt (A p p) * (1 + δb)) *
+              (A p j / fp.fl_sqrt (A p p) * (1 + δc)) *
+              ((1 + δm) * (1 + δs) - 1)|
+          ≤ |A i j * δs| +
+            |(A i p / fp.fl_sqrt (A p p) * (1 + δb)) *
+              (A p j / fp.fl_sqrt (A p p) * (1 + δc)) *
+              ((1 + δm) * (1 + δs) - 1)| := by
+            have h := abs_add_le (A i j * δs)
+              (-((A i p / fp.fl_sqrt (A p p) * (1 + δb)) *
+                (A p j / fp.fl_sqrt (A p p) * (1 + δc)) *
+                ((1 + δm) * (1 + δs) - 1)))
+            rw [abs_neg, ← sub_eq_add_neg] at h
+            exact h
+        _ ≤ fp.u * |A i j| + (2 * fp.u + fp.u ^ 2) *
+              (|A i p / fp.fl_sqrt (A p p) * (1 + δb)| *
+               |A p j / fp.fl_sqrt (A p p) * (1 + δc)|) := by
+            refine add_le_add ?_ ?_
+            · rw [abs_mul, mul_comm]
+              exact mul_le_mul_of_nonneg_right hδs (abs_nonneg _)
+            · rw [abs_mul, abs_mul]
+              rw [show |A i p / fp.fl_sqrt (A p p) * (1 + δb)| *
+                  |A p j / fp.fl_sqrt (A p p) * (1 + δc)| *
+                  |(1 + δm) * (1 + δs) - 1| =
+                  |(1 + δm) * (1 + δs) - 1| *
+                  (|A i p / fp.fl_sqrt (A p p) * (1 + δb)| *
+                   |A p j / fp.fl_sqrt (A p p) * (1 + δc)|) by ring]
+              exact mul_le_mul_of_nonneg_right herr
+                (by positivity)
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
