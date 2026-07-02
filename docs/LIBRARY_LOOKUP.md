@@ -3737,6 +3737,8 @@ Source-facing Chapter 10 wrappers:
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)
+- `schur_first_order_entrywise_bound` (|Ebar| <= eps (1 + k^2 alpha mu)^2, the source (1+||W||)^2 shape) / `strict_argmax_diag_stable` (L10.11 stage engine)
+- `diagArgmax` / `diagArgmax_max` / `diagArgmax_eq_of_strict` / `diagArgmax_stable` (deterministic complete-pivoting choice + single-stage stability)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
