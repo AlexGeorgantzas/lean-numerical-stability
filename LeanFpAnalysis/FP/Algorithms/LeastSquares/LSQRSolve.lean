@@ -66513,6 +66513,126 @@ theorem exists_perturbed_ls_minimizer_of_stored_trailing_householder_sequence_to
         hinit hinitBlock hglobalBudget hBudget_nonneg hcomparison
         hpivotChoice hsmall)
 
+/-- Concrete stored-Householder QR matrix sequence used by the Chapter 20,
+    Theorem 20.3 stored-loop wrappers.
+
+For `k < n`, step `k + 1` applies the rounded stored Householder panel update
+with the signed `alpha` computed from the current active column.  After the QR
+horizon the sequence is held fixed. -/
+noncomputable def storedHouseholderQRMatrixSeq (fp : FPModel) {m n : ℕ}
+    (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) :
+    ℕ → Fin m → Fin n → ℝ
+  | 0 => A
+  | k + 1 =>
+      if hk : k < n then
+        let Aprev := storedHouseholderQRMatrixSeq fp hmn A k
+        let alpha :=
+          signedHouseholderAlpha
+            (Real.sqrt
+              (householderTrailingNorm2Sq m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a => Aprev a ⟨k, hk⟩)))
+            (Aprev ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩)
+        let v :=
+          householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => Aprev a ⟨k, hk⟩) alpha
+        let beta := householderBetaSpec m v
+        fl_householderStoredPanelStep fp m n k v beta Aprev
+      else
+        storedHouseholderQRMatrixSeq fp hmn A k
+
+/-- Signed Householder scalar chosen by the concrete stored-Householder QR
+    matrix sequence. -/
+noncomputable def storedHouseholderQRAlphaSeq (fp : FPModel) {m n : ℕ}
+    (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) (k : ℕ) : ℝ :=
+  if hk : k < n then
+    signedHouseholderAlpha
+      (Real.sqrt
+        (householderTrailingNorm2Sq m
+          ⟨k, lt_of_lt_of_le hk hmn⟩
+          (fun a => storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)))
+      (storedHouseholderQRMatrixSeq fp hmn A k
+        ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩)
+  else
+    0
+
+/-- Concrete stored-Householder QR right-hand-side sequence paired with
+    `storedHouseholderQRMatrixSeq`. -/
+noncomputable def storedHouseholderQRRhsSeq (fp : FPModel) {m n : ℕ}
+    (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) :
+    ℕ → Fin m → ℝ
+  | 0 => b
+  | k + 1 =>
+      if hk : k < n then
+        let Aprev := storedHouseholderQRMatrixSeq fp hmn A k
+        let alpha := storedHouseholderQRAlphaSeq fp hmn A k
+        let v :=
+          householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => Aprev a ⟨k, hk⟩) alpha
+        let beta := householderBetaSpec m v
+        fl_householderStoredRhsStep fp m k v beta
+          (storedHouseholderQRRhsSeq fp hmn A b k)
+      else
+        storedHouseholderQRRhsSeq fp hmn A b k
+
+@[simp] theorem storedHouseholderQRMatrixSeq_zero (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) :
+    storedHouseholderQRMatrixSeq fp hmn A 0 = A := rfl
+
+@[simp] theorem storedHouseholderQRRhsSeq_zero (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) :
+    storedHouseholderQRRhsSeq fp hmn A b 0 = b := rfl
+
+theorem storedHouseholderQRAlphaSeq_eq_signed (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (k : ℕ) (hk : k < n) :
+    storedHouseholderQRAlphaSeq fp hmn A k =
+      signedHouseholderAlpha
+        (Real.sqrt
+          (householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)))
+        (storedHouseholderQRMatrixSeq fp hmn A k
+          ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩) := by
+  simp [storedHouseholderQRAlphaSeq, hk]
+
+theorem storedHouseholderQRMatrixSeq_succ_of_lt (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (k : ℕ) (hk : k < n) :
+    storedHouseholderQRMatrixSeq fp hmn A (k + 1) =
+      fl_householderStoredPanelStep fp m n k
+        (householderTrailingActiveVector m
+          ⟨k, lt_of_lt_of_le hk hmn⟩
+          (fun a => storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+          (storedHouseholderQRAlphaSeq fp hmn A k))
+        (householderBetaSpec m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+            (storedHouseholderQRAlphaSeq fp hmn A k)))
+        (storedHouseholderQRMatrixSeq fp hmn A k) := by
+  simp [storedHouseholderQRMatrixSeq, storedHouseholderQRAlphaSeq, hk]
+
+theorem storedHouseholderQRRhsSeq_succ_of_lt (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (k : ℕ) (hk : k < n) :
+    storedHouseholderQRRhsSeq fp hmn A b (k + 1) =
+      fl_householderStoredRhsStep fp m k
+        (householderTrailingActiveVector m
+          ⟨k, lt_of_lt_of_le hk hmn⟩
+          (fun a => storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+          (storedHouseholderQRAlphaSeq fp hmn A k))
+        (householderBetaSpec m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+            (storedHouseholderQRAlphaSeq fp hmn A k)))
+        (storedHouseholderQRRhsSeq fp hmn A b k) := by
+  simp [storedHouseholderQRRhsSeq, storedHouseholderQRAlphaSeq, hk]
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.3, stored-Householder QR
     source-facing compact-budget wrapper.
 
@@ -66734,6 +66854,179 @@ theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDomina
         (storedQRSourceDenominator_ne_zero_of_diagDominant_signedAlphaDef_stored_trailing_sequence
           fp hmn A_hat alpha hStepA hAlphaDef hDD)
         (le_rfl : fp.u ≤ fp.u) huSmall hsmall)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, stored-Householder QR
+    concrete-loop compact-budget wrapper.
+
+This specializes
+`theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_storedLower_activePivot_actualUnitRoundoff_initialBudget_horizonBudget`
+to the concrete recursive stored-Householder matrix, right-hand-side, and
+signed-`alpha` sequences.  The loop recurrence, initial equations, and signed
+`alpha` definition are discharged by the sequence definitions; the genuine
+diagonal-dominance, active-pivot, scalar-comparison, initial-budget, and
+finite-max smallness side conditions remain visible. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_concreteStoredLower_activePivot_actualUnitRoundoff_initialBudget_horizonBudget
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hinit : ∀ k (hk : k < n), ∀ i j : Fin (k + 1), ∀ _hij : i.val < j.val,
+      |A
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          (qrLeadingColumn n k hk j)| ≤
+        stageBudget 0)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn
+        (storedHouseholderQRMatrixSeq fp hmn A) stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩
+          (storedHouseholderQRMatrixSeq fp hmn A t))
+    (hsmall :
+      let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+      let Dcap := storedQRDiagDominantInvFactorBudget hmn A_hat
+      let Ncap := storedQRPivotColumnNormBudget hmn A_hat
+      let Gcap := ((m : ℝ) * fp.u) / (1 - (m : ℝ) * fp.u)
+      let Fcap :=
+        fp.u * (1 + Gcap) * (1 + fp.u) +
+          fp.u * (1 + Gcap) +
+          Gcap +
+          fp.u * (1 + Gcap) * (1 + fp.u) ^ 2
+      2 * Dcap *
+          ((m : ℝ) *
+            ((((n : ℝ) * ((n : ℝ) + 1) * (fp.u + 2 * Fcap)) *
+                Ncap) ^ 2)) <
+        1) :
+    let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+    let b_hat := storedHouseholderQRRhsSeq fp hmn A b
+    let alpha := storedHouseholderQRAlphaSeq fp hmn A
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  let A_hat : ℕ → Fin m → Fin n → ℝ := storedHouseholderQRMatrixSeq fp hmn A
+  let b_hat : ℕ → Fin m → ℝ := storedHouseholderQRRhsSeq fp hmn A b
+  let alpha : ℕ → ℝ := storedHouseholderQRAlphaSeq fp hmn A
+  have hInitA : A_hat 0 = A := by
+    simp [A_hat]
+  have hInitb : b_hat 0 = b := by
+    simp [b_hat]
+  have hStepA : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k) := by
+    intro k hk
+    simpa [A_hat, alpha] using
+      storedHouseholderQRMatrixSeq_succ_of_lt fp hmn A k hk
+  have hStepb : ∀ k (hk : k < n),
+      b_hat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (b_hat k) := by
+    intro k hk
+    simpa [A_hat, b_hat, alpha] using
+      storedHouseholderQRRhsSeq_succ_of_lt fp hmn A b k hk
+  have hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩)))
+          (A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩) := by
+    intro k hk
+    simpa [A_hat, alpha] using
+      storedHouseholderQRAlphaSeq_eq_signed fp hmn A k hk
+  have hDD' : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk) := by
+    intro k hk
+    simpa [A_hat] using hDD k hk
+  have hinit' : ∀ k (hk : k < n), ∀ i j : Fin (k + 1),
+      ∀ _hij : i.val < j.val,
+        |A_hat 0
+            (qrLeadingRow m k
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+            (qrLeadingColumn n k hk j)| ≤
+          stageBudget 0 := by
+    intro k hk i j hij
+    simpa [A_hat] using hinit k hk i j hij
+  have hinitBlock' : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget 0 := by
+    intro r l
+    simpa [A_hat] using hinitBlock r l
+  have hglobalBudget' : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1) := by
+    intro t ht
+    simpa [A_hat, alpha] using hglobalBudget t ht
+  have hcomparison' :
+      storedQRStageRowMaxComparisonDefectBudget hmn A_hat stageBudget ≤ 0 := by
+    simpa [A_hat] using hcomparison
+  have hpivotChoice' : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩ (A_hat t) := by
+    intro t ht
+    simpa [A_hat] using hpivotChoice t ht
+  have hsmall' :
+      let Dcap := storedQRDiagDominantInvFactorBudget hmn A_hat
+      let Ncap := storedQRPivotColumnNormBudget hmn A_hat
+      let Gcap := ((m : ℝ) * fp.u) / (1 - (m : ℝ) * fp.u)
+      let Fcap :=
+        fp.u * (1 + Gcap) * (1 + fp.u) +
+          fp.u * (1 + Gcap) +
+          Gcap +
+          fp.u * (1 + Gcap) * (1 + fp.u) ^ 2
+      2 * Dcap *
+          ((m : ℝ) *
+            ((((n : ℝ) * ((n : ℝ) + 1) * (fp.u + 2 * Fcap)) *
+                Ncap) ^ 2)) <
+        1 := by
+    simpa [A_hat, b_hat, alpha] using hsmall
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_storedLower_activePivot_actualUnitRoundoff_initialBudget_horizonBudget
+      fp hmn A b A_hat b_hat alpha stageBudget huSmall hInitA hInitb
+      hStepA hStepb hAlphaDef hDD' hinit' hinitBlock' hglobalBudget'
+      hBudget0_nonneg hcomparison' hpivotChoice' hsmall'
 
 /-- Solver-facing active-max-pivot QR certificate using row-max scalar defect
     plus an explicit stage-budget/row-max comparison.
