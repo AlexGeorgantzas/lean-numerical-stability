@@ -3829,6 +3829,7 @@ Source-facing Chapter 10 wrappers:
 - `bordered_perturbation_floor_normwise` (Th10.7 sharpening route: normwise mass, no dimension factor - lam - 2eps weight)
 - `scaled_interior_mass_normwise` (mass hypothesis discharged from a scaled opNorm2Le certificate: |y^T Delta y| <= eps sum a y^2)
 - `scaled_border_mass_normwise` (border mass from a scaled vector-norm certificate: |2 sum y delta| <= eps (t + W))
+- `normwise_stage_endgame` (Th10.7 sharpened scalar core: contradiction at lam > eps + 2 gamma - source-shaped threshold)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)

@@ -1474,6 +1474,49 @@ theorem bordered_perturbation_floor_normwise (m : ℕ)
   have h2 := abs_le.mp hbord
   linarith [h1.1, h1.2, h2.1, h2.2]
 
+/-- **Normwise stage endgame** (Theorem 10.7 sharpened threshold,
+    scalar core): combining the normwise perturbation floor, the
+    rounded-pivot lower bound, and a breakdown assumption yields a
+    contradiction whenever `lam > ε + 2γ` (and `lam ≥ 2ε`,
+    `lam ≤ 1`) — the source-shaped threshold whose leading term is the
+    normwise certificate `ε` (which carries the dimension), replacing
+    the componentwise route's `2εm` weight. -/
+theorem normwise_stage_endgame (ajj t W lam ε γ s : ℝ)
+    (hAj : 0 < ajj) (ht0 : 0 ≤ t) (hW0 : 0 ≤ W)
+    (hγ0 : 0 ≤ γ) (hγ1 : γ < 1) (hε0 : 0 ≤ ε) (hε1 : ε < 1)
+    (hfloor : lam * ajj + (lam - 2 * ε) * W - ε * t ≤ ajj - t)
+    (hlow : ajj - t - γ * (ajj + t) ≤ s)
+    (hs : s ≤ 0)
+    (hlam2ε : 2 * ε ≤ lam)
+    (hthresh : ε + 2 * γ < lam) :
+    False := by
+  -- breakdown converts the pivot lower bound into a t-floor
+  have hkey2 : (1 - γ) * ajj ≤ (1 + γ) * t := by nlinarith
+  -- the W-term is nonnegative, so the floor gives a t-ceiling
+  have hWnn : 0 ≤ (lam - 2 * ε) * W :=
+    mul_nonneg (by linarith) hW0
+  have hkey1 : lam * ajj - ε * t ≤ ajj - t := by nlinarith
+  -- combine: (1−γ)(1−ε)·ajj ≤ (1+γ)(1−lam)·ajj forces lam ≤ ε + 2γ
+  have ht_ceil : t * (1 - ε) ≤ ajj * (1 - lam) := by nlinarith
+  have h1ε : (0:ℝ) < 1 - ε := by linarith
+  have h1γ : (0:ℝ) < 1 + γ := by linarith
+  -- chain the two t-bounds through the positive weights
+  have hA : (1 - γ) * (1 - ε) * ajj ≤
+      (1 + γ) * (ajj * (1 - lam)) := by
+    calc (1 - γ) * (1 - ε) * ajj
+        = (1 - ε) * ((1 - γ) * ajj) := by ring
+      _ ≤ (1 - ε) * ((1 + γ) * t) :=
+          mul_le_mul_of_nonneg_left hkey2 h1ε.le
+      _ = (1 + γ) * (t * (1 - ε)) := by ring
+      _ ≤ (1 + γ) * (ajj * (1 - lam)) :=
+          mul_le_mul_of_nonneg_left ht_ceil h1γ.le
+  -- the threshold forces the reverse strict inequality
+  have hceil : (1 + γ) * (1 - lam) < (1 - γ) * (1 - ε) := by
+    have h1 := mul_lt_mul_of_pos_right hthresh h1γ
+    nlinarith [mul_nonneg hγ0 hε0, sq_nonneg γ]
+  have hfinal := mul_lt_mul_of_pos_right hceil hAj
+  nlinarith [hA, hfinal]
+
 /-- **Border-column entry bound**: the `w = j` instance of
     `fl_cholesky_truncated_bound`. -/
 theorem fl_cholesky_border_bound (fp : FPModel) {n : ℕ}
