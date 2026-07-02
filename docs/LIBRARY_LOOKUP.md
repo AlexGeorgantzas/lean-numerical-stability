@@ -3768,6 +3768,7 @@ Source-facing Chapter 10 wrappers:
 - `fl_cp_termination_trailing_bound` ((10.23)/(10.24) as-run: computed stopping test => exact trailing Schur entrywise <= tol + h r)
 - `fl_schurStepFactor` / `fl_schurStepFactor_close` (sqrt-scaled factor-form fl step; proximity u(c + c^2/rho) + (1+u) gamma_5 (c^2/rho) via a 5-factor Stewart counter)
 - `fl_cpStateFactor` / `fl_cpPivotFactor` / `fl_cpPivotFactor_sequence_agrees` (the sqrt-scaled pivoted run follows the exact pivot sequence)
+- `fl_factor_row_dominated` (computed factor rows pivot-dominated: c = (1 + 4ht/rho)(1+u)/(1-u)^2 - the Th10.14 hdom discharge, one stage)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
