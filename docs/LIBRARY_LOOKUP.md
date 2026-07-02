@@ -3795,6 +3795,7 @@ Source-facing Chapter 10 wrappers:
 - `fl_factor_row_dominated` (computed factor rows pivot-dominated: c = (1 + 4ht/rho)(1+u)/(1-u)^2 - the Th10.14 hdom discharge, one stage)
 - `fl_cpFactor_rows_dominated` (hdom discharged across the whole run: per-stage explicit domination constants for the as-run factor)
 - `schurRow` / `schurStep_decompose` / `cpState_telescope` (exact Gram assembly: A = sum row^T row + S_r entrywise)
+- `fl_cpPivot_sequence_agrees_small` (non-vacuous fl agreement: explicit budget U t K^t under one scalar smallness condition, U -> 0 as u -> 0)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
