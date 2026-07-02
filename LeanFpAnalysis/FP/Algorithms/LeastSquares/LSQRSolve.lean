@@ -17832,6 +17832,17 @@ theorem householderQRRhsPanelSqrtResidualGrowthCoeff_le_lsTheorem20_4ConcreteGam
   dsimp [lsTheorem20_4ConcreteGammaTildeSqrtResidual]
   exact le_add_of_nonneg_left (gamma_nonneg fp hvalid)
 
+/-- The global Householder QR gamma-validity assumption used in Theorem 20.4
+    also supplies the triangular-solve gamma-validity assumption. -/
+theorem gammaValid_n_of_householderConstructApplyGammaValid
+    (fp : FPModel) (m n : ℕ)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    gammaValid fp n := by
+  have hK_pos : 0 < householderConstructApplyGammaIndex m := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  exact gammaValid_mono fp (Nat.le_mul_of_pos_right n hK_pos) hvalid
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
     handoff with an explicit conservative `γ̃` coefficient.
 
@@ -18528,6 +18539,77 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQR
     hDeltag_tilde, hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm,
     hH3norm, hDeltaR1, hDeltaR2, ?_⟩
   simpa [gammaTilde, Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    residual-sharpened handoff with no separate triangular-solve
+    gamma-validity input.
+
+The global Householder QR validity hypothesis already implies `gammaValid fp n`,
+so callers only supply the single source-facing validity condition for the
+residual-sharpened `γ̃` theorem. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTildeSqrtResidual_unified_frob_bound_of_global_gammaValid
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0) :
+    let gammaTilde : ℝ :=
+      lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤ gammaTilde * frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  have hγ : gammaValid fp n :=
+    gammaValid_n_of_householderConstructApplyGammaValid fp (n + k) n hvalid
+  exact
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTildeSqrtResidual_unified_frob_bound
+      fp A f g hn hvalid hdiag hγ
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
     handoff with implementation-backed uniform `Delta f` source witnesses and a
