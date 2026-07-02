@@ -1977,6 +1977,110 @@ lemma schurStep_entrywise_perturbation {n : ℕ}
     rw [abs_le]
     constructor <;> linarith [h1.1, h1.2, h2.1, h2.2]
 
+/-- **Lemma 10.11 (no-tie pivot-sequence stability), full stage
+    induction**: if every stage `t < r` of the exact complete-pivoting
+    recursion on `A` has diagonal gap `δ`, pivot floor `ρ ≥ δ`, and
+    entry cap `c`, and the error budget `g` absorbs the one-stage
+    growth `ε ↦ ε + (3c²ε + cε²)/(ρ/2)²` while staying below `δ/2`,
+    then a perturbed matrix `B` within `ε₀ ≤ g 0` of `A` selects the
+    SAME pivot sequence through `r` stages, with stage states
+    `g`-close. -/
+theorem cpPivot_sequence_stable {n : ℕ} (hn : 0 < n)
+    (A B : Fin n → Fin n → ℝ) (r : ℕ)
+    (ε₀ δ ρ c : ℝ) (hε₀ : 0 ≤ ε₀) (hδ : 0 < δ) (hδρ : δ ≤ ρ)
+    (hc : 0 ≤ c) (g : ℕ → ℝ) (hg0 : ε₀ ≤ g 0)
+    (hgstep : ∀ t : ℕ, t < r →
+      g t + (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 ≤ g (t + 1))
+    (hghalf : ∀ t : ℕ, t < r → g t < δ / 2)
+    (hAB : ∀ i j : Fin n, |A i j - B i j| ≤ ε₀)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c) :
+    ∀ t : ℕ, t ≤ r →
+      (∀ i j : Fin n,
+        |cpState hn A t i j - cpState hn B t i j| ≤ g t) ∧
+      (∀ s : ℕ, s < t → cpPivot hn A s = cpPivot hn B s) := by
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  -- the budget is nonnegative along the run
+  have hg_nonneg : ∀ t : ℕ, t ≤ r → 0 ≤ g t := by
+    intro t
+    induction t with
+    | zero => intro _; linarith
+    | succ t iht =>
+      intro htr
+      have ht' : t < r := Nat.lt_of_succ_le htr
+      have h0 := iht (Nat.le_of_lt ht')
+      have hstep := hgstep t ht'
+      have hadd : (0:ℝ) ≤
+          (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 := by
+        positivity
+      linarith
+  intro t
+  induction t with
+  | zero =>
+    intro _
+    exact ⟨fun i j => (hAB i j).trans hg0,
+      fun s hs => absurd hs (Nat.not_lt_zero s)⟩
+  | succ t ih =>
+    intro htr
+    have ht' : t < r := Nat.lt_of_succ_le htr
+    obtain ⟨hdiff, hpiv⟩ := ih (Nat.le_of_lt ht')
+    set p : Fin n := cpPivot hn A t with hp
+    -- perturbed stage selects the same pivot
+    set Et : Fin n → Fin n → ℝ :=
+      fun i j => cpState hn B t i j - cpState hn A t i j with hEt
+    have hEdiag : ∀ i : Fin n, |Et i i| < δ / 2 := by
+      intro i
+      have h := hdiff i i
+      rw [abs_sub_comm] at h
+      exact lt_of_le_of_lt h (hghalf t ht')
+    have hstable := diagArgmax_stable hn (cpState hn A t) Et p δ
+      (hgap t ht') hEdiag
+    have hBfun : (fun i j => cpState hn A t i j + Et i j) =
+        cpState hn B t := by
+      funext i j
+      simp [hEt]
+    have hpivB : cpPivot hn B t = p := by
+      show diagArgmax hn (cpState hn B t) = p
+      rw [← hBfun]
+      exact hstable.2
+    -- one-stage error growth at the shared pivot
+    have hAfloor : ρ / 2 ≤ cpState hn A t p p := by
+      have := hfloor t ht'
+      linarith
+    have hBfloor : ρ / 2 ≤ cpState hn B t p p := by
+      have h1 := hEdiag p
+      have h2 := abs_lt.mp h1
+      have h3 := hfloor t ht'
+      have h4 : cpState hn B t p p =
+          cpState hn A t p p + Et p p := by simp [hEt]
+      rw [h4]
+      linarith [h2.1, hδρ]
+    have hstep := schurStep_entrywise_perturbation
+      (cpState hn A t) (cpState hn B t) p (g t) c (ρ / 2)
+      (hg_nonneg t (Nat.le_of_lt ht')) hc (by linarith)
+      hdiff (hcap t ht') hAfloor hBfloor
+    constructor
+    · intro i j
+      have hSA : cpState hn A (t + 1) =
+          schurStep (cpState hn A t) p := rfl
+      have hSB : cpState hn B (t + 1) =
+          schurStep (cpState hn B t) p := by
+        show schurStep (cpState hn B t) (cpPivot hn B t) =
+          schurStep (cpState hn B t) p
+        rw [hpivB]
+      rw [hSA, hSB]
+      exact (hstep i j).trans (hgstep t ht')
+    · intro s hs
+      rcases Nat.lt_or_eq_of_le (Nat.le_of_lt_succ hs) with h' | h'
+      · exact hpiv s h'
+      · subst h'
+        rw [hpivB]
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
