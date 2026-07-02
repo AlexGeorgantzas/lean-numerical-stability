@@ -626,6 +626,36 @@ lemma schur_diag_le_pivot {m : ℕ} (B : Fin (m + 1) → Fin (m + 1) → ℝ)
     div_nonneg (mul_self_nonneg _) hB00.le
   linarith [hmax i.succ]
 
+/-- **Column-tail identity for the pivoted factor** (equation (10.13)
+    foundation, spec level): the tail of a squared column of `R` from row
+    `k` down equals the permuted diagonal entry minus the head — i.e. the
+    stage-`k` Schur diagonal in factored form.  Combined with the
+    stage-domination invariant this yields the display (10.13). -/
+lemma pivoted_spec_column_split {n : ℕ} {A R : Fin n → Fin n → ℝ}
+    {σ : Fin n → Fin n} {r : ℕ}
+    (hspec : PivotedCholeskySpec n A R σ r) (k j : Fin n) :
+    (∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+      R i j ^ 2) =
+    A (σ j) (σ j) -
+      ∑ i ∈ Finset.univ.filter (fun i : Fin n => i.val < k.val),
+        R i j ^ 2 := by
+  have hprod := hspec.product_eq j j
+  have hsq : ∑ i : Fin n, R i j * R i j = ∑ i : Fin n, R i j ^ 2 :=
+    Finset.sum_congr rfl fun i _ => by ring
+  rw [hsq] at hprod
+  have hsplit : ∑ i : Fin n, R i j ^ 2 =
+      (∑ i ∈ Finset.univ.filter (fun i : Fin n => i.val < k.val),
+        R i j ^ 2) +
+      ∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+        R i j ^ 2 := by
+    rw [← Finset.sum_filter_add_sum_filter_not Finset.univ
+      (fun i : Fin n => i.val < k.val) (fun i => R i j ^ 2)]
+    congr 1
+    apply Finset.sum_congr _ (fun _ _ => rfl)
+    ext i
+    simp [Nat.not_lt]
+  linarith [hprod, hsplit]
+
 -- ============================================================
 -- §10.3  Theorem 10.9(b): SPD → PivotedCholeskySpec (full rank)
 -- ============================================================
