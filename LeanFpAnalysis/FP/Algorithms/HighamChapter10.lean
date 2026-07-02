@@ -1222,6 +1222,115 @@ theorem finiteMaxEigenvalue_rayleigh {n : ℕ} (hn : 0 < n)
     finiteQuadraticForm_eq_sum_sum] at h
   simpa [finiteVecNorm2Sq] using h
 
+/-- The Gram quadratic form is the squared image norm:
+`xᵀ(RᵀR)x = ‖Rx‖₂²` in the repository's column convention. -/
+theorem gram_quadForm_eq_sq_norm (n : ℕ) (R : Fin n → Fin n → ℝ)
+    (x : Fin n → ℝ) :
+    ∑ i : Fin n, ∑ l : Fin n,
+      x i * (∑ p : Fin n, R p i * R p l) * x l =
+    vecNorm2Sq (matMulVec n R x) := by
+  unfold vecNorm2Sq matMulVec
+  calc ∑ i : Fin n, ∑ l : Fin n,
+      x i * (∑ p : Fin n, R p i * R p l) * x l
+      = ∑ i : Fin n, ∑ l : Fin n, ∑ p : Fin n,
+          (R p i * x i) * (R p l * x l) := by
+        apply Finset.sum_congr rfl
+        intro i _
+        apply Finset.sum_congr rfl
+        intro l _
+        rw [mul_comm (x i) _, Finset.sum_mul, Finset.sum_mul]
+        apply Finset.sum_congr rfl
+        intro p _
+        ring
+    _ = ∑ p : Fin n, ∑ i : Fin n, ∑ l : Fin n,
+          (R p i * x i) * (R p l * x l) := by
+        refine Eq.trans
+          (Finset.sum_congr rfl fun i _ => Finset.sum_comm) ?_
+        exact Finset.sum_comm
+    _ = ∑ p : Fin n, (∑ j : Fin n, R p j * x j) ^ 2 := by
+        apply Finset.sum_congr rfl
+        intro p _
+        rw [sq, Finset.sum_mul_sum]
+
+/-- **Spectral reading of the operator-2-norm certificate**
+(`‖R‖₂ ≤ √λ_max(RᵀR)`, the remaining tail of display (10.7)): the
+vector-action certificate holds at the square root of the Gram matrix's
+largest eigenvalue. -/
+theorem opNorm2Le_sqrt_maxEigenvalue_gram (n : ℕ) (hn : 0 < n)
+    (R : Fin n → Fin n → ℝ)
+    (hG_sym : IsSymmetricFiniteMatrix
+      (fun i l : Fin n => ∑ p : Fin n, R p i * R p l)) :
+    opNorm2Le R (Real.sqrt (finiteMaxEigenvalue hn
+      (fun i l : Fin n => ∑ p : Fin n, R p i * R p l) hG_sym)) := by
+  have hlam0 : 0 ≤ finiteMaxEigenvalue hn
+      (fun i l : Fin n => ∑ p : Fin n, R p i * R p l) hG_sym := by
+    obtain ⟨a, ha⟩ := exists_finiteMaxEigenvalue_eq hn _ hG_sym
+    have hnorm1 := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one
+      (fun i l : Fin n => ∑ p : Fin n, R p i * R p l) hG_sym a
+    have hq :=
+      finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+        (fun i l : Fin n => ∑ p : Fin n, R p i * R p l) hG_sym a
+    rw [hnorm1, mul_one] at hq
+    rw [← ha, ← hq, finiteQuadraticForm_eq_sum_sum,
+      gram_quadForm_eq_sq_norm]
+    exact vecNorm2Sq_nonneg _
+  intro x
+  have hray := finiteMaxEigenvalue_rayleigh hn
+    (fun i l : Fin n => ∑ p : Fin n, R p i * R p l) hG_sym x
+  rw [gram_quadForm_eq_sq_norm] at hray
+  have hx2 : vecNorm2 x ^ 2 = ∑ i : Fin n, x i ^ 2 := vecNorm2_sq _
+  have hRx2 : vecNorm2 (matMulVec n R x) ^ 2 =
+      vecNorm2Sq (matMulVec n R x) := vecNorm2_sq _
+  have hboth : vecNorm2 (matMulVec n R x) ^ 2 ≤
+      (Real.sqrt (finiteMaxEigenvalue hn
+        (fun i l : Fin n => ∑ p : Fin n, R p i * R p l) hG_sym) *
+       vecNorm2 x) ^ 2 := by
+    rw [hRx2, mul_pow, Real.sq_sqrt hlam0, hx2]
+    exact hray
+  nlinarith [vecNorm2_nonneg (matMulVec n R x),
+    mul_nonneg (Real.sqrt_nonneg (finiteMaxEigenvalue hn
+      (fun i l : Fin n => ∑ p : Fin n, R p i * R p l) hG_sym))
+      (vecNorm2_nonneg x), hboth]
+
+/-- **Spectral reading, converse direction**: an operator-2-norm
+certificate `c` bounds the Gram matrix's largest eigenvalue by `c²` —
+together with the forward direction this is the honest certificate form
+of `‖RᵀR‖₂ = ‖R‖₂²`. -/
+theorem maxEigenvalue_gram_le_sq_of_opNorm2Le (n : ℕ) (hn : 0 < n)
+    (R : Fin n → Fin n → ℝ)
+    (hG_sym : IsSymmetricFiniteMatrix
+      (fun i l : Fin n => ∑ p : Fin n, R p i * R p l))
+    (c : ℝ) (h : opNorm2Le R c) :
+    finiteMaxEigenvalue hn
+      (fun i l : Fin n => ∑ p : Fin n, R p i * R p l) hG_sym ≤ c ^ 2 := by
+  obtain ⟨a, ha⟩ := exists_finiteMaxEigenvalue_eq hn _ hG_sym
+  have hnorm1 := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one
+    (fun i l : Fin n => ∑ p : Fin n, R p i * R p l) hG_sym a
+  have hq :=
+    finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+      (fun i l : Fin n => ∑ p : Fin n, R p i * R p l) hG_sym a
+  rw [hnorm1, mul_one] at hq
+  set v : Fin n → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian
+      (fun i l : Fin n => ∑ p : Fin n, R p i * R p l)
+      hG_sym).eigenvectorBasis a) with hv
+  have hvq : vecNorm2Sq (matMulVec n R v) =
+      finiteMaxEigenvalue hn
+        (fun i l : Fin n => ∑ p : Fin n, R p i * R p l) hG_sym := by
+    rw [← gram_quadForm_eq_sq_norm, ← finiteQuadraticForm_eq_sum_sum,
+      hq, ha]
+  have hvn : vecNorm2 v = 1 := by
+    unfold vecNorm2
+    rw [show vecNorm2Sq v = 1 from hnorm1]
+    exact Real.sqrt_one
+  have hb := h v
+  rw [hvn, mul_one] at hb
+  have hRv0 : 0 ≤ vecNorm2 (matMulVec n R v) := vecNorm2_nonneg _
+  have hsq : vecNorm2 (matMulVec n R v) ^ 2 =
+      vecNorm2Sq (matMulVec n R v) := vecNorm2_sq _
+  nlinarith [hb, hRv0, hvq, hsq]
+
+
 
 /-- Splitting a double sum over `Fin (m+1)` into interior, two borders,
 and corner. -/

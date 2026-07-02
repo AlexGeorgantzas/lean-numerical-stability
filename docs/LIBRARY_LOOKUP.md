@@ -3590,6 +3590,9 @@ Source-facing Chapter 10 wrappers:
 - `le_finiteMaxEigenvalue`
 - `exists_finiteMaxEigenvalue_eq`
 - `finiteMaxEigenvalue_rayleigh`
+- `gram_quadForm_eq_sq_norm`
+- `opNorm2Le_sqrt_maxEigenvalue_gram`
+- `maxEigenvalue_gram_le_sq_of_opNorm2Le`
 - `higham10_7_success_factorization_min_eig`
 - `higham10_7_failure_no_factorization_min_eig`
 - `quadForm_add_pos_of_perturbation`
