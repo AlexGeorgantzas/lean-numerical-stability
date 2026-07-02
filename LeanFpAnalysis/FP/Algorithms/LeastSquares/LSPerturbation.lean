@@ -231,6 +231,57 @@ theorem wedinLemma20_11_lowerActionBound_of_sub_rectOpNorm2Le
   simpa [hmat] using h
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column singular-value perturbation line.
+
+    For real rectangular matrices with nonempty column dimension, a rectangular
+    operator-2 bound on `B - A` gives
+    `sigma_min(A) - delta <= sigma_min(B)`.  This is the source line
+    `sigma_r(B) >= sigma_r(A) - ||A-B||_2` specialized to the full-column-rank
+    indexing surface used by least-squares applications. -/
+theorem wedinLemma20_11_sigmaMinCol_sub_le_sigmaMinCol_of_sub_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta) :
+    wedinLemma20_11_sigmaMinCol A - delta ≤
+      wedinLemma20_11_sigmaMinCol B := by
+  by_cases hnonneg : 0 ≤ wedinLemma20_11_sigmaMinCol A - delta
+  · obtain ⟨x, hx_ne, hsq⟩ :=
+      realRectToCMatrix_last_singularValue_exists_real_attaining_vector_sq B
+    have hx_norm_ne : vecNorm2 x ≠ 0 := by
+      intro hx_norm
+      apply hx_ne
+      ext j
+      exact (vecNorm2_eq_zero_iff x).mp hx_norm j
+    have hx_norm_pos : 0 < vecNorm2 x :=
+      lt_of_le_of_ne (vecNorm2_nonneg x) (Ne.symm hx_norm_ne)
+    have hB_lower :=
+      wedinLemma20_11_lowerActionBound_of_sub_rectOpNorm2Le
+        A B (wedinLemma20_11_sigmaMinCol_mul_vecNorm2_le_rectMatMulVec A)
+        hDelta x
+    have hB_norm_eq :
+        vecNorm2 (rectMatMulVec B x) =
+          wedinLemma20_11_sigmaMinCol B * vecNorm2 x := by
+      apply (sq_eq_sq₀
+        (vecNorm2_nonneg (rectMatMulVec B x))
+        (mul_nonneg (wedinLemma20_11_sigmaMinCol_nonneg B)
+          (vecNorm2_nonneg x))).mp
+      calc
+        vecNorm2 (rectMatMulVec B x) ^ 2 =
+            vecNorm2Sq (rectMatMulVec B x) := vecNorm2_sq _
+        _ = (wedinLemma20_11_sigmaMinCol B) ^ 2 * vecNorm2Sq x := by
+            simpa [wedinLemma20_11_sigmaMinCol] using hsq
+        _ = (wedinLemma20_11_sigmaMinCol B) ^ 2 * vecNorm2 x ^ 2 := by
+            rw [← vecNorm2_sq x]
+        _ = (wedinLemma20_11_sigmaMinCol B * vecNorm2 x) ^ 2 := by
+            ring
+    have hmul :
+        (wedinLemma20_11_sigmaMinCol A - delta) * vecNorm2 x ≤
+          wedinLemma20_11_sigmaMinCol B * vecNorm2 x := by
+      simpa [hB_norm_eq] using hB_lower
+    nlinarith
+  · have hB_nonneg := wedinLemma20_11_sigmaMinCol_nonneg B
+    linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
     strict perturbations below a lower action radius preserve injectivity.
 
     This is a full-column-rank consequence of the source singular-value
