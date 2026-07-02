@@ -2286,6 +2286,64 @@ theorem higham10_9_unit_diag_cond_bound {n : ℕ} (hn : 0 < n)
   gcongr
 
 
+/-- The √-scaled matrix `H = D⁻¹AD⁻¹`, `D = diag(√a_ii)`, has unit
+    diagonal. -/
+lemma scaled_matrix_unit_diag {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hAdiag : ∀ i : Fin n, 0 < A i i) (i : Fin n) :
+    A i i / (Real.sqrt (A i i) * Real.sqrt (A i i)) = 1 := by
+  rw [Real.mul_self_sqrt (hAdiag i).le]
+  exact div_self (hAdiag i).ne'
+
+/-- The √-scaled matrix of a PSD matrix is PSD (congruence by the
+    positive diagonal scaling). -/
+lemma scaled_matrix_isPosSemiDef {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (hAdiag : ∀ i : Fin n, 0 < A i i) :
+    IsPosSemiDef n
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) := by
+  constructor
+  · intro i j
+    show A i j / (Real.sqrt (A i i) * Real.sqrt (A j j)) =
+      A j i / (Real.sqrt (A j j) * Real.sqrt (A i i))
+    rw [hPSD.1 i j, mul_comm]
+  · intro x
+    have h := hPSD.2 (fun i => x i / Real.sqrt (A i i))
+    calc (0:ℝ) ≤ ∑ i : Fin n, ∑ j : Fin n,
+          x i / Real.sqrt (A i i) * A i j *
+          (x j / Real.sqrt (A j j)) := h
+      _ = ∑ i : Fin n, ∑ j : Fin n, x i *
+          (A i j / (Real.sqrt (A i i) * Real.sqrt (A j j))) * x j := by
+          refine Finset.sum_congr rfl fun i _ =>
+            Finset.sum_congr rfl fun j _ => ?_
+          have hi := Real.sqrt_pos.mpr (hAdiag i)
+          have hj := Real.sqrt_pos.mpr (hAdiag j)
+          field_simp
+
+/-- **Display (10.9) fragment for the concrete scaled matrix**: for SPD
+    data (`A` PSD with positive diagonal), the van der Sluis scaling
+    `H = D⁻¹AD⁻¹` satisfies `κ₂(H) ≤ n/λ_min(H)`. -/
+theorem higham10_9_scaled_cond_bound {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (hPSD : IsPosSemiDef n A)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hSym : IsSymmetricFiniteMatrix
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))))
+    (hmin : 0 < finiteMinEigenvalue hn
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) hSym) :
+    finiteMaxEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSym /
+      finiteMinEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSym ≤
+    (n : ℝ) / finiteMinEigenvalue hn
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) hSym :=
+  higham10_9_unit_diag_cond_bound hn _
+    (scaled_matrix_isPosSemiDef A hPSD hAdiag)
+    (fun i => scaled_matrix_unit_diag A hAdiag i) hSym hmin
+
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
 `‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
 an `r × r` upper-triangular block `U` with positive diagonal whose rows
