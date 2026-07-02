@@ -3802,6 +3802,7 @@ Source-facing Chapter 10 wrappers:
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)
 - `schur_first_order_entrywise_bound` (|Ebar| <= eps (1 + k^2 alpha mu)^2, the source (1+||W||)^2 shape) / `strict_argmax_diag_stable` (L10.11 stage engine)
+- `resolvent_entry_cap` (Neumann cap: |X| <= mu/(1 - k^2 mu eps) from the resolvent alone - removes L10.10's chi hypothesis)
 - `diagArgmax` / `diagArgmax_max` / `diagArgmax_eq_of_strict` / `diagArgmax_stable` (deterministic complete-pivoting choice + single-stage stability)
 - `schurStep` / `schurStep_symm` / `schurStep_isPosSemiDef` (dimension-preserving elimination step; completion-of-squares PSD invariant)
 - `cpState` / `cpPivot` / `cpState_symm` / `cpState_isPosSemiDef` / `cpPivot_max` (complete-pivoting state machine + stage invariants)

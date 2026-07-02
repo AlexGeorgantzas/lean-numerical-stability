@@ -3275,6 +3275,64 @@ theorem fl_cpPivotFactor_sequence_agrees_small (fp : FPModel)
   exact fl_cpPivotFactor_sequence_agrees fp hn A r δ ρ c hδ hδρ hc
     h5 g hg0 hgstep hghalf hgap hfloor hcap
 
+/-- **Neumann-style entry cap for the perturbed inverse** (resolves the
+    recorded Lemma 10.10 `χ`-as-hypothesis delta): from the resolvent
+    identity alone, if `q = k²με < 1` then every entry of `X` is
+    bounded by `μ/(1−q)` — no cap on `X` needs to be assumed. Proof by
+    evaluating the identity at the maximal entry. -/
+lemma resolvent_entry_cap {k : ℕ} (hk : 0 < k)
+    (M X E11 : Matrix (Fin k) (Fin k) ℝ) (μ ε : ℝ)
+    (hμ : 0 ≤ μ) (hε : 0 ≤ ε)
+    (hM : ∀ i j, |M i j| ≤ μ) (hE : ∀ i j, |E11 i j| ≤ ε)
+    (hX : X = M - M * E11 * X)
+    (hq : (k:ℝ) ^ 2 * μ * ε < 1) :
+    ∀ i j, |X i j| ≤ μ / (1 - (k:ℝ) ^ 2 * μ * ε) := by
+  have hne : (Finset.univ : Finset (Fin k × Fin k)).Nonempty := by
+    refine ⟨(⟨0, hk⟩, ⟨0, hk⟩), Finset.mem_univ _⟩
+  set χ : ℝ := Finset.univ.sup' hne
+    (fun p : Fin k × Fin k => |X p.1 p.2|) with hχ
+  have hbound : ∀ i j : Fin k, |X i j| ≤ χ := fun i j =>
+    Finset.le_sup' (f := fun p : Fin k × Fin k => |X p.1 p.2|)
+      (Finset.mem_univ (i, j))
+  have hχ0 : 0 ≤ χ := le_trans (abs_nonneg _)
+    (hbound ⟨0, hk⟩ ⟨0, hk⟩)
+  -- the sup is attained
+  obtain ⟨p, _, hp⟩ := Finset.exists_mem_eq_sup' hne
+    (fun p : Fin k × Fin k => |X p.1 p.2|)
+  -- entrywise bound on the correction term at any entry
+  have hME : ∀ (i t : Fin k), |(M * E11) i t| ≤ (k:ℝ) * μ * ε :=
+    entrywise_matMul_le M E11 μ ε hμ hM hE
+  have hMEX : ∀ (i j : Fin k), |((M * E11) * X) i j| ≤
+      (k:ℝ) * ((k:ℝ) * μ * ε) * χ :=
+    entrywise_matMul_le (M * E11) X _ χ (by positivity) hME hbound
+  -- evaluate the identity at the attaining entry
+  have hself : χ ≤ μ + (k:ℝ) ^ 2 * μ * ε * χ := by
+    have hXe : X p.1 p.2 = M p.1 p.2 - ((M * E11) * X) p.1 p.2 := by
+      conv_lhs => rw [hX]
+      simp [Matrix.sub_apply]
+    have h1 : |X p.1 p.2| ≤ |M p.1 p.2| + |((M * E11) * X) p.1 p.2| := by
+      rw [hXe]
+      have h := abs_add_le (M p.1 p.2) (-(((M * E11) * X) p.1 p.2))
+      rw [abs_neg, ← sub_eq_add_neg] at h
+      exact h
+    have h2 := hMEX p.1 p.2
+    have h3 : (k:ℝ) * ((k:ℝ) * μ * ε) * χ =
+        (k:ℝ) ^ 2 * μ * ε * χ := by ring
+    have hpχ : χ = |X p.1 p.2| := by
+      rw [hχ]; exact hp
+    have hcalc : |X p.1 p.2| ≤ μ + (k:ℝ) ^ 2 * μ * ε * χ :=
+      calc |X p.1 p.2|
+          ≤ |M p.1 p.2| + |((M * E11) * X) p.1 p.2| := h1
+        _ ≤ μ + (k:ℝ) ^ 2 * μ * ε * χ := by
+            rw [← h3]
+            exact add_le_add (hM p.1 p.2) h2
+    linarith [hpχ, hcalc]
+  have h1q : (0:ℝ) < 1 - (k:ℝ) ^ 2 * μ * ε := by linarith
+  have hχle : χ ≤ μ / (1 - (k:ℝ) ^ 2 * μ * ε) := by
+    rw [le_div_iff₀ h1q]
+    nlinarith
+  exact fun i j => le_trans (hbound i j) hχle
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
