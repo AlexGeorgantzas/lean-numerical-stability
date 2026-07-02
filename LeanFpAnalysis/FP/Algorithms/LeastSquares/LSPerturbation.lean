@@ -338,6 +338,35 @@ theorem wedinLemma20_11_pinvNorm_le_of_singularValue_gap
       rw [hsigmaA]
       field_simp [ne_of_gt hAplus_pos, ne_of_gt hden_pos]
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column specialization of the pseudoinverse norm bound.
+
+    Compared with `wedinLemma20_11_pinvNorm_le_of_singularValue_gap`, this
+    theorem proves the singular-value perturbation step locally for real
+    rectangular matrices with nonempty column dimension.  The remaining
+    assumptions are exactly the reciprocal identifications between the
+    column-side `sigma_min` values and the displayed pseudoinverse norms. -/
+theorem wedinLemma20_11_fullColumn_pinvNorm_le_of_sub_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    {Aplus_norm Bplus_norm delta eta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus_sigma :
+      wedinLemma20_11_sigmaMinCol A = 1 / Aplus_norm)
+    (hBplus_sigma :
+      Bplus_norm = 1 / wedinLemma20_11_sigmaMinCol B) :
+    Bplus_norm ≤ Aplus_norm / (1 - eta) :=
+  wedinLemma20_11_pinvNorm_le_of_singularValue_gap
+    (Aplus_norm := Aplus_norm) (Bplus_norm := Bplus_norm)
+    (delta := delta) (eta := eta)
+    (sigmaA := wedinLemma20_11_sigmaMinCol A)
+    (sigmaB := wedinLemma20_11_sigmaMinCol B)
+    hAplus_pos heta hsmall hAplus_sigma hBplus_sigma
+    (wedinLemma20_11_sigmaMinCol_sub_le_sigmaMinCol_of_sub_rectOpNorm2Le
+      A B hDelta)
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
