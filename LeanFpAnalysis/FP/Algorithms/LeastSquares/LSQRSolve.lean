@@ -19075,6 +19075,65 @@ theorem theorem20_4_printed_deltaf_coefficient_lt_conservative_gammaFactor_coeff
           fp (m := n + k) (p := n) hm hn hu hvalid)
     hsqrt_pos
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4, residual-sharpened coefficient
+    obstruction for the printed `Delta f` route in the one-column panel case.
+
+    The latest residual-sharpened unified coefficient is
+    `gamma + householderQRRhsPanelSqrtResidualGrowthCoeff`.  For one panel
+    reflector the residual-growth term is already positive under positive unit
+    roundoff, so the current implementation-backed `gammaTilde` coefficient is
+    still strictly larger than Higham's printed `1 * gamma` coefficient. -/
+theorem theorem20_4_printed_deltaf_coefficient_lt_concrete_gammaTildeSqrtResidual_one_column
+    (fp : FPModel) {k : ℕ} (hu : 0 < fp.u)
+    (hvalid :
+      gammaValid fp (1 * householderConstructApplyGammaIndex (k + 1))) :
+    Real.sqrt (k + 1 : ℝ) *
+        ((1 : ℝ) *
+          gamma fp (1 * householderConstructApplyGammaIndex (k + 1))) <
+      Real.sqrt (k + 1 : ℝ) *
+        lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (k + 1) 1 := by
+  have hm : 0 < k + 1 := Nat.succ_pos k
+  have hm_real : 0 < (k + 1 : ℝ) := by
+    exact_mod_cast hm
+  have hm_real_nat : 0 < ((k + 1 : ℕ) : ℝ) := by
+    exact_mod_cast hm
+  have hbase_valid : gammaValid fp (11 * (k + 1) + 23) :=
+    gammaValid_mono fp (by
+      dsimp [householderConstructApplyGammaIndex]
+      omega) hvalid
+  have hCpos : 0 < householderConstructApplyBound fp (k + 1) := by
+    unfold householderConstructApplyBound
+    have hu_sq : 0 < fp.u ^ 2 := sq_pos_of_pos hu
+    have hprod : 0 < ((k + 1 : ℕ) : ℝ) * fp.u ^ 2 :=
+      mul_pos hm_real_nat hu_sq
+    have hsqrt : 0 < Real.sqrt (((k + 1 : ℕ) : ℝ) * fp.u ^ 2) :=
+      Real.sqrt_pos.2 hprod
+    have hgamma_nonneg : 0 ≤ gamma fp (11 * (k + 1) + 23) :=
+      gamma_nonneg fp hbase_valid
+    exact add_pos_of_pos_of_nonneg hsqrt
+      (mul_nonneg (by norm_num) hgamma_nonneg)
+  have hsqrt_pos : 0 < Real.sqrt (k + 1 : ℝ) :=
+    Real.sqrt_pos.2 hm_real
+  have htail_pos :
+      0 <
+        householderQRRhsPanelSqrtResidualGrowthCoeff fp (k + 1) 1 := by
+    have htail_zero :
+        householderQRRhsPanelSqrtResidualGrowthCoeff fp k 0 = 0 := by
+      cases k <;> simp [householderQRRhsPanelSqrtResidualGrowthCoeff]
+    simpa [householderQRRhsPanelSqrtResidualGrowthCoeff, htail_zero] using
+      mul_pos hsqrt_pos (mul_pos hsqrt_pos hCpos)
+  have hinner :
+      (1 : ℝ) *
+          gamma fp (1 * householderConstructApplyGammaIndex (k + 1)) <
+        lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (k + 1) 1 := by
+    have hadd :
+        gamma fp (1 * householderConstructApplyGammaIndex (k + 1)) <
+          gamma fp (1 * householderConstructApplyGammaIndex (k + 1)) +
+            householderQRRhsPanelSqrtResidualGrowthCoeff fp (k + 1) 1 :=
+      lt_add_of_pos_right _ htail_pos
+    simpa [lsTheorem20_4ConcreteGammaTildeSqrtResidual] using hadd
+  exact mul_lt_mul_of_pos_left hinner hsqrt_pos
+
 private theorem vecNorm2Sq_add_eq {m : ℕ} (r e : Fin m → ℝ) :
     vecNorm2Sq (fun i => r i + e i) =
       vecNorm2Sq r + 2 * (∑ i : Fin m, r i * e i) + vecNorm2Sq e := by
