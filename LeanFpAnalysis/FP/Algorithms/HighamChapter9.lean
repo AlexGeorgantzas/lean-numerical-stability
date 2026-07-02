@@ -42552,6 +42552,43 @@ theorem higham9_15_componentwise_source_firstOrder_zero_bound_of_source_perturba
     apply FirstOrderLe.of_le
     simp [hΔUzero i j]
 
+/-- **Theorem 9.15 support**, if both inverse-normalized perturbations vanish,
+then each source entry is bounded by a zero first-order envelope. -/
+theorem higham9_15_componentwise_source_firstOrder_zero_bound_of_inverse_normalized_zero
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n, FirstOrderLe u 0 |ΔL i j|) ∧
+      (∀ i j : Fin n, FirstOrderLe u 0 |ΔU i j|) := by
+  have hzero :=
+    higham9_15_source_perturbations_zero_of_inverse_normalized_zero
+      L U Linv Uinv ΔL ΔU hLright hUleft hXzero hYzero
+  exact
+    higham9_15_componentwise_source_firstOrder_zero_bound_of_source_perturbations_zero
+      u ΔL ΔU hzero.1 hzero.2
+
+/-- **Theorem 9.15 support**, source-oriented inverse-identity form of the
+inverse-normalized zero first-order source-bound theorem. -/
+theorem higham9_15_componentwise_source_firstOrder_zero_bound_of_inverse_normalized_zero_of_source_inverse_identities
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n, FirstOrderLe u 0 |ΔL i j|) ∧
+      (∀ i j : Fin n, FirstOrderLe u 0 |ΔU i j|) :=
+  higham9_15_componentwise_source_firstOrder_zero_bound_of_inverse_normalized_zero
+    u L U Linv Uinv ΔL ΔU
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse L Linv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse U Uinv hUright)
+    hXzero hYzero
+
 /-- **Theorem 9.15 support**, exact full residual zero in the normalized
 `I + G` split gives componentwise zero first-order source bounds. -/
 theorem higham9_15_componentwise_source_firstOrder_zero_bound_of_G_split_residual_zero_of_inverse_identities
