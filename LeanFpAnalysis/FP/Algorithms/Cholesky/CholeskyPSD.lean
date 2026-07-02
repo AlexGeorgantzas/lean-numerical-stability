@@ -3064,6 +3064,275 @@ theorem cpState_telescope {n : ℕ} (hn : 0 < n)
     rw [Finset.sum_range_succ, hS]
     linarith [hih]
 
+/-- **The fl pivot-agreement hypotheses are non-vacuous** (instantiated
+    budget): with `U` the one-stage rounding contribution and
+    `K = 1 + (3c² + c)/(ρ/2)²` the exact-growth rate, the explicit
+    budget `g t = U·t·Kᵗ` satisfies the recurrence, so a single scalar
+    smallness condition `U·r·Kʳ < min(min 1 (δ/2)) (ρ/4)` — which holds
+    for all sufficiently small `u`, since `U` is a polynomial in `u`
+    vanishing at `0` — yields pivot agreement and state closeness
+    outright. -/
+theorem fl_cpPivot_sequence_agrees_small (fp : FPModel) {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ) (r : ℕ)
+    (δ ρ c : ℝ) (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c)
+    (hsmall :
+      (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+        ((c + δ / 2) ^ 2 / (ρ / 2)) * (2 * fp.u + fp.u ^ 2) *
+          (1 + fp.u)) * r *
+        (1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2) ^ r <
+      min (min 1 (δ / 2)) (ρ / 4)) :
+    ∀ t : ℕ, t ≤ r →
+      (∀ i j : Fin n,
+        |cpState hn A t i j - fl_cpState fp hn A t i j| ≤
+        (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+          ((c + δ / 2) ^ 2 / (ρ / 2)) * (2 * fp.u + fp.u ^ 2) *
+            (1 + fp.u)) * t *
+          (1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2) ^ t) ∧
+      (∀ s : ℕ, s < t → cpPivot hn A s = fl_cpPivot fp hn A s) := by
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  have hu0 := fp.u_nonneg
+  set U : ℝ := fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+    ((c + δ / 2) ^ 2 / (ρ / 2)) * (2 * fp.u + fp.u ^ 2) *
+      (1 + fp.u) with hU
+  set K : ℝ := 1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2 with hK
+  have hU0 : 0 ≤ U := by rw [hU]; positivity
+  have hK1 : (1:ℝ) ≤ K := by
+    rw [hK]
+    have : (0:ℝ) ≤ (3 * c ^ 2 + c) / (ρ / 2) ^ 2 := by positivity
+    linarith
+  have hK0 : (0:ℝ) < K := lt_of_lt_of_le one_pos hK1
+  set g : ℕ → ℝ := fun t => U * t * K ^ t with hg
+  -- the budget is capped along the run by the smallness scalar
+  have hgle : ∀ t : ℕ, t ≤ r →
+      g t ≤ U * r * K ^ r := by
+    intro t htr
+    show U * t * K ^ t ≤ U * r * K ^ r
+    have h1 : (t:ℝ) ≤ (r:ℝ) := by exact_mod_cast htr
+    have h2 : K ^ t ≤ K ^ r := pow_le_pow_right₀ hK1 htr
+    calc U * t * K ^ t ≤ U * r * K ^ t := by
+          have := mul_le_mul_of_nonneg_left h1 hU0
+          exact mul_le_mul_of_nonneg_right this (by positivity)
+      _ ≤ U * r * K ^ r := by
+          exact mul_le_mul_of_nonneg_left h2
+            (mul_nonneg hU0 (Nat.cast_nonneg r))
+  have hM := hsmall
+  have hmin1 : min (min 1 (δ / 2)) (ρ / 4) ≤ 1 :=
+    le_trans (min_le_left _ _) (min_le_left _ _)
+  have hminδ : min (min 1 (δ / 2)) (ρ / 4) ≤ δ / 2 :=
+    le_trans (min_le_left _ _) (min_le_right _ _)
+  -- the explicit budget satisfies all three conditions
+  have hg0 : g 0 = 0 := by
+    show U * (0:ℕ) * K ^ 0 = 0
+    norm_num
+  have hg1 : ∀ t : ℕ, t < r → g t ≤ 1 := fun t htr =>
+    le_trans (hgle t (Nat.le_of_lt htr)) (le_of_lt
+      (lt_of_lt_of_le hM hmin1))
+  have hghalf : ∀ t : ℕ, t < r → g t < δ / 2 := fun t htr =>
+    lt_of_le_of_lt (hgle t (Nat.le_of_lt htr))
+      (lt_of_lt_of_le hM hminδ)
+  have hg_nonneg : ∀ t : ℕ, 0 ≤ g t := by
+    intro t
+    show (0:ℝ) ≤ U * t * K ^ t
+    positivity
+  have hgstep : ∀ t : ℕ, t < r →
+      g t + (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 + U ≤
+        g (t + 1) := by
+    intro t htr
+    have hgt1 := hg1 t htr
+    have hgt0 := hg_nonneg t
+    -- quadratic absorbed at g ≤ 1, then the K-recurrence
+    have habs : 3 * c ^ 2 * g t + c * g t ^ 2 ≤
+        (3 * c ^ 2 + c) * g t := by
+      nlinarith [mul_nonneg (mul_nonneg hc hgt0)
+        (sub_nonneg.mpr hgt1)]
+    have hKrec : g t * K + U ≤ g (t + 1) := by
+      show U * t * K ^ t * K + U ≤ U * ((t + 1 : ℕ) : ℝ) * K ^ (t + 1)
+      push_cast
+      have h1 : (1:ℝ) ≤ K ^ (t + 1) := one_le_pow₀ hK1
+      have h2 : U * (t:ℝ) * K ^ t * K = U * (t:ℝ) * K ^ (t + 1) := by
+        rw [pow_succ]; ring
+      nlinarith [h2, mul_nonneg hU0 (sub_nonneg.mpr h1)]
+    have hexp : g t + (3 * c ^ 2 + c) * g t / (ρ / 2) ^ 2 =
+        g t * K := by
+      rw [hK]
+      field_simp
+    have hdiv : (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 ≤
+        (3 * c ^ 2 + c) * g t / (ρ / 2) ^ 2 := by gcongr
+    calc g t + (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 + U
+        ≤ g t + (3 * c ^ 2 + c) * g t / (ρ / 2) ^ 2 + U := by
+          linarith [hdiv]
+      _ = g t * K + U := by rw [hexp]
+      _ ≤ g (t + 1) := hKrec
+  exact fl_cpPivot_sequence_agrees fp hn A r δ ρ c hδ hδρ hc
+    g hg0 hgstep hghalf hgap hfloor hcap
+
+/-- **Factor-form fl agreement, non-vacuous form**: the explicit budget
+    `g t = U·t·Kᵗ` with the `γ₅` rounding contribution — one scalar
+    smallness condition, holding for all sufficiently small `u`. -/
+theorem fl_cpPivotFactor_sequence_agrees_small (fp : FPModel)
+    {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) (r : ℕ)
+    (δ ρ c : ℝ) (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (h5 : gammaValid fp 5)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c)
+    (hsmall :
+      (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+        (1 + fp.u) * gamma fp 5 * ((c + δ / 2) ^ 2 / (ρ / 2))) * r *
+        (1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2) ^ r <
+      min (min 1 (δ / 2)) (ρ / 4)) :
+    ∀ t : ℕ, t ≤ r →
+      (∀ i j : Fin n,
+        |cpState hn A t i j - fl_cpStateFactor fp hn A t i j| ≤
+        (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+          (1 + fp.u) * gamma fp 5 * ((c + δ / 2) ^ 2 / (ρ / 2))) * t *
+          (1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2) ^ t) ∧
+      (∀ s : ℕ, s < t →
+        cpPivot hn A s = fl_cpPivotFactor fp hn A s) := by
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  have hu0 := fp.u_nonneg
+  have hγ5 : 0 ≤ gamma fp 5 := gamma_nonneg fp h5
+  set U : ℝ := fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+    (1 + fp.u) * gamma fp 5 * ((c + δ / 2) ^ 2 / (ρ / 2)) with hU
+  set K : ℝ := 1 + (3 * c ^ 2 + c) / (ρ / 2) ^ 2 with hK
+  have hU0 : 0 ≤ U := by
+    rw [hU]
+    refine add_nonneg (by positivity)
+      (mul_nonneg (mul_nonneg (by positivity) hγ5) (by positivity))
+  have hK1 : (1:ℝ) ≤ K := by
+    rw [hK]
+    have : (0:ℝ) ≤ (3 * c ^ 2 + c) / (ρ / 2) ^ 2 := by positivity
+    linarith
+  have hK0 : (0:ℝ) < K := lt_of_lt_of_le one_pos hK1
+  set g : ℕ → ℝ := fun t => U * t * K ^ t with hg
+  have hgle : ∀ t : ℕ, t ≤ r → g t ≤ U * r * K ^ r := by
+    intro t htr
+    show U * t * K ^ t ≤ U * r * K ^ r
+    have h1 : (t:ℝ) ≤ (r:ℝ) := by exact_mod_cast htr
+    have h2 : K ^ t ≤ K ^ r := pow_le_pow_right₀ hK1 htr
+    calc U * t * K ^ t ≤ U * r * K ^ t := by
+          have := mul_le_mul_of_nonneg_left h1 hU0
+          exact mul_le_mul_of_nonneg_right this (by positivity)
+      _ ≤ U * r * K ^ r :=
+          mul_le_mul_of_nonneg_left h2
+            (mul_nonneg hU0 (Nat.cast_nonneg r))
+  have hmin1 : min (min 1 (δ / 2)) (ρ / 4) ≤ 1 :=
+    le_trans (min_le_left _ _) (min_le_left _ _)
+  have hminδ : min (min 1 (δ / 2)) (ρ / 4) ≤ δ / 2 :=
+    le_trans (min_le_left _ _) (min_le_right _ _)
+  have hg0 : g 0 = 0 := by
+    show U * (0:ℕ) * K ^ 0 = 0
+    norm_num
+  have hg1 : ∀ t : ℕ, t < r → g t ≤ 1 := fun t htr =>
+    le_trans (hgle t (Nat.le_of_lt htr))
+      (le_of_lt (lt_of_lt_of_le hsmall hmin1))
+  have hghalf : ∀ t : ℕ, t < r → g t < δ / 2 := fun t htr =>
+    lt_of_le_of_lt (hgle t (Nat.le_of_lt htr))
+      (lt_of_lt_of_le hsmall hminδ)
+  have hg_nonneg : ∀ t : ℕ, 0 ≤ g t := by
+    intro t
+    show (0:ℝ) ≤ U * t * K ^ t
+    positivity
+  have hgstep : ∀ t : ℕ, t < r →
+      g t + (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 + U ≤
+        g (t + 1) := by
+    intro t htr
+    have hgt1 := hg1 t htr
+    have hgt0 := hg_nonneg t
+    have habs : 3 * c ^ 2 * g t + c * g t ^ 2 ≤
+        (3 * c ^ 2 + c) * g t := by
+      nlinarith [mul_nonneg (mul_nonneg hc hgt0)
+        (sub_nonneg.mpr hgt1)]
+    have hKrec : g t * K + U ≤ g (t + 1) := by
+      show U * t * K ^ t * K + U ≤ U * ((t + 1 : ℕ) : ℝ) * K ^ (t + 1)
+      push_cast
+      have h1 : (1:ℝ) ≤ K ^ (t + 1) := one_le_pow₀ hK1
+      have h2 : U * (t:ℝ) * K ^ t * K = U * (t:ℝ) * K ^ (t + 1) := by
+        rw [pow_succ]; ring
+      nlinarith [h2, mul_nonneg hU0 (sub_nonneg.mpr h1)]
+    have hexp : g t + (3 * c ^ 2 + c) * g t / (ρ / 2) ^ 2 =
+        g t * K := by
+      rw [hK]
+      field_simp
+    have hdiv : (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 ≤
+        (3 * c ^ 2 + c) * g t / (ρ / 2) ^ 2 := by gcongr
+    calc g t + (3 * c ^ 2 * g t + c * g t ^ 2) / (ρ / 2) ^ 2 + U
+        ≤ g t + (3 * c ^ 2 + c) * g t / (ρ / 2) ^ 2 + U := by
+          linarith [hdiv]
+      _ = g t * K + U := by rw [hexp]
+      _ ≤ g (t + 1) := hKrec
+  exact fl_cpPivotFactor_sequence_agrees fp hn A r δ ρ c hδ hδρ hc
+    h5 g hg0 hgstep hghalf hgap hfloor hcap
+
+/-- **Neumann-style entry cap for the perturbed inverse** (resolves the
+    recorded Lemma 10.10 `χ`-as-hypothesis delta): from the resolvent
+    identity alone, if `q = k²με < 1` then every entry of `X` is
+    bounded by `μ/(1−q)` — no cap on `X` needs to be assumed. Proof by
+    evaluating the identity at the maximal entry. -/
+lemma resolvent_entry_cap {k : ℕ} (hk : 0 < k)
+    (M X E11 : Matrix (Fin k) (Fin k) ℝ) (μ ε : ℝ)
+    (hμ : 0 ≤ μ) (hε : 0 ≤ ε)
+    (hM : ∀ i j, |M i j| ≤ μ) (hE : ∀ i j, |E11 i j| ≤ ε)
+    (hX : X = M - M * E11 * X)
+    (hq : (k:ℝ) ^ 2 * μ * ε < 1) :
+    ∀ i j, |X i j| ≤ μ / (1 - (k:ℝ) ^ 2 * μ * ε) := by
+  have hne : (Finset.univ : Finset (Fin k × Fin k)).Nonempty := by
+    refine ⟨(⟨0, hk⟩, ⟨0, hk⟩), Finset.mem_univ _⟩
+  set χ : ℝ := Finset.univ.sup' hne
+    (fun p : Fin k × Fin k => |X p.1 p.2|) with hχ
+  have hbound : ∀ i j : Fin k, |X i j| ≤ χ := fun i j =>
+    Finset.le_sup' (f := fun p : Fin k × Fin k => |X p.1 p.2|)
+      (Finset.mem_univ (i, j))
+  have hχ0 : 0 ≤ χ := le_trans (abs_nonneg _)
+    (hbound ⟨0, hk⟩ ⟨0, hk⟩)
+  -- the sup is attained
+  obtain ⟨p, _, hp⟩ := Finset.exists_mem_eq_sup' hne
+    (fun p : Fin k × Fin k => |X p.1 p.2|)
+  -- entrywise bound on the correction term at any entry
+  have hME : ∀ (i t : Fin k), |(M * E11) i t| ≤ (k:ℝ) * μ * ε :=
+    entrywise_matMul_le M E11 μ ε hμ hM hE
+  have hMEX : ∀ (i j : Fin k), |((M * E11) * X) i j| ≤
+      (k:ℝ) * ((k:ℝ) * μ * ε) * χ :=
+    entrywise_matMul_le (M * E11) X _ χ (by positivity) hME hbound
+  -- evaluate the identity at the attaining entry
+  have hself : χ ≤ μ + (k:ℝ) ^ 2 * μ * ε * χ := by
+    have hXe : X p.1 p.2 = M p.1 p.2 - ((M * E11) * X) p.1 p.2 := by
+      conv_lhs => rw [hX]
+      simp [Matrix.sub_apply]
+    have h1 : |X p.1 p.2| ≤ |M p.1 p.2| + |((M * E11) * X) p.1 p.2| := by
+      rw [hXe]
+      have h := abs_add_le (M p.1 p.2) (-(((M * E11) * X) p.1 p.2))
+      rw [abs_neg, ← sub_eq_add_neg] at h
+      exact h
+    have h2 := hMEX p.1 p.2
+    have h3 : (k:ℝ) * ((k:ℝ) * μ * ε) * χ =
+        (k:ℝ) ^ 2 * μ * ε * χ := by ring
+    have hpχ : χ = |X p.1 p.2| := by
+      rw [hχ]; exact hp
+    have hcalc : |X p.1 p.2| ≤ μ + (k:ℝ) ^ 2 * μ * ε * χ :=
+      calc |X p.1 p.2|
+          ≤ |M p.1 p.2| + |((M * E11) * X) p.1 p.2| := h1
+        _ ≤ μ + (k:ℝ) ^ 2 * μ * ε * χ := by
+            rw [← h3]
+            exact add_le_add (hM p.1 p.2) h2
+    linarith [hpχ, hcalc]
+  have h1q : (0:ℝ) < 1 - (k:ℝ) ^ 2 * μ * ε := by linarith
+  have hχle : χ ≤ μ / (1 - (k:ℝ) ^ 2 * μ * ε) := by
+    rw [le_div_iff₀ h1q]
+    nlinarith
+  exact fun i j => le_trans (hbound i j) hχle
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================

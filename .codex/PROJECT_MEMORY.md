@@ -20,6 +20,21 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-02 Problem 13.4 raw canonical-parent determinant product packaging:
+  added
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_canonical_parent_inverse_entry_of_det_ne_zero`
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_canonical_parent_inverse_entry_of_det_ne_zero`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These compose the raw
+  Eq.13.22/Eq.13.23 active-suffix product witnesses with the canonical parent
+  inverse-entry handoff and derive the ambient canonical `nonsingInv`
+  right-inverse from `det(blockMatrixFirstSplitFlat A) != 0`.  This removes the
+  caller-supplied `hRight` proof artifact at the raw canonical-parent product
+  surface while keeping the genuine active-suffix invertibility/source
+  obligations and, for Eq.13.23, the source `rho <= 2` theorem explicit.  The
+  all-tail parent/source comparisons, source-strength BDD table construction,
+  dimension-free max-entry product estimate, and Theorem 13.6 cited
+  implementation estimates remain open.
 - 2026-07-01 BDD generic source-norm upper endpoint: added
   `higham13_blockNormSup` and basic supremum lemmas, the normed-block assembled
   upper factor `higham13_algorithm13_3_upperFromNormedStages`, and
@@ -10864,3 +10879,17 @@ These compile, but should not be treated as fully derived stability results:
   Eq.13.22/Eq.13.23 active-suffix product surfaces.  The all-tail
   parent/source comparison theorem, source-strength BDD table construction, and
   Theorem 13.6 cited implementation estimates remain open.
+- 2026-07-02 Problem 13.4 canonical-parent Eq.13.23 product-update packaging:
+  added
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_canonical_parent_inverse_entry`,
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_canonical_parent_inverse_entry`,
+  and determinant-nonzero companions ending in
+  `_of_canonical_parent_inverse_entry_of_det_ne_zero`.
+  These compose the existing first-split product/update or reciprocal-table
+  `rho <= 2` bridge with the canonical parent inverse-entry handoff, so the
+  source-strength Eq.13.23 active-suffix product-update surfaces no longer
+  expose a first-Schur-tail inverse-entry comparison; the determinant variants
+  also derive the ambient `nonsingInv` right-inverse from `det A != 0`.  This is
+  dependency/interface cleanup only: the structured max-entry product estimate,
+  source table data, all-tail source comparisons, and Theorem 13.6 cited
+  implementation estimates remain open.
