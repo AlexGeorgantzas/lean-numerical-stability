@@ -3972,6 +3972,15 @@ theorem subtractZeroExact_exactWithUnitRoundoff
   intro x
   simp [FPModel.exactWithUnitRoundoff]
 
+/-- Exact subtraction implies the Ch19 subtract-zero copy convention. -/
+theorem subtractZeroExact_of_exact_sub
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y) :
+    subtractZeroExact fp := by
+  intro x
+  rw [hsub]
+  ring
+
 /-- A stored panel step preserves the top row tail when the active vector has
 zero in the top row and subtraction by zero is exact. -/
 theorem panelTopRowTail_storedPanelStep_eq_of_top_zero
@@ -20130,6 +20139,33 @@ theorem
       fp hadd hmul hdiv hsqrt)
     r p A_hat alpha hvecs hcopy
 
+/-- Exact primitive operations, including subtraction, assemble the
+twice-trailing final-closure predicate from tail-local vector equalities.
+
+Compared with
+`storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_of_exact_add_mul_div_sqrt`,
+this wrapper also discharges the subtract-zero copy convention from exact
+subtraction. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_of_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_of_exact_add_mul_div_sqrt
+    fp hadd hmul hdiv hsqrt r p A_hat alpha hvecs
+    (subtractZeroExact_of_exact_sub fp hsub)
+
 /-- Exact add/mul/div/sqrt operations feed the stronger-model final-panel
 bridge from the same tail-vector loop facts.
 
@@ -20217,6 +20253,91 @@ theorem
       fp hadd hmul hdiv hsqrt)
     r p A A_hat alpha hrows hcols hinit hStep hvec0 hdetFirst hdetTail
     hvecTail htailVecs hcopy
+
+/-- Exact primitive operations, including subtraction, feed the
+stronger-model final-panel bridge from tail-vector loop facts.
+
+This wrapper removes the separate `subtractZeroExact fp` premise by deriving it
+from exact subtraction; the first-reflector vector equalities, determinant
+nonbreakdown, and recursive tail-vector facts remain explicit. -/
+theorem
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_sourceFaithful_tailVectorEqLoopFacts_of_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    (r p : Nat)
+    (A : Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrows : 2 <= r + p + 2)
+    (hcols : 2 <= p + 2)
+    (hinit : A_hat 0 = A)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + p + 2) (p + 2) k
+          (householderTrailingActiveVector (r + p + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + p + 2)
+            (householderTrailingActiveVector (r + p + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hvec0 :
+      householderTrailingActiveVector (r + p + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0) =
+        fl_householderNormalizedVector fp (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A))
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (r + p + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp
+              (Nat.succ_pos (r + p + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp
+              (r + p + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le (r + p)))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      (let v0 := fl_householderNormalizedVector fp
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp
+          (r + p + 2) (p + 2) 0 v0 1 A
+       householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) (alpha 1) =
+          fl_householderNormalizedVector fp (Nat.succ_pos (r + p))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))))
+    (htailVecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    A_hat (p + 2) =
+      fl_householderQRPanel_R fp (r + p + 2) (p + 2) A :=
+  storedSignedSequence_final_panel_eq_qrPanel_R_of_sourceFaithful_tailVectorEqLoopFacts_of_exact_add_mul_div_sqrt
+    fp hadd hmul hdiv hsqrt r p A A_hat alpha hrows hcols hinit hStep
+    hvec0 hdetFirst hdetTail hvecTail htailVecs
+    (subtractZeroExact_of_exact_sub fp hsub)
 
 /-- Exact-arithmetic tail-vector loop facts imply the twice-trailing
 final-closure predicate.
