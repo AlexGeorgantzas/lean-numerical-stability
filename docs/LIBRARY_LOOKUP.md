@@ -3537,6 +3537,9 @@ Source-facing Chapter 10 wrappers:
 - `sum_sq_zero_pad_eq`
 - `finiteMinEigenvalue_leading_principal_ge`
 - `quadForm_abs_le_of_opNorm2Le`
+- `quadForm_abs_le_of_entrywise_le`
+- `chol_cert_colNormSq_le`
+- `chol_cert_scaled_entrywise_le`
 - `higham10_7_success_factorization_spectral`
 - `higham10_7_failure_no_factorization_spectral`
 - `finiteMinEigenvalue`
