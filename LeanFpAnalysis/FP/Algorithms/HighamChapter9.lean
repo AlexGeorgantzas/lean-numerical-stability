@@ -29844,6 +29844,87 @@ theorem higham9_15_lu_inverse_product_identities_of_source_inverse_identities {n
         rw [rectMatMul_id_left]
   exact ⟨hAinv_prod, hUinv_prod, hLinv_prod⟩
 
+/-- **Theorem 9.15**, Matrix-notation LU/inverse-identity bridge for the
+source condition-number chain.  This is the matrix API companion to
+`higham9_15_lu_inverse_product_identities_of_source_inverse_identities`. -/
+theorem higham9_15_matrix_lu_inverse_product_identities_of_source_inverse_identities
+    {n : ℕ}
+    (A Ainv L U Linv Uinv : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : A = L * U)
+    (hAleft : Ainv * A = 1)
+    (hAright : A * Ainv = 1)
+    (hLleft : Linv * L = 1)
+    (hLright : L * Linv = 1)
+    (hUright : U * Uinv = 1) :
+    Ainv = Uinv * Linv ∧
+      Uinv = Ainv * L ∧
+      Linv = U * Ainv := by
+  have hA_candidate : A * (Uinv * Linv) = 1 := by
+    calc
+      A * (Uinv * Linv)
+          = (L * U) * (Uinv * Linv) := by
+            rw [hLU]
+      _ = L * ((U * Uinv) * Linv) := by
+            noncomm_ring
+      _ = L * (1 * Linv) := by
+            rw [hUright]
+      _ = L * Linv := by
+            simp
+      _ = 1 := hLright
+  have hAinv_prod : Ainv = Uinv * Linv := by
+    calc
+      Ainv = Ainv * 1 := by
+        simp
+      _ = Ainv * (A * (Uinv * Linv)) := by
+            rw [hA_candidate]
+      _ = (Ainv * A) * (Uinv * Linv) := by
+            noncomm_ring
+      _ = 1 * (Uinv * Linv) := by
+            rw [hAleft]
+      _ = Uinv * Linv := by
+            simp
+  have hU_candidate : (Ainv * L) * U = 1 := by
+    calc
+      (Ainv * L) * U
+          = Ainv * (L * U) := by
+            noncomm_ring
+      _ = Ainv * A := by
+            rw [← hLU]
+      _ = 1 := hAleft
+  have hUinv_prod : Uinv = Ainv * L := by
+    calc
+      Uinv = 1 * Uinv := by
+        simp
+      _ = ((Ainv * L) * U) * Uinv := by
+            rw [hU_candidate]
+      _ = (Ainv * L) * (U * Uinv) := by
+            noncomm_ring
+      _ = (Ainv * L) * 1 := by
+            rw [hUright]
+      _ = Ainv * L := by
+            simp
+  have hL_candidate : L * (U * Ainv) = 1 := by
+    calc
+      L * (U * Ainv)
+          = (L * U) * Ainv := by
+            noncomm_ring
+      _ = A * Ainv := by
+            rw [← hLU]
+      _ = 1 := hAright
+  have hLinv_prod : Linv = U * Ainv := by
+    calc
+      Linv = Linv * 1 := by
+        simp
+      _ = Linv * (L * (U * Ainv)) := by
+            rw [hL_candidate]
+      _ = (Linv * L) * (U * Ainv) := by
+            noncomm_ring
+      _ = 1 * (U * Ainv) := by
+            rw [hLleft]
+      _ = U * Ainv := by
+            simp
+  exact ⟨hAinv_prod, hUinv_prod, hLinv_prod⟩
+
 /-- **Theorem 9.15**, source condition-number chain from the LU factorization
 and two-sided inverse identities.  This is the source-facing form of
 `κ₂(A) <= χ(A) <= κ₂(L)κ₂(A)` and
@@ -29866,6 +29947,40 @@ theorem higham9_15_chi_condition_chain_of_lu_inverse_identities {n : ℕ}
   exact higham9_15_chi_condition_chain_of_inverse_products
     A Ainv L U Linv Uinv hAinv_prod hUinv_prod hLinv_prod
 
+/-- **Theorem 9.15**, Matrix-notation source condition-number chain from the
+LU factorization and two-sided inverse identities. -/
+theorem higham9_15_chi_condition_chain_of_matrix_lu_inverse_identities {n : ℕ}
+    (A Ainv L U Linv Uinv : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : A = L * U)
+    (hAleft : Ainv * A = 1)
+    (hAright : A * Ainv = 1)
+    (hLleft : Linv * L = 1)
+    (hLright : L * Linv = 1)
+    (hUright : U * Uinv = 1) :
+    kappa2 A Ainv ≤ higham9_15_chi A Linv Uinv ∧
+      higham9_15_chi A Linv Uinv ≤ kappa2 L Linv * kappa2 A Ainv ∧
+      higham9_15_chi A Linv Uinv ≤ kappa2 U Uinv * kappa2 A Ainv := by
+  obtain ⟨hAinv_prod, hUinv_prod, hLinv_prod⟩ :=
+    higham9_15_matrix_lu_inverse_product_identities_of_source_inverse_identities
+      A Ainv L U Linv Uinv hLU hAleft hAright hLleft hLright hUright
+  have hAinv_rect :
+      (Ainv : Fin n → Fin n → ℝ) = rectMatMul Uinv Linv := by
+    ext i j
+    have h := congrFun (congrFun hAinv_prod i) j
+    simpa [rectMatMul, Matrix.mul_apply] using h
+  have hUinv_rect :
+      (Uinv : Fin n → Fin n → ℝ) = rectMatMul Ainv L := by
+    ext i j
+    have h := congrFun (congrFun hUinv_prod i) j
+    simpa [rectMatMul, Matrix.mul_apply] using h
+  have hLinv_rect :
+      (Linv : Fin n → Fin n → ℝ) = rectMatMul U Ainv := by
+    ext i j
+    have h := congrFun (congrFun hLinv_prod i) j
+    simpa [rectMatMul, Matrix.mul_apply] using h
+  exact higham9_15_chi_condition_chain_of_inverse_products
+    A Ainv L U Linv Uinv hAinv_rect hUinv_rect hLinv_rect
+
 /-- **Theorem 9.15**, source-shaped min condition-number chain from the LU
 factorization and two-sided inverse identities:
 `κ₂(A) <= χ(A) <= min{κ₂(L), κ₂(U)} κ₂(A)`. -/
@@ -29885,6 +30000,40 @@ theorem higham9_15_chi_condition_chain_min_of_lu_inverse_identities {n : ℕ}
       A Ainv L U Linv Uinv hLU hAleft hAright hLleft hLright hUright
   exact higham9_15_chi_condition_chain_min_of_inverse_products
     A Ainv L U Linv Uinv hAinv_prod hUinv_prod hLinv_prod
+
+/-- **Theorem 9.15**, Matrix-notation source-shaped min condition-number chain
+from the LU factorization and two-sided inverse identities. -/
+theorem higham9_15_chi_condition_chain_min_of_matrix_lu_inverse_identities {n : ℕ}
+    (A Ainv L U Linv Uinv : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : A = L * U)
+    (hAleft : Ainv * A = 1)
+    (hAright : A * Ainv = 1)
+    (hLleft : Linv * L = 1)
+    (hLright : L * Linv = 1)
+    (hUright : U * Uinv = 1) :
+    kappa2 A Ainv ≤ higham9_15_chi A Linv Uinv ∧
+      higham9_15_chi A Linv Uinv ≤
+        min (kappa2 L Linv) (kappa2 U Uinv) * kappa2 A Ainv := by
+  obtain ⟨hAinv_prod, hUinv_prod, hLinv_prod⟩ :=
+    higham9_15_matrix_lu_inverse_product_identities_of_source_inverse_identities
+      A Ainv L U Linv Uinv hLU hAleft hAright hLleft hLright hUright
+  have hAinv_rect :
+      (Ainv : Fin n → Fin n → ℝ) = rectMatMul Uinv Linv := by
+    ext i j
+    have h := congrFun (congrFun hAinv_prod i) j
+    simpa [rectMatMul, Matrix.mul_apply] using h
+  have hUinv_rect :
+      (Uinv : Fin n → Fin n → ℝ) = rectMatMul Ainv L := by
+    ext i j
+    have h := congrFun (congrFun hUinv_prod i) j
+    simpa [rectMatMul, Matrix.mul_apply] using h
+  have hLinv_rect :
+      (Linv : Fin n → Fin n → ℝ) = rectMatMul U Ainv := by
+    ext i j
+    have h := congrFun (congrFun hLinv_prod i) j
+    simpa [rectMatMul, Matrix.mul_apply] using h
+  exact higham9_15_chi_condition_chain_min_of_inverse_products
+    A Ainv L U Linv Uinv hAinv_rect hUinv_rect hLinv_rect
 
 /-- **Theorem 9.15**, normalized algebraic identity for the normwise
 perturbation theorem.  With
