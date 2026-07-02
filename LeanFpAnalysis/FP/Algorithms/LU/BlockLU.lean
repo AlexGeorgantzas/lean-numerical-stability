@@ -192,6 +192,9 @@
     Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain_of_right_inverse,
     Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa_of_right_inverse,
     Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse,
+    Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain_of_det_ne_zero,
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa_of_det_ne_zero,
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_det_ne_zero,
     Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update,
     Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update_reciprocal,
     Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_of_det_ne_zero,
@@ -43729,6 +43732,110 @@ theorem
     Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_23_product_exact_kappa
       (r := r) hr hN Aglob Gglob AinvGlob hApos n hchain
       hRho_le_two
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    determinant-nonzero fixed-ambient global-tableau source certificate
+    instantiates the ambient exact-`κ` budget chain with the canonical
+    `nonsingInv` inverse.
+
+    This is the determinant-input companion to
+    `Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain_of_right_inverse`;
+    it removes the raw ambient right-inverse proof artifact when the ambient
+    inverse stored in the source chain is the canonical nonsingular inverse. -/
+theorem Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain_of_det_ne_zero
+    {r N n : ℕ} (hr : 0 < r) (hN : 0 < N)
+    (Aglob Gglob : Fin N → Fin N → ℝ)
+    (hApos : 0 < maxEntryNorm hN Aglob)
+    (hdet : Matrix.det (Aglob : Matrix (Fin N) (Fin N) ℝ) ≠ 0)
+    (hNn : (N : ℝ) ≤ (n : ℝ))
+    (hA_le_G : maxEntryNorm hN Aglob ≤ maxEntryNorm hN Gglob) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob
+        (nonsingInv N Aglob) hApos n m Ablk pivotInv →
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hN Aglob Gglob hApos) ^ 2 *
+          (maxEntryNormRect hN hN Aglob *
+            maxEntryNormRect hN hN (nonsingInv N Aglob)))
+        (growthFactorEntry hN Aglob Gglob hApos *
+          maxEntryNormRect hN hN Aglob)
+        m Ablk pivotInv := by
+  intro m Ablk pivotInv hcert
+  exact
+    Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain_of_right_inverse
+      (r := r) (N := N) (n := n) hr hN Aglob Gglob
+      (nonsingInv N Aglob) hApos
+      ((isInverse_nonsingInv_of_det_ne_zero N Aglob hdet).2)
+      hNn hA_le_G hcert
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    determinant-nonzero recursive Eq.13.22 product witness from the
+    fixed-ambient global-tableau source chain with the canonical ambient
+    `nonsingInv` inverse. -/
+theorem
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa_of_det_ne_zero
+    {r N n : ℕ} (hr : 0 < r) (hN : 0 < N)
+    (Aglob Gglob : Fin N → Fin N → ℝ)
+    (hApos : 0 < maxEntryNorm hN Aglob)
+    (hdet : Matrix.det (Aglob : Matrix (Fin N) (Fin N) ℝ) ≠ 0)
+    (hNn : (N : ℝ) ≤ (n : ℝ))
+    (hA_le_G : maxEntryNorm hN Aglob ≤ maxEntryNorm hN Gglob) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob
+        (nonsingInv N Aglob) hApos n m Ablk pivotInv →
+        ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+          BlockLUFactSpec (m + 1) r Ablk L U ∧
+            blockMaxNorm (Nat.succ_pos m) hr L *
+                blockMaxNorm (Nat.succ_pos m) hr U ≤
+              (n : ℝ) * (growthFactorEntry hN Aglob Gglob hApos) ^ 3 *
+                (maxEntryNormRect hN hN Aglob *
+                  maxEntryNormRect hN hN (nonsingInv N Aglob)) *
+                maxEntryNormRect hN hN Aglob := by
+  intro m Ablk pivotInv hcert
+  exact
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa_of_right_inverse
+      (r := r) (N := N) (n := n) hr hN Aglob Gglob
+      (nonsingInv N Aglob) hApos
+      ((isInverse_nonsingInv_of_det_ne_zero N Aglob hdet).2)
+      hNn hA_le_G hcert
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    determinant-nonzero recursive point-row product witness from the
+    fixed-ambient global-tableau source chain with the canonical ambient
+    `nonsingInv` inverse.  The source-side `rho <= 2` theorem remains an
+    explicit Eq.13.23 obligation. -/
+theorem
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_det_ne_zero
+    {r N n : ℕ} (hr : 0 < r) (hN : 0 < N)
+    (Aglob Gglob : Fin N → Fin N → ℝ)
+    (hApos : 0 < maxEntryNorm hN Aglob)
+    (hdet : Matrix.det (Aglob : Matrix (Fin N) (Fin N) ℝ) ≠ 0)
+    (hNn : (N : ℝ) ≤ (n : ℝ))
+    (hA_le_G : maxEntryNorm hN Aglob ≤ maxEntryNorm hN Gglob)
+    (hRho_le_two : growthFactorEntry hN Aglob Gglob hApos ≤ 2) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob
+        (nonsingInv N Aglob) hApos n m Ablk pivotInv →
+        ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+          BlockLUFactSpec (m + 1) r Ablk L U ∧
+            blockMaxNorm (Nat.succ_pos m) hr L *
+                blockMaxNorm (Nat.succ_pos m) hr U ≤
+              8 * (n : ℝ) *
+                (maxEntryNormRect hN hN Aglob *
+                  maxEntryNormRect hN hN (nonsingInv N Aglob)) *
+                maxEntryNormRect hN hN Aglob := by
+  intro m Ablk pivotInv hcert
+  exact
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse
+      (r := r) (N := N) (n := n) hr hN Aglob Gglob
+      (nonsingInv N Aglob) hApos
+      ((isInverse_nonsingInv_of_det_ne_zero N Aglob hdet).2)
+      hNn hA_le_G hRho_le_two hcert
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 / equation (13.23):
     fixed-ambient global-tableau source-chain witness with `rho <= 2`
