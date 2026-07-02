@@ -55,10 +55,13 @@ pivot-zero signed-active-vector bridges identifying the stored signed vector
 with the exact or computed unnormalized Householder vector, plus a betaSpec
 normalization bridge showing that, under nonzero-column and exact primitive
 operation hypotheses, betaSpec-normalizing that unnormalized vector gives the
-computed normalized Householder vector. The full rounded stored-loop proof
-remains open until the per-stage certificate fields are proved from a
-source-faithful model or replaced by a separate compatibility/perturbation
-theorem.
+computed normalized Householder vector. That bridge is now threaded through the
+first-pivot signed stored-panel handoff under the same exact-operation and
+update-compatibility surfaces, so the first QR storage step can consume the
+computed normalized vector while the stored route keeps the signed active vector
+and `householderBetaSpec`. The full rounded stored-loop proof remains open until
+the per-stage certificate fields are proved from a source-faithful model or
+replaced by a separate compatibility/perturbation theorem.
 
 For a searchable map from stability-analysis goals to files, definitions, and
 theorem names, see [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).  For a
