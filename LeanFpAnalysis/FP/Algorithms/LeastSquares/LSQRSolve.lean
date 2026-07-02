@@ -17843,6 +17843,37 @@ theorem gammaValid_n_of_householderConstructApplyGammaValid
     omega
   exact gammaValid_mono fp (Nat.le_mul_of_pos_right n hK_pos) hvalid
 
+/-- Computed-QR nonbreakdown domain for the concrete Chapter 20,
+    Theorem 20.4 Householder path.
+
+    Higham's printed theorem assumes source full column rank.  The verified
+    implementation-backed triangular solves also require the computed top
+    square `R` diagonal to be nonzero; this predicate names that finite-
+    precision domain condition instead of leaving it as an anonymous `hdiag`. -/
+def lsTheorem20_4ComputedQRNonbreakdown (fp : FPModel) {n k : ℕ}
+    (A : Fin (n + k) → Fin n → ℝ) : Prop :=
+  ∀ i : Fin n,
+    fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0
+
+/-- Source-facing domain for the concrete Chapter 20, Theorem 20.4
+    Householder path: the printed full-column-rank hypothesis plus the
+    computed nonbreakdown side condition consumed by triangular solves. -/
+def lsTheorem20_4FullRankComputedQRDomain (fp : FPModel) {n k : ℕ}
+    (A : Fin (n + k) → Fin n → ℝ) : Prop :=
+  lsRealRectColRank A = n ∧ lsTheorem20_4ComputedQRNonbreakdown fp A
+
+theorem lsTheorem20_4FullRankComputedQRDomain.fullRank (fp : FPModel)
+    {n k : ℕ} {A : Fin (n + k) → Fin n → ℝ}
+    (h : lsTheorem20_4FullRankComputedQRDomain fp A) :
+    lsRealRectColRank A = n :=
+  h.1
+
+theorem lsTheorem20_4FullRankComputedQRDomain.computedQRNonbreakdown
+    (fp : FPModel) {n k : ℕ} {A : Fin (n + k) → Fin n → ℝ}
+    (h : lsTheorem20_4FullRankComputedQRDomain fp A) :
+    lsTheorem20_4ComputedQRNonbreakdown fp A :=
+  h.2
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
     handoff with an explicit conservative `γ̃` coefficient.
 
@@ -18610,6 +18641,77 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQR
   exact
     LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTildeSqrtResidual_unified_frob_bound
       fp A f g hn hvalid hdiag hγ
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 source-domain wrapper.
+
+    This is the same residual-sharpened concrete `γ̃` handoff as
+    `..._of_global_gammaValid`, but its solve-side domain is named in the
+    source-facing form: full column rank of `A` together with computed QR
+    nonbreakdown for the top square `R`.  The full-rank field records the
+    printed hypothesis; the computed nonbreakdown field is the finite-precision
+    triangular-solve side condition still not derivable from full rank alone by
+    the current verified zero-aware QR API. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_source_fullRank_computed_nonbreakdown
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdomain : lsTheorem20_4FullRankComputedQRDomain fp A) :
+    let gammaTilde : ℝ :=
+      lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤ gammaTilde * frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  exact
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTildeSqrtResidual_unified_frob_bound_of_global_gammaValid
+      fp A f g hn hvalid
+      (lsTheorem20_4FullRankComputedQRDomain.computedQRNonbreakdown fp hdomain)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
     handoff with implementation-backed uniform `Delta f` source witnesses and a

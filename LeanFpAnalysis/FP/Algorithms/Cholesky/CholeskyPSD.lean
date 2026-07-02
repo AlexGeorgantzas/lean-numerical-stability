@@ -2286,6 +2286,225 @@ theorem fl_schurStep_close (fp : FPModel) {n : ℕ}
       _ = fp.u * (c + c ^ 2 / ρ) +
           (c ^ 2 / ρ) * (2 * fp.u + fp.u ^ 2) * (1 + fp.u) := by ring
 
+/-- **The floating-point complete-pivoting trace**: iterate the fl
+    elimination step, choosing each pivot as the argmax of the
+    *computed* working diagonal — the algorithm as actually run. -/
+noncomputable def fl_cpState (fp : FPModel) {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) : ℕ → (Fin n → Fin n → ℝ)
+  | 0 => A
+  | t + 1 => fl_schurStep fp (fl_cpState fp hn A t)
+      (diagArgmax hn (fl_cpState fp hn A t))
+
+/-- The pivot the floating-point run selects at stage `t`. -/
+noncomputable def fl_cpPivot (fp : FPModel) {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (t : ℕ) : Fin n :=
+  diagArgmax hn (fl_cpState fp hn A t)
+
+/-- **The floating-point run follows the exact pivot sequence**
+    (Theorem 10.14 `c`/`η` discharge, stage induction): if the exact
+    complete-pivoting trace has gap `δ`, floor `ρ ≥ δ`, cap `c` through
+    `r` stages, and the budget `h` starts at `0`, absorbs per stage the
+    exact-perturbation growth plus the one-stage rounding contribution
+    `U = u(c' + c'²/(ρ/2)) + (c'²/(ρ/2))(2u + u²)(1 + u)` with
+    `c' = c + δ/2`, and stays below `δ/2`, then the computed trace
+    selects the SAME pivots as exact complete pivoting through `r`
+    stages, with working matrices `h`-close throughout. -/
+theorem fl_cpPivot_sequence_agrees (fp : FPModel) {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (r : ℕ)
+    (δ ρ c : ℝ) (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (h : ℕ → ℝ) (hh0 : h 0 = 0)
+    (hhstep : ∀ t : ℕ, t < r →
+      h t + (3 * c ^ 2 * h t + c * h t ^ 2) / (ρ / 2) ^ 2 +
+        (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+          ((c + δ / 2) ^ 2 / (ρ / 2)) * (2 * fp.u + fp.u ^ 2) *
+            (1 + fp.u)) ≤ h (t + 1))
+    (hhhalf : ∀ t : ℕ, t < r → h t < δ / 2)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c) :
+    ∀ t : ℕ, t ≤ r →
+      (∀ i j : Fin n,
+        |cpState hn A t i j - fl_cpState fp hn A t i j| ≤ h t) ∧
+      (∀ s : ℕ, s < t → cpPivot hn A s = fl_cpPivot fp hn A s) := by
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  have hu0 := fp.u_nonneg
+  have hh_nonneg : ∀ t : ℕ, t ≤ r → 0 ≤ h t := by
+    intro t
+    induction t with
+    | zero => intro _; rw [hh0]
+    | succ t iht =>
+      intro htr
+      have ht' : t < r := Nat.lt_of_succ_le htr
+      have h0 := iht (Nat.le_of_lt ht')
+      have hstep := hhstep t ht'
+      have h1 : (0:ℝ) ≤
+          (3 * c ^ 2 * h t + c * h t ^ 2) / (ρ / 2) ^ 2 := by
+        positivity
+      have h2 : (0:ℝ) ≤
+          fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+          ((c + δ / 2) ^ 2 / (ρ / 2)) * (2 * fp.u + fp.u ^ 2) *
+            (1 + fp.u) := by
+        positivity
+      linarith
+  intro t
+  induction t with
+  | zero =>
+    intro _
+    refine ⟨fun i j => ?_, fun s hs => absurd hs (Nat.not_lt_zero s)⟩
+    show |cpState hn A 0 i j - fl_cpState fp hn A 0 i j| ≤ h 0
+    show |A i j - A i j| ≤ h 0
+    rw [sub_self, abs_zero, hh0]
+  | succ t ih =>
+    intro htr
+    have ht' : t < r := Nat.lt_of_succ_le htr
+    obtain ⟨hdiff, hpiv⟩ := ih (Nat.le_of_lt ht')
+    have hht0 := hh_nonneg t (Nat.le_of_lt ht')
+    set p : Fin n := cpPivot hn A t with hp
+    -- the computed stage selects the exact pivot
+    set Et : Fin n → Fin n → ℝ :=
+      fun i j => fl_cpState fp hn A t i j - cpState hn A t i j
+      with hEt
+    have hEdiag : ∀ i : Fin n, |Et i i| < δ / 2 := by
+      intro i
+      have hd := hdiff i i
+      rw [abs_sub_comm] at hd
+      exact lt_of_le_of_lt hd (hhhalf t ht')
+    have hstable := diagArgmax_stable hn (cpState hn A t) Et p δ
+      (hgap t ht') hEdiag
+    have hFfun : (fun i j => cpState hn A t i j + Et i j) =
+        fl_cpState fp hn A t := by
+      funext i j
+      simp [hEt]
+    have hpivF : fl_cpPivot fp hn A t = p := by
+      show diagArgmax hn (fl_cpState fp hn A t) = p
+      rw [← hFfun]
+      exact hstable.2
+    -- caps and floors for the computed working matrix
+    have hFcap : ∀ i j : Fin n,
+        |fl_cpState fp hn A t i j| ≤ c + δ / 2 := by
+      intro i j
+      have h1 := hdiff i j
+      have h2 := hcap t ht' i j
+      have h3 := abs_sub_abs_le_abs_sub
+        (fl_cpState fp hn A t i j) (cpState hn A t i j)
+      rw [abs_sub_comm (fl_cpState fp hn A t i j)
+        (cpState hn A t i j)] at h3
+      have h4 := hhhalf t ht'
+      linarith
+    have hAfloor : ρ / 2 ≤ cpState hn A t p p := by
+      have := hfloor t ht'
+      linarith
+    have hFfloor : ρ / 2 ≤ fl_cpState fp hn A t p p := by
+      have h1 := hEdiag p
+      have h2 := abs_lt.mp h1
+      have h3 := hfloor t ht'
+      have h4 : fl_cpState fp hn A t p p =
+          cpState hn A t p p + Et p p := by simp [hEt]
+      rw [h4]
+      linarith [h2.1, hδρ]
+    -- exact-vs-exact perturbation at the shared pivot
+    have hexact := schurStep_entrywise_perturbation
+      (cpState hn A t) (fl_cpState fp hn A t) p (h t) c (ρ / 2)
+      hht0 hc (by linarith) hdiff (hcap t ht') hAfloor hFfloor
+    -- fl-vs-exact rounding at the computed working matrix
+    have hround := fl_schurStep_close fp (fl_cpState fp hn A t) p
+      (c + δ / 2) (ρ / 2) (by linarith) (by linarith)
+      hFcap hFfloor
+    constructor
+    · intro i j
+      have hSA : cpState hn A (t + 1) =
+          schurStep (cpState hn A t) p := rfl
+      have hSF : fl_cpState fp hn A (t + 1) =
+          fl_schurStep fp (fl_cpState fp hn A t) p := by
+        show fl_schurStep fp (fl_cpState fp hn A t)
+          (diagArgmax hn (fl_cpState fp hn A t)) =
+          fl_schurStep fp (fl_cpState fp hn A t) p
+        rw [show diagArgmax hn (fl_cpState fp hn A t) =
+          fl_cpPivot fp hn A t from rfl, hpivF]
+      rw [hSA, hSF]
+      have htri : |schurStep (cpState hn A t) p i j -
+          fl_schurStep fp (fl_cpState fp hn A t) p i j| ≤
+          |schurStep (cpState hn A t) p i j -
+            schurStep (fl_cpState fp hn A t) p i j| +
+          |fl_schurStep fp (fl_cpState fp hn A t) p i j -
+            schurStep (fl_cpState fp hn A t) p i j| := by
+        have habs := abs_add_le
+          (schurStep (cpState hn A t) p i j -
+            schurStep (fl_cpState fp hn A t) p i j)
+          (schurStep (fl_cpState fp hn A t) p i j -
+            fl_schurStep fp (fl_cpState fp hn A t) p i j)
+        rw [sub_add_sub_cancel] at habs
+        rw [abs_sub_comm (fl_schurStep fp (fl_cpState fp hn A t) p i j)
+          (schurStep (fl_cpState fp hn A t) p i j)]
+        exact habs
+      calc |schurStep (cpState hn A t) p i j -
+            fl_schurStep fp (fl_cpState fp hn A t) p i j|
+          ≤ _ + _ := htri
+        _ ≤ (h t + (3 * c ^ 2 * h t + c * h t ^ 2) / (ρ / 2) ^ 2) +
+            (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+              ((c + δ / 2) ^ 2 / (ρ / 2)) * (2 * fp.u + fp.u ^ 2) *
+                (1 + fp.u)) :=
+            add_le_add (hexact i j) (hround i j)
+        _ ≤ h (t + 1) := by
+            have := hhstep t ht'
+            linarith
+    · intro s hs
+      rcases Nat.lt_or_eq_of_le (Nat.le_of_lt_succ hs) with h' | h'
+      · exact hpiv s h'
+      · subst h'
+        rw [hpivF]
+
+/-- **The computed stopping test certifies the exact trailing Schur
+    complement** (displays (10.23)/(10.24) for the algorithm as run):
+    under the pivot-agreement hypotheses, if the computed working
+    diagonal at stage `r` passes the termination test
+    `max_i S̃_ii ≤ tol`, then EVERY entry of the exact stage-`r` Schur
+    complement is at most `tol + h r` in absolute value — the
+    `η`-reading for the Theorem 10.14 certificate: exact trailing
+    smallness from a computed test plus the accumulated budget. -/
+theorem fl_cp_termination_trailing_bound (fp : FPModel) {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (r : ℕ)
+    (δ ρ c : ℝ) (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (h : ℕ → ℝ) (hh0 : h 0 = 0)
+    (hhstep : ∀ t : ℕ, t < r →
+      h t + (3 * c ^ 2 * h t + c * h t ^ 2) / (ρ / 2) ^ 2 +
+        (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+          ((c + δ / 2) ^ 2 / (ρ / 2)) * (2 * fp.u + fp.u ^ 2) *
+            (1 + fp.u)) ≤ h (t + 1))
+    (hhhalf : ∀ t : ℕ, t < r → h t < δ / 2)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c)
+    (tol : ℝ)
+    (hterm : ∀ i : Fin n, fl_cpState fp hn A r i i ≤ tol) :
+    ∀ i j : Fin n, |cpState hn A r i j| ≤ tol + h r := by
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  -- the exact stage-r state is PSD
+  have hSr : IsPosSemiDef n (cpState hn A r) :=
+    cpState_isPosSemiDef hn A hPSD r fun s hs =>
+      lt_of_lt_of_le hρ0 (hfloor s hs)
+  -- the computed and exact stage-r states are h r-close
+  have hagree := fl_cpPivot_sequence_agrees fp hn A r δ ρ c hδ hδρ hc
+    h hh0 hhstep hhhalf hgap hfloor hcap r le_rfl
+  have hdiff := hagree.1
+  -- exact trailing diagonal from the computed test
+  have hdiag : ∀ i : Fin n, cpState hn A r i i ≤ tol + h r := by
+    intro i
+    have h1 := hdiff i i
+    have h2 := abs_le.mp h1
+    have h3 := hterm i
+    linarith [h2.2]
+  exact psd_abs_entry_le_maxdiag (cpState hn A r) hSr (tol + h r)
+    hdiag
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
