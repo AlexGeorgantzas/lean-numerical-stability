@@ -1766,14 +1766,19 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget_of_eq_one`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget_of_le_two`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedStageTrace`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedStageTrace_of_eq_one`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedStageTrace_of_le_two`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedLoop`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedLoop_of_eq_one`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedLoop_of_le_two`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_literalSourceBudgets`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_literalSourceBudgets_of_eq_one`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_literalSourceBudgets_of_le_two`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_componentDominance`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_componentDominance_of_eq_one`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_componentDominance_of_le_two`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductMargins`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductMargins_of_eq_one`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductMargins_of_le_two`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductNumeratorMargins`
 - `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductNumeratorMargins_of_le_two`
@@ -3728,12 +3733,14 @@ Source-facing Chapter 10 wrappers:
 - `higham10_6_fl_scaled_forward_error_source` (source gamma_{3n+1} constant) / `eps_tot_le_gamma_3n1`
 - `higham10_12_psd_w_action_bound` / `higham10_12_w_action_norm_bound` (honest: PSD block quadratic form + Rayleigh)
 - `quadForm_append_split`
+- `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
 - `fl_cholesky_truncated_demmel` (Th10.14 leading-block engine: computed block Demmel-stable under early termination)
 - `fl_cholesky_truncated_border_demmel` (Th10.14 border block: trace-controlled under computed-pivot domination)
+- `fl_choleskyTrunc` / `fl_choleskyTrunc_gram(_computed)` / `fl_choleskyTrunc_backward_error` / `higham10_14_fl_psd_cholesky_backward_error` (Th10.14 three-block certificate for the truncated computed factor)
 - `higham10_26_nonpositivePivotCriterion`
 - `higham10_27_residualStopCriterion`
 - `higham10_27_nonpositiveDiagonalCriterion`
