@@ -3578,6 +3578,7 @@ Source-facing Chapter 10 wrappers:
 - `fl_cholSubFold_pivot_lower`
 - `fl_sqrt_pos`
 - `upperTriangular_solve_exists`
+- `fl_cholesky_entry_bound_stage`
 - `fl_chol_offdiag_solve_form`
 - `fl_chol_diag_solve_form`
 - `fl_cholPivot`
