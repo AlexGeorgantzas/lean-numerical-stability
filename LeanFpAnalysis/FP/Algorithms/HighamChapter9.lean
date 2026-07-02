@@ -28502,6 +28502,128 @@ theorem higham9_15_componentwise_product_majorant_of_right_zero {n : ℕ}
             |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c)
           i j := hright_nonneg
 
+/-- **Theorem 9.15 support**, first-order local-product envelope discharge when
+the normalized lower perturbation is identically zero. -/
+theorem higham9_15_firstOrder_local_product_envelopes_of_left_zero {n : ℕ}
+    (u : ℝ) (L U X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hXzero : ∀ i j : Fin n, X i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u 0
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n =>
+              rectMatMul (absMatrix n X) (absMatrix n Y) i j)) i j)) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n X) (absMatrix n Y) i j))
+            (absMatrix n U) i j)) := by
+  let Q : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j => rectMatMul (absMatrix n X) (absMatrix n Y) i j
+  have hQzero : ∀ i j : Fin n, Q i j = 0 := by
+    intro i j
+    dsimp [Q]
+    unfold rectMatMul absMatrix
+    apply Finset.sum_eq_zero
+    intro k _hk
+    simp [hXzero i k]
+  have hstril_zero :
+      ∀ i j : Fin n, higham9_15_strilPart Q i j = 0 := by
+    intro i j
+    unfold higham9_15_strilPart
+    by_cases h : j.val < i.val
+    · simp [h, hQzero i j]
+    · simp [h]
+  have htriu_zero :
+      ∀ i j : Fin n, higham9_15_triuPart Q i j = 0 := by
+    intro i j
+    unfold higham9_15_triuPart
+    by_cases h : i.val ≤ j.val
+    · simp [h, hQzero i j]
+    · simp [h]
+  constructor
+  · intro i j
+    apply FirstOrderLe.of_le
+    have hzero :
+        rectMatMul (absMatrix n L) (higham9_15_strilPart Q) i j = 0 := by
+      unfold rectMatMul
+      apply Finset.sum_eq_zero
+      intro k _hk
+      simp [hstril_zero k j]
+    simp [Q, hzero]
+  · intro i j
+    apply FirstOrderLe.of_le
+    have hzero :
+        rectMatMul (higham9_15_triuPart Q) (absMatrix n U) i j = 0 := by
+      unfold rectMatMul
+      apply Finset.sum_eq_zero
+      intro k _hk
+      simp [htriu_zero i k]
+    simp [Q, hzero]
+
+/-- **Theorem 9.15 support**, first-order local-product envelope discharge when
+the normalized upper perturbation is identically zero. -/
+theorem higham9_15_firstOrder_local_product_envelopes_of_right_zero {n : ℕ}
+    (u : ℝ) (L U X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hYzero : ∀ i j : Fin n, Y i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u 0
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n =>
+              rectMatMul (absMatrix n X) (absMatrix n Y) i j)) i j)) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n X) (absMatrix n Y) i j))
+            (absMatrix n U) i j)) := by
+  let Q : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j => rectMatMul (absMatrix n X) (absMatrix n Y) i j
+  have hQzero : ∀ i j : Fin n, Q i j = 0 := by
+    intro i j
+    dsimp [Q]
+    unfold rectMatMul absMatrix
+    apply Finset.sum_eq_zero
+    intro k _hk
+    simp [hYzero k j]
+  have hstril_zero :
+      ∀ i j : Fin n, higham9_15_strilPart Q i j = 0 := by
+    intro i j
+    unfold higham9_15_strilPart
+    by_cases h : j.val < i.val
+    · simp [h, hQzero i j]
+    · simp [h]
+  have htriu_zero :
+      ∀ i j : Fin n, higham9_15_triuPart Q i j = 0 := by
+    intro i j
+    unfold higham9_15_triuPart
+    by_cases h : i.val ≤ j.val
+    · simp [h, hQzero i j]
+    · simp [h]
+  constructor
+  · intro i j
+    apply FirstOrderLe.of_le
+    have hzero :
+        rectMatMul (absMatrix n L) (higham9_15_strilPart Q) i j = 0 := by
+      unfold rectMatMul
+      apply Finset.sum_eq_zero
+      intro k _hk
+      simp [hstril_zero k j]
+    simp [Q, hzero]
+  · intro i j
+    apply FirstOrderLe.of_le
+    have hzero :
+        rectMatMul (higham9_15_triuPart Q) (absMatrix n U) i j = 0 := by
+      unfold rectMatMul
+      apply Finset.sum_eq_zero
+      intro k _hk
+      simp [htriu_zero i k]
+    simp [Q, hzero]
+
 /-- **Theorem 9.15 spectral-majorant support**.  In the componentwise
 Barrlund--Sun route, a nonnegative majorant matrix with spectral radius below
 one forces every positive right subeigenvector scale below one.  This is a
@@ -49432,6 +49554,170 @@ theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse U Uinv hUright)
     hfact hXtri hYtri hquadL hquadU
 
+/-- **Theorem 9.15**, split-level first-order `G` endpoint when the normalized
+lower perturbation is identically zero. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_left_zero
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  have hquad :=
+    higham9_15_firstOrder_local_product_envelopes_of_left_zero
+      u L U (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hXzero
+  exact
+    higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities
+      u L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri
+      hquad.1 hquad.2
+
+/-- **Theorem 9.15**, split-level first-order `G` endpoint when the normalized
+upper perturbation is identically zero. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_right_zero
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  have hquad :=
+    higham9_15_firstOrder_local_product_envelopes_of_right_zero
+      u L U (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero
+  exact
+    higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities
+      u L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri
+      hquad.1 hquad.2
+
+/-- **Theorem 9.15**, source-oriented first-order `G` endpoint when the
+normalized lower perturbation is identically zero. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_left_zero
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) :=
+  higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_left_zero
+    u L U Linv Uinv ΔA ΔL ΔU
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse L Linv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse U Uinv hUright)
+    hfact hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, source-oriented first-order `G` endpoint when the
+normalized upper perturbation is identically zero. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_right_zero
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) :=
+  higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_right_zero
+    u L U Linv Uinv ΔA ΔL ΔU
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse L Linv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse U Uinv hUright)
+    hfact hXtri hYtri hYzero
+
 /-- **Theorem 9.15**, source-facing first-order componentwise endpoint from the
 original `G` factorization equations. -/
 theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant
@@ -49550,6 +49836,174 @@ theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majoran
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
       Uhat UhatInv hUright)
     hfact hXtri hYtri hquadL hquadU
+
+/-- **Theorem 9.15**, split-level first-order `Gtilde` endpoint when the
+normalized lower perturbation is identically zero. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_left_zero
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  have hquad :=
+    higham9_15_firstOrder_local_product_envelopes_of_left_zero
+      u Lhat Uhat (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hXzero
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLright hUleft hfact hXtri hYtri hquad.1 hquad.2
+
+/-- **Theorem 9.15**, split-level first-order `Gtilde` endpoint when the
+normalized upper perturbation is identically zero. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_right_zero
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  have hquad :=
+    higham9_15_firstOrder_local_product_envelopes_of_right_zero
+      u Lhat Uhat (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLright hUleft hfact hXtri hYtri hquad.1 hquad.2
+
+/-- **Theorem 9.15**, source-oriented first-order `Gtilde` endpoint when the
+normalized lower perturbation is identically zero. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_left_zero
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) :=
+  higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_left_zero
+    u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      Lhat LhatInv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      Uhat UhatInv hUright)
+    hfact hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, source-oriented first-order `Gtilde` endpoint when the
+normalized upper perturbation is identically zero. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_right_zero
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) :=
+  higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_right_zero
+    u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      Lhat LhatInv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      Uhat UhatInv hUright)
+    hfact hXtri hYtri hYzero
 
 /-- **Theorem 9.15**, source-facing first-order componentwise endpoint from the
 original `Gtilde` factorization equations. -/

@@ -3127,6 +3127,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_product_majorant`
 - `higham9_15_componentwise_product_majorant_of_left_zero`
 - `higham9_15_componentwise_product_majorant_of_right_zero`
+- `higham9_15_firstOrder_local_product_envelopes_of_left_zero`
+- `higham9_15_firstOrder_local_product_envelopes_of_right_zero`
 - `higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_left_zero`
 - `higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_right_zero`
 - `higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_left_zero`
@@ -3232,10 +3234,18 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_componentwise_source_bound_of_factorization_Gtilde_majorant`
 - `higham9_15_componentwise_source_bound_of_factorization_Gtilde_local_majorant`
 - `higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities`
+- `higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_right_zero`
 - `higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities`
+- `higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_right_zero`
 - `higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant`
 - `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_right_zero`
 - `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_right_zero`
 - `higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant`
 - `higham9_2_danger_shift_count_bound`
 - `higham9_2_charpolyDangerSet`
@@ -3572,6 +3582,10 @@ Source-facing Chapter 10 wrappers:
 - `finiteMinEigenvalue_le`
 - `exists_finiteMinEigenvalue_eq`
 - `finiteMinEigenvalue_rayleigh`
+- `finiteMaxEigenvalue`
+- `le_finiteMaxEigenvalue`
+- `exists_finiteMaxEigenvalue_eq`
+- `finiteMaxEigenvalue_rayleigh`
 - `higham10_7_success_factorization_min_eig`
 - `higham10_7_failure_no_factorization_min_eig`
 - `quadForm_add_pos_of_perturbation`
@@ -3610,6 +3624,8 @@ Source-facing Chapter 10 wrappers:
 - `fl_cholesky_pivot_pos_step`
 - `fl_cholesky_pivots_pos`
 - `fl_cholesky_diag_pos_of_floor`
+- `sum_sum_castSucc_split`
+- `higham10_7_fl_cholesky_success`
 - `fl_cholesky_truncated_bound`
 - `fl_cholesky_border_bound`
 - `fl_chol_offdiag_solve_form`
