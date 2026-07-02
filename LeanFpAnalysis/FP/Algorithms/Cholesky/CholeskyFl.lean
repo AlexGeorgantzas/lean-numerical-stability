@@ -1100,4 +1100,140 @@ theorem fl_cholesky_block_certificate (fp : FPModel) {n m : ℕ}
     exact (fl_sqrt_pos fp hu _ (IH ⟨l.val, by omega⟩ l.isLt)).ne'
 
 
+/-- **Bordered perturbation floor** (Theorem 10.7 induction, abstract
+    scalar core): if the computed Gram form of the test vector vanishes,
+    the interior and border perturbations are `ε`-small against the
+    `D`-weights, and the bordered `A`-form has Rayleigh floor `lam`, then
+    the exact pivot `a_jj − t` is floored by
+    `lam·a_jj + (lam − 2εm)W − εt`.  All Cauchy–Schwarz and AM–GM steps
+    happen here, divorced from the algorithm. -/
+theorem bordered_perturbation_floor (m : ℕ)
+    (Gint : Fin m → Fin m → ℝ) (gb : Fin m → ℝ)
+    (Bint : Fin m → Fin m → ℝ) (bb : Fin m → ℝ)
+    (a : Fin m → ℝ) (ajj t : ℝ) (y : Fin m → ℝ) (ε lam : ℝ)
+    (ha : ∀ i, 0 ≤ a i) (hε0 : 0 ≤ ε) (ht0 : 0 ≤ t)
+    (hgram : (∑ i : Fin m, ∑ l : Fin m, y i * Gint i l * y l) +
+      2 * (∑ i : Fin m, y i * gb i) + t = 0)
+    (hint : ∀ i l : Fin m, |Gint i l - Bint i l| ≤
+      ε * (Real.sqrt (a i) * Real.sqrt (a l)))
+    (hbord : ∀ i : Fin m, |gb i - bb i| ≤
+      ε * (Real.sqrt (a i) * Real.sqrt t))
+    (hfloor : lam * ((∑ i : Fin m, a i * y i ^ 2) + ajj) ≤
+      (∑ i : Fin m, ∑ l : Fin m, y i * Bint i l * y l) +
+      2 * (∑ i : Fin m, y i * bb i) + ajj) :
+    lam * ajj + lam * (∑ i : Fin m, a i * y i ^ 2) -
+      2 * ε * m * (∑ i : Fin m, a i * y i ^ 2) - ε * t ≤ ajj - t := by
+  set W : ℝ := ∑ i : Fin m, a i * y i ^ 2 with hW
+  have hW0 : 0 ≤ W := Finset.sum_nonneg fun i _ =>
+    mul_nonneg (ha i) (sq_nonneg _)
+  set Q : ℝ := ∑ i : Fin m, |y i| * Real.sqrt (a i) with hQ
+  have hQ0 : 0 ≤ Q := Finset.sum_nonneg fun i _ =>
+    mul_nonneg (abs_nonneg _) (Real.sqrt_nonneg _)
+  -- Q² ≤ m·W by Cauchy–Schwarz with the ones vector
+  have hQsq : Q ^ 2 ≤ m * W := by
+    have h := Finset.sum_mul_sq_le_sq_mul_sq
+      (Finset.univ : Finset (Fin m))
+      (fun _ => (1:ℝ)) (fun i => |y i| * Real.sqrt (a i))
+    have h1 : ∑ i : Fin m, (1:ℝ) * (|y i| * Real.sqrt (a i)) = Q :=
+      Finset.sum_congr rfl fun i _ => one_mul _
+    have h2 : ∑ _i : Fin m, ((1:ℝ)) ^ 2 = (m : ℝ) := by simp
+    have h3 : ∑ i : Fin m, (|y i| * Real.sqrt (a i)) ^ 2 = W := by
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [mul_pow, sq_abs, Real.sq_sqrt (ha i)]
+      ring
+    rw [h1, h2, h3] at h
+    exact h
+  -- interior mass
+  have hImass : |∑ i : Fin m, ∑ l : Fin m,
+      y i * (Gint i l - Bint i l) * y l| ≤ ε * Q ^ 2 := by
+    calc |∑ i : Fin m, ∑ l : Fin m, y i * (Gint i l - Bint i l) * y l|
+        ≤ ∑ i : Fin m, |∑ l : Fin m, y i * (Gint i l - Bint i l) * y l| :=
+          Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ i : Fin m, ∑ l : Fin m,
+            |y i| * |Gint i l - Bint i l| * |y l| := by
+          apply Finset.sum_le_sum
+          intro i _
+          calc |∑ l : Fin m, y i * (Gint i l - Bint i l) * y l|
+              ≤ ∑ l : Fin m, |y i * (Gint i l - Bint i l) * y l| :=
+                Finset.abs_sum_le_sum_abs _ _
+            _ = ∑ l : Fin m, |y i| * |Gint i l - Bint i l| * |y l| := by
+                apply Finset.sum_congr rfl
+                intro l _
+                rw [abs_mul, abs_mul]
+      _ ≤ ∑ i : Fin m, ∑ l : Fin m,
+            |y i| * (ε * (Real.sqrt (a i) * Real.sqrt (a l))) * |y l| := by
+          apply Finset.sum_le_sum
+          intro i _
+          apply Finset.sum_le_sum
+          intro l _
+          apply mul_le_mul_of_nonneg_right _ (abs_nonneg _)
+          exact mul_le_mul_of_nonneg_left (hint i l) (abs_nonneg _)
+      _ = ε * Q ^ 2 := by
+          rw [hQ, sq, Finset.sum_mul_sum, Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro i _
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro l _
+          ring
+  -- border mass, with AM–GM
+  have hBmass : |2 * ∑ i : Fin m, y i * (gb i - bb i)| ≤ ε * (t + Q ^ 2) := by
+    have h1 : |∑ i : Fin m, y i * (gb i - bb i)| ≤
+        ε * Real.sqrt t * Q := by
+      calc |∑ i : Fin m, y i * (gb i - bb i)|
+          ≤ ∑ i : Fin m, |y i * (gb i - bb i)| :=
+            Finset.abs_sum_le_sum_abs _ _
+        _ = ∑ i : Fin m, |y i| * |gb i - bb i| := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [abs_mul]
+        _ ≤ ∑ i : Fin m, |y i| *
+              (ε * (Real.sqrt (a i) * Real.sqrt t)) := by
+            apply Finset.sum_le_sum
+            intro i _
+            exact mul_le_mul_of_nonneg_left (hbord i) (abs_nonneg _)
+        _ = ε * Real.sqrt t * Q := by
+            rw [hQ, Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+    have hamgm : 2 * (Real.sqrt t * Q) ≤ t + Q ^ 2 := by
+      have hsq := sq_nonneg (Real.sqrt t - Q)
+      have hts : Real.sqrt t ^ 2 = t := Real.sq_sqrt ht0
+      nlinarith
+    calc |2 * ∑ i : Fin m, y i * (gb i - bb i)|
+        = 2 * |∑ i : Fin m, y i * (gb i - bb i)| := by
+          rw [abs_mul]
+          norm_num
+      _ ≤ 2 * (ε * Real.sqrt t * Q) := by linarith [h1]
+      _ = ε * (2 * (Real.sqrt t * Q)) := by ring
+      _ ≤ ε * (t + Q ^ 2) := mul_le_mul_of_nonneg_left hamgm hε0
+  -- assemble: S_B = −ΔI − 2ΔM + (ajj − t)
+  have hdecomp : (∑ i : Fin m, ∑ l : Fin m, y i * Bint i l * y l) +
+      2 * (∑ i : Fin m, y i * bb i) + ajj =
+      -(∑ i : Fin m, ∑ l : Fin m, y i * (Gint i l - Bint i l) * y l) -
+      2 * (∑ i : Fin m, y i * (gb i - bb i)) + (ajj - t) := by
+    have hsplitI : ∑ i : Fin m, ∑ l : Fin m,
+        y i * (Gint i l - Bint i l) * y l =
+        (∑ i : Fin m, ∑ l : Fin m, y i * Gint i l * y l) -
+        ∑ i : Fin m, ∑ l : Fin m, y i * Bint i l * y l := by
+      rw [← Finset.sum_sub_distrib]
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun l _ => by ring
+    have hsplitB : ∑ i : Fin m, y i * (gb i - bb i) =
+        (∑ i : Fin m, y i * gb i) - ∑ i : Fin m, y i * bb i := by
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun i _ => by ring
+    rw [hsplitI, hsplitB]
+    linarith [hgram]
+  have hfloor2 := hfloor
+  rw [hdecomp] at hfloor2
+  have habs1 := abs_le.mp hImass
+  have habs2 := abs_le.mp hBmass
+  have hQW := hQsq
+  nlinarith [habs1.1, habs1.2, habs2.1, habs2.2, hε0, hQ0, hW0]
+
 end LeanFpAnalysis.FP
