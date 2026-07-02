@@ -324,6 +324,43 @@ theorem fl_cholesky_leading_principal (fp : FPModel) {n k : ℕ}
     fl_cholesky fp n A ⟨i.val, by omega⟩ ⟨j.val, by omega⟩ :=
   (fl_cholEntry_leading_principal fp hk A i.val j.val i.isLt j.isLt).symm
 
+/-- **Diagonal pivot lower bound** (Theorem 10.7 induction, real-model
+    form of the "stage `k` can be completed" step): the rounded partial
+    pivot is at least the exact partial pivot minus the accumulated
+    rounding mass `γ_{m+1}(|c| + ∑ x_k²)`.  When the exact pivot exceeds
+    that mass — which the `λ_min` threshold guarantees — the rounded pivot
+    is positive and the stage's square root is real. -/
+theorem fl_cholSubFold_pivot_lower (fp : FPModel) (m : ℕ)
+    (x : Fin m → ℝ) (c : ℝ) (hm1 : gammaValid fp (m + 1)) :
+    c - (∑ k : Fin m, x k ^ 2) -
+      gamma fp (m + 1) * (|c| + ∑ k : Fin m, x k ^ 2) ≤
+    fl_cholSubFold fp m x x c := by
+  obtain ⟨Θ, θ, hΘ, hθ, heq⟩ := fl_cholSubFold_error fp m x x c hm1
+  rw [heq]
+  have hγnn : 0 ≤ gamma fp (m + 1) := gamma_nonneg fp hm1
+  have hγm : gamma fp m ≤ gamma fp (m + 1) :=
+    gamma_mono fp (Nat.le_succ m) hm1
+  have h1 : c - |c| * gamma fp (m + 1) ≤ c * (1 + Θ) := by
+    have habs : |c * Θ| ≤ |c| * gamma fp (m + 1) := by
+      rw [abs_mul]
+      exact mul_le_mul_of_nonneg_left (le_trans hΘ hγm) (abs_nonneg c)
+    have h := (abs_le.mp habs).1
+    nlinarith
+  have h2 : ∑ k : Fin m, x k * x k * (1 + θ k) ≤
+      (∑ k : Fin m, x k ^ 2) + gamma fp (m + 1) * ∑ k : Fin m, x k ^ 2 := by
+    calc ∑ k : Fin m, x k * x k * (1 + θ k)
+        ≤ ∑ k : Fin m, x k ^ 2 * (1 + gamma fp (m + 1)) := by
+          apply Finset.sum_le_sum
+          intro k _
+          have hθk := (abs_le.mp (hθ k)).2
+          nlinarith [sq_nonneg (x k)]
+      _ = (∑ k : Fin m, x k ^ 2) +
+          gamma fp (m + 1) * ∑ k : Fin m, x k ^ 2 := by
+          rw [← Finset.sum_mul, Finset.sum_mul]
+          rw [Finset.mul_sum, ← Finset.sum_add_distrib]
+          exact Finset.sum_congr rfl fun k _ => by ring
+  nlinarith [h1, h2]
+
 -- ============================================================
 -- §10.1  Sharp solve forms for the Algorithm 10.2 recurrences
 --        (Higham Theorem 10.3 per-entry equations, Stewart counters)
