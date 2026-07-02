@@ -1847,21 +1847,40 @@ noncomputable def higham10_14_schurComplement (n k : ℕ)
     (A A11_inv : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   schurComplement n k A A11_inv
 
-/-- **Lemma 10.10 / equation (10.16)**: Schur-complement perturbation
-interface. -/
-theorem higham10_10_schur_complement_perturbation (n k : ℕ)
-    (A E A11_inv : Fin n → Fin n → ℝ)
-    (W_norm : ℝ) (hW_norm : 0 ≤ W_norm)
-    (E_norm : ℝ) (hE_norm : 0 ≤ E_norm)
-    (hbound : ∀ i j : Fin n, k ≤ i.val → k ≤ j.val →
-      |higham10_14_schurComplement n k (fun i' j' => A i' j' + E i' j') A11_inv i j -
-       higham10_14_schurComplement n k A A11_inv i j| ≤
-      (1 + W_norm) ^ 2 * E_norm) :
-    ∀ i j : Fin n, k ≤ i.val → k ≤ j.val →
-      |higham10_14_schurComplement n k (fun i' j' => A i' j' + E i' j') A11_inv i j -
-       higham10_14_schurComplement n k A A11_inv i j| ≤
-      (1 + W_norm) ^ 2 * E_norm :=
-  schur_complement_perturbation n k A E A11_inv W_norm hW_norm E_norm hE_norm hbound
+/-- **Lemma 10.10 / equation (10.16)** in honest form: the perturbed
+Schur complement equals the unperturbed one plus Higham's first-order
+term `Ē = E₂₂ − E₂₁MA₁₂ − A₂₁ME₁₂ + A₂₁ME₁₁MA₁₂` plus a remainder that
+is entrywise bounded by an explicit polynomial times `ε²` — the exact
+statement behind the source's `S(A+E) = S(A) + Ē + O(‖E‖²)`. The
+leading-block inverses enter through genuine inverse equations
+(`M A₁₁ = 1` up to the resolvent identity), not assumed bounds on the
+conclusion. -/
+theorem higham10_10_schur_complement_perturbation {k m : ℕ}
+    (A11 E11 M X : Matrix (Fin k) (Fin k) ℝ)
+    (A21 E21 : Matrix (Fin m) (Fin k) ℝ)
+    (A12 E12 : Matrix (Fin k) (Fin m) ℝ)
+    (A22 E22 : Matrix (Fin m) (Fin m) ℝ)
+    (hM : M * A11 = 1) (hXi : (A11 + E11) * X = 1)
+    (α μ χ ε : ℝ) (hα : 0 ≤ α) (hμ : 0 ≤ μ) (hχ : 0 ≤ χ) (hε : 0 ≤ ε)
+    (hA21 : ∀ i j, |A21 i j| ≤ α) (hA12 : ∀ i j, |A12 i j| ≤ α)
+    (hE21 : ∀ i j, |E21 i j| ≤ ε) (hE12 : ∀ i j, |E12 i j| ≤ ε)
+    (hE11 : ∀ i j, |E11 i j| ≤ ε)
+    (hMb : ∀ i j, |M i j| ≤ μ) (hXb : ∀ i j, |X i j| ≤ χ) :
+    ∃ R : Matrix (Fin m) (Fin m) ℝ,
+      (A22 + E22) - (A21 + E21) * X * (A12 + E12) =
+        (A22 - A21 * M * A12)
+        + (E22 - E21 * M * A12 - A21 * M * E12
+            + A21 * (M * E11 * M) * A12)
+        + R ∧
+      ∀ i j : Fin m, |R i j| ≤
+        ((k : ℝ) ^ 2 * μ + (k : ℝ) ^ 6 * α ^ 2 * μ ^ 2 * χ
+          + 2 * ((k : ℝ) ^ 4 * α * μ * χ) + (k : ℝ) ^ 4 * μ * χ * ε)
+          * ε ^ 2 := by
+  have hres := schur_resolvent_from_inverses M X A11 E11 hM hXi
+  refine ⟨_, schur_perturbation_exact A21 E21 A12 E12 A22 E22 M X E11
+    hres, ?_⟩
+  exact schur_perturbation_remainder_bound A21 E21 A12 E12 M X E11
+    α μ χ ε hα hμ hχ hε hA21 hA12 hE21 hE12 hE11 hMb hXb
 
 /-- **Lemma 10.12**: abstract `W = A11^{-1} A12` norm bound. -/
 theorem higham10_12_w_norm_bound_from_cond
