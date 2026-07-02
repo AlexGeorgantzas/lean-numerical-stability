@@ -345,6 +345,158 @@ theorem givens_complex_eigenpair_minus {n : Nat}
 
 end Problem19_1
 
+namespace Problem19_8
+
+/-- Higham, 2nd ed., Chapter 19, Problem 19.8: a finite family of Gram-Schmidt
+vectors is orthonormal when its dot products are Kronecker deltas. -/
+def OrthonormalFamily {m r : Nat}
+    (q : Fin r -> Fin m -> Real) : Prop :=
+  forall a b : Fin r, gsDot (q a) (q b) = if a = b then 1 else 0
+
+/-- Higham, 2nd ed., Chapter 19, Problem 19.8: the sum of the rank-one
+orthogonal projections onto the listed Gram-Schmidt directions, written in the
+repository's vector API. -/
+noncomputable def projectionCombination {m r : Nat}
+    (q : Fin r -> Fin m -> Real) (x : Fin m -> Real) :
+    Fin m -> Real :=
+  fun i =>
+    (Finset.univ : Finset (Fin r)).sum
+      (fun k => gsDot (q k) x * q k i)
+
+/-- Higham, 2nd ed., Chapter 19, Problem 19.8: iterated application of the
+operators `I - q_k q_k^T` to a vector.  The recursion appends the last
+projection after the shorter prefix, matching the product
+`(I-P_j) ... (I-P_1)`. -/
+noncomputable def projectionRemovalProduct {m : Nat} :
+    (r : Nat) -> (Fin r -> Fin m -> Real) -> (Fin m -> Real) ->
+      Fin m -> Real
+  | 0, _q, x => x
+  | r + 1, q, x =>
+      gsProjectAway
+        (projectionRemovalProduct r (fun k : Fin r => q k.castSucc) x)
+        (q (Fin.last r))
+
+theorem gsDot_projectionCombination_eq_zero_of_left_orthogonal
+    {m r : Nat} (u : Fin m -> Real)
+    (q : Fin r -> Fin m -> Real) (x : Fin m -> Real)
+    (horth : forall k : Fin r, gsDot u (q k) = 0) :
+    gsDot u (projectionCombination q x) = 0 := by
+  unfold gsDot projectionCombination
+  calc
+    (Finset.univ.sum fun i : Fin m =>
+        u i *
+          (Finset.univ.sum fun k : Fin r =>
+            gsDot (q k) x * q k i))
+        =
+      (Finset.univ.sum fun i : Fin m =>
+        Finset.univ.sum fun k : Fin r =>
+          u i * (gsDot (q k) x * q k i)) := by
+        apply Finset.sum_congr rfl
+        intro i _hi
+        rw [Finset.mul_sum]
+    _ =
+      (Finset.univ.sum fun k : Fin r =>
+        Finset.univ.sum fun i : Fin m =>
+          u i * (gsDot (q k) x * q k i)) := by
+        rw [Finset.sum_comm]
+    _ = 0 := by
+        apply Finset.sum_eq_zero
+        intro k _hk
+        calc
+          (Finset.univ.sum fun i : Fin m =>
+              u i * (gsDot (q k) x * q k i))
+              =
+            gsDot (q k) x *
+              (Finset.univ.sum fun i : Fin m => u i * q k i) := by
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro i _hi
+              ring
+          _ = gsDot (q k) x * gsDot u (q k) := rfl
+          _ = 0 := by
+              rw [horth k]
+              ring
+
+theorem gsDot_sub_projectionCombination_of_left_orthogonal
+    {m r : Nat} (u : Fin m -> Real)
+    (q : Fin r -> Fin m -> Real) (x : Fin m -> Real)
+    (horth : forall k : Fin r, gsDot u (q k) = 0) :
+    gsDot u (fun i => x i - projectionCombination q x i) =
+      gsDot u x := by
+  have hz :
+      gsDot u (projectionCombination q x) = 0 :=
+    gsDot_projectionCombination_eq_zero_of_left_orthogonal u q x horth
+  unfold gsDot at hz ⊢
+  calc
+    (Finset.univ.sum fun i : Fin m =>
+        u i * (x i - projectionCombination q x i))
+        =
+      (Finset.univ.sum fun i : Fin m => u i * x i) -
+        (Finset.univ.sum fun i : Fin m =>
+          u i * projectionCombination q x i) := by
+        rw [← Finset.sum_sub_distrib]
+        apply Finset.sum_congr rfl
+        intro i _hi
+        ring
+    _ = Finset.univ.sum (fun i : Fin m => u i * x i) := by
+        rw [hz]
+        ring
+
+theorem projectionCombination_succ_last {m r : Nat}
+    (q : Fin (r + 1) -> Fin m -> Real) (x : Fin m -> Real)
+    (i : Fin m) :
+    projectionCombination q x i =
+      projectionCombination (fun k : Fin r => q k.castSucc) x i +
+        gsDot (q (Fin.last r)) x * q (Fin.last r) i := by
+  unfold projectionCombination
+  rw [Fin.sum_univ_castSucc]
+
+/-- Higham, 2nd ed., Chapter 19, Problem 19.8: for orthonormal
+Gram-Schmidt directions, the product `(I-P_j) ... (I-P_1)` acts as
+`I - P_1 - ... - P_j` on every vector.  This vector-action form is the exact
+identity that makes the classical and modified Gram-Schmidt projection updates
+coincide in exact arithmetic. -/
+theorem projectionRemovalProduct_eq_id_sub_projection_sum
+    {m r : Nat} (q : Fin r -> Fin m -> Real) (x : Fin m -> Real)
+    (horth : OrthonormalFamily q) :
+    projectionRemovalProduct r q x =
+      fun i => x i - projectionCombination q x i := by
+  induction r with
+  | zero =>
+      ext i
+      simp [projectionRemovalProduct, projectionCombination]
+  | succ r ih =>
+      let qprev : Fin r -> Fin m -> Real := fun k => q k.castSucc
+      have hprev : OrthonormalFamily qprev := by
+        intro a b
+        simpa [OrthonormalFamily, qprev] using horth a.castSucc b.castSucc
+      have hlast_prev :
+          forall k : Fin r, gsDot (q (Fin.last r)) (qprev k) = 0 := by
+        intro k
+        have hne : (Fin.last r : Fin (r + 1)) ≠ k.castSucc :=
+          (Fin.castSucc_ne_last k).symm
+        simpa [OrthonormalFamily, qprev, hne] using
+          horth (Fin.last r) k.castSucc
+      have hdot :
+          gsDot (q (Fin.last r))
+              (fun i => x i - projectionCombination qprev x i) =
+            gsDot (q (Fin.last r)) x :=
+        gsDot_sub_projectionCombination_of_left_orthogonal
+          (q (Fin.last r)) qprev x hlast_prev
+      ext i
+      change
+        (gsProjectAway (projectionRemovalProduct r qprev x)
+            (q (Fin.last r))) i =
+          x i - projectionCombination q x i
+      rw [ih qprev hprev]
+      unfold gsProjectAway
+      rw [hdot]
+      have hsum := projectionCombination_succ_last q x i
+      rw [hsum]
+      ring
+
+end Problem19_8
+
 namespace Algorithm19_11
 
 /-- Source-facing state equations for Higham Algorithm 19.11, classical
@@ -4861,6 +5013,87 @@ theorem householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
     householderBetaSpec_eq_one_of_inner_self_eq_two n
       (householderTrailingActiveVector n p x alpha) hself
 
+/-- Source-faithful rounded normalization data for one Householder stage.
+
+The record names the exact missing premise left by the arbitrary-`FPModel`
+counterexamples: the stored trailing-active vector must be the computed
+normalized reflector and must also satisfy the source normalization
+`v^T v = 2`.  The beta-one fact is derived below rather than stored. -/
+structure sourceFaithfulHouseholderNormalization
+    (fp : FPModel) {n : Nat} (hn : 0 < n)
+    (sourceColumn : Fin n -> Real) (v : Fin n -> Real) : Prop where
+  vector_eq :
+    v = fl_householderNormalizedVector fp hn sourceColumn
+  self_dot :
+    (Finset.univ : Finset (Fin n)).sum (fun i => v i * v i) = 2
+
+/-- A source-faithful normalized stage has `householderBetaSpec = 1`.
+
+This keeps beta-one as a consequence of the explicit self-dot field, rather
+than as another independent hidden assumption. -/
+theorem sourceFaithfulHouseholderNormalization_betaSpec_eq_one
+    (fp : FPModel) {n : Nat} (hn : 0 < n)
+    (sourceColumn : Fin n -> Real) (v : Fin n -> Real)
+    (hsrc :
+      sourceFaithfulHouseholderNormalization fp hn sourceColumn v) :
+    householderBetaSpec n v = 1 := by
+  exact householderBetaSpec_eq_one_of_inner_self_eq_two n v hsrc.self_dot
+
+/-- Stronger model surface for source-faithful Householder normalization.
+
+The base `FPModel` does not imply this property: a rounded model can compute a
+normalized vector whose self-dot is not `2`.  This predicate names the exact
+extra model fact needed by the source-faithful certificate route without
+pretending it holds for every `FPModel`. -/
+def sourceFaithfulHouseholderNormalizationModel (fp : FPModel) : Prop :=
+  forall {n : Nat} (hn : 0 < n) (sourceColumn : Fin n -> Real),
+    Ne sourceColumn 0 ->
+      (Finset.univ : Finset (Fin n)).sum
+        (fun i =>
+          fl_householderNormalizedVector fp hn sourceColumn i *
+            fl_householderNormalizedVector fp hn sourceColumn i) =
+        2
+
+/-- A model satisfying `sourceFaithfulHouseholderNormalizationModel` turns a
+literal normalized-vector equality into the source-faithful certificate. -/
+theorem sourceFaithfulHouseholderNormalization_of_vector_eq_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    {n : Nat} (hn : 0 < n)
+    (sourceColumn : Fin n -> Real) (v : Fin n -> Real)
+    (hvec : v = fl_householderNormalizedVector fp hn sourceColumn)
+    (hx : Ne sourceColumn 0) :
+    sourceFaithfulHouseholderNormalization fp hn sourceColumn v := by
+  constructor
+  · exact hvec
+  · rw [hvec]
+    exact hmodel hn sourceColumn hx
+
+/-- Sufficient condition for the source-faithful normalization model.
+
+If the computed normalized Householder vector agrees with Higham's exact
+normalized vector on every nonzero source column, then its source self-dot is
+`2`.  This keeps the stronger model boundary explicit rather than asserting it
+for every `FPModel`. -/
+theorem sourceFaithfulHouseholderNormalizationModel_of_fl_householderNormalizedVector_eq
+    (fp : FPModel)
+    (hvec :
+      forall {n : Nat} (hn : 0 < n) (sourceColumn : Fin n -> Real),
+        Ne sourceColumn 0 ->
+          fl_householderNormalizedVector fp hn sourceColumn =
+            householderNormalizedVector n
+              (LeanFpAnalysis.FP.householderVector hn sourceColumn)
+              (householderBetaFromScale hn sourceColumn)) :
+    sourceFaithfulHouseholderNormalizationModel fp := by
+  intro n hn sourceColumn hx
+  rw [hvec hn sourceColumn hx]
+  exact
+    householderNormalizedVector_norm_sq n
+      (LeanFpAnalysis.FP.householderVector hn sourceColumn)
+      (householderBetaFromScale hn sourceColumn)
+      (le_of_lt
+        (householderBetaFromScale_pos_of_ne_zero hn sourceColumn hx))
+      (householderBetaFromScale_mul_norm_sq hn sourceColumn hx)
+
 /-- Exact left-to-right addition over `Fin.foldl` is the initial value plus the
 source finite sum.  This is the small arithmetic support fact needed to expose
 the exact dot product hidden inside the compact Householder update. -/
@@ -4891,6 +5124,32 @@ theorem fl_dotProduct_exactWithUnitRoundoff_eq_sum
         (fun acc i => acc + (x i.succ * y i.succ)) (x 0 * y 0) =
           (Finset.univ : Finset (Fin (n + 1))).sum
             (fun i => x i * y i)
+      rw [fin_foldl_add_eq_add_sum]
+      rw [Fin.sum_univ_succ]
+
+/-- If the dot-product path's additions and multiplications are exact, the
+repository's sequential dot product is the mathematical source dot product.
+
+This is the operation-level sufficient condition used by the normalized-beta
+compatibility route.  It is weaker than requiring the whole `FPModel` to be
+`exactWithUnitRoundoff`: no assumptions on division or square root are needed. -/
+theorem fl_dotProduct_eq_sum_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y) :
+    forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i)
+  | 0, _x, _y => by
+      simp [fl_dotProduct]
+  | n + 1, x, y => by
+      rw [fl_dotProduct]
+      change Fin.foldl n
+        (fun acc i => fp.fl_add acc (fp.fl_mul (x i.succ) (y i.succ)))
+        (fp.fl_mul (x 0) (y 0)) =
+          (Finset.univ : Finset (Fin (n + 1))).sum
+            (fun i => x i * y i)
+      simp_rw [hadd, hmul]
       rw [fin_foldl_add_eq_add_sum]
       rw [Fin.sum_univ_succ]
 
@@ -4955,6 +5214,39 @@ theorem fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
       (householderBetaFromScale hn x)
       (le_of_lt (householderBetaFromScale_pos_of_ne_zero hn x hx))
       (householderBetaFromScale_mul_norm_sq hn x hx)
+
+/-- Exact arithmetic satisfies the source-faithful normalization model. -/
+theorem sourceFaithfulHouseholderNormalizationModel_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) :
+    sourceFaithfulHouseholderNormalizationModel
+      (FPModel.exactWithUnitRoundoff u0 hu0) := by
+  intro n hn sourceColumn hx
+  exact
+    fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
+      u0 hu0 hn sourceColumn hx
+
+/-- Exact-arithmetic constructor for a one-stage source-faithful
+normalization certificate.
+
+If the stored stage vector is identified with the computed normalized
+Householder vector and the source column is nonzero, then `exactWithUnitRoundoff`
+supplies the self-dot field of `sourceFaithfulHouseholderNormalization`.  This
+is the reusable one-stage certificate form of
+`fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff`. -/
+theorem sourceFaithfulHouseholderNormalization_of_vector_eq_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) {n : Nat} (hn : 0 < n)
+    (sourceColumn v : Fin n -> Real)
+    (hvec :
+      v = fl_householderNormalizedVector
+        (FPModel.exactWithUnitRoundoff u0 hu0) hn sourceColumn)
+    (hsource : Ne sourceColumn 0) :
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0) hn sourceColumn v := by
+  refine { vector_eq := hvec, self_dot := ?_ }
+  rw [hvec]
+  exact
+    fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
+      u0 hu0 hn sourceColumn hsource
 
 /-- Exact-arithmetic self-dot after adding two leading zeroes.
 
@@ -5065,6 +5357,435 @@ theorem
         Fin (n + 3) -> Real)
       (fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff_zero_cons_zero_cons_zero_cons
         u0 hu0 hn x hx)
+
+/-- Operation-level compatibility needed to reuse Higham's normalized
+beta-one Householder update as the repository's unnormalized
+`householderBetaSpec` compact update under a rounded model.
+
+This is the corrected rounded-route surface exposed by the counterexamples
+below.  The arbitrary `FPModel` contract alone does not imply this property;
+callers must prove it, specialize to exact arithmetic, or use a perturbation
+statement instead of a literal equality. -/
+def normalizedBetaSpecCompactUpdateCompatible (fp : FPModel) : Prop :=
+  forall (n : Nat) (v b : Fin n -> Real) (i : Fin n),
+    let beta := householderBetaSpec n v
+    let w := householderNormalizedVector n v beta
+    fp.fl_mul (fp.fl_mul 1 (fl_dotProduct fp n w b)) (w i) =
+      fp.fl_mul (fp.fl_mul beta (fl_dotProduct fp n v b)) (v i)
+
+/-- A sufficient operation-level route for
+`normalizedBetaSpecCompactUpdateCompatible`.
+
+Exact multiplication and an exact sequential dot product are enough for the
+normalized beta-one update to agree with the unnormalized `householderBetaSpec`
+compact update.  This isolates the real rounded-model obligation: arbitrary
+`FPModel` does not provide these identities, but any stronger model that does
+can discharge the compatibility predicate without assuming the final handoff
+itself. -/
+theorem normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y) :
+    normalizedBetaSpecCompactUpdateCompatible fp := by
+  intro n v b i
+  dsimp [normalizedBetaSpecCompactUpdateCompatible]
+  rw [hdot n (householderNormalizedVector n v (householderBetaSpec n v)) b]
+  rw [hdot n v b]
+  simp_rw [hmul]
+  simp [householderNormalizedVector]
+  let beta : Real := householderBetaSpec n v
+  have hbeta : 0 <= beta := by
+    simpa [beta] using householderBetaSpec_nonneg n v
+  have hsqrt : Real.sqrt beta * Real.sqrt beta = beta :=
+    Real.mul_self_sqrt hbeta
+  let S : Real := (Finset.univ : Finset (Fin n)).sum (fun j => v j * b j)
+  have hsum :
+      ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (Real.sqrt beta * v j) * b j)) =
+        Real.sqrt beta * S := by
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro j _hj
+    ring
+  change (((Finset.univ : Finset (Fin n)).sum
+        (fun j => (Real.sqrt beta * v j) * b j)) *
+      (Real.sqrt beta * v i)) =
+    (beta * S) * v i
+  rw [hsum]
+  calc
+    (Real.sqrt beta * S) * (Real.sqrt beta * v i)
+        = (Real.sqrt beta * Real.sqrt beta) * S * v i := by ring
+    _ = (beta * S) * v i := by rw [hsqrt]
+
+/-- Exact addition and multiplication on the compact Householder update path
+imply the normalized-beta compatibility predicate.
+
+This is the first non-tautological stronger-model discharge of
+`normalizedBetaSpecCompactUpdateCompatible`; it requires only the operations
+used by the compact update and dot product, not exact division or square root
+throughout the whole floating-point model. -/
+theorem normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y) :
+    normalizedBetaSpecCompactUpdateCompatible fp :=
+  normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul fp
+    (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul
+
+/-- Compact-vector handoff under the explicit normalized-beta update
+compatibility hypothesis.
+
+Unlike the rejected arbitrary-`FPModel` route, this theorem states the exact
+extra operation-level equality needed by the rounded model. -/
+theorem fl_householderApply_normalized_betaSpec_eq_of_updateCompatible
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (n : Nat) (v b : Fin n -> Real) :
+    fl_householderApply fp n
+        (householderNormalizedVector n v (householderBetaSpec n v)) 1 b =
+      fl_householderApply fp n v (householderBetaSpec n v) b := by
+  funext i
+  simp [fl_householderApply]
+  rw [hcompat n v b i]
+
+/-- Compact Householder handoff under the explicit normalized-beta update
+compatibility hypothesis. -/
+theorem fl_householderApplyCompact_normalized_betaSpec_eq_of_updateCompatible
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (n : Nat) (v b : Fin n -> Real) :
+    fl_householderApplyCompact fp n
+        (householderNormalizedVector n v (householderBetaSpec n v)) 1 b =
+      fl_householderApplyCompact fp n v (householderBetaSpec n v) b := by
+  funext i
+  simp [fl_householderApplyCompact]
+  rw [hcompat n v b i]
+
+/-- Columnwise compact-panel form of the explicit normalized-beta update
+compatibility bridge. -/
+theorem
+    fl_householderApplyCompactPanel_normalized_betaSpec_eq_of_updateCompatible
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (m n : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyCompactPanel fp m n
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderApplyCompactPanel fp m n
+        v (householderBetaSpec m v) A := by
+  ext i j
+  exact congrFun
+    (fl_householderApplyCompact_normalized_betaSpec_eq_of_updateCompatible
+      fp hcompat m v (fun a => A a j)) i
+
+/-- Matrix-rectangular form of the explicit normalized-beta update
+compatibility bridge. -/
+theorem
+    fl_householderApplyMatrixRect_normalized_betaSpec_eq_of_updateCompatible
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (m n : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyMatrixRect fp m n
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderApplyMatrixRect fp m n
+        v (householderBetaSpec m v) A := by
+  ext i j
+  exact congrFun
+    (fl_householderApply_normalized_betaSpec_eq_of_updateCompatible
+      fp hcompat m v (fun a => A a j)) i
+
+/-- Stored-panel form of the explicit normalized-beta update compatibility
+bridge. -/
+theorem
+    fl_householderStoredPanelStep_normalized_betaSpec_eq_of_updateCompatible
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (m n k : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderStoredPanelStep fp m n k
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderStoredPanelStep fp m n k
+        v (householderBetaSpec m v) A := by
+  ext i j
+  simp [fl_householderStoredPanelStep,
+    fl_householderApplyCompactPanel_normalized_betaSpec_eq_of_updateCompatible
+      fp hcompat m n v A]
+
+/-- First-pivot QR-storage handoff under the explicit normalized-beta update
+compatibility hypothesis. -/
+theorem
+    firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_updateCompatible
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    {m p : Nat} (v : Fin (m + 1) -> Real)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (householderNormalizedVector (m + 1) v
+          (householderBetaSpec (m + 1) v))
+        1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v
+      (householderBetaSpec (m + 1) v) A := by
+  let w : Fin (m + 1) -> Real :=
+    householderNormalizedVector (m + 1) v (householderBetaSpec (m + 1) v)
+  calc
+    (let Astep := fl_householderApplyMatrixRect fp (m + 1) (p + 1) w 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep))
+        = fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 w 1 A := by
+            exact firstStoredPanelStep_eq_panelFromTopAndTrailing_applyMatrixRect
+              fp w 1 A
+    _ = fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v
+          (householderBetaSpec (m + 1) v) A := by
+            exact
+              fl_householderStoredPanelStep_normalized_betaSpec_eq_of_updateCompatible
+                fp hcompat (m + 1) (p + 1) 0 v A
+
+/-- Compact-vector normalized-to-`householderBetaSpec` handoff when the
+sequential dot product and update multiplications are exact.
+
+This is the direct stronger-operation-model wrapper around
+`normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul`; it
+does not assert the handoff for an arbitrary rounded `FPModel`. -/
+theorem fl_householderApply_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (n : Nat) (v b : Fin n -> Real) :
+    fl_householderApply fp n
+        (householderNormalizedVector n v (householderBetaSpec n v)) 1 b =
+      fl_householderApply fp n v (householderBetaSpec n v) b :=
+  fl_householderApply_normalized_betaSpec_eq_of_updateCompatible fp
+    (normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+      fp hdot hmul) n v b
+
+/-- Compact-panel-vector handoff under exact dot-product and multiplication
+operations on the compact update path. -/
+theorem
+    fl_householderApplyCompact_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (n : Nat) (v b : Fin n -> Real) :
+    fl_householderApplyCompact fp n
+        (householderNormalizedVector n v (householderBetaSpec n v)) 1 b =
+      fl_householderApplyCompact fp n v (householderBetaSpec n v) b :=
+  fl_householderApplyCompact_normalized_betaSpec_eq_of_updateCompatible fp
+    (normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+      fp hdot hmul) n v b
+
+/-- Columnwise compact-panel handoff under exact dot-product and multiplication
+operations on the compact update path. -/
+theorem
+    fl_householderApplyCompactPanel_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (m n : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyCompactPanel fp m n
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderApplyCompactPanel fp m n
+        v (householderBetaSpec m v) A :=
+  fl_householderApplyCompactPanel_normalized_betaSpec_eq_of_updateCompatible fp
+    (normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+      fp hdot hmul) m n v A
+
+/-- Matrix-rectangular handoff under exact dot-product and multiplication
+operations on the compact update path. -/
+theorem
+    fl_householderApplyMatrixRect_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (m n : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyMatrixRect fp m n
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderApplyMatrixRect fp m n
+        v (householderBetaSpec m v) A :=
+  fl_householderApplyMatrixRect_normalized_betaSpec_eq_of_updateCompatible fp
+    (normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+      fp hdot hmul) m n v A
+
+/-- Stored-panel handoff under exact dot-product and multiplication operations
+on the compact update path. -/
+theorem
+    fl_householderStoredPanelStep_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (m n k : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderStoredPanelStep fp m n k
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderStoredPanelStep fp m n k
+        v (householderBetaSpec m v) A :=
+  fl_householderStoredPanelStep_normalized_betaSpec_eq_of_updateCompatible fp
+    (normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+      fp hdot hmul) m n k v A
+
+/-- First-pivot QR-storage handoff under exact dot-product and multiplication
+operations on the compact update path. -/
+theorem
+    firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    {m p : Nat} (v : Fin (m + 1) -> Real)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (householderNormalizedVector (m + 1) v
+          (householderBetaSpec (m + 1) v))
+        1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v
+      (householderBetaSpec (m + 1) v) A :=
+  firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_updateCompatible
+    fp
+    (normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+      fp hdot hmul) v A
+
+/-- Compact-vector normalized-to-`householderBetaSpec` handoff when addition
+and multiplication are exact on the dot-product/update path. -/
+theorem fl_householderApply_normalized_betaSpec_eq_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (n : Nat) (v b : Fin n -> Real) :
+    fl_householderApply fp n
+        (householderNormalizedVector n v (householderBetaSpec n v)) 1 b =
+      fl_householderApply fp n v (householderBetaSpec n v) b :=
+  fl_householderApply_normalized_betaSpec_eq_of_exact_dotProduct_and_mul fp
+    (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul n v b
+
+/-- Compact-panel-vector handoff when addition and multiplication are exact on
+the dot-product/update path. -/
+theorem fl_householderApplyCompact_normalized_betaSpec_eq_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (n : Nat) (v b : Fin n -> Real) :
+    fl_householderApplyCompact fp n
+        (householderNormalizedVector n v (householderBetaSpec n v)) 1 b =
+      fl_householderApplyCompact fp n v (householderBetaSpec n v) b :=
+  fl_householderApplyCompact_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    fp (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul n v b
+
+/-- Columnwise compact-panel handoff when addition and multiplication are exact
+on the dot-product/update path. -/
+theorem
+    fl_householderApplyCompactPanel_normalized_betaSpec_eq_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (m n : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyCompactPanel fp m n
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderApplyCompactPanel fp m n
+        v (householderBetaSpec m v) A :=
+  fl_householderApplyCompactPanel_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    fp (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul m n v A
+
+/-- Matrix-rectangular handoff when addition and multiplication are exact on
+the dot-product/update path. -/
+theorem
+    fl_householderApplyMatrixRect_normalized_betaSpec_eq_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (m n : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyMatrixRect fp m n
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderApplyMatrixRect fp m n
+        v (householderBetaSpec m v) A :=
+  fl_householderApplyMatrixRect_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    fp (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul m n v A
+
+/-- Stored-panel handoff when addition and multiplication are exact on the
+dot-product/update path. -/
+theorem
+    fl_householderStoredPanelStep_normalized_betaSpec_eq_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (m n k : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderStoredPanelStep fp m n k
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderStoredPanelStep fp m n k
+        v (householderBetaSpec m v) A :=
+  fl_householderStoredPanelStep_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    fp (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul m n k v A
+
+/-- First-pivot QR-storage handoff when addition and multiplication are exact
+on the dot-product/update path. -/
+theorem
+    firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    {m p : Nat} (v : Fin (m + 1) -> Real)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (householderNormalizedVector (m + 1) v
+          (householderBetaSpec (m + 1) v))
+        1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v
+      (householderBetaSpec (m + 1) v) A :=
+  firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_exact_dotProduct_and_mul
+    fp (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul v A
+
+/-- Exact arithmetic satisfies the explicit normalized-beta update
+compatibility surface. -/
+theorem normalizedBetaSpecCompactUpdateCompatible_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) :
+    normalizedBetaSpecCompactUpdateCompatible
+      (FPModel.exactWithUnitRoundoff u0 hu0) := by
+  intro n v b i
+  dsimp
+  rw [fl_dotProduct_exactWithUnitRoundoff_eq_sum u0 hu0 n
+    (householderNormalizedVector n v (householderBetaSpec n v)) b]
+  rw [fl_dotProduct_exactWithUnitRoundoff_eq_sum u0 hu0 n v b]
+  simp [FPModel.exactWithUnitRoundoff, householderNormalizedVector]
+  let beta : Real := householderBetaSpec n v
+  have hbeta : 0 <= beta := by
+    simpa [beta] using householderBetaSpec_nonneg n v
+  have hsqrt : Real.sqrt beta * Real.sqrt beta = beta :=
+    Real.mul_self_sqrt hbeta
+  let S : Real := (Finset.univ : Finset (Fin n)).sum (fun j => v j * b j)
+  have hsum :
+      ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (Real.sqrt beta * v j) * b j)) =
+        Real.sqrt beta * S := by
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro j _hj
+    ring
+  change (((Finset.univ : Finset (Fin n)).sum
+        (fun j => (Real.sqrt beta * v j) * b j)) *
+      (Real.sqrt beta * v i)) =
+    (beta * S) * v i
+  rw [hsum]
+  calc
+    (Real.sqrt beta * S) * (Real.sqrt beta * v i)
+        = (Real.sqrt beta * Real.sqrt beta) * S * v i := by ring
+    _ = (beta * S) * v i := by rw [hsqrt]
 
 /-- Exact-arithmetic handoff from Higham's normalized beta-one compact
 Householder update to the repository's unnormalized `householderBetaSpec`
@@ -11808,6 +12529,320 @@ structure storedSignedSequenceFirstTwoTailNormalizedFacts
             (alpha 3) i) =
       2
 
+/-- One-tail normalized facts from the explicit source-faithful normalization
+record for the twice-trailing stage-two reflector. -/
+theorem storedSignedSequenceOneTailNormalizedFacts_of_sourceFaithfulNormalization
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hsrc :
+      sourceFaithfulHouseholderNormalization fp (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (A_hat 2))))
+        (householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2))) :
+    storedSignedSequenceOneTailNormalizedFacts fp A_hat alpha :=
+  ⟨hsrc.vector_eq, hsrc.self_dot⟩
+
+/-- First-two tail-normalized facts from explicit source-faithful
+normalization records for the stage-two and stage-three twice-trailing
+reflectors. -/
+theorem
+    storedSignedSequenceFirstTwoTailNormalizedFacts_of_sourceFaithfulNormalizations
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hsrc2 :
+      sourceFaithfulHouseholderNormalization fp
+        (show 0 < r + (p + 2) by omega)
+        (panelFirstColumn (Nat.succ_pos (p + 1))
+          (trailingPanel (trailingPanel (A_hat 2))))
+        (householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2)))
+    (hsrc3 :
+      sourceFaithfulHouseholderNormalization fp
+        (show 0 < r + (p + 1) by omega)
+        (panelFirstColumn (Nat.succ_pos p)
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+        (householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3))) :
+    storedSignedSequenceFirstTwoTailNormalizedFacts fp r p A_hat alpha :=
+  ⟨hsrc2.vector_eq, hsrc2.self_dot, hsrc3.vector_eq, hsrc3.self_dot⟩
+
+/-- Beta-one consequence of the one-tail normalized-facts record. -/
+theorem storedSignedSequenceOneTailNormalizedFacts_betaSpec_eq_one
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hfacts : storedSignedSequenceOneTailNormalizedFacts fp A_hat alpha) :
+    householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2)) =
+      1 :=
+  householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
+    (0 : Fin (m + 1))
+    (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+    (alpha 2) hfacts.hselfTail
+
+/-- Beta-one consequence for the first stage of a first-two tail-normalized
+record. -/
+theorem storedSignedSequenceFirstTwoTailNormalizedFacts_betaSpec_two_eq_one
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hfacts :
+      storedSignedSequenceFirstTwoTailNormalizedFacts fp r p A_hat alpha) :
+    householderBetaSpec (r + (p + 2))
+        (householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2)) =
+      1 :=
+  householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
+    (0 : Fin (r + (p + 2)))
+    (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+    (alpha 2) hfacts.hselfTail2
+
+/-- Beta-one consequence for the second stage of a first-two tail-normalized
+record. -/
+theorem storedSignedSequenceFirstTwoTailNormalizedFacts_betaSpec_three_eq_one
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hfacts :
+      storedSignedSequenceFirstTwoTailNormalizedFacts fp r p A_hat alpha) :
+    householderBetaSpec (r + (p + 1))
+        (householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3)) =
+      1 :=
+  householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
+    (0 : Fin (r + (p + 1)))
+    (fun a =>
+      A_hat 3 a.succ.succ.succ
+        ((0 : Fin (p + 1)).succ.succ.succ))
+    (alpha 3) hfacts.hselfTail3
+
+/-- One-tail route audit for the raw normalized-loop record.
+
+Even a literal equality between the twice-trailing active vector and
+`fl_householderNormalizedVector` does not imply the one-tail normalized-facts
+record for an arbitrary rounded `FPModel`.  The missing field is exactly the
+source-shaped self-dot equality. -/
+theorem oneTailNormalizedFacts_not_forall_from_tail_vector_eq_FPModel :
+    Exists (fun fp : FPModel =>
+      Exists (fun A_hat :
+        Nat -> Fin (0 + 1 + 2) -> Fin (1 + 2) -> Real =>
+        Exists (fun alpha : Nat -> Real =>
+          (householderTrailingActiveVector (0 + 1)
+              (0 : Fin (0 + 1))
+              (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+              (alpha 2) =
+            fl_householderNormalizedVector fp (Nat.succ_pos 0)
+              (panelFirstColumn (Nat.succ_pos 0)
+                (trailingPanel (trailingPanel (A_hat 2))))) /\
+          Not (storedSignedSequenceOneTailNormalizedFacts fp A_hat alpha)))) := by
+  rcases fl_householderNormalizedVector_self_dot_not_forall_FPModel with
+    ⟨fp, x, hbad⟩
+  let tail : Fin (0 + 1 + 2) := ((0 : Fin 1).succ.succ)
+  let tailCol : Fin (1 + 2) := ((0 : Fin 1).succ.succ)
+  let A2 : Fin (0 + 1 + 2) -> Fin (1 + 2) -> Real :=
+    fun i j => if i = tail then if j = tailCol then x 0 else 0 else 0
+  let A_hat : Nat -> Fin (0 + 1 + 2) -> Fin (1 + 2) -> Real :=
+    fun k => if k = 2 then A2 else fun _ _ => 0
+  let alpha : Nat -> Real :=
+    fun k =>
+      if k = 2 then
+        x 0 - fl_householderNormalizedVector fp (Nat.succ_pos 0) x 0
+      else 0
+  refine Exists.intro fp ?_
+  refine Exists.intro A_hat ?_
+  refine Exists.intro alpha ?_
+  have hpanel :
+      panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (A_hat 2))) =
+        x := by
+    funext i
+    fin_cases i
+    simp [A_hat, A2, tail, tailCol, panelFirstColumn, trailingPanel]
+  have hvec :
+      householderTrailingActiveVector (0 + 1)
+          (0 : Fin (0 + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector fp (Nat.succ_pos 0)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2)))) := by
+    rw [hpanel]
+    funext i
+    fin_cases i
+    simp [householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, A_hat, A2, alpha, tail, tailCol]
+  refine ⟨hvec, ?_⟩
+  intro hfacts
+  have hself := hfacts.hselfTail
+  rw [hvec, hpanel] at hself
+  exact hbad hself
+
+/-- First-two route audit for the raw normalized-loop record.
+
+The arbitrary-width first-two record has the same hidden self-dot boundary as
+the one-tail record.  Even if both first-two tail active vectors are literally
+identified with the corresponding `fl_householderNormalizedVector`s, the
+record does not follow for an arbitrary rounded `FPModel`; one of the self-dot
+fields can still fail. -/
+theorem firstTwoTailNormalizedFacts_not_forall_from_tail_vector_eq_FPModel :
+    Exists (fun fp : FPModel =>
+      Exists (fun A_hat :
+        Nat -> Fin (0 + (0 + 2) + 2) -> Fin ((0 + 2) + 2) -> Real =>
+        Exists (fun alpha : Nat -> Real =>
+          (householderTrailingActiveVector (0 + (0 + 2))
+              (0 : Fin (0 + (0 + 2)))
+              (fun a => A_hat 2 a.succ.succ ((0 : Fin (0 + 2)).succ.succ))
+              (alpha 2) =
+            fl_householderNormalizedVector fp
+              (show 0 < 0 + (0 + 2) by omega)
+              (panelFirstColumn (Nat.succ_pos (0 + 1))
+                (trailingPanel (trailingPanel (A_hat 2))))) /\
+          (householderTrailingActiveVector (0 + (0 + 1))
+              (0 : Fin (0 + (0 + 1)))
+              (fun a =>
+                A_hat 3 a.succ.succ.succ
+                  ((0 : Fin (0 + 1)).succ.succ.succ))
+              (alpha 3) =
+            fl_householderNormalizedVector fp
+              (show 0 < 0 + (0 + 1) by omega)
+              (panelFirstColumn (Nat.succ_pos 0)
+                (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))) /\
+          Not (storedSignedSequenceFirstTwoTailNormalizedFacts
+            fp 0 0 A_hat alpha)))) := by
+  let fp : FPModel := divDoubledFPModel
+  let y2 : Fin (0 + (0 + 2)) -> Real :=
+    fun i => if i = (0 : Fin (0 + (0 + 2))) then 1 else 0
+  let y3 : Fin (0 + (0 + 1)) -> Real := fun _ => 1
+  let row2 : Fin (0 + (0 + 2) + 2) :=
+    ((0 : Fin (0 + (0 + 2))).succ.succ)
+  let col2 : Fin ((0 + 2) + 2) :=
+    ((0 : Fin (0 + 2)).succ.succ)
+  let row3 : Fin (0 + (0 + 2) + 2) :=
+    ((0 : Fin (0 + (0 + 1))).succ.succ.succ)
+  let col3 : Fin ((0 + 2) + 2) :=
+    ((0 : Fin (0 + 1)).succ.succ.succ)
+  let A2 : Fin (0 + (0 + 2) + 2) -> Fin ((0 + 2) + 2) -> Real :=
+    fun i j => if j = col2 then if i = row2 then 1 else 0 else 0
+  let A3 : Fin (0 + (0 + 2) + 2) -> Fin ((0 + 2) + 2) -> Real :=
+    fun i j => if j = col3 then if i = row3 then 1 else 0 else 0
+  let A_hat : Nat -> Fin (0 + (0 + 2) + 2) -> Fin ((0 + 2) + 2) -> Real :=
+    fun k => if k = 2 then A2 else if k = 3 then A3 else fun _ _ => 0
+  let alpha : Nat -> Real :=
+    fun k =>
+      if k = 2 then
+        y2 0 -
+          fl_householderNormalizedVector fp
+            (show 0 < 0 + (0 + 2) by omega) y2 0
+      else if k = 3 then
+        y3 0 -
+          fl_householderNormalizedVector fp
+            (show 0 < 0 + (0 + 1) by omega) y3 0
+      else 0
+  refine Exists.intro fp ?_
+  refine Exists.intro A_hat ?_
+  refine Exists.intro alpha ?_
+  have hpanel2 :
+      panelFirstColumn (Nat.succ_pos (0 + 1))
+          (trailingPanel (trailingPanel (A_hat 2))) =
+        y2 := by
+    funext i
+    fin_cases i <;>
+      simp [A_hat, A2, y2, row2, col2, panelFirstColumn, trailingPanel]
+  have hpanel3 :
+      panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))) =
+        y3 := by
+    funext i
+    fin_cases i
+    simp [A_hat, A3, y3, row3, col3, panelFirstColumn, trailingPanel]
+  have hvec2 :
+      householderTrailingActiveVector (0 + (0 + 2))
+          (0 : Fin (0 + (0 + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (0 + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector divDoubledFPModel
+          (show 0 < 0 + (0 + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (0 + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))) := by
+    rw [hpanel2]
+    funext i
+    fin_cases i
+    · simp [fp, householderTrailingActiveVector, householderActiveVector,
+        householderTrailingPart, A_hat, A2, alpha, y2, row2, col2]
+    · simp [divDoubledFPModel, fl_householderNormalizedVector,
+        householderNormalizedVector, fl_householderVector,
+        householderTrailingActiveVector, householderActiveVector,
+        householderTrailingPart, A_hat, A2, alpha, y2, row2, col2]
+  have hvec3 :
+      householderTrailingActiveVector (0 + (0 + 1))
+          (0 : Fin (0 + (0 + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (0 + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector divDoubledFPModel
+          (show 0 < 0 + (0 + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))) := by
+    rw [hpanel3]
+    funext i
+    fin_cases i
+    simp [fp, householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, A_hat, A3, alpha, y3, row3, col3]
+  refine ⟨hvec2, hvec3, ?_⟩
+  intro hfacts
+  have hself := hfacts.hselfTail3
+  rw [hvec3, hpanel3] at hself
+  have hbad :
+      Not (
+        (Finset.univ : Finset (Fin (0 + (0 + 1)))).sum
+          (fun i =>
+            fl_householderNormalizedVector fp
+                (show 0 < 0 + (0 + 1) by omega) y3 i *
+              fl_householderNormalizedVector fp
+                (show 0 < 0 + (0 + 1) by omega) y3 i) =
+          2) := by
+    intro h
+    norm_num [fp, divDoubledFPModel, y3, fl_householderNormalizedVector,
+      householderNormalizedVector, fl_householderVector, fl_householderScale,
+      fl_householderBeta, fl_norm2, fl_norm2Sq, fl_dotProduct,
+      householderSign] at h
+    simp at h
+    have hsqrt_sq :
+        Real.sqrt (1 : Real) * Real.sqrt (1 : Real) = 1 := by
+      exact Real.mul_self_sqrt (by norm_num)
+    have hsqrt_pow : Real.sqrt (1 : Real) ^ 2 = 1 := by
+      rw [pow_two]
+      exact hsqrt_sq
+    ring_nf at h
+    have hleft :
+        Real.sqrt (1 : Real) ^ 2 * 4 = (4 : Real) := by
+      rw [hsqrt_pow]
+      norm_num
+    have hbad_eq : (4 : Real) = 2 := hleft.symm.trans h
+    norm_num at hbad_eq
+  exact hbad hself
+
 /-- Exact-arithmetic one-tail normalized reflector facts from the tail-vector
 equality and the local tail determinant nonzero fact.
 
@@ -11937,9 +12972,171 @@ theorem
     exact
       fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
         u0 hu0 (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+        hx3
+
+/-- Exact-arithmetic one-tail source-faithful certificate from the tail-vector
+equality and the local tail determinant nonzero fact. -/
+theorem
+    sourceFaithfulHouseholderNormalization_of_tail_vector_eq_and_det_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdetTailTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (A_hat 2)))
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2))))) :
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos 0)
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (m + 1)
+        (0 : Fin (m + 1))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+        (alpha 2)) := by
+  have hx :
+      Ne
+        (panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (A_hat 2))))
+        0 := by
+    intro hzero
+    apply hdetTailTail
+    have hentry := congrFun hzero 0
+    simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn,
+      trailingPanel] using hentry
+  exact
+    sourceFaithfulHouseholderNormalization_of_vector_eq_exactWithUnitRoundoff
+      u0 hu0 (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos 0)
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (m + 1)
+        (0 : Fin (m + 1))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+        (alpha 2))
+      hvecTail hx
+
+/-- Exact-arithmetic first-two source-faithful certificates from tail-vector
+equalities and the two local tail determinant nonzero facts. -/
+theorem
+    sourceFaithfulHouseholderNormalizations_of_tail_vectors_eq_and_dets_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdetTailTailFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (A_hat 2)))
+          (show 1 <= r + (p + 2) by omega)
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTailTailTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))
+          (show 1 <= r + (p + 1) by omega)
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail2 :
+      householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))))
+    (hvecTail3 :
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))) :
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0)
+      (show 0 < r + (p + 2) by omega)
+      (panelFirstColumn (Nat.succ_pos (p + 1))
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (r + (p + 2))
+        (0 : Fin (r + (p + 2)))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+        (alpha 2)) /\
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0)
+      (show 0 < r + (p + 1) by omega)
+      (panelFirstColumn (Nat.succ_pos p)
+        (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+      (householderTrailingActiveVector (r + (p + 1))
+        (0 : Fin (r + (p + 1)))
+        (fun a =>
+          A_hat 3 a.succ.succ.succ
+            ((0 : Fin (p + 1)).succ.succ.succ))
+        (alpha 3)) := by
+  constructor
+  · have hx2 :
+        Ne
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2))))
+          0 := by
+      intro hzero
+      apply hdetTailTailFirst
+      have hentry := congrFun hzero 0
+      simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn,
+        trailingPanel] using hentry
+    exact
+      sourceFaithfulHouseholderNormalization_of_vector_eq_exactWithUnitRoundoff
+        u0 hu0 (show 0 < r + (p + 2) by omega)
+        (panelFirstColumn (Nat.succ_pos (p + 1))
+          (trailingPanel (trailingPanel (A_hat 2))))
+        (householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2))
+        hvecTail2 hx2
+  · have hx3 :
+        Ne
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+          0 := by
+      intro hzero
+      apply hdetTailTailTail
+      have hentry := congrFun hzero 0
+      simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn,
+        trailingPanel] using hentry
+    exact
+      sourceFaithfulHouseholderNormalization_of_vector_eq_exactWithUnitRoundoff
+        u0 hu0 (show 0 < r + (p + 1) by omega)
         (panelFirstColumn (Nat.succ_pos p)
           (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
-        hx3
+        (householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3))
+        hvecTail3 hx3
 
 /-- Exact-arithmetic one-tail normalized reflector facts from the tail-vector
 equality and the standard leading-block nonbreakdown hypothesis. -/
@@ -11989,6 +13186,60 @@ theorem
       (storedSignedSequenceOneTailFullStageFacts_tail_det_ne_zero_of_leadingBlock_det_ne_zero
         (FPModel.exactWithUnitRoundoff u0 hu0) A_hat alpha hStep hdetLead)
       hvecTail
+
+/-- Exact-arithmetic one-tail source-faithful certificate from the tail-vector
+equality and the standard leading-block nonbreakdown hypothesis. -/
+theorem
+    sourceFaithfulHouseholderNormalization_of_tail_vector_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < 1 + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep (FPModel.exactWithUnitRoundoff u0 hu0)
+          (m + 1 + 2) (1 + 2) k
+          (householderTrailingActiveVector (m + 1 + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= m + 1 + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 1 + 2)
+            (householderTrailingActiveVector (m + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= m + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < 1 + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : 1 + 2 <= m + 1 + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecTail :
+      householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2))))) :
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos 0)
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (m + 1)
+        (0 : Fin (m + 1))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+        (alpha 2)) :=
+  sourceFaithfulHouseholderNormalization_of_tail_vector_eq_and_det_ne_zero_exactWithUnitRoundoff
+    u0 hu0 A_hat alpha
+    (storedSignedSequenceOneTailFullStageFacts_tail_det_ne_zero_of_leadingBlock_det_ne_zero
+      (FPModel.exactWithUnitRoundoff u0 hu0) A_hat alpha hStep hdetLead)
+    hvecTail
 
 /-- Exact-arithmetic first-two normalized reflector facts from tail-vector
 equalities and the standard leading-block nonbreakdown hypothesis. -/
@@ -12052,6 +13303,378 @@ theorem
   exact
     storedSignedSequenceFirstTwoTailNormalizedFacts_of_tail_vectors_eq_and_dets_ne_zero_exactWithUnitRoundoff
       u0 hu0 r p A_hat alpha hdetTailTailFirst hdetTailTailTail
+      hvecTail2 hvecTail3
+
+/-- Exact-arithmetic first-two source-faithful certificates from tail-vector
+equalities and the standard leading-block nonbreakdown hypothesis. -/
+theorem
+    sourceFaithfulHouseholderNormalizations_of_tail_vectors_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < (p + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep (FPModel.exactWithUnitRoundoff u0 hu0)
+          (r + (p + 2) + 2) ((p + 2) + 2) k
+          (householderTrailingActiveVector (r + (p + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + (p + 2) + 2)
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < (p + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecTail2 :
+      householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))))
+    (hvecTail3 :
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))) :
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0)
+      (show 0 < r + (p + 2) by omega)
+      (panelFirstColumn (Nat.succ_pos (p + 1))
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (r + (p + 2))
+        (0 : Fin (r + (p + 2)))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+        (alpha 2)) /\
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0)
+      (show 0 < r + (p + 1) by omega)
+      (panelFirstColumn (Nat.succ_pos p)
+        (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+      (householderTrailingActiveVector (r + (p + 1))
+        (0 : Fin (r + (p + 1)))
+        (fun a =>
+          A_hat 3 a.succ.succ.succ
+            ((0 : Fin (p + 1)).succ.succ.succ))
+        (alpha 3)) := by
+  rcases
+      storedSignedSequenceFirstTwoFullStageFacts_tail_dets_ne_zero_of_leadingBlock_det_ne_zero
+        (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha hStep hdetLead with
+    ⟨hdetTailTailFirst, hdetTailTailTail⟩
+  exact
+    sourceFaithfulHouseholderNormalizations_of_tail_vectors_eq_and_dets_ne_zero_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hdetTailTailFirst hdetTailTailTail
+      hvecTail2 hvecTail3
+
+/-- One-tail source-faithful certificate from a model-level normalization fact,
+the tail-vector equality, and the local tail determinant nonzero fact. -/
+theorem
+    sourceFaithfulHouseholderNormalization_of_tail_vector_eq_and_det_ne_zero_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdetTailTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (A_hat 2)))
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2))))) :
+    sourceFaithfulHouseholderNormalization fp (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos 0)
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (m + 1)
+        (0 : Fin (m + 1))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+        (alpha 2)) := by
+  have hx :
+      Ne
+        (panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (A_hat 2))))
+        0 := by
+    intro hzero
+    apply hdetTailTail
+    have hentry := congrFun hzero 0
+    simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn,
+      trailingPanel] using hentry
+  exact
+    sourceFaithfulHouseholderNormalization_of_vector_eq_of_normalizationModel
+      fp hmodel (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos 0)
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (m + 1)
+        (0 : Fin (m + 1))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+        (alpha 2))
+      hvecTail hx
+
+/-- First-two source-faithful certificates from a model-level normalization
+fact, tail-vector equalities, and the two local tail determinant nonzero facts. -/
+theorem
+    sourceFaithfulHouseholderNormalizations_of_tail_vectors_eq_and_dets_ne_zero_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdetTailTailFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (A_hat 2)))
+          (show 1 <= r + (p + 2) by omega)
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTailTailTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))
+          (show 1 <= r + (p + 1) by omega)
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail2 :
+      householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))))
+    (hvecTail3 :
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))) :
+    sourceFaithfulHouseholderNormalization fp
+      (show 0 < r + (p + 2) by omega)
+      (panelFirstColumn (Nat.succ_pos (p + 1))
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (r + (p + 2))
+        (0 : Fin (r + (p + 2)))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+        (alpha 2)) /\
+    sourceFaithfulHouseholderNormalization fp
+      (show 0 < r + (p + 1) by omega)
+      (panelFirstColumn (Nat.succ_pos p)
+        (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+      (householderTrailingActiveVector (r + (p + 1))
+        (0 : Fin (r + (p + 1)))
+        (fun a =>
+          A_hat 3 a.succ.succ.succ
+            ((0 : Fin (p + 1)).succ.succ.succ))
+        (alpha 3)) := by
+  constructor
+  · have hx2 :
+        Ne
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2))))
+          0 := by
+      intro hzero
+      apply hdetTailTailFirst
+      have hentry := congrFun hzero 0
+      simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn,
+        trailingPanel] using hentry
+    exact
+      sourceFaithfulHouseholderNormalization_of_vector_eq_of_normalizationModel
+        fp hmodel (show 0 < r + (p + 2) by omega)
+        (panelFirstColumn (Nat.succ_pos (p + 1))
+          (trailingPanel (trailingPanel (A_hat 2))))
+        (householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2))
+        hvecTail2 hx2
+  · have hx3 :
+        Ne
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+          0 := by
+      intro hzero
+      apply hdetTailTailTail
+      have hentry := congrFun hzero 0
+      simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn,
+        trailingPanel] using hentry
+    exact
+      sourceFaithfulHouseholderNormalization_of_vector_eq_of_normalizationModel
+        fp hmodel (show 0 < r + (p + 1) by omega)
+        (panelFirstColumn (Nat.succ_pos p)
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+        (householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3))
+        hvecTail3 hx3
+
+/-- One-tail source-faithful certificate from a model-level normalization fact,
+the tail-vector equality, and the standard leading-block nonbreakdown
+hypothesis. -/
+theorem
+    sourceFaithfulHouseholderNormalization_of_tail_vector_eq_and_leadingBlock_det_ne_zero_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < 1 + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 1 + 2) (1 + 2) k
+          (householderTrailingActiveVector (m + 1 + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= m + 1 + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 1 + 2)
+            (householderTrailingActiveVector (m + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= m + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < 1 + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : 1 + 2 <= m + 1 + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecTail :
+      householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2))))) :
+    sourceFaithfulHouseholderNormalization fp (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos 0)
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (m + 1)
+        (0 : Fin (m + 1))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+        (alpha 2)) :=
+  sourceFaithfulHouseholderNormalization_of_tail_vector_eq_and_det_ne_zero_of_normalizationModel
+    fp hmodel A_hat alpha
+    (storedSignedSequenceOneTailFullStageFacts_tail_det_ne_zero_of_leadingBlock_det_ne_zero
+      fp A_hat alpha hStep hdetLead)
+    hvecTail
+
+/-- First-two source-faithful certificates from a model-level normalization
+fact, tail-vector equalities, and the standard leading-block nonbreakdown
+hypothesis. -/
+theorem
+    sourceFaithfulHouseholderNormalizations_of_tail_vectors_eq_and_leadingBlock_det_ne_zero_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < (p + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + (p + 2) + 2) ((p + 2) + 2) k
+          (householderTrailingActiveVector (r + (p + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + (p + 2) + 2)
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < (p + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecTail2 :
+      householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))))
+    (hvecTail3 :
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))) :
+    sourceFaithfulHouseholderNormalization fp
+      (show 0 < r + (p + 2) by omega)
+      (panelFirstColumn (Nat.succ_pos (p + 1))
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (r + (p + 2))
+        (0 : Fin (r + (p + 2)))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+        (alpha 2)) /\
+    sourceFaithfulHouseholderNormalization fp
+      (show 0 < r + (p + 1) by omega)
+      (panelFirstColumn (Nat.succ_pos p)
+        (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+      (householderTrailingActiveVector (r + (p + 1))
+        (0 : Fin (r + (p + 1)))
+        (fun a =>
+          A_hat 3 a.succ.succ.succ
+            ((0 : Fin (p + 1)).succ.succ.succ))
+        (alpha 3)) := by
+  rcases
+      storedSignedSequenceFirstTwoFullStageFacts_tail_dets_ne_zero_of_leadingBlock_det_ne_zero
+        fp r p A_hat alpha hStep hdetLead with
+    ⟨hdetTailTailFirst, hdetTailTailTail⟩
+  exact
+    sourceFaithfulHouseholderNormalizations_of_tail_vectors_eq_and_dets_ne_zero_of_normalizationModel
+      fp hmodel r p A_hat alpha hdetTailTailFirst hdetTailTailTail
       hvecTail2 hvecTail3
 
 /-- One-tail full-stage facts from the named tail-local normalized reflector
@@ -14608,6 +16231,1427 @@ theorem
         Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using hfacts.hselfTail3)
     htail
 
+/-- Recursive package of the named tail-local normalized reflector facts at
+every twice-trailing stored-loop stage.
+
+The package keeps the ordinary stored recurrence and stage-local leading-block
+nonbreakdown hypotheses together with the rounded/source-faithful
+tail-normalized records.  It is the all-stages premise surface left after the
+single-stage record constructors above: a future rounded proof can target this
+package, then use `...FullStageNormalizedLoopFacts_of_tailNormalizedLoopRecords`
+to enter the existing full-stage/source-closure pipeline. -/
+def storedSignedSequenceTailNormalizedLoopRecords
+    (fp : FPModel) :
+    (r p : Nat) ->
+      (Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real) ->
+      (Nat -> Real) -> Prop
+  | _r, 0, _A_hat, _alpha => True
+  | _r, 1, A_hat, alpha =>
+      (forall k (hk : k < 1 + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep fp (_r + 1 + 2) (1 + 2) k
+            (householderTrailingActiveVector (_r + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= _r + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (_r + 1 + 2)
+              (householderTrailingActiveVector (_r + 1 + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : 1 + 2 <= _r + 1 + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < 1 + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= _r + 1 + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      storedSignedSequenceOneTailNormalizedFacts fp A_hat alpha
+  | r, p + 2, A_hat, alpha =>
+      (forall k (hk : k < (p + 2) + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep fp (r + (p + 2) + 2)
+            ((p + 2) + 2) k
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (r + (p + 2) + 2)
+              (householderTrailingActiveVector (r + (p + 2) + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < (p + 2) + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      storedSignedSequenceFirstTwoTailNormalizedFacts fp r p A_hat alpha /\
+      storedSignedSequenceTailNormalizedLoopRecords fp r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)
+
+/-- Recursive package of the raw source-facing tail-local normalized reflector
+facts at every twice-trailing stored-loop stage.
+
+This is the premise surface that the rounded stored-loop proof should target:
+the usual recurrence and leading-block nonbreakdown hypotheses, plus the
+tail-local normalized-vector equality and self-dot fact at each one-tail or
+first-two recursive stage. The theorem below packages these raw fields into
+the named record surface used by the normalized-loop/source-closure pipeline. -/
+def storedSignedSequenceTailNormalizedLoopRawFacts
+    (fp : FPModel) :
+    (r p : Nat) ->
+      (Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real) ->
+      (Nat -> Real) -> Prop
+  | _r, 0, _A_hat, _alpha => True
+  | _r, 1, A_hat, alpha =>
+      (forall k (hk : k < 1 + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep fp (_r + 1 + 2) (1 + 2) k
+            (householderTrailingActiveVector (_r + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= _r + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (_r + 1 + 2)
+              (householderTrailingActiveVector (_r + 1 + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : 1 + 2 <= _r + 1 + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < 1 + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= _r + 1 + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      householderTrailingActiveVector (_r + 1)
+          (0 : Fin (_r + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector fp (Nat.succ_pos _r)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2)))) /\
+      (Finset.univ : Finset (Fin (_r + 1))).sum
+        (fun i =>
+          householderTrailingActiveVector (_r + 1)
+              (0 : Fin (_r + 1))
+              (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+              (alpha 2) i *
+            householderTrailingActiveVector (_r + 1)
+              (0 : Fin (_r + 1))
+              (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+              (alpha 2) i) =
+        2
+  | r, p + 2, A_hat, alpha =>
+      (forall k (hk : k < (p + 2) + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep fp (r + (p + 2) + 2)
+            ((p + 2) + 2) k
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (r + (p + 2) + 2)
+              (householderTrailingActiveVector (r + (p + 2) + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < (p + 2) + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))) /\
+      (Finset.univ : Finset (Fin (r + (p + 2)))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + (p + 2))
+              (0 : Fin (r + (p + 2)))
+              (fun a =>
+                A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+              (alpha 2) i *
+            householderTrailingActiveVector (r + (p + 2))
+              (0 : Fin (r + (p + 2)))
+              (fun a =>
+                A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+              (alpha 2) i) =
+        2 /\
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))) /\
+      (Finset.univ : Finset (Fin (r + (p + 1)))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + (p + 1))
+              (0 : Fin (r + (p + 1)))
+              (fun a =>
+                A_hat 3 a.succ.succ.succ
+                  ((0 : Fin (p + 1)).succ.succ.succ))
+              (alpha 3) i *
+            householderTrailingActiveVector (r + (p + 1))
+              (0 : Fin (r + (p + 1)))
+              (fun a =>
+                A_hat 3 a.succ.succ.succ
+                  ((0 : Fin (p + 1)).succ.succ.succ))
+              (alpha 3) i) =
+        2 /\
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)
+
+/-- One-column raw normalized-loop facts from actual stage-two twice-trailing
+facts.
+
+This is the normalized-loop analogue of
+`storedSignedSequenceTwiceTrailingSourceClosureData_one_of_twice_trailing_stage_facts`.
+The hard hypotheses are still the source-faithful tail-vector equality and
+self-dot fact; this theorem only packages them, with the standard recurrence
+and leading-block nonbreakdown hypotheses, into
+`storedSignedSequenceTailNormalizedLoopRawFacts`. -/
+theorem storedSignedSequenceTailNormalizedLoopRawFacts_one_of_twice_trailing_stage_facts
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < 1 + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 1 + 2) (1 + 2) k
+          (householderTrailingActiveVector (m + 1 + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= m + 1 + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 1 + 2)
+            (householderTrailingActiveVector (m + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= m + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < 1 + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : 1 + 2 <= m + 1 + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecTailTail :
+      householderTrailingActiveVector (m + 1)
+          (Fin.mk 0 (Nat.succ_pos m))
+          (fun a =>
+            trailingPanel (trailingPanel (A_hat 2)) a
+              (Fin.mk 0 (Nat.succ_pos 0)))
+          (alpha 2) =
+        fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2)))))
+    (hselfTailTail :
+      (Finset.univ : Finset (Fin (m + 1))).sum
+        (fun i =>
+          householderTrailingActiveVector (m + 1)
+              (Fin.mk 0 (Nat.succ_pos m))
+              (fun a =>
+                trailingPanel (trailingPanel (A_hat 2)) a
+                  (Fin.mk 0 (Nat.succ_pos 0)))
+              (alpha 2) i *
+            householderTrailingActiveVector (m + 1)
+              (Fin.mk 0 (Nat.succ_pos m))
+              (fun a =>
+                trailingPanel (trailingPanel (A_hat 2)) a
+                  (Fin.mk 0 (Nat.succ_pos 0)))
+              (alpha 2) i) =
+        2) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp m 1 A_hat alpha := by
+  refine ⟨hStep, hdetLead, ?_, ?_⟩
+  · simpa [trailingPanel, panelFirstColumn] using hvecTailTail
+  · simpa [trailingPanel, panelFirstColumn] using hselfTailTail
+
+/-- Two-step raw normalized-loop facts from actual stage-two/stage-three
+twice-trailing facts plus recursive raw tail facts.
+
+This constructor is the direct raw-normalized counterpart of
+`storedSignedSequenceTwiceTrailingSourceClosureData_succ_succ_of_twice_trailing_stage_facts`:
+the current twice-trailing stage supplies the first two source-faithful
+normalized-vector/self-dot facts, and the twice-shrunk tail supplies the
+recursive raw package. -/
+theorem storedSignedSequenceTailNormalizedLoopRawFacts_succ_succ_of_twice_trailing_stage_facts
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < (p + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + (p + 2) + 2) ((p + 2) + 2) k
+          (householderTrailingActiveVector (r + (p + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + (p + 2) + 2)
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < (p + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecTailTail0 :
+      householderTrailingActiveVector (r + (p + 2))
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+          (fun a =>
+            trailingPanel (trailingPanel (A_hat 2)) a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+          (alpha 2) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))))
+    (hselfTailTail0 :
+      (Finset.univ : Finset (Fin (r + (p + 2)))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + (p + 2))
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+              (fun a =>
+                trailingPanel (trailingPanel (A_hat 2)) a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+              (alpha 2) i *
+            householderTrailingActiveVector (r + (p + 2))
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+              (fun a =>
+                trailingPanel (trailingPanel (A_hat 2)) a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+              (alpha 2) i) =
+        2)
+    (hvecTailTail1 :
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+          (alpha 3) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))))
+    (hselfTailTail1 :
+      (Finset.univ : Finset (Fin (r + (p + 1)))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + (p + 1))
+              (0 : Fin (r + (p + 1)))
+              (panelFirstColumn (Nat.succ_pos p)
+                (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+              (alpha 3) i *
+            householderTrailingActiveVector (r + (p + 1))
+              (0 : Fin (r + (p + 1)))
+              (panelFirstColumn (Nat.succ_pos p)
+                (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+              (alpha 3) i) =
+        2)
+    (htail :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp r (p + 2) A_hat alpha := by
+  refine ⟨hStep, hdetLead, ?_, ?_, ?_, ?_, htail⟩
+  · simpa [trailingPanel, panelFirstColumn] using hvecTailTail0
+  · simpa [trailingPanel, panelFirstColumn] using hselfTailTail0
+  · simpa [trailingPanel, panelFirstColumn] using hvecTailTail1
+  · simpa [trailingPanel, panelFirstColumn] using hselfTailTail1
+
+/-- One-column raw normalized-loop facts from an explicit source-faithful
+normalization record for the stage-two twice-trailing reflector.
+
+The recurrence and leading-block nonbreakdown fields remain the ordinary
+stored-loop hypotheses; this theorem only turns the new per-stage
+source-faithful normalization record into the existing raw loop package. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_one_of_sourceFaithfulNormalization
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < 1 + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 1 + 2) (1 + 2) k
+          (householderTrailingActiveVector (m + 1 + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= m + 1 + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 1 + 2)
+            (householderTrailingActiveVector (m + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= m + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < 1 + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : 1 + 2 <= m + 1 + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hsrc :
+      sourceFaithfulHouseholderNormalization fp (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (A_hat 2))))
+        (householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2))) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp m 1 A_hat alpha :=
+  storedSignedSequenceTailNormalizedLoopRawFacts_one_of_twice_trailing_stage_facts
+    fp A_hat alpha hStep hdetLead hsrc.vector_eq hsrc.self_dot
+
+/-- Two-step raw normalized-loop facts from explicit source-faithful
+normalization records for the stage-two and stage-three twice-trailing
+reflectors. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_succ_succ_of_sourceFaithfulNormalizations
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < (p + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + (p + 2) + 2)
+          ((p + 2) + 2) k
+          (householderTrailingActiveVector (r + (p + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + (p + 2) + 2)
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < (p + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hsrc2 :
+      sourceFaithfulHouseholderNormalization fp
+        (show 0 < r + (p + 2) by omega)
+        (panelFirstColumn (Nat.succ_pos (p + 1))
+          (trailingPanel (trailingPanel (A_hat 2))))
+        (householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2)))
+    (hsrc3 :
+      sourceFaithfulHouseholderNormalization fp
+        (show 0 < r + (p + 1) by omega)
+        (panelFirstColumn (Nat.succ_pos p)
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+        (householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3)))
+    (htail :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp r (p + 2) A_hat alpha :=
+  storedSignedSequenceTailNormalizedLoopRawFacts_succ_succ_of_twice_trailing_stage_facts
+    fp r p A_hat alpha hStep hdetLead
+    hsrc2.vector_eq hsrc2.self_dot hsrc3.vector_eq hsrc3.self_dot htail
+
+/-- Higham, 2nd ed., Chapter 19, Section 19.8/Theorem 19.13 support:
+recursive all-stage package of per-stage source-faithful Householder
+normalization certificates for the twice-trailing stored-loop route.
+
+The package includes the ordinary stored-loop recurrence and leading-block
+nonbreakdown fields, then records the remaining mathematical certificate at
+each active twice-trailing stage: the tail active vector is the computed
+normalized reflector and has self-dot `2`. -/
+def storedSignedSequenceTailSourceFaithfulNormalizations
+    (fp : FPModel) :
+    (r p : Nat) ->
+      (Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real) ->
+      (Nat -> Real) -> Prop
+  | _r, 0, _A_hat, _alpha => True
+  | _r, 1, A_hat, alpha =>
+      (forall k (hk : k < 1 + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep fp (_r + 1 + 2) (1 + 2) k
+            (householderTrailingActiveVector (_r + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= _r + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (_r + 1 + 2)
+              (householderTrailingActiveVector (_r + 1 + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : 1 + 2 <= _r + 1 + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < 1 + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= _r + 1 + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      sourceFaithfulHouseholderNormalization fp (Nat.succ_pos _r)
+        (panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (A_hat 2))))
+        (householderTrailingActiveVector (_r + 1)
+          (0 : Fin (_r + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2))
+  | r, p + 2, A_hat, alpha =>
+      (forall k (hk : k < (p + 2) + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep fp (r + (p + 2) + 2)
+            ((p + 2) + 2) k
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (r + (p + 2) + 2)
+              (householderTrailingActiveVector (r + (p + 2) + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < (p + 2) + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      sourceFaithfulHouseholderNormalization fp
+        (show 0 < r + (p + 2) by omega)
+        (panelFirstColumn (Nat.succ_pos (p + 1))
+          (trailingPanel (trailingPanel (A_hat 2))))
+        (householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2)) /\
+      sourceFaithfulHouseholderNormalization fp
+        (show 0 < r + (p + 1) by omega)
+        (panelFirstColumn (Nat.succ_pos p)
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+        (householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3)) /\
+      storedSignedSequenceTailSourceFaithfulNormalizations fp r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)
+
+/-- The recursive source-faithful normalization package assembles the raw
+tail-normalized loop facts used by the source-closure pipeline. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_of_sourceFaithfulNormalizations
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hsrcs :
+      storedSignedSequenceTailSourceFaithfulNormalizations fp r p
+        A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTailSourceFaithfulNormalizations fp r p
+              A_hat alpha ->
+            storedSignedSequenceTailNormalizedLoopRawFacts fp r p
+              A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hsrcs
+    trivial
+  · intro r A_hat alpha hsrcs
+    rcases hsrcs with ⟨hStep, hdetLead, hsrc⟩
+    exact
+      storedSignedSequenceTailNormalizedLoopRawFacts_one_of_sourceFaithfulNormalization
+        fp A_hat alpha hStep hdetLead hsrc
+  · intro p ih _ihSucc r A_hat alpha hsrcs
+    rcases hsrcs with ⟨hStep, hdetLead, hsrc2, hsrc3, htailSrcs⟩
+    exact
+      storedSignedSequenceTailNormalizedLoopRawFacts_succ_succ_of_sourceFaithfulNormalizations
+        fp r p A_hat alpha hStep hdetLead hsrc2 hsrc3
+        (ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) htailSrcs)
+
+/-- One-column raw normalized-loop facts from full stage-two zero-prefixed
+stored-loop facts and the standard leading-block nonbreakdown hypothesis.
+
+This is the raw normalized-loop counterpart of the full-stage source-closure
+constructor: the full pivot-2 zero-prefix/self-dot facts are first reduced to
+the twice-trailing source-tail facts, and then packaged into
+`storedSignedSequenceTailNormalizedLoopRawFacts`. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_one_of_full_stage_two_zero_prefixed_facts_and_leadingBlock_det_ne_zero
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < 1 + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 1 + 2) (1 + 2) k
+          (householderTrailingActiveVector (m + 1 + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= m + 1 + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 1 + 2)
+            (householderTrailingActiveVector (m + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= m + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < 1 + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : 1 + 2 <= m + 1 + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecFull :
+      householderTrailingActiveVector (m + 1 + 2)
+          ((0 : Fin (m + 1)).succ.succ)
+          (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        Fin.cases 0 (Fin.cases 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos 0)
+              (trailingPanel (trailingPanel (A_hat 2)))))))
+    (hselfFull :
+      (Finset.univ : Finset (Fin (m + 1 + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector (m + 1 + 2)
+              ((0 : Fin (m + 1)).succ.succ)
+              (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+              (alpha 2) i *
+            householderTrailingActiveVector (m + 1 + 2)
+              ((0 : Fin (m + 1)).succ.succ)
+              (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+              (alpha 2) i) =
+        2) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp m 1 A_hat alpha := by
+  let hsrc : storedSignedSequenceOneTailReflectorFacts fp A_hat alpha :=
+    storedSignedSequenceOneTailReflectorFacts_of_full_stage_two_zero_prefixed_facts
+      fp A_hat alpha hvecFull hselfFull
+      (storedSignedSequenceOneTailFullStageFacts_tail_det_ne_zero_of_leadingBlock_det_ne_zero
+        fp A_hat alpha hStep hdetLead)
+  exact
+    storedSignedSequenceTailNormalizedLoopRawFacts_one_of_twice_trailing_stage_facts
+      fp A_hat alpha hStep hdetLead hsrc.hvecTailTail hsrc.hselfTailTail
+
+/-- Two-step raw normalized-loop facts from full stage-two/stage-three
+zero-prefixed stored-loop facts and standard leading-block nonbreakdown.
+
+The full pivot-2 and pivot-3 facts are reduced through the existing
+first-two source-tail packager.  The stage-three synthetic-panel field in that
+package is rewritten back to the real `A_hat 3` triple-trailing source panel
+before the raw recursive constructor is applied. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_succ_succ_of_full_stage_two_three_zero_prefixed_facts_and_leadingBlock_det_ne_zero
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < (p + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + (p + 2) + 2) ((p + 2) + 2) k
+          (householderTrailingActiveVector (r + (p + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + (p + 2) + 2)
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < (p + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecFull2 :
+      householderTrailingActiveVector (r + (p + 2) + 2)
+          ((0 : Fin (r + (p + 2))).succ.succ)
+          (fun a => A_hat 2 a ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        (((Fin.cases 0 (Fin.cases 0
+          (fl_householderNormalizedVector fp
+            (show 0 < r + (p + 2) by omega)
+            (panelFirstColumn (Nat.succ_pos (p + 1))
+              (trailingPanel (trailingPanel (A_hat 2))))))) :
+          Fin (r + (p + 2) + 2) -> Real)))
+    (hselfFull2 :
+      (Finset.univ : Finset (Fin (r + (p + 2) + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + (p + 2) + 2)
+              ((0 : Fin (r + (p + 2))).succ.succ)
+              (fun a => A_hat 2 a ((0 : Fin (p + 2)).succ.succ))
+              (alpha 2) i *
+            householderTrailingActiveVector (r + (p + 2) + 2)
+              ((0 : Fin (r + (p + 2))).succ.succ)
+              (fun a => A_hat 2 a ((0 : Fin (p + 2)).succ.succ))
+              (alpha 2) i) =
+        2)
+    (hvecFull3 :
+      householderTrailingActiveVector (r + (p + 2) + 2)
+          ((0 : Fin (r + (p + 1))).succ.succ.succ)
+          (fun a => A_hat 3 a ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        (((Fin.cases 0 (Fin.cases 0 (Fin.cases 0
+          (fl_householderNormalizedVector fp
+            (show 0 < r + (p + 1) by omega)
+            (panelFirstColumn (Nat.succ_pos p)
+              (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))))) :
+          Fin (r + (p + 2) + 2) -> Real))))
+    (hselfFull3 :
+      (Finset.univ : Finset (Fin (r + (p + 2) + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + (p + 2) + 2)
+              ((0 : Fin (r + (p + 1))).succ.succ.succ)
+              (fun a => A_hat 3 a ((0 : Fin (p + 1)).succ.succ.succ))
+              (alpha 3) i *
+            householderTrailingActiveVector (r + (p + 2) + 2)
+              ((0 : Fin (r + (p + 1))).succ.succ.succ)
+              (fun a => A_hat 3 a ((0 : Fin (p + 1)).succ.succ.succ))
+              (alpha 3) i) =
+        2)
+    (htail :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp r (p + 2) A_hat alpha := by
+  let hdets :=
+    storedSignedSequenceFirstTwoFullStageFacts_tail_dets_ne_zero_of_leadingBlock_det_ne_zero
+      fp r p A_hat alpha hStep hdetLead
+  let hsrc : storedSignedSequenceFirstTwoTailReflectorFacts fp A_hat alpha :=
+    storedSignedSequenceFirstTwoTailReflectorFacts_of_full_stage_two_three_zero_prefixed_facts
+      fp r p A_hat alpha hStep hvecFull2 hselfFull2
+      hdets.1 hdets.2 hvecFull3 hselfFull3
+  have hselfTailTail0_norm :
+      (Finset.univ : Finset (Fin (r + (p + 2)))).sum
+        (fun i =>
+          fl_householderNormalizedVector fp
+              (show 0 < r + (p + 2) by omega)
+              (panelFirstColumn (Nat.succ_pos (p + 1))
+                (trailingPanel (trailingPanel (A_hat 2)))) i *
+            fl_householderNormalizedVector fp
+              (show 0 < r + (p + 2) by omega)
+              (panelFirstColumn (Nat.succ_pos (p + 1))
+                (trailingPanel (trailingPanel (A_hat 2)))) i) =
+        2 := by
+    rw [<- hsrc.hvecTailTail0]
+    exact hsrc.hselfTailTail0
+  have hbetaTailTail0_norm :
+      householderBetaSpec (r + (p + 2))
+          (fl_householderNormalizedVector fp
+            (show 0 < r + (p + 2) by omega)
+            (panelFirstColumn (Nat.succ_pos (p + 1))
+              (trailingPanel (trailingPanel (A_hat 2))))) =
+        1 := by
+    exact
+      householderBetaSpec_eq_one_of_inner_self_eq_two (r + (p + 2))
+        (fl_householderNormalizedVector fp
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))))
+        hselfTailTail0_norm
+  have htailStep0 :
+      trailingPanel (trailingPanel (A_hat 3)) =
+        fl_householderStoredPanelStep fp (r + (p + 2)) (p + 2) 0
+          (fl_householderNormalizedVector fp
+            (show 0 < r + (p + 2) by omega)
+            (panelFirstColumn (Nat.succ_pos (p + 1))
+              (trailingPanel (trailingPanel (A_hat 2)))))
+          1
+          (trailingPanel (trailingPanel (A_hat 2))) := by
+    have h :=
+      storedSignedSequence_twice_trailing_step_of_source_step
+        (fp := fp) (m := r + (p + 2)) (p := p + 2)
+        (hmn := by omega)
+        (A_hat := A_hat) (alpha := alpha) hStep 0 (by omega)
+    change trailingPanel (trailingPanel (A_hat 3)) =
+      fl_householderStoredPanelStep fp (r + (p + 2)) (p + 2) 0
+        (householderTrailingActiveVector (r + (p + 2))
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+          (fun a =>
+            trailingPanel (trailingPanel (A_hat 2)) a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+          (alpha 2))
+        (householderBetaSpec (r + (p + 2))
+          (householderTrailingActiveVector (r + (p + 2))
+            (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+            (fun a =>
+              trailingPanel (trailingPanel (A_hat 2)) a
+                (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+            (alpha 2)))
+        (trailingPanel (trailingPanel (A_hat 2))) at h
+    rw [hsrc.hvecTailTail0, hbetaTailTail0_norm] at h
+    simpa using h
+  exact
+    storedSignedSequenceTailNormalizedLoopRawFacts_succ_succ_of_twice_trailing_stage_facts
+      fp r p A_hat alpha hStep hdetLead
+      hsrc.hvecTailTail0 hsrc.hselfTailTail0
+      (by simpa [htailStep0] using hsrc.hvecTailTail1)
+      (by simpa [htailStep0] using hsrc.hselfTailTail1)
+      htail
+
+/-- Recursive exact-arithmetic package of tail-local normalized-vector
+equalities at every twice-trailing stored-loop stage.
+
+Unlike `storedSignedSequenceTailNormalizedLoopRawFacts`, this exact-model
+surface does not ask callers to supply the self-dot fields.  The theorem below
+derives them from the vector equalities and the usual stage-local leading-block
+nonbreakdown hypotheses. -/
+def storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) :
+    (r p : Nat) ->
+      (Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real) ->
+      (Nat -> Real) -> Prop
+  | _r, 0, _A_hat, _alpha => True
+  | _r, 1, A_hat, alpha =>
+      (forall k (hk : k < 1 + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep
+            (FPModel.exactWithUnitRoundoff u0 hu0) (_r + 1 + 2) (1 + 2) k
+            (householderTrailingActiveVector (_r + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= _r + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (_r + 1 + 2)
+              (householderTrailingActiveVector (_r + 1 + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : 1 + 2 <= _r + 1 + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < 1 + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= _r + 1 + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      householderTrailingActiveVector (_r + 1)
+          (0 : Fin (_r + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos _r)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2))))
+  | r, p + 2, A_hat, alpha =>
+      (forall k (hk : k < (p + 2) + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep
+            (FPModel.exactWithUnitRoundoff u0 hu0) (r + (p + 2) + 2)
+            ((p + 2) + 2) k
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (r + (p + 2) + 2)
+              (householderTrailingActiveVector (r + (p + 2) + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < (p + 2) + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))) /\
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))) /\
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)
+
+/-- Recursive package of tail-local normalized-vector equalities at every
+twice-trailing stored-loop stage for an arbitrary model.
+
+Unlike `storedSignedSequenceTailNormalizedLoopRawFacts`, this surface asks only
+for vector equalities, recurrence, and leading-block nonbreakdown.  A separate
+model-level normalization hypothesis supplies the self-dot fields. -/
+def storedSignedSequenceTailNormalizedLoopVectorEqFacts
+    (fp : FPModel) :
+    (r p : Nat) ->
+      (Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real) ->
+      (Nat -> Real) -> Prop
+  | _r, 0, _A_hat, _alpha => True
+  | _r, 1, A_hat, alpha =>
+      (forall k (hk : k < 1 + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep fp (_r + 1 + 2) (1 + 2) k
+            (householderTrailingActiveVector (_r + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= _r + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (_r + 1 + 2)
+              (householderTrailingActiveVector (_r + 1 + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : 1 + 2 <= _r + 1 + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < 1 + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= _r + 1 + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      householderTrailingActiveVector (_r + 1)
+          (0 : Fin (_r + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector fp (Nat.succ_pos _r)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2))))
+  | r, p + 2, A_hat, alpha =>
+      (forall k (hk : k < (p + 2) + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep fp (r + (p + 2) + 2)
+            ((p + 2) + 2) k
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (r + (p + 2) + 2)
+              (householderTrailingActiveVector (r + (p + 2) + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < (p + 2) + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))) /\
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))) /\
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)
+
+/-- Exact-arithmetic tail-local vector equalities assemble the recursive
+source-faithful normalization package.
+
+This proves that the all-stage source-faithful certificate surface is inhabited
+in `FPModel.exactWithUnitRoundoff`: the existing exact constructors derive the
+self-dot fields from the vector equalities and standard leading-block
+nonbreakdown hypotheses. -/
+theorem
+    storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceTailSourceFaithfulNormalizations
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+              u0 hu0 r p A_hat alpha ->
+            storedSignedSequenceTailSourceFaithfulNormalizations
+              (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hvecs
+    trivial
+  · intro r A_hat alpha hvecs
+    rcases hvecs with ⟨hStep, hdetLead, hvecTail⟩
+    exact
+      ⟨hStep, hdetLead,
+        sourceFaithfulHouseholderNormalization_of_tail_vector_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+          u0 hu0 A_hat alpha hStep hdetLead hvecTail⟩
+  · intro p ih _ihSucc r A_hat alpha hvecs
+    rcases hvecs with ⟨hStep, hdetLead, hvecTail2, hvecTail3, htailVecs⟩
+    rcases
+        sourceFaithfulHouseholderNormalizations_of_tail_vectors_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+          u0 hu0 r p A_hat alpha hStep hdetLead hvecTail2 hvecTail3 with
+      ⟨hsrc2, hsrc3⟩
+    exact
+      ⟨hStep, hdetLead,
+        hsrc2, hsrc3,
+        ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) htailVecs⟩
+
+/-- Tail-local vector equalities assemble the recursive source-faithful
+normalization package for any model satisfying the source-faithful
+normalization predicate. -/
+theorem
+    storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p A_hat alpha) :
+    storedSignedSequenceTailSourceFaithfulNormalizations fp r p A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+              A_hat alpha ->
+            storedSignedSequenceTailSourceFaithfulNormalizations fp r p
+              A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hvecs
+    trivial
+  · intro r A_hat alpha hvecs
+    rcases hvecs with ⟨hStep, hdetLead, hvecTail⟩
+    exact
+      ⟨hStep, hdetLead,
+        sourceFaithfulHouseholderNormalization_of_tail_vector_eq_and_leadingBlock_det_ne_zero_of_normalizationModel
+          fp hmodel A_hat alpha hStep hdetLead hvecTail⟩
+  · intro p ih _ihSucc r A_hat alpha hvecs
+    rcases hvecs with ⟨hStep, hdetLead, hvecTail2, hvecTail3, htailVecs⟩
+    rcases
+        sourceFaithfulHouseholderNormalizations_of_tail_vectors_eq_and_leadingBlock_det_ne_zero_of_normalizationModel
+          fp hmodel r p A_hat alpha hStep hdetLead hvecTail2 hvecTail3 with
+      ⟨hsrc2, hsrc3⟩
+    exact
+      ⟨hStep, hdetLead,
+        hsrc2, hsrc3,
+        ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) htailVecs⟩
+
+/-- Exact-arithmetic tail-local vector equalities assemble the raw all-stage
+tail-normalized facts, including the self-dot fields.
+
+This removes the self-dot facts from the exact-model caller surface: the
+self-dot equalities are derived at each recursive stage from the computed exact
+normalized vector, the vector equality, and the standard leading-block
+nonbreakdown hypothesis. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRawFacts
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+              u0 hu0 r p A_hat alpha ->
+            storedSignedSequenceTailNormalizedLoopRawFacts
+              (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hvecs
+    trivial
+  · intro r A_hat alpha hvecs
+    rcases hvecs with ⟨hStep, hdetLead, hvecTail⟩
+    have hfacts :
+        storedSignedSequenceOneTailNormalizedFacts
+          (FPModel.exactWithUnitRoundoff u0 hu0) A_hat alpha :=
+      storedSignedSequenceOneTailNormalizedFacts_of_tail_vector_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+        u0 hu0 A_hat alpha hStep hdetLead hvecTail
+    exact ⟨hStep, hdetLead, hfacts.hvecTail, hfacts.hselfTail⟩
+  · intro p ih _ihSucc r A_hat alpha hvecs
+    rcases hvecs with ⟨hStep, hdetLead, hvecTail2, hvecTail3, htailVecs⟩
+    have hfacts :
+        storedSignedSequenceFirstTwoTailNormalizedFacts
+          (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha :=
+      storedSignedSequenceFirstTwoTailNormalizedFacts_of_tail_vectors_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha hStep hdetLead hvecTail2 hvecTail3
+    exact
+      ⟨hStep, hdetLead, hfacts.hvecTail2, hfacts.hselfTail2,
+        hfacts.hvecTail3, hfacts.hselfTail3,
+        ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) htailVecs⟩
+
+/-- Raw source-facing tail-local normalized loop facts assemble the named
+recursive record package.
+
+This closes the bookkeeping layer between the explicit rounded/source-faithful
+facts that remain to be proved and the named record surface used by the
+normalized-loop/source-closure bridge. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hraw :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha ->
+            storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hraw
+    trivial
+  · intro r A_hat alpha hraw
+    rcases hraw with ⟨hStep, hdetLead, hvecTail, hselfTail⟩
+    exact
+      ⟨hStep, hdetLead,
+        { hvecTail := hvecTail, hselfTail := hselfTail }⟩
+  · intro p ih _ihSucc r A_hat alpha hraw
+    rcases hraw with
+      ⟨hStep, hdetLead, hvecTail2, hselfTail2, hvecTail3, hselfTail3,
+        htailRaw⟩
+    exact
+      ⟨hStep, hdetLead,
+        { hvecTail2 := hvecTail2, hselfTail2 := hselfTail2,
+          hvecTail3 := hvecTail3, hselfTail3 := hselfTail3 },
+        ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) htailRaw⟩
+
+/-- The recursive source-faithful normalization package assembles the named
+tail-normalized record package. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRecords_of_sourceFaithfulNormalizations
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hsrcs :
+      storedSignedSequenceTailSourceFaithfulNormalizations fp r p
+        A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha :=
+  storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
+    fp r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_sourceFaithfulNormalizations
+      fp r p A_hat alpha hsrcs)
+
+/-- Tail-local vector equalities assemble the raw normalized-loop facts under
+any model satisfying the source-faithful normalization predicate. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha :=
+  storedSignedSequenceTailNormalizedLoopRawFacts_of_sourceFaithfulNormalizations
+    fp r p A_hat alpha
+    (storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_of_normalizationModel
+      fp hmodel r p A_hat alpha hvecs)
+
+/-- Tail-local vector equalities assemble the named tail-normalized record
+package under any model satisfying the source-faithful normalization predicate. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRecords_of_tailVectorEqLoopFacts_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha :=
+  storedSignedSequenceTailNormalizedLoopRecords_of_sourceFaithfulNormalizations
+    fp r p A_hat alpha
+    (storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_of_normalizationModel
+      fp hmodel r p A_hat alpha hvecs)
+
+/-- The named recursive tail-normalized record package also assembles the raw
+source-facing normalized-loop package.
+
+This is the reverse bookkeeping bridge for
+`storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts`:
+future stored-loop proofs may target either the named record surface or the
+fully expanded raw field surface without rethreading the recurrence and
+leading-block nonbreakdown fields. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_of_tailNormalizedLoopRecords
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrecords :
+      storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha ->
+            storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hrecords
+    trivial
+  · intro r A_hat alpha hrecords
+    exact
+      storedSignedSequenceTailNormalizedLoopRawFacts_one_of_twice_trailing_stage_facts
+        fp A_hat alpha hrecords.1 hrecords.2.1
+        hrecords.2.2.hvecTail hrecords.2.2.hselfTail
+  · intro p ih _ihSucc r A_hat alpha hrecords
+    exact
+      storedSignedSequenceTailNormalizedLoopRawFacts_succ_succ_of_twice_trailing_stage_facts
+        fp r p A_hat alpha hrecords.1 hrecords.2.1
+        hrecords.2.2.1.hvecTail2 hrecords.2.2.1.hselfTail2
+        hrecords.2.2.1.hvecTail3 hrecords.2.2.1.hselfTail3
+        (ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) hrecords.2.2.2)
+
+/-- The raw source-facing and named record tail-normalized loop packages are
+equivalent bookkeeping surfaces. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_iff_tailNormalizedLoopRecords
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha <->
+      storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha := by
+  constructor
+  · intro hraw
+    exact
+      storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
+        fp r p A_hat alpha hraw
+  · intro hrecords
+    exact
+      storedSignedSequenceTailNormalizedLoopRawFacts_of_tailNormalizedLoopRecords
+        fp r p A_hat alpha hrecords
+
+/-- Exact-arithmetic tail-local vector equalities assemble the named recursive
+tail-normalized record package. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRecords_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRecords
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha :=
+  storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
+    (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hvecs)
+
+/-- The recursive named tail-local normalized-record package assembles the
+explicit normalized full-stage loop facts.
+
+This closes the assembly side of the rounded route: once every recursive
+stored-loop stage supplies its named tail-local normalized record, together
+with the standard recurrence and leading-block nonbreakdown hypotheses, the
+existing normalized-loop/full-stage/source-closure pipeline can be used. -/
+theorem
+    storedSignedSequenceFullStageNormalizedLoopFacts_of_tailNormalizedLoopRecords
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrecords :
+      storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha) :
+    storedSignedSequenceFullStageNormalizedLoopFacts fp r p A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha ->
+            storedSignedSequenceFullStageNormalizedLoopFacts fp r p A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hrecords
+    exact
+      storedSignedSequenceFullStageNormalizedLoopFacts_zero fp r A_hat alpha
+  · intro r A_hat alpha hrecords
+    rcases hrecords with ⟨hStep, hdetLead, hfacts⟩
+    exact
+      storedSignedSequenceFullStageNormalizedLoopFacts_one_of_tailNormalizedFacts_and_leadingBlock_det_ne_zero
+        fp A_hat alpha hStep hdetLead hfacts
+  · intro p ih _ihSucc r A_hat alpha hrecords
+    rcases hrecords with ⟨hStep, hdetLead, hfacts, htailRecords⟩
+    exact
+      storedSignedSequenceFullStageNormalizedLoopFacts_succ_succ_of_tailNormalizedFacts_and_leadingBlock_det_ne_zero
+        fp r p A_hat alpha hStep hdetLead hfacts
+        (ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) htailRecords)
+
+/-- Raw source-facing tail-local normalized loop facts assemble the explicit
+normalized full-stage loop facts. -/
+theorem
+    storedSignedSequenceFullStageNormalizedLoopFacts_of_tailNormalizedLoopRawFacts
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hraw :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha) :
+    storedSignedSequenceFullStageNormalizedLoopFacts fp r p A_hat alpha :=
+  storedSignedSequenceFullStageNormalizedLoopFacts_of_tailNormalizedLoopRecords
+    fp r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
+      fp r p A_hat alpha hraw)
+
+/-- Exact-arithmetic tail-local vector equalities assemble the explicit
+normalized full-stage loop facts. -/
+theorem
+    storedSignedSequenceFullStageNormalizedLoopFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceFullStageNormalizedLoopFacts
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha :=
+  storedSignedSequenceFullStageNormalizedLoopFacts_of_tailNormalizedLoopRawFacts
+    (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hvecs)
+
+/-- Tail-local vector equalities assemble the full-stage normalized-loop facts
+under any model satisfying the source-faithful normalization predicate. -/
+theorem
+    storedSignedSequenceFullStageNormalizedLoopFacts_of_tailVectorEqLoopFacts_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceFullStageNormalizedLoopFacts fp r p A_hat alpha :=
+  storedSignedSequenceFullStageNormalizedLoopFacts_of_tailNormalizedLoopRawFacts
+    fp r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_of_normalizationModel
+      fp hmodel r p A_hat alpha hvecs)
+
 /-- Odd recursive-tail normalized loop facts from current first-two full-stage
 data and absolute stage-four facts. -/
 theorem
@@ -15264,6 +18308,86 @@ theorem
     fp r p A_hat alpha
     (storedSignedSequenceTwiceTrailingFullStageSourceClosureData_of_fullStageNormalizedLoopFacts
       fp r p A_hat alpha hfacts)
+
+/-- The recursive named tail-local normalized-record package assembles raw
+source-closure data through the existing normalized-loop bridge. -/
+theorem
+    storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRecords
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrecords :
+      storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingSourceClosureData fp r p A_hat alpha :=
+  storedSignedSequenceTwiceTrailingSourceClosureData_of_fullStageNormalizedLoopFacts
+    fp r p A_hat alpha
+    (storedSignedSequenceFullStageNormalizedLoopFacts_of_tailNormalizedLoopRecords
+      fp r p A_hat alpha hrecords)
+
+/-- Raw source-facing tail-local normalized loop facts assemble raw
+source-closure data through the existing normalized-loop bridge. -/
+theorem
+    storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRawFacts
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hraw :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingSourceClosureData fp r p A_hat alpha :=
+  storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRecords
+    fp r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
+      fp r p A_hat alpha hraw)
+
+/-- The recursive source-faithful normalization package assembles raw
+source-closure data through the tail-normalized loop bridge. -/
+theorem
+    storedSignedSequenceTwiceTrailingSourceClosureData_of_sourceFaithfulNormalizations
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hsrcs :
+      storedSignedSequenceTailSourceFaithfulNormalizations fp r p
+        A_hat alpha) :
+    storedSignedSequenceTwiceTrailingSourceClosureData fp r p A_hat alpha :=
+  storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRawFacts
+    fp r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_sourceFaithfulNormalizations
+      fp r p A_hat alpha hsrcs)
+
+/-- Exact-arithmetic tail-local vector equalities assemble raw source-closure
+data through the existing normalized-loop bridge. -/
+theorem
+    storedSignedSequenceTwiceTrailingSourceClosureData_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingSourceClosureData
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha :=
+  storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRawFacts
+    (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hvecs)
+
+/-- Tail-local vector equalities assemble raw source-closure data under any
+model satisfying the source-faithful normalization predicate. -/
+theorem
+    storedSignedSequenceTwiceTrailingSourceClosureData_of_tailVectorEqLoopFacts_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTwiceTrailingSourceClosureData fp r p A_hat alpha :=
+  storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRawFacts
+    fp r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_of_normalizationModel
+      fp hmodel r p A_hat alpha hvecs)
 
 /-- Raw source-tail closure facts imply the recursive closure-data contract. -/
 theorem storedSignedSequenceTwiceTrailingClosureData_of_sourceClosureData
@@ -16134,6 +19258,322 @@ theorem
       fp r p A_hat alpha hsource)
     hcopy
 
+/-- Final-panel bridge consuming the named recursive tail-normalized record
+package.
+
+This is the endpoint counterpart of
+`storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRecords`:
+the named per-stage records are assembled into source closure, and the existing
+source-closure final-panel bridge proves the arbitrary-width endpoint.  The
+tail-local normalized-vector and self-dot facts remain explicit in the record
+package. -/
+theorem
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_tailNormalizedLoopRecords
+    (fp : FPModel) (r p : Nat)
+    (A : Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrows : 2 <= r + p + 2)
+    (hcols : 2 <= p + 2)
+    (hinit : A_hat 0 = A)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + p + 2) (p + 2) k
+          (householderTrailingActiveVector (r + p + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + p + 2)
+            (householderTrailingActiveVector (r + p + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hvec0 :
+      householderTrailingActiveVector (r + p + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0) =
+        fl_householderNormalizedVector fp (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A))
+    (hself0 :
+      (Finset.univ : Finset (Fin (r + p + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + p + 2)
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+              (fun a =>
+                A_hat 0 a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+              (alpha 0) i *
+            householderTrailingActiveVector (r + p + 2)
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+              (fun a =>
+                A_hat 0 a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+              (alpha 0) i) =
+        2)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (r + p + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp
+              (Nat.succ_pos (r + p + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp
+              (r + p + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le (r + p)))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      (let v0 := fl_householderNormalizedVector fp
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp
+          (r + p + 2) (p + 2) 0 v0 1 A
+       householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) (alpha 1) =
+          fl_householderNormalizedVector fp (Nat.succ_pos (r + p))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))))
+    (hselfTail :
+      (let v0 := fl_householderNormalizedVector fp
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp
+          (r + p + 2) (p + 2) 0 v0 1 A
+       (Finset.univ : Finset (Fin (r + p + 1))).sum
+          (fun i =>
+            householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+                (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+                (alpha 1) i *
+              householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+                (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+                (alpha 1) i) =
+        2))
+    (hrecords :
+      storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    A_hat (p + 2) =
+      fl_householderQRPanel_R fp (r + p + 2) (p + 2) A :=
+  storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_sourceClosureData
+    fp r p A A_hat alpha hrows hcols hinit hStep hvec0 hself0
+    hdetFirst hdetTail hvecTail hselfTail
+    (storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRecords
+      fp r p A_hat alpha hrecords)
+    hcopy
+
+/-- Final-panel bridge consuming the raw recursive tail-normalized facts.
+
+This direct endpoint exposes the most expanded source-facing premise surface:
+ordinary recurrence, leading-block nonbreakdown, and tail-local normalized-vector
+and self-dot facts at every twice-trailing stage.  It packages those raw facts
+through the named records and source-closure bridge before applying the existing
+final-panel theorem. -/
+theorem
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_tailNormalizedLoopRawFacts
+    (fp : FPModel) (r p : Nat)
+    (A : Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrows : 2 <= r + p + 2)
+    (hcols : 2 <= p + 2)
+    (hinit : A_hat 0 = A)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + p + 2) (p + 2) k
+          (householderTrailingActiveVector (r + p + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + p + 2)
+            (householderTrailingActiveVector (r + p + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hvec0 :
+      householderTrailingActiveVector (r + p + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0) =
+        fl_householderNormalizedVector fp (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A))
+    (hself0 :
+      (Finset.univ : Finset (Fin (r + p + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + p + 2)
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+              (fun a =>
+                A_hat 0 a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+              (alpha 0) i *
+            householderTrailingActiveVector (r + p + 2)
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+              (fun a =>
+                A_hat 0 a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+              (alpha 0) i) =
+        2)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (r + p + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp
+              (Nat.succ_pos (r + p + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp
+              (r + p + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le (r + p)))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      (let v0 := fl_householderNormalizedVector fp
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp
+          (r + p + 2) (p + 2) 0 v0 1 A
+       householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) (alpha 1) =
+          fl_householderNormalizedVector fp (Nat.succ_pos (r + p))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))))
+    (hselfTail :
+      (let v0 := fl_householderNormalizedVector fp
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp
+          (r + p + 2) (p + 2) 0 v0 1 A
+       (Finset.univ : Finset (Fin (r + p + 1))).sum
+          (fun i =>
+            householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+                (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+                (alpha 1) i *
+              householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+                (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+                (alpha 1) i) =
+        2))
+    (hraw :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    A_hat (p + 2) =
+      fl_householderQRPanel_R fp (r + p + 2) (p + 2) A :=
+  storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_tailNormalizedLoopRecords
+    fp r p A A_hat alpha hrows hcols hinit hStep hvec0 hself0
+    hdetFirst hdetTail hvecTail hselfTail
+    (storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
+      fp r p A_hat alpha hraw)
+    hcopy
+
+/-- Higham, 2nd ed., Chapter 19, Section 19.8/Theorem 19.13 support:
+final-panel bridge from source-faithful normalization certificates.
+
+This endpoint replaces the explicit top-level and recursive normalized-vector
+equality/self-dot fields by source-faithful certificates.  It is still a
+conditional stored-loop theorem: the certificates themselves remain the rounded
+normalization obligations. -/
+theorem
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_sourceFaithfulNormalizations
+    (fp : FPModel) (r p : Nat)
+    (A : Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrows : 2 <= r + p + 2)
+    (hcols : 2 <= p + 2)
+    (hinit : A_hat 0 = A)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + p + 2) (p + 2) k
+          (householderTrailingActiveVector (r + p + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + p + 2)
+            (householderTrailingActiveVector (r + p + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hsrc0 :
+      sourceFaithfulHouseholderNormalization fp
+        (Nat.succ_pos (r + p + 1))
+        (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+        (householderTrailingActiveVector (r + p + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0)))
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (r + p + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp
+              (Nat.succ_pos (r + p + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp
+              (r + p + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le (r + p)))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hsrcTail :
+      (let v0 := fl_householderNormalizedVector fp
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp
+          (r + p + 2) (p + 2) 0 v0 1 A
+       sourceFaithfulHouseholderNormalization fp (Nat.succ_pos (r + p))
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+          (householderTrailingActiveVector (r + p + 1)
+            (0 : Fin (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+            (alpha 1))))
+    (hsrcs :
+      storedSignedSequenceTailSourceFaithfulNormalizations fp r p
+        A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    A_hat (p + 2) =
+      fl_householderQRPanel_R fp (r + p + 2) (p + 2) A :=
+  storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_tailNormalizedLoopRawFacts
+    fp r p A A_hat alpha hrows hcols hinit hStep
+    hsrc0.vector_eq hsrc0.self_dot hdetFirst hdetTail
+    (by simpa using hsrcTail.vector_eq)
+    (by simpa using hsrcTail.self_dot)
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_sourceFaithfulNormalizations
+      fp r p A_hat alpha hsrcs)
+    hcopy
+
 /-- Full-stage source-closure data implies the older recursive closure-data
 contract.
 
@@ -16172,6 +19612,281 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_of_sourceClosureData
     (storedSignedSequenceTwiceTrailingClosureData_of_sourceClosureData
       fp r p A_hat alpha hdata)
     hcopy
+
+/-- Named tail-local normalized records imply the twice-trailing final-closure
+predicate.
+
+This is the final-closed endpoint for callers that have already packaged every
+twice-trailing stage into the named tail-normalized record surface. -/
+theorem storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRecords
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrecords :
+      storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_sourceClosureData
+    fp r p A_hat alpha
+    (storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRecords
+      fp r p A_hat alpha hrecords)
+    hcopy
+
+/-- Raw tail-local normalized loop facts imply the twice-trailing final-closure
+predicate.
+
+This is the final-closed endpoint for the expanded source-facing premise
+surface, keeping the rounded/source-faithful vector equality and self-dot facts
+visible while removing endpoint bookkeeping from future callers. -/
+theorem storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRawFacts
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hraw :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRecords
+    fp r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
+      fp r p A_hat alpha hraw)
+    hcopy
+
+/-- Source-faithful tail-normalization certificates imply the twice-trailing
+final-closure predicate. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_sourceFaithfulNormalizations
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hsrcs :
+      storedSignedSequenceTailSourceFaithfulNormalizations fp r p
+        A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRawFacts
+    fp r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_sourceFaithfulNormalizations
+      fp r p A_hat alpha hsrcs)
+    hcopy
+
+/-- Tail-local vector equalities imply the twice-trailing final-closure
+predicate under any model satisfying the source-faithful normalization
+predicate. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_sourceFaithfulNormalizations
+    fp r p A_hat alpha
+    (storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_of_normalizationModel
+      fp hmodel r p A_hat alpha hvecs)
+    hcopy
+
+/-- Stronger-model final-panel bridge from tail-vector loop facts.
+
+The caller supplies only the first two normalized-vector equalities, the
+standard leading-block nonbreakdown witnesses, and the recursive all-stage
+tail-vector facts.  A model satisfying
+`sourceFaithfulHouseholderNormalizationModel` derives the first two
+source-faithful certificates and the recursive source-faithful package, then
+the established source-faithful final-panel endpoint supplies the equality. -/
+theorem
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_sourceFaithful_tailVectorEqLoopFacts_of_normalizationModel
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (r p : Nat)
+    (A : Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrows : 2 <= r + p + 2)
+    (hcols : 2 <= p + 2)
+    (hinit : A_hat 0 = A)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + p + 2) (p + 2) k
+          (householderTrailingActiveVector (r + p + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + p + 2)
+            (householderTrailingActiveVector (r + p + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hvec0 :
+      householderTrailingActiveVector (r + p + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0) =
+        fl_householderNormalizedVector fp (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A))
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (r + p + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp
+              (Nat.succ_pos (r + p + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp
+              (r + p + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le (r + p)))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      (let v0 := fl_householderNormalizedVector fp
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp
+          (r + p + 2) (p + 2) 0 v0 1 A
+       householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) (alpha 1) =
+          fl_householderNormalizedVector fp (Nat.succ_pos (r + p))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))))
+    (htailVecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    A_hat (p + 2) =
+      fl_householderQRPanel_R fp (r + p + 2) (p + 2) A := by
+  have hx0 :
+      Ne (panelFirstColumn (Nat.succ_pos (p + 1)) A) 0 := by
+    intro hzero
+    apply hdetFirst
+    have hentry := congrFun hzero 0
+    simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn]
+      using hentry
+  have hsrc0 :
+      sourceFaithfulHouseholderNormalization fp
+        (Nat.succ_pos (r + p + 1))
+        (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+        (householderTrailingActiveVector (r + p + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0)) := by
+    exact
+      sourceFaithfulHouseholderNormalization_of_vector_eq_of_normalizationModel
+        fp hmodel (Nat.succ_pos (r + p + 1))
+        (panelFirstColumn (Nat.succ_pos (p + 1)) A) _ hvec0 hx0
+  have hxTail :
+      Ne
+        (let v0 := fl_householderNormalizedVector fp
+            (Nat.succ_pos (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+         let S0 := fl_householderStoredPanelStep fp
+            (r + p + 2) (p + 2) 0 v0 1 A
+         panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+        0 := by
+    intro hzero
+    apply hdetTail
+    have hentry := congrFun hzero 0
+    simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn]
+      using hentry
+  have hsrcTail :
+      (let v0 := fl_householderNormalizedVector fp
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp
+          (r + p + 2) (p + 2) 0 v0 1 A
+       sourceFaithfulHouseholderNormalization fp (Nat.succ_pos (r + p))
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+          (householderTrailingActiveVector (r + p + 1)
+            (0 : Fin (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+            (alpha 1))) := by
+    dsimp only
+    dsimp only at hvecTail
+    exact
+      sourceFaithfulHouseholderNormalization_of_vector_eq_of_normalizationModel
+        fp hmodel (Nat.succ_pos (r + p))
+        (let v0 := fl_householderNormalizedVector fp
+            (Nat.succ_pos (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+         let S0 := fl_householderStoredPanelStep fp
+            (r + p + 2) (p + 2) 0 v0 1 A
+         panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+        _ hvecTail hxTail
+  exact
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_sourceFaithfulNormalizations
+      fp r p A A_hat alpha hrows hcols hinit hStep hsrc0 hdetFirst
+      hdetTail hsrcTail
+      (storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_of_normalizationModel
+        fp hmodel r p A_hat alpha htailVecs)
+      hcopy
+
+/-- Exact-arithmetic tail-vector loop facts imply the twice-trailing
+final-closure predicate.
+
+This is the exact-model endpoint counterpart of
+`storedSignedSequenceTwiceTrailingSourceClosureData_of_tailVectorEqLoopFacts_exactWithUnitRoundoff`:
+the all-stage tail-vector equalities derive the missing self-dot/source-closure
+data, and exact arithmetic supplies the zero-subtraction convention. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed
+      (FPModel.exactWithUnitRoundoff u0 hu0)
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_sourceClosureData
+    (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
+    (storedSignedSequenceTwiceTrailingSourceClosureData_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hvecs)
+    (subtractZeroExact_exactWithUnitRoundoff u0 hu0)
+
+/-- Exact-arithmetic tail-vector loop facts imply final closure through the
+source-faithful certificate endpoint.
+
+This is the source-faithful counterpart of
+`storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_exactWithUnitRoundoff`:
+the all-stage exact tail-vector equalities first assemble the recursive
+source-faithful certificate package, then reuse the source-faithful final-closed
+endpoint. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_sourceFaithful_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed
+      (FPModel.exactWithUnitRoundoff u0 hu0)
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_sourceFaithfulNormalizations
+    (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
+    (storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hvecs)
+    (subtractZeroExact_exactWithUnitRoundoff u0 hu0)
 
 /-- Full-stage source-closure data implies the twice-trailing final-closure
 predicate.
@@ -16473,6 +20188,256 @@ theorem
       (FPModel.exactWithUnitRoundoff u0 hu0) r p A A_hat alpha hrows
       hcols hinit hStep hvec0 hself0 hdetFirst hdetTail hvecTail
       hselfTail hfull (subtractZeroExact_exactWithUnitRoundoff u0 hu0)
+
+/-- Exact-arithmetic final-panel bridge from all-stage tail-vector facts.
+
+This composes the exact reflector-vector final-panel bridge with the all-stage
+tail-vector loop package.  The caller supplies only the first two reflector
+vector equalities, the determinant/nonbreakdown fields, and the recursive
+tail-vector loop facts; the first two self-dot fields and all recursive tail
+self-dot/source-closure data are derived internally in the exact roundoff
+model. -/
+theorem
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_vectors_and_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A : Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrows : 2 <= r + p + 2)
+    (hcols : 2 <= p + 2)
+    (hinit : A_hat 0 = A)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep (FPModel.exactWithUnitRoundoff u0 hu0)
+          (r + p + 2) (p + 2) k
+          (householderTrailingActiveVector (r + p + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + p + 2)
+            (householderTrailingActiveVector (r + p + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hvec0 :
+      householderTrailingActiveVector (r + p + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0) =
+        fl_householderNormalizedVector (FPModel.exactWithUnitRoundoff u0 hu0)
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A))
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (r + p + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector
+              (FPModel.exactWithUnitRoundoff u0 hu0)
+              (Nat.succ_pos (r + p + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep
+              (FPModel.exactWithUnitRoundoff u0 hu0)
+              (r + p + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le (r + p)))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      (let v0 := fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (r + p + 2) (p + 2) 0 v0 1 A
+       householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) (alpha 1) =
+          fl_householderNormalizedVector (FPModel.exactWithUnitRoundoff u0 hu0)
+            (Nat.succ_pos (r + p))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))))
+    (htailVecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    A_hat (p + 2) =
+      fl_householderQRPanel_R (FPModel.exactWithUnitRoundoff u0 hu0)
+        (r + p + 2) (p + 2) A :=
+  storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_vectors_of_fullStageSourceClosureData_exactWithUnitRoundoff
+    u0 hu0 r p A A_hat alpha hrows hcols hinit hStep hvec0 hdetFirst
+    hdetTail hvecTail
+    (storedSignedSequenceTwiceTrailingFullStageSourceClosureData_of_fullStageNormalizedLoopFacts
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
+      (storedSignedSequenceFullStageNormalizedLoopFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha htailVecs))
+
+/-- Exact-arithmetic final-panel bridge through source-faithful certificates.
+
+This is the source-faithful endpoint version of
+`storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_vectors_and_tailVectorEqLoopFacts_exactWithUnitRoundoff`:
+the first two source-faithful certificates and all recursive tail certificates
+are derived internally from exact tail-vector equalities plus determinant
+nonbreakdown. -/
+theorem
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_sourceFaithful_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A : Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrows : 2 <= r + p + 2)
+    (hcols : 2 <= p + 2)
+    (hinit : A_hat 0 = A)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep (FPModel.exactWithUnitRoundoff u0 hu0)
+          (r + p + 2) (p + 2) k
+          (householderTrailingActiveVector (r + p + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + p + 2)
+            (householderTrailingActiveVector (r + p + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hvec0 :
+      householderTrailingActiveVector (r + p + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0) =
+        fl_householderNormalizedVector (FPModel.exactWithUnitRoundoff u0 hu0)
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A))
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (r + p + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector
+              (FPModel.exactWithUnitRoundoff u0 hu0)
+              (Nat.succ_pos (r + p + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep
+              (FPModel.exactWithUnitRoundoff u0 hu0)
+              (r + p + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le (r + p)))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      (let v0 := fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (r + p + 2) (p + 2) 0 v0 1 A
+       householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) (alpha 1) =
+          fl_householderNormalizedVector (FPModel.exactWithUnitRoundoff u0 hu0)
+            (Nat.succ_pos (r + p))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))))
+    (htailVecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    A_hat (p + 2) =
+      fl_householderQRPanel_R (FPModel.exactWithUnitRoundoff u0 hu0)
+        (r + p + 2) (p + 2) A := by
+  have hx0 :
+      Ne (panelFirstColumn (Nat.succ_pos (p + 1)) A) 0 := by
+    intro hzero
+    apply hdetFirst
+    have hentry := congrFun hzero 0
+    simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn]
+      using hentry
+  have hsrc0 :
+      sourceFaithfulHouseholderNormalization
+        (FPModel.exactWithUnitRoundoff u0 hu0)
+        (Nat.succ_pos (r + p + 1))
+        (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+        (householderTrailingActiveVector (r + p + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0)) := by
+    exact
+      sourceFaithfulHouseholderNormalization_of_vector_eq_exactWithUnitRoundoff
+        u0 hu0 (Nat.succ_pos (r + p + 1))
+        (panelFirstColumn (Nat.succ_pos (p + 1)) A) _ hvec0 hx0
+  have hxTail :
+      Ne
+        (let v0 := fl_householderNormalizedVector
+            (FPModel.exactWithUnitRoundoff u0 hu0)
+            (Nat.succ_pos (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+         let S0 := fl_householderStoredPanelStep
+            (FPModel.exactWithUnitRoundoff u0 hu0)
+            (r + p + 2) (p + 2) 0 v0 1 A
+         panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+        0 := by
+    intro hzero
+    apply hdetTail
+    have hentry := congrFun hzero 0
+    simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn]
+      using hentry
+  have hsrcTail :
+      (let v0 := fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (r + p + 2) (p + 2) 0 v0 1 A
+       sourceFaithfulHouseholderNormalization
+          (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos (r + p))
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+          (householderTrailingActiveVector (r + p + 1)
+            (0 : Fin (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+            (alpha 1))) := by
+    dsimp only
+    dsimp only at hvecTail
+    exact
+      sourceFaithfulHouseholderNormalization_of_vector_eq_exactWithUnitRoundoff
+        u0 hu0 (Nat.succ_pos (r + p))
+        (let v0 := fl_householderNormalizedVector
+            (FPModel.exactWithUnitRoundoff u0 hu0)
+            (Nat.succ_pos (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+         let S0 := fl_householderStoredPanelStep
+            (FPModel.exactWithUnitRoundoff u0 hu0)
+            (r + p + 2) (p + 2) 0 v0 1 A
+         panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+        _ hvecTail hxTail
+  exact
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_sourceFaithfulNormalizations
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A A_hat alpha
+      hrows hcols hinit hStep hsrc0 hdetFirst hdetTail hsrcTail
+      (storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha htailVecs)
+      (subtractZeroExact_exactWithUnitRoundoff u0 hu0)
 
 /-- One recursive full-stage final-panel bridge.
 
@@ -21310,6 +25275,2292 @@ theorem eq19_12_componentwise_backward_error
   householder_qr_componentwise_backward_error fp m n A hn hnm hvalid
 
 end Theorem19_4
+
+namespace Theorem19_6
+
+/-- Source-facing step-growth factor used by the Cox--Higham row-wise
+pivoting route behind Higham, Theorem 19.6.  This is a local dependency
+surface, not the complete row-wise QR stability theorem. -/
+noncomputable def rowwise_step_growth_factor : Real := 1 + Real.sqrt 2
+
+/-- The Cox--Higham row-wise step-growth factor is nonnegative. -/
+theorem rowwise_step_growth_factor_nonneg :
+    0 <= rowwise_step_growth_factor := by
+  simpa [rowwise_step_growth_factor] using coxHighamGrowthFactor_nonneg
+
+/-- Unified active-row growth factor for the Cox--Higham route behind
+Higham, Theorem 19.6.
+
+This combines the off-pivot `1 + sqrt 2` branch with the ambient pivot-row
+`sqrt m` branch currently available in the local finite-vector norm bridge. -/
+noncomputable def active_row_growth_factor (m : Nat) : Real :=
+  coxHighamActiveRowGrowthFactor m
+
+/-- The unified Cox--Higham active-row factor is nonnegative. -/
+theorem active_row_growth_factor_nonneg (m : Nat) :
+    0 <= active_row_growth_factor m := by
+  simpa [active_row_growth_factor] using
+    coxHighamActiveRowGrowthFactor_nonneg m
+
+/-- The unified Cox--Higham active-row factor is at least one. -/
+theorem one_le_active_row_growth_factor (m : Nat) :
+    1 <= active_row_growth_factor m := by
+  simpa [active_row_growth_factor] using
+    one_le_coxHighamActiveRowGrowthFactor m
+
+/-- Higham, Theorem 19.6 route dependency: off-pivot row-growth step under
+signed column pivoting.
+
+If the active pivot column is maximal and the pivot/target row entries are
+bounded by `B`, the exact signed Householder update grows the target entry by
+at most the Cox--Higham factor `1 + sqrt 2`.  This wraps the reusable
+`HouseholderSpecSupport` lemma with a chapter-facing name; it does not by
+itself close the full row-wise QR theorem. -/
+theorem off_pivot_row_growth_step
+    {m n : Nat} (p row : Fin m) (k j : Fin n)
+    (A : Fin m -> Fin n -> Real) (B : Real)
+    (hpivot :
+      forall l : Fin n, k.val <= l.val ->
+        householderTrailingColumnNorm2Sq (m := m) (n := n) p A l <=
+          householderTrailingColumnNorm2Sq (m := m) (n := n) p A k)
+    (hj : k.val <= j.val)
+    (hrowBound : forall l : Fin n, k.val <= l.val -> |A row l| <= B) :
+    let phi : Real :=
+        householderBetaSpec m
+          (householderTrailingActiveVector m p (fun r => A r k)
+            (signedHouseholderAlpha
+              (Real.sqrt (householderTrailingColumnNorm2Sq (m := m) (n := n) p A k))
+              (A p k))) *
+          ((Finset.univ : Finset (Fin m)).sum (fun i =>
+            householderTrailingActiveVector m p (fun r => A r k)
+                (signedHouseholderAlpha
+                  (Real.sqrt (householderTrailingColumnNorm2Sq (m := m) (n := n) p A k))
+                  (A p k)) i *
+              householderTrailingPart m p (fun r => A r j) i))
+    abs (A row j - phi * A row k) <= rowwise_step_growth_factor * B := by
+  simpa [rowwise_step_growth_factor] using
+    abs_householder_signed_pivot_update_entry_le_one_add_sqrt_two_mul_row_bound
+      p row k j A B hpivot hj hrowBound
+
+/-- Higham, Theorem 19.6 route dependency: off-pivot row-growth step, lifted
+to the unified active-row factor.
+
+This is useful when later row-wise induction code wants a single factor that
+covers both the off-pivot and pivot-row branches. -/
+theorem off_pivot_row_growth_step_active_factor
+    {m n : Nat} (p row : Fin m) (k j : Fin n)
+    (A : Fin m -> Fin n -> Real) (B : Real)
+    (hpivot :
+      forall l : Fin n, k.val <= l.val ->
+        householderTrailingColumnNorm2Sq (m := m) (n := n) p A l <=
+          householderTrailingColumnNorm2Sq (m := m) (n := n) p A k)
+    (hj : k.val <= j.val)
+    (hrowBound : forall l : Fin n, k.val <= l.val -> |A row l| <= B)
+    (hB : 0 <= B) :
+    let phi : Real :=
+        householderBetaSpec m
+          (householderTrailingActiveVector m p (fun r => A r k)
+            (signedHouseholderAlpha
+              (Real.sqrt (householderTrailingColumnNorm2Sq (m := m) (n := n) p A k))
+              (A p k))) *
+          ((Finset.univ : Finset (Fin m)).sum (fun i =>
+            householderTrailingActiveVector m p (fun r => A r k)
+                (signedHouseholderAlpha
+                  (Real.sqrt (householderTrailingColumnNorm2Sq (m := m) (n := n) p A k))
+                  (A p k)) i *
+              householderTrailingPart m p (fun r => A r j) i))
+    abs (A row j - phi * A row k) <= active_row_growth_factor m * B := by
+  have hbase :=
+    off_pivot_row_growth_step p row k j A B hpivot hj hrowBound
+  have hfactor : rowwise_step_growth_factor <= active_row_growth_factor m := by
+    simp [rowwise_step_growth_factor, active_row_growth_factor,
+      coxHighamActiveRowGrowthFactor]
+  exact hbase.trans (mul_le_mul_of_nonneg_right hfactor hB)
+
+/-- Higham, Theorem 19.6 route dependency: pivot-row active-entry bound.
+
+This is the pivot-row branch of the row-wise route.  The current local lemma
+uses the ambient `sqrt m` factor from the available finite-vector norm bridge;
+the sharper source factor remains part of the eventual Theorem 19.6 audit. -/
+theorem pivot_row_entry_bound_of_stage_entry_bound
+    {m n : Nat} (k : Fin m) (j : Fin n)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (row0Bound : Fin m -> Real)
+    (hrow0 : 0 <= row0Bound k)
+    (hcol :
+      |Astage (k.val + 1) k j| <=
+        vecNorm2 (householderTrailingPart m k (fun i => Astage k.val i j)))
+    (hentry :
+      forall i : Fin m, k.val <= i.val ->
+        |Astage k.val i j| <=
+          rowwise_step_growth_factor ^ k.val * row0Bound k) :
+    |Astage (k.val + 1) k j| <=
+      Real.sqrt (m : Real) *
+        (rowwise_step_growth_factor ^ k.val * row0Bound k) := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_pivot_row_entry_bound_of_stage_entry_bound
+      k j Astage row0Bound hrow0 hcol hentry
+
+/-- Higham, Theorem 19.6 route dependency: pivot-row active-entry bound,
+lifted to the unified active-row factor. -/
+theorem pivot_row_entry_bound_of_stage_entry_bound_active_factor
+    {m n : Nat} (k : Fin m) (j : Fin n)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (row0Bound : Fin m -> Real)
+    (hrow0 : 0 <= row0Bound k)
+    (hcol :
+      |Astage (k.val + 1) k j| <=
+        vecNorm2 (householderTrailingPart m k (fun i => Astage k.val i j)))
+    (hentry :
+      forall i : Fin m, k.val <= i.val ->
+        |Astage k.val i j| <=
+          rowwise_step_growth_factor ^ k.val * row0Bound k) :
+    |Astage (k.val + 1) k j| <=
+      active_row_growth_factor m *
+        (rowwise_step_growth_factor ^ k.val * row0Bound k) := by
+  have hbase :=
+    pivot_row_entry_bound_of_stage_entry_bound k j Astage row0Bound
+      hrow0 hcol hentry
+  have hB : 0 <= rowwise_step_growth_factor ^ k.val * row0Bound k :=
+    mul_nonneg (pow_nonneg rowwise_step_growth_factor_nonneg k.val) hrow0
+  have hfactor : Real.sqrt (m : Real) <= active_row_growth_factor m := by
+    simp [active_row_growth_factor, coxHighamActiveRowGrowthFactor]
+  exact hbase.trans (mul_le_mul_of_nonneg_right hfactor hB)
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot Householder
+pivot-row update with the row-sorted stage budget.
+
+This wraps the support lemma that derives the pivot-row active-tail norm bound
+from the actual signed Householder update and the nonbreakdown condition for
+the pivot column. -/
+theorem exact_signed_pivot_row_entry_bound_of_stage_entry_bound
+    {m n : Nat} (p : Fin m) (pivotCol j : Fin n)
+    (A : Fin m -> Fin n -> Real) (row0Bound : Fin m -> Real)
+    (hnorm :
+      0 < householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hrow0 : 0 <= row0Bound p)
+    (hentry :
+      forall i : Fin m, p.val <= i.val ->
+        |A i j| <= rowwise_step_growth_factor ^ p.val * row0Bound p) :
+    |matMulVec m
+        (householder m
+          (householderTrailingActiveVector m p (fun r => A r pivotCol)
+            (signedHouseholderAlpha
+              (Real.sqrt
+                (householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol))
+              (A p pivotCol)))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m p (fun r => A r pivotCol)
+              (signedHouseholderAlpha
+                (Real.sqrt
+                  (householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol))
+                (A p pivotCol)))))
+        (fun r => A r j) p| <=
+      Real.sqrt (m : Real) *
+        (rowwise_step_growth_factor ^ p.val * row0Bound p) := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_exact_signed_pivot_row_entry_bound_of_stage_entry_bound
+      p pivotCol j A row0Bound hnorm hrow0 hentry
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot Householder
+pivot-row update, lifted to the unified active-row factor. -/
+theorem exact_signed_pivot_row_entry_bound_of_stage_entry_bound_active_factor
+    {m n : Nat} (p : Fin m) (pivotCol j : Fin n)
+    (A : Fin m -> Fin n -> Real) (row0Bound : Fin m -> Real)
+    (hnorm :
+      0 < householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hrow0 : 0 <= row0Bound p)
+    (hentry :
+      forall i : Fin m, p.val <= i.val ->
+        |A i j| <= rowwise_step_growth_factor ^ p.val * row0Bound p) :
+    |matMulVec m
+        (householder m
+          (householderTrailingActiveVector m p (fun r => A r pivotCol)
+            (signedHouseholderAlpha
+              (Real.sqrt
+                (householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol))
+              (A p pivotCol)))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m p (fun r => A r pivotCol)
+              (signedHouseholderAlpha
+                (Real.sqrt
+                  (householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol))
+                (A p pivotCol)))))
+        (fun r => A r j) p| <=
+      active_row_growth_factor m *
+        (rowwise_step_growth_factor ^ p.val * row0Bound p) := by
+  have hbase :=
+    exact_signed_pivot_row_entry_bound_of_stage_entry_bound
+      p pivotCol j A row0Bound hnorm hrow0 hentry
+  have hB : 0 <= rowwise_step_growth_factor ^ p.val * row0Bound p :=
+    mul_nonneg (pow_nonneg rowwise_step_growth_factor_nonneg p.val) hrow0
+  have hfactor : Real.sqrt (m : Real) <= active_row_growth_factor m := by
+    simp [active_row_growth_factor, coxHighamActiveRowGrowthFactor]
+  exact hbase.trans (mul_le_mul_of_nonneg_right hfactor hB)
+
+/-- Higham, Theorem 19.6 route dependency: one exact signed-pivot panel
+entry update under visible row and column stage bounds.
+
+This is the chapter-facing one-step panel form below the active-block sequence
+wrappers.  It combines the off-pivot and pivot-row branches into the unified
+Cox--Higham active-row factor; it does not by itself close the full row-wise
+QR theorem. -/
+theorem exact_signed_pivot_panel_step_active_entry_bound_of_stage_bounds
+    {m n : Nat} (p row : Fin m) (pivotCol j : Fin n)
+    (A : Fin m -> Fin n -> Real) (B : Real)
+    (hactive : p.val <= row.val)
+    (hB : 0 <= B)
+    (hnorm :
+      0 < householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hpivotMax :
+      forall l : Fin n, pivotCol.val <= l.val ->
+        householderTrailingColumnNorm2Sq (m := m) (n := n) p A l <=
+          householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hj : pivotCol.val <= j.val)
+    (hrowBound : forall l : Fin n, pivotCol.val <= l.val -> |A row l| <= B)
+    (hcolBound : forall i : Fin m, p.val <= i.val -> |A i j| <= B) :
+    |exactSignedPivotHouseholderPanelStep m n p pivotCol A row j| <=
+      active_row_growth_factor m * B := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanelStep_active_entry_bound_of_stage_bounds
+      p row pivotCol j A B hactive hB hnorm hpivotMax hj hrowBound hcolBound
+
+/-- Higham, Theorem 19.6 route dependency: one exact signed-pivot panel
+entry update from a single active-block invariant.
+
+This adapter is the one-step active-block form used by the exact sequence
+wrappers: a single active-block bound supplies both the active-row and
+active-column stage budgets. -/
+theorem exact_signed_pivot_panel_step_active_block_bound_of_stage_bound
+    {m n : Nat} (p row : Fin m) (pivotCol j : Fin n)
+    (A : Fin m -> Fin n -> Real) (B : Real)
+    (hactive : p.val <= row.val)
+    (hB : 0 <= B)
+    (hnorm :
+      0 < householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hpivotMax :
+      forall l : Fin n, pivotCol.val <= l.val ->
+        householderTrailingColumnNorm2Sq (m := m) (n := n) p A l <=
+          householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hj : pivotCol.val <= j.val)
+    (hblock :
+      forall i : Fin m, p.val <= i.val ->
+        forall l : Fin n, pivotCol.val <= l.val -> |A i l| <= B) :
+    |exactSignedPivotHouseholderPanelStep m n p pivotCol A row j| <=
+      active_row_growth_factor m * B := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanelStep_active_block_bound_of_stage_bound
+      p row pivotCol j A B hactive hB hnorm hpivotMax hj hblock
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+entry bound under visible stage budgets.
+
+Each stage supplies the row/column bounds needed by the one-step
+Cox--Higham signed-pivot estimate, and the scalar budget `B` absorbs the
+unified active-row factor.  This is an intermediate sequence dependency, not
+the complete row-wise QR stability theorem. -/
+theorem exact_signed_pivot_panel_sequence_active_entry_bound_of_stage_budgets
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B : Nat -> Real) (row : Fin m) (j : Fin n)
+    (hinit : |Astage 0 row j| <= B 0)
+    (hB : forall t : Nat, t <= steps -> 0 <= B t)
+    (hbudget : forall t : Nat, t < steps ->
+      active_row_growth_factor m * B t <= B (t + 1))
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hactive : forall t : Nat, t < steps -> (p t).val <= row.val)
+    (hnorm : forall t : Nat, t < steps ->
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hj : forall t : Nat, t < steps -> (pivotCol t).val <= j.val)
+    (hrowBound : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val -> |Astage t row l| <= B t)
+    (hcolBound : forall t : Nat, t < steps ->
+      forall i : Fin m, (p t).val <= i.val -> |Astage t i j| <= B t) :
+    |Astage steps row j| <= B steps := by
+  have hbudget' : forall t : Nat, t < steps ->
+      coxHighamActiveRowGrowthFactor m * B t <= B (t + 1) := by
+    simpa [active_row_growth_factor] using hbudget
+  exact
+    coxHigham_exactSignedPivotPanel_sequence_active_entry_bound_of_stage_budgets
+      steps Astage p pivotCol B row j hinit hB hbudget' hstep hactive
+      hnorm hpivotMax hj hrowBound hcolBound
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+entry bound from one active-block budget per stage.
+
+This packages the source-shaped case where a single active-block invariant
+provides both the active-row and active-column bounds for every exact
+signed-pivot panel step. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_stage_budgets
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B : Nat -> Real) (row : Fin m) (j : Fin n)
+    (hinit : |Astage 0 row j| <= B 0)
+    (hB : forall t : Nat, t <= steps -> 0 <= B t)
+    (hbudget : forall t : Nat, t < steps ->
+      active_row_growth_factor m * B t <= B (t + 1))
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hactive : forall t : Nat, t < steps -> (p t).val <= row.val)
+    (hnorm : forall t : Nat, t < steps ->
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hj : forall t : Nat, t < steps -> (pivotCol t).val <= j.val)
+    (hblockBound : forall t : Nat, t < steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val -> |Astage t i l| <= B t) :
+    |Astage steps row j| <= B steps := by
+  have hbudget' : forall t : Nat, t < steps ->
+      coxHighamActiveRowGrowthFactor m * B t <= B (t + 1) := by
+    simpa [active_row_growth_factor] using hbudget
+  exact
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_stage_budgets
+      steps Astage p pivotCol B row j hinit hB hbudget' hstep hactive
+      hnorm hpivotMax hj hblockBound
+
+/-- Higham, Theorem 19.6 route dependency: geometric-budget exact
+signed-pivot panel sequence entry bound.
+
+When the stage budget is the geometric Cox--Higham budget
+`active_row_growth_factor m ^ t * B0`, the exact signed-pivot panel sequence
+keeps the requested entry within the matching final geometric bound. -/
+theorem exact_signed_pivot_panel_sequence_active_entry_bound_of_geometric_stage_budgets
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real) (row : Fin m) (j : Fin n)
+    (hinit : |Astage 0 row j| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hactive : forall t : Nat, t < steps -> (p t).val <= row.val)
+    (hnorm : forall t : Nat, t < steps ->
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hj : forall t : Nat, t < steps -> (pivotCol t).val <= j.val)
+    (hrowBound : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        |Astage t row l| <= active_row_growth_factor m ^ t * B0)
+    (hcolBound : forall t : Nat, t < steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        |Astage t i j| <= active_row_growth_factor m ^ t * B0) :
+    |Astage steps row j| <= active_row_growth_factor m ^ steps * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_entry_bound_of_geometric_stage_budgets
+      steps Astage p pivotCol B0 row j hinit hB0 hstep hactive hnorm
+      hpivotMax hj hrowBound hcolBound
+
+/-- Higham, Theorem 19.6 route dependency: geometric-budget exact
+signed-pivot panel sequence bound from active-block invariants.
+
+This is the active-block version of the geometric sequence dependency; it
+still assumes the stage-wise active-block invariant and does not close the full
+row-wise QR/preconditioner theorem. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_geometric_stage_budgets
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real) (row : Fin m) (j : Fin n)
+    (hinit : |Astage 0 row j| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hactive : forall t : Nat, t < steps -> (p t).val <= row.val)
+    (hnorm : forall t : Nat, t < steps ->
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hj : forall t : Nat, t < steps -> (pivotCol t).val <= j.val)
+    (hblockBound : forall t : Nat, t < steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0) :
+    |Astage steps row j| <= active_row_growth_factor m ^ steps * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_geometric_stage_budgets
+      steps Astage p pivotCol B0 row j hinit hB0 hstep hactive hnorm
+      hpivotMax hj hblockBound
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+active-block propagation from a uniform initial block bound.
+
+This removes the per-stage active-block bound premise from the pointwise
+sequence wrapper: monotone active windows, positive pivot-column norm, and
+active-max pivot bounds propagate the geometric Cox--Higham active-row budget
+through every exact signed-pivot stage. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_initial_block_bound
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hnorm : forall t : Nat, t < steps ->
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound
+      steps Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono hnorm
+      hpivotMax
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel
+active-block propagation with nonbreakdown stated as an active nonzero entry.
+
+This discharges the positive pivot-column norm field from active-block
+nonzero mass plus the visible active-max pivot inequality. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_initial_block_bound_of_active_block_nonzero
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hactiveNonzero : forall t : Nat, t < steps ->
+      exists l : Fin n, (pivotCol t).val <= l.val /\
+        exists i : Fin m, (p t).val <= i.val /\ Astage t i l ≠ 0)
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_active_block_nonzero
+      steps Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hactiveNonzero hpivotMax
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel
+active-block propagation with the pivot choice supplied by the active-column
+max selector.
+
+This is closer to the pivoted QR loop: the raw pivot-max inequality is
+replaced by the algorithmic finite active-max choice, while nonbreakdown is
+still stated as a visible active nonzero entry. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_initial_block_bound_of_active_max_pivot
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hactiveNonzero : forall t : Nat, t < steps ->
+      exists l : Fin n, (pivotCol t).val <= l.val /\
+        exists i : Fin m, (p t).val <= i.val /\ Astage t i l ≠ 0)
+    (hpivotChoice : forall t : Nat, t < steps ->
+      pivotCol t =
+        householderActiveMaxPivotColumn (p t) (pivotCol t) (Astage t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_active_max_pivot
+      steps Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hactiveNonzero hpivotChoice
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel
+active-block propagation from positive active-block mass and the finite
+active-max pivot policy.
+
+This makes the nonbreakdown field scalar and source-shaped: every active
+trailing block has positive squared mass before its pivot is chosen. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_initial_block_bound_of_active_block_norm_pos
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hactiveBlockPos : forall t : Nat, t < steps ->
+      0 < householderActiveBlockNorm2Sq (p t) (pivotCol t) (Astage t))
+    (hpivotChoice : forall t : Nat, t < steps ->
+      pivotCol t =
+        householderActiveMaxPivotColumn (p t) (pivotCol t) (Astage t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_active_block_norm_pos
+      steps Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hactiveBlockPos hpivotChoice
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+active-block bound after active-max column swaps, with post-swap
+active-block nonbreakdown stated on the displayed stages.
+
+The stronger raw-stage variant below is usually the more useful loop surface;
+this wrapper keeps the intermediate sorted-stage nonbreakdown theorem visible
+under a Chapter 19.6 name. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_swapped_active_max_pivot_of_active_block_norm_pos
+    {m n : Nat} (steps : Nat)
+    (Araw Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hsorted : forall t : Nat, t < steps ->
+      Astage t =
+        householderSwapColumns (Araw t) (pivotCol t)
+          (householderActiveMaxPivotColumn (p t) (pivotCol t) (Araw t)))
+    (hactiveBlockPos : forall t : Nat, t < steps ->
+      0 < householderActiveBlockNorm2Sq (p t) (pivotCol t) (Astage t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_swapped_active_max_pivot
+      steps Araw Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hsorted hactiveBlockPos
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+active-block bound after active-max column swaps.
+
+This wraps the multi-stage Cox--Higham active-block result for the exact
+signed-pivot Householder panel.  It propagates an initial active-block bound
+through `steps` exact stages using the unified active-row growth factor; it is
+a dependency for the future full row-wise QR/preconditioner theorem, not a
+final source closure. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_swapped_active_max_pivot
+    {m n : Nat} (steps : Nat)
+    (Araw Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hsorted : forall t : Nat, t < steps ->
+      Astage t =
+        householderSwapColumns (Araw t) (pivotCol t)
+          (householderActiveMaxPivotColumn (p t) (pivotCol t) (Araw t)))
+    (hrawActiveBlockPos : forall t : Nat, t < steps ->
+      0 < householderActiveBlockNorm2Sq (p t) (pivotCol t) (Araw t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_swapped_active_max_pivot_of_raw_active_block_norm_pos
+      steps Araw Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hsorted hrawActiveBlockPos
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+active-block bound with nonbreakdown supplied by leading-block determinant
+data.
+
+This is the determinant-facing exact sequence bridge for the pivoted QR route:
+leading-block and previous-block determinants plus already-zero lower-prefix
+entries supply the raw active-block nonbreakdown field consumed by the sorted
+active-max sequence theorem.  It remains a dependency, not the complete
+rounded row-wise QR theorem. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_leading_block_det_ne_zero
+    {m n : Nat} (hmn : n <= m) {steps : Nat} (hsteps : steps <= n)
+    (Araw Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hstageRow : forall t : Nat, t < steps -> (p t).val = t)
+    (hstageCol : forall t : Nat, t < steps -> (pivotCol t).val = t)
+    (hsorted : forall t : Nat, t < steps ->
+      Astage t =
+        householderSwapColumns (Araw t) (pivotCol t)
+          (householderActiveMaxPivotColumn (p t) (pivotCol t) (Araw t)))
+    (hdetPrev : forall t (ht : t < steps),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose (Araw t)
+          (le_of_lt (lt_of_lt_of_le (lt_of_lt_of_le ht hsteps) hmn))
+          (lt_of_lt_of_le ht hsteps) :
+          Matrix (Fin t) (Fin t) Real) ≠ 0)
+    (hdetLead : forall t (ht : t < steps),
+      Matrix.det
+        (qrLeadingBlock (Araw t)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le (lt_of_lt_of_le ht hsteps) hmn))
+          (lt_of_lt_of_le ht hsteps) :
+          Matrix (Fin (t + 1)) (Fin (t + 1)) Real) ≠ 0)
+    (hlowerPrev : forall t (ht : t < steps) (i : Fin m) (j : Fin t),
+      t <= i.val ->
+        Araw t i (qrPreviousColumn n t (lt_of_lt_of_le ht hsteps) j) = 0) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_swapped_active_max_pivot_of_leading_block_det_ne_zero
+      hmn hsteps Araw Astage p pivotCol B0 hinitBlock hB0 hstep hpMono
+      hkMono hstageRow hstageCol hsorted hdetPrev hdetLead hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: rounded stored-panel active-block
+propagation from signed-pivot stage bounds.
+
+The theorem packages the stored-panel induction surface: a per-stage budget
+that dominates exact active-row growth plus the compact floating-point update
+budget propagates the active-block bound across the panel sequence.  It remains
+a conditional dependency for the full row-wise stability theorem. -/
+theorem stored_panel_sequence_active_block_bound_of_signed_pivot_stage_bounds
+    {m n : Nat} (fp : FPModel) (steps : Nat)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B : Nat -> Real) (hm : gammaValid fp m)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Ahat 0 i l| <= B 0)
+    (hB : forall t : Nat, t < steps -> 0 <= B t)
+    (hstep : forall t : Nat, t < steps ->
+      Ahat (t + 1) =
+        fl_householderStoredPanelStep fp m n (pivotCol t).val
+          (signedPivotHouseholderVector m n (p t) (pivotCol t) (Ahat t))
+          (signedPivotHouseholderBeta m n (p t) (pivotCol t) (Ahat t))
+          (Ahat t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hnorm : forall t : Nat, t < steps ->
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n) (p t) (Ahat t) (pivotCol t))
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Ahat t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Ahat t) (pivotCol t))
+    (hcompleted : forall t : Nat, t < steps -> forall j : Fin n,
+      j.val < (pivotCol t).val ->
+        forall i : Fin m, matMulVec m
+          (householder m
+            (signedPivotHouseholderVector m n (p t) (pivotCol t) (Ahat t))
+            (signedPivotHouseholderBeta m n (p t) (pivotCol t) (Ahat t)))
+          (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps -> forall j : Fin n,
+      j.val = (pivotCol t).val ->
+        forall i : Fin m, (pivotCol t).val < i.val ->
+          matMulVec m
+            (householder m
+              (signedPivotHouseholderVector m n (p t) (pivotCol t) (Ahat t))
+              (signedPivotHouseholderBeta m n (p t) (pivotCol t) (Ahat t)))
+            (fun a => Ahat t a j) i = 0)
+    (hbudget : forall t : Nat, t < steps -> forall row : Fin m, forall l : Fin n,
+      (p (t + 1)).val <= row.val ->
+        (pivotCol (t + 1)).val <= l.val ->
+          active_row_growth_factor m * B t +
+              householderCompactComponentBudget fp m
+                (signedPivotHouseholderVector m n (p t) (pivotCol t) (Ahat t))
+                (signedPivotHouseholderBeta m n (p t) (pivotCol t) (Ahat t))
+                (fun a => Ahat t a l) row <=
+            B (t + 1)) :
+    forall t : Nat, t <= steps ->
+      forall row : Fin m, (p t).val <= row.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Ahat t row l| <= B t := by
+  have hbudget' : forall t : Nat, t < steps -> forall row : Fin m, forall l : Fin n,
+      (p (t + 1)).val <= row.val ->
+        (pivotCol (t + 1)).val <= l.val ->
+          coxHighamActiveRowGrowthFactor m * B t +
+              householderCompactComponentBudget fp m
+                (signedPivotHouseholderVector m n (p t) (pivotCol t) (Ahat t))
+                (signedPivotHouseholderBeta m n (p t) (pivotCol t) (Ahat t))
+                (fun a => Ahat t a l) row <=
+            B (t + 1) := by
+    simpa [active_row_growth_factor] using hbudget
+  simpa [active_row_growth_factor] using
+    coxHigham_storedPanel_sequence_active_block_bound_of_signed_pivot_stage_bounds
+      fp steps Ahat p pivotCol B hm hinitBlock hB hstep hpMono hkMono hnorm
+      hpivotMax hcompleted hpivot hbudget'
+
+/-- Higham, Theorem 19.6 route dependency: concrete stored-panel row-error
+accumulation from an exact same-reflector Lipschitz field.
+
+The exact Cox--Higham growth hypothesis remains visible as `hexact`; this
+wrapper only exposes the repository's floating-point stored-panel component
+budgets under the Chapter 19.6 namespace. -/
+theorem stored_panel_sequence_rowwise_error_accumulation_bound_of_exact_lipschitz
+    {m n : Nat} (fp : FPModel) (steps : Fin m)
+    (Ahat Aexact : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hstep : forall t : Nat, t < steps.val ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps.val -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps.val -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps.val -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hexact : forall t : Nat, t < steps.val ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r -
+          Aexact (t + 1) r j| <=
+        rowwise_step_growth_factor * |Ahat t r j - Aexact t r j|) :
+    |Ahat steps.val r j - Aexact steps.val r j| <=
+      rowwise_step_growth_factor ^ steps.val * |Ahat 0 r j - Aexact 0 r j| +
+        scalarAffineGrowthBudget rowwise_step_growth_factor
+          (fun t => householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r)
+          steps.val := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_storedPanel_sequence_rowwise_error_accumulation_bound_of_exact_lipschitz
+      fp steps Ahat Aexact v beta hm r j hstep hactive hcompleted hpivot
+      hexact
+
+/-- Higham, Theorem 19.6 route dependency: one rounded stored-panel entry
+bound from an exact same-reflector row-growth field. -/
+theorem stored_panel_step_active_entry_bound_of_exact_growth
+    (fp : FPModel) (m n k : Nat)
+    (v : Fin m -> Real) (beta : Real) (AhatPrev : Fin m -> Fin n -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hactive : k <= j.val)
+    (hcompleted : j.val < k ->
+      forall i : Fin m, matMulVec m (householder m v beta)
+        (fun a => AhatPrev a j) i = AhatPrev i j)
+    (hpivot : j.val = k ->
+      forall i : Fin m, k < i.val ->
+        matMulVec m (householder m v beta) (fun a => AhatPrev a j) i = 0)
+    (hexact :
+      |matMulVec m (householder m v beta) (fun a => AhatPrev a j) r| <=
+        rowwise_step_growth_factor * |AhatPrev r j|) :
+    |fl_householderStoredPanelStep fp m n k v beta AhatPrev r j| <=
+      rowwise_step_growth_factor * |AhatPrev r j| +
+        householderCompactComponentBudget fp m v beta (fun a => AhatPrev a j) r := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_storedPanelStep_active_entry_bound_of_exact_growth
+      fp m n k v beta AhatPrev hm r j hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: one rounded stored-panel entry
+bound from an exact same-reflector row-growth field with an arbitrary
+nonnegative growth factor supplied by the caller. -/
+theorem stored_panel_step_active_entry_bound_of_exact_growth_factor
+    (fp : FPModel) (m n k : Nat)
+    (v : Fin m -> Real) (beta c : Real) (AhatPrev : Fin m -> Fin n -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hactive : k <= j.val)
+    (hcompleted : j.val < k ->
+      forall i : Fin m, matMulVec m (householder m v beta)
+        (fun a => AhatPrev a j) i = AhatPrev i j)
+    (hpivot : j.val = k ->
+      forall i : Fin m, k < i.val ->
+        matMulVec m (householder m v beta) (fun a => AhatPrev a j) i = 0)
+    (hexact :
+      |matMulVec m (householder m v beta) (fun a => AhatPrev a j) r| <=
+        c * |AhatPrev r j|) :
+    |fl_householderStoredPanelStep fp m n k v beta AhatPrev r j| <=
+      c * |AhatPrev r j| +
+        householderCompactComponentBudget fp m v beta (fun a => AhatPrev a j) r := by
+  exact
+    coxHigham_storedPanelStep_active_entry_bound_of_exact_growth_factor
+      fp m n k v beta c AhatPrev hm r j hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound from exact same-reflector row growth.
+
+The concrete compact Householder component budgets are accumulated by
+`scalarAffineGrowthBudget`; no full row-wise QR/preconditioner theorem is
+claimed here. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_growth
+    {m n : Nat} (fp : FPModel) (steps : Fin m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hstep : forall t : Nat, t < steps.val ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps.val -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps.val -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps.val -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hexact : forall t : Nat, t < steps.val ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        rowwise_step_growth_factor * |Ahat t r j|) :
+    |Ahat steps.val r j| <=
+      rowwise_step_growth_factor ^ steps.val * |Ahat 0 r j| +
+        scalarAffineGrowthBudget rowwise_step_growth_factor
+          (fun t => householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r)
+          steps.val := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_growth
+      fp steps Ahat v beta hm r j hstep hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound from exact row growth with a caller-supplied factor. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_growth_factor
+    {m n : Nat} (fp : FPModel) (steps : Fin m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real) (c : Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hc : 0 <= c)
+    (hstep : forall t : Nat, t < steps.val ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps.val -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps.val -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps.val -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hexact : forall t : Nat, t < steps.val ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        c * |Ahat t r j|) :
+    |Ahat steps.val r j| <=
+      c ^ steps.val * |Ahat 0 r j| +
+        scalarAffineGrowthBudget c
+          (fun t => householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r)
+          steps.val := by
+  exact
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_growth_factor
+      fp steps Ahat v beta c hm r j hc hstep hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound using the unified active-row Cox--Higham factor. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_active_growth
+    {m n : Nat} (fp : FPModel) (steps : Fin m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hstep : forall t : Nat, t < steps.val ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps.val -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps.val -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps.val -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hexact : forall t : Nat, t < steps.val ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        active_row_growth_factor m * |Ahat t r j|) :
+    |Ahat steps.val r j| <=
+      active_row_growth_factor m ^ steps.val * |Ahat 0 r j| +
+        scalarAffineGrowthBudget (active_row_growth_factor m)
+          (fun t => householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r)
+          steps.val := by
+  simpa [active_row_growth_factor] using
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_active_growth
+      fp steps Ahat v beta hm r j hstep hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: one stored-panel entry bound from
+an exact stage budget and the compact floating-point component budget. -/
+theorem stored_panel_step_active_entry_bound_of_exact_stage_budget_factor
+    (fp : FPModel) (m n k : Nat)
+    (v : Fin m -> Real) (beta c B : Real) (AhatPrev : Fin m -> Fin n -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hactive : k <= j.val)
+    (hcompleted : j.val < k ->
+      forall i : Fin m, matMulVec m (householder m v beta)
+        (fun a => AhatPrev a j) i = AhatPrev i j)
+    (hpivot : j.val = k ->
+      forall i : Fin m, k < i.val ->
+        matMulVec m (householder m v beta) (fun a => AhatPrev a j) i = 0)
+    (hexact :
+      |matMulVec m (householder m v beta) (fun a => AhatPrev a j) r| <=
+        c * B) :
+    |fl_householderStoredPanelStep fp m n k v beta AhatPrev r j| <=
+      c * B +
+        householderCompactComponentBudget fp m v beta (fun a => AhatPrev a j) r := by
+  exact
+    coxHigham_storedPanelStep_active_entry_bound_of_exact_stage_budget_factor
+      fp m n k v beta c B AhatPrev hm r j hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound from exact stage budgets and concrete compact component budgets. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_stage_budgets_factor
+    {m n : Nat} (fp : FPModel) (steps : Nat)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real) (c : Real) (B : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hinit : |Ahat 0 r j| <= B 0)
+    (hstep : forall t : Nat, t < steps ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hbudget : forall t : Nat, t < steps ->
+      c * B t +
+          householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r <=
+        B (t + 1))
+    (hexact : forall t : Nat, t < steps ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        c * B t) :
+    |Ahat steps r j| <= B steps := by
+  exact
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_stage_budgets_factor
+      fp steps Ahat v beta c B hm r j hinit hstep hactive hcompleted hpivot
+      hbudget hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound from exact stage budgets using the unified active-row Cox--Higham
+factor. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_active_stage_budgets
+    {m n : Nat} (fp : FPModel) (steps : Nat)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real) (B : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hinit : |Ahat 0 r j| <= B 0)
+    (hstep : forall t : Nat, t < steps ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hbudget : forall t : Nat, t < steps ->
+      active_row_growth_factor m * B t +
+          householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r <=
+        B (t + 1))
+    (hexact : forall t : Nat, t < steps ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        active_row_growth_factor m * B t) :
+    |Ahat steps r j| <= B steps := by
+  simpa [active_row_growth_factor] using
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_active_stage_budgets
+      fp steps Ahat v beta B hm r j hinit hstep hactive hcompleted hpivot
+      hbudget hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel leading-block
+off-diagonal row budgets from exact stage budgets.
+
+This exposes the repository's leading-block off-diagonal budget field under
+the Chapter 19.6 namespace.  It is still a dependency surface: diagonal lower
+bounds and the complete row-wise pivoted QR/preconditioner theorem remain open. -/
+theorem stored_panel_sequence_leadingBlock_offdiag_budget_of_exact_stage_budgets_factor
+    {m n : Nat} (hmn : n <= m) (fp : FPModel)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real) (c : Real)
+    (rowBudget : forall k, k < n -> Fin (k + 1) -> Real)
+    (entryBudget :
+      forall k (_hk : k < n), forall i j : Fin (k + 1), i.val < j.val -> Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall t, t < n ->
+      Ahat (t + 1) =
+        fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hinit : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      |Ahat 0
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          (qrLeadingColumn n k hk j)| <=
+        entryBudget k hk i j hij 0)
+    (hpivot : forall k (hk : k < n), forall i j : Fin (k + 1), forall _hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        (qrLeadingColumn n k hk j).val = t ->
+          forall a : Fin m, t < a.val ->
+            matMulVec m (householder m (v t) (beta t))
+              (fun r => Ahat t r (qrLeadingColumn n k hk j)) a = 0)
+    (hbudget : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        c * entryBudget k hk i j hij t +
+            householderCompactComponentBudget fp m (v t) (beta t)
+              (fun a => Ahat t a (qrLeadingColumn n k hk j))
+              (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          <= entryBudget k hk i j hij (t + 1))
+    (hexact : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        |matMulVec m (householder m (v t) (beta t))
+          (fun a => Ahat t a (qrLeadingColumn n k hk j))
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)| <=
+          c * entryBudget k hk i j hij t)
+    (hrowBudget : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      entryBudget k hk i j hij (qrLeadingOffdiagStop j) <=
+        rowBudget k hk i) :
+    forall k (hk : k < n), forall i j : Fin (k + 1), i.val < j.val ->
+      |qrLeadingBlock (Ahat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk i j| <=
+        rowBudget k hk i := by
+  exact
+    fl_householderStoredPanel_sequence_leadingBlock_offdiag_budget_of_exact_stage_budgets_factor
+      hmn fp Ahat v beta c rowBudget entryBudget hm hStep hinit hpivot
+      hbudget hexact hrowBudget
+
+/-- Higham, Theorem 19.6 route dependency: signed stored-panel leading-block
+off-diagonal row budgets from exact stage budgets.
+
+This removes the generic reflector family from the leading-block budget bridge
+by using the concrete signed trailing Householder stages.  It remains row-wise
+stability infrastructure, not the full source theorem. -/
+theorem stored_panel_sequence_leadingBlock_offdiag_budget_of_signed_stage_budgets_factor
+    {m n : Nat} (hmn : n <= m) (fp : FPModel)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real) (c : Real)
+    (rowBudget : forall k, k < n -> Fin (k + 1) -> Real)
+    (entryBudget :
+      forall k (_hk : k < n), forall i j : Fin (k + 1), i.val < j.val -> Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall t (_ht : t < n),
+      Ahat (t + 1) =
+        fl_householderStoredPanelStep fp m n t
+          (storedQRSignedStageVector hmn Ahat alpha t)
+          (storedQRSignedStageBeta hmn Ahat alpha t)
+          (Ahat t))
+    (hinit : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      |Ahat 0
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          (qrLeadingColumn n k hk j)| <=
+        entryBudget k hk i j hij 0)
+    (hpivot : forall k (hk : k < n), forall i j : Fin (k + 1), forall _hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        (qrLeadingColumn n k hk j).val = t ->
+          forall a : Fin m, t < a.val ->
+            matMulVec m
+              (householder m
+                (storedQRSignedStageVector hmn Ahat alpha t)
+                (storedQRSignedStageBeta hmn Ahat alpha t))
+              (fun r => Ahat t r (qrLeadingColumn n k hk j)) a = 0)
+    (hbudget : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        c * entryBudget k hk i j hij t +
+            householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hmn Ahat alpha t)
+              (storedQRSignedStageBeta hmn Ahat alpha t)
+              (fun a => Ahat t a (qrLeadingColumn n k hk j))
+              (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          <= entryBudget k hk i j hij (t + 1))
+    (hexact : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        |matMulVec m
+          (householder m
+            (storedQRSignedStageVector hmn Ahat alpha t)
+            (storedQRSignedStageBeta hmn Ahat alpha t))
+          (fun a => Ahat t a (qrLeadingColumn n k hk j))
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)| <=
+          c * entryBudget k hk i j hij t)
+    (hrowBudget : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      entryBudget k hk i j hij (qrLeadingOffdiagStop j) <=
+        rowBudget k hk i) :
+    forall k (hk : k < n), forall i j : Fin (k + 1), i.val < j.val ->
+      |qrLeadingBlock (Ahat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk i j| <=
+        rowBudget k hk i := by
+  exact
+    fl_householderStoredPanel_sequence_leadingBlock_offdiag_budget_of_signed_stage_budgets_factor
+      hmn fp Ahat alpha c rowBudget entryBudget hm hStep hinit hpivot hbudget
+      hexact hrowBudget
+
+/-- Higham, Theorem 19.6 route dependency: signed-alpha stored-panel diagonal
+nonbreakdown from positive trailing norms and square-root component budgets.
+
+This is the diagonal counterpart to the leading-block off-diagonal budget
+wrappers above.  It exposes the proved stored-loop nonbreakdown route under the
+row-wise stability namespace, but it remains dependency infrastructure rather
+than the full pivoted QR/preconditioner theorem. -/
+theorem stored_panel_sequence_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget
+    {m n : Nat} (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (hAlphaDef : forall k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun i => Ahat k i (Fin.mk k hk))))
+          (Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk)))
+    (htrailingPos : forall k (hk : k < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hbudgetSqrt : forall k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (fun a => Ahat k a (Fin.mk k hk))
+          (Fin.mk k (lt_of_lt_of_le hk hmn)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget
+      fp hmn Ahat alpha hm hStep hAlphaDef htrailingPos hbudgetSqrt
+
+/-- Higham, Theorem 19.6 route dependency: prefix-local signed-alpha diagonal
+nonbreakdown for the stored QR loop.
+
+After any completed prefix, the diagonal entries already written by previous
+stored Householder steps are nonzero.  This is the local triangular-leading-block
+form needed by later source-control and pivoted-QR assembly. -/
+theorem stored_panel_sequence_prefix_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget
+    {m n : Nat} (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (hAlphaDef : forall k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun i => Ahat k i (Fin.mk k hk))))
+          (Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk)))
+    (htrailingPos : forall k (hk : k < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hbudgetSqrt : forall k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (fun a => Ahat k a (Fin.mk k hk))
+          (Fin.mk k (lt_of_lt_of_le hk hmn)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall k (hk : k <= n) (i : Fin k),
+      Ne
+        (Ahat k
+          (Fin.mk i.val (lt_of_lt_of_le i.isLt (le_trans hk hmn)))
+          (Fin.mk i.val (lt_of_lt_of_le i.isLt hk)))
+        0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_prefix_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget
+      fp hmn Ahat alpha hm hStep hAlphaDef htrailingPos hbudgetSqrt
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from prefix-span nonbreakdown and a concrete active-entry pivot budget.
+
+This exposes the quantitative active-entry margin route used to keep the
+stored QR top-block diagonal nonzero.  It is source-control infrastructure, not
+the complete pivoted QR/preconditioner theorem. -/
+theorem stored_panel_sequence_diag_nonzero_of_span_nonbreakdown_active_entry_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hnotspan : forall k (hk : k < n),
+      qrColumnNotInPreviousSpan (Ahat k) hk)
+    (hprefixSpan : forall k (hk : k < n),
+      qrPrefixSupportSpannedByPreviousColumns (Ahat k) hk)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetEntry : forall k (hk : k < n),
+      exists i : Fin m, k <= i.val /\
+        householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk k (lt_of_lt_of_le hk hmn))
+                (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+            (fun a => Ahat k a (Fin.mk k hk))
+            (Fin.mk k (lt_of_lt_of_le hk hmn)) <
+          |Ahat k i (Fin.mk k hk)|) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_span_nonbreakdown_active_entry_budget
+      fp hmn Ahat alpha hm hStep halpha hnotspan hprefixSpan hsign hbudgetEntry
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from prefix-span nonbreakdown and a dimensioned trailing-norm-square budget.
+
+The stronger margin `m * budget_k^2 < ||A_k(k:m,k)||_2^2` feeds the existing
+square-root nonbreakdown theorem while keeping the conditioning-oriented
+source-control assumption explicit. -/
+theorem stored_panel_sequence_diag_nonzero_of_span_nonbreakdown_trailingNorm2Sq_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hnotspan : forall k (hk : k < n),
+      qrColumnNotInPreviousSpan (Ahat k) hk)
+    (hprefixSpan : forall k (hk : k < n),
+      qrPrefixSupportSpannedByPreviousColumns (Ahat k) hk)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetNormSq : forall k (hk : k < n),
+      (m : Real) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk k (lt_of_lt_of_le hk hmn))
+                (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+            (fun a => Ahat k a (Fin.mk k hk))
+            (Fin.mk k (lt_of_lt_of_le hk hmn))) ^ 2 <
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun a => Ahat k a (Fin.mk k hk))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_span_nonbreakdown_trailingNorm2Sq_budget
+      fp hmn Ahat alpha hm hStep halpha hnotspan hprefixSpan hsign hbudgetNormSq
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from prefix-span data and a bounded leading-column dual.
+
+The theorem packages the dual-norm source-control route: a local dual row with
+norm-square bounded by `K k` and `m * budget_k^2 < 1 / K k` supplies the
+trailing-norm-square margin. -/
+theorem stored_panel_sequence_diag_nonzero_of_span_nonbreakdown_leading_dual_norm_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (L : forall k, k < n -> Fin (k + 1) -> Fin m -> Real)
+    (K : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hL : forall k (hk : k < n),
+      qrLeadingColumnLeftInverse (Ahat k) hk (L k hk))
+    (hprefixSpan : forall k (hk : k < n),
+      qrPrefixSupportSpannedByPreviousColumns (Ahat k) hk)
+    (hK : forall k (_hk : k < n), 0 < K k)
+    (hLnorm : forall k (hk : k < n),
+      vecNorm2Sq (fun i : Fin m =>
+        L k hk (Fin.mk k (Nat.lt_succ_self k)) i) <= K k)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetDual : forall k (hk : k < n),
+      (m : Real) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk k (lt_of_lt_of_le hk hmn))
+                (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+            (fun a => Ahat k a (Fin.mk k hk))
+            (Fin.mk k (lt_of_lt_of_le hk hmn))) ^ 2 <
+        1 / K k) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_span_nonbreakdown_leading_dual_norm_budget
+      fp hmn Ahat alpha L K hm hStep halpha hL hprefixSpan hK hLnorm
+      hsign hbudgetDual
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from local leading-block left inverses with last-row norm budgets.
+
+This is the left-inverse version of the leading-dual budget route; the padded
+dual row is constructed by the reusable Householder support theorem. -/
+theorem stored_panel_sequence_diag_nonzero_of_span_nonbreakdown_leadingBlock_leftInverse_norm_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (C : forall k, k < n -> Fin (k + 1) -> Fin (k + 1) -> Real)
+    (K : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hC : forall k (hk : k < n),
+      IsLeftInverse (k + 1)
+        (qrLeadingBlock (Ahat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+        (C k hk))
+    (hprefixSpan : forall k (hk : k < n),
+      qrPrefixSupportSpannedByPreviousColumns (Ahat k) hk)
+    (hK : forall k (_hk : k < n), 0 < K k)
+    (hCnorm : forall k (hk : k < n),
+      vecNorm2Sq (fun r : Fin (k + 1) =>
+        C k hk (Fin.mk k (Nat.lt_succ_self k)) r) <= K k)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetDual : forall k (hk : k < n),
+      (m : Real) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk k (lt_of_lt_of_le hk hmn))
+                (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+            (fun a => Ahat k a (Fin.mk k hk))
+            (Fin.mk k (lt_of_lt_of_le hk hmn))) ^ 2 <
+        1 / K k) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_span_nonbreakdown_leadingBlock_leftInverse_norm_budget
+      fp hmn Ahat alpha C K hm hStep halpha hC hprefixSpan hK hCnorm
+      hsign hbudgetDual
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from local leading-block left inverses with Frobenius-norm budgets. -/
+theorem stored_panel_sequence_diag_nonzero_of_span_nonbreakdown_leadingBlock_leftInverse_frobNorm_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (C : forall k, k < n -> Fin (k + 1) -> Fin (k + 1) -> Real)
+    (K : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hC : forall k (hk : k < n),
+      IsLeftInverse (k + 1)
+        (qrLeadingBlock (Ahat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+        (C k hk))
+    (hprefixSpan : forall k (hk : k < n),
+      qrPrefixSupportSpannedByPreviousColumns (Ahat k) hk)
+    (hK : forall k (_hk : k < n), 0 < K k)
+    (hCfrob : forall k (hk : k < n), frobNorm (C k hk) ^ 2 <= K k)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetDual : forall k (hk : k < n),
+      (m : Real) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk k (lt_of_lt_of_le hk hmn))
+                (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+            (fun a => Ahat k a (Fin.mk k hk))
+            (Fin.mk k (lt_of_lt_of_le hk hmn))) ^ 2 <
+        1 / K k) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_span_nonbreakdown_leadingBlock_leftInverse_frobNorm_budget
+      fp hmn Ahat alpha C K hm hStep halpha hC hprefixSpan hK hCfrob
+      hsign hbudgetDual
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from local leading-block left inverses with infinity-norm budgets.
+
+The reusable support theorem converts the per-prefix infinity-norm bound into
+the Frobenius budget required by the left-inverse route. -/
+theorem stored_panel_sequence_diag_nonzero_of_span_nonbreakdown_leadingBlock_leftInverse_infNorm_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (C : forall k, k < n -> Fin (k + 1) -> Fin (k + 1) -> Real)
+    (K : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hC : forall k (hk : k < n),
+      IsLeftInverse (k + 1)
+        (qrLeadingBlock (Ahat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+        (C k hk))
+    (hprefixSpan : forall k (hk : k < n),
+      qrPrefixSupportSpannedByPreviousColumns (Ahat k) hk)
+    (hK : forall k (_hk : k < n), 0 < K k)
+    (hCinf : forall k (hk : k < n),
+      ((k + 1 : Nat) : Real) * infNorm (C k hk) ^ 2 <= K k)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetDual : forall k (hk : k < n),
+      (m : Real) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk k (lt_of_lt_of_le hk hmn))
+                (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+            (fun a => Ahat k a (Fin.mk k hk))
+            (Fin.mk k (lt_of_lt_of_le hk hmn))) ^ 2 <
+        1 / K k) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_span_nonbreakdown_leadingBlock_leftInverse_infNorm_budget
+      fp hmn Ahat alpha C K hm hStep halpha hC hprefixSpan hK hCinf
+      hsign hbudgetDual
+
+/-- Higham, Theorem 19.6 route dependency: leading-block coefficient and
+dual witnesses imply that the active trailing pivot column has a nonzero entry.
+
+This is a structural source-control bridge used by the stored-loop diagonal
+nonbreakdown route; it keeps the concrete prefix-span and independence
+witnesses visible. -/
+theorem exists_active_trailing_entry_ne_of_leading_witnesses
+    {m n k : Nat}
+    (A : Fin m -> Fin n -> Real) (hkm : k <= m) (hk : k < n)
+    (C : Fin k -> Fin k -> Real)
+    (L : Fin (k + 1) -> Fin m -> Real)
+    (hC : qrPrefixBasisCoefficientMatrix A hkm hk C)
+    (hL : qrLeadingColumnLeftInverse A hk L)
+    (hlowerPrev : forall (i : Fin m) (j : Fin k), k <= i.val ->
+      A i (qrPreviousColumn n k hk j) = 0) :
+    exists i : Fin m, k <= i.val /\ Ne (A i (Fin.mk k hk)) 0 := by
+  exact
+    LeanFpAnalysis.FP.exists_active_trailing_entry_ne_of_leading_witnesses
+      A hkm hk C L hC hL hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: leading-block witnesses force a
+positive trailing Householder column norm. -/
+theorem householderTrailingNorm2Sq_pos_of_leading_witnesses
+    {m n k : Nat}
+    (A : Fin m -> Fin n -> Real) (hkm : k < m) (hk : k < n)
+    (C : Fin k -> Fin k -> Real)
+    (L : Fin (k + 1) -> Fin m -> Real)
+    (hC : qrPrefixBasisCoefficientMatrix A (le_of_lt hkm) hk C)
+    (hL : qrLeadingColumnLeftInverse A hk L)
+    (hlowerPrev : forall (i : Fin m) (j : Fin k), k <= i.val ->
+      A i (qrPreviousColumn n k hk j) = 0) :
+    0 < householderTrailingNorm2Sq m (Fin.mk k hkm)
+        (fun i : Fin m => A i (Fin.mk k hk)) := by
+  exact
+    LeanFpAnalysis.FP.householderTrailingNorm2Sq_pos_of_leading_witnesses
+      A hkm hk C L hC hL hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: leading-block witnesses force
+positive active-block mass in the current pivot column. -/
+theorem householderActiveBlockNorm2Sq_pos_of_leading_witnesses
+    {m n k : Nat}
+    (A : Fin m -> Fin n -> Real) (hkm : k < m) (hk : k < n)
+    (C : Fin k -> Fin k -> Real)
+    (L : Fin (k + 1) -> Fin m -> Real)
+    (hC : qrPrefixBasisCoefficientMatrix A (le_of_lt hkm) hk C)
+    (hL : qrLeadingColumnLeftInverse A hk L)
+    (hlowerPrev : forall (i : Fin m) (j : Fin k), k <= i.val ->
+      A i (qrPreviousColumn n k hk j) = 0) :
+    0 < householderActiveBlockNorm2Sq (Fin.mk k hkm) (Fin.mk k hk) A := by
+  exact
+    LeanFpAnalysis.FP.householderActiveBlockNorm2Sq_pos_of_leading_witnesses
+      A hkm hk C L hC hL hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: local left inverses for the previous
+and current leading blocks imply a nonzero active trailing pivot entry. -/
+theorem exists_active_trailing_entry_ne_of_leading_block_leftInverses
+    {m n k : Nat}
+    (A : Fin m -> Fin n -> Real) (hkm : k + 1 <= m) (hk : k < n)
+    (Cprev : Fin k -> Fin k -> Real)
+    (Dlead : Fin (k + 1) -> Fin (k + 1) -> Real)
+    (hCprev : IsLeftInverse k
+      (qrPreviousLeadingBlockTranspose A (le_trans (Nat.le_succ k) hkm) hk)
+      Cprev)
+    (hDlead : IsLeftInverse (k + 1) (qrLeadingBlock A hkm hk) Dlead)
+    (hlowerPrev : forall (i : Fin m) (j : Fin k), k <= i.val ->
+      A i (qrPreviousColumn n k hk j) = 0) :
+    exists i : Fin m, k <= i.val /\ Ne (A i (Fin.mk k hk)) 0 := by
+  exact
+    LeanFpAnalysis.FP.exists_active_trailing_entry_ne_of_leading_block_leftInverses
+      A hkm hk Cprev Dlead hCprev hDlead hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: local leading-block left inverses
+force a positive trailing Householder column norm. -/
+theorem householderTrailingNorm2Sq_pos_of_leading_block_leftInverses
+    {m n k : Nat}
+    (A : Fin m -> Fin n -> Real) (hkm : k < m) (hk : k < n)
+    (Cprev : Fin k -> Fin k -> Real)
+    (Dlead : Fin (k + 1) -> Fin (k + 1) -> Real)
+    (hCprev : IsLeftInverse k
+      (qrPreviousLeadingBlockTranspose A (le_of_lt hkm) hk) Cprev)
+    (hDlead : IsLeftInverse (k + 1)
+      (qrLeadingBlock A (Nat.succ_le_iff.mpr hkm) hk) Dlead)
+    (hlowerPrev : forall (i : Fin m) (j : Fin k), k <= i.val ->
+      A i (qrPreviousColumn n k hk j) = 0) :
+    0 < householderTrailingNorm2Sq m (Fin.mk k hkm)
+        (fun i : Fin m => A i (Fin.mk k hk)) := by
+  exact
+    LeanFpAnalysis.FP.householderTrailingNorm2Sq_pos_of_leading_block_leftInverses
+      A hkm hk Cprev Dlead hCprev hDlead hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: local leading-block left inverses
+force positive active-block mass in the current pivot column. -/
+theorem householderActiveBlockNorm2Sq_pos_of_leading_block_leftInverses
+    {m n k : Nat}
+    (A : Fin m -> Fin n -> Real) (hkm : k < m) (hk : k < n)
+    (Cprev : Fin k -> Fin k -> Real)
+    (Dlead : Fin (k + 1) -> Fin (k + 1) -> Real)
+    (hCprev : IsLeftInverse k
+      (qrPreviousLeadingBlockTranspose A (le_of_lt hkm) hk) Cprev)
+    (hDlead : IsLeftInverse (k + 1)
+      (qrLeadingBlock A (Nat.succ_le_iff.mpr hkm) hk) Dlead)
+    (hlowerPrev : forall (i : Fin m) (j : Fin k), k <= i.val ->
+      A i (qrPreviousColumn n k hk j) = 0) :
+    0 < householderActiveBlockNorm2Sq (Fin.mk k hkm) (Fin.mk k hk) A := by
+  exact
+    LeanFpAnalysis.FP.householderActiveBlockNorm2Sq_pos_of_leading_block_leftInverses
+      A hkm hk Cprev Dlead hCprev hDlead hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from concrete leading-block witnesses and square-root component budgets.
+
+This version derives prefix-span and column-independence nonbreakdown from
+explicit leading-block coefficient and dual witnesses, while leaving the
+per-pivot floating-point budget visible. -/
+theorem stored_panel_sequence_diag_nonzero_of_leading_witnesses_sqrt_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (C : forall k, k < n -> Fin k -> Fin k -> Real)
+    (L : forall k, k < n -> Fin (k + 1) -> Fin m -> Real)
+    (hC : forall k (hk : k < n),
+      qrPrefixBasisCoefficientMatrix (Ahat k)
+        (le_trans (Nat.le_of_lt hk) hmn) hk (C k hk))
+    (hL : forall k (hk : k < n),
+      qrLeadingColumnLeftInverse (Ahat k) hk (L k hk))
+    (hlowerPrev : forall k (hk : k < n) (i : Fin m) (j : Fin k),
+      k <= i.val -> Ahat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetSqrt : forall k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (fun a => Ahat k a (Fin.mk k hk))
+          (Fin.mk k (lt_of_lt_of_le hk hmn)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_leading_witnesses_sqrt_budget
+      fp hmn Ahat alpha hm hStep halpha C L hC hL hlowerPrev hsign hbudgetSqrt
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from local leading-block left inverses and square-root component budgets. -/
+theorem stored_panel_sequence_diag_nonzero_of_leading_block_leftInverses_sqrt_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (Cprev : forall k, k < n -> Fin k -> Fin k -> Real)
+    (Dlead : forall k, k < n -> Fin (k + 1) -> Fin (k + 1) -> Real)
+    (hCprev : forall k (hk : k < n),
+      IsLeftInverse k
+        (qrPreviousLeadingBlockTranspose (Ahat k)
+          (le_trans (Nat.le_of_lt hk) hmn) hk)
+        (Cprev k hk))
+    (hDlead : forall k (hk : k < n),
+      IsLeftInverse (k + 1)
+        (qrLeadingBlock (Ahat k)
+          (le_trans (Nat.succ_le_of_lt hk) hmn) hk)
+        (Dlead k hk))
+    (hlowerPrev : forall k (hk : k < n) (i : Fin m) (j : Fin k),
+      k <= i.val -> Ahat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetSqrt : forall k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (fun a => Ahat k a (Fin.mk k hk))
+          (Fin.mk k (lt_of_lt_of_le hk hmn)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_leading_block_leftInverses_sqrt_budget
+      fp hmn Ahat alpha hm hStep halpha Cprev Dlead hCprev hDlead
+      hlowerPrev hsign hbudgetSqrt
+
+/-- Higham, Theorem 19.6 route dependency: leading-minor stored-loop diagonal
+nonbreakdown from local determinant data and square-root component budgets.
+
+Nonsingular previous/current leading blocks, the stored lower-zero invariant,
+the signed Householder pivot convention, and a per-pivot square-root budget
+imply nonzero final top-block diagonal entries. -/
+theorem stored_panel_sequence_diag_nonzero_of_leading_block_det_ne_zero_sqrt_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hdetPrev : forall k (hk : k < n),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose (Ahat k)
+          (le_trans (Nat.le_of_lt hk) hmn) hk :
+          Matrix (Fin k) (Fin k) Real) ≠ 0)
+    (hdetLead : forall k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (Ahat k)
+          (le_trans (Nat.succ_le_of_lt hk) hmn) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real) ≠ 0)
+    (hlowerPrev : forall k (hk : k < n) (i : Fin m) (j : Fin k),
+      k <= i.val -> Ahat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetSqrt : forall k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (fun a => Ahat k a (Fin.mk k hk))
+          (Fin.mk k (lt_of_lt_of_le hk hmn)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_leading_block_det_ne_zero_sqrt_budget
+      fp hmn Ahat alpha hm hStep halpha hdetPrev hdetLead hlowerPrev
+      hsign hbudgetSqrt
+
+/-- Higham, Theorem 19.6 route dependency: sequence-budget version of the
+leading-minor stored-loop diagonal nonbreakdown route.
+
+The deterministic compact-update sequence budget controls the per-pivot diagonal
+component budget used by the square-root nonbreakdown theorem. -/
+theorem stored_panel_sequence_diag_nonzero_of_leading_block_det_ne_zero_sequence_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (bhat : Nat -> Fin m -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hdetPrev : forall k (hk : k < n),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose (Ahat k)
+          (le_trans (Nat.le_of_lt hk) hmn) hk :
+          Matrix (Fin k) (Fin k) Real) ≠ 0)
+    (hdetLead : forall k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (Ahat k)
+          (le_trans (Nat.succ_le_of_lt hk) hmn) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real) ≠ 0)
+    (hlowerPrev : forall k (hk : k < n) (i : Fin m) (j : Fin k),
+      k <= i.val -> Ahat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hsequenceBudget : forall k (hk : k < n),
+      storedQRCompactSequenceRelativeBudget hmn fp Ahat bhat alpha *
+          vecNorm2 (fun i : Fin m => Ahat k i (Fin.mk k hk)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  refine
+    stored_panel_sequence_diag_nonzero_of_leading_block_det_ne_zero_sqrt_budget
+      fp hmn Ahat alpha hm hStep halpha hdetPrev hdetLead hlowerPrev
+      hsign ?_
+  intro k hk
+  exact
+    lt_of_le_of_lt
+      (storedQRCompactPivotBudget_le_sequence_column_norm
+        hmn fp Ahat bhat alpha hm k hk)
+      (hsequenceBudget k hk)
+
+/-- Higham, Theorem 19.6 route dependency: uniform-step-budget version of the
+leading-minor stored-loop diagonal nonbreakdown route.
+
+If every compact stored-QR update has relative budget at most `cStep`, a
+per-pivot margin for the uniform `n * cStep` sequence cap proves nonzero final
+diagonal entries. -/
+theorem stored_panel_sequence_diag_nonzero_of_leading_block_det_ne_zero_uniform_step_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (bhat : Nat -> Fin m -> Real)
+    (alpha : Nat -> Real)
+    (cStep : Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hdetPrev : forall k (hk : k < n),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose (Ahat k)
+          (le_trans (Nat.le_of_lt hk) hmn) hk :
+          Matrix (Fin k) (Fin k) Real) ≠ 0)
+    (hdetLead : forall k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (Ahat k)
+          (le_trans (Nat.succ_le_of_lt hk) hmn) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real) ≠ 0)
+    (hlowerPrev : forall k (hk : k < n) (i : Fin m) (j : Fin k),
+      k <= i.val -> Ahat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hStepBudget : forall k : Fin n,
+      storedQRCompactStepRelativeBudget hmn fp Ahat bhat alpha k <= cStep)
+    (huniformBudget : forall k (hk : k < n),
+      ((n : Real) * cStep) *
+          vecNorm2 (fun i : Fin m => Ahat k i (Fin.mk k hk)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  refine
+    stored_panel_sequence_diag_nonzero_of_leading_block_det_ne_zero_sequence_budget
+      fp hmn Ahat bhat alpha hm hStep halpha hdetPrev hdetLead
+      hlowerPrev hsign ?_
+  intro k hk
+  have hseq :
+      storedQRCompactSequenceRelativeBudget hmn fp Ahat bhat alpha <=
+        (n : Real) * cStep :=
+    storedQRCompactSequenceRelativeBudget_le_mul_of_step_le
+      hmn fp Ahat bhat alpha cStep hStepBudget
+  have hseqMul :
+      storedQRCompactSequenceRelativeBudget hmn fp Ahat bhat alpha *
+          vecNorm2 (fun i : Fin m => Ahat k i (Fin.mk k hk)) <=
+        ((n : Real) * cStep) *
+          vecNorm2 (fun i : Fin m => Ahat k i (Fin.mk k hk)) :=
+    mul_le_mul_of_nonneg_right hseq
+      (vecNorm2_nonneg (fun i : Fin m => Ahat k i (Fin.mk k hk)))
+  exact lt_of_le_of_lt hseqMul (huniformBudget k hk)
+
+/-- Higham, Theorem 19.6 route dependency: signed stored-QR stages preserve
+completed columns.
+
+This exposes the exact `hcompleted` field used by Cox--Higham row-growth
+handoffs: once a column has already been processed, the signed trailing
+Householder reflector for a later stage leaves that completed column unchanged. -/
+theorem stored_signed_stage_completed_column_preservation
+    {m n : Nat} (hmn : n <= m)
+    (fp : FPModel)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k)) :
+    forall t (_ht : t < n), forall j : Fin n, j.val < t ->
+      forall i : Fin m,
+        matMulVec m
+          (householder m
+            (storedQRSignedStageVector hmn Ahat alpha t)
+            (storedQRSignedStageBeta hmn Ahat alpha t))
+          (fun a => Ahat t a j) i = Ahat t i j := by
+  exact
+    storedQRSignedStage_completed_column_preservation
+      hmn fp Ahat alpha hStep
+
+/-- Higham, Theorem 19.6 route dependency: exact below-pivot zeroing for the
+concrete signed stored-QR pivot column.
+
+Under the source signed-alpha convention and positive active trailing norm, the
+exact signed Householder reflector zeros entries below the active pivot in its
+own pivot column. -/
+theorem stored_signed_stage_pivot_column_zero_below_of_trailingNorm_pos
+    {m n : Nat} (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (t : Nat) (ht : t < n)
+    (hAlphaDef :
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hmn))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hmn)) (Fin.mk t ht)))
+    (htrailingPos :
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hmn))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (a : Fin m) (ha : t < a.val) :
+    matMulVec m
+      (householder m
+        (storedQRSignedStageVector hmn Ahat alpha t)
+        (storedQRSignedStageBeta hmn Ahat alpha t))
+      (fun r => Ahat t r (Fin.mk t ht)) a = 0 := by
+  exact
+    storedQRSignedStage_pivot_column_zero_below_of_trailingNorm_pos
+      hmn Ahat alpha t ht hAlphaDef htrailingPos a ha
+
+/-- Higham, Theorem 19.6 route dependency: signed stored-QR stages supply the
+pivot-column zeroing field used by the leading-block off-diagonal budget bridge.
+
+This is the all-leading-block form of
+`stored_signed_stage_pivot_column_zero_below_of_trailingNorm_pos`. -/
+theorem stored_signed_stage_pivot_zeroing_field_of_trailingNorm_pos
+    {m n : Nat} (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hAlphaDef : forall t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hmn))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hmn)) (Fin.mk t ht)))
+    (htrailingPos : forall t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hmn))
+          (fun a => Ahat t a (Fin.mk t ht))) :
+    forall k (hk : k < n), forall i j : Fin (k + 1), forall _hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        (qrLeadingColumn n k hk j).val = t ->
+          forall a : Fin m, t < a.val ->
+            matMulVec m
+              (householder m
+                (storedQRSignedStageVector hmn Ahat alpha t)
+                (storedQRSignedStageBeta hmn Ahat alpha t))
+              (fun r => Ahat t r (qrLeadingColumn n k hk j)) a = 0 := by
+  exact
+    storedQRSignedStage_pivot_zeroing_field_of_trailingNorm_pos
+      hmn Ahat alpha hAlphaDef htrailingPos
+
+/-- Higham, Theorem 19.6 route dependency: the norm-square source-control
+budget supplies signed stored-QR pivot-column zeroing.
+
+The visible budget inequality implies positive active trailing norm, so callers
+of the off-diagonal budget bridge can reuse the same source-control budget
+instead of passing a separate nonbreakdown proof for pivot zeroing. -/
+theorem stored_signed_stage_pivot_zeroing_field_of_normSqBudget
+    {m n : Nat} (hmn : n <= m)
+    (fp : FPModel)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hAlphaDef : forall t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hmn))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hmn)) (Fin.mk t ht)))
+    (hbudgetNormSq : forall t (ht : t < n),
+      (m : Real) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk t (lt_of_lt_of_le ht hmn))
+              (fun a => Ahat t a (Fin.mk t ht)) (alpha t))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk t (lt_of_lt_of_le ht hmn))
+                (fun a => Ahat t a (Fin.mk t ht)) (alpha t)))
+            (fun a => Ahat t a (Fin.mk t ht))
+            (Fin.mk t (lt_of_lt_of_le ht hmn))) ^ 2 <
+        householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hmn))
+          (fun a => Ahat t a (Fin.mk t ht))) :
+    forall k (hk : k < n), forall i j : Fin (k + 1), forall _hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        (qrLeadingColumn n k hk j).val = t ->
+          forall a : Fin m, t < a.val ->
+            matMulVec m
+              (householder m
+                (storedQRSignedStageVector hmn Ahat alpha t)
+                (storedQRSignedStageBeta hmn Ahat alpha t))
+              (fun r => Ahat t r (qrLeadingColumn n k hk j)) a = 0 := by
+  exact
+    storedQRSignedStage_pivot_zeroing_field_of_normSqBudget
+      hmn fp Ahat alpha hAlphaDef hbudgetNormSq
+
+/-- Higham, Theorem 19.6 route dependency: one rounded stored-panel update
+bounded by signed-pivot exact stage fields plus the compact component budget.
+
+This is the local one-step floating-point counterpart to
+`exact_signed_pivot_panel_step_active_entry_bound_of_stage_bounds`.  The exact
+signed-pivot row/column bounds and the concrete compact-update budget remain
+visible, so the theorem is a dependency surface rather than a full row-wise
+stability closure. -/
+theorem stored_panel_step_active_entry_bound_of_signed_pivot_stage_bounds
+    (fp : FPModel) {m n : Nat} (p row : Fin m) (pivotCol j : Fin n)
+    (A : Fin m -> Fin n -> Real) (B : Real) (hm : gammaValid fp m)
+    (hactiveRow : p.val <= row.val)
+    (hB : 0 <= B)
+    (hnorm :
+      0 < householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hpivotMax :
+      forall l : Fin n, pivotCol.val <= l.val ->
+        householderTrailingColumnNorm2Sq (m := m) (n := n) p A l <=
+          householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hj : pivotCol.val <= j.val)
+    (hrowBound : forall l : Fin n, pivotCol.val <= l.val -> |A row l| <= B)
+    (hcolBound : forall i : Fin m, p.val <= i.val -> |A i j| <= B)
+    (hcompleted : j.val < pivotCol.val ->
+      forall i : Fin m, matMulVec m
+        (householder m
+          (signedPivotHouseholderVector m n p pivotCol A)
+          (signedPivotHouseholderBeta m n p pivotCol A))
+        (fun a => A a j) i = A i j)
+    (hpivot : j.val = pivotCol.val ->
+      forall i : Fin m, pivotCol.val < i.val ->
+        matMulVec m
+          (householder m
+            (signedPivotHouseholderVector m n p pivotCol A)
+            (signedPivotHouseholderBeta m n p pivotCol A))
+          (fun a => A a j) i = 0) :
+    |fl_householderStoredPanelStep fp m n pivotCol.val
+        (signedPivotHouseholderVector m n p pivotCol A)
+        (signedPivotHouseholderBeta m n p pivotCol A)
+        A row j| <=
+      active_row_growth_factor m * B +
+        householderCompactComponentBudget fp m
+          (signedPivotHouseholderVector m n p pivotCol A)
+          (signedPivotHouseholderBeta m n p pivotCol A)
+          (fun a => A a j) row := by
+  simpa [active_row_growth_factor, signedPivotHouseholderVector,
+    signedPivotHouseholderBeta] using
+    coxHigham_storedPanelStep_active_entry_bound_of_signed_pivot_stage_bounds
+      fp p row pivotCol j A B hm hactiveRow hB hnorm hpivotMax hj hrowBound
+      hcolBound hcompleted hpivot
+
+/-- Higham, Theorem 19.6 route dependency: row sorting plus accumulated
+computed/exact row error.
+
+The theorem packages the source-shaped scalar recurrence used by the row-wise
+pivoting proof: exact row growth is multiplied by `(1 + sqrt 2)^k`, while
+`stepBudget` accumulates additive per-step perturbation error.  It is a
+dependency for the future full row-wise QR/preconditioner theorem, not a final
+source closure. -/
+theorem row_sorting_active_entry_bound_with_accumulated_error
+    {m n : Nat} (k : Fin m) (r : Fin m) (j : Fin n)
+    (Ahat Aexact : Nat -> Fin m -> Fin n -> Real)
+    (row0Bound : Fin m -> Real) (stepBudget : Nat -> Real)
+    (hr : k.val <= r.val)
+    (hsorted :
+      forall s : Fin m, k.val <= s.val -> row0Bound s <= row0Bound k)
+    (hinitExact : |Aexact 0 r j| <= row0Bound r)
+    (hstepExact :
+      forall t : Nat, t < k.val ->
+        |Aexact (t + 1) r j| <=
+          rowwise_step_growth_factor * |Aexact t r j|)
+    (hstepErr :
+      forall t : Nat, t < k.val ->
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| <=
+          rowwise_step_growth_factor * |Ahat t r j - Aexact t r j| +
+            stepBudget t) :
+    |Ahat k.val r j| <=
+      rowwise_step_growth_factor ^ k.val * row0Bound k +
+        (rowwise_step_growth_factor ^ k.val * |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget rowwise_step_growth_factor stepBudget k.val) := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_rowSorting_active_entry_bound_with_accumulated_error
+      k r j Ahat Aexact row0Bound stepBudget hr hsorted hinitExact
+      hstepExact hstepErr
+
+end Theorem19_6
 
 namespace Theorem19_13
 

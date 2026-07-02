@@ -20,6 +20,255 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 BDD generic source-norm upper endpoint: added
+  `higham13_blockNormSup` and basic supremum lemmas, the normed-block assembled
+  upper factor `higham13_algorithm13_3_upperFromNormedStages`, and
+  `higham13_algorithm13_3_upperFromNormedStages_blockNormSup_bound_of_column_bdd_diag_lower`
+  plus the reciprocal source-table corollary.  The new endpoint proves the
+  source-norm upper-factor bound
+  `higham13_blockNormSup U <= 2 * higham13_blockNormSup A` for any
+  `SeminormedRing` block algebra from column BDD, a one-sided/reciprocal
+  diagonal certificate, and the Eq.13.18 active diagonal-update predicate.
+  Direct `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` passed
+  before documentation wiring.  This is dependency progress only: the
+  source-strength entrywise max-growth route, concrete BDD source-table
+  construction, Problem 13.4 source comparisons, and Theorem 13.6 cited
+  implementation estimates remain open.
+- 2026-07-01 BDD generic source-norm finite-history endpoint: added
+  `higham13_algorithm13_3_normedStageHistoryBound` and containment/nonnegativity
+  helpers, the active-stage-to-history bound
+  `higham13_algorithm13_3_normedStageHistoryBound_le_of_active_bound`, the
+  one-sided and reciprocal source-table endpoints
+  `higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_diag_lower`
+  and
+  `higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_source_table_reciprocal`,
+  and the paired theorem
+  `higham13_algorithm13_3_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_column_bdd_source_table_reciprocal`.
+  These prove the finite source-norm history bound over stages `0, ..., m` in
+  any `SeminormedRing` block algebra and pair it with the assembled
+  source-norm upper-factor Eq.13.21 bound.  This is clean Theorem 13.8
+  source-norm dependency progress only: scalar entrywise `growthFactorEntry <= 2`,
+  the concrete BDD source-table/nonsingularity construction, Problem 13.4 source
+  comparisons, and Theorem 13.6 cited implementation estimates remain open.
+- 2026-07-01 Problem 13.4 canonical all-tail global-tableau source-chain
+  constructor: added `higham13_algorithm13_3_activeSuffixTail`,
+  `higham13_algorithm13_3_activeSuffixStageTailBlock`, the stage-zero/stage-one
+  bridges `higham13_algorithm13_3_activeSuffixStageTailBlock_zero_eq` and
+  `higham13_algorithm13_3_activeSuffixStageTailBlock_one_eq_blockSchur`, and
+  `Higham13Eq1322GlobalTableauSourceChain.activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa`.
+  The new theorem builds the fixed-ambient global-tableau source chain for any
+  canonical Algorithm 13.3 active suffix from per-stage source obligations
+  (current-tail full invertibility and inverse-entry comparison, nonterminal
+  first-split/Schur invertibility, pivot identity, dimension budget, and global
+  tableau containment).  It uses the derived-tail handoff internally, so callers
+  no longer need to pass a prebuilt recursive `hTail` at every suffix level.
+	  A follow-up theorem,
+	  `Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa`,
+	  identifies the canonical stage-one suffix with `blockSchur A (pivotInv 0)`,
+	  giving first-split Eq.13.22/Eq.13.23 wrappers a direct replacement for a raw
+	  recursive tail-chain premise once the first Schur-tail inverse-entry
+	  comparison is supplied.  The Eq.13.22 product witness
+	  `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa`
+	  and Eq.13.23 product witness
+	  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa`
+	  now consume that first-Schur-tail active-suffix certificate directly,
+	  replacing the old raw `hTail` premise by source-shaped active-suffix
+	  obligations.  This closes the general all-tail packaging dependency and
+	  wires the raw first-split Eq.13.22/Eq.13.23 product-witness layer; follow-up
+	  work should continue the source-strength BDD/product-update and Theorem 13.6
+	  rows.
+- 2026-07-01 Problem 13.4 active-suffix dimension-budget cleanup: added
+  `higham13_activeSuffix_dimension_budget_of_global_bound`,
+  `Higham13Eq1322GlobalTableauSourceChain.activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound`,
+  and
+  `Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound`.
+  These derive the per-tail `(m+1)*r <= n` budget table for canonical
+  active-suffix source chains from one ambient bound `M*r <= n` (or the
+  first-split specialization `((m+1)+1)*r <= n`).  This removes a bookkeeping
+  proof artifact from the all-tail route; the active pivot/Schur invertibility
+  data, inverse-entry/source comparisons, source-strength BDD product-update
+  data, and Theorem 13.6 estimates remain open.
+- 2026-07-01 Problem 13.4 active-suffix determinant-table cleanup: added
+  `Higham13Eq1322GlobalTableauSourceChain.activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound_of_det_tables`
+  and
+  `Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound_of_det_tables`.
+  These derive the current-tail, pivot-block, and Schur-complement
+  invertibility instances for the canonical active-suffix global-tableau chain
+  from determinant-nonzero tables plus the existing global dimension bound.
+  This removes another proof-artifact layer from the Problem 13.4 route; the
+  all-tail inverse-entry/source comparisons, source-strength BDD
+  product-update data, and Theorem 13.6 estimates remain open.
+- 2026-07-01 Problem 13.4 active-suffix determinant-table product witnesses:
+  added
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_det_tables`
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_det_tables`.
+  These feed the determinant-table first-Schur-tail active-suffix constructor
+  directly into the Eq.13.22/Eq.13.23 first-split product-witness APIs.  They
+  remove caller-supplied active-suffix invertibility instances from the product
+  surface while still keeping the source inverse-entry comparison table, ambient
+  right-inverse certificate, and Eq.13.23 `rho <= 2` theorem explicit.
+- 2026-07-01 Problem 13.4 active-suffix determinant-table product-update
+  witnesses: added
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_det_tables`
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_tables`.
+  These combine the source product-bound/diagonal-update `rho <= 2` route with
+  the determinant-table active-suffix Eq.13.23 product wrapper.  The active
+  suffix invertibility instances are now internal at this product-update
+  surface too; the source product/update data, inverse-entry comparison table,
+  and ambient right-inverse certificate remain explicit obligations.
+- 2026-07-01 Problem 13.4 first-split active-suffix Eq.13.23 product-update
+  wrappers: added
+  `higham13_algorithm13_3_firstSplitStageHistoryGrowthFactor_le_two_of_product_bound_diag_update`,
+  `higham13_algorithm13_3_firstSplitStageHistoryGrowthFactor_le_two_of_product_bound_diag_update_reciprocal`,
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal`.
+  These transport the source product-bound/diagonal-update `rho <= 2` theorem to
+  the first-split flat representation and then feed it into the active-suffix
+  Eq.13.23 product witness, so the source-strength first-split Eq.13.23 route no
+  longer needs raw `hTail` or raw `rho <= 2` premises once the active-suffix
+  source chain and BDD tables are supplied.  The source-compatible structured
+  product estimate, source table data, and Theorem 13.6 estimates remain open.
+- 2026-07-01 Problem 13.4 global-tableau Eq.13.23 product-update
+  source-chain method: added
+  `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update`
+  and
+  `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update_reciprocal`,
+  plus determinant variants
+  `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`
+  and
+  `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero`.
+  It is the fixed-ambient source-chain-level wrapper for the full flat
+  Algorithm 13.3 matrix: from any completed
+  `Higham13Eq1322GlobalTableauSourceChain`, an ambient right inverse or
+  `det(blockMatrixFlatFin A) != 0`, and the product-bound/diagonal-update BDD
+  data, it derives `rho <= 2` internally and returns the Eq.13.23
+  `BlockLUFactSpec` product witness; the reciprocal variants accept the
+  Theorem 13.7-style reciprocal pivot table, and the determinant variants
+  derive the canonical ambient `nonsingInv` right-inverse.  This removes the
+  raw growth-factor and ambient-right-inverse plumbing at the global-tableau
+  source-chain boundary, but it does not construct the all-tail source chain or
+  prove the inverse-entry/source comparison.
+- 2026-07-01 Problem 13.4 global-tableau source-chain pivot tables: added
+  `Higham13Eq1322GlobalTableauSourceChain.nonterminal_pivot_right_inverse`,
+  `Higham13Eq1322GlobalTableauSourceChain.nonterminal_pivot_det_ne_zero`,
+  `Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final`,
+  `Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final`,
+  `Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final_right_inverse`,
+  `Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final_nonsingInv`,
+  and
+  `Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final_nonsingInv`.
+  These expose the pivot identity stored at each nonterminal step of the
+  fixed-ambient global-tableau source certificate and add the terminal-pivot
+  wrappers needed to satisfy all-pivot right-inverse/determinant APIs.  This
+  removes an all-pivot proof-artifact table from the global-tableau route, but
+  the all-tail source comparison/nonsingularity data, source-strength BDD
+  product/update data, and Theorem 13.6 cited estimates remain open.
+- 2026-07-01 Problem 13.4 global-tableau determinant variants: added
+  `Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain_of_det_ne_zero`,
+  `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa_of_det_ne_zero`,
+  and
+  `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_det_ne_zero`.
+  These specialize the generic fixed-ambient global-tableau source-chain
+  surfaces to the canonical ambient inverse `nonsingInv N Aglob` under
+  `det Aglob != 0`, deriving the ambient right-inverse certificate internally.
+  This removes the raw ambient right-inverse proof artifact from the reusable
+  source-chain boundary; Eq.13.23 still keeps the source-side `rho <= 2` theorem
+  explicit, and the all-tail source comparisons, source-strength BDD data, and
+  Theorem 13.6 estimates remain open.
+- 2026-07-01 Problem 13.4 derived active-tail Eq.13.23 product-update
+  wrappers: added
+  `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update`,
+  `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update_reciprocal`,
+  `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero`.
+  These specialize the generic derived-tail active Eq.13.23 witness to the
+  full flat Algorithm 13.3 source matrix, derive `rho <= 2` from the existing
+  BDD product-bound/diagonal-update route, accept reciprocal-table pivot data,
+  and optionally derive the ambient `nonsingInv` right-inverse from
+  `det(blockMatrixFlatFin A) != 0`.  The successor-tail source-chain
+  constructor and derived tail inverse-entry comparison remain explicit; the
+  all-tail source certificate, Schur-complement/source-chain invertibility
+  data, source BDD product/update data, and Theorem 13.6 cited estimates remain
+  open.
+- 2026-07-01 Problem 13.4 three-block active-tail Eq.13.23
+  product-update wrappers: added
+  `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update`,
+  `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal`,
+  `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero`.
+  These specialize the length-three active-tail Eq.13.23 product witness to
+  the full flat Algorithm 13.3 source matrix, derive the `rho <= 2` side
+  condition from existing BDD product-bound/diagonal-update data, accept the
+  source-style active reciprocal table, and optionally derive the ambient
+  canonical `nonsingInv` right-inverse from `det(blockMatrixFlatFin A) != 0`.
+  This is dependency/plumbing progress only: the all-tail source certificate,
+  Schur-complement/source-chain invertibility data, source BDD product/update
+  data, and Theorem 13.6 cited estimates remain open.
+- 2026-07-01 Problem 13.4 tail invertibility representation bridges:
+  added `blockMatrixFirstSplitFlat_invertible_of_blockMatrixFlatFin`,
+  `blockMatrixFirstSplit_fromBlocks_invertible_of_blockMatrixFirstSplitFlat`,
+  `blockMatrixFirstSplit_fromBlocks_invertible_of_blockMatrixFlatFin`, and
+  `higham13_problem13_4_schurTail_fromBlocks_invertible_of_schur_invertible`.
+  These transport invertibility from the uniform flat block matrix through the
+  first-split scalar flattening and `Matrix.fromBlocks` view, then specialize
+  that transport to Schur tails.  The derived active-tail successor and its
+  Eq.13.22/Eq.13.23 product wrappers now derive the tail representation
+  instance locally instead of requiring it from callers; the finite
+  three-block active-tail constructor/product wrappers use the same bridge to
+  remove their explicit recursive tail `Matrix.fromBlocks` instance.  The
+  all-tail constructor, Schur-complement/source-chain invertibility data,
+  Eq.13.23 `rho <= 2`/BDD data, and Theorem 13.6 cited estimates remain open.
+- 2026-07-01 Problem 13.4 derived-tail active product witnesses:
+  added
+  `higham13_eq13_22_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa`
+  and
+  `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa`.
+  They feed the derived-tail active successor into the fixed-ambient
+  Eq.13.22/Eq.13.23 `BlockLUFactSpec` product APIs, so a recursive tail
+  builder only has to consume the derived tail inverse-entry certificate under
+  the locally derived tail representation instance.  The all-tail constructor,
+  Schur-complement/source-chain invertibility data, Eq.13.23 `rho <= 2`/BDD
+  data, and Theorem 13.6 cited estimates remain open.
+- 2026-07-01 Problem 13.4 derived-tail active successor handoff:
+  added
+  `Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_with_derived_tail_inverse_entry_exact_kappa`.
+  It derives the recursive Schur-tail inverse-entry certificate from the
+  parent active-tail inverse-entry certificate via
+  `higham13_problem13_4_firstSplit_schurTail_inverse_entry_bound_from_block_inverse`,
+  then invokes the recorded active-tail successor for any tail builder that
+  only needs that derived certificate.  This is reusable all-tail
+  infrastructure; the actual all-tail constructor, Schur-complement/source-chain
+  invertibility data, Eq.13.23 `rho <= 2`/BDD data, and Theorem 13.6 cited
+  estimates remain open.
+- 2026-07-01 Problem 13.4 three-block active-tail product witnesses: added
+  `higham13_eq13_22_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa`
+  and
+  `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa`.
+  They route the closed three-block global-tableau active-tail source chain
+  through the Eq.13.22/Eq.13.23 `BlockLUFactSpec` product APIs, removing a
+  finite recursive-tail product plumbing gap.  The all-tail source certificate,
+  Schur-complement/source-chain invertibility data, Eq.13.23 `rho <= 2`/BDD
+  data, and Theorem 13.6 cited estimates remain open; after the tail
+  representation-bridge cleanup these wrappers no longer require the recursive
+  tail `Matrix.fromBlocks` invertibility instance from callers.
+- 2026-07-01 Problem 13.4 three-block global-tableau active-tail constructor:
+  added
+  `Higham13Eq1322GlobalTableauSourceChain.three_from_matrix_stage_history_active_tail_exact_kappa`.
+  It composes the active-tail successor with the two-block active-tail
+  constructor and uses
+  `higham13_problem13_4_firstSplit_schurTail_inverse_entry_bound_from_block_inverse`
+  to derive the first recursive tail inverse-entry certificate from the parent
+  active-tail inverse-entry certificate, and it now derives the recursive tail
+  `Matrix.fromBlocks` invertibility instance locally from the Schur-tail bridge.
+  This removes explicit recursive inverse-entry and representation proof
+  artifacts for the three-block active-tail case; the all-tail source
+  certificate, Schur-complement/source-chain invertibility data, Eq.13.23
+  `rho <= 2`/BDD data, and Theorem 13.6 cited estimates remain open.
 - 2026-07-01 Problem 13.4 recursive Schur-tail inverse-entry handoff:
   added `invOf_entry_bound_of_reindex_eq` and
   `higham13_problem13_4_firstSplit_schurTail_inverse_entry_bound_from_block_inverse`.
@@ -10555,3 +10804,33 @@ These compile, but should not be treated as fully derived stability results:
   This is dependency progress only: recursive all-tail tableau containment,
   all-tail inverse/source comparison data, Eq.13.23 `rho <= 2`/BDD product
   update, and Theorem 13.6 cited estimates remain open.
+
+- 2026-07-01 Problem 13.4 active-suffix determinant packaging: added
+  determinant-nonzero wrappers for the active-suffix first-split Eq.13.22 and
+  Eq.13.23 product witnesses, including the Eq.13.23 product-update and
+  reciprocal product-update surfaces.  The new wrappers derive the canonical
+  ambient `nonsingInv` right-inverse from
+  `det(blockMatrixFirstSplitFlat A) != 0`, so callers using the canonical
+  active-suffix all-tail source chain no longer expose the raw ambient
+  right-inverse premise at that layer.  This is proof-surface cleanup for
+  Problem 13.4; the source-strength BDD table construction, all-tail source
+  comparison data, and Theorem 13.6 cited estimates remain open.
+
+- 2026-07-01 Algorithm 13.3 matrix-stage Eq.13.21/Eq.13.23 paired
+  product/update package: added
+  `higham13_algorithm13_3_upperFromMatrixStages_blockMaxNorm_bound_of_active_stage_bound`,
+  `higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update`,
+  and
+  `higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update_reciprocal`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These compose the true
+  matrix-product active-stage/product-update route into both the Eq.13.21
+  assembled upper-factor bound and the finite matrix-stage `growthFactorEntry
+  <= 2` endpoint.  The reciprocal wrapper accepts
+  `SchurStageActivePivotInvReciprocal13_7` and derives the raw pivot-product
+  table internally.  Verification: direct `BlockLU.lean`, focused BlockLU
+  build, public lookup, `git diff --check`, touched placeholder scan, and
+  focused `#print axioms` passed; the axiom audit reported only `propext`,
+  `Classical.choice`, and `Quot.sound`.  This is dependency-strength progress:
+  the structured dimension-free triple-product max-entry estimate,
+  diagonal-update/source table data, Problem 13.4 source comparisons, and
+  Theorem 13.6 cited estimates remain open.

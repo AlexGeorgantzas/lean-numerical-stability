@@ -9,6 +9,9 @@
 -- Theorem 10.14: Error analysis for PSD Cholesky with complete pivoting.
 
 import Mathlib.Data.Real.Basic
+import Mathlib.LinearAlgebra.Matrix.Rank
+import Mathlib.LinearAlgebra.Matrix.Block
+import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Field
@@ -72,6 +75,146 @@ structure PivotedCholeskySpec (n : ℕ) (A R : Fin n → Fin n → ℝ)
   /-- Π^T A Π = R^T R. -/
   product_eq : ∀ i j : Fin n,
     ∑ k : Fin n, R k i * R k j = A (σ i) (σ j)
+
+/-- **Positive semidefiniteness is invariant under simultaneous
+    permutation** (Theorem 10.9(b) foundation): if `σ` is a permutation,
+    `(i, j) ↦ A (σ i) (σ j)` is PSD whenever `A` is — the permuted
+    quadratic form at `x` is the original form at `x ∘ σ⁻¹`. -/
+lemma isPosSemiDef_perm (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n) (hσ : IsPermutation n σ)
+    (hPSD : IsPosSemiDef n A) :
+    IsPosSemiDef n (fun i j => A (σ i) (σ j)) := by
+  obtain ⟨σinv, hleft, hright⟩ :=
+    Function.bijective_iff_has_inverse.mp hσ
+  refine ⟨fun i j => hPSD.1 (σ i) (σ j), ?_⟩
+  intro x
+  have h1 : ∀ (F : Fin n → ℝ), ∑ i : Fin n, F i = ∑ i : Fin n, F (σ i) :=
+    fun F => (Fintype.sum_bijective σ hσ (fun i => F (σ i)) F
+      (fun i => rfl)).symm
+  have h := hPSD.2 (fun k => x (σinv k))
+  calc (0:ℝ)
+      ≤ ∑ i : Fin n, ∑ j : Fin n,
+          x (σinv i) * A i j * x (σinv j) := h
+    _ = ∑ i : Fin n, ∑ j : Fin n,
+          x (σinv (σ i)) * A (σ i) (σ j) * x (σinv (σ j)) := by
+        rw [h1 (fun i => ∑ j : Fin n,
+          x (σinv i) * A i j * x (σinv j))]
+        apply Finset.sum_congr rfl
+        intro i _
+        rw [h1 (fun j => x (σinv (σ i)) * A (σ i) j * x (σinv j))]
+    _ = ∑ i : Fin n, ∑ j : Fin n, x i * A (σ i) (σ j) * x j := by
+        apply Finset.sum_congr rfl
+        intro i _
+        apply Finset.sum_congr rfl
+        intro j _
+        rw [hleft i, hleft j]
+
+/-- **Complete-pivoting selection step** (Theorem 10.9(b) / §10.3): when
+    some diagonal entry of a PSD matrix is positive, a transposition
+    brings a largest diagonal entry to the pivot position; the permuted
+    matrix has a positive leading pivot dominating every diagonal entry. -/
+lemma psd_pivot_selection {m : ℕ} (A : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hnz : ∃ i, 0 < A i i) :
+    ∃ σ : Fin (m + 1) → Fin (m + 1), IsPermutation (m + 1) σ ∧
+      0 < A (σ 0) (σ 0) ∧
+      ∀ i : Fin (m + 1), A (σ i) (σ i) ≤ A (σ 0) (σ 0) := by
+  obtain ⟨t, _, ht⟩ := Finset.exists_max_image
+    (Finset.univ : Finset (Fin (m + 1))) (fun i => A i i)
+    ⟨0, Finset.mem_univ 0⟩
+  obtain ⟨w, hw⟩ := hnz
+  refine ⟨⇑(Equiv.swap 0 t), (Equiv.swap 0 t).bijective, ?_, ?_⟩
+  · rw [Equiv.swap_apply_left]
+    exact lt_of_lt_of_le hw (ht w (Finset.mem_univ w))
+  · intro i
+    rw [Equiv.swap_apply_left]
+    exact ht _ (Finset.mem_univ _)
+
+/-- Two-point evaluation of the quadratic form: for `x` supported on
+    `{i, j}` with `i ≠ j`, `xᵀAx = t²·a_ii + ts·(a_ij + a_ji) + s²·a_jj`. -/
+private lemma quadForm_two_point {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (i j : Fin n) (hij : i ≠ j) (t s : ℝ) :
+    ∑ k : Fin n, ∑ l : Fin n,
+      (if k = i then t else if k = j then s else 0) * A k l *
+      (if l = i then t else if l = j then s else 0) =
+    t ^ 2 * A i i + t * s * (A i j + A j i) + s ^ 2 * A j j := by
+  have hrow : ∀ k : Fin n,
+      ∑ l : Fin n, (if k = i then t else if k = j then s else 0) * A k l *
+        (if l = i then t else if l = j then s else 0) =
+      (if k = i then t else if k = j then s else 0) *
+        (A k i * t + A k j * s) := by
+    intro k
+    rw [Finset.sum_eq_add_of_mem i j (Finset.mem_univ i)
+      (Finset.mem_univ j) hij ?_]
+    · rw [if_pos rfl, if_neg (Ne.symm hij), if_pos rfl]
+      ring
+    · intro l _ hl
+      rcases hl with ⟨hli, hlj⟩
+      simp [hli, hlj]
+  rw [Finset.sum_congr rfl fun k _ => hrow k]
+  rw [Finset.sum_eq_add_of_mem i j (Finset.mem_univ i)
+    (Finset.mem_univ j) hij ?_]
+  · rw [if_pos rfl, if_neg (Ne.symm hij), if_pos rfl]
+    ring
+  · intro k _ hk
+    rcases hk with ⟨hki, hkj⟩
+    simp [hki, hkj]
+
+/-- **All diagonal entries zero forces the zero matrix** for PSD matrices
+    (Theorem 10.9(b) recursion, termination case): with every `a_ii = 0`,
+    the two-point quadratic form reduces to `2ts·a_ij ≥ 0` for all
+    `t, s`, so every entry vanishes. -/
+lemma psd_all_diag_zero {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (hdiag : ∀ i, A i i = 0) :
+    ∀ i j : Fin n, A i j = 0 := by
+  intro i j
+  by_cases hij : i = j
+  · rw [hij]; exact hdiag j
+  · have hpos := hPSD.2
+      (fun k => if k = i then (1:ℝ) else if k = j then 1 else 0)
+    have hneg := hPSD.2
+      (fun k => if k = i then (1:ℝ) else if k = j then (-1) else 0)
+    rw [quadForm_two_point A i j hij 1 1] at hpos
+    rw [quadForm_two_point A i j hij 1 (-1)] at hneg
+    have hsym := hPSD.1 i j
+    rw [hdiag i, hdiag j] at hpos hneg
+    nlinarith [hpos, hneg, hsym]
+
+/-- Extend a permutation of `Fin m` to `Fin (m+1)` fixing `0` and acting
+    on successors (Theorem 10.9(b) recursion: composing the tail stage's
+    permutation with the current pivot transposition). -/
+noncomputable def extendPerm {m : ℕ} (σ' : Fin m → Fin m) :
+    Fin (m + 1) → Fin (m + 1) :=
+  Fin.cases 0 (fun i => (σ' i).succ)
+
+@[simp] lemma extendPerm_zero {m : ℕ} (σ' : Fin m → Fin m) :
+    extendPerm σ' 0 = 0 := rfl
+
+@[simp] lemma extendPerm_succ {m : ℕ} (σ' : Fin m → Fin m) (i : Fin m) :
+    extendPerm σ' i.succ = (σ' i).succ := by
+  unfold extendPerm
+  rw [Fin.cases_succ]
+
+/-- Extension preserves the permutation property. -/
+lemma extendPerm_isPermutation {m : ℕ} (σ' : Fin m → Fin m)
+    (hσ' : IsPermutation m σ') :
+    IsPermutation (m + 1) (extendPerm σ') := by
+  obtain ⟨inv', hleft, hright⟩ :=
+    Function.bijective_iff_has_inverse.mp hσ'
+  refine Function.bijective_iff_has_inverse.mpr
+    ⟨Fin.cases 0 (fun i => (inv' i).succ), ?_, ?_⟩
+  · intro x
+    refine Fin.cases ?_ ?_ x
+    · rfl
+    · intro i
+      rw [extendPerm_succ]
+      simp only [Fin.cases_succ]
+      rw [hleft i]
+  · intro x
+    refine Fin.cases ?_ ?_ x
+    · rfl
+    · intro i
+      simp only [Fin.cases_succ]
+      rw [extendPerm_succ, hright i]
 
 -- ============================================================
 -- §10.3  Theorem 10.9: PSD Cholesky existence (helpers)
@@ -354,6 +497,689 @@ theorem psd_cholesky_existence (n : ℕ) (A : Fin n → Fin n → ℝ)
             rw [div_mul_div_comm, hsa_sq]
           linarith
 
+/-- **Theorem 10.9(b), constructive core** (Higham §10.3, equation
+    (10.11)): every real PSD matrix admits a pivoted Cholesky
+    factorization `Πᵀ A Π = RᵀR` in the displayed rank-truncated form,
+    with the permutation produced by greedy complete pivoting and `r`
+    the number of positive pivots encountered.  Identification of `r`
+    with the matrix rank is left as a separate row over Mathlib's rank. -/
+theorem psd_pivoted_cholesky_exists (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) :
+    ∃ (r : ℕ) (σ : Fin n → Fin n) (R : Fin n → Fin n → ℝ),
+      PivotedCholeskySpec n A R σ r := by
+  induction n with
+  | zero =>
+    exact ⟨0, id, fun i => Fin.elim0 i,
+      Function.bijective_id, fun i => Fin.elim0 i, fun i => Fin.elim0 i,
+      fun i => Fin.elim0 i, fun i => Fin.elim0 i⟩
+  | succ m ih =>
+    by_cases hall : ∀ i, A i i = 0
+    · have hzero := psd_all_diag_zero A hPSD hall
+      refine ⟨0, id, fun _ _ => 0, Function.bijective_id,
+        fun i j _ => rfl, fun i hi => absurd hi (Nat.not_lt_zero _),
+        fun i j _ => rfl, fun i j => ?_⟩
+      show ∑ k : Fin (m + 1), (0:ℝ) * 0 = A i j
+      rw [hzero i j]
+      simp
+    · push_neg at hall
+      obtain ⟨w, hw⟩ := hall
+      have hw_pos : 0 < A w w :=
+        lt_of_le_of_ne (psd_diag_nonneg hPSD w) (Ne.symm hw)
+      obtain ⟨τ, hτ_perm, hτ_pos, _⟩ :=
+        psd_pivot_selection A ⟨w, hw_pos⟩
+      set B : Fin (m + 1) → Fin (m + 1) → ℝ :=
+        fun i j => A (τ i) (τ j) with hBdef
+      have hB_psd : IsPosSemiDef (m + 1) B :=
+        isPosSemiDef_perm (m + 1) A τ hτ_perm hPSD
+      have hB00 : 0 < B 0 0 := hτ_pos
+      set S : Fin m → Fin m → ℝ := fun i j =>
+        B i.succ j.succ - B 0 i.succ * B 0 j.succ / B 0 0 with hSdef
+      have hS_psd := schur_psd hB_psd hB00
+      obtain ⟨r', σ', R₁, hspec⟩ := ih S hS_psd
+      set sa := Real.sqrt (B 0 0) with hsadef
+      have hsa_pos : 0 < sa := Real.sqrt_pos_of_pos hB00
+      have hsa_ne : sa ≠ 0 := ne_of_gt hsa_pos
+      have hsa_sq : sa * sa = B 0 0 :=
+        Real.mul_self_sqrt (le_of_lt hB00)
+      set R : Fin (m + 1) → Fin (m + 1) → ℝ := (fun i j =>
+        if hi : i = 0 then
+          (if j = 0 then sa else B 0 (extendPerm σ' j) / sa)
+        else
+          if hj : j = 0 then 0 else R₁ (i.pred hi) (j.pred hj))
+        with hRdef
+      have hR0 : ∀ p : Fin (m + 1), R 0 p =
+          if p = 0 then sa else B 0 (extendPerm σ' p) / sa := by
+        intro p; simp [hRdef]
+      have hRs : ∀ (k : Fin m) (p : Fin (m + 1)), R k.succ p =
+          if hp : p = 0 then 0 else R₁ k (p.pred hp) := by
+        intro k p; simp [hRdef, Fin.succ_ne_zero, Fin.pred_succ]
+      have hext : ∀ (p : Fin (m + 1)) (hp : p ≠ 0),
+          extendPerm σ' p = (σ' (p.pred hp)).succ := by
+        intro p hp
+        conv_lhs => rw [← Fin.succ_pred p hp]
+        rw [extendPerm_succ]
+      refine ⟨r' + 1, fun i => τ (extendPerm σ' i), R,
+        hτ_perm.comp (extendPerm_isPermutation σ' hspec.perm),
+        fun i j hij => ?_, fun i hir => ?_, fun i j hri => ?_,
+        fun i j => ?_⟩
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi; exact absurd hij (Nat.not_lt_zero _)
+        · by_cases hj : j = 0
+          · simp [hi, hj]
+          · simp only [dif_neg hi, dif_neg hj]
+            exact hspec.R_upper _ _ (by
+              have hiv : i.val ≠ 0 := fun h => hi (Fin.ext h)
+              have hjv : j.val ≠ 0 := fun h => hj (Fin.ext h)
+              have := Fin.val_pred i hi
+              have := Fin.val_pred j hj
+              omega)
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi; simp [hsa_pos]
+        · simp only [dif_neg hi]
+          exact hspec.R_diag_pos _ (by
+            have hiv : i.val ≠ 0 := fun h => hi (Fin.ext h)
+            have := Fin.val_pred i hi
+            omega)
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi
+          exact absurd hri (by simp)
+        · simp only [dif_neg hi]
+          by_cases hj : j = 0
+          · simp [hj]
+          · simp only [dif_neg hj]
+            exact hspec.R_rank_zero _ _ (by
+              have := Fin.val_pred i hi
+              omega)
+      · show ∑ k : Fin (m + 1), R k i * R k j =
+          B (extendPerm σ' i) (extendPerm σ' j)
+        rw [Fin.sum_univ_succ]
+        simp only [hR0, hRs]
+        by_cases hi : i = 0 <;> by_cases hj : j = 0
+        · subst hi; subst hj
+          simp [hsa_sq]
+        · subst hi
+          simp [hj, mul_div_cancel₀, hsa_ne]
+        · subst hj
+          simp [hi, hsa_ne, hB_psd.1 (extendPerm σ' i) 0]
+        · simp only [if_neg hi, if_neg hj, dif_neg hi, dif_neg hj]
+          have hih := hspec.product_eq (i.pred hi) (j.pred hj)
+          rw [hext i hi, hext j hj, hih]
+          have h1 : B 0 (σ' (i.pred hi)).succ / sa *
+              (B 0 (σ' (j.pred hj)).succ / sa) =
+              B 0 (σ' (i.pred hi)).succ *
+                B 0 (σ' (j.pred hj)).succ / B 0 0 := by
+            rw [div_mul_div_comm, hsa_sq]
+          rw [h1]
+          simp only [hSdef]
+          ring
+
+/-- **Schur diagonal domination** (equation (10.13) foundation): each
+    Schur-complement diagonal entry is at most the corresponding original
+    diagonal entry, hence — under the complete-pivoting choice — at most
+    the current pivot.  This is the monotonicity that propagates the
+    per-stage maximality into the (10.13) display. -/
+lemma schur_diag_le_pivot {m : ℕ} (B : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hB00 : 0 < B 0 0)
+    (hmax : ∀ i : Fin (m + 1), B i i ≤ B 0 0) (i : Fin m) :
+    B i.succ i.succ - B 0 i.succ * B 0 i.succ / B 0 0 ≤ B 0 0 := by
+  have hsub : 0 ≤ B 0 i.succ * B 0 i.succ / B 0 0 :=
+    div_nonneg (mul_self_nonneg _) hB00.le
+  linarith [hmax i.succ]
+
+/-- **Column-tail identity for the pivoted factor** (equation (10.13)
+    foundation, spec level): the tail of a squared column of `R` from row
+    `k` down equals the permuted diagonal entry minus the head — i.e. the
+    stage-`k` Schur diagonal in factored form.  Combined with the
+    stage-domination invariant this yields the display (10.13). -/
+lemma pivoted_spec_column_split {n : ℕ} {A R : Fin n → Fin n → ℝ}
+    {σ : Fin n → Fin n} {r : ℕ}
+    (hspec : PivotedCholeskySpec n A R σ r) (k j : Fin n) :
+    (∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+      R i j ^ 2) =
+    A (σ j) (σ j) -
+      ∑ i ∈ Finset.univ.filter (fun i : Fin n => i.val < k.val),
+        R i j ^ 2 := by
+  have hprod := hspec.product_eq j j
+  have hsq : ∑ i : Fin n, R i j * R i j = ∑ i : Fin n, R i j ^ 2 :=
+    Finset.sum_congr rfl fun i _ => by ring
+  rw [hsq] at hprod
+  have hsplit : ∑ i : Fin n, R i j ^ 2 =
+      (∑ i ∈ Finset.univ.filter (fun i : Fin n => i.val < k.val),
+        R i j ^ 2) +
+      ∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+        R i j ^ 2 := by
+    rw [← Finset.sum_filter_add_sum_filter_not Finset.univ
+      (fun i : Fin n => i.val < k.val) (fun i => R i j ^ 2)]
+    congr 1
+    apply Finset.sum_congr _ (fun _ _ => rfl)
+    ext i
+    simp
+  linarith [hprod, hsplit]
+
+/-- The leading diagonal entry of a pivoted factor squares to the
+    permuted leading diagonal of `A` (product equation at `(0,0)` with
+    upper triangularity). -/
+lemma pivoted_spec_head_sq {m : ℕ} {A R : Fin (m + 1) → Fin (m + 1) → ℝ}
+    {σ : Fin (m + 1) → Fin (m + 1)} {r : ℕ}
+    (hspec : PivotedCholeskySpec (m + 1) A R σ r) :
+    R 0 0 * R 0 0 = A (σ 0) (σ 0) := by
+  have h := hspec.product_eq 0 0
+  rw [Fin.sum_univ_succ] at h
+  rw [show ∑ i : Fin m, R i.succ 0 * R i.succ 0 = 0 from
+    Finset.sum_eq_zero fun i _ => by
+      rw [hspec.R_upper i.succ 0 (by simp), zero_mul]] at h
+  linarith
+
+/-- Diagonal entries of a pivoted factor are nonnegative. -/
+lemma pivoted_spec_diag_nonneg {n : ℕ} {A R : Fin n → Fin n → ℝ}
+    {σ : Fin n → Fin n} {r : ℕ}
+    (hspec : PivotedCholeskySpec n A R σ r) (i : Fin n) :
+    0 ≤ R i i := by
+  rcases Nat.lt_or_ge i.val r with h | h
+  · exact (hspec.R_diag_pos i h).le
+  · rw [hspec.R_rank_zero i i h]
+
+/-- **Theorem 10.9(b) with the complete-pivoting invariant**: the greedy
+    construction additionally yields nonincreasing factor diagonal —
+    `R l l ≤ R k k` for `k ≤ l` — the per-stage maximality that together
+    with `pivoted_spec_column_split` gives the display (10.13). -/
+theorem psd_pivoted_cholesky_exists_cp (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) :
+    ∃ (r : ℕ) (σ : Fin n → Fin n) (R : Fin n → Fin n → ℝ),
+      PivotedCholeskySpec n A R σ r ∧
+      ∀ k l : Fin n, k.val ≤ l.val → R l l ≤ R k k := by
+  induction n with
+  | zero =>
+    exact ⟨0, id, fun i => Fin.elim0 i,
+      ⟨Function.bijective_id, fun i => Fin.elim0 i, fun i => Fin.elim0 i,
+       fun i => Fin.elim0 i, fun i => Fin.elim0 i⟩,
+      fun k => Fin.elim0 k⟩
+  | succ m ih =>
+    by_cases hall : ∀ i, A i i = 0
+    · have hzero := psd_all_diag_zero A hPSD hall
+      refine ⟨0, id, fun _ _ => 0,
+        ⟨Function.bijective_id, fun i j _ => rfl,
+         fun i hi => absurd hi (Nat.not_lt_zero _),
+         fun i j _ => rfl, fun i j => ?_⟩,
+        fun k l _ => le_rfl⟩
+      show ∑ k : Fin (m + 1), (0:ℝ) * 0 = A i j
+      rw [hzero i j]
+      simp
+    · push_neg at hall
+      obtain ⟨w, hw⟩ := hall
+      have hw_pos : 0 < A w w :=
+        lt_of_le_of_ne (psd_diag_nonneg hPSD w) (Ne.symm hw)
+      obtain ⟨τ, hτ_perm, hτ_pos, hτ_max⟩ :=
+        psd_pivot_selection A ⟨w, hw_pos⟩
+      set B : Fin (m + 1) → Fin (m + 1) → ℝ :=
+        fun i j => A (τ i) (τ j) with hBdef
+      have hB_psd : IsPosSemiDef (m + 1) B :=
+        isPosSemiDef_perm (m + 1) A τ hτ_perm hPSD
+      have hB00 : 0 < B 0 0 := hτ_pos
+      set S : Fin m → Fin m → ℝ := fun i j =>
+        B i.succ j.succ - B 0 i.succ * B 0 j.succ / B 0 0 with hSdef
+      have hS_psd := schur_psd hB_psd hB00
+      obtain ⟨r', σ', R₁, hspec, hmono⟩ := ih S hS_psd
+      set sa := Real.sqrt (B 0 0) with hsadef
+      have hsa_pos : 0 < sa := Real.sqrt_pos_of_pos hB00
+      have hsa_ne : sa ≠ 0 := ne_of_gt hsa_pos
+      have hsa_sq : sa * sa = B 0 0 :=
+        Real.mul_self_sqrt (le_of_lt hB00)
+      -- the tail's leading diagonal is bounded by the pivot root
+      have hR₁_le_sa : ∀ i : Fin m, R₁ i i ≤ sa := by
+        intro i
+        rcases Nat.eq_zero_or_pos m with hm | hm
+        · exact absurd i.isLt (by omega)
+        · have h0m : (0 : ℕ) < m := hm
+          have hhead : R₁ ⟨0, h0m⟩ ⟨0, h0m⟩ * R₁ ⟨0, h0m⟩ ⟨0, h0m⟩ =
+              S (σ' ⟨0, h0m⟩) (σ' ⟨0, h0m⟩) := by
+            have h := hspec.product_eq ⟨0, h0m⟩ ⟨0, h0m⟩
+            rw [show ∑ k : Fin m, R₁ k ⟨0, h0m⟩ * R₁ k ⟨0, h0m⟩ =
+                R₁ ⟨0, h0m⟩ ⟨0, h0m⟩ * R₁ ⟨0, h0m⟩ ⟨0, h0m⟩ from ?_] at h
+            · exact h
+            · rw [Finset.sum_eq_single ⟨0, h0m⟩]
+              · intro b _ hb
+                rw [hspec.R_upper b ⟨0, h0m⟩ (by
+                  have hb0 : b.val ≠ 0 := fun h0 => hb (Fin.ext h0)
+                  show 0 < b.val
+                  omega), zero_mul]
+              · intro habs
+                exact absurd (Finset.mem_univ _) habs
+          have hSmax : S (σ' ⟨0, h0m⟩) (σ' ⟨0, h0m⟩) ≤ B 0 0 :=
+            schur_diag_le_pivot B hB00 (fun i => hτ_max i) _
+          have hi_le : R₁ i i ≤ R₁ ⟨0, h0m⟩ ⟨0, h0m⟩ :=
+            hmono ⟨0, h0m⟩ i (by simp)
+          have hnn := pivoted_spec_diag_nonneg hspec ⟨0, h0m⟩
+          nlinarith [pivoted_spec_diag_nonneg hspec i, hsa_sq, hsa_pos]
+      set R : Fin (m + 1) → Fin (m + 1) → ℝ := (fun i j =>
+        if hi : i = 0 then
+          (if j = 0 then sa else B 0 (extendPerm σ' j) / sa)
+        else
+          if hj : j = 0 then 0 else R₁ (i.pred hi) (j.pred hj))
+        with hRdef
+      have hR0 : ∀ p : Fin (m + 1), R 0 p =
+          if p = 0 then sa else B 0 (extendPerm σ' p) / sa := by
+        intro p; simp [hRdef]
+      have hRs : ∀ (k : Fin m) (p : Fin (m + 1)), R k.succ p =
+          if hp : p = 0 then 0 else R₁ k (p.pred hp) := by
+        intro k p; simp [hRdef, Fin.succ_ne_zero, Fin.pred_succ]
+      have hext : ∀ (p : Fin (m + 1)) (hp : p ≠ 0),
+          extendPerm σ' p = (σ' (p.pred hp)).succ := by
+        intro p hp
+        conv_lhs => rw [← Fin.succ_pred p hp]
+        rw [extendPerm_succ]
+      refine ⟨r' + 1, fun i => τ (extendPerm σ' i), R,
+        ⟨hτ_perm.comp (extendPerm_isPermutation σ' hspec.perm),
+         fun i j hij => ?_, fun i hir => ?_, fun i j hri => ?_,
+         fun i j => ?_⟩, fun k l hkl => ?_⟩
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi; exact absurd hij (Nat.not_lt_zero _)
+        · by_cases hj : j = 0
+          · simp [hi, hj]
+          · simp only [dif_neg hi, dif_neg hj]
+            exact hspec.R_upper _ _ (by
+              have hiv : i.val ≠ 0 := fun h => hi (Fin.ext h)
+              have hjv : j.val ≠ 0 := fun h => hj (Fin.ext h)
+              have := Fin.val_pred i hi
+              have := Fin.val_pred j hj
+              omega)
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi; simp [hsa_pos]
+        · simp only [dif_neg hi]
+          exact hspec.R_diag_pos _ (by
+            have hiv : i.val ≠ 0 := fun h => hi (Fin.ext h)
+            have := Fin.val_pred i hi
+            omega)
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi
+          exact absurd hri (by simp)
+        · simp only [dif_neg hi]
+          by_cases hj : j = 0
+          · simp [hj]
+          · simp only [dif_neg hj]
+            exact hspec.R_rank_zero _ _ (by
+              have := Fin.val_pred i hi
+              omega)
+      · show ∑ k : Fin (m + 1), R k i * R k j =
+          B (extendPerm σ' i) (extendPerm σ' j)
+        rw [Fin.sum_univ_succ]
+        simp only [hR0, hRs]
+        by_cases hi : i = 0 <;> by_cases hj : j = 0
+        · subst hi; subst hj
+          simp [hsa_sq]
+        · subst hi
+          simp [hj, mul_div_cancel₀, hsa_ne]
+        · subst hj
+          simp [hi, hsa_ne, hB_psd.1 (extendPerm σ' i) 0]
+        · simp only [if_neg hi, if_neg hj, dif_neg hi, dif_neg hj]
+          have hih := hspec.product_eq (i.pred hi) (j.pred hj)
+          rw [hext i hi, hext j hj, hih]
+          have h1 : B 0 (σ' (i.pred hi)).succ / sa *
+              (B 0 (σ' (j.pred hj)).succ / sa) =
+              B 0 (σ' (i.pred hi)).succ *
+                B 0 (σ' (j.pred hj)).succ / B 0 0 := by
+            rw [div_mul_div_comm, hsa_sq]
+          rw [h1]
+          simp only [hSdef]
+          ring
+      · -- diagonal monotonicity
+        simp only [hRdef]
+        by_cases hk : k = 0
+        · subst hk
+          by_cases hl : l = 0
+          · subst hl; simp
+          · simp only [dif_neg hl]
+            exact hR₁_le_sa _
+        · have hlk : l ≠ 0 := by
+            intro h0
+            apply hk
+            apply Fin.ext
+            have hl0 : l.val = 0 := by simp [h0]
+            omega
+          simp only [dif_neg hk, dif_neg hlk]
+          exact hmono _ _ (by
+            have := Fin.val_pred k hk
+            have := Fin.val_pred l hlk
+            omega)
+
+/-- Reindex a succ-tail filter sum over `Fin (m+1)` to a tail filter sum
+    over `Fin m`. -/
+private lemma sum_filter_succ_tail {m : ℕ} (k₀ : ℕ)
+    (f : Fin (m + 1) → ℝ) :
+    (∑ i ∈ Finset.univ.filter
+      (fun i : Fin (m + 1) => k₀ + 1 ≤ i.val), f i) =
+    ∑ i₀ ∈ Finset.univ.filter (fun i₀ : Fin m => k₀ ≤ i₀.val),
+      f i₀.succ := by
+  have himg : (Finset.univ.filter
+      (fun i₀ : Fin m => k₀ ≤ i₀.val)).image Fin.succ =
+      Finset.univ.filter (fun i : Fin (m + 1) => k₀ + 1 ≤ i.val) := by
+    ext i
+    simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ,
+      true_and]
+    constructor
+    · rintro ⟨i₀, hi₀, rfl⟩
+      simp only [Fin.val_succ]
+      omega
+    · intro hi
+      have hne : i ≠ 0 := by
+        intro h0
+        rw [h0] at hi
+        simp at hi
+      refine ⟨i.pred hne, ?_, Fin.succ_pred i hne⟩
+      have := Fin.val_pred i hne
+      omega
+  rw [← himg, Finset.sum_image
+    (fun a _ b _ h => Fin.succ_injective m h)]
+
+/-- **Theorem 10.9(b) with the (10.13) column-tail invariant**: the greedy
+    complete-pivoting construction yields, beyond the pivoted certificate,
+    the stage-wise column-tail domination
+    `∑_{i ≥ k} r_ij² ≤ r_kk²` for `k ≤ j` — precisely the content of the
+    display (10.13). -/
+theorem psd_pivoted_cholesky_exists_tail (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hPSD : IsPosSemiDef n A) :
+    ∃ (r : ℕ) (σ : Fin n → Fin n) (R : Fin n → Fin n → ℝ),
+      PivotedCholeskySpec n A R σ r ∧
+      ∀ k j : Fin n, k.val ≤ j.val →
+        (∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+          R i j ^ 2) ≤ R k k ^ 2 := by
+  induction n with
+  | zero =>
+    exact ⟨0, id, fun i => Fin.elim0 i,
+      ⟨Function.bijective_id, fun i => Fin.elim0 i, fun i => Fin.elim0 i,
+       fun i => Fin.elim0 i, fun i => Fin.elim0 i⟩,
+      fun k => Fin.elim0 k⟩
+  | succ m ih =>
+    by_cases hall : ∀ i, A i i = 0
+    · have hzero := psd_all_diag_zero A hPSD hall
+      refine ⟨0, id, fun _ _ => 0,
+        ⟨Function.bijective_id, fun i j _ => rfl,
+         fun i hi => absurd hi (Nat.not_lt_zero _),
+         fun i j _ => rfl, fun i j => ?_⟩,
+        fun k j _ => by simp⟩
+      show ∑ k : Fin (m + 1), (0:ℝ) * 0 = A i j
+      rw [hzero i j]
+      simp
+    · push_neg at hall
+      obtain ⟨w, hw⟩ := hall
+      have hw_pos : 0 < A w w :=
+        lt_of_le_of_ne (psd_diag_nonneg hPSD w) (Ne.symm hw)
+      obtain ⟨τ, hτ_perm, hτ_pos, hτ_max⟩ :=
+        psd_pivot_selection A ⟨w, hw_pos⟩
+      set B : Fin (m + 1) → Fin (m + 1) → ℝ :=
+        fun i j => A (τ i) (τ j) with hBdef
+      have hB_psd : IsPosSemiDef (m + 1) B :=
+        isPosSemiDef_perm (m + 1) A τ hτ_perm hPSD
+      have hB00 : 0 < B 0 0 := hτ_pos
+      set S : Fin m → Fin m → ℝ := fun i j =>
+        B i.succ j.succ - B 0 i.succ * B 0 j.succ / B 0 0 with hSdef
+      have hS_psd := schur_psd hB_psd hB00
+      obtain ⟨r', σ', R₁, hspec, htail⟩ := ih S hS_psd
+      set sa := Real.sqrt (B 0 0) with hsadef
+      have hsa_pos : 0 < sa := Real.sqrt_pos_of_pos hB00
+      have hsa_ne : sa ≠ 0 := ne_of_gt hsa_pos
+      have hsa_sq : sa * sa = B 0 0 :=
+        Real.mul_self_sqrt (le_of_lt hB00)
+      set R : Fin (m + 1) → Fin (m + 1) → ℝ := (fun i j =>
+        if hi : i = 0 then
+          (if j = 0 then sa else B 0 (extendPerm σ' j) / sa)
+        else
+          if hj : j = 0 then 0 else R₁ (i.pred hi) (j.pred hj))
+        with hRdef
+      have hR0 : ∀ p : Fin (m + 1), R 0 p =
+          if p = 0 then sa else B 0 (extendPerm σ' p) / sa := by
+        intro p; simp [hRdef]
+      have hRs : ∀ (k : Fin m) (p : Fin (m + 1)), R k.succ p =
+          if hp : p = 0 then 0 else R₁ k (p.pred hp) := by
+        intro k p; simp [hRdef, Fin.succ_ne_zero, Fin.pred_succ]
+      have hext : ∀ (p : Fin (m + 1)) (hp : p ≠ 0),
+          extendPerm σ' p = (σ' (p.pred hp)).succ := by
+        intro p hp
+        conv_lhs => rw [← Fin.succ_pred p hp]
+        rw [extendPerm_succ]
+      have hproduct : ∀ i j : Fin (m + 1),
+          ∑ p : Fin (m + 1), R p i * R p j =
+          B (extendPerm σ' i) (extendPerm σ' j) := by
+        intro i j
+        rw [Fin.sum_univ_succ]
+        simp only [hR0, hRs]
+        by_cases hi : i = 0 <;> by_cases hj : j = 0
+        · subst hi; subst hj
+          simp [hsa_sq]
+        · subst hi
+          simp [hj, mul_div_cancel₀, hsa_ne]
+        · subst hj
+          simp [hi, hsa_ne, hB_psd.1 (extendPerm σ' i) 0]
+        · simp only [if_neg hi, if_neg hj, dif_neg hi, dif_neg hj]
+          have hih := hspec.product_eq (i.pred hi) (j.pred hj)
+          rw [hext i hi, hext j hj, hih]
+          have h1 : B 0 (σ' (i.pred hi)).succ / sa *
+              (B 0 (σ' (j.pred hj)).succ / sa) =
+              B 0 (σ' (i.pred hi)).succ *
+                B 0 (σ' (j.pred hj)).succ / B 0 0 := by
+            rw [div_mul_div_comm, hsa_sq]
+          rw [h1]
+          simp only [hSdef]
+          ring
+      refine ⟨r' + 1, fun i => τ (extendPerm σ' i), R,
+        ⟨hτ_perm.comp (extendPerm_isPermutation σ' hspec.perm),
+         fun i j hij => ?_, fun i hir => ?_, fun i j hri => ?_,
+         fun i j => hproduct i j⟩, fun k j hkj => ?_⟩
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi; exact absurd hij (Nat.not_lt_zero _)
+        · by_cases hj : j = 0
+          · simp [hi, hj]
+          · simp only [dif_neg hi, dif_neg hj]
+            exact hspec.R_upper _ _ (by
+              have hiv : i.val ≠ 0 := fun h => hi (Fin.ext h)
+              have hjv : j.val ≠ 0 := fun h => hj (Fin.ext h)
+              have := Fin.val_pred i hi
+              have := Fin.val_pred j hj
+              omega)
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi; simp [hsa_pos]
+        · simp only [dif_neg hi]
+          exact hspec.R_diag_pos _ (by
+            have hiv : i.val ≠ 0 := fun h => hi (Fin.ext h)
+            have := Fin.val_pred i hi
+            omega)
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi
+          exact absurd hri (by simp)
+        · simp only [dif_neg hi]
+          by_cases hj : j = 0
+          · simp [hj]
+          · simp only [dif_neg hj]
+            exact hspec.R_rank_zero _ _ (by
+              have := Fin.val_pred i hi
+              omega)
+      · -- column-tail domination (the (10.13) invariant)
+        by_cases hk : k = 0
+        · subst hk
+          have hfilter : Finset.univ.filter
+              (fun i : Fin (m + 1) => (0 : Fin (m + 1)).val ≤ i.val) =
+              Finset.univ := by
+            ext i; simp
+          rw [hfilter]
+          have hsum : ∑ i : Fin (m + 1), R i j ^ 2 =
+              B (extendPerm σ' j) (extendPerm σ' j) := by
+            rw [← hproduct j j]
+            exact Finset.sum_congr rfl fun i _ => by ring
+          rw [hsum]
+          have hR00 : R 0 0 = sa := by rw [hR0 0]; simp
+          rw [hR00]
+          calc B (extendPerm σ' j) (extendPerm σ' j) ≤ B 0 0 :=
+              hτ_max (extendPerm σ' j)
+            _ = sa ^ 2 := by rw [← hsa_sq]; ring
+        · have hj0 : j ≠ 0 := by
+            intro h0
+            apply hk
+            apply Fin.ext
+            have hjv : j.val = 0 := by simp [h0]
+            omega
+          have hkval : k.val = (k.pred hk).val + 1 := by
+            have := Fin.val_pred k hk
+            have hkv : k.val ≠ 0 := fun h => hk (Fin.ext h)
+            omega
+          have hfeq : Finset.univ.filter
+              (fun i : Fin (m + 1) => k.val ≤ i.val) =
+              Finset.univ.filter
+              (fun i : Fin (m + 1) => (k.pred hk).val + 1 ≤ i.val) := by
+            apply Finset.filter_congr
+            intro i _
+            constructor <;> intro h <;> omega
+          rw [hfeq, sum_filter_succ_tail (k.pred hk).val
+            (fun i => R i j ^ 2)]
+          have hterm : ∀ i₀ : Fin m, R i₀.succ j ^ 2 =
+              R₁ i₀ (j.pred hj0) ^ 2 := by
+            intro i₀
+            rw [hRs i₀ j, dif_neg hj0]
+          rw [Finset.sum_congr rfl fun i₀ _ => hterm i₀]
+          have hkk : R k k = R₁ (k.pred hk) (k.pred hk) := by
+            conv_lhs => rw [← Fin.succ_pred k hk]
+            rw [hRs (k.pred hk) (k.pred hk).succ,
+              dif_neg (Fin.succ_ne_zero _), Fin.pred_succ]
+          rw [hkk]
+          exact htail (k.pred hk) (j.pred hj0) (by
+            have := Fin.val_pred j hj0
+            have := Fin.val_pred k hk
+            omega)
+
+/-- **Rank invariance of the pivoted certificate** (Theorem 10.9(b),
+    `r = rank` bridge, part 1): the matrix rank of `A` equals the rank of
+    the pivoted factor `R` — `rank A = rank(ΠᵀAΠ) = rank(RᵀR) = rank R`.
+    The remaining identification `rank R = r` (triangular rank count) is
+    a separate row. -/
+theorem pivoted_spec_rank_eq {n : ℕ} {A R : Fin n → Fin n → ℝ}
+    {σ : Fin n → Fin n} {r : ℕ}
+    (hspec : PivotedCholeskySpec n A R σ r) :
+    (Matrix.of A).rank = (Matrix.of R).rank := by
+  let eσ : Fin n ≃ Fin n := Equiv.ofBijective σ hspec.perm
+  have hsub : (Matrix.of A).submatrix ⇑eσ ⇑eσ =
+      (Matrix.of R).transpose * Matrix.of R := by
+    ext i j
+    simp only [Matrix.submatrix_apply, Matrix.mul_apply,
+      Matrix.transpose_apply, Matrix.of_apply]
+    show A (σ i) (σ j) = ∑ k : Fin n, R k i * R k j
+    rw [← hspec.product_eq i j]
+  calc (Matrix.of A).rank
+      = ((Matrix.of A).submatrix ⇑eσ ⇑eσ).rank :=
+        (Matrix.rank_submatrix (Matrix.of A) eσ eσ).symm
+    _ = ((Matrix.of R).transpose * Matrix.of R).rank := by rw [hsub]
+    _ = (Matrix.of R).rank :=
+        Matrix.rank_transpose_mul_self (Matrix.of R)
+
+/-- **The leading `r × r` block of a pivoted factor is a determinant
+    unit** (Theorem 10.9(b), `rank R = r` bridge, `≥` side): upper
+    triangular with positive diagonal, so its determinant is the product
+    of the positive pivots. -/
+theorem pivoted_leading_block_isUnit_det {n : ℕ}
+    {A R : Fin n → Fin n → ℝ} {σ : Fin n → Fin n} {r : ℕ}
+    (hspec : PivotedCholeskySpec n A R σ r) (hr : r ≤ n) :
+    IsUnit (Matrix.of (fun i j : Fin r =>
+      R ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)).det := by
+  have hBT : (Matrix.of (fun i j : Fin r =>
+      R ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)).BlockTriangular id := by
+    intro i j hij
+    exact hspec.R_upper _ _ hij
+  rw [Matrix.det_of_upperTriangular hBT]
+  apply isUnit_iff_ne_zero.mpr
+  apply Finset.prod_ne_zero_iff.mpr
+  intro i _
+  exact (hspec.R_diag_pos ⟨i.val, by omega⟩ i.isLt).ne'
+
+/-- **Triangular rank count** (Theorem 10.9(b), `r = rank` bridge,
+    part 2): the pivoted factor has matrix rank exactly `r` — the zero
+    rows give `≤` and the unit leading block gives `≥`, both through
+    selection-matrix factorizations and `rank_mul_le`. -/
+theorem pivoted_spec_rank_R {n : ℕ} {A R : Fin n → Fin n → ℝ}
+    {σ : Fin n → Fin n} {r : ℕ}
+    (hspec : PivotedCholeskySpec n A R σ r) (hr : r ≤ n) :
+    (Matrix.of R).rank = r := by
+  set Rtop : Matrix (Fin r) (Fin n) ℝ :=
+    Matrix.of (fun k j => R ⟨k.val, by omega⟩ j) with hRtop
+  set E : Matrix (Fin n) (Fin r) ℝ :=
+    Matrix.of (fun i k => if i.val = k.val then (1:ℝ) else 0) with hE
+  set E' : Matrix (Fin r) (Fin n) ℝ :=
+    Matrix.of (fun k i => if k.val = i.val then (1:ℝ) else 0) with hE'
+  set F : Matrix (Fin n) (Fin r) ℝ :=
+    Matrix.of (fun j k => if j.val = k.val then (1:ℝ) else 0) with hF
+  have hfac1 : Matrix.of R = E * Rtop := by
+    ext i j
+    show R i j = ∑ k : Fin r,
+      (if i.val = k.val then (1:ℝ) else 0) * R ⟨k.val, by omega⟩ j
+    by_cases hi : i.val < r
+    · rw [Finset.sum_eq_single (⟨i.val, hi⟩ : Fin r)]
+      · rw [if_pos rfl, one_mul]
+      · intro b _ hb
+        rw [if_neg (fun hbe => hb (Fin.ext hbe.symm)), zero_mul]
+      · intro h
+        exact absurd (Finset.mem_univ _) h
+    · rw [hspec.R_rank_zero i j (by omega)]
+      symm
+      apply Finset.sum_eq_zero
+      intro k _
+      rw [if_neg (by omega), zero_mul]
+  have hfac2 : Rtop = E' * Matrix.of R := by
+    ext k j
+    show R ⟨k.val, by omega⟩ j = ∑ i : Fin n,
+      (if k.val = i.val then (1:ℝ) else 0) * R i j
+    rw [Finset.sum_eq_single (⟨k.val, by omega⟩ : Fin n)]
+    · rw [if_pos rfl, one_mul]
+    · intro b _ hb
+      rw [if_neg (fun hbe => hb (Fin.ext hbe.symm)), zero_mul]
+    · intro h
+      exact absurd (Finset.mem_univ _) h
+  have hfac3 : Matrix.of (fun i j : Fin r =>
+      R ⟨i.val, by omega⟩ ⟨j.val, by omega⟩) = Rtop * F := by
+    ext k k'
+    show R ⟨k.val, by omega⟩ ⟨k'.val, by omega⟩ = ∑ j : Fin n,
+      R ⟨k.val, by omega⟩ j * (if j.val = k'.val then (1:ℝ) else 0)
+    rw [Finset.sum_eq_single (⟨k'.val, by omega⟩ : Fin n)]
+    · rw [if_pos rfl, mul_one]
+    · intro b _ hb
+      rw [if_neg (fun hbe => hb (Fin.ext hbe)), mul_zero]
+    · intro h
+      exact absurd (Finset.mem_univ _) h
+  have hMrank : (Matrix.of (fun i j : Fin r =>
+      R ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)).rank = r := by
+    rw [Matrix.rank_of_isUnit _
+      ((Matrix.isUnit_iff_isUnit_det _).mpr
+        (pivoted_leading_block_isUnit_det hspec hr))]
+    simp
+  have h1 : (Matrix.of R).rank ≤ Rtop.rank := by
+    rw [hfac1]
+    exact Matrix.rank_mul_le_right E Rtop
+  have h2 : Rtop.rank ≤ (Matrix.of R).rank := by
+    rw [hfac2]
+    exact Matrix.rank_mul_le_right E' (Matrix.of R)
+  have h3 : r ≤ Rtop.rank := by
+    have hle := Matrix.rank_mul_le_left Rtop F
+    rw [← hfac3, hMrank] at hle
+    exact hle
+  have h4 : Rtop.rank ≤ r := by
+    have := Matrix.rank_le_card_height Rtop
+    simpa using this
+  omega
+
+/-- **Theorem 10.9(b), rank identification**: for any pivoted certificate
+    with `r ≤ n`, the parameter `r` is the matrix rank of `A` — closing
+    the "positive semidefinite of rank r" reading of the source row. -/
+theorem pivoted_spec_rank_eq_r {n : ℕ} {A R : Fin n → Fin n → ℝ}
+    {σ : Fin n → Fin n} {r : ℕ}
+    (hspec : PivotedCholeskySpec n A R σ r) (hr : r ≤ n) :
+    (Matrix.of A).rank = r := by
+  rw [pivoted_spec_rank_eq hspec, pivoted_spec_rank_R hspec hr]
+
 -- ============================================================
 -- §10.3  Theorem 10.9(b): SPD → PivotedCholeskySpec (full rank)
 -- ============================================================
@@ -397,24 +1223,202 @@ noncomputable def schurComplement (n k : ℕ) (A A11_inv : Fin n → Fin n → �
 -- §10.3  Lemma 10.10: Schur complement perturbation
 -- ============================================================
 
-/-- **Abstract Schur complement perturbation interface**
-    (Higham §10.3, Lemma 10.10).
 
-    The perturbation estimate is supplied as `hbound`; the theorem gives it a
-    named interface for later PSD Cholesky results. -/
-theorem schur_complement_perturbation (n k : ℕ)
-    (A E A11_inv : Fin n → Fin n → ℝ)
-    (W_norm : ℝ) (_hW_norm : 0 ≤ W_norm)
-    (E_norm : ℝ) (_hE_norm : 0 ≤ E_norm)
-    (hbound : ∀ i j : Fin n, k ≤ i.val → k ≤ j.val →
-      |schurComplement n k (fun i' j' => A i' j' + E i' j') A11_inv i j -
-       schurComplement n k A A11_inv i j| ≤
-      (1 + W_norm) ^ 2 * E_norm) :
-    ∀ i j : Fin n, k ≤ i.val → k ≤ j.val →
-      |schurComplement n k (fun i' j' => A i' j' + E i' j') A11_inv i j -
-       schurComplement n k A A11_inv i j| ≤
-      (1 + W_norm) ^ 2 * E_norm :=
-  hbound
+/-- **Resolvent identity for the perturbed leading block** (Lemma 10.10
+    setup): if `M` is a left inverse of `A₁₁` and `X` a right... — more
+    precisely, if `M * A₁₁ = 1` and `(A₁₁ + E₁₁) * X = 1`, then
+    `X = M − M E₁₁ X` exactly. This is the identity that makes the
+    Schur-complement perturbation expansion pure algebra. -/
+lemma schur_resolvent_from_inverses {k : ℕ}
+    (M X A11 E11 : Matrix (Fin k) (Fin k) ℝ)
+    (hM : M * A11 = 1) (hXi : (A11 + E11) * X = 1) :
+    X = M - M * E11 * X := by
+  have h : M * ((A11 + E11) * X) = M := by rw [hXi, mul_one]
+  rw [Matrix.add_mul, Matrix.mul_add, ← Matrix.mul_assoc, hM,
+    Matrix.one_mul, ← Matrix.mul_assoc] at h
+  linear_combination (norm := abel) h
+
+/-- **First-order split of the perturbed Schur complement** (Lemma 10.10
+    engine): with the perturbed leading-block inverse written as
+    `X = M − Y`, the perturbed Schur complement decomposes exactly into
+    the unperturbed one, the `E`-linear part, and a remainder carrying
+    `Y` (which is second order once `Y = M E₁₁ X`). -/
+lemma schur_perturbation_split {k m : ℕ}
+    (A21 E21 : Matrix (Fin m) (Fin k) ℝ)
+    (A12 E12 : Matrix (Fin k) (Fin m) ℝ)
+    (A22 E22 : Matrix (Fin m) (Fin m) ℝ)
+    (M X Y : Matrix (Fin k) (Fin k) ℝ) (hX : X = M - Y) :
+    (A22 + E22) - (A21 + E21) * X * (A12 + E12) =
+      ((A22 - A21 * M * A12)
+        + (E22 - E21 * M * A12 - A21 * M * E12)
+        + (-(E21 * M * E12) + (A21 + E21) * Y * (A12 + E12))) := by
+  subst hX
+  simp only [Matrix.add_mul, Matrix.mul_add, Matrix.sub_mul,
+    Matrix.mul_sub, Matrix.mul_assoc]
+  abel
+
+/-- **One re-expansion of the resolvent inside the remainder**: the
+    leading remainder term regains Higham's second-order form. -/
+lemma schur_remainder_reexpand {k m : ℕ}
+    (A21 : Matrix (Fin m) (Fin k) ℝ) (A12 : Matrix (Fin k) (Fin m) ℝ)
+    (M X E11 : Matrix (Fin k) (Fin k) ℝ)
+    (hX : X = M - M * E11 * X) :
+    A21 * (M * E11 * X) * A12 =
+      A21 * (M * E11 * M) * A12
+        - A21 * (M * E11 * (M * E11 * X)) * A12 := by
+  conv_lhs => rw [hX]
+  simp only [Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_assoc]
+
+/-- **Lemma 10.10, exact form (display (10.16))**: for the perturbed
+    block matrix `A + E` with leading-block inverses related by the
+    resolvent identity (`schur_resolvent_from_inverses`), the perturbed
+    Schur complement equals the unperturbed one plus Higham's
+    first-order term
+    `Ē = E₂₂ − E₂₁ M A₁₂ − A₂₁ M E₁₂ + A₂₁ M E₁₁ M A₁₂`
+    (with `W = M A₁₂`, `Wᵀ = A₂₁ M` for symmetric `A` this is
+    `E₂₂ − E₂₁ W − Wᵀ E₁₂ + Wᵀ E₁₁ W`) plus an explicit remainder in
+    which every term carries two `E`-factors — the `O(‖E‖²)` of the
+    source, here exact rather than asymptotic. -/
+theorem schur_perturbation_exact {k m : ℕ}
+    (A21 E21 : Matrix (Fin m) (Fin k) ℝ)
+    (A12 E12 : Matrix (Fin k) (Fin m) ℝ)
+    (A22 E22 : Matrix (Fin m) (Fin m) ℝ)
+    (M X E11 : Matrix (Fin k) (Fin k) ℝ)
+    (hX : X = M - M * E11 * X) :
+    (A22 + E22) - (A21 + E21) * X * (A12 + E12) =
+      (A22 - A21 * M * A12)
+      + (E22 - E21 * M * A12 - A21 * M * E12
+          + A21 * (M * E11 * M) * A12)
+      + (-(E21 * M * E12)
+          - A21 * (M * E11 * (M * E11 * X)) * A12
+          + E21 * (M * E11 * X) * A12
+          + A21 * (M * E11 * X) * E12
+          + E21 * (M * E11 * X) * E12) := by
+  rw [schur_perturbation_split A21 E21 A12 E12 A22 E22 M X
+    (M * E11 * X) hX]
+  have hre := schur_remainder_reexpand A21 A12 M X E11 hX
+  simp only [Matrix.add_mul, Matrix.mul_add] at *
+  rw [hre]
+  abel
+
+/-- Entrywise bound for a matrix product from entrywise bounds on the
+    factors. -/
+lemma entrywise_matMul_le {a b c : ℕ}
+    (F : Matrix (Fin a) (Fin b) ℝ) (G : Matrix (Fin b) (Fin c) ℝ)
+    (f g : ℝ) (hf : 0 ≤ f)
+    (hF : ∀ i j, |F i j| ≤ f) (hG : ∀ i j, |G i j| ≤ g) :
+    ∀ (i : Fin a) (j : Fin c), |(F * G) i j| ≤ (b : ℝ) * f * g := by
+  intro i j
+  rw [Matrix.mul_apply]
+  calc |∑ s : Fin b, F i s * G s j|
+      ≤ ∑ s : Fin b, |F i s * G s j| := Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ _s : Fin b, f * g := Finset.sum_le_sum fun s _ => by
+        rw [abs_mul]
+        exact mul_le_mul (hF i s) (hG s j) (abs_nonneg _) hf
+    _ = (b : ℝ) * (f * g) := by
+        rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+          nsmul_eq_mul]
+    _ = (b : ℝ) * f * g := by ring
+
+/-- **Lemma 10.10, second-order remainder bound**: the exact remainder of
+    `schur_perturbation_exact` is entrywise `O(ε²)` — bounded by an
+    explicit polynomial in the entrywise bounds `α` (of the off-diagonal
+    blocks of `A`), `μ` (of `M = A₁₁⁻¹`), `χ` (of the perturbed inverse
+    `X`), times `ε²`. This is the honest content of the source's
+    `O(‖E‖²)`. -/
+theorem schur_perturbation_remainder_bound {k m : ℕ}
+    (A21 E21 : Matrix (Fin m) (Fin k) ℝ)
+    (A12 E12 : Matrix (Fin k) (Fin m) ℝ)
+    (M X E11 : Matrix (Fin k) (Fin k) ℝ)
+    (α μ χ ε : ℝ) (hα : 0 ≤ α) (hμ : 0 ≤ μ) (hχ : 0 ≤ χ) (hε : 0 ≤ ε)
+    (hA21 : ∀ i j, |A21 i j| ≤ α) (hA12 : ∀ i j, |A12 i j| ≤ α)
+    (hE21 : ∀ i j, |E21 i j| ≤ ε) (hE12 : ∀ i j, |E12 i j| ≤ ε)
+    (hE11 : ∀ i j, |E11 i j| ≤ ε)
+    (hM : ∀ i j, |M i j| ≤ μ) (hX : ∀ i j, |X i j| ≤ χ) :
+    ∀ (i j : Fin m),
+      |(-(E21 * M * E12)
+          - A21 * (M * E11 * (M * E11 * X)) * A12
+          + E21 * (M * E11 * X) * A12
+          + A21 * (M * E11 * X) * E12
+          + E21 * (M * E11 * X) * E12) i j| ≤
+      ((k : ℝ) ^ 2 * μ + (k : ℝ) ^ 6 * α ^ 2 * μ ^ 2 * χ
+        + 2 * ((k : ℝ) ^ 4 * α * μ * χ) + (k : ℝ) ^ 4 * μ * χ * ε)
+        * ε ^ 2 := by
+  intro i j
+  have hk : (0 : ℝ) ≤ (k : ℝ) := Nat.cast_nonneg k
+  -- entrywise bounds on the building blocks
+  have hME : ∀ (p q : Fin k), |(M * E11) p q| ≤ (k : ℝ) * μ * ε :=
+    entrywise_matMul_le M E11 μ ε hμ hM hE11
+  have hMEnn : (0 : ℝ) ≤ (k : ℝ) * μ * ε := by positivity
+  have hMEX : ∀ (p q : Fin k), |((M * E11) * X) p q| ≤
+      (k : ℝ) * ((k : ℝ) * μ * ε) * χ :=
+    entrywise_matMul_le (M * E11) X _ χ hMEnn hME hX
+  have hMEXnn : (0 : ℝ) ≤ (k : ℝ) * ((k : ℝ) * μ * ε) * χ := by
+    positivity
+  -- term 1 : E21 * M * E12
+  have hT1a : ∀ (p : Fin m) (q : Fin k), |(E21 * M) p q| ≤
+      (k : ℝ) * ε * μ := entrywise_matMul_le E21 M ε μ hε hE21 hM
+  have hT1 : ∀ (p q : Fin m), |((E21 * M) * E12) p q| ≤
+      (k : ℝ) * ((k : ℝ) * ε * μ) * ε :=
+    entrywise_matMul_le (E21 * M) E12 _ ε (by positivity) hT1a hE12
+  -- term 2 : A21 * (M*E11*(M*E11*X)) * A12
+  have hInner : ∀ (p q : Fin k), |((M * E11) * ((M * E11) * X)) p q| ≤
+      (k : ℝ) * ((k : ℝ) * μ * ε) * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ) :=
+    entrywise_matMul_le (M * E11) ((M * E11) * X) _ _ hMEnn hME hMEX
+  have hT2a : ∀ (p : Fin m) (q : Fin k),
+      |(A21 * ((M * E11) * ((M * E11) * X))) p q| ≤
+      (k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) *
+        ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) :=
+    entrywise_matMul_le A21 _ α _ hα hA21 hInner
+  have hT2 : ∀ (p q : Fin m),
+      |((A21 * ((M * E11) * ((M * E11) * X))) * A12) p q| ≤
+      (k : ℝ) * ((k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) *
+        ((k : ℝ) * ((k : ℝ) * μ * ε) * χ))) * α :=
+    entrywise_matMul_le _ A12 _ α (by positivity) hT2a hA12
+  -- term 3 : E21 * (M*E11*X) * A12
+  have hT3a : ∀ (p : Fin m) (q : Fin k),
+      |(E21 * ((M * E11) * X)) p q| ≤
+      (k : ℝ) * ε * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ) :=
+    entrywise_matMul_le E21 _ ε _ hε hE21 hMEX
+  have hT3 : ∀ (p q : Fin m),
+      |((E21 * ((M * E11) * X)) * A12) p q| ≤
+      (k : ℝ) * ((k : ℝ) * ε * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) * α :=
+    entrywise_matMul_le _ A12 _ α (by positivity) hT3a hA12
+  -- term 4 : A21 * (M*E11*X) * E12
+  have hT4a : ∀ (p : Fin m) (q : Fin k),
+      |(A21 * ((M * E11) * X)) p q| ≤
+      (k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ) :=
+    entrywise_matMul_le A21 _ α _ hα hA21 hMEX
+  have hT4 : ∀ (p q : Fin m),
+      |((A21 * ((M * E11) * X)) * E12) p q| ≤
+      (k : ℝ) * ((k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) * ε :=
+    entrywise_matMul_le _ E12 _ ε (by positivity) hT4a hE12
+  -- term 5 : E21 * (M*E11*X) * E12
+  have hT5 : ∀ (p q : Fin m),
+      |((E21 * ((M * E11) * X)) * E12) p q| ≤
+      (k : ℝ) * ((k : ℝ) * ε * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) * ε :=
+    entrywise_matMul_le _ E12 _ ε (by positivity) hT3a hE12
+  -- assemble by the triangle inequality
+  have h1 := abs_le.mp (hT1 i j)
+  have h2 := abs_le.mp (hT2 i j)
+  have h3 := abs_le.mp (hT3 i j)
+  have h4 := abs_le.mp (hT4 i j)
+  have h5 := abs_le.mp (hT5 i j)
+  have hsum : ((k : ℝ) ^ 2 * μ + (k : ℝ) ^ 6 * α ^ 2 * μ ^ 2 * χ
+      + 2 * ((k : ℝ) ^ 4 * α * μ * χ) + (k : ℝ) ^ 4 * μ * χ * ε)
+      * ε ^ 2 =
+      (k : ℝ) * ((k : ℝ) * ε * μ) * ε
+      + (k : ℝ) * ((k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) *
+          ((k : ℝ) * ((k : ℝ) * μ * ε) * χ))) * α
+      + (k : ℝ) * ((k : ℝ) * ε * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) * α
+      + (k : ℝ) * ((k : ℝ) * α * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) * ε
+      + (k : ℝ) * ((k : ℝ) * ε * ((k : ℝ) * ((k : ℝ) * μ * ε) * χ)) * ε
+      := by ring
+  rw [hsum]
+  simp only [Matrix.add_apply, Matrix.sub_apply, Matrix.neg_apply]
+  rw [abs_le]
+  constructor <;> linarith [h1.1, h1.2, h2.1, h2.2, h3.1, h3.2,
+    h4.1, h4.2, h5.1, h5.2]
 
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
@@ -427,17 +1431,221 @@ theorem w_norm_bound_from_cond
     W_norm ^ 2 ≤ κ_A11 :=
   hW
 
+/-- **Abstract back-substitution growth** (Lemma 10.13 engine): if each
+    `|w i|` is bounded by `1` plus the sum of the later `|w j|` — the
+    pivot-normalized form of the triangular solve under the (10.13)
+    bounds — then `|w i| ≤ 2^{r-1-i}`, by downward induction with the
+    geometric sum `1 + (2^t − 1) = 2^t`. -/
+lemma backsub_growth {r : ℕ} (w : Fin r → ℝ)
+    (hrec : ∀ i : Fin r, |w i| ≤ 1 +
+      ∑ j ∈ Finset.univ.filter (fun j : Fin r => i.val < j.val), |w j|) :
+    ∀ i : Fin r, |w i| ≤ 2 ^ (r - 1 - i.val) := by
+  have H : ∀ (t : ℕ) (i : Fin r), r - 1 - i.val = t →
+      |w i| ≤ 2 ^ t := by
+    intro t
+    induction t using Nat.strong_induction_on with
+    | _ t IH =>
+      intro i hit
+      have himg : (Finset.univ.filter
+          (fun j : Fin r => i.val < j.val)).image
+          (fun j : Fin r => r - 1 - j.val) = Finset.range t := by
+        ext k
+        simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ,
+          true_and, Finset.mem_range]
+        constructor
+        · rintro ⟨j, hj, rfl⟩
+          have := j.isLt
+          omega
+        · intro hk
+          refine ⟨⟨r - 1 - k, by omega⟩, by simp; omega, by simp; omega⟩
+      have hinj : ∀ a ∈ Finset.univ.filter
+          (fun j : Fin r => i.val < j.val),
+          ∀ b ∈ Finset.univ.filter
+          (fun j : Fin r => i.val < j.val),
+          r - 1 - a.val = r - 1 - b.val → a = b := by
+        intro a ha b hb hab
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at ha hb
+        have := a.isLt
+        have := b.isLt
+        exact Fin.ext (by omega)
+      have hsum_exp : ∑ j ∈ Finset.univ.filter
+          (fun j : Fin r => i.val < j.val), (2:ℝ) ^ (r - 1 - j.val) =
+          ∑ k ∈ Finset.range t, (2:ℝ) ^ k := by
+        rw [← himg, Finset.sum_image hinj]
+      calc |w i| ≤ 1 + ∑ j ∈ Finset.univ.filter
+            (fun j : Fin r => i.val < j.val), |w j| := hrec i
+        _ ≤ 1 + ∑ j ∈ Finset.univ.filter
+            (fun j : Fin r => i.val < j.val),
+            (2:ℝ) ^ (r - 1 - j.val) := by
+            gcongr with j hj
+            simp only [Finset.mem_filter, Finset.mem_univ,
+              true_and] at hj
+            exact IH (r - 1 - j.val) (by have := j.isLt; omega) j rfl
+        _ = 1 + ∑ k ∈ Finset.range t, (2:ℝ) ^ k := by rw [hsum_exp]
+        _ = 2 ^ t := by
+            rw [geom_sum_eq (by norm_num : (2:ℝ) ≠ 1) t]
+            ring
+  intro i
+  exact H (r - 1 - i.val) i rfl
+
+/-- **Entry domination from the column-tail invariant** (Lemma 10.13
+    wiring): under the (10.13) invariant, every entry on or right of the
+    diagonal is dominated in absolute value by its row pivot. -/
+lemma tail_invariant_entry_le {n : ℕ} {R : Fin n → Fin n → ℝ}
+    (hdiag_nonneg : ∀ i : Fin n, 0 ≤ R i i)
+    (htail : ∀ k j : Fin n, k.val ≤ j.val →
+      (∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+        R i j ^ 2) ≤ R k k ^ 2)
+    (k j : Fin n) (hkj : k.val ≤ j.val) :
+    |R k j| ≤ R k k := by
+  have hmem : k ∈ Finset.univ.filter
+      (fun i : Fin n => k.val ≤ i.val) := by
+    simp
+  have hsingle : R k j ^ 2 ≤
+      ∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+        R i j ^ 2 :=
+    Finset.single_le_sum (fun i _ => sq_nonneg (R i j)) hmem
+  have hsq : R k j ^ 2 ≤ R k k ^ 2 :=
+    le_trans hsingle (htail k j hkj)
+  nlinarith [abs_nonneg (R k j), sq_abs (R k j), hdiag_nonneg k]
+
+/-- **Normalized triangular-solve growth** (Lemma 10.13 core): a solve
+    `Uw = b` against an upper-triangular matrix whose every row is
+    pivot-dominated (`|U i j| ≤ U i i`, `|b i| ≤ U i i` — supplied by the
+    (10.13) invariant through `tail_invariant_entry_le`) has solution
+    entries bounded by `2^{r-1-i}`. -/
+theorem normalized_solve_growth {r : ℕ} (U : Fin r → Fin r → ℝ)
+    (b w : Fin r → ℝ)
+    (hupper : ∀ i j : Fin r, j.val < i.val → U i j = 0)
+    (hdiag_pos : ∀ i : Fin r, 0 < U i i)
+    (hentry : ∀ i j : Fin r, i.val ≤ j.val → |U i j| ≤ U i i)
+    (hb : ∀ i : Fin r, |b i| ≤ U i i)
+    (hsolve : ∀ i : Fin r, ∑ j : Fin r, U i j * w j = b i) :
+    ∀ i : Fin r, |w i| ≤ 2 ^ (r - 1 - i.val) := by
+  apply backsub_growth
+  intro i
+  have hpos := hdiag_pos i
+  -- split the solve row at the diagonal: below-diagonal entries vanish
+  have hle_part : ∑ j ∈ Finset.univ.filter
+      (fun j : Fin r => ¬ i.val < j.val), U i j * w j =
+      U i i * w i := by
+    refine Finset.sum_eq_single_of_mem i (by simp) ?_
+    intro j hj hji
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and,
+      Nat.not_lt] at hj
+    have hjlt : j.val < i.val := by
+      rcases Nat.lt_or_eq_of_le hj with h' | h'
+      · exact h'
+      · exact absurd (Fin.ext h') hji
+    rw [hupper i j hjlt, zero_mul]
+  have hsplit : U i i * w i +
+      ∑ j ∈ Finset.univ.filter (fun j : Fin r => i.val < j.val),
+        U i j * w j = b i := by
+    have h := hsolve i
+    rw [← Finset.sum_filter_add_sum_filter_not Finset.univ
+      (fun j : Fin r => i.val < j.val) (fun j => U i j * w j),
+      hle_part] at h
+    linarith [h]
+  -- bound the absolute tail sum by pivot-scaled solution magnitudes
+  have hsum_abs : |∑ j ∈ Finset.univ.filter
+      (fun j : Fin r => i.val < j.val), U i j * w j| ≤
+      ∑ j ∈ Finset.univ.filter (fun j : Fin r => i.val < j.val),
+        U i i * |w j| := by
+    refine (Finset.abs_sum_le_sum_abs _ _).trans
+      (Finset.sum_le_sum ?_)
+    intro j hj
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
+    rw [abs_mul]
+    exact mul_le_mul_of_nonneg_right (hentry i j hj.le) (abs_nonneg _)
+  -- triangle inequality on the rearranged pivot equation
+  have htri : |U i i * w i| ≤ |b i| + |∑ j ∈ Finset.univ.filter
+      (fun j : Fin r => i.val < j.val), U i j * w j| := by
+    have heq : U i i * w i = b i - ∑ j ∈ Finset.univ.filter
+        (fun j : Fin r => i.val < j.val), U i j * w j := by
+      linarith [hsplit]
+    rw [heq]
+    have h1 := abs_add_le (b i) (-(∑ j ∈ Finset.univ.filter
+      (fun j : Fin r => i.val < j.val), U i j * w j))
+    rw [abs_neg, ← sub_eq_add_neg] at h1
+    exact h1
+  -- assemble and divide by the positive pivot
+  have hwi : U i i * |w i| ≤ U i i * (1 +
+      ∑ j ∈ Finset.univ.filter (fun j : Fin r => i.val < j.val),
+        |w j|) := by
+    have habs : U i i * |w i| = |U i i * w i| := by
+      rw [abs_mul, abs_of_pos hpos]
+    rw [habs, mul_add, mul_one, Finset.mul_sum]
+    calc |U i i * w i|
+        ≤ |b i| + |∑ j ∈ Finset.univ.filter
+          (fun j : Fin r => i.val < j.val), U i j * w j| := htri
+      _ ≤ U i i + ∑ j ∈ Finset.univ.filter
+          (fun j : Fin r => i.val < j.val), U i i * |w j| :=
+          add_le_add (hb i) hsum_abs
+  exact le_of_mul_le_mul_left hwi hpos
+
 -- ============================================================
 -- §10.3  Lemma 10.13: Complete pivoting bound
 -- ============================================================
 
-/-- **Abstract complete-pivoting bound on ‖W‖²**
-    (Higham §10.3, Lemma 10.13). -/
-theorem complete_pivoting_w_bound (n r : ℕ) (_hr : r ≤ n)
-    (W_norm_sq : ℝ)
-    (_hW : W_norm_sq ≤ (↑(n - r) : ℝ) * ((4 : ℝ) ^ r - 1) / 3) :
-    W_norm_sq ≤ (↑(n - r) : ℝ) * ((4 : ℝ) ^ r - 1) / 3 :=
-  _hW
+/-- **Squared-sum of the growth bounds**: entries bounded by `2^{r-1-i}`
+    have squared sum at most `(4^r − 1)/3` (geometric sum, Higham
+    §10.3, proof of Lemma 10.13). -/
+lemma sq_sum_pow_two_bound {r : ℕ} (w : Fin r → ℝ)
+    (h : ∀ i : Fin r, |w i| ≤ 2 ^ (r - 1 - i.val)) :
+    ∑ i : Fin r, w i ^ 2 ≤ ((4 : ℝ) ^ r - 1) / 3 := by
+  have hterm : ∀ i : Fin r, w i ^ 2 ≤ (4 : ℝ) ^ (r - 1 - i.val) := by
+    intro i
+    obtain ⟨hlo, hhi⟩ := abs_le.mp (h i)
+    have hsq : w i ^ 2 ≤ ((2 : ℝ) ^ (r - 1 - i.val)) ^ 2 :=
+      sq_le_sq' hlo hhi
+    calc w i ^ 2 ≤ ((2 : ℝ) ^ (r - 1 - i.val)) ^ 2 := hsq
+      _ = ((2 : ℝ) ^ 2) ^ (r - 1 - i.val) := by
+          rw [← pow_mul, ← pow_mul, Nat.mul_comm]
+      _ = (4 : ℝ) ^ (r - 1 - i.val) := by norm_num
+  have hrev : ∑ i : Fin r, (4 : ℝ) ^ (r - 1 - i.val) =
+      ∑ i : Fin r, (4 : ℝ) ^ i.val := by
+    apply Fintype.sum_bijective (Fin.rev) (Fin.rev_involutive.bijective)
+    intro i
+    rw [Fin.val_rev]
+    congr 1
+    omega
+  have hgeom : ∑ i : Fin r, (4 : ℝ) ^ i.val = ((4 : ℝ) ^ r - 1) / 3 := by
+    rw [Fin.sum_univ_eq_sum_range (fun t => (4 : ℝ) ^ t) r,
+      geom_sum_eq (by norm_num : (4 : ℝ) ≠ 1) r,
+      show (4 : ℝ) - 1 = 3 by norm_num]
+  calc ∑ i : Fin r, w i ^ 2
+      ≤ ∑ i : Fin r, (4 : ℝ) ^ (r - 1 - i.val) :=
+        Finset.sum_le_sum fun i _ => hterm i
+    _ = ((4 : ℝ) ^ r - 1) / 3 := by rw [hrev, hgeom]
+
+/-- **Complete-pivoting bound on ‖W‖_F²** (Higham §10.3, Lemma 10.13,
+    display (10.19)): if the `r × r` upper-triangular block `U` has
+    positive diagonal and every row pivot-dominated on and right of the
+    diagonal (as `tail_invariant_entry_le` extracts from the (10.13)
+    column-tail invariant of complete pivoting), and `W` solves
+    `U W = B` column-by-column with `|B i j| ≤ U i i`, then
+    `‖W‖_F² ≤ m (4^r − 1)/3` — Higham's `(n − r)(4^r − 1)/3` with
+    `m = n − r` border columns. -/
+theorem complete_pivoting_w_bound {r m : ℕ} (U : Fin r → Fin r → ℝ)
+    (B W : Fin r → Fin m → ℝ)
+    (hupper : ∀ i j : Fin r, j.val < i.val → U i j = 0)
+    (hdiag_pos : ∀ i : Fin r, 0 < U i i)
+    (hentry : ∀ i j : Fin r, i.val ≤ j.val → |U i j| ≤ U i i)
+    (hB : ∀ (i : Fin r) (j : Fin m), |B i j| ≤ U i i)
+    (hsolve : ∀ (i : Fin r) (j : Fin m),
+      ∑ k : Fin r, U i k * W k j = B i j) :
+    ∑ j : Fin m, ∑ i : Fin r, W i j ^ 2 ≤
+      (m : ℝ) * (((4 : ℝ) ^ r - 1) / 3) := by
+  have hcol : ∀ j : Fin m, ∑ i : Fin r, W i j ^ 2 ≤
+      ((4 : ℝ) ^ r - 1) / 3 := fun j =>
+    sq_sum_pow_two_bound (fun i => W i j)
+      (normalized_solve_growth U (fun i => B i j) (fun i => W i j)
+        hupper hdiag_pos hentry (fun i => hB i j) (fun i => hsolve i j))
+  calc ∑ j : Fin m, ∑ i : Fin r, W i j ^ 2
+      ≤ ∑ _j : Fin m, ((4 : ℝ) ^ r - 1) / 3 :=
+        Finset.sum_le_sum fun j _ => hcol j
+    _ = (m : ℝ) * (((4 : ℝ) ^ r - 1) / 3) := by
+        simp [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
 
 -- ============================================================
 -- §10.3  Theorem 10.14: PSD Cholesky error analysis

@@ -33,6 +33,20 @@ during gradual migration.
 
 The library formalizes reusable results and stability contracts from **Chapter 1**, selected **Chapter 2** model algebra, core **Chapters 3-6** results, **Chapters 8 and 9** of Higham, plus selected higher-chapter interfaces used for compositional stability proofs. It also includes a RandNLA case study for the explicit meta-algorithms in Drineas and Mahoney's CACM survey, ["RandNLA: Randomized Numerical Linear Algebra"](https://dl.acm.org/doi/10.1145/2842602).
 
+Chapter 19 QR work is tracked in
+[`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
+The current Split 3B route has checked source-faithful Householder
+normalization certificate surfaces, including a named stronger normalization
+model boundary, exact one-tail and first-two certificate constructors, and an
+exact-arithmetic all-stage tail-vector bridge that feeds the Theorem 19.13
+final-panel pipeline through those certificates. The stronger-model boundary
+now also exposes raw, record, full-stage, source-closure, and final-closed
+and final-panel endpoint wrappers from all-stage tail-vector equalities. The
+full rounded stored-loop
+proof remains open until the per-stage certificate fields are proved from a
+source-faithful model or replaced by a separate compatibility/perturbation
+theorem.
+
 For a searchable map from stability-analysis goals to files, definitions, and
 theorem names, see [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).  For a
 Lean `#check` companion index, see [`examples/LibraryLookup.lean`](examples/LibraryLookup.lean).
