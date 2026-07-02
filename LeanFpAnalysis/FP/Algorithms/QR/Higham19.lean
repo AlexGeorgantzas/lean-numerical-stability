@@ -12907,9 +12907,171 @@ theorem
     exact
       fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
         u0 hu0 (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+        hx3
+
+/-- Exact-arithmetic one-tail source-faithful certificate from the tail-vector
+equality and the local tail determinant nonzero fact. -/
+theorem
+    sourceFaithfulHouseholderNormalization_of_tail_vector_eq_and_det_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdetTailTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (A_hat 2)))
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2))))) :
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos 0)
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (m + 1)
+        (0 : Fin (m + 1))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+        (alpha 2)) := by
+  have hx :
+      Ne
+        (panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (A_hat 2))))
+        0 := by
+    intro hzero
+    apply hdetTailTail
+    have hentry := congrFun hzero 0
+    simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn,
+      trailingPanel] using hentry
+  exact
+    sourceFaithfulHouseholderNormalization_of_vector_eq_exactWithUnitRoundoff
+      u0 hu0 (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos 0)
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (m + 1)
+        (0 : Fin (m + 1))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+        (alpha 2))
+      hvecTail hx
+
+/-- Exact-arithmetic first-two source-faithful certificates from tail-vector
+equalities and the two local tail determinant nonzero facts. -/
+theorem
+    sourceFaithfulHouseholderNormalizations_of_tail_vectors_eq_and_dets_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdetTailTailFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (A_hat 2)))
+          (show 1 <= r + (p + 2) by omega)
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTailTailTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))
+          (show 1 <= r + (p + 1) by omega)
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail2 :
+      householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))))
+    (hvecTail3 :
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))) :
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0)
+      (show 0 < r + (p + 2) by omega)
+      (panelFirstColumn (Nat.succ_pos (p + 1))
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (r + (p + 2))
+        (0 : Fin (r + (p + 2)))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+        (alpha 2)) /\
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0)
+      (show 0 < r + (p + 1) by omega)
+      (panelFirstColumn (Nat.succ_pos p)
+        (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+      (householderTrailingActiveVector (r + (p + 1))
+        (0 : Fin (r + (p + 1)))
+        (fun a =>
+          A_hat 3 a.succ.succ.succ
+            ((0 : Fin (p + 1)).succ.succ.succ))
+        (alpha 3)) := by
+  constructor
+  · have hx2 :
+        Ne
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2))))
+          0 := by
+      intro hzero
+      apply hdetTailTailFirst
+      have hentry := congrFun hzero 0
+      simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn,
+        trailingPanel] using hentry
+    exact
+      sourceFaithfulHouseholderNormalization_of_vector_eq_exactWithUnitRoundoff
+        u0 hu0 (show 0 < r + (p + 2) by omega)
+        (panelFirstColumn (Nat.succ_pos (p + 1))
+          (trailingPanel (trailingPanel (A_hat 2))))
+        (householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2))
+        hvecTail2 hx2
+  · have hx3 :
+        Ne
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+          0 := by
+      intro hzero
+      apply hdetTailTailTail
+      have hentry := congrFun hzero 0
+      simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn,
+        trailingPanel] using hentry
+    exact
+      sourceFaithfulHouseholderNormalization_of_vector_eq_exactWithUnitRoundoff
+        u0 hu0 (show 0 < r + (p + 1) by omega)
         (panelFirstColumn (Nat.succ_pos p)
           (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
-        hx3
+        (householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3))
+        hvecTail3 hx3
 
 /-- Exact-arithmetic one-tail normalized reflector facts from the tail-vector
 equality and the standard leading-block nonbreakdown hypothesis. -/
@@ -12959,6 +13121,60 @@ theorem
       (storedSignedSequenceOneTailFullStageFacts_tail_det_ne_zero_of_leadingBlock_det_ne_zero
         (FPModel.exactWithUnitRoundoff u0 hu0) A_hat alpha hStep hdetLead)
       hvecTail
+
+/-- Exact-arithmetic one-tail source-faithful certificate from the tail-vector
+equality and the standard leading-block nonbreakdown hypothesis. -/
+theorem
+    sourceFaithfulHouseholderNormalization_of_tail_vector_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < 1 + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep (FPModel.exactWithUnitRoundoff u0 hu0)
+          (m + 1 + 2) (1 + 2) k
+          (householderTrailingActiveVector (m + 1 + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= m + 1 + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 1 + 2)
+            (householderTrailingActiveVector (m + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= m + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < 1 + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : 1 + 2 <= m + 1 + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecTail :
+      householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2))))) :
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos 0)
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (m + 1)
+        (0 : Fin (m + 1))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+        (alpha 2)) :=
+  sourceFaithfulHouseholderNormalization_of_tail_vector_eq_and_det_ne_zero_exactWithUnitRoundoff
+    u0 hu0 A_hat alpha
+    (storedSignedSequenceOneTailFullStageFacts_tail_det_ne_zero_of_leadingBlock_det_ne_zero
+      (FPModel.exactWithUnitRoundoff u0 hu0) A_hat alpha hStep hdetLead)
+    hvecTail
 
 /-- Exact-arithmetic first-two normalized reflector facts from tail-vector
 equalities and the standard leading-block nonbreakdown hypothesis. -/
@@ -13021,6 +13237,88 @@ theorem
     ⟨hdetTailTailFirst, hdetTailTailTail⟩
   exact
     storedSignedSequenceFirstTwoTailNormalizedFacts_of_tail_vectors_eq_and_dets_ne_zero_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hdetTailTailFirst hdetTailTailTail
+      hvecTail2 hvecTail3
+
+/-- Exact-arithmetic first-two source-faithful certificates from tail-vector
+equalities and the standard leading-block nonbreakdown hypothesis. -/
+theorem
+    sourceFaithfulHouseholderNormalizations_of_tail_vectors_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < (p + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep (FPModel.exactWithUnitRoundoff u0 hu0)
+          (r + (p + 2) + 2) ((p + 2) + 2) k
+          (householderTrailingActiveVector (r + (p + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + (p + 2) + 2)
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < (p + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecTail2 :
+      householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))))
+    (hvecTail3 :
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))) :
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0)
+      (show 0 < r + (p + 2) by omega)
+      (panelFirstColumn (Nat.succ_pos (p + 1))
+        (trailingPanel (trailingPanel (A_hat 2))))
+      (householderTrailingActiveVector (r + (p + 2))
+        (0 : Fin (r + (p + 2)))
+        (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+        (alpha 2)) /\
+    sourceFaithfulHouseholderNormalization
+      (FPModel.exactWithUnitRoundoff u0 hu0)
+      (show 0 < r + (p + 1) by omega)
+      (panelFirstColumn (Nat.succ_pos p)
+        (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+      (householderTrailingActiveVector (r + (p + 1))
+        (0 : Fin (r + (p + 1)))
+        (fun a =>
+          A_hat 3 a.succ.succ.succ
+            ((0 : Fin (p + 1)).succ.succ.succ))
+        (alpha 3)) := by
+  rcases
+      storedSignedSequenceFirstTwoFullStageFacts_tail_dets_ne_zero_of_leadingBlock_det_ne_zero
+        (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha hStep hdetLead with
+    ⟨hdetTailTailFirst, hdetTailTailTail⟩
+  exact
+    sourceFaithfulHouseholderNormalizations_of_tail_vectors_eq_and_dets_ne_zero_exactWithUnitRoundoff
       u0 hu0 r p A_hat alpha hdetTailTailFirst hdetTailTailTail
       hvecTail2 hvecTail3
 
@@ -16537,25 +16835,19 @@ theorem
     trivial
   · intro r A_hat alpha hvecs
     rcases hvecs with ⟨hStep, hdetLead, hvecTail⟩
-    have hfacts :
-        storedSignedSequenceOneTailNormalizedFacts
-          (FPModel.exactWithUnitRoundoff u0 hu0) A_hat alpha :=
-      storedSignedSequenceOneTailNormalizedFacts_of_tail_vector_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
-        u0 hu0 A_hat alpha hStep hdetLead hvecTail
     exact
       ⟨hStep, hdetLead,
-        { vector_eq := hfacts.hvecTail, self_dot := hfacts.hselfTail }⟩
+        sourceFaithfulHouseholderNormalization_of_tail_vector_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+          u0 hu0 A_hat alpha hStep hdetLead hvecTail⟩
   · intro p ih _ihSucc r A_hat alpha hvecs
     rcases hvecs with ⟨hStep, hdetLead, hvecTail2, hvecTail3, htailVecs⟩
-    have hfacts :
-        storedSignedSequenceFirstTwoTailNormalizedFacts
-          (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha :=
-      storedSignedSequenceFirstTwoTailNormalizedFacts_of_tail_vectors_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
-        u0 hu0 r p A_hat alpha hStep hdetLead hvecTail2 hvecTail3
+    rcases
+        sourceFaithfulHouseholderNormalizations_of_tail_vectors_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+          u0 hu0 r p A_hat alpha hStep hdetLead hvecTail2 hvecTail3 with
+      ⟨hsrc2, hsrc3⟩
     exact
       ⟨hStep, hdetLead,
-        { vector_eq := hfacts.hvecTail2, self_dot := hfacts.hselfTail2 },
-        { vector_eq := hfacts.hvecTail3, self_dot := hfacts.hselfTail3 },
+        hsrc2, hsrc3,
         ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
           (storedSignedSequenceTailAlpha2 alpha) htailVecs⟩
 
