@@ -3659,6 +3659,8 @@ Source-facing Chapter 10 wrappers:
 - `higham10_4_fl_cholesky_solve_backward_error`
 - `higham10_8_sun_normwise_perturbation`
 - `higham10_8_sun_componentwise_perturbation`
+- `isPosSemiDef_perm`
+- `psd_pivot_selection`
 - `higham10_9_PivotedCholeskySpec`
 - `higham10_9_psd_cholesky_existence`
 - `higham10_9_spd_pivoted_cholesky_full_rank`
