@@ -3816,6 +3816,7 @@ Source-facing Chapter 10 wrappers:
 - `higham10_6_fl_scaled_forward_error_source` (source gamma_{3n+1} constant) / `eps_tot_le_gamma_3n1`
 - `higham10_12_psd_w_action_bound` / `higham10_12_w_action_norm_bound` (honest: PSD block quadratic form + Rayleigh)
 - `higham10_12_w_action_trace_bound` (computable trace certificate) / `psd_quadForm_le_trace` / `psd_abs_entry_le_sqrt_diag` / `isPosSemiDef_diag_nonneg` / `isPosSemiDef_trailing_block`
+- `unit_diag_psd_maxEigenvalue_bounds` / `higham10_9_unit_diag_cond_bound` (van der Sluis route: 1 <= lambda_max(H) <= n for unit-diagonal PSD; kappa_2(H) <= n/lambda_min)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)
@@ -3839,6 +3840,7 @@ Source-facing Chapter 10 wrappers:
 - `fl_cpPivotFactor_sequence_agrees_small` (factor-form analogue, gamma_5 rounding contribution)
 - `fl_cpRowOf` / `fl_schurStepFactor_defect_bound` (R-hat Gram bridge engine: per-stage defect u|a_ij| + (2u+u^2)|r_i||r_j|; exact sqrt cancellation on the pivot row/column)
 - `fl_schurStepFactor_symm` / `fl_cpStateFactor_symm` (fl symmetry propagation, needs fl_mul commutativity) / `fl_cpFactor_gram_backward_error` (AS-RUN Th10.14: |sum r r + S_r - A| <= r(u cS + (2u+u^2) cR^2) entrywise)
+- `higham10_14_as_run_backward_error` (FULLY COMPOSED as-run Th10.14: caps discharged, explicit constants; hypotheses = no-tie data + budget + u <= 1/8 + fl_mul comm + A PSD)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
