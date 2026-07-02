@@ -65429,6 +65429,19 @@ inductive higham9_TracePivotingGrowthKind where
   | completePivoting
   | rookPivoting
 
+/-- **Growth-factor source family**, embed the trace-only pivoting family into
+the broader no-pivot/partial/complete/rook source family.  This is the
+source-facing handoff that records that the trace family is exactly the
+non-no-pivot part of `higham9_PivotingGrowthKind`. -/
+def higham9_TracePivotingGrowthKind.toPivotingGrowthKind :
+    higham9_TracePivotingGrowthKind → higham9_PivotingGrowthKind
+  | higham9_TracePivotingGrowthKind.partialPivoting =>
+      higham9_PivotingGrowthKind.partialPivoting
+  | higham9_TracePivotingGrowthKind.completePivoting =>
+      higham9_PivotingGrowthKind.completePivoting
+  | higham9_TracePivotingGrowthKind.rookPivoting =>
+      higham9_PivotingGrowthKind.rookPivoting
+
 /-- **Growth-factor source family**, indexed values for the recursive
 partial-, complete-, and rook-pivoting trace families. -/
 def higham9_tracePivotingGrowthValues :
@@ -65445,6 +65458,26 @@ pivoting trace families. -/
 noncomputable def higham9_tracePivotingGrowthSup
     (kind : higham9_TracePivotingGrowthKind) (n : ℕ) : ℝ :=
   sSup (higham9_tracePivotingGrowthValues kind n)
+
+/-- **Growth-factor source family**, the trace-only indexed value family is the
+corresponding non-no-pivot branch of the broader source growth family. -/
+theorem higham9_tracePivotingGrowthValues_eq_pivotingGrowthValues
+    (kind : higham9_TracePivotingGrowthKind) (n : ℕ) :
+    higham9_tracePivotingGrowthValues kind n =
+      higham9_pivotingGrowthValues
+        (higham9_TracePivotingGrowthKind.toPivotingGrowthKind kind) n := by
+  cases kind <;> rfl
+
+/-- **Growth-factor source family**, the trace-only indexed supremum agrees
+with the corresponding non-no-pivot branch of the broader source growth
+supremum. -/
+theorem higham9_tracePivotingGrowthSup_eq_pivotingGrowthSup
+    (kind : higham9_TracePivotingGrowthKind) (n : ℕ) :
+    higham9_tracePivotingGrowthSup kind n =
+      higham9_pivotingGrowthSup
+        (higham9_TracePivotingGrowthKind.toPivotingGrowthKind kind) n := by
+  simp [higham9_tracePivotingGrowthSup, higham9_pivotingGrowthSup,
+    higham9_tracePivotingGrowthValues_eq_pivotingGrowthValues]
 
 /-- **Growth-factor source family**, the indexed recursive pivoting trace
 families are nonempty in every positive dimension. -/
