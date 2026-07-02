@@ -40,9 +40,10 @@ normalization certificate surfaces, including a named stronger normalization
 model boundary, exact one-tail and first-two certificate constructors, and an
 exact-arithmetic all-stage tail-vector bridge that feeds the Theorem 19.13
 final-panel pipeline through those certificates. The stronger-model boundary
-now also exposes raw, record, full-stage, source-closure, and final-closed
-and final-panel endpoint wrappers from all-stage tail-vector equalities. The
-full rounded stored-loop
+now also exposes a sufficient-condition constructor from agreement with the
+exact Higham normalized vector, plus raw, record, full-stage, source-closure,
+final-closed, and final-panel endpoint wrappers from all-stage tail-vector
+equalities. The full rounded stored-loop
 proof remains open until the per-stage certificate fields are proved from a
 source-faithful model or replaced by a separate compatibility/perturbation
 theorem.
