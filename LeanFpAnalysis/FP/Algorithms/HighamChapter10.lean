@@ -2344,6 +2344,88 @@ theorem higham10_9_scaled_cond_bound {n : ℕ} (hn : 0 < n)
     (scaled_matrix_isPosSemiDef A hPSD hAdiag)
     (fun i => scaled_matrix_unit_diag A hAdiag i) hSym hmin
 
+/-- Every diagonal entry is a Rayleigh quotient, so bounds `λ_max`
+    from below (van der Sluis engine, `λ_max(M) ≥ m_ii`). -/
+lemma finiteMaxEigenvalue_ge_diag {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hSym : IsSymmetricFiniteMatrix M)
+    (i : Fin n) :
+    M i i ≤ finiteMaxEigenvalue hn M hSym := by
+  set e : Fin n → ℝ := fun k => if k = i then 1 else 0 with he
+  have hray := finiteMaxEigenvalue_rayleigh hn M hSym e
+  have hquad : ∑ k : Fin n, ∑ l : Fin n, e k * M k l * e l =
+      M i i := by
+    simp [he, Finset.sum_ite_eq']
+  have hnorm : ∑ k : Fin n, e k ^ 2 = 1 := by
+    simp [he, Finset.sum_ite_eq']
+  rw [hquad, hnorm, mul_one] at hray
+  exact hray
+
+/-- **Diagonal congruence bounds the smallest eigenvalue from below**
+    (van der Sluis engine): if `N = E M E` with diagonal `E = diag(e)`
+    and `m ≤ e_i²` throughout, then `λ_min(N) ≥ m·λ_min(M)` — evaluate
+    at `N`'s bottom eigenvector and pass through the congruence. -/
+lemma diag_congruence_minEigenvalue_ge {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hSymM : IsSymmetricFiniteMatrix M)
+    (e : Fin n → ℝ) (m : ℝ) (hm : 0 ≤ m)
+    (hme : ∀ i : Fin n, m ≤ e i ^ 2)
+    (hSymN : IsSymmetricFiniteMatrix
+      (fun i j : Fin n => e i * M i j * e j))
+    (hminM : 0 ≤ finiteMinEigenvalue hn M hSymM) :
+    m * finiteMinEigenvalue hn M hSymM ≤
+      finiteMinEigenvalue hn
+        (fun i j : Fin n => e i * M i j * e j) hSymN := by
+  -- bottom eigenvector of N
+  obtain ⟨a, ha⟩ := exists_finiteMinEigenvalue_eq hn _ hSymN
+  have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one
+    (fun i j : Fin n => e i * M i j * e j) hSymN a
+  have hq :=
+    finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+      (fun i j : Fin n => e i * M i j * e j) hSymN a
+  rw [hnorm, mul_one] at hq
+  set v : Fin n → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian
+      (fun i j : Fin n => e i * M i j * e j)
+      hSymN).eigenvectorBasis a) with hv
+  have hvsq : ∑ i : Fin n, v i ^ 2 = 1 := by
+    have := hnorm
+    unfold finiteVecNorm2Sq at this
+    exact this
+  have hqv : ∑ i : Fin n, ∑ j : Fin n,
+      v i * (e i * M i j * e j) * v j =
+      finiteMinEigenvalue hn
+        (fun i j : Fin n => e i * M i j * e j) hSymN := by
+    rw [← ha, ← hq, finiteQuadraticForm_eq_sum_sum]
+  -- pass through the congruence: quadForm N v = quadForm M (e·v)
+  have hcong : ∑ i : Fin n, ∑ j : Fin n,
+      v i * (e i * M i j * e j) * v j =
+      ∑ i : Fin n, ∑ j : Fin n,
+        (e i * v i) * M i j * (e j * v j) := by
+    refine Finset.sum_congr rfl fun i _ =>
+      Finset.sum_congr rfl fun j _ => by ring
+  have hrayM := finiteMinEigenvalue_rayleigh hn M hSymM
+    (fun i => e i * v i)
+  have hnorm2 : m * (∑ i : Fin n, v i ^ 2) ≤
+      ∑ i : Fin n, (e i * v i) ^ 2 := by
+    rw [Finset.mul_sum]
+    refine Finset.sum_le_sum fun i _ => ?_
+    have h1 := hme i
+    have h2 := sq_nonneg (v i)
+    calc m * v i ^ 2 ≤ e i ^ 2 * v i ^ 2 :=
+          mul_le_mul_of_nonneg_right h1 h2
+      _ = (e i * v i) ^ 2 := by ring
+  rw [hvsq, mul_one] at hnorm2
+  calc m * finiteMinEigenvalue hn M hSymM
+      ≤ (∑ i : Fin n, (e i * v i) ^ 2) *
+          finiteMinEigenvalue hn M hSymM := by
+        exact mul_le_mul_of_nonneg_right hnorm2 hminM
+    _ = finiteMinEigenvalue hn M hSymM *
+          ∑ i : Fin n, (e i * v i) ^ 2 := mul_comm _ _
+    _ ≤ ∑ i : Fin n, ∑ j : Fin n,
+          (e i * v i) * M i j * (e j * v j) := hrayM
+    _ = finiteMinEigenvalue hn
+          (fun i j : Fin n => e i * M i j * e j) hSymN := by
+        rw [← hcong, hqv]
+
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
 `‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
 an `r × r` upper-triangular block `U` with positive diagonal whose rows
