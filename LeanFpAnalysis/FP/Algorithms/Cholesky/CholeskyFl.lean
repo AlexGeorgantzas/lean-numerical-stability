@@ -18,6 +18,8 @@ import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
+import Mathlib.LinearAlgebra.Matrix.Block
+import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
 import LeanFpAnalysis.FP.Analysis.SubtractionFold
@@ -361,6 +363,39 @@ theorem fl_cholSubFold_pivot_lower (fp : FPModel) (m : ℕ)
           exact Finset.sum_congr rfl fun k _ => by ring
   nlinarith [h1, h2]
 
+/-- A rounded square root of a positive number is positive (`u < 1`). -/
+theorem fl_sqrt_pos (fp : FPModel) (hu : fp.u < 1) (s : ℝ) (hs : 0 < s) :
+    0 < fp.fl_sqrt s := by
+  obtain ⟨δ, hδ, heq⟩ := fp.model_sqrt s hs.le
+  rw [heq]
+  have h1 : 0 < 1 + δ := by
+    have := (abs_le.mp hδ).1
+    linarith
+  exact mul_pos (Real.sqrt_pos_of_pos hs) h1
+
+/-- **Exact upper-triangular solvability** (Theorem 10.7 induction,
+    "producing a nonsingular R̂" step): an upper-triangular matrix with
+    nonzero diagonal solves every right-hand side, via the determinant of
+    a block-triangular matrix. -/
+theorem upperTriangular_solve_exists (k : ℕ) (U : Fin k → Fin k → ℝ)
+    (hupper : ∀ i j : Fin k, j.val < i.val → U i j = 0)
+    (hdiag : ∀ i, U i i ≠ 0) (b : Fin k → ℝ) :
+    ∃ y : Fin k → ℝ, ∀ i : Fin k, ∑ j : Fin k, U i j * y j = b i := by
+  let M : Matrix (Fin k) (Fin k) ℝ := Matrix.of U
+  have hBT : M.BlockTriangular id := fun i j hij => hupper i j hij
+  have hdet_unit : IsUnit M.det := by
+    rw [Matrix.det_of_upperTriangular hBT]
+    exact isUnit_iff_ne_zero.mpr
+      (Finset.prod_ne_zero_iff.mpr fun i _ => hdiag i)
+  refine ⟨M⁻¹.mulVec b, ?_⟩
+  intro i
+  have hsolve : M.mulVec (M⁻¹.mulVec b) = b := by
+    rw [Matrix.mulVec_mulVec, Matrix.mul_nonsing_inv M hdet_unit,
+      Matrix.one_mulVec]
+  calc ∑ j : Fin k, U i j * (M⁻¹.mulVec b) j
+      = M.mulVec (M⁻¹.mulVec b) i := rfl
+    _ = b i := congrFun hsolve i
+
 -- ============================================================
 -- §10.1  Sharp solve forms for the Algorithm 10.2 recurrences
 --        (Higham Theorem 10.3 per-entry equations, Stewart counters)
@@ -687,13 +722,17 @@ private lemma chol_cert_core (m : ℕ) (a d r : ℝ) (x y : Fin m → ℝ)
         rw [← Finset.sum_mul]
         ring
 
-/-- **Theorem 10.3 componentwise bound**, upper-triangle case `i ≤ j`. -/
-private lemma fl_cholesky_entry_bound (fp : FPModel) (n : ℕ)
+/-- **Theorem 10.3, per-entry stage-local form** (Theorem 10.7 induction):
+    the componentwise certificate for entry `(i, j)` with `i ≤ j` needs
+    only the `i`-th diagonal nonzero (off-diagonal case) or the `i`-th
+    pivot nonnegative (diagonal case) — hypotheses available inductively
+    at each stage before any later pivot exists. -/
+theorem fl_cholesky_entry_bound_stage (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ)
     (hn1 : gammaValid fp (n + 1))
-    (hpiv : ∀ j : Fin n, 0 ≤ fl_cholPivot fp n A j)
-    (hdz : ∀ j : Fin n, fl_cholesky fp n A j j ≠ 0)
-    (i j : Fin n) (hij : i.val ≤ j.val) :
+    (i j : Fin n) (hij : i.val ≤ j.val)
+    (hdz_i : i.val < j.val → fl_cholesky fp n A i i ≠ 0)
+    (hpiv_i : i = j → 0 ≤ fl_cholPivot fp n A i) :
     |∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k j - A i j| ≤
       gamma fp (n + 1) *
         ∑ k : Fin n, |fl_cholesky fp n A k i| * |fl_cholesky fp n A k j| := by
@@ -716,12 +755,11 @@ private lemma fl_cholesky_entry_bound (fp : FPModel) (n : ℕ)
     rw [fl_cholesky_strict_lower fp n A k i hk, abs_zero, zero_mul]
   rw [htrunc, htrunc_abs]
   rcases Nat.lt_or_eq_of_le hij with hlt | heq
-  · -- off-diagonal entry
-    have hm1 : gammaValid fp (i.val + 1) := gammaValid_mono fp (by omega) hn1
+  · have hm1 : gammaValid fp (i.val + 1) := gammaValid_mono fp (by omega) hn1
     obtain ⟨φ₀, φ, hφ₀, hφ, heqn⟩ := fl_chol_offdiag_solve_form fp i.val
       (fun k => fl_cholesky fp n A ⟨k.val, Nat.lt_trans k.isLt i.isLt⟩ i)
       (fun k => fl_cholesky fp n A ⟨k.val, Nat.lt_trans k.isLt i.isLt⟩ j)
-      (A i j) (fl_cholesky fp n A i i) (hdz i) hm1
+      (A i j) (fl_cholesky fp n A i i) (hdz_i hlt) hm1
     rw [← fl_cholesky_offdiag_eq fp n A i j hlt] at heqn
     have hmono : gamma fp (i.val + 1) ≤ gamma fp (n + 1) :=
       gamma_mono fp (by omega) hn1
@@ -729,13 +767,13 @@ private lemma fl_cholesky_entry_bound (fp : FPModel) (n : ℕ)
       (fl_cholesky fp n A i i) (fl_cholesky fp n A i j) _ _ φ₀ φ
       (gamma fp (n + 1))
       (le_trans hφ₀ hmono) (fun k => le_trans (hφ k) hmono) heqn
-  · -- diagonal entry
-    have hieqj : i = j := Fin.ext heq
+  · have hieqj : i = j := Fin.ext heq
+    have hpiv := hpiv_i hieqj
     subst hieqj
     have hm2 : gammaValid fp (i.val + 2) := gammaValid_mono fp (by omega) hn1
     obtain ⟨φ₀, φ, hφ₀, hφ, heqn⟩ := fl_chol_diag_solve_form fp i.val
       (fun k => fl_cholesky fp n A ⟨k.val, Nat.lt_trans k.isLt i.isLt⟩ i)
-      (A i i) (hpiv i) hm2
+      (A i i) hpiv hm2
     rw [← fl_cholesky_diag_eq fp n A i, pow_two] at heqn
     have hmono1 : gamma fp (i.val + 1) ≤ gamma fp (n + 1) :=
       gamma_mono fp (by omega) hn1
@@ -745,6 +783,18 @@ private lemma fl_cholesky_entry_bound (fp : FPModel) (n : ℕ)
       (fl_cholesky fp n A i i) (fl_cholesky fp n A i i) _ _ φ₀ φ
       (gamma fp (n + 1))
       (le_trans hφ₀ hmono2) (fun k => le_trans (hφ k) hmono1) heqn
+
+private lemma fl_cholesky_entry_bound (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hpiv : ∀ j : Fin n, 0 ≤ fl_cholPivot fp n A j)
+    (hdz : ∀ j : Fin n, fl_cholesky fp n A j j ≠ 0)
+    (i j : Fin n) (hij : i.val ≤ j.val) :
+    |∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k j - A i j| ≤
+      gamma fp (n + 1) *
+        ∑ k : Fin n, |fl_cholesky fp n A k i| * |fl_cholesky fp n A k j| :=
+  fl_cholesky_entry_bound_stage fp n A hn1 i j hij
+    (fun _ => hdz i) (fun h => h ▸ hpiv i)
 
 /-- **Theorem 10.3 (Higham §10.1, equations (10.4)–(10.5))**: the concrete
     floating-point Cholesky factorization of Algorithm 10.2, when it runs to
