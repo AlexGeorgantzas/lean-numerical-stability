@@ -26006,6 +26006,277 @@ theorem higham9_14_sign_equiv_source_f_bound_of_models
   intro i j
   simpa [one_mul] using hDeltaA i j
 
+/-- **Theorem 9.14**, SPD positive-`D L^T` model-consuming final bound
+specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (d : Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hStruct : IsTridiagLU n L_hat U_hat)
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n, L_hat i k * U_hat k j = A i j)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n, U_hat k j = d k * L_hat j k)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU (gamma fp n))
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_models
+    n A L_hat U_hat d y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hStruct hLU_eq hd_pos hDLT DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` model-consuming final bound from
+the tridiagonal recurrence, specialized to `γ_n`. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_recurrence_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat d y_hat x_hat b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n,
+      tridiag_U_matrix u_hat T.c k j =
+        d k * tridiag_L_matrix l_hat j k)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n
+      (higham9_18_tridiag_to_matrix T)
+      (tridiag_L_matrix l_hat) (tridiag_U_matrix u_hat T.c)
+      DeltaA_LU (gamma fp n))
+    (h21 : higham9_21_tridiag_solve_perturbation_model n
+      (tridiag_L_matrix l_hat) (tridiag_U_matrix u_hat T.c)
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j,
+        |DeltaA i j| ≤
+          higham9_14_h (gamma fp n) *
+            |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i,
+        ∑ j : Fin n,
+          (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+        b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_recurrence
+    n T l_hat u_hat d y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hrec hd_pos hDLT DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, nonnegative-LU model-consuming final bound specialized
+to the natural `γ_n` coefficient. -/
+theorem higham9_14_nonnegative_lu_source_h_bound_of_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hNonneg : HasNonnegLUFactors n A L_hat U_hat)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU (gamma fp n))
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_nonnegative_lu_source_h_bound_of_models
+    n A L_hat U_hat y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hNonneg DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, M-matrix LU model-consuming final bound specialized to
+the natural `γ_n` coefficient. -/
+theorem higham9_14_mmatrix_lu_source_h_bound_of_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hM : IsMMatrix n A)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hL_nn : ∀ i k : Fin n, 0 ≤ L_hat i k)
+    (hU_nn : ∀ k j : Fin n, 0 ≤ U_hat k j)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU (gamma fp n))
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_mmatrix_lu_source_h_bound_of_models
+    n A L_hat U_hat y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hM hLU hL_nn hU_nn DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, sign-equivalent optimal-growth model-consuming final
+bound specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_sign_equiv_source_h_bound_of_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (B L_B U_B : Fin n → Fin n → ℝ)
+    (D₁ D₂ : Fin n → Fin n → ℝ)
+    (hD₁ : IsSignDiag n D₁) (hD₂ : IsSignDiag n D₂)
+    (hB_growth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_B i k| * |U_B k j| = |B i j|)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (hA_eq : ∀ i j : Fin n,
+      A i j = ∑ k₁ : Fin n, D₁ i k₁ * (∑ k₂ : Fin n, B k₁ k₂ * D₂ k₂ j))
+    (hL_abs : ∀ i k : Fin n, |L_hat i k| = |L_B i k|)
+    (hU_abs : ∀ k j : Fin n, |U_hat k j| = |U_B k j|)
+    (y_hat x_hat b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU (gamma fp n))
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_sign_equiv_source_h_bound_of_models
+    n B L_B U_B D₁ D₂ hD₁ hD₂ hB_growth
+    A L_hat U_hat hA_eq hL_abs hU_abs y_hat x_hat b
+    (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
+    DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` model-consuming `f(γ_n)` bound. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (d : Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hStruct : IsTridiagLU n L_hat U_hat)
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n, L_hat i k * U_hat k j = A i j)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n, U_hat k j = d k * L_hat j k)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU (gamma fp n))
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_models
+    n A L_hat U_hat d y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hStruct hLU_eq hd_pos hDLT DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` model-consuming `f(γ_n)` bound
+from the explicit tridiagonal recurrence. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_recurrence_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat d y_hat x_hat b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n,
+      tridiag_U_matrix u_hat T.c k j =
+        d k * tridiag_L_matrix l_hat j k)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n
+      (higham9_18_tridiag_to_matrix T)
+      (tridiag_L_matrix l_hat) (tridiag_U_matrix u_hat T.c)
+      DeltaA_LU (gamma fp n))
+    (h21 : higham9_21_tridiag_solve_perturbation_model n
+      (tridiag_L_matrix l_hat) (tridiag_U_matrix u_hat T.c)
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j,
+        |DeltaA i j| ≤
+          higham9_14_f (gamma fp n) *
+            |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i,
+        ∑ j : Fin n,
+          (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+        b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_recurrence
+    n T l_hat u_hat d y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hrec hd_pos hDLT DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, nonnegative-LU model-consuming `f(γ_n)` bound. -/
+theorem higham9_14_nonnegative_lu_source_f_bound_of_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hNonneg : HasNonnegLUFactors n A L_hat U_hat)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU (gamma fp n))
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_nonnegative_lu_source_f_bound_of_models
+    n A L_hat U_hat y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hNonneg DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, M-matrix LU model-consuming `f(γ_n)` bound. -/
+theorem higham9_14_mmatrix_lu_source_f_bound_of_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hM : IsMMatrix n A)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hL_nn : ∀ i k : Fin n, 0 ≤ L_hat i k)
+    (hU_nn : ∀ k j : Fin n, 0 ≤ U_hat k j)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU (gamma fp n))
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_mmatrix_lu_source_f_bound_of_models
+    n A L_hat U_hat y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hM hLU hL_nn hU_nn DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, sign-equivalent optimal-growth model-consuming
+`f(γ_n)` bound. -/
+theorem higham9_14_sign_equiv_source_f_bound_of_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (B L_B U_B : Fin n → Fin n → ℝ)
+    (D₁ D₂ : Fin n → Fin n → ℝ)
+    (hD₁ : IsSignDiag n D₁) (hD₂ : IsSignDiag n D₂)
+    (hB_growth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_B i k| * |U_B k j| = |B i j|)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (hA_eq : ∀ i j : Fin n,
+      A i j = ∑ k₁ : Fin n, D₁ i k₁ * (∑ k₂ : Fin n, B k₁ k₂ * D₂ k₂ j))
+    (hL_abs : ∀ i k : Fin n, |L_hat i k| = |L_B i k|)
+    (hU_abs : ∀ k j : Fin n, |U_hat k j| = |U_B k j|)
+    (y_hat x_hat b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU (gamma fp n))
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_sign_equiv_source_f_bound_of_models
+    n B L_B U_B D₁ D₂ hD₁ hD₂ hB_growth
+    A L_hat U_hat hA_eq hL_abs hU_abs y_hat x_hat b
+    (gamma fp n) (gamma_nonneg fp hn) DeltaA_LU DeltaL DeltaU h20 h21
+
 /-- **Theorem 9.14**, SPD positive-`D L^T` exact-factor package with actual
 triangular solves.
 
@@ -26870,6 +27141,59 @@ theorem higham9_14_sign_equiv_source_f_bound_of_IsSignEquiv_models
     n B L_B U_B D₁ D₂ hD₁ hD₂ hB_growth
     A L_hat U_hat hA_eq hL_abs hU_abs
     y_hat x_hat b u hu DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, source-predicate sign-equivalent model-consuming final
+bound specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A B L_B U_B L_hat U_hat : Fin n → Fin n → ℝ)
+    (hAB : IsSignEquiv n A B)
+    (hB_growth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_B i k| * |U_B k j| = |B i j|)
+    (hL_abs : ∀ i k : Fin n, |L_hat i k| = |L_B i k|)
+    (hU_abs : ∀ k j : Fin n, |U_hat k j| = |U_B k j|)
+    (y_hat x_hat b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU (gamma fp n))
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_models
+    n A B L_B U_B L_hat U_hat hAB hB_growth hL_abs hU_abs
+    y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
+    DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, source-predicate sign-equivalent model-consuming
+`f(γ_n)` bound. -/
+theorem higham9_14_sign_equiv_source_f_bound_of_IsSignEquiv_models_gamma
+    (fp : FPModel) (n : ℕ)
+    (A B L_B U_B L_hat U_hat : Fin n → Fin n → ℝ)
+    (hAB : IsSignEquiv n A B)
+    (hB_growth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_B i k| * |U_B k j| = |B i j|)
+    (hL_abs : ∀ i k : Fin n, |L_hat i k| = |L_B i k|)
+    (hU_abs : ∀ k j : Fin n, |U_hat k j| = |U_B k j|)
+    (y_hat x_hat b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU (gamma fp n))
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU (gamma fp n)) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_sign_equiv_source_f_bound_of_IsSignEquiv_models
+    n A B L_B U_B L_hat U_hat hAB hB_growth hL_abs hU_abs
+    y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    DeltaA_LU DeltaL DeltaU h20 h21
 
 /-- **Theorem 9.14**, source-predicate sign-equivalent exact-factor package
 with actual triangular solves. -/
