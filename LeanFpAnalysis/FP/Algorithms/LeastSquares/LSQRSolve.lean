@@ -17771,6 +17771,67 @@ theorem householderQRRhsPanelSqrtGrowthCoeffSharp_le_lsTheorem20_4ConcreteGammaT
   dsimp [lsTheorem20_4ConcreteGammaTildeSharp]
   exact le_add_of_nonneg_left (gamma_nonneg fp hvalid)
 
+/-- Residual-sharpened explicit conservative `γ̃` coefficient for the concrete
+    Householder QR augmented-system solve in Higham, Chapter 20,
+    Theorem 20.4.
+
+    This uses `householderQRRhsPanelSqrtResidualGrowthCoeff`, whose recurrence
+    sharpens both intermediate rounded-vector growth and the one-reflector RHS
+    residual estimate. -/
+noncomputable def lsTheorem20_4ConcreteGammaTildeSqrtResidual
+    (fp : FPModel) (m n : ℕ) : ℝ :=
+  gamma fp (n * householderConstructApplyGammaIndex m) +
+    householderQRRhsPanelSqrtResidualGrowthCoeff fp m n
+
+/-- The global Householder gamma-validity assumption used in the concrete
+    Theorem 20.4 handoff also validates the residual-sharpened fixed-`Q` RHS
+    coefficient base. -/
+theorem lsTheorem20_4ConcreteGammaTildeSqrtResidual_base_gammaValid
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    gammaValid fp (11 * m + 23) :=
+  lsTheorem20_4ConcreteGammaTilde_base_gammaValid fp hn hvalid
+
+/-- Higham, Chapter 20, Theorem 20.4 residual-sharpened concrete `γ̃` is
+    nonnegative under the same gamma-validity hypothesis as the Householder QR
+    handoff. -/
+theorem lsTheorem20_4ConcreteGammaTildeSqrtResidual_nonneg
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    0 ≤ lsTheorem20_4ConcreteGammaTildeSqrtResidual fp m n := by
+  have hbase_valid :
+      gammaValid fp (11 * m + 23) :=
+    lsTheorem20_4ConcreteGammaTildeSqrtResidual_base_gammaValid fp
+      hn hvalid
+  exact add_nonneg (gamma_nonneg fp hvalid)
+    (householderQRRhsPanelSqrtResidualGrowthCoeff_nonneg fp m n hbase_valid)
+
+/-- The matrix-side QR gamma is dominated by the residual-sharpened explicit
+    concrete `γ̃` used in the Chapter 20, Theorem 20.4 Householder QR handoff. -/
+theorem gamma_le_lsTheorem20_4ConcreteGammaTildeSqrtResidual
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    gamma fp (n * householderConstructApplyGammaIndex m) ≤
+      lsTheorem20_4ConcreteGammaTildeSqrtResidual fp m n := by
+  have hbase_valid :
+      gammaValid fp (11 * m + 23) :=
+    lsTheorem20_4ConcreteGammaTildeSqrtResidual_base_gammaValid fp
+      hn hvalid
+  dsimp [lsTheorem20_4ConcreteGammaTildeSqrtResidual]
+  exact le_add_of_nonneg_right
+    (householderQRRhsPanelSqrtResidualGrowthCoeff_nonneg fp m n hbase_valid)
+
+/-- The residual-sharpened fixed-`Q` RHS growth coefficient is dominated by
+    the residual-sharpened explicit concrete `γ̃` used in the Chapter 20,
+    Theorem 20.4 handoff. -/
+theorem householderQRRhsPanelSqrtResidualGrowthCoeff_le_lsTheorem20_4ConcreteGammaTildeSqrtResidual
+    (fp : FPModel) {m n : ℕ}
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    householderQRRhsPanelSqrtResidualGrowthCoeff fp m n ≤
+      lsTheorem20_4ConcreteGammaTildeSqrtResidual fp m n := by
+  dsimp [lsTheorem20_4ConcreteGammaTildeSqrtResidual]
+  exact le_add_of_nonneg_left (gamma_nonneg fp hvalid)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
     handoff with an explicit conservative `γ̃` coefficient.
 
@@ -18249,6 +18310,198 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQR
             householderQRRhsPanelSqrtGrowthCoeffSharp fp (n + k) n ≤
           Real.sqrt (n + k : ℝ) * ((n : ℝ) * gammaTilde) :=
             mul_le_mul_of_nonneg_left hsharpCoeff_le_n_tilde
+              (Real.sqrt_nonneg _)
+        _ = Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by ring
+    exact le_trans (hDeltaf i)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  have hDeltag_tilde : ∀ j,
+      |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j := by
+    intro j
+    have hmaj_nonneg :
+        0 ≤ lsTheorem20_4DeltagMajorant A H3 rhat j :=
+      lsTheorem20_4DeltagMajorant_nonneg A H3 rhat hH3nonneg j
+    have hcoeff :
+        Real.sqrt (n + k : ℝ) * (n : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      have hleft_nonneg : 0 ≤ Real.sqrt (n + k : ℝ) * (n : ℝ) :=
+        mul_nonneg (Real.sqrt_nonneg _) (Nat.cast_nonneg n)
+      exact mul_le_mul_of_nonneg_left hgamma_le_tilde hleft_nonneg
+    exact le_trans (hDeltag j)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  refine ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2,
+    hDeltaA_tilde, hGnonneg, hGnorm, hDeltaAcomp_tilde, hDeltaf_tilde,
+    hDeltag_tilde, hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm,
+    hH3norm, hDeltaR1, hDeltaR2, ?_⟩
+  simpa [gammaTilde, Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
+    handoff with all displayed perturbation budgets stated using the
+    residual-sharpened explicit conservative `γ̃` coefficient.
+
+    This is the residual-sharpened analogue of
+    `exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTildeSharp_unified_frob_bound`.
+    It uses `lsTheorem20_4ConcreteGammaTildeSqrtResidual`, whose RHS component
+    is `householderQRRhsPanelSqrtResidualGrowthCoeff`. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_concrete_gammaTildeSqrtResidual_unified_frob_bound
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0)
+    (hγ : gammaValid fp n) :
+    let gammaTilde : ℝ :=
+      lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤ gammaTilde * frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let gammaTilde : ℝ :=
+    lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let R : Fin n → Fin n → ℝ :=
+    fun i j => Rhat (Fin.castAdd k i) j
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+  let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+  let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+  have hgamma_le_tilde :
+      gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+        gammaTilde := by
+    simpa [gammaTilde] using
+      (gamma_le_lsTheorem20_4ConcreteGammaTildeSqrtResidual fp
+        (m := n + k) (n := n) hn hvalid)
+  have hresCoeff_le_tilde :
+      householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n ≤
+        gammaTilde := by
+    simpa [gammaTilde] using
+      (householderQRRhsPanelSqrtResidualGrowthCoeff_le_lsTheorem20_4ConcreteGammaTildeSqrtResidual
+        fp (m := n + k) (n := n) hvalid)
+  have htilde_nonneg : 0 ≤ gammaTilde := by
+    simpa [gammaTilde] using
+      (lsTheorem20_4ConcreteGammaTildeSqrtResidual_nonneg fp
+        (m := n + k) (n := n) hn hvalid)
+  have htilde_le_n_tilde : gammaTilde ≤ (n : ℝ) * gammaTilde := by
+    have hn1 : (1 : ℝ) ≤ (n : ℝ) := by
+      exact_mod_cast Nat.succ_le_of_lt hn
+    calc
+      gammaTilde = (1 : ℝ) * gammaTilde := by ring
+      _ ≤ (n : ℝ) * gammaTilde :=
+          mul_le_mul_of_nonneg_right hn1 htilde_nonneg
+  have hgamma_le_n_tilde :
+      gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+        (n : ℝ) * gammaTilde :=
+    le_trans hgamma_le_tilde htilde_le_n_tilde
+  have hresCoeff_le_n_tilde :
+      householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n ≤
+        (n : ℝ) * gammaTilde :=
+    le_trans hresCoeff_le_tilde htilde_le_n_tilde
+  rcases
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_sqrt_residual_growth_source_rhs_bound
+      fp A f g hn hvalid hdiag hγ with
+    ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2, hDeltaA,
+      hGnonneg, hGnorm, hDeltaAcomp, hDeltaf, hDeltag, hH1nonneg,
+      hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm, hDeltaR1,
+      hDeltaR2, hsys⟩
+  have hDeltaA_tilde :
+      frobNorm DeltaA ≤ gammaTilde * frobNorm A := by
+    exact le_trans hDeltaA
+      (mul_le_mul_of_nonneg_right hgamma_le_tilde (frobNorm_nonneg A))
+  have hDeltaAcomp_tilde : ∀ i j,
+      |DeltaA i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j := by
+    intro i j
+    have hmaj_nonneg :
+        0 ≤ matMulRect (n + k) (n + k) n G
+          (fun a b => |A a b|) i j := by
+      unfold matMulRect
+      exact Finset.sum_nonneg (by
+        intro t _
+        exact mul_nonneg (hGnonneg i t) (abs_nonneg _))
+    have hcoeff :
+        (n + k : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      calc
+        (n + k : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)) ≤
+          (n + k : ℝ) * ((n : ℝ) * gammaTilde) :=
+            mul_le_mul_of_nonneg_left hgamma_le_n_tilde (by positivity)
+        _ = (n + k : ℝ) * (n : ℝ) * gammaTilde := by ring
+    exact le_trans (hDeltaAcomp i j)
+      (mul_le_mul_of_nonneg_right hcoeff hmaj_nonneg)
+  have hDeltaf_tilde : ∀ i,
+      |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1 H2 f rhat i := by
+    intro i
+    have hmaj_nonneg :
+        0 ≤ lsTheorem20_4DeltafMajorant H1 H2 f rhat i :=
+      lsTheorem20_4DeltafMajorant_nonneg H1 H2 f rhat
+        hH1nonneg hH2nonneg i
+    have hcoeff :
+        Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n ≤
+          Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by
+      calc
+        Real.sqrt (n + k : ℝ) *
+            householderQRRhsPanelSqrtResidualGrowthCoeff fp (n + k) n ≤
+          Real.sqrt (n + k : ℝ) * ((n : ℝ) * gammaTilde) :=
+            mul_le_mul_of_nonneg_left hresCoeff_le_n_tilde
               (Real.sqrt_nonneg _)
         _ = Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde := by ring
     exact le_trans (hDeltaf i)
