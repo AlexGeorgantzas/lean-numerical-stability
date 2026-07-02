@@ -126,6 +126,56 @@ lemma psd_pivot_selection {m : ℕ} (A : Fin (m + 1) → Fin (m + 1) → ℝ)
     rw [Equiv.swap_apply_left]
     exact ht _ (Finset.mem_univ _)
 
+/-- Two-point evaluation of the quadratic form: for `x` supported on
+    `{i, j}` with `i ≠ j`, `xᵀAx = t²·a_ii + ts·(a_ij + a_ji) + s²·a_jj`. -/
+private lemma quadForm_two_point {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (i j : Fin n) (hij : i ≠ j) (t s : ℝ) :
+    ∑ k : Fin n, ∑ l : Fin n,
+      (if k = i then t else if k = j then s else 0) * A k l *
+      (if l = i then t else if l = j then s else 0) =
+    t ^ 2 * A i i + t * s * (A i j + A j i) + s ^ 2 * A j j := by
+  have hrow : ∀ k : Fin n,
+      ∑ l : Fin n, (if k = i then t else if k = j then s else 0) * A k l *
+        (if l = i then t else if l = j then s else 0) =
+      (if k = i then t else if k = j then s else 0) *
+        (A k i * t + A k j * s) := by
+    intro k
+    rw [Finset.sum_eq_add_of_mem i j (Finset.mem_univ i)
+      (Finset.mem_univ j) hij ?_]
+    · rw [if_pos rfl, if_neg (Ne.symm hij), if_pos rfl]
+      ring
+    · intro l _ hl
+      rcases hl with ⟨hli, hlj⟩
+      simp [hli, hlj]
+  rw [Finset.sum_congr rfl fun k _ => hrow k]
+  rw [Finset.sum_eq_add_of_mem i j (Finset.mem_univ i)
+    (Finset.mem_univ j) hij ?_]
+  · rw [if_pos rfl, if_neg (Ne.symm hij), if_pos rfl]
+    ring
+  · intro k _ hk
+    rcases hk with ⟨hki, hkj⟩
+    simp [hki, hkj]
+
+/-- **All diagonal entries zero forces the zero matrix** for PSD matrices
+    (Theorem 10.9(b) recursion, termination case): with every `a_ii = 0`,
+    the two-point quadratic form reduces to `2ts·a_ij ≥ 0` for all
+    `t, s`, so every entry vanishes. -/
+lemma psd_all_diag_zero {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (hdiag : ∀ i, A i i = 0) :
+    ∀ i j : Fin n, A i j = 0 := by
+  intro i j
+  by_cases hij : i = j
+  · rw [hij]; exact hdiag j
+  · have hpos := hPSD.2
+      (fun k => if k = i then (1:ℝ) else if k = j then 1 else 0)
+    have hneg := hPSD.2
+      (fun k => if k = i then (1:ℝ) else if k = j then (-1) else 0)
+    rw [quadForm_two_point A i j hij 1 1] at hpos
+    rw [quadForm_two_point A i j hij 1 (-1)] at hneg
+    have hsym := hPSD.1 i j
+    rw [hdiag i, hdiag j] at hpos hneg
+    nlinarith [hpos, hneg, hsym]
+
 -- ============================================================
 -- §10.3  Theorem 10.9: PSD Cholesky existence (helpers)
 -- ============================================================
