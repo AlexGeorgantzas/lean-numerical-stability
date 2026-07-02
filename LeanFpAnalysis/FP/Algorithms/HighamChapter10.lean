@@ -2703,6 +2703,56 @@ lemma scaled_border_mass_normwise {m : ℕ}
     _ = ε * (2 * (Real.sqrt t * Real.sqrt W)) := by ring
     _ ≤ ε * (t + W) := mul_le_mul_of_nonneg_left hamgm hε0
 
+/-- **Eigenvalue interlacing, upper direction** (the dual of
+    `finiteMinEigenvalue_leading_principal_ge`, completing the
+    two-sided leading-block spectral envelope): the maximum eigenvalue
+    of a leading principal submatrix is at most the maximum eigenvalue
+    of the full matrix — evaluate the full max-Rayleigh bound at the
+    zero-padded maximizing eigenvector of the submatrix. -/
+theorem finiteMaxEigenvalue_leading_principal_le (n : ℕ) (hn : 0 < n)
+    (H : Fin n → Fin n → ℝ) (hH : IsSymmetricFiniteMatrix H)
+    (k : ℕ) (hk0 : 0 < k) (hk : k ≤ n)
+    (hHk_sym : IsSymmetricFiniteMatrix
+      (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)) :
+    finiteMaxEigenvalue hk0
+        (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+        hHk_sym ≤
+      finiteMaxEigenvalue hn H hH := by
+  obtain ⟨a, ha⟩ := exists_finiteMaxEigenvalue_eq hk0
+    (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩) hHk_sym
+  have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one
+    (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+    hHk_sym a
+  have hq :=
+    finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+      (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+      hHk_sym a
+  rw [hnorm, mul_one] at hq
+  set v : Fin k → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian
+      (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+      hHk_sym).eigenvectorBasis a) with hv
+  have hvsq : ∑ i : Fin k, v i ^ 2 = 1 := by
+    have := hnorm
+    unfold finiteVecNorm2Sq at this
+    exact this
+  have hpadsq : ∑ i : Fin n,
+      (if h : i.val < k then v ⟨i.val, h⟩ else 0) ^ 2 = 1 := by
+    rw [sum_sq_zero_pad_eq k hk v, hvsq]
+  have hray := finiteMaxEigenvalue_rayleigh hn H hH
+    (fun i => if h : i.val < k then v ⟨i.val, h⟩ else 0)
+  rw [hpadsq, mul_one] at hray
+  have hpadquad : ∑ i : Fin n, ∑ j : Fin n,
+      (if h : i.val < k then v ⟨i.val, h⟩ else 0) * H i j *
+        (if h : j.val < k then v ⟨j.val, h⟩ else 0) =
+      finiteMaxEigenvalue hk0
+        (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+        hHk_sym := by
+    rw [quadForm_zero_pad_eq H k hk v, ← ha, ← hq,
+      finiteQuadraticForm_eq_sum_sum]
+  rw [hpadquad] at hray
+  exact hray
+
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
 `‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
 an `r × r` upper-triangular block `U` with positive diagonal whose rows
