@@ -2224,6 +2224,768 @@ theorem higham10_12_w_action_trace_bound {k m : ℕ} (hk : 0 < k)
     (isPosSemiDef_trailing_block A hPSD) w
   simpa [vecNorm2Sq] using h
 
+/-- **Spectral bounds for unit-diagonal PSD matrices** (the van der
+    Sluis (10.9) route ingredient): the scaled matrix `H = D⁻¹AD⁻¹`
+    with `D = diag(√a_ii)` has unit diagonal, and any unit-diagonal PSD
+    matrix has `1 ≤ λ_max ≤ n` — the upper bound from the trace, the
+    lower from the Rayleigh quotient at a coordinate vector. -/
+theorem unit_diag_psd_maxEigenvalue_bounds {n : ℕ} (hn : 0 < n)
+    (H : Fin n → Fin n → ℝ) (hPSD : IsPosSemiDef n H)
+    (hdiag : ∀ i : Fin n, H i i = 1)
+    (hSym : IsSymmetricFiniteMatrix H) :
+    1 ≤ finiteMaxEigenvalue hn H hSym ∧
+      finiteMaxEigenvalue hn H hSym ≤ (n : ℝ) := by
+  constructor
+  · -- Rayleigh at a coordinate vector
+    set e : Fin n → ℝ := fun k => if k = ⟨0, hn⟩ then 1 else 0 with he
+    have hray := finiteMaxEigenvalue_rayleigh hn H hSym e
+    have hquad : ∑ i : Fin n, ∑ j : Fin n, e i * H i j * e j =
+        H ⟨0, hn⟩ ⟨0, hn⟩ := by
+      simp [he, Finset.sum_ite_eq', Finset.mul_sum]
+    have hnorm : ∑ i : Fin n, e i ^ 2 = 1 := by
+      simp [he, Finset.sum_ite_eq']
+    rw [hquad, hnorm, mul_one, hdiag] at hray
+    exact hray
+  · -- trace bound at the top eigenvector
+    obtain ⟨a, ha⟩ := exists_finiteMaxEigenvalue_eq hn H hSym
+    have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one
+      H hSym a
+    have hq :=
+      finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+        H hSym a
+    rw [hnorm, mul_one] at hq
+    set v : Fin n → ℝ :=
+      ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian H
+        hSym).eigenvectorBasis a) with hv
+    have hvsq : ∑ i : Fin n, v i ^ 2 = 1 := by
+      have := hnorm
+      unfold finiteVecNorm2Sq at this
+      exact this
+    have hqv : ∑ i : Fin n, ∑ j : Fin n, v i * H i j * v j =
+        finiteMaxEigenvalue hn H hSym := by
+      rw [← ha, ← hq, finiteQuadraticForm_eq_sum_sum]
+    have htr := psd_quadForm_le_trace H hPSD v
+    have htrace : ∑ i : Fin n, H i i = (n : ℝ) := by
+      simp [hdiag]
+    rw [hqv, htrace, hvsq, mul_one] at htr
+    exact htr
+
+/-- **Condition-number certificate for the scaled matrix** (van der
+    Sluis route, display (10.9) fragment): a unit-diagonal PSD matrix
+    with positive smallest eigenvalue has
+    `κ₂(H) = λ_max/λ_min ≤ n/λ_min`. -/
+theorem higham10_9_unit_diag_cond_bound {n : ℕ} (hn : 0 < n)
+    (H : Fin n → Fin n → ℝ) (hPSD : IsPosSemiDef n H)
+    (hdiag : ∀ i : Fin n, H i i = 1)
+    (hSym : IsSymmetricFiniteMatrix H)
+    (hmin : 0 < finiteMinEigenvalue hn H hSym) :
+    finiteMaxEigenvalue hn H hSym / finiteMinEigenvalue hn H hSym ≤
+      (n : ℝ) / finiteMinEigenvalue hn H hSym := by
+  have h := (unit_diag_psd_maxEigenvalue_bounds hn H hPSD hdiag
+    hSym).2
+  gcongr
+
+
+/-- The √-scaled matrix `H = D⁻¹AD⁻¹`, `D = diag(√a_ii)`, has unit
+    diagonal. -/
+lemma scaled_matrix_unit_diag {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hAdiag : ∀ i : Fin n, 0 < A i i) (i : Fin n) :
+    A i i / (Real.sqrt (A i i) * Real.sqrt (A i i)) = 1 := by
+  rw [Real.mul_self_sqrt (hAdiag i).le]
+  exact div_self (hAdiag i).ne'
+
+/-- The √-scaled matrix of a PSD matrix is PSD (congruence by the
+    positive diagonal scaling). -/
+lemma scaled_matrix_isPosSemiDef {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hPSD : IsPosSemiDef n A) (hAdiag : ∀ i : Fin n, 0 < A i i) :
+    IsPosSemiDef n
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) := by
+  constructor
+  · intro i j
+    show A i j / (Real.sqrt (A i i) * Real.sqrt (A j j)) =
+      A j i / (Real.sqrt (A j j) * Real.sqrt (A i i))
+    rw [hPSD.1 i j, mul_comm]
+  · intro x
+    have h := hPSD.2 (fun i => x i / Real.sqrt (A i i))
+    calc (0:ℝ) ≤ ∑ i : Fin n, ∑ j : Fin n,
+          x i / Real.sqrt (A i i) * A i j *
+          (x j / Real.sqrt (A j j)) := h
+      _ = ∑ i : Fin n, ∑ j : Fin n, x i *
+          (A i j / (Real.sqrt (A i i) * Real.sqrt (A j j))) * x j := by
+          refine Finset.sum_congr rfl fun i _ =>
+            Finset.sum_congr rfl fun j _ => ?_
+          have hi := Real.sqrt_pos.mpr (hAdiag i)
+          have hj := Real.sqrt_pos.mpr (hAdiag j)
+          field_simp
+
+/-- **Display (10.9) fragment for the concrete scaled matrix**: for SPD
+    data (`A` PSD with positive diagonal), the van der Sluis scaling
+    `H = D⁻¹AD⁻¹` satisfies `κ₂(H) ≤ n/λ_min(H)`. -/
+theorem higham10_9_scaled_cond_bound {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (hPSD : IsPosSemiDef n A)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hSym : IsSymmetricFiniteMatrix
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))))
+    (hmin : 0 < finiteMinEigenvalue hn
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) hSym) :
+    finiteMaxEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSym /
+      finiteMinEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSym ≤
+    (n : ℝ) / finiteMinEigenvalue hn
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) hSym :=
+  higham10_9_unit_diag_cond_bound hn _
+    (scaled_matrix_isPosSemiDef A hPSD hAdiag)
+    (fun i => scaled_matrix_unit_diag A hAdiag i) hSym hmin
+
+/-- Every diagonal entry is a Rayleigh quotient, so bounds `λ_max`
+    from below (van der Sluis engine, `λ_max(M) ≥ m_ii`). -/
+lemma finiteMaxEigenvalue_ge_diag {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hSym : IsSymmetricFiniteMatrix M)
+    (i : Fin n) :
+    M i i ≤ finiteMaxEigenvalue hn M hSym := by
+  set e : Fin n → ℝ := fun k => if k = i then 1 else 0 with he
+  have hray := finiteMaxEigenvalue_rayleigh hn M hSym e
+  have hquad : ∑ k : Fin n, ∑ l : Fin n, e k * M k l * e l =
+      M i i := by
+    simp [he, Finset.sum_ite_eq']
+  have hnorm : ∑ k : Fin n, e k ^ 2 = 1 := by
+    simp [he, Finset.sum_ite_eq']
+  rw [hquad, hnorm, mul_one] at hray
+  exact hray
+
+/-- **Diagonal congruence bounds the smallest eigenvalue from below**
+    (van der Sluis engine): if `N = E M E` with diagonal `E = diag(e)`
+    and `m ≤ e_i²` throughout, then `λ_min(N) ≥ m·λ_min(M)` — evaluate
+    at `N`'s bottom eigenvector and pass through the congruence. -/
+lemma diag_congruence_minEigenvalue_ge {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hSymM : IsSymmetricFiniteMatrix M)
+    (e : Fin n → ℝ) (m : ℝ) (hm : 0 ≤ m)
+    (hme : ∀ i : Fin n, m ≤ e i ^ 2)
+    (hSymN : IsSymmetricFiniteMatrix
+      (fun i j : Fin n => e i * M i j * e j))
+    (hminM : 0 ≤ finiteMinEigenvalue hn M hSymM) :
+    m * finiteMinEigenvalue hn M hSymM ≤
+      finiteMinEigenvalue hn
+        (fun i j : Fin n => e i * M i j * e j) hSymN := by
+  -- bottom eigenvector of N
+  obtain ⟨a, ha⟩ := exists_finiteMinEigenvalue_eq hn _ hSymN
+  have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one
+    (fun i j : Fin n => e i * M i j * e j) hSymN a
+  have hq :=
+    finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+      (fun i j : Fin n => e i * M i j * e j) hSymN a
+  rw [hnorm, mul_one] at hq
+  set v : Fin n → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian
+      (fun i j : Fin n => e i * M i j * e j)
+      hSymN).eigenvectorBasis a) with hv
+  have hvsq : ∑ i : Fin n, v i ^ 2 = 1 := by
+    have := hnorm
+    unfold finiteVecNorm2Sq at this
+    exact this
+  have hqv : ∑ i : Fin n, ∑ j : Fin n,
+      v i * (e i * M i j * e j) * v j =
+      finiteMinEigenvalue hn
+        (fun i j : Fin n => e i * M i j * e j) hSymN := by
+    rw [← ha, ← hq, finiteQuadraticForm_eq_sum_sum]
+  -- pass through the congruence: quadForm N v = quadForm M (e·v)
+  have hcong : ∑ i : Fin n, ∑ j : Fin n,
+      v i * (e i * M i j * e j) * v j =
+      ∑ i : Fin n, ∑ j : Fin n,
+        (e i * v i) * M i j * (e j * v j) := by
+    refine Finset.sum_congr rfl fun i _ =>
+      Finset.sum_congr rfl fun j _ => by ring
+  have hrayM := finiteMinEigenvalue_rayleigh hn M hSymM
+    (fun i => e i * v i)
+  have hnorm2 : m * (∑ i : Fin n, v i ^ 2) ≤
+      ∑ i : Fin n, (e i * v i) ^ 2 := by
+    rw [Finset.mul_sum]
+    refine Finset.sum_le_sum fun i _ => ?_
+    have h1 := hme i
+    have h2 := sq_nonneg (v i)
+    calc m * v i ^ 2 ≤ e i ^ 2 * v i ^ 2 :=
+          mul_le_mul_of_nonneg_right h1 h2
+      _ = (e i * v i) ^ 2 := by ring
+  rw [hvsq, mul_one] at hnorm2
+  calc m * finiteMinEigenvalue hn M hSymM
+      ≤ (∑ i : Fin n, (e i * v i) ^ 2) *
+          finiteMinEigenvalue hn M hSymM := by
+        exact mul_le_mul_of_nonneg_right hnorm2 hminM
+    _ = finiteMinEigenvalue hn M hSymM *
+          ∑ i : Fin n, (e i * v i) ^ 2 := mul_comm _ _
+    _ ≤ ∑ i : Fin n, ∑ j : Fin n,
+          (e i * v i) * M i j * (e j * v j) := hrayM
+    _ = finiteMinEigenvalue hn
+          (fun i j : Fin n => e i * M i j * e j) hSymN := by
+        rw [← hcong, hqv]
+
+/-- **van der Sluis / display (10.9)**: the √-scaling is within a
+    factor `n` of every diagonal scaling —
+    `κ₂(H) ≤ n·κ₂(DAD)` for every positive diagonal `D`, hence
+    `κ₂(H) ≤ n·min_D κ₂(DAD)`. `B` names the largest `d_i²a_ii`
+    (supplied with its attainment witness). Chain:
+    `λ_max(H) ≤ n` (unit diagonal), `λ_min(H) ≥ λ_min(DAD)/B`
+    (diagonal congruence `H = E(DAD)E`, `e_i = 1/(d_i√a_ii)`), and
+    `B ≤ λ_max(DAD)` (a diagonal Rayleigh value). -/
+theorem higham10_9_van_der_sluis {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (hPSD : IsPosSemiDef n A)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (d : Fin n → ℝ) (hd : ∀ i : Fin n, 0 < d i)
+    (hSymH : IsSymmetricFiniteMatrix
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))))
+    (hSymM : IsSymmetricFiniteMatrix
+      (fun i j : Fin n => d i * A i j * d j))
+    (hminM : 0 < finiteMinEigenvalue hn
+      (fun i j : Fin n => d i * A i j * d j) hSymM)
+    (B : ℝ) (hB : ∀ i : Fin n, d i ^ 2 * A i i ≤ B)
+    (hattain : ∃ k : Fin n, d k ^ 2 * A k k = B) :
+    finiteMaxEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH /
+      finiteMinEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH ≤
+    (n : ℝ) * finiteMaxEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM /
+      finiteMinEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM := by
+  obtain ⟨k, hk⟩ := hattain
+  have hB0 : (0:ℝ) < B := by
+    rw [← hk]
+    have hdk := hd k
+    have hak := hAdiag k
+    positivity
+  -- B is a Rayleigh value of M
+  have hBmax : B ≤ finiteMaxEigenvalue hn
+      (fun i j : Fin n => d i * A i j * d j) hSymM := by
+    have h := finiteMaxEigenvalue_ge_diag hn
+      (fun i j : Fin n => d i * A i j * d j) hSymM k
+    have h2 : d k * A k k * d k = B := by rw [← hk]; ring
+    calc B = d k * A k k * d k := h2.symm
+      _ ≤ _ := h
+  -- H is the diagonal congruence of M by e = 1/(d√a)
+  have hHM : (fun i j : Fin n =>
+      (1 / (d i * Real.sqrt (A i i))) *
+        (d i * A i j * d j) *
+        (1 / (d j * Real.sqrt (A j j)))) =
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) := by
+    funext i j
+    have hi := Real.sqrt_pos.mpr (hAdiag i)
+    have hj := Real.sqrt_pos.mpr (hAdiag j)
+    have hdi := hd i
+    have hdj := hd j
+    field_simp
+  -- the congruence floor for λ_min(H)
+  have hmfloor : ∀ i : Fin n,
+      1 / B ≤ (1 / (d i * Real.sqrt (A i i))) ^ 2 := by
+    intro i
+    have hi := Real.sqrt_pos.mpr (hAdiag i)
+    have hdi := hd i
+    rw [div_pow, one_pow]
+    have hsq : (d i * Real.sqrt (A i i)) ^ 2 = d i ^ 2 * A i i := by
+      rw [mul_pow, Real.sq_sqrt (hAdiag i).le]
+    rw [hsq]
+    have hai := hAdiag i
+    have h1 : (0:ℝ) < d i ^ 2 * A i i := by positivity
+    exact one_div_le_one_div_of_le h1 (hB i)
+  have hSymH' : IsSymmetricFiniteMatrix
+      (fun i j : Fin n =>
+        (1 / (d i * Real.sqrt (A i i))) *
+          (d i * A i j * d j) *
+          (1 / (d j * Real.sqrt (A j j)))) := by
+    rw [hHM]; exact hSymH
+  have hcong := diag_congruence_minEigenvalue_ge hn
+    (fun i j : Fin n => d i * A i j * d j) hSymM
+    (fun i => 1 / (d i * Real.sqrt (A i i))) (1 / B)
+    (one_div_pos.mpr hB0).le hmfloor hSymH' hminM.le
+  -- transport across the congruence identity
+  have hminH_ge : (1 / B) * finiteMinEigenvalue hn
+      (fun i j : Fin n => d i * A i j * d j) hSymM ≤
+      finiteMinEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH := by
+    refine hcong.trans_eq ?_
+    congr 1
+  have hminH0 : 0 < finiteMinEigenvalue hn
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH := by
+    have : (0:ℝ) < (1 / B) * finiteMinEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM :=
+      mul_pos (one_div_pos.mpr hB0) hminM
+    linarith [hminH_ge]
+  -- assemble the condition-number comparison
+  have hmaxH : finiteMaxEigenvalue hn
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH ≤ (n : ℝ) :=
+    (unit_diag_psd_maxEigenvalue_bounds hn _
+      (scaled_matrix_isPosSemiDef A hPSD hAdiag)
+      (fun i => scaled_matrix_unit_diag A hAdiag i) hSymH).2
+  rw [div_le_div_iff₀ hminH0 hminM]
+  have h1 : finiteMaxEigenvalue hn
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH *
+      finiteMinEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM ≤
+      (n : ℝ) * finiteMinEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM :=
+    mul_le_mul_of_nonneg_right hmaxH hminM.le
+  have h2 : finiteMinEigenvalue hn
+      (fun i j : Fin n => d i * A i j * d j) hSymM ≤
+      B * finiteMinEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH := by
+    have := mul_le_mul_of_nonneg_left hminH_ge hB0.le
+    calc finiteMinEigenvalue hn
+          (fun i j : Fin n => d i * A i j * d j) hSymM
+        = B * ((1 / B) * finiteMinEigenvalue hn
+            (fun i j : Fin n => d i * A i j * d j) hSymM) := by
+          field_simp
+      _ ≤ B * finiteMinEigenvalue hn
+            (fun i l : Fin n => A i l /
+              (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH := this
+  have h3 : (n : ℝ) * B ≤ (n : ℝ) *
+      finiteMaxEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM :=
+    mul_le_mul_of_nonneg_left hBmax (Nat.cast_nonneg n)
+  have h4 : (n : ℝ) * finiteMinEigenvalue hn
+      (fun i j : Fin n => d i * A i j * d j) hSymM ≤
+      (n : ℝ) * (B * finiteMinEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH) :=
+    mul_le_mul_of_nonneg_left h2 (Nat.cast_nonneg n)
+  have h5 : ((n : ℝ) * B) * finiteMinEigenvalue hn
+      (fun i l : Fin n => A i l /
+        (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH ≤
+      ((n : ℝ) * finiteMaxEigenvalue hn
+        (fun i j : Fin n => d i * A i j * d j) hSymM) *
+      finiteMinEigenvalue hn
+        (fun i l : Fin n => A i l /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) hSymH :=
+    mul_le_mul_of_nonneg_right h3 hminH0.le
+  nlinarith [h1, h4, h5]
+
+/-- **Scaled interior mass from an operator-norm certificate**
+    (Theorem 10.7 normwise stage route): if the `D`-scaled residual
+    `E_ij = Δ_ij/(√a_i√a_j)` carries `opNorm2Le E ε`, the weighted
+    perturbation mass obeys `|yᵀΔy| ≤ ε·∑ a_i y_i²` — exactly the
+    normwise hypothesis of `bordered_perturbation_floor_normwise`,
+    with no dimension factor. -/
+lemma scaled_interior_mass_normwise {m : ℕ}
+    (Δ : Fin m → Fin m → ℝ) (a : Fin m → ℝ) (ha : ∀ i, 0 ≤ a i)
+    (ε : ℝ)
+    (hcert : opNorm2Le
+      (fun i j : Fin m => Δ i j /
+        (Real.sqrt (a i) * Real.sqrt (a j))) ε)
+    (y : Fin m → ℝ)
+    (hnz : ∀ i j : Fin m, a i = 0 ∨ a j = 0 → Δ i j = 0) :
+    |∑ i : Fin m, ∑ j : Fin m, y i * Δ i j * y j| ≤
+      ε * ∑ i : Fin m, a i * y i ^ 2 := by
+  set z : Fin m → ℝ := fun i => y i * Real.sqrt (a i) with hz
+  have habs := quadForm_abs_le_of_opNorm2Le m
+    (fun i j : Fin m => Δ i j /
+      (Real.sqrt (a i) * Real.sqrt (a j))) ε hcert z
+  have hquad : ∑ i : Fin m, ∑ j : Fin m,
+      z i * (Δ i j / (Real.sqrt (a i) * Real.sqrt (a j))) * z j =
+      ∑ i : Fin m, ∑ j : Fin m, y i * Δ i j * y j := by
+    refine Finset.sum_congr rfl fun i _ =>
+      Finset.sum_congr rfl fun j _ => ?_
+    by_cases hi : a i = 0
+    · rw [hnz i j (Or.inl hi)]
+      simp
+    by_cases hj : a j = 0
+    · rw [hnz i j (Or.inr hj)]
+      simp
+    · have hi' := lt_of_le_of_ne (ha i) (Ne.symm hi)
+      have hj' := lt_of_le_of_ne (ha j) (Ne.symm hj)
+      have hsi := Real.sqrt_pos.mpr hi'
+      have hsj := Real.sqrt_pos.mpr hj'
+      show y i * Real.sqrt (a i) *
+        (Δ i j / (Real.sqrt (a i) * Real.sqrt (a j))) *
+        (y j * Real.sqrt (a j)) = y i * Δ i j * y j
+      field_simp
+  have hnorm : ∑ i : Fin m, z i ^ 2 =
+      ∑ i : Fin m, a i * y i ^ 2 := by
+    refine Finset.sum_congr rfl fun i _ => ?_
+    show (y i * Real.sqrt (a i)) ^ 2 = a i * y i ^ 2
+    rw [mul_pow, Real.sq_sqrt (ha i)]
+    ring
+  rw [hquad, hnorm] at habs
+  exact habs
+
+/-- **Scaled border mass from a vector-norm certificate** (Theorem
+    10.7 normwise stage route): if the `D`-scaled border perturbation
+    has squared norm at most `ε²t`, then
+    `|2∑yᵢδᵢ| ≤ ε(t + ∑aᵢyᵢ²)` — Cauchy–Schwarz in the scaled inner
+    product followed by AM–GM, again with no dimension factor. -/
+lemma scaled_border_mass_normwise {m : ℕ}
+    (δ : Fin m → ℝ) (a : Fin m → ℝ) (ha : ∀ i, 0 ≤ a i)
+    (ε t : ℝ) (hε0 : 0 ≤ ε) (ht0 : 0 ≤ t)
+    (hnz : ∀ i : Fin m, a i = 0 → δ i = 0)
+    (hcert : ∑ i : Fin m,
+      (if a i = 0 then 0 else δ i ^ 2 / a i) ≤ ε ^ 2 * t)
+    (y : Fin m → ℝ) :
+    |2 * ∑ i : Fin m, y i * δ i| ≤
+      ε * (t + ∑ i : Fin m, a i * y i ^ 2) := by
+  set W : ℝ := ∑ i : Fin m, a i * y i ^ 2 with hW
+  have hW0 : 0 ≤ W := Finset.sum_nonneg fun i _ =>
+    mul_nonneg (ha i) (sq_nonneg _)
+  -- Cauchy–Schwarz in the scaled coordinates
+  have hcs : (∑ i : Fin m, y i * δ i) ^ 2 ≤
+      W * (ε ^ 2 * t) := by
+    have hsplit : ∑ i : Fin m, y i * δ i =
+        ∑ i : Fin m, (y i * Real.sqrt (a i)) *
+          (if a i = 0 then 0 else δ i / Real.sqrt (a i)) := by
+      refine Finset.sum_congr rfl fun i _ => ?_
+      by_cases hi : a i = 0
+      · rw [if_pos hi, hnz i hi]
+        simp
+      · rw [if_neg hi]
+        have hi' := lt_of_le_of_ne (ha i) (Ne.symm hi)
+        have hsi := Real.sqrt_pos.mpr hi'
+        field_simp
+    rw [hsplit]
+    have h := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
+      (fun i => y i * Real.sqrt (a i))
+      (fun i => if a i = 0 then 0 else δ i / Real.sqrt (a i))
+    have hL : ∑ i : Fin m, (y i * Real.sqrt (a i)) ^ 2 = W := by
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [mul_pow, Real.sq_sqrt (ha i)]
+      ring
+    have hR : ∑ i : Fin m,
+        (if a i = 0 then 0 else δ i / Real.sqrt (a i)) ^ 2 =
+        ∑ i : Fin m, (if a i = 0 then 0 else δ i ^ 2 / a i) := by
+      refine Finset.sum_congr rfl fun i _ => ?_
+      by_cases hi : a i = 0
+      · rw [if_pos hi, if_pos hi]
+        norm_num
+      · rw [if_neg hi, if_neg hi, div_pow, Real.sq_sqrt (ha i)]
+    rw [hL, hR] at h
+    calc (∑ i : Fin m, (y i * Real.sqrt (a i)) *
+          (if a i = 0 then 0 else δ i / Real.sqrt (a i))) ^ 2
+        ≤ W * ∑ i : Fin m,
+            (if a i = 0 then 0 else δ i ^ 2 / a i) := h
+      _ ≤ W * (ε ^ 2 * t) :=
+          mul_le_mul_of_nonneg_left hcert hW0
+  -- AM–GM assembly
+  have hsum : |∑ i : Fin m, y i * δ i| ≤
+      ε * Real.sqrt t * Real.sqrt W := by
+    have h1 : |∑ i : Fin m, y i * δ i| ^ 2 ≤
+        (ε * Real.sqrt t * Real.sqrt W) ^ 2 := by
+      rw [sq_abs]
+      calc (∑ i : Fin m, y i * δ i) ^ 2
+          ≤ W * (ε ^ 2 * t) := hcs
+        _ = (ε * Real.sqrt t * Real.sqrt W) ^ 2 := by
+            rw [mul_pow, mul_pow, Real.sq_sqrt ht0,
+              Real.sq_sqrt hW0]
+            ring
+    have h2 : (0:ℝ) ≤ ε * Real.sqrt t * Real.sqrt W := by
+      positivity
+    nlinarith [abs_nonneg (∑ i : Fin m, y i * δ i), h1, h2]
+  have hamgm : 2 * (Real.sqrt t * Real.sqrt W) ≤ t + W := by
+    have hsq := sq_nonneg (Real.sqrt t - Real.sqrt W)
+    have hts : Real.sqrt t ^ 2 = t := Real.sq_sqrt ht0
+    have hWs : Real.sqrt W ^ 2 = W := Real.sq_sqrt hW0
+    nlinarith
+  calc |2 * ∑ i : Fin m, y i * δ i|
+      = 2 * |∑ i : Fin m, y i * δ i| := by
+        rw [abs_mul]
+        norm_num
+    _ ≤ 2 * (ε * Real.sqrt t * Real.sqrt W) := by linarith [hsum]
+    _ = ε * (2 * (Real.sqrt t * Real.sqrt W)) := by ring
+    _ ≤ ε * (t + W) := mul_le_mul_of_nonneg_left hamgm hε0
+
+/-- **Eigenvalue interlacing, upper direction** (the dual of
+    `finiteMinEigenvalue_leading_principal_ge`, completing the
+    two-sided leading-block spectral envelope): the maximum eigenvalue
+    of a leading principal submatrix is at most the maximum eigenvalue
+    of the full matrix — evaluate the full max-Rayleigh bound at the
+    zero-padded maximizing eigenvector of the submatrix. -/
+theorem finiteMaxEigenvalue_leading_principal_le (n : ℕ) (hn : 0 < n)
+    (H : Fin n → Fin n → ℝ) (hH : IsSymmetricFiniteMatrix H)
+    (k : ℕ) (hk0 : 0 < k) (hk : k ≤ n)
+    (hHk_sym : IsSymmetricFiniteMatrix
+      (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)) :
+    finiteMaxEigenvalue hk0
+        (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+        hHk_sym ≤
+      finiteMaxEigenvalue hn H hH := by
+  obtain ⟨a, ha⟩ := exists_finiteMaxEigenvalue_eq hk0
+    (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩) hHk_sym
+  have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one
+    (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+    hHk_sym a
+  have hq :=
+    finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+      (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+      hHk_sym a
+  rw [hnorm, mul_one] at hq
+  set v : Fin k → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian
+      (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+      hHk_sym).eigenvectorBasis a) with hv
+  have hvsq : ∑ i : Fin k, v i ^ 2 = 1 := by
+    have := hnorm
+    unfold finiteVecNorm2Sq at this
+    exact this
+  have hpadsq : ∑ i : Fin n,
+      (if h : i.val < k then v ⟨i.val, h⟩ else 0) ^ 2 = 1 := by
+    rw [sum_sq_zero_pad_eq k hk v, hvsq]
+  have hray := finiteMaxEigenvalue_rayleigh hn H hH
+    (fun i => if h : i.val < k then v ⟨i.val, h⟩ else 0)
+  rw [hpadsq, mul_one] at hray
+  have hpadquad : ∑ i : Fin n, ∑ j : Fin n,
+      (if h : i.val < k then v ⟨i.val, h⟩ else 0) * H i j *
+        (if h : j.val < k then v ⟨j.val, h⟩ else 0) =
+      finiteMaxEigenvalue hk0
+        (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+        hHk_sym := by
+    rw [quadForm_zero_pad_eq H k hk v, ← ha, ← hq,
+      finiteQuadraticForm_eq_sum_sum]
+  rw [hpadquad] at hray
+  exact hray
+
+/-- Quadratic-form-certificate variant of the scaled interior mass
+    (composes with zero-pad restriction, unlike the `opNorm2Le`
+    form). -/
+lemma scaled_interior_mass_normwise_quad {m : ℕ}
+    (Δ : Fin m → Fin m → ℝ) (a : Fin m → ℝ) (ha : ∀ i, 0 ≤ a i)
+    (ε : ℝ)
+    (hcert : ∀ z : Fin m → ℝ,
+      |∑ i : Fin m, ∑ j : Fin m, z i *
+        (Δ i j / (Real.sqrt (a i) * Real.sqrt (a j))) * z j| ≤
+      ε * ∑ i : Fin m, z i ^ 2)
+    (y : Fin m → ℝ)
+    (hnz : ∀ i j : Fin m, a i = 0 ∨ a j = 0 → Δ i j = 0) :
+    |∑ i : Fin m, ∑ j : Fin m, y i * Δ i j * y j| ≤
+      ε * ∑ i : Fin m, a i * y i ^ 2 := by
+  set z : Fin m → ℝ := fun i => y i * Real.sqrt (a i) with hz
+  have habs := hcert z
+  have hquad : ∑ i : Fin m, ∑ j : Fin m,
+      z i * (Δ i j / (Real.sqrt (a i) * Real.sqrt (a j))) * z j =
+      ∑ i : Fin m, ∑ j : Fin m, y i * Δ i j * y j := by
+    refine Finset.sum_congr rfl fun i _ =>
+      Finset.sum_congr rfl fun j _ => ?_
+    by_cases hi : a i = 0
+    · rw [hnz i j (Or.inl hi)]
+      simp
+    by_cases hj : a j = 0
+    · rw [hnz i j (Or.inr hj)]
+      simp
+    · have hi' := lt_of_le_of_ne (ha i) (Ne.symm hi)
+      have hj' := lt_of_le_of_ne (ha j) (Ne.symm hj)
+      have hsi := Real.sqrt_pos.mpr hi'
+      have hsj := Real.sqrt_pos.mpr hj'
+      show y i * Real.sqrt (a i) *
+        (Δ i j / (Real.sqrt (a i) * Real.sqrt (a j))) *
+        (y j * Real.sqrt (a j)) = y i * Δ i j * y j
+      field_simp
+  have hnorm : ∑ i : Fin m, z i ^ 2 =
+      ∑ i : Fin m, a i * y i ^ 2 := by
+    refine Finset.sum_congr rfl fun i _ => ?_
+    show (y i * Real.sqrt (a i)) ^ 2 = a i * y i ^ 2
+    rw [mul_pow, Real.sq_sqrt (ha i)]
+    ring
+  rw [hquad, hnorm] at habs
+  exact habs
+
+/-- **Per-stage interior mass from the full scaled certificate**
+    (Theorem 10.7 sharp route, certificate restriction): a single
+    quadratic-form certificate `ε` on the full scaled defect restricts
+    to every leading block by zero-padding — the stage-`k` interior
+    mass hypothesis of `fl_cholesky_pivot_pos_step_sharp` follows for
+    all stages at once. -/
+theorem stage_interior_mass_from_full {n : ℕ}
+    (Δ : Fin n → Fin n → ℝ) (a : Fin n → ℝ) (ha : ∀ i, 0 ≤ a i)
+    (ε : ℝ)
+    (hcert : ∀ z : Fin n → ℝ,
+      |∑ i : Fin n, ∑ j : Fin n, z i *
+        (Δ i j / (Real.sqrt (a i) * Real.sqrt (a j))) * z j| ≤
+      ε * ∑ i : Fin n, z i ^ 2)
+    (hnz : ∀ i j : Fin n, a i = 0 ∨ a j = 0 → Δ i j = 0)
+    (k : ℕ) (hk : k ≤ n) (y : Fin k → ℝ) :
+    |∑ i : Fin k, ∑ j : Fin k, y i *
+      Δ ⟨i.val, by omega⟩ ⟨j.val, by omega⟩ * y j| ≤
+      ε * ∑ i : Fin k, a ⟨i.val, by omega⟩ * y i ^ 2 := by
+  refine scaled_interior_mass_normwise_quad
+    (fun i j : Fin k => Δ ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+    (fun i : Fin k => a ⟨i.val, by omega⟩) (fun i => ha _) ε
+    ?_ y (fun i j h => hnz _ _ h)
+  intro z
+  have hpad := hcert
+    (fun i : Fin n => if h : i.val < k then z ⟨i.val, h⟩ else 0)
+  have hq := quadForm_zero_pad_eq
+    (fun i j : Fin n => Δ i j /
+      (Real.sqrt (a i) * Real.sqrt (a j))) k hk z
+  have hs := sum_sq_zero_pad_eq k hk z
+  rw [hq, hs] at hpad
+  exact hpad
+
+/-- **Per-stage border mass from full-column certificates** (Theorem
+    10.7 sharp route): a scaled column-norm certificate on each full
+    defect column restricts monotonically to every leading segment, so
+    the border-mass hypothesis of the sharpened stage step follows for
+    all stages from `n` column certificates. -/
+theorem stage_border_mass_from_full {n : ℕ}
+    (Δ : Fin n → Fin n → ℝ) (a : Fin n → ℝ) (ha : ∀ i, 0 ≤ a i)
+    (ε : ℝ) (hε0 : 0 ≤ ε)
+    (t : Fin n → ℝ) (ht0 : ∀ j, 0 ≤ t j)
+    (hnz : ∀ i j : Fin n, a i = 0 → Δ i j = 0)
+    (hcertB : ∀ j : Fin n, ∑ i : Fin n,
+      (if a i = 0 then 0 else Δ i j ^ 2 / a i) ≤ ε ^ 2 * t j)
+    (j : Fin n) (y : Fin j.val → ℝ) :
+    |2 * ∑ i : Fin j.val, y i * Δ ⟨i.val, by omega⟩ j| ≤
+      ε * (t j + ∑ i : Fin j.val, a ⟨i.val, by omega⟩ * y i ^ 2) := by
+  refine scaled_border_mass_normwise
+    (fun i : Fin j.val => Δ ⟨i.val, by omega⟩ j)
+    (fun i : Fin j.val => a ⟨i.val, by omega⟩) (fun i => ha _)
+    ε (t j) hε0 (ht0 j) (fun i h => hnz _ _ h) ?_ y
+  -- restrict the full column certificate to the leading segment
+  refine le_trans ?_ (hcertB j)
+  have hemb : Function.Injective
+      (fun i : Fin j.val => (⟨i.val, by omega⟩ : Fin n)) := by
+    intro p q hpq
+    simpa [Fin.ext_iff] using hpq
+  calc ∑ i : Fin j.val,
+      (if a ⟨i.val, by omega⟩ = 0 then 0
+        else Δ ⟨i.val, by omega⟩ j ^ 2 / a ⟨i.val, by omega⟩)
+      = ∑ i ∈ Finset.univ.map ⟨fun i : Fin j.val =>
+          (⟨i.val, by omega⟩ : Fin n), hemb⟩,
+        (if a i = 0 then 0 else Δ i j ^ 2 / a i) := by
+        rw [Finset.sum_map]
+        simp only [Function.Embedding.coeFn_mk]
+    _ ≤ ∑ i : Fin n, (if a i = 0 then 0 else Δ i j ^ 2 / a i) := by
+        refine Finset.sum_le_sum_of_subset_of_nonneg
+          (Finset.subset_univ _) fun i _ _ => ?_
+        by_cases hi : a i = 0
+        · rw [if_pos hi]
+        · rw [if_neg hi]
+          have := lt_of_le_of_ne (ha i) (Ne.symm hi)
+          positivity
+
+/-- **Theorem 10.7 at the source-shaped threshold, certified form**: all
+    rounded pivots are positive at `λ > ε + 2γ_{n+1}` given ONLY
+    run-level normwise certificates — one quadratic-form certificate on
+    the scaled full Gram defect and one scaled column-norm certificate
+    per column — the per-stage mass hypotheses being discharged by
+    zero-pad restriction. -/
+theorem fl_cholesky_pivots_pos_sharp_certified (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hAdiag : ∀ i : Fin n, 0 < A i i)
+    (hn1 : gammaValid fp (n + 1))
+    (hγ1 : gamma fp (n + 1) < 1)
+    (lam ε : ℝ) (hε0 : 0 ≤ ε) (hε1 : ε < 1)
+    (hfloor : ∀ j : Fin n, ∀ y : Fin j.val → ℝ,
+      lam * ((∑ i : Fin j.val,
+          A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2) + A j j) ≤
+        (∑ i : Fin j.val, ∑ l : Fin j.val,
+          y i * A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ * y l) +
+        2 * (∑ i : Fin j.val, y i * A ⟨i.val, by omega⟩ j) + A j j)
+    (hcertI : ∀ z : Fin n → ℝ,
+      |∑ i : Fin n, ∑ l : Fin n, z i *
+        (((∑ p : Fin n, fl_cholesky fp n A p i *
+            fl_cholesky fp n A p l) - A i l) /
+          (Real.sqrt (A i i) * Real.sqrt (A l l))) * z l| ≤
+      ε * ∑ i : Fin n, z i ^ 2)
+    (hcertB : ∀ j : Fin n, ∑ i : Fin n,
+      (if A i i = 0 then 0 else
+        ((∑ p : Fin n, fl_cholesky fp n A p i *
+            fl_cholesky fp n A p j) - A i j) ^ 2 / A i i) ≤
+      ε ^ 2 * ∑ p ∈ Finset.univ.filter
+        (fun p : Fin n => p.val < j.val),
+        fl_cholesky fp n A p j ^ 2)
+    (hlam2ε : 2 * ε ≤ lam)
+    (hthresh : ε + 2 * gamma fp (n + 1) < lam) :
+    ∀ j : Fin n, 0 < fl_cholPivot fp n A j := by
+  set Δ : Fin n → Fin n → ℝ := fun i l =>
+    (∑ p : Fin n, fl_cholesky fp n A p i * fl_cholesky fp n A p l) -
+      A i l with hΔ
+  have hnzI : ∀ i l : Fin n, A i i = 0 ∨ A l l = 0 → Δ i l = 0 :=
+    fun i l h => h.elim
+      (fun h0 => absurd h0 (hAdiag i).ne')
+      (fun h0 => absurd h0 (hAdiag l).ne')
+  have hnzB : ∀ i l : Fin n, A i i = 0 → Δ i l = 0 :=
+    fun i l h0 => absurd h0 (hAdiag i).ne'
+  refine fl_cholesky_pivots_pos_sharp fp A hAdiag hn1 hγ1 lam ε
+    hε0 hε1 hfloor ?_ ?_ hlam2ε hthresh
+  · -- interior masses from the single full certificate
+    intro j y
+    have h := stage_interior_mass_from_full Δ (fun i => A i i)
+      (fun i => (hAdiag i).le) ε hcertI hnzI j.val j.isLt.le y
+    have hrw : ∀ i l : Fin j.val,
+        Δ ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ =
+        (∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ *
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨l.val, by omega⟩) -
+          A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ := by
+      intro i l
+      show (∑ p : Fin n, _ * _) - _ = _
+      rw [gram_sum_stage_trunc fp A j ⟨i.val, by omega⟩
+        ⟨l.val, by omega⟩ i.isLt]
+    calc |∑ i : Fin j.val, ∑ l : Fin j.val, y i *
+          ((∑ p : Fin j.val,
+            fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ *
+            fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨l.val, by omega⟩) -
+            A ⟨i.val, by omega⟩ ⟨l.val, by omega⟩) * y l|
+        = |∑ i : Fin j.val, ∑ l : Fin j.val, y i *
+            Δ ⟨i.val, by omega⟩ ⟨l.val, by omega⟩ * y l| := by
+          congr 1
+          exact Finset.sum_congr rfl fun i _ =>
+            Finset.sum_congr rfl fun l _ => by rw [hrw i l]
+      _ ≤ ε * ∑ i : Fin j.val,
+            A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2 := h
+  · -- border masses from the column certificates
+    intro j y
+    have h := stage_border_mass_from_full Δ (fun i => A i i)
+      (fun i => (hAdiag i).le) ε hε0
+      (fun w => ∑ p ∈ Finset.univ.filter
+        (fun p : Fin n => p.val < w.val),
+        fl_cholesky fp n A p w ^ 2)
+      (fun w => Finset.sum_nonneg fun p _ => sq_nonneg _)
+      hnzB hcertB j y
+    have hrwB : ∀ i : Fin j.val,
+        Δ ⟨i.val, by omega⟩ j =
+        (∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ *
+          fl_cholesky fp n A ⟨p.val, by omega⟩ j) -
+          A ⟨i.val, by omega⟩ j := by
+      intro i
+      show (∑ p : Fin n, _ * _) - _ = _
+      rw [gram_sum_stage_trunc fp A j ⟨i.val, by omega⟩ j i.isLt]
+    have hrwT : (∑ p ∈ Finset.univ.filter
+        (fun p : Fin n => p.val < j.val),
+        fl_cholesky fp n A p j ^ 2) =
+        ∑ p : Fin j.val,
+          fl_cholesky fp n A ⟨p.val, by omega⟩ j ^ 2 :=
+      (sum_fin_eq_sum_filter_lt' j.isLt.le
+        (fun p => fl_cholesky fp n A p j ^ 2)).symm
+    calc |2 * ∑ i : Fin j.val, y i *
+          ((∑ p : Fin j.val,
+            fl_cholesky fp n A ⟨p.val, by omega⟩ ⟨i.val, by omega⟩ *
+            fl_cholesky fp n A ⟨p.val, by omega⟩ j) -
+            A ⟨i.val, by omega⟩ j)|
+        = |2 * ∑ i : Fin j.val, y i * Δ ⟨i.val, by omega⟩ j| := by
+          congr 2
+          exact Finset.sum_congr rfl fun i _ => by rw [hrwB i]
+      _ ≤ ε * ((∑ p ∈ Finset.univ.filter
+            (fun p : Fin n => p.val < j.val),
+            fl_cholesky fp n A p j ^ 2) +
+          ∑ i : Fin j.val,
+            A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2) := h
+      _ = ε * ((∑ p : Fin j.val,
+            fl_cholesky fp n A ⟨p.val, by omega⟩ j ^ 2) +
+          ∑ i : Fin j.val,
+            A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2) := by
+          rw [hrwT]
+
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
 `‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
 an `r × r` upper-triangular block `U` with positive diagonal whose rows

@@ -1393,6 +1393,14 @@ Source-facing Chapter 9 wrappers:
 - `higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate`
 - `higham9_2_rectRoundedLoop_to_rectAbsBudgetCertificate`
 - `higham9_2_rectRoundedLoop_to_rectDenseLoopCertificate`
+- `higham9_2_permutedRectRoundedLoopStageTrace`
+- `higham9_2_permutedRectRoundedLoop_to_rectAbsBudgetCertificate`
+- `higham9_2_permutedRectRoundedLoop_to_rectDenseLoopCertificate`
+- `higham9_2_permutedRectRoundedLoop_square_to_DoolittleLU`
+- `higham9_2_completePermutedRectRoundedLoopStageTrace`
+- `higham9_2_completePermutedRectRoundedLoop_to_rectAbsBudgetCertificate`
+- `higham9_2_completePermutedRectRoundedLoop_to_rectDenseLoopCertificate`
+- `higham9_2_completePermutedRectRoundedLoop_square_to_DoolittleLU`
 - `higham9_2_rectRoundedStageTrace_to_prefixTrace`
 - `higham9_2_rectRoundedPrefixTrace_complete_to_stageTrace`
 - `higham9_2_rectRoundedPrefixTrace_zero`
@@ -1768,6 +1776,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_10_hessenbergGEPPUTraceGrowth_le_sup`
 - `higham9_10_hessenbergGEPPUTraceGrowthValues_nonempty`
 - `higham9_10_hessenbergGEPPUTraceGrowthSup_le_card`
+- `higham9_10_hessenbergGEPPUTraceGrowthValues_subset_partialPivotingUTraceGrowthValues`
+- `higham9_10_hessenbergGEPPUTraceGrowthValues_subset_pivotingGrowthValues_partial`
+- `higham9_10_hessenbergGEPPUTraceGrowthValues_subset_tracePivotingGrowthValues_partial`
+- `higham9_10_hessenbergGEPPUTraceGrowthSup_le_partialPivotingUTraceGrowthSup`
+- `higham9_10_hessenbergGEPPUTraceGrowthSup_le_pivotingGrowthSup_partial`
+- `higham9_10_hessenbergGEPPUTraceGrowthSup_le_tracePivotingGrowthSup_partial`
 - `higham9_5_wilkinson_normwise_infNorm_tight`
 - `higham9_5_wilkinson_source_bound_of_growth_bridge`
 - `higham9_5_wilkinson_source_bound_of_entry_growth`
@@ -2464,7 +2478,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleDenseLoopCertificate_square`
 - `higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleDenseLoopAbsBudgetCertificate_square`
 - `higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleRoundedStageTrace_square`
+- `higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleRoundedStageTrace_square_gamma`
 - `higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square`
+- `higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square_gamma`
 - `higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma_le`
 - `higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma`
 - `higham9_14_source_f_bound`
@@ -2522,6 +2538,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_const_gamma_le`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_const_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_const_gamma`
+- `higham9_14_tridiag_colDiagDom_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_tridiag_rowDiagDom_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_tridiag_colDiagDom_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_tridiag_rowDiagDom_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
 - `higham9_14_source_f_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_gamma_le`
 - `higham9_14_source_h_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_gamma_le`
 - `higham9_14_source_h_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_const_gamma_le`
@@ -2542,6 +2562,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma_le`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma`
+- `higham9_14_tridiag_colDiagDom_source_f_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_tridiag_rowDiagDom_source_f_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_tridiag_colDiagDom_source_h_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_tridiag_rowDiagDom_source_h_bound_of_rectRoundedLoop_square_models_gamma`
 - `higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le`
 - `higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le`
 - `higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma`
@@ -2574,6 +2598,14 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le`
 - `higham9_14_sign_equiv_source_f_bound_of_IsSignEquiv_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma`
 - `higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma`
+- `higham9_14_nonnegative_lu_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_nonnegative_lu_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_mmatrix_lu_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_mmatrix_lu_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_sign_equiv_source_f_bound_of_IsSignEquiv_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_totalNonnegative_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_totalNonnegative_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
 - `higham9_14_nonnegative_lu_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le`
 - `higham9_14_nonnegative_lu_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le`
 - `higham9_14_nonnegative_lu_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma`
@@ -2590,6 +2622,14 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_rectRoundedLoop_square_fl_triangular_solves_gamma_le`
 - `higham9_14_sign_equiv_source_f_bound_of_IsSignEquiv_rectRoundedLoop_square_fl_triangular_solves_gamma`
 - `higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_rectRoundedLoop_square_fl_triangular_solves_gamma`
+- `higham9_14_nonnegative_lu_source_f_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_nonnegative_lu_source_h_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_mmatrix_lu_source_f_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_mmatrix_lu_source_h_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_sign_equiv_source_f_bound_of_IsSignEquiv_rectRoundedLoop_square_models_gamma`
+- `higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_rectRoundedLoop_square_models_gamma`
+- `higham9_14_totalNonnegative_source_f_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_models_gamma`
 - `higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_models`
 - `higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_models_gamma`
 - `higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_recurrence`
@@ -2713,6 +2753,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_lu_perturbation_forward_bound`
 - `higham9_15_ratio_le_of_norm_bounds`
 - `higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one`
+- `higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound`
+- `higham9_15_GMatrix_nonnegative_resolvent_nonsingInv_of_row_sum_bound`
 - `higham9_27_GMatrix_ratio_le_product_ratio`
 - `higham9_15_chi`
 - `higham9_15_chi_nonneg`
@@ -3804,6 +3846,20 @@ Source-facing Chapter 10 wrappers:
 - `higham10_6_fl_scaled_forward_error_source` (source gamma_{3n+1} constant) / `eps_tot_le_gamma_3n1`
 - `higham10_12_psd_w_action_bound` / `higham10_12_w_action_norm_bound` (honest: PSD block quadratic form + Rayleigh)
 - `higham10_12_w_action_trace_bound` (computable trace certificate) / `psd_quadForm_le_trace` / `psd_abs_entry_le_sqrt_diag` / `isPosSemiDef_diag_nonneg` / `isPosSemiDef_trailing_block`
+- `unit_diag_psd_maxEigenvalue_bounds` / `higham10_9_unit_diag_cond_bound` (van der Sluis route: 1 <= lambda_max(H) <= n for unit-diagonal PSD; kappa_2(H) <= n/lambda_min)
+- `scaled_matrix_unit_diag` / `scaled_matrix_isPosSemiDef` / `higham10_9_scaled_cond_bound` ((10.9) fragment instantiated on the concrete H = D^-1 A D^-1)
+- `finiteMaxEigenvalue_ge_diag` / `diag_congruence_minEigenvalue_ge` (van der Sluis spectral engines: lambda_max >= diag; lambda_min(EME) >= m lambda_min(M))
+- `higham10_9_van_der_sluis` ((10.9) PROVED: kappa_2(H) <= n kappa_2(DAD) for every positive diagonal D)
+- `bordered_perturbation_floor_normwise` (Th10.7 sharpening route: normwise mass, no dimension factor - lam - 2eps weight)
+- `scaled_interior_mass_normwise` (mass hypothesis discharged from a scaled opNorm2Le certificate: |y^T Delta y| <= eps sum a y^2)
+- `scaled_border_mass_normwise` (border mass from a scaled vector-norm certificate: |2 sum y delta| <= eps (t + W))
+- `normwise_stage_endgame` (Th10.7 sharpened scalar core: contradiction at lam > eps + 2 gamma - source-shaped threshold)
+- `fl_cholesky_pivot_pos_step_sharp` (Th10.7 stage step at the SOURCE-SHAPED threshold lam > eps + 2 gamma_{n+1}, normwise masses as hypotheses)
+- `fl_cholesky_pivots_pos_sharp` (whole-run induction: all pivots positive at the source-shaped threshold)
+- `finiteMaxEigenvalue_leading_principal_le` (interlacing upper direction: lambda_max of leading principal block <= lambda_max of full)
+- `scaled_interior_mass_normwise_quad` / `stage_interior_mass_from_full` (one full scaled certificate restricts to ALL leading blocks by zero-padding - per-stage mass discharge)
+- `stage_border_mass_from_full` (per-stage border mass from n full-column certificates, monotone segment restriction)
+- `fl_cholesky_pivots_pos_sharp_certified` (Th10.7 SHARP FINAL FORM: all pivots positive at lam > eps + 2 gamma_{n+1} from run-level certificates only) / `gram_sum_stage_trunc`
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)
@@ -3825,6 +3881,9 @@ Source-facing Chapter 10 wrappers:
 - `schurRow` / `schurStep_decompose` / `cpState_telescope` (exact Gram assembly: A = sum row^T row + S_r entrywise)
 - `fl_cpPivot_sequence_agrees_small` (non-vacuous fl agreement: explicit budget U t K^t under one scalar smallness condition, U -> 0 as u -> 0)
 - `fl_cpPivotFactor_sequence_agrees_small` (factor-form analogue, gamma_5 rounding contribution)
+- `fl_cpRowOf` / `fl_schurStepFactor_defect_bound` (R-hat Gram bridge engine: per-stage defect u|a_ij| + (2u+u^2)|r_i||r_j|; exact sqrt cancellation on the pivot row/column)
+- `fl_schurStepFactor_symm` / `fl_cpStateFactor_symm` (fl symmetry propagation, needs fl_mul commutativity) / `fl_cpFactor_gram_backward_error` (AS-RUN Th10.14: |sum r r + S_r - A| <= r(u cS + (2u+u^2) cR^2) entrywise)
+- `higham10_14_as_run_backward_error` (FULLY COMPOSED as-run Th10.14: caps discharged, explicit constants; hypotheses = no-tie data + budget + u <= 1/8 + fl_mul comm + A PSD)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`

@@ -17,6 +17,7 @@
 import Mathlib.Data.Real.Basic
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Analysis.Norms
+import LeanFpAnalysis.FP.Analysis.HighamChapter7
 
 namespace LeanFpAnalysis.FP
 
@@ -614,6 +615,221 @@ theorem wedinLemma20_11_fullColumn_pinvNorm_le_of_left_inverse_rectOpNorm2Le
     hAplus_pos heta hsmall rfl hBplus_sigma
     (wedinLemma20_11_recip_sub_le_sigmaMinCol_of_left_inverse_rectOpNorm2Le
       A B Aplus hAplus_pos hleft hAplus hDelta)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    a lower action radius for `B`, together with the Moore-Penrose range-side
+    projection conditions, bounds the rectangular operator norm of `Bplus`.
+
+    The hypotheses `Bplus B = I` and symmetry of `B Bplus` are exactly the
+    full-column Penrose fields needed to make the range projection
+    nonexpansive. -/
+theorem wedinLemma20_11_rectOpNorm2Le_left_inverse_of_lowerActionBound
+    {m n : ℕ} (B : Fin m → Fin n → ℝ) (Bplus : Fin n → Fin m → ℝ)
+    {sigma : ℝ}
+    (hsigma_pos : 0 < sigma)
+    (hlower : ∀ x : Fin n → ℝ,
+      sigma * vecNorm2 x ≤ vecNorm2 (rectMatMulVec B x))
+    (hleft : rectMatMul Bplus B = idMatrix n)
+    (hSym : IsSymmetricFiniteMatrix (rectMatMul B Bplus)) :
+    rectOpNorm2Le Bplus (1 / sigma) := by
+  intro y
+  have hproj :=
+    rectOpNorm2Le_rangeProjection_of_symmetric_left_inverse B Bplus
+      hleft hSym y
+  have hproj' :
+      vecNorm2 (rectMatMulVec B (rectMatMulVec Bplus y)) ≤ vecNorm2 y := by
+    simpa [rectMatMulVec_rectMatMul] using hproj
+  have hlower_y := hlower (rectMatMulVec Bplus y)
+  have hbound :
+      sigma * vecNorm2 (rectMatMulVec Bplus y) ≤ vecNorm2 y :=
+    le_trans hlower_y hproj'
+  have hrec_nonneg : 0 ≤ 1 / sigma :=
+    le_of_lt (one_div_pos.mpr hsigma_pos)
+  calc
+    vecNorm2 (rectMatMulVec Bplus y)
+        = (1 / sigma) * (sigma * vecNorm2 (rectMatMulVec Bplus y)) := by
+            field_simp [ne_of_gt hsigma_pos]
+    _ ≤ (1 / sigma) * vecNorm2 y :=
+            mul_le_mul_of_nonneg_left hbound hrec_nonneg
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column predicate-form pseudoinverse norm perturbation bound.
+
+    This is the source Lemma 20.11 route in the repository's
+    `rectOpNorm2Le` API: an explicit left inverse for `A`, the perturbation
+    bound for `B - A`, and the full-column Penrose range-projection fields for
+    `Bplus` imply `||Bplus||₂ <= ||Aplus||₂ / (1 - eta)`. -/
+theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_left_inverse_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {Aplus_norm delta eta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus)) :
+    rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)) := by
+  subst eta
+  have hden_pos : 0 < 1 - Aplus_norm * delta :=
+    wedinLemma20_11_denominator_pos hsmall
+  have hdelta_lt : delta < 1 / Aplus_norm := by
+    rw [lt_div_iff₀ hAplus_pos]
+    simpa [mul_comm] using hsmall
+  have hmu_pos : 0 < 1 / Aplus_norm - delta := by
+    linarith
+  have hlowerA :
+      ∀ x : Fin (k + 1) → ℝ,
+        (1 / Aplus_norm) * vecNorm2 x ≤
+          vecNorm2 (rectMatMulVec A x) :=
+    wedinLemma20_11_lowerActionBound_of_left_inverse_rectOpNorm2Le
+      A Aplus hAplus_pos hleftA hAplus
+  have hlowerB :
+      ∀ x : Fin (k + 1) → ℝ,
+        (1 / Aplus_norm - delta) * vecNorm2 x ≤
+          vecNorm2 (rectMatMulVec B x) :=
+    wedinLemma20_11_lowerActionBound_of_sub_rectOpNorm2Le
+      A B hlowerA hDelta
+  have hBplus :
+      rectOpNorm2Le Bplus (1 / (1 / Aplus_norm - delta)) :=
+    wedinLemma20_11_rectOpNorm2Le_left_inverse_of_lowerActionBound
+      B Bplus hmu_pos hlowerB hleftB hSymB
+  have hcoeff :
+      (Aplus_norm⁻¹ - delta)⁻¹ =
+        Aplus_norm / (1 - Aplus_norm * delta) := by
+    field_simp [ne_of_gt hAplus_pos, ne_of_gt hmu_pos, ne_of_gt hden_pos]
+  simpa [one_div, hcoeff] using hBplus
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column predicate-form pseudoinverse perturbation bound with the
+    perturbed-side left inverse derived from the first Penrose equation.
+
+    The Chapter 7 Moore-Penrose bridge turns `B Bplus B = B` plus injectivity
+    of `x ↦ B*x` into `Bplus B = I`, leaving the same range-projection
+    symmetry condition used by the direct operator-bound theorem above. -/
+theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_penrose1_injective_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {Aplus_norm delta eta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBpenrose1 : rectMatMul (rectMatMul B Bplus) B = B)
+    (hBinj : Function.Injective (rectMatMulVec B))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus)) :
+    rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)) := by
+  have hleftB : rectMatMul Bplus B = idMatrix (k + 1) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using
+      theorem7_5_rect_left_inverse_of_penrose1_rectMatMulVec_injective
+        B Bplus hBpenrose1 hBinj i j
+  exact
+    wedinLemma20_11_rectOpNorm2Le_Bplus_of_left_inverse_rectOpNorm2Le
+      A B Aplus Bplus hAplus_pos heta hsmall hleftA hAplus hDelta
+      hleftB hSymB
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column predicate-form pseudoinverse perturbation bound with the
+    perturbed-side injectivity derived from the smallness condition.
+
+    The A-side left inverse and operator bound supply the lower action radius
+    `1 / Aplus_norm`; the source smallness condition `eta = Aplus_norm * delta
+    < 1` makes the perturbation strict enough to preserve injectivity of `B`.
+    The first Penrose equation for `Bplus` then supplies the remaining
+    perturbed-side left-inverse field. -/
+theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_penrose1_small_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {Aplus_norm delta eta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBpenrose1 : rectMatMul (rectMatMul B Bplus) B = B)
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus)) :
+    rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)) := by
+  have hsmall_mul : Aplus_norm * delta < 1 := by
+    simpa [heta] using hsmall
+  have hdelta_lt : delta < 1 / Aplus_norm := by
+    rw [lt_div_iff₀ hAplus_pos]
+    simpa [mul_comm] using hsmall_mul
+  have hlowerA :
+      ∀ x : Fin (k + 1) → ℝ,
+        (1 / Aplus_norm) * vecNorm2 x ≤
+          vecNorm2 (rectMatMulVec A x) :=
+    wedinLemma20_11_lowerActionBound_of_left_inverse_rectOpNorm2Le
+      A Aplus hAplus_pos hleftA hAplus
+  have hBinj : Function.Injective (rectMatMulVec B) :=
+    wedinLemma20_11_rectMatMulVec_injective_of_sub_rectOpNorm2Le_lt
+      A B hlowerA hDelta hdelta_lt
+  exact
+    wedinLemma20_11_rectOpNorm2Le_Bplus_of_penrose1_injective_rectOpNorm2Le
+      A B Aplus Bplus hAplus_pos heta hsmall hleftA hAplus hDelta
+      hBpenrose1 hBinj hSymB
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    full-column predicate-form pseudoinverse perturbation bound with both
+    rectangular left-inverse fields derived from Penrose1 data.
+
+    On the `A` side, Penrose1 plus injectivity gives `Aplus A = I`; the
+    smallness condition then preserves injectivity for `B`, and Penrose1 plus
+    the Chapter 7 bridge gives `Bplus B = I`. -/
+theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_Apenrose1_Bpenrose1_small_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {Aplus_norm delta eta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hApenrose1 : rectMatMul (rectMatMul A Aplus) A = A)
+    (hAinj : Function.Injective (rectMatMulVec A))
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBpenrose1 : rectMatMul (rectMatMul B Bplus) B = B)
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus)) :
+    rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)) := by
+  have hleftA : rectMatMul Aplus A = idMatrix (k + 1) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using
+      theorem7_5_rect_left_inverse_of_penrose1_rectMatMulVec_injective
+        A Aplus hApenrose1 hAinj i j
+  exact
+    wedinLemma20_11_rectOpNorm2Le_Bplus_of_penrose1_small_rectOpNorm2Le
+      A B Aplus Bplus hAplus_pos heta hsmall hleftA hAplus hDelta
+      hBpenrose1 hSymB
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
+    matrix-rank source wrapper for the full-column predicate-form
+    pseudoinverse perturbation bound.
+
+    Full column rank of `A` is represented by `(Matrix.of A).rank = k + 1`;
+    Chapter 7 turns that rank hypothesis and A-side Penrose1 into the explicit
+    left inverse needed by the operator-bound route. -/
+theorem wedinLemma20_11_rectOpNorm2Le_Bplus_of_Apenrose1_rank_Bpenrose1_small_rectOpNorm2Le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {Aplus_norm delta eta : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hApenrose1 : rectMatMul (rectMatMul A Aplus) A = A)
+    (hArank : (Matrix.of A).rank = k + 1)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBpenrose1 : rectMatMul (rectMatMul B Bplus) B = B)
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus)) :
+    rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)) :=
+  wedinLemma20_11_rectOpNorm2Le_Bplus_of_Apenrose1_Bpenrose1_small_rectOpNorm2Le
+    A B Aplus Bplus hAplus_pos heta hsmall hApenrose1
+    (ch7_rectMatMulVec_injective_of_matrix_rank_eq_width A hArank)
+    hAplus hDelta hBpenrose1 hSymB
 
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 

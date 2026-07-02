@@ -3333,6 +3333,526 @@ lemma resolvent_entry_cap {k : ℕ} (hk : 0 < k)
     nlinarith
   exact fun i j => le_trans (hbound i j) hχle
 
+/-- The computed factor row extracted at one fl elimination stage:
+    `fl(√a_pp)` at the pivot, `fl(a_pj/fl(√a_pp))` off it. -/
+noncomputable def fl_cpRowOf (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (p : Fin n) : Fin n → ℝ :=
+  fun j => if j = p then fp.fl_sqrt (A p p)
+    else fp.fl_div (A p j) (fp.fl_sqrt (A p p))
+
+/-- **Per-stage defect of the fl factorization step** (R̂-Gram bridge
+    engine): the fl update differs from
+    `A − (computed row)ᵀ(computed row)` entrywise by at most
+    `u|a_ij| + (2u+u²)|r̃_i||r̃_j|`. On the pivot row and column the
+    computed square root cancels *exactly* as a real number, so only
+    the divide's single rounding survives; on the diagonal the
+    `(1+δ)²` of the square root is absorbed for `u ≤ 1/8`. -/
+theorem fl_schurStepFactor_defect_bound (fp : FPModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (p : Fin n)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hApp : 0 < A p p) (hu8 : fp.u ≤ 1 / 8) :
+    ∀ i j : Fin n,
+      |fl_schurStepFactor fp A p i j -
+        (A i j - fl_cpRowOf fp A p i * fl_cpRowOf fp A p j)| ≤
+      fp.u * |A i j| + (2 * fp.u + fp.u ^ 2) *
+        (|fl_cpRowOf fp A p i| * |fl_cpRowOf fp A p j|) := by
+  intro i j
+  have hu0 := fp.u_nonneg
+  obtain ⟨δa, hδa, hsqrt⟩ := fp.model_sqrt (A p p) hApp.le
+  have ha := abs_le.mp hδa
+  have h1a : (0:ℝ) < 1 + δa := by nlinarith [ha.1]
+  have hsq0 : (0:ℝ) < Real.sqrt (A p p) := Real.sqrt_pos.mpr hApp
+  have hfs0 : fp.fl_sqrt (A p p) ≠ 0 := by
+    rw [hsqrt]; positivity
+  have hsqsq : Real.sqrt (A p p) * Real.sqrt (A p p) = A p p :=
+    Real.mul_self_sqrt hApp.le
+  by_cases hi : i = p
+  · -- pivot row: exact real cancellation of the square root
+    obtain ⟨δb, hδb, hdiv⟩ := fp.model_div (A p j)
+      (fp.fl_sqrt (A p p)) hfs0
+    by_cases hj : j = p
+    · -- diagonal: (1+δa)² absorbed at u ≤ 1/8
+      unfold fl_schurStepFactor fl_cpRowOf
+      rw [hi, hj, if_pos (Or.inl rfl), if_pos rfl, hsqrt]
+      have hkey : (0:ℝ) - (A p p - Real.sqrt (A p p) * (1 + δa) *
+          (Real.sqrt (A p p) * (1 + δa))) =
+          A p p * ((1 + δa) * (1 + δa) - 1) := by
+        nlinarith [hsqsq]
+      rw [hkey, abs_mul, abs_of_pos hApp]
+      have herr : |(1 + δa) * (1 + δa) - 1| ≤ 2 * fp.u + fp.u ^ 2 := by
+        have h1 : (1 + δa) * (1 + δa) - 1 = 2 * δa + δa ^ 2 := by ring
+        rw [h1]
+        have h2 : |δa ^ 2| ≤ fp.u ^ 2 := by
+          rw [abs_pow]
+          exact pow_le_pow_left₀ (abs_nonneg _) hδa 2
+        have h3 := abs_le.mp h2
+        rw [abs_le]
+        constructor <;> nlinarith [ha.1, ha.2, h3.1, h3.2]
+      have hrow2 : |Real.sqrt (A p p) * (1 + δa)| *
+          |Real.sqrt (A p p) * (1 + δa)| =
+          A p p * ((1 + δa) * (1 + δa)) := by
+        rw [abs_mul, abs_of_pos hsq0, abs_of_pos h1a]
+        nlinarith [hsqsq]
+      calc A p p * |(1 + δa) * (1 + δa) - 1|
+          ≤ A p p * (2 * fp.u + fp.u ^ 2) :=
+            mul_le_mul_of_nonneg_left herr hApp.le
+        _ ≤ fp.u * A p p + (2 * fp.u + fp.u ^ 2) *
+              (A p p * ((1 + δa) * (1 + δa))) := by
+            have hge : (1 - fp.u) * (1 - fp.u) ≤
+                (1 + δa) * (1 + δa) := by
+              nlinarith [ha.1, hu8, hu0]
+            have h5 : A p p * ((2 * fp.u + fp.u ^ 2) *
+                ((1 - fp.u) * (1 - fp.u))) ≤
+                A p p * ((2 * fp.u + fp.u ^ 2) *
+                ((1 + δa) * (1 + δa))) := by
+              refine mul_le_mul_of_nonneg_left ?_ hApp.le
+              exact mul_le_mul_of_nonneg_left hge (by positivity)
+            have hcoef : 2 * fp.u + fp.u ^ 2 ≤ fp.u +
+                (2 * fp.u + fp.u ^ 2) *
+                  ((1 - fp.u) * (1 - fp.u)) := by
+              nlinarith [mul_nonneg hu0
+                (by linarith : (0:ℝ) ≤ 1 - 4 * fp.u),
+                pow_nonneg hu0 4, sq_nonneg fp.u]
+            nlinarith [h5, mul_le_mul_of_nonneg_left hcoef hApp.le]
+        _ = fp.u * A p p + (2 * fp.u + fp.u ^ 2) *
+              (|Real.sqrt (A p p) * (1 + δa)| *
+               |Real.sqrt (A p p) * (1 + δa)|) := by
+            rw [hrow2]
+    · unfold fl_schurStepFactor fl_cpRowOf
+      rw [hi, if_pos (Or.inl rfl), if_pos rfl, if_neg hj, hdiv, hsqrt]
+      have hcancel : (0:ℝ) - (A p j - Real.sqrt (A p p) * (1 + δa) *
+          (A p j / (Real.sqrt (A p p) * (1 + δa)) * (1 + δb))) =
+          A p j * δb := by
+        field_simp
+        ring
+      rw [hcancel, abs_mul]
+      have h1 : |A p j| * |δb| ≤ fp.u * |A p j| := by
+        rw [mul_comm]
+        exact mul_le_mul_of_nonneg_right hδb (abs_nonneg _)
+      have h2 : (0:ℝ) ≤ (2 * fp.u + fp.u ^ 2) *
+          (|Real.sqrt (A p p) * (1 + δa)| *
+           |A p j / (Real.sqrt (A p p) * (1 + δa)) * (1 + δb)|) := by
+        positivity
+      linarith
+  · by_cases hj : j = p
+    · -- pivot column: same exact cancellation, via symmetry
+      obtain ⟨δb, hδb, hdiv⟩ := fp.model_div (A p i)
+        (fp.fl_sqrt (A p p)) hfs0
+      unfold fl_schurStepFactor fl_cpRowOf
+      rw [hj, if_pos (Or.inr rfl), if_neg hi, if_pos rfl, hdiv, hsqrt]
+      have hcancel : (0:ℝ) - (A i p -
+          A p i / (Real.sqrt (A p p) * (1 + δa)) * (1 + δb) *
+            (Real.sqrt (A p p) * (1 + δa))) =
+          A i p * δb := by
+        rw [hsym p i]
+        field_simp
+        ring
+      rw [hcancel, abs_mul]
+      have h1 : |A i p| * |δb| ≤ fp.u * |A i p| := by
+        rw [mul_comm]
+        exact mul_le_mul_of_nonneg_right hδb (abs_nonneg _)
+      have h2 : (0:ℝ) ≤ (2 * fp.u + fp.u ^ 2) *
+          (|A p i / (Real.sqrt (A p p) * (1 + δa)) * (1 + δb)| *
+           |Real.sqrt (A p p) * (1 + δa)|) := by
+        positivity
+      linarith
+    · -- off-pivot: the multiply and subtract roundings
+      obtain ⟨δb, hδb, hdivb⟩ := fp.model_div (A i p)
+        (fp.fl_sqrt (A p p)) hfs0
+      obtain ⟨δc, hδc, hdivc⟩ := fp.model_div (A p j)
+        (fp.fl_sqrt (A p p)) hfs0
+      obtain ⟨δm, hδm, hmul⟩ := fp.model_mul
+        (fp.fl_div (A i p) (fp.fl_sqrt (A p p)))
+        (fp.fl_div (A p j) (fp.fl_sqrt (A p p)))
+      obtain ⟨δs, hδs, hsub⟩ := fp.model_sub (A i j)
+        (fp.fl_mul (fp.fl_div (A i p) (fp.fl_sqrt (A p p)))
+          (fp.fl_div (A p j) (fp.fl_sqrt (A p p))))
+      unfold fl_schurStepFactor fl_cpRowOf
+      rw [if_neg (by simp [hi, hj]), if_neg hi, if_neg hj,
+        hsub, hmul, hdivb, hdivc]
+      have hrow_i : fp.fl_div (A p i) (fp.fl_sqrt (A p p)) =
+          A i p / fp.fl_sqrt (A p p) * (1 + δb) := by
+        rw [hsym p i]
+        exact hdivb
+      rw [hrow_i]
+      have hexp : (A i j - A i p / fp.fl_sqrt (A p p) * (1 + δb) *
+            (A p j / fp.fl_sqrt (A p p) * (1 + δc)) * (1 + δm)) *
+            (1 + δs) -
+          (A i j - A i p / fp.fl_sqrt (A p p) * (1 + δb) *
+            (A p j / fp.fl_sqrt (A p p) * (1 + δc))) =
+          A i j * δs -
+          (A i p / fp.fl_sqrt (A p p) * (1 + δb)) *
+            (A p j / fp.fl_sqrt (A p p) * (1 + δc)) *
+            ((1 + δm) * (1 + δs) - 1) := by
+        ring
+      rw [hexp]
+      have herr : |(1 + δm) * (1 + δs) - 1| ≤
+          2 * fp.u + fp.u ^ 2 := by
+        have h1 : (1 + δm) * (1 + δs) - 1 =
+            δm + δs + δm * δs := by ring
+        rw [h1]
+        have hab : |δm * δs| ≤ fp.u ^ 2 := by
+          rw [abs_mul]
+          calc |δm| * |δs| ≤ fp.u * fp.u :=
+                mul_le_mul hδm hδs (abs_nonneg _) hu0
+            _ = fp.u ^ 2 := by ring
+        have h2 := abs_le.mp hab
+        have h3 := abs_le.mp hδm
+        have h4 := abs_le.mp hδs
+        rw [abs_le]
+        constructor <;> linarith [h2.1, h2.2, h3.1, h3.2, h4.1, h4.2]
+      calc |A i j * δs -
+            (A i p / fp.fl_sqrt (A p p) * (1 + δb)) *
+              (A p j / fp.fl_sqrt (A p p) * (1 + δc)) *
+              ((1 + δm) * (1 + δs) - 1)|
+          ≤ |A i j * δs| +
+            |(A i p / fp.fl_sqrt (A p p) * (1 + δb)) *
+              (A p j / fp.fl_sqrt (A p p) * (1 + δc)) *
+              ((1 + δm) * (1 + δs) - 1)| := by
+            have h := abs_add_le (A i j * δs)
+              (-((A i p / fp.fl_sqrt (A p p) * (1 + δb)) *
+                (A p j / fp.fl_sqrt (A p p) * (1 + δc)) *
+                ((1 + δm) * (1 + δs) - 1)))
+            rw [abs_neg, ← sub_eq_add_neg] at h
+            exact h
+        _ ≤ fp.u * |A i j| + (2 * fp.u + fp.u ^ 2) *
+              (|A i p / fp.fl_sqrt (A p p) * (1 + δb)| *
+               |A p j / fp.fl_sqrt (A p p) * (1 + δc)|) := by
+            refine add_le_add ?_ ?_
+            · rw [abs_mul, mul_comm]
+              exact mul_le_mul_of_nonneg_right hδs (abs_nonneg _)
+            · rw [abs_mul, abs_mul]
+              rw [show |A i p / fp.fl_sqrt (A p p) * (1 + δb)| *
+                  |A p j / fp.fl_sqrt (A p p) * (1 + δc)| *
+                  |(1 + δm) * (1 + δs) - 1| =
+                  |(1 + δm) * (1 + δs) - 1| *
+                  (|A i p / fp.fl_sqrt (A p p) * (1 + δb)| *
+                   |A p j / fp.fl_sqrt (A p p) * (1 + δc)|) by ring]
+              exact mul_le_mul_of_nonneg_right herr
+                (by positivity)
+
+/-- The fl elimination step preserves symmetry, given commutative
+    rounded multiplication (true for IEEE; the abstract model does not
+    assert it, so it is carried as a hypothesis). -/
+lemma fl_schurStepFactor_symm (fp : FPModel)
+    (hmul : ∀ x y : ℝ, fp.fl_mul x y = fp.fl_mul y x) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (p : Fin n)
+    (hsym : ∀ i j : Fin n, A i j = A j i) (i j : Fin n) :
+    fl_schurStepFactor fp A p i j = fl_schurStepFactor fp A p j i := by
+  unfold fl_schurStepFactor
+  by_cases hi : i = p
+  · by_cases hj : j = p <;> simp [hi, hj]
+  · by_cases hj : j = p
+    · simp [hi, hj]
+    · rw [if_neg (by simp [hi, hj]), if_neg (by simp [hi, hj])]
+      rw [hsym i j, hsym i p, hsym p j]
+      rw [hmul (fp.fl_div (A p i) (fp.fl_sqrt (A p p)))
+        (fp.fl_div (A j p) (fp.fl_sqrt (A p p)))]
+
+/-- The fl trace stays symmetric from a symmetric input. -/
+lemma fl_cpStateFactor_symm (fp : FPModel)
+    (hmul : ∀ x y : ℝ, fp.fl_mul x y = fp.fl_mul y x) {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i) :
+    ∀ t : ℕ, ∀ i j : Fin n,
+      fl_cpStateFactor fp hn A t i j = fl_cpStateFactor fp hn A t j i := by
+  intro t
+  induction t with
+  | zero => exact hsym
+  | succ t ih =>
+    exact fl_schurStepFactor_symm fp hmul
+      (fl_cpStateFactor fp hn A t) _ ih
+
+/-- **The as-run factorization telescopes with summable defects**
+    (Theorem 10.14 componentwise backward error for the pivoted
+    algorithm as actually executed): the Gram of the computed rows,
+    plus the terminal computed Schur state, reproduces `A` entrywise up
+    to `r` per-stage rounding defects —
+    `|∑_{t<r} r̃ᵗᵢ r̃ᵗⱼ + S̃ᵣ ᵢⱼ − aᵢⱼ| ≤ r(u·cS + (2u+u²)·cR²)`. -/
+theorem fl_cpFactor_gram_backward_error (fp : FPModel) {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ) (r : ℕ)
+    (hmul : ∀ x y : ℝ, fp.fl_mul x y = fp.fl_mul y x)
+    (hsymA : ∀ i j : Fin n, A i j = A j i)
+    (hu8 : fp.u ≤ 1 / 8)
+    (hpos : ∀ t : ℕ, t < r →
+      0 < fl_cpStateFactor fp hn A t (fl_cpPivotFactor fp hn A t)
+        (fl_cpPivotFactor fp hn A t))
+    (cS cR : ℝ)
+    (hcapS : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |fl_cpStateFactor fp hn A t i j| ≤ cS)
+    (hcapR : ∀ t : ℕ, t < r → ∀ i : Fin n,
+      |fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+        (fl_cpPivotFactor fp hn A t) i| ≤ cR) :
+    ∀ i j : Fin n,
+      |(∑ t ∈ Finset.range r,
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) i *
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) j) +
+        fl_cpStateFactor fp hn A r i j - A i j| ≤
+      (r : ℝ) * (fp.u * cS + (2 * fp.u + fp.u ^ 2) * cR ^ 2) := by
+  induction r with
+  | zero =>
+    intro i j
+    simp [fl_cpStateFactor]
+  | succ r ih =>
+    intro i j
+    have hpos' : ∀ t : ℕ, t < r →
+        0 < fl_cpStateFactor fp hn A t (fl_cpPivotFactor fp hn A t)
+          (fl_cpPivotFactor fp hn A t) :=
+      fun t ht => hpos t (Nat.lt_succ_of_lt ht)
+    have hcapS' : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+        |fl_cpStateFactor fp hn A t i j| ≤ cS :=
+      fun t ht => hcapS t (Nat.lt_succ_of_lt ht)
+    have hcapR' : ∀ t : ℕ, t < r → ∀ i : Fin n,
+        |fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+          (fl_cpPivotFactor fp hn A t) i| ≤ cR :=
+      fun t ht => hcapR t (Nat.lt_succ_of_lt ht)
+    have hih := ih hpos' hcapS' hcapR' i j
+    -- the stage-r defect
+    have hsymr := fl_cpStateFactor_symm fp hmul hn A hsymA r
+    have hdef := fl_schurStepFactor_defect_bound fp
+      (fl_cpStateFactor fp hn A r) (fl_cpPivotFactor fp hn A r)
+      hsymr (hpos r (Nat.lt_succ_self r)) hu8 i j
+    have hSsucc : fl_cpStateFactor fp hn A (r + 1) i j =
+        fl_schurStepFactor fp (fl_cpStateFactor fp hn A r)
+          (fl_cpPivotFactor fp hn A r) i j := rfl
+    -- bound the stage-r defect by the uniform constant
+    have hdef' : |fl_cpStateFactor fp hn A (r + 1) i j -
+        (fl_cpStateFactor fp hn A r i j -
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+            (fl_cpPivotFactor fp hn A r) i *
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+            (fl_cpPivotFactor fp hn A r) j)| ≤
+        fp.u * cS + (2 * fp.u + fp.u ^ 2) * cR ^ 2 := by
+      rw [hSsucc]
+      refine hdef.trans (add_le_add ?_ ?_)
+      · exact mul_le_mul_of_nonneg_left
+          (hcapS r (Nat.lt_succ_self r) i j) fp.u_nonneg
+      · have h1 := hcapR r (Nat.lt_succ_self r) i
+        have h2 := hcapR r (Nat.lt_succ_self r) j
+        have hcR0 : (0:ℝ) ≤ cR := le_trans (abs_nonneg _) h1
+        have : |fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+              (fl_cpPivotFactor fp hn A r) i| *
+            |fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+              (fl_cpPivotFactor fp hn A r) j| ≤ cR ^ 2 := by
+          calc _ ≤ cR * cR :=
+                mul_le_mul h1 h2 (abs_nonneg _) hcR0
+            _ = cR ^ 2 := by ring
+        refine mul_le_mul_of_nonneg_left this ?_
+        have := fp.u_nonneg
+        positivity
+    -- assemble
+    rw [Finset.sum_range_succ]
+    have hgoal : (∑ t ∈ Finset.range r,
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) i *
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) j) +
+        fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+          (fl_cpPivotFactor fp hn A r) i *
+        fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+          (fl_cpPivotFactor fp hn A r) j +
+        fl_cpStateFactor fp hn A (r + 1) i j - A i j =
+        ((∑ t ∈ Finset.range r,
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) i *
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) j) +
+          fl_cpStateFactor fp hn A r i j - A i j) +
+        (fl_cpStateFactor fp hn A (r + 1) i j -
+          (fl_cpStateFactor fp hn A r i j -
+            fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+              (fl_cpPivotFactor fp hn A r) i *
+            fl_cpRowOf fp (fl_cpStateFactor fp hn A r)
+              (fl_cpPivotFactor fp hn A r) j)) := by
+      ring
+    rw [hgoal]
+    calc |_ + _|
+        ≤ _ + _ := abs_add_le _ _
+      _ ≤ (r : ℝ) * (fp.u * cS + (2 * fp.u + fp.u ^ 2) * cR ^ 2) +
+          (fp.u * cS + (2 * fp.u + fp.u ^ 2) * cR ^ 2) :=
+          add_le_add hih hdef'
+      _ = ((r + 1 : ℕ) : ℝ) *
+          (fp.u * cS + (2 * fp.u + fp.u ^ 2) * cR ^ 2) := by
+          push_cast
+          ring
+
+/-- **Theorem 10.14 for the algorithm as run, fully composed**: under
+    the exact trace's no-tie data, the rounding budget (capped at
+    `ρ/4`), `u ≤ 1/8`, commutative rounded multiplication, and `A` PSD
+    symmetric, the computed pivoted factorization satisfies the
+    componentwise backward-error bound
+    `|∑_{t<r} r̃ᵗᵢr̃ᵗⱼ + S̃ᵣᵢⱼ − aᵢⱼ| ≤ r(u·cS + (2u+u²)·cR²)` with the
+    explicit caps `cS = c + δ/2` and
+    `cR = 2(1+u)²/(1−u)²·√(c + δ/2)` discharged from the agreement
+    machinery — no cap hypotheses remain. -/
+theorem higham10_14_as_run_backward_error (fp : FPModel) {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ) (r : ℕ)
+    (δ ρ c : ℝ) (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (h5 : gammaValid fp 5) (hu8 : fp.u ≤ 1 / 8)
+    (hmul : ∀ x y : ℝ, fp.fl_mul x y = fp.fl_mul y x)
+    (hPSD : IsPosSemiDef n A)
+    (h : ℕ → ℝ) (hh0 : h 0 = 0)
+    (hhstep : ∀ t : ℕ, t < r →
+      h t + (3 * c ^ 2 * h t + c * h t ^ 2) / (ρ / 2) ^ 2 +
+        (fp.u * ((c + δ / 2) + (c + δ / 2) ^ 2 / (ρ / 2)) +
+          (1 + fp.u) * gamma fp 5 * ((c + δ / 2) ^ 2 / (ρ / 2))) ≤
+        h (t + 1))
+    (hhhalf : ∀ t : ℕ, t < r → h t < δ / 2)
+    (hht4 : ∀ t : ℕ, t < r → h t ≤ ρ / 4)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j| ≤ c) :
+    ∀ i j : Fin n,
+      |(∑ t ∈ Finset.range r,
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) i *
+          fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+            (fl_cpPivotFactor fp hn A t) j) +
+        fl_cpStateFactor fp hn A r i j - A i j| ≤
+      (r : ℝ) * (fp.u * (c + δ / 2) + (2 * fp.u + fp.u ^ 2) *
+        (2 * (1 + fp.u) ^ 2 / (1 - fp.u) ^ 2 *
+          Real.sqrt (c + δ / 2)) ^ 2) := by
+  have hρ0 : (0:ℝ) < ρ := lt_of_lt_of_le hδ hδρ
+  have hu0 := fp.u_nonneg
+  have hu1 : fp.u < 1 := by linarith
+  have h1u : (0:ℝ) < 1 - fp.u := by linarith
+  have hcδ : (0:ℝ) ≤ c + δ / 2 := by linarith
+  -- stage data shared by all discharges
+  have hagree := fl_cpPivotFactor_sequence_agrees fp hn A r δ ρ c
+    hδ hδρ hc h5 h hh0 hhstep hhhalf hgap hfloor hcap
+  have hstage : ∀ t : ℕ, t < r →
+      fl_cpPivotFactor fp hn A t = cpPivot hn A t := by
+    intro t htr
+    exact ((hagree (t + 1) (Nat.succ_le_of_lt htr)).2 t
+      (Nat.lt_succ_self t)).symm
+  have hclose : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |cpState hn A t i j - fl_cpStateFactor fp hn A t i j| ≤ h t :=
+    fun t htr => (hagree t (Nat.le_of_lt htr)).1
+  have hSfloor : ∀ t : ℕ, t < r → ρ / 2 ≤
+      fl_cpStateFactor fp hn A t (cpPivot hn A t) (cpPivot hn A t) := by
+    intro t htr
+    have h1 := abs_le.mp (hclose t htr (cpPivot hn A t)
+      (cpPivot hn A t))
+    have h2 := hfloor t htr
+    have h3 := hhhalf t htr
+    linarith [h1.1, hδρ]
+  -- pivot positivity for the fl states
+  have hpos : ∀ t : ℕ, t < r →
+      0 < fl_cpStateFactor fp hn A t (fl_cpPivotFactor fp hn A t)
+        (fl_cpPivotFactor fp hn A t) := by
+    intro t htr
+    rw [hstage t htr]
+    linarith [hSfloor t htr]
+  -- state cap
+  have hcapS : ∀ t : ℕ, t < r → ∀ i j : Fin n,
+      |fl_cpStateFactor fp hn A t i j| ≤ c + δ / 2 := by
+    intro t htr i j
+    have h1 := hclose t htr i j
+    have h2 := hcap t htr i j
+    have h3 := abs_sub_abs_le_abs_sub
+      (fl_cpStateFactor fp hn A t i j) (cpState hn A t i j)
+    rw [abs_sub_comm (fl_cpStateFactor fp hn A t i j)
+      (cpState hn A t i j)] at h3
+    have h4 := hhhalf t htr
+    linarith
+  -- row cap: pivot entry via the sqrt model, off-pivot via domination
+  have hcapR : ∀ t : ℕ, t < r → ∀ i : Fin n,
+      |fl_cpRowOf fp (fl_cpStateFactor fp hn A t)
+        (fl_cpPivotFactor fp hn A t) i| ≤
+      2 * (1 + fp.u) ^ 2 / (1 - fp.u) ^ 2 *
+        Real.sqrt (c + δ / 2) := by
+    intro t htr i
+    have hp := hstage t htr
+    have hSp := hSfloor t htr
+    have hSpos : (0:ℝ) < fl_cpStateFactor fp hn A t
+        (cpPivot hn A t) (cpPivot hn A t) := by linarith
+    -- the computed pivot entry
+    obtain ⟨δa, hδa, hsqrt⟩ := fp.model_sqrt
+      (fl_cpStateFactor fp hn A t (cpPivot hn A t) (cpPivot hn A t))
+      hSpos.le
+    have ha := abs_le.mp hδa
+    have hsqle : Real.sqrt (fl_cpStateFactor fp hn A t
+        (cpPivot hn A t) (cpPivot hn A t)) ≤
+        Real.sqrt (c + δ / 2) := by
+      apply Real.sqrt_le_sqrt
+      have := hcapS t htr (cpPivot hn A t) (cpPivot hn A t)
+      calc fl_cpStateFactor fp hn A t (cpPivot hn A t)
+            (cpPivot hn A t)
+          ≤ |fl_cpStateFactor fp hn A t (cpPivot hn A t)
+            (cpPivot hn A t)| := le_abs_self _
+        _ ≤ c + δ / 2 := this
+    have hpivot_cap : |fp.fl_sqrt (fl_cpStateFactor fp hn A t
+        (cpPivot hn A t) (cpPivot hn A t))| ≤
+        (1 + fp.u) * Real.sqrt (c + δ / 2) := by
+      rw [hsqrt, abs_mul, abs_of_nonneg (Real.sqrt_nonneg _)]
+      have h1a : |1 + δa| ≤ 1 + fp.u := by
+        rw [abs_le]
+        constructor <;> linarith [ha.1, ha.2]
+      calc Real.sqrt _ * |1 + δa|
+          ≤ Real.sqrt (c + δ / 2) * (1 + fp.u) :=
+            mul_le_mul hsqle h1a (abs_nonneg _) (Real.sqrt_nonneg _)
+        _ = (1 + fp.u) * Real.sqrt (c + δ / 2) := mul_comm _ _
+    -- exact-state invariants at stage t for the domination lemma
+    have hSPSD : IsPosSemiDef n (cpState hn A t) :=
+      cpState_isPosSemiDef hn A hPSD t fun s hs =>
+        lt_of_lt_of_le hρ0 (hfloor s (lt_trans hs htr))
+    have hht0 : 0 ≤ h t := by
+      have h1 := abs_nonneg (cpState hn A t (cpPivot hn A t)
+        (cpPivot hn A t) - fl_cpStateFactor fp hn A t
+        (cpPivot hn A t) (cpPivot hn A t))
+      exact le_trans h1 (hclose t htr _ _)
+    have hdom := fl_factor_row_dominated fp (cpState hn A t)
+      (fl_cpStateFactor fp hn A t) (cpPivot hn A t) ρ (h t)
+      hSPSD (cpPivot_max hn A t) (hfloor t htr) hρ0 hht0
+      (hht4 t htr) (hclose t htr) hu1 i
+    have hconst : (1 + 4 * h t / ρ) * ((1 + fp.u) / (1 - fp.u) ^ 2) ≤
+        2 * (1 + fp.u) / (1 - fp.u) ^ 2 := by
+      have h1 : 4 * h t / ρ ≤ 1 := by
+        rw [div_le_one hρ0]
+        linarith [hht4 t htr]
+      have h2 : (0:ℝ) ≤ (1 + fp.u) / (1 - fp.u) ^ 2 := by positivity
+      have h1' : 1 + 4 * h t / ρ ≤ 2 := by linarith
+      calc (1 + 4 * h t / ρ) * ((1 + fp.u) / (1 - fp.u) ^ 2)
+          ≤ 2 * ((1 + fp.u) / (1 - fp.u) ^ 2) :=
+            mul_le_mul_of_nonneg_right h1' h2
+        _ = 2 * (1 + fp.u) / (1 - fp.u) ^ 2 := by ring
+    unfold fl_cpRowOf
+    rw [hp]
+    by_cases hip : i = cpPivot hn A t
+    · rw [if_pos hip]
+      refine hpivot_cap.trans ?_
+      have hge1 : (1:ℝ) ≤ 2 * (1 + fp.u) / (1 - fp.u) ^ 2 := by
+        rw [le_div_iff₀ (by positivity)]
+        nlinarith
+      calc (1 + fp.u) * Real.sqrt (c + δ / 2)
+          ≤ (2 * (1 + fp.u) / (1 - fp.u) ^ 2) *
+            ((1 + fp.u) * Real.sqrt (c + δ / 2)) := by
+            nlinarith [mul_nonneg (by linarith : (0:ℝ) ≤ 1 + fp.u)
+              (Real.sqrt_nonneg (c + δ / 2)), hge1]
+        _ = 2 * (1 + fp.u) ^ 2 / (1 - fp.u) ^ 2 *
+            Real.sqrt (c + δ / 2) := by ring
+    · rw [if_neg hip]
+      refine (hdom).trans ?_
+      calc (1 + 4 * h t / ρ) * ((1 + fp.u) / (1 - fp.u) ^ 2) *
+            |fp.fl_sqrt (fl_cpStateFactor fp hn A t
+              (cpPivot hn A t) (cpPivot hn A t))|
+          ≤ (2 * (1 + fp.u) / (1 - fp.u) ^ 2) *
+            ((1 + fp.u) * Real.sqrt (c + δ / 2)) := by
+            refine mul_le_mul hconst hpivot_cap (abs_nonneg _) ?_
+            positivity
+        _ = 2 * (1 + fp.u) ^ 2 / (1 - fp.u) ^ 2 *
+            Real.sqrt (c + δ / 2) := by ring
+  exact fl_cpFactor_gram_backward_error fp hn A r hmul hPSD.1 hu8
+    hpos (c + δ / 2)
+    (2 * (1 + fp.u) ^ 2 / (1 - fp.u) ^ 2 * Real.sqrt (c + δ / 2))
+    hcapS hcapR
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
