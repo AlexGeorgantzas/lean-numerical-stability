@@ -7387,6 +7387,148 @@ theorem
     fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
     hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail hcopy
 
+/-- Exact subtraction discharges the zero-copy convention in the computed-alpha
+successor-pivot signed betaSpec handoff, while keeping the explicit
+normalized-beta compatibility premise. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp hcompat hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail
+    (subtractZeroExact_of_exact_sub fp hsub)
+
+/-- Exact primitive operations, including subtraction, remove both the
+normalized-beta compatibility and zero-copy premises from the computed-alpha
+successor-pivot signed betaSpec handoff. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+    fp hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail
+    (subtractZeroExact_of_exact_sub fp hsub)
+
+/-- Exact subtraction discharges the zero-copy convention in the exact-alpha
+successor-pivot signed betaSpec handoff, while keeping the explicit
+normalized-beta compatibility premise. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_updateCompatible_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp hcompat hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail
+    (subtractZeroExact_of_exact_sub fp hsub)
+
+/-- Exact primitive operations, including subtraction, remove both the
+normalized-beta compatibility and zero-copy premises from the exact-alpha
+successor-pivot signed betaSpec handoff. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+    fp hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail
+    (subtractZeroExact_of_exact_sub fp hsub)
+
 /-- Successor-pivot stored-step reconstruction with beta-one data from the
 once-shrunk panel self-dot normalization.
 
@@ -8326,6 +8468,685 @@ theorem
               (trailingPanel (trailingPanel SfullActive)))) := by
     simp [hSfull]
   simpa [v0, S0, SfullActive] using hqr'.trans htailExpr
+
+/-- Arbitrary-width two-step recursive/stored bridge with signed
+`householderBetaSpec` data at the successor pivot.
+
+Compared with
+`qrPanel_R_succ_succ_eq_secondStoredActiveStep_trailingQR_of_tail_reflector_self_dot_of_subtractZeroExact`,
+this theorem removes the explicit tail-vector equality and self-dot premises for
+the second reflector.  Instead, the full successor-pivot stored step keeps the
+source signed active vector and its `householderBetaSpec`, while exact
+add/mul/div/sqrt operations plus normalized-beta update compatibility identify
+that stored step with the recursive QR branch's computed normalized reflector. -/
+theorem
+    qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (m + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hx :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) 0))
+    (halpha :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))))
+    (hcopy : subtractZeroExact fp) :
+    fl_householderQRPanel_R fp (m + 2) (p + 2) A =
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       let Sfull :=
+          fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+            (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+              (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha)
+            (householderBetaSpec (m + 2)
+              (householderTrailingActiveVector (m + 2)
+                ((0 : Fin (m + 1)).succ)
+                (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha))
+            S0
+       panelFromTopAndTrailing (panelTopLeft Sfull) (panelTopRowTail Sfull)
+        (panelFromTopAndTrailing
+          (panelTopLeft (trailingPanel Sfull))
+          (panelTopRowTail (trailingPanel Sfull))
+          (fl_householderQRPanel_R fp m p
+            (trailingPanel (trailingPanel Sfull))))) := by
+  let v0 : Fin (m + 2) -> Real :=
+    fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+      (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+  let S0 : Fin (m + 2) -> Fin (p + 2) -> Real :=
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+  let v1 : Fin (m + 1) -> Real :=
+    fl_householderNormalizedVector fp (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+  let SfullNorm : Fin (m + 2) -> Fin (p + 2) -> Real :=
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+      (Fin.cases 0 v1) 1 S0
+  let SfullBeta : Fin (m + 2) -> Fin (p + 2) -> Real :=
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+      (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+        (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha)
+      (householderBetaSpec (m + 2)
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha))
+      S0
+  have hqr :=
+    qrPanel_R_succ_succ_eq_secondStoredStep_trailingQR_of_leadingBlock_det_ne_zero_of_subtractZeroExact
+      fp A hdetFirst hdetTail hcopy
+  have hfirstTail : panelFirstColumnTailZero S0 :=
+    panelFirstColumnTailZero_firstStoredPanelStep fp v0 1 A
+  have hfullNorm :
+      SfullNorm =
+        panelFromTopAndTrailing (panelTopLeft S0) (panelTopRowTail S0)
+          (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+            (fl_householderNormalizedVector fp (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)))
+            1 (trailingPanel S0)) := by
+    dsimp [SfullNorm, v1]
+    exact
+      storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_subtractZeroExact_anyCols
+        fp v1 1 S0 hfirstTail hcopy
+  have hfullBeta :
+      SfullBeta =
+        panelFromTopAndTrailing (panelTopLeft S0) (panelTopRowTail S0)
+          (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+            (fl_householderNormalizedVector fp (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)))
+            1 (trailingPanel S0)) := by
+    dsimp [SfullBeta]
+    exact
+      storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+        fp hcompat hadd hmul hdiv hsqrt S0 alpha
+        (by simpa [v0, S0] using hx)
+        (by simpa [v0, S0] using halpha)
+        hfirstTail hcopy
+  have hSfull : SfullNorm = SfullBeta := hfullNorm.trans hfullBeta.symm
+  have hqr' :
+      fl_householderQRPanel_R fp (m + 2) (p + 2) A =
+        panelFromTopAndTrailing (panelTopLeft SfullNorm) (panelTopRowTail SfullNorm)
+          (panelFromTopAndTrailing
+            (panelTopLeft (trailingPanel SfullNorm))
+            (panelTopRowTail (trailingPanel SfullNorm))
+            (fl_householderQRPanel_R fp m p
+              (trailingPanel (trailingPanel SfullNorm)))) := by
+    simpa [v0, S0, v1, SfullNorm] using hqr
+  have htailExpr :
+      panelFromTopAndTrailing (panelTopLeft SfullNorm) (panelTopRowTail SfullNorm)
+          (panelFromTopAndTrailing
+            (panelTopLeft (trailingPanel SfullNorm))
+            (panelTopRowTail (trailingPanel SfullNorm))
+            (fl_householderQRPanel_R fp m p
+              (trailingPanel (trailingPanel SfullNorm)))) =
+        panelFromTopAndTrailing (panelTopLeft SfullBeta) (panelTopRowTail SfullBeta)
+          (panelFromTopAndTrailing
+            (panelTopLeft (trailingPanel SfullBeta))
+            (panelTopRowTail (trailingPanel SfullBeta))
+            (fl_householderQRPanel_R fp m p
+              (trailingPanel (trailingPanel SfullBeta)))) := by
+    simp [hSfull]
+  simpa [v0, S0, SfullBeta] using hqr'.trans htailExpr
+
+/-- Exact add/mul operations discharge the normalized-beta compatibility
+assumption in the signed-`householderBetaSpec` successor-pivot QR bridge. -/
+theorem
+    qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (m + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hx :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) 0))
+    (halpha :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))))
+    (hcopy : subtractZeroExact fp) :
+    fl_householderQRPanel_R fp (m + 2) (p + 2) A =
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       let Sfull :=
+          fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+            (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+              (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha)
+            (householderBetaSpec (m + 2)
+              (householderTrailingActiveVector (m + 2)
+                ((0 : Fin (m + 1)).succ)
+                (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha))
+            S0
+       panelFromTopAndTrailing (panelTopLeft Sfull) (panelTopRowTail Sfull)
+        (panelFromTopAndTrailing
+          (panelTopLeft (trailingPanel Sfull))
+          (panelTopRowTail (trailingPanel Sfull))
+          (fl_householderQRPanel_R fp m p
+            (trailingPanel (trailingPanel Sfull))))) :=
+  qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
+    hadd hmul hdiv hsqrt A alpha hdetFirst hdetTail hx halpha hcopy
+
+/-- Exact-alpha variant of the arbitrary-width two-step recursive/stored bridge
+with signed `householderBetaSpec` data at the successor pivot. -/
+theorem
+    qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (m + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hx :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) 0))
+    (halpha :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))))
+    (hcopy : subtractZeroExact fp) :
+    fl_householderQRPanel_R fp (m + 2) (p + 2) A =
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       let Sfull :=
+          fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+            (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+              (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha)
+            (householderBetaSpec (m + 2)
+              (householderTrailingActiveVector (m + 2)
+                ((0 : Fin (m + 1)).succ)
+                (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha))
+            S0
+       panelFromTopAndTrailing (panelTopLeft Sfull) (panelTopRowTail Sfull)
+        (panelFromTopAndTrailing
+          (panelTopLeft (trailingPanel Sfull))
+          (panelTopRowTail (trailingPanel Sfull))
+          (fl_householderQRPanel_R fp m p
+            (trailingPanel (trailingPanel Sfull))))) := by
+  let v0 : Fin (m + 2) -> Real :=
+    fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+      (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+  let S0 : Fin (m + 2) -> Fin (p + 2) -> Real :=
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+  let v1 : Fin (m + 1) -> Real :=
+    fl_householderNormalizedVector fp (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+  let SfullNorm : Fin (m + 2) -> Fin (p + 2) -> Real :=
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+      (Fin.cases 0 v1) 1 S0
+  let SfullBeta : Fin (m + 2) -> Fin (p + 2) -> Real :=
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+      (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+        (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha)
+      (householderBetaSpec (m + 2)
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha))
+      S0
+  have hqr :=
+    qrPanel_R_succ_succ_eq_secondStoredStep_trailingQR_of_leadingBlock_det_ne_zero_of_subtractZeroExact
+      fp A hdetFirst hdetTail hcopy
+  have hfirstTail : panelFirstColumnTailZero S0 :=
+    panelFirstColumnTailZero_firstStoredPanelStep fp v0 1 A
+  have hfullNorm :
+      SfullNorm =
+        panelFromTopAndTrailing (panelTopLeft S0) (panelTopRowTail S0)
+          (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+            (fl_householderNormalizedVector fp (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)))
+            1 (trailingPanel S0)) := by
+    dsimp [SfullNorm, v1]
+    exact
+      storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_subtractZeroExact_anyCols
+        fp v1 1 S0 hfirstTail hcopy
+  have hfullBeta :
+      SfullBeta =
+        panelFromTopAndTrailing (panelTopLeft S0) (panelTopRowTail S0)
+          (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+            (fl_householderNormalizedVector fp (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)))
+            1 (trailingPanel S0)) := by
+    dsimp [SfullBeta]
+    exact
+      storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+        fp hcompat hadd hmul hdiv hsqrt S0 alpha
+        (by simpa [v0, S0] using hx)
+        (by simpa [v0, S0] using halpha)
+        hfirstTail hcopy
+  have hSfull : SfullNorm = SfullBeta := hfullNorm.trans hfullBeta.symm
+  have hqr' :
+      fl_householderQRPanel_R fp (m + 2) (p + 2) A =
+        panelFromTopAndTrailing (panelTopLeft SfullNorm) (panelTopRowTail SfullNorm)
+          (panelFromTopAndTrailing
+            (panelTopLeft (trailingPanel SfullNorm))
+            (panelTopRowTail (trailingPanel SfullNorm))
+            (fl_householderQRPanel_R fp m p
+              (trailingPanel (trailingPanel SfullNorm)))) := by
+    simpa [v0, S0, v1, SfullNorm] using hqr
+  have htailExpr :
+      panelFromTopAndTrailing (panelTopLeft SfullNorm) (panelTopRowTail SfullNorm)
+          (panelFromTopAndTrailing
+            (panelTopLeft (trailingPanel SfullNorm))
+            (panelTopRowTail (trailingPanel SfullNorm))
+            (fl_householderQRPanel_R fp m p
+              (trailingPanel (trailingPanel SfullNorm)))) =
+        panelFromTopAndTrailing (panelTopLeft SfullBeta) (panelTopRowTail SfullBeta)
+          (panelFromTopAndTrailing
+            (panelTopLeft (trailingPanel SfullBeta))
+            (panelTopRowTail (trailingPanel SfullBeta))
+            (fl_householderQRPanel_R fp m p
+              (trailingPanel (trailingPanel SfullBeta)))) := by
+    simp [hSfull]
+  simpa [v0, S0, SfullBeta] using hqr'.trans htailExpr
+
+/-- Exact add/mul operations discharge the normalized-beta compatibility
+assumption in the exact-alpha signed-`householderBetaSpec` successor-pivot QR
+bridge. -/
+theorem
+    qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (m + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hx :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) 0))
+    (halpha :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))))
+    (hcopy : subtractZeroExact fp) :
+    fl_householderQRPanel_R fp (m + 2) (p + 2) A =
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       let Sfull :=
+          fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+            (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+              (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha)
+            (householderBetaSpec (m + 2)
+              (householderTrailingActiveVector (m + 2)
+                ((0 : Fin (m + 1)).succ)
+                (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha))
+            S0
+       panelFromTopAndTrailing (panelTopLeft Sfull) (panelTopRowTail Sfull)
+        (panelFromTopAndTrailing
+          (panelTopLeft (trailingPanel Sfull))
+          (panelTopRowTail (trailingPanel Sfull))
+          (fl_householderQRPanel_R fp m p
+            (trailingPanel (trailingPanel Sfull))))) :=
+  qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
+    hadd hmul hdiv hsqrt A alpha hdetFirst hdetTail hx halpha hcopy
+
+/-- Exact subtraction discharges the zero-copy convention in the computed-alpha
+successor signed-`householderBetaSpec` QR bridge, while keeping the explicit
+normalized-beta compatibility premise. -/
+theorem
+    qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (m + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hx :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) 0))
+    (halpha :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)))) :
+    fl_householderQRPanel_R fp (m + 2) (p + 2) A =
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       let Sfull :=
+          fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+            (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+              (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha)
+            (householderBetaSpec (m + 2)
+              (householderTrailingActiveVector (m + 2)
+                ((0 : Fin (m + 1)).succ)
+                (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha))
+            S0
+       panelFromTopAndTrailing (panelTopLeft Sfull) (panelTopRowTail Sfull)
+        (panelFromTopAndTrailing
+          (panelTopLeft (trailingPanel Sfull))
+          (panelTopRowTail (trailingPanel Sfull))
+          (fl_householderQRPanel_R fp m p
+            (trailingPanel (trailingPanel Sfull))))) :=
+  qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp hcompat hadd hmul hdiv hsqrt A alpha hdetFirst hdetTail hx halpha
+    (subtractZeroExact_of_exact_sub fp hsub)
+
+/-- Exact primitive operations, including subtraction, remove both the
+normalized-beta compatibility and zero-copy premises from the computed-alpha
+successor signed-`householderBetaSpec` QR bridge. -/
+theorem
+    qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_fl_householderAlpha_of_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (m + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hx :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) 0))
+    (halpha :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)))) :
+    fl_householderQRPanel_R fp (m + 2) (p + 2) A =
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       let Sfull :=
+          fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+            (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+              (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha)
+            (householderBetaSpec (m + 2)
+              (householderTrailingActiveVector (m + 2)
+                ((0 : Fin (m + 1)).succ)
+                (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha))
+            S0
+       panelFromTopAndTrailing (panelTopLeft Sfull) (panelTopRowTail Sfull)
+        (panelFromTopAndTrailing
+          (panelTopLeft (trailingPanel Sfull))
+          (panelTopRowTail (trailingPanel Sfull))
+          (fl_householderQRPanel_R fp m p
+            (trailingPanel (trailingPanel Sfull))))) :=
+  qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+    fp hadd hmul hdiv hsqrt A alpha hdetFirst hdetTail hx halpha
+    (subtractZeroExact_of_exact_sub fp hsub)
+
+/-- Exact subtraction discharges the zero-copy convention in the exact-alpha
+successor signed-`householderBetaSpec` QR bridge, while keeping the explicit
+normalized-beta compatibility premise. -/
+theorem
+    qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_householderAlpha_of_updateCompatible_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (m + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hx :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) 0))
+    (halpha :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)))) :
+    fl_householderQRPanel_R fp (m + 2) (p + 2) A =
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       let Sfull :=
+          fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+            (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+              (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha)
+            (householderBetaSpec (m + 2)
+              (householderTrailingActiveVector (m + 2)
+                ((0 : Fin (m + 1)).succ)
+                (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha))
+            S0
+       panelFromTopAndTrailing (panelTopLeft Sfull) (panelTopRowTail Sfull)
+        (panelFromTopAndTrailing
+          (panelTopLeft (trailingPanel Sfull))
+          (panelTopRowTail (trailingPanel Sfull))
+          (fl_householderQRPanel_R fp m p
+            (trailingPanel (trailingPanel Sfull))))) :=
+  qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp hcompat hadd hmul hdiv hsqrt A alpha hdetFirst hdetTail hx halpha
+    (subtractZeroExact_of_exact_sub fp hsub)
+
+/-- Exact primitive operations, including subtraction, remove both the
+normalized-beta compatibility and zero-copy premises from the exact-alpha
+successor signed-`householderBetaSpec` QR bridge. -/
+theorem
+    qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_householderAlpha_of_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (m + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hx :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) 0))
+    (halpha :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)))) :
+    fl_householderQRPanel_R fp (m + 2) (p + 2) A =
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1 A
+       let Sfull :=
+          fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+            (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+              (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha)
+            (householderBetaSpec (m + 2)
+              (householderTrailingActiveVector (m + 2)
+                ((0 : Fin (m + 1)).succ)
+                (fun a => S0 a ((0 : Fin (p + 1)).succ)) alpha))
+            S0
+       panelFromTopAndTrailing (panelTopLeft Sfull) (panelTopRowTail Sfull)
+        (panelFromTopAndTrailing
+          (panelTopLeft (trailingPanel Sfull))
+          (panelTopRowTail (trailingPanel Sfull))
+          (fl_householderQRPanel_R fp m p
+            (trailingPanel (trailingPanel Sfull))))) :=
+  qrPanel_R_succ_succ_eq_secondStoredActiveBetaSpecStep_trailingQR_of_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+    fp hadd hmul hdiv hsqrt A alpha hdetFirst hdetTail hx halpha
+    (subtractZeroExact_of_exact_sub fp hsub)
 
 /-- Arbitrary-width two-step signed stored-sequence bridge.
 
