@@ -1407,6 +1407,79 @@ theorem wedinTheorem20_1_vecNorm2_Bplus_combined_forcing_residual_le
         (fun i : Fin m => -rectMatMulVec DeltaA x i + Deltab i) r
   simpa [hsplit] using hsum
 
+/-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
+    if the perturbation algebra has produced the source equation for
+    `B*(y-x)`, then the left inverse `Bplus*B = I` identifies the solution
+    difference with the combined `Bplus` vector. -/
+theorem wedinTheorem20_1_solution_difference_eq_Bplus_combined_of_B_mul
+    {m k : ℕ} (B : Fin m → Fin (k + 1) → ℝ)
+    (Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (Deltab r : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hBdiff :
+      rectMatMulVec B (fun j => y j - x j) =
+        fun i => (-rectMatMulVec DeltaA x i + Deltab i) + r i) :
+    (fun j => y j - x j) =
+      rectMatMulVec Bplus
+        (fun i => (-rectMatMulVec DeltaA x i + Deltab i) + r i) := by
+  calc
+    (fun j => y j - x j)
+        = rectMatMulVec (idMatrix (k + 1)) (fun j => y j - x j) := by
+            symm
+            exact rectMatMulVec_idMatrix (fun j => y j - x j)
+    _ = rectMatMulVec (rectMatMul Bplus B) (fun j => y j - x j) := by
+            rw [hleftB]
+    _ = rectMatMulVec Bplus
+          (rectMatMulVec B (fun j => y j - x j)) := by
+            rw [rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec Bplus
+          (fun i => (-rectMatMulVec DeltaA x i + Deltab i) + r i) := by
+            rw [hBdiff]
+
+/-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
+    solution-difference norm bound after the source equation for `B*(y-x)`
+    has been exposed.  This is still prior to the printed relative scalar
+    normalization in (20.1). -/
+theorem wedinTheorem20_1_vecNorm2_solution_difference_le_of_B_mul
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (Deltab r : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hBdiff :
+      rectMatMulVec B (fun j => y j - x j) =
+        fun i => (-rectMatMulVec DeltaA x i + Deltab i) + r i) :
+    vecNorm2 (fun j => y j - x j) ≤
+      (Aplus_norm / (1 - eta)) *
+          (DeltaA_norm * vecNorm2 x + Deltab_norm) +
+        (eta * Aplus_norm / (1 - eta) ^ 2) * vecNorm2 r := by
+  have hdiff_eq :
+      (fun j => y j - x j) =
+        rectMatMulVec Bplus
+          (fun i => (-rectMatMulVec DeltaA x i + Deltab i) + r i) :=
+    wedinTheorem20_1_solution_difference_eq_Bplus_combined_of_B_mul
+      B Bplus DeltaA Deltab r x y hleftB hBdiff
+  rw [hdiff_eq]
+  exact
+    wedinTheorem20_1_vecNorm2_Bplus_combined_forcing_residual_le
+      A B Aplus Bplus DeltaA Deltab r x hAplus_pos heta hsmall
+      hleftA hleftB hSymA hSymB hDelta hBplus hDeltaA hDeltab
+      hrangeA_residual
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
