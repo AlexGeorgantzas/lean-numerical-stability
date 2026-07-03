@@ -49,8 +49,10 @@ bound `xiSq_le_mu_relative_residual_sq`. It also constructs the coordinatewise
 SVD optimizer through `svdOptimalDeltaA`, `svdOptimalDeltaB`,
 `svdOptimalDeltaC`, `svdOptimalPerturbations_cost_eq_xiSq`, and
 `exists_svdOptimalPerturbations`, plus the component bounds
-`svdOptimalPerturbations_frobNormSq_bounds`, while leaving the global eta
-minimum/infimum bridge open. It also connects square Frobenius
+`svdOptimalPerturbations_frobNormSq_bounds`, and lifts that optimizer to an
+original-coordinate backward-error certificate via
+`isBackwardError_sqrt_xiSq_of_svdOptimalPerturbations`, while leaving the eta
+minimum/infimum order bridge open. It also connects square Frobenius
 backward-error certificates to the SVD-coordinate lower-direction bridge through
 `sylvesterBackwardResidual`, `svdResidual_backwardResidual`, and
 `xiSq_le_three_eta_sq_of_backward_error`. The Lyapunov subsection now also has
