@@ -55,9 +55,11 @@ The existing `StationaryIteration.lean` module now carries the correct
 `SourceComputedIteration` for equation (17.1), plus a bridge
 `computedIteration_of_sourceComputedIteration` and source-sign one-step error
 recurrence `one_step_error_source`. The current proved surface covers
-nonsingular splitting algebra, finite/q-bound forward and residual dependencies,
-and Jacobi/SOR splitting identities; the exact infinite-sum, singular-system,
-and stopping-test rows remain open in the Chapter 17 ledger.
+nonsingular splitting algebra, the exact-solution affine fixed-point identity
+`stationary_solution_fixed_point` behind (17.4), finite/q-bound forward and
+residual dependencies, and Jacobi/SOR splitting identities; the full finite-sum,
+exact infinite-sum, singular-system, and stopping-test rows remain open in the
+Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
