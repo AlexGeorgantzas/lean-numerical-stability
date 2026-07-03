@@ -873,6 +873,29 @@ theorem wedinLemma20_12_rectOpNorm2Le_projectionComplement_of_symmetric_left_inv
     simp [rectMatMulVec]
   simpa [wedinLemma20_12_rectMatMulVec_projectionComplement, hzero] using hbest
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    reversing a matrix difference preserves a rectangular operator-2 bound. -/
+theorem wedinLemma20_12_rectOpNorm2Le_sub_rev
+    {m n : ℕ} (A B : Fin m → Fin n → ℝ) {delta : ℝ}
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta) :
+    rectOpNorm2Le (fun i j => A i j - B i j) delta := by
+  intro x
+  have hmul :
+      rectMatMulVec (fun i j => A i j - B i j) x =
+        fun i => -rectMatMulVec (fun i j => B i j - A i j) x i := by
+    ext i
+    unfold rectMatMulVec
+    calc
+      (∑ j : Fin n, (A i j - B i j) * x j)
+          = ∑ j : Fin n, -((B i j - A i j) * x j) := by
+              apply Finset.sum_congr rfl
+              intro j _
+              ring
+      _ = -(∑ j : Fin n, (B i j - A i j) * x j) := by
+              rw [Finset.sum_neg_distrib]
+  rw [hmul]
+  simpa [vecNorm2_neg] using hDelta x
+
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
     one-sided projection perturbation bound from the source proof.
 
@@ -966,6 +989,31 @@ theorem wedinLemma20_12_rectOpNorm2Le_complement_rangeProjection_mul_rangeProjec
     _ ≤ delta * (Bplus_norm * vecNorm2 y) :=
             mul_le_mul_of_nonneg_left hBplus_y hdelta_nonneg
     _ = (delta * Bplus_norm) * vecNorm2 y := by ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
+    swapped one-sided projection perturbation bound from the source proof.
+
+    This is the companion elementary half
+    `||(I - P_B) P_A||_2 <= ||A - B||_2 ||Aplus||_2` in the repository's
+    predicate API.  As above, this does not claim the nontrivial equality of
+    the two cross-projection operator norms. -/
+theorem wedinLemma20_12_rectOpNorm2Le_complement_rangeProjection_mul_rangeProjection_swapped
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {delta Aplus_norm : ℝ}
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm) :
+    rectOpNorm2Le
+      (rectMatMul
+        (fun i j => idMatrix m i j - rectMatMul B Bplus i j)
+        (rectMatMul A Aplus))
+      (delta * Aplus_norm) :=
+  wedinLemma20_12_rectOpNorm2Le_complement_rangeProjection_mul_rangeProjection
+    B A Bplus Aplus hleftB hSymB
+    (wedinLemma20_12_rectOpNorm2Le_sub_rev A B hDelta)
+    hAplus
 
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
