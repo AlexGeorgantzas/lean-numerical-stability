@@ -14643,3 +14643,6 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham_18_1_real_jordan_tendsto
 #check higham_18_1_real_jordan_fl_tendsto
 #check higham_eq_18_5_alt_real_jordan
+#check matPow_abs_weighted_bound
+#check matPow_convergence_weighted
+#check matPow_convergence_weighted_fl

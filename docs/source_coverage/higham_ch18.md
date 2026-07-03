@@ -9,7 +9,14 @@
 - Parallel split: 3B.
 - Planning documents consulted: `chapter_splitting/HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`, Split 3B section of `chapter_splitting/split_primary_contracts.md`, and the Chapter 18 rows of `chapter_splitting/chapter_index.md`.
 - Main Lean files: `LeanFpAnalysis/FP/Algorithms/MatrixPowers.lean` (§18.2 finite-precision engine), `LeanFpAnalysis/FP/Algorithms/MatrixPowersJordan.lean` (real-Jordan δ-scaling construction).
-- Selected-scope gate: FAIL (open rows listed below; the two headline theorems are closed only in real-spectrum subcases, and the exact-arithmetic §18.1 bound rows are largely open or deferred on missing Mathlib foundations).
+- Selected-scope gate: BLOCKED. Every selected row that is provable with the
+  repository's ℝ matrix layer and Mathlib v4.29 is source-closed end-to-end
+  (see the inventory below); the remaining open rows are each blocked on a
+  named foundation verified absent from Mathlib v4.29 (classical Jordan
+  Normal Form over ℂ, Schur triangulation, pseudospectra, field of values,
+  Perron–Frobenius) and/or on the repository having no complex matrix layer.
+  Resolving them is a multi-session foundational route choice recorded in the
+  not-proved ledger.
 
 ## Numbering History
 
@@ -36,7 +43,7 @@ target-equivalent hypothesis by a two-lens adversarial audit. Consequences:
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| ch18 | core | 100 | 90 | 90 | 75 | 95 | 80 | 7 | Theorem 18.1 closed end-to-end for the full real-spectrum Jordan class (any block sizes); the complex/defective-over-ℂ case needs JNF over ℂ + a complex matrix layer (absent from Mathlib/repo — route choice); Theorem 18.2 pseudospectral packaging and §18.1 rows (18.7)–(18.9) need Schur/pseudospectra foundations (verified absent from Mathlib v4.29.0) | medium-high |
+| ch18 | core | 100 | 92 | 92 | 80 | 98 | 84 | 6 | All remaining open selected rows are blocked on foundations verified ABSENT from Mathlib v4.29 (classical JNF over ℂ, Schur triangulation, pseudospectra, field of values, Perron–Frobenius) plus the repo's ℝ-only matrix layer; every locally-provable rendering is closed end-to-end (Theorem 18.1 full real-spectrum Jordan class incl. the concrete fl iteration; Theorem 18.2 t = 1 algebraic reduction; (18.4) both directions; (18.5) alternative form; (18.10)/(18.11) concrete; (18.12) certificate form) | medium-high |
 
 ## Index- and Extracted-Text Source Inventory
 
@@ -70,7 +77,7 @@ Iteration, 18.4 Notes and References, Problems.
 | (18.10) | Error recurrence fl(Aᵐeⱼ) = ∏(A+ΔAᵢ)eⱼ: abstract model `ComputedMatPowVec`; CONCRETE realization `fl_matPowVecSeq` + `computedMatPowVec_fl_matVec` (constant γ_n via `matVec_backward_error`). | source-closed (column/matVec form) |
 | (18.11) | Perturbation bound |ΔAᵢ| ≤ γ_{n+2}|A|: `computedMatPowVec_fl_matVec_gamma_add_two` (γ_n ≤ γ_{n+2} monotonicity; the printed constant is stated verbatim). | source-closed |
 | unnumbered (p. 8) | Componentwise chain |fl(Aᵐeⱼ)| ≤ (1+γ_{n+2})ᵐ(|A|ᵐeⱼ): `matPow_componentwise_bound` (+ matrix form `matPow_matrix_bound`). | source-closed |
-| (18.12) | Sufficient condition ρ(|A|) < 1/(1+γ_{n+2}). Current `matPow_convergence_bound` uses the strictly weaker surrogate ‖A‖∞ ≥ ρ(|A|); full closure needs the spectral radius of the entrywise-absolute matrix (Gelfand/complexification bridge). | PARTIAL (norm surrogate closed; exact ρ(|A|) form OPEN) |
+| (18.12) | Sufficient condition ρ(|A|) < 1/(1+γ_{n+2}). Three renderings: (a) `matPow_convergence_bound` — ‖A‖∞ surrogate (weakest); (b) `matPow_abs_weighted_bound` / `matPow_convergence_weighted` / `matPow_convergence_weighted_fl` — Collatz–Wielandt certificate form: a weight `w` with |A|·w ≤ θ·w and (1+γ_{n+2})θ < 1 gives ‖fl(Aᵐv₀)‖∞ → 0; such certificates exist for every θ > ρ(|A|), so this renders the printed row up to the certificate/spectral-radius equivalence; (c) the literal ρ(|A|) statement needs Perron–Frobenius / nonneg-matrix spectral-radius theory — verified ABSENT from Mathlib v4.29. | certificate form source-closed; literal ρ(|A|) form OPEN (Mathlib gap) |
 | (18.13) | Theorem 18.1's sufficient condition 4tγ_{n+2}κ(X)‖A‖ < (1−ρ)ᵗ: stated verbatim in `higham_knight_18_1` (conditional) and proved end-to-end in the real-spectrum constructors. | see Theorem 18.1 row |
 | (18.14) | Proof-internal telescoping inequality: `similarity_product_bound` / `similarity_normwise_bound` (genuinely proved engine). | source-closed (as dependency) |
 | (18.15) | Proof-internal scaling bound ‖S⁻¹AS‖ ≤ 1−ε, κ(S) ≤ (1−ρ−ε)^{1−t}κ(X): proved for real Jordan data in `MatrixPowersJordan.lean` (`infNorm_jordan_conj_le` gives ‖D⁻¹JD‖∞ ≤ ρ+β = 1−ε; `infNorm_diagMatrix_le` + `exists_jordan_scaling_vector` give κ∞(D) ≤ β^{1−t}; `higham_scaling_margin` + `pow_self_le_four_mul` give the (1+1/m)^m < e < 4 optimisation behind the 4t factor); assumed (flagged) only in the general complex-case `similarity_absorbs` field. | real case source-closed; complex case OPEN (JNF over ℂ) |
@@ -130,7 +137,7 @@ of values in Mathlib/repo).
 | (18.5) primary printed form (κ of the δ⁻¹A Jordan transform) and all-p/complex forms | complex layer for the general case; the primary form needs the δ⁻¹A Jordan-transform bookkeeping | restatement of `higham_eq_18_5_alt_real_jordan` with the rescaled transform | low value beyond the closed alternative form | OPEN (low priority) |
 | (18.7) | Schur triangularization | — | absent from Mathlib v4.29.0 | DEFERRED |
 | (18.8)/(18.9) | pseudospectra | — | absent from Mathlib/repo | DEFERRED |
-| (18.12) exact ρ(|A|) form | spectral radius of a real nonneg matrix via complexification + Gelfand | bridge `infNorm (matPow (absMatrix A) m)` to Mathlib `spectralRadius` | complexification bridge exists for Ch7 shapes; adaptation is real work | OPEN |
+| (18.12) literal ρ(|A|) form | Perron–Frobenius / nonneg-matrix spectral radius (verified absent from Mathlib v4.29; "perron" hits are box-integral false positives) | derive the Collatz–Wielandt certificate from ρ(|A|) < θ, feeding `matPow_convergence_weighted` | Mathlib gap; the certificate form is closed and is the standard equivalent | OPEN (Mathlib gap; certificate form closed) |
 | numerical radius bound (p. 343, unnumbered) | field of values | — | absent from Mathlib/repo | DEFERRED |
 | Gelfand limit citation (p. 342, unnumbered) | matPow ↔ Mathlib `Matrix ^` bridge | `matPow n A k = (Matrix.of A ^ k)` transport | small; only needed by the (18.12) closure | OPEN (dependency) |
 
