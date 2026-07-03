@@ -37782,6 +37782,236 @@ theorem higham9_15_normwise_source_bound_of_normalized_linear_step_opNorm_of_sou
     heta
 
 /-- **Theorem 9.15**, source-facing normwise endpoint from the original
+factorization equations plus a full-matrix linearized Barrlund--Sun step
+hypothesis.
+
+The equations `LU = A` and `(L + ΔL)(U + ΔU) = A + ΔA` identify this as the
+factorization-level API; the remaining analytic content is the explicit
+normalized linear-step hypothesis. -/
+theorem higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities
+    {n : ℕ} [Nonempty (Fin n)]
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (_hLU : L * U = A)
+    (_hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (_hLleft : Linv * L = 1)
+    (hLright : L * Linv = 1)
+    (_hUright : U * Uinv = 1)
+    (hUleft : Uinv * U = 1)
+    (hGlt : opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) < 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) := by
+  have hLrightRect : rectMatMul L Linv = idMatrix n := by
+    ext i j
+    have h := congrFun (congrFun hLright i) j
+    simpa [rectMatMul, idMatrix, Matrix.mul_apply] using h
+  have hUleftRect : rectMatMul Uinv U = idMatrix n := by
+    ext i j
+    have h := congrFun (congrFun hUleft i) j
+    simpa [rectMatMul, idMatrix, Matrix.mul_apply] using h
+  exact
+    higham9_15_normwise_source_bound_of_normalized_linear_step_opNorm_of_inverse_identities
+      L U Linv Uinv ΔA ΔL ΔU hLrightRect hUleftRect hGlt hlinear
+      hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, product-smallness source-facing factorization endpoint
+from a full-matrix linearized Barrlund--Sun step hypothesis. -/
+theorem higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+    {n : ℕ} [Nonempty (Fin n)]
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hLright : L * Linv = 1)
+    (hUright : U * Uinv = 1)
+    (hUleft : Uinv * U = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities
+    A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hLright hUright hUleft
+    (higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+      Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
+    hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, exact-operator-norm source-facing factorization endpoint
+from a full-matrix linearized Barrlund--Sun step hypothesis. -/
+theorem higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hLright : L * Linv = 1)
+    (hUright : U * Uinv = 1)
+    (hUleft : Uinv * U = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (heta : opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (opNorm2 Linv * frobNormRect ΔA * opNorm2 Uinv) /
+        (1 - opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv) :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+    A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hLright hUright hUleft hlinear
+    (opNorm2_nonneg Linv) (opNorm2_nonneg ΔA) (opNorm2_nonneg Uinv)
+    (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
+    heta
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the
+factorization-level full-matrix linear-step endpoint. -/
+theorem higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm
+    {n : ℕ} [Nonempty (Fin n)]
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (_hLU : L * U = A)
+    (_hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hGlt : opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) < 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) :=
+  higham9_15_normwise_source_bound_of_normalized_linear_step_opNorm_of_source_inverse_identities
+    L U Linv Uinv ΔA ΔL ΔU hLleft hUright hGlt hlinear
+    hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, product-smallness source-oriented inverse-identity form
+of the factorization-level full-matrix linear-step endpoint. -/
+theorem higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_product_lt
+    {n : ℕ} [Nonempty (Fin n)]
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm
+    A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
+    (higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+      Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
+    hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, exact-operator-norm source-oriented inverse-identity
+form of the factorization-level full-matrix linear-step endpoint. -/
+theorem higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (heta : opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (opNorm2 Linv * frobNormRect ΔA * opNorm2 Uinv) /
+        (1 - opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv) :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_product_lt
+    A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright hlinear
+    (opNorm2_nonneg Linv) (opNorm2_nonneg ΔA) (opNorm2_nonneg Uinv)
+    (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
+    heta
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the factorization-level
+linear-step endpoint with two-sided inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm_of_matrix_inverse_identities :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the product-smallness
+factorization-level linear-step endpoint with two-sided inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm_of_matrix_inverse_identities_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the exact-operator-norm
+factorization-level linear-step endpoint with two-sided inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the source-oriented
+factorization-level linear-step endpoint. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the product-smallness
+source-oriented factorization-level linear-step endpoint. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_product_lt
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the exact-operator-norm
+source-oriented factorization-level linear-step endpoint. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15**, source-facing normwise endpoint from the original
 perturbed factorization equations plus the conditional min-factor control.
 
 The exact equations `LU = A`, `(L + ΔL)(U + ΔU) = A + ΔA`, and two-sided
