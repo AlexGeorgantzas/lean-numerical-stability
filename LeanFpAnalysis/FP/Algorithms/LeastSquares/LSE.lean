@@ -95,6 +95,15 @@ theorem theorem20_7_stageRowMax_le_of_entry_le {m n : ℕ} (hn : 0 < n)
   intro p _hp
   exact hbound p.1 p.2
 
+/-- Nat-indexed variant of `theorem20_7_stageRowMax_le_of_entry_le`.
+    This is the form produced by the Chapter 19 row-wise QR stage recurrences. -/
+theorem theorem20_7_stageRowMax_le_of_entry_le_nat {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (i : Fin m) {C : ℝ}
+    (hbound : ∀ k : ℕ, k < n → ∀ j : Fin n, |Astage k i j| ≤ C) :
+    theorem20_7_stageRowMax hn Astage i ≤ C := by
+  exact theorem20_7_stageRowMax_le_of_entry_le hn Astage i
+    (fun k j => hbound k.val k.isLt j)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     the source ratio `α_i = max_{j,k}|a_ij^(k)| / max_j |a_ij|`. -/
 noncomputable def theorem20_7_alpha {m n : ℕ} (hn : 0 < n)
@@ -161,6 +170,15 @@ theorem theorem20_7_stageBMax_le_of_entry_le {m n : ℕ} (hn : 0 < n)
   apply Finset.sup'_le
   intro k _hk
   exact hbound k
+
+/-- Nat-indexed variant of `theorem20_7_stageBMax_le_of_entry_le`.
+    This matches the stage indexing of the Chapter 19 row-wise QR wrappers. -/
+theorem theorem20_7_stageBMax_le_of_entry_le_nat {m n : ℕ} (hn : 0 < n)
+    (bstage : ℕ → Fin m → ℝ) (i : Fin m) {C : ℝ}
+    (hbound : ∀ k : ℕ, k < n → |bstage k i| ≤ C) :
+    theorem20_7_stageBMax hn bstage i ≤ C := by
+  exact theorem20_7_stageBMax_le_of_entry_le hn bstage i
+    (fun k => hbound k.val k.isLt)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     numerator scale for the source `β_i` ratio. -/
@@ -325,6 +343,32 @@ theorem theorem20_7_alphaBetaMax_le_of_uniform_entry_growth {m n : ℕ}
         _ = C * (phi * theorem20_7_initialRowMax hn A i) := by ring
         _ ≤ C * theorem20_7_initialWeightedRowMax hn A b phi i := hscaled
     · exact theorem20_7_stageBMax_le_of_entry_le hn bstage i (hb i)
+
+/-- Nat-indexed version of
+    `theorem20_7_alphaBetaMax_le_of_uniform_entry_growth`.
+
+The Chapter 19 row-wise QR dependencies are naturally stated with `Nat` stage
+indices and a side condition `k < n`; this bridge converts those bounds into the
+finite `max_i {α_i, β_i}` surface used by Higham Theorem 20.7. -/
+theorem theorem20_7_alphaBetaMax_le_of_uniform_entry_growth_nat {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) {C : ℝ}
+    (hC : 0 ≤ C) (hphi : 0 ≤ phi)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤ C * theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        C * theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C := by
+  exact
+    theorem20_7_alphaBetaMax_le_of_uniform_entry_growth
+      hm hn Astage A bstage b phi hC hphi hdenA hdenW
+      (fun i k j => hA i k.val k.isLt j)
+      (fun i k => hb i k.val k.isLt)
 
 -- ============================================================
 -- §20.9  Equality-constrained least squares
