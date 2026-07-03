@@ -39,8 +39,12 @@ The current Split 3B route has checked source-faithful Householder
 normalization certificate surfaces, including a named stronger normalization
 model boundary, exact one-tail and first-two certificate constructors, and an
 exact-arithmetic all-stage tail-vector bridge that feeds the Theorem 19.13
-final-panel pipeline through those certificates. The stronger-model boundary
-now also exposes sufficient-condition constructors from agreement with the
+final-panel pipeline through those certificates. The all-stage tail-vector
+premise now also has explicit zero, one-column, and two-step constructors for
+both the exact-unit-roundoff and arbitrary-model package surfaces, so future
+stored-loop induction work can assemble the package without unfolding the
+recursive definition. The stronger-model boundary now also exposes
+sufficient-condition constructors from agreement with the
 exact Higham normalized vector and from exact computed Householder vector/beta
 agreement, plus an exact add/mul/div/sqrt operation route, the exact-arithmetic
 normalized-vector equality, and raw, record, full-stage, source-closure,
