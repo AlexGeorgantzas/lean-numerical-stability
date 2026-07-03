@@ -293,6 +293,46 @@ theorem upperTriangular_inverse_exists (k : ℕ) (U : Fin k → Fin k → ℝ)
     simp only [Matrix.mul_apply, Matrix.one_apply] at h
     exact h
 
+/-- Product of upper-triangular matrices is upper triangular. -/
+lemma matMul_upper_upper {n : ℕ} (M N : Fin n → Fin n → ℝ)
+    (hM : ∀ i j : Fin n, j.val < i.val → M i j = 0)
+    (hN : ∀ i j : Fin n, j.val < i.val → N i j = 0) :
+    ∀ i j : Fin n, j.val < i.val → matMul n M N i j = 0 := by
+  intro i j hij
+  unfold matMul
+  refine Finset.sum_eq_zero fun k _ => ?_
+  rcases Nat.lt_or_ge k.val i.val with hk | hk
+  · rw [hM i k hk, zero_mul]
+  · rw [hN k j (by omega), mul_zero]
+
+/-- **Frobenius submultiplicativity for the Gram square** (Theorem 10.8
+    proof, step 7): `‖MᵀM‖_F² ≤ (‖M‖_F²)²`, by per-entry Cauchy–Schwarz
+    over columns. -/
+theorem frobNormSq_transpose_mul_self_le {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    frobNormSq (matMul n (fun i j => M j i) M) ≤ frobNormSq M ^ 2 := by
+  have hentry : ∀ i j : Fin n,
+      (matMul n (fun p q => M q p) M i j) ^ 2 ≤
+      (∑ k : Fin n, M k i ^ 2) * ∑ k : Fin n, M k j ^ 2 := by
+    intro i j
+    have hcs := Finset.sum_mul_sq_le_sq_mul_sq
+      (Finset.univ : Finset (Fin n)) (fun k => M k i) (fun k => M k j)
+    have hsq : (matMul n (fun p q => M q p) M i j) ^ 2 =
+        (∑ k : Fin n, M k i * M k j) ^ 2 := rfl
+    rw [hsq]
+    exact hcs
+  calc frobNormSq (matMul n (fun i j => M j i) M)
+      ≤ ∑ i : Fin n, ∑ j : Fin n,
+        (∑ k : Fin n, M k i ^ 2) * ∑ k : Fin n, M k j ^ 2 :=
+        Finset.sum_le_sum fun i _ => Finset.sum_le_sum fun j _ =>
+          hentry i j
+    _ = (∑ i : Fin n, ∑ k : Fin n, M k i ^ 2) *
+        ∑ j : Fin n, ∑ k : Fin n, M k j ^ 2 := by
+        rw [Finset.sum_mul_sum]
+    _ = frobNormSq M ^ 2 := by
+        rw [show (∑ i : Fin n, ∑ k : Fin n, M k i ^ 2) = frobNormSq M
+          from Finset.sum_comm, sq]
+
 -- ============================================================
 -- §10.2  Theorem 10.8: Sun perturbation bound (normwise)
 -- ============================================================
