@@ -886,6 +886,81 @@ theorem residual_finite_sum (n : ℕ)
   rw [hsource] at hunroll
   simpa [R, H, C, sub_eq_add_neg] using hunroll
 
+/-- Finite sigma-form residual bound following from the closed residual
+    recurrence: the propagated initial residual plus the finite sum of
+    `||H^k(I-H)||∞ * ||ξ_{m-k}||∞` controls `||r_{m+1}||∞`. -/
+theorem normwise_residual_sigma_finite_bound (n : ℕ) (hn : 0 < n)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
+    (hIter : ComputedIteration n M N b x_hat ξ)
+    (m : ℕ) :
+    infNormVec (fun i => b i - ∑ j : Fin n, A i j * x_hat (m + 1) j) ≤
+      infNorm (matPow n (dualIterMatrix n N M_inv) (m + 1)) *
+        infNormVec (fun i => b i - ∑ j : Fin n, A i j * x_hat 0 j) +
+      ∑ k ∈ Finset.range (m + 1),
+        infNorm (matMul n (matPow n (dualIterMatrix n N M_inv) k)
+          (matSub_id n (dualIterMatrix n N M_inv))) *
+        infNormVec (ξ (m - k)) := by
+  let H := dualIterMatrix n N M_inv
+  let C := matSub_id n H
+  let r0 : Fin n → ℝ :=
+    fun i => b i - ∑ j : Fin n, A i j * x_hat 0 j
+  apply infNormVec_le_of_abs_le
+  · intro i
+    have hres := residual_finite_sum n A M N M_inv hS b x hAx x_hat ξ hIter m i
+    have hlead :
+        |matMulVec n (matPow n H (m + 1)) r0 i| ≤
+          infNorm (matPow n H (m + 1)) * infNormVec r0 := by
+      exact (abs_le_infNormVec (matMulVec n (matPow n H (m + 1)) r0) i).trans
+        (infNormVec_matMulVec_le hn (matPow n H (m + 1)) r0)
+    have hsum :
+        |∑ k ∈ Finset.range (m + 1),
+          matMulVec n (matPow n H k) (matMulVec n C (ξ (m - k))) i| ≤
+        ∑ k ∈ Finset.range (m + 1),
+          infNorm (matMul n (matPow n H k) C) * infNormVec (ξ (m - k)) := by
+      calc
+        |∑ k ∈ Finset.range (m + 1),
+          matMulVec n (matPow n H k) (matMulVec n C (ξ (m - k))) i|
+            ≤ ∑ k ∈ Finset.range (m + 1),
+                |matMulVec n (matPow n H k) (matMulVec n C (ξ (m - k))) i| :=
+              Finset.abs_sum_le_sum_abs _ _
+        _ ≤ ∑ k ∈ Finset.range (m + 1),
+              infNorm (matMul n (matPow n H k) C) * infNormVec (ξ (m - k)) := by
+            apply Finset.sum_le_sum
+            intro k _hk
+            calc
+              |matMulVec n (matPow n H k) (matMulVec n C (ξ (m - k))) i|
+                  = |matMulVec n (matMul n (matPow n H k) C)
+                      (ξ (m - k)) i| := by
+                    rw [matMulVec_matMul n (matPow n H k) C (ξ (m - k)) i]
+              _ ≤ infNormVec
+                    (matMulVec n (matMul n (matPow n H k) C) (ξ (m - k))) :=
+                  abs_le_infNormVec _ i
+              _ ≤ infNorm (matMul n (matPow n H k) C) *
+                    infNormVec (ξ (m - k)) :=
+                  infNormVec_matMulVec_le hn _ _
+    calc
+      |b i - ∑ j : Fin n, A i j * x_hat (m + 1) j|
+          = |matMulVec n (matPow n H (m + 1)) r0 i -
+              ∑ k ∈ Finset.range (m + 1),
+                matMulVec n (matPow n H k) (matMulVec n C (ξ (m - k))) i| := by
+              rw [hres]
+      _ ≤ |matMulVec n (matPow n H (m + 1)) r0 i| +
+            |∑ k ∈ Finset.range (m + 1),
+              matMulVec n (matPow n H k) (matMulVec n C (ξ (m - k))) i| :=
+          (abs_add_le _ _).trans (by rw [abs_neg])
+      _ ≤ infNorm (matPow n H (m + 1)) * infNormVec r0 +
+            ∑ k ∈ Finset.range (m + 1),
+              infNorm (matMul n (matPow n H k) C) *
+                infNormVec (ξ (m - k)) :=
+          add_le_add hlead hsum
+  · exact add_nonneg
+      (mul_nonneg (infNorm_nonneg _) (infNormVec_nonneg _))
+      (Finset.sum_nonneg (fun k _hk =>
+        mul_nonneg (infNorm_nonneg _) (infNormVec_nonneg _)))
+
 -- ============================================================
 -- §17.2  Normwise one-step bound and forward bound (eqs 17.5, 17.8)
 -- ============================================================
