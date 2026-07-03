@@ -28,6 +28,7 @@ import LeanFpAnalysis.FP.Algorithms.TriangularSolve
 import LeanFpAnalysis.FP.Algorithms.ForwardSub
 import LeanFpAnalysis.FP.Algorithms.InverseBounds
 import LeanFpAnalysis.FP.Algorithms.RandNLA.LowRankApprox
+import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
 
 namespace LeanFpAnalysis.FP
 
@@ -19568,6 +19569,60 @@ theorem IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
         ext i
         rw [hs]
         rfl)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2):
+    residual-side Wedin bound with perturbed least-squares optimality as the
+    caller-facing hypothesis.
+
+This composes the `IsLeastSquaresMinimizer` normal-equation bridge with the
+current strongest residual-side Wedin wrapper.  The source-strength projector
+estimate `||P_B(I-P_A)|| <= ||Delta A|| ||Aplus||` remains explicit, so the
+full Wedin theorem is still open until the Lemma 20.12 equality/min surface is
+formalized. -/
+theorem IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_projector_bound_geometry
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {delta Aplus_norm DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hPertMin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
+    (hb_norm_pos : 0 < vecNorm2 b)
+    (hA_norm_nonneg : 0 ≤ A_norm)
+    (heps_nonneg : 0 ≤ eps)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget : Deltab_norm ≤ eps * vecNorm2 b)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hPBIPA :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm))
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
+    vecNorm2 (fun i => r i - s i) / vecNorm2 b ≤
+      wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+  have horth_s :
+      ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0 :=
+    IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
+      (B := B) (b := b) (Deltab := Deltab) (s := s) (y := y)
+      hPertMin hs
+  exact
+    wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_projector_bound_geometry_column_orthogonal
+      A B Aplus Bplus DeltaA b Deltab r s x y hb_norm_pos hA_norm_nonneg
+      heps_nonneg hkappa hdelta hAplus hDeltaA hDeltab hDeltaA_norm_budget
+      hDeltab_norm_budget hleftA hleftB hSymA hSymB hrangeA_residual
+      hPBIPA hB hr hs horth_s
 
 /-- Perturbed-data expansion of Higham's signed residual:
     `(b + Delta b) - (A + Delta A)y = (b - A y) + Delta b - Delta A y`. -/
