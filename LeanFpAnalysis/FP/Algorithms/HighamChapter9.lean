@@ -24331,6 +24331,87 @@ theorem higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves
       fp n A b c (gamma fp n) (gamma_nonneg fp hn)
       hn hU_diag hU_budget_le hL_budget_le le_rfl hAbsLU_le
 
+/-- **Theorem 9.14**, executable rectangular rounded loop source `f(u)` bound
+with optimal growth `|Lhat||Uhat| <= |A|`. -/
+theorem higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hU_diag : ∀ k : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n,
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k| *
+            |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j| ≤
+        |A i j|) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+      fp n A b 1 u hu hn hU_diag hU_budget_le hL_budget_le hγ_le_u
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, executable rectangular rounded loop source `f(γ_n)`
+bound with optimal growth `|Lhat||Uhat| <= |A|`. -/
+theorem higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hU_diag : ∀ k : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n,
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k| *
+            |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j| ≤
+        |A i j|) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma
+      fp n A b 1 hn hU_diag hU_budget_le hL_budget_le
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
 /-- **Theorem 9.14**, executable rectangular rounded loop source `h(u)` bound
 with the exact-growth comparison `|Lhat||Uhat| <= |A|`. -/
 theorem higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
@@ -24426,6 +24507,85 @@ theorem higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves
     higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
       fp n A b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
       hn hU_diag hU_budget_le hL_budget_le le_rfl hAbsLU_le
+
+/-- **Theorem 9.14**, executable rectangular rounded loop source `h(u)` bound
+with optimal growth `|Lhat||Uhat| <= |A|`. -/
+theorem higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hU_diag : ∀ k : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n,
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k| *
+            |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j| ≤
+        |A i j|) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+    fp n A b u hu hu_lt_one hn hU_diag hU_budget_le hL_budget_le
+    hγ_le_u hAbsLU_le
+
+/-- **Theorem 9.14**, executable rectangular rounded loop source `h(γ_n)`
+bound with optimal growth `|Lhat||Uhat| <= |A|`. -/
+theorem higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hU_diag : ∀ k : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n,
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k| *
+            |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j| ≤
+        |A i j|) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma
+    fp n A b hn hγ_lt_one hU_diag hU_budget_le hL_budget_le hAbsLU_le
 
 /-- **Theorem 9.14**, executable rectangular rounded loop source `h(u)` bound
 with a supplied constant-growth comparison. -/
