@@ -1408,6 +1408,155 @@ theorem finite_norm_form_jacobi_forward_bound (n : ℕ)
   have hvec := mainForwardBoundVector_eq_jacobiForwardBoundVector n A_inv A M N x hM hN
   simpa [hvec] using hmain
 
+/-- Higham, 2nd ed., Chapter 17, equation (17.17):
+    SOR multiplier `f(omega) = (1 + |1 - omega|) / omega`. -/
+noncomputable def sorForwardFactor (ω : ℝ) : ℝ :=
+  (1 + |1 - ω|) / ω
+
+/-- The SOR forward-error multiplier is nonnegative for positive relaxation
+    parameter. -/
+theorem sorForwardFactor_nonneg (ω : ℝ) (hω_pos : 0 < ω) :
+    0 ≤ sorForwardFactor ω := by
+  unfold sorForwardFactor
+  have hnum : 0 ≤ 1 + |1 - ω| := by
+    linarith [abs_nonneg (1 - ω)]
+  exact div_nonneg hnum (le_of_lt hω_pos)
+
+/-- The Jacobi right-hand vector `|A^{-1}||A||x|` is componentwise
+    nonnegative. -/
+theorem jacobiForwardBoundVector_nonneg (n : ℕ)
+    (A_inv A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    ∀ i, 0 ≤ jacobiForwardBoundVector n A_inv A x i := by
+  intro i
+  unfold jacobiForwardBoundVector
+  apply Finset.sum_nonneg
+  intro j _
+  apply mul_nonneg (abs_nonneg _)
+  apply Finset.sum_nonneg
+  intro p _
+  exact mul_nonneg (abs_nonneg _) (abs_nonneg _)
+
+/-- Higham, 2nd ed., Chapter 17, equation (17.17), lifted to the
+    source-vector level: the general vector `|A^{-1}|(|M|+|N|)|x|` is bounded by
+    `f(omega)|A^{-1}||A||x|` for the SOR splitting. -/
+theorem mainForwardBoundVector_le_sorForwardBoundVector (n : ℕ)
+    (A_inv A D L U M_sor N_sor : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (ω : ℝ) (hω_pos : 0 < ω)
+    (hDecomp : ∀ i j, A i j = D i j + L i j + U i j)
+    (hD : ∀ i j, i ≠ j → D i j = 0)
+    (hL : ∀ i j, j.val ≥ i.val → L i j = 0)
+    (hU : ∀ i j, j.val ≤ i.val → U i j = 0)
+    (hM : ∀ i j, M_sor i j = (1 / ω) * (D i j + ω * L i j))
+    (hN : ∀ i j, N_sor i j = (1 / ω) * ((1 - ω) * D i j - ω * U i j)) :
+    ∀ i, mainForwardBoundVector n A_inv M_sor N_sor x i ≤
+      sorForwardFactor ω * jacobiForwardBoundVector n A_inv A x i := by
+  let f := sorForwardFactor ω
+  have hsor :
+      ∀ i j, |M_sor i j| + |N_sor i j| ≤ f * |A i j| := by
+    intro i j
+    simpa [f, sorForwardFactor] using
+      sor_splitting_bound n A ω hω_pos D L U hDecomp hD hL hU M_sor N_sor hM hN i j
+  intro i
+  unfold mainForwardBoundVector jacobiForwardBoundVector
+  change (∑ j : Fin n, |A_inv i j| *
+      ∑ p : Fin n, (|M_sor j p| + |N_sor j p|) * |x p|) ≤
+    f * (∑ j : Fin n, |A_inv i j| * ∑ p : Fin n, |A j p| * |x p|)
+  calc
+    ∑ j : Fin n, |A_inv i j| *
+        ∑ p : Fin n, (|M_sor j p| + |N_sor j p|) * |x p|
+        ≤ ∑ j : Fin n, |A_inv i j| *
+            ∑ p : Fin n, (f * |A j p|) * |x p| := by
+          apply Finset.sum_le_sum
+          intro j _
+          apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+          apply Finset.sum_le_sum
+          intro p _
+          exact mul_le_mul_of_nonneg_right (hsor j p) (abs_nonneg _)
+    _ = f * (∑ j : Fin n, |A_inv i j| * ∑ p : Fin n, |A j p| * |x p|) := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro j _
+          calc
+            |A_inv i j| * (∑ p : Fin n, (f * |A j p|) * |x p|)
+                = |A_inv i j| * (f * ∑ p : Fin n, |A j p| * |x p|) := by
+                  congr 1
+                  rw [Finset.mul_sum]
+                  apply Finset.sum_congr rfl
+                  intro p _
+                  ring
+            _ = f * (|A_inv i j| * ∑ p : Fin n, |A j p| * |x p|) := by ring
+
+/-- Infinity-norm version of the SOR source-vector comparison from (17.17). -/
+theorem mainForwardBoundVector_norm_le_sorForwardBoundVector (n : ℕ)
+    (A_inv A D L U M_sor N_sor : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (ω : ℝ) (hω_pos : 0 < ω)
+    (hDecomp : ∀ i j, A i j = D i j + L i j + U i j)
+    (hD : ∀ i j, i ≠ j → D i j = 0)
+    (hL : ∀ i j, j.val ≥ i.val → L i j = 0)
+    (hU : ∀ i j, j.val ≤ i.val → U i j = 0)
+    (hM : ∀ i j, M_sor i j = (1 / ω) * (D i j + ω * L i j))
+    (hN : ∀ i j, N_sor i j = (1 / ω) * ((1 - ω) * D i j - ω * U i j)) :
+    infNormVec (mainForwardBoundVector n A_inv M_sor N_sor x) ≤
+      sorForwardFactor ω * infNormVec (jacobiForwardBoundVector n A_inv A x) := by
+  have hf : 0 ≤ sorForwardFactor ω := sorForwardFactor_nonneg ω hω_pos
+  have hmain_nonneg := mainForwardBoundVector_nonneg n A_inv M_sor N_sor x
+  have hjac_nonneg := jacobiForwardBoundVector_nonneg n A_inv A x
+  have hcomp :=
+    mainForwardBoundVector_le_sorForwardBoundVector n A_inv A D L U M_sor N_sor x
+      ω hω_pos hDecomp hD hL hU hM hN
+  apply infNormVec_le_of_abs_le
+  · intro i
+    have hjac_abs :
+        |jacobiForwardBoundVector n A_inv A x i| =
+          jacobiForwardBoundVector n A_inv A x i :=
+      abs_of_nonneg (hjac_nonneg i)
+    have hjac_le_norm :
+        jacobiForwardBoundVector n A_inv A x i ≤
+          infNormVec (jacobiForwardBoundVector n A_inv A x) := by
+      simpa [hjac_abs] using
+        abs_le_infNormVec (jacobiForwardBoundVector n A_inv A x) i
+    calc
+      |mainForwardBoundVector n A_inv M_sor N_sor x i|
+          = mainForwardBoundVector n A_inv M_sor N_sor x i :=
+            abs_of_nonneg (hmain_nonneg i)
+      _ ≤ sorForwardFactor ω * jacobiForwardBoundVector n A_inv A x i :=
+            hcomp i
+      _ ≤ sorForwardFactor ω * infNormVec (jacobiForwardBoundVector n A_inv A x) :=
+            mul_le_mul_of_nonneg_left hjac_le_norm hf
+  · exact mul_nonneg hf (infNormVec_nonneg _)
+
+/-- Finite/certificate SOR specialization of Higham, 2nd ed., Chapter 17,
+    equations (17.15)-(17.17): the finite norm-form forward bound with the
+    SOR multiplier `f(omega)` and right-hand vector `|A^{-1}||A||x|`. -/
+theorem finite_norm_form_sor_forward_bound (n : ℕ)
+    (A G M_inv A_inv D L U M_sor N_sor : Fin n → Fin n → ℝ) (e₀ x : Fin n → ℝ)
+    (ω cn_u θ_x cA : ℝ) (hω_pos : 0 < ω)
+    (hcn : 0 ≤ cn_u) (hcA : 0 ≤ cA) (hθ : 0 ≤ θ_x)
+    (hDecomp : ∀ i j, A i j = D i j + L i j + U i j)
+    (hD : ∀ i j, i ≠ j → D i j = 0)
+    (hL : ∀ i j, j.val ≥ i.val → L i j = 0)
+    (hU : ∀ i j, j.val ≤ i.val → U i j = 0)
+    (hM : ∀ i j, M_sor i j = (1 / ω) * (D i j + ω * L i j))
+    (hN : ∀ i j, N_sor i j = (1 / ω) * ((1 - ω) * D i j - ω * U i j))
+    (m : ℕ) (hPartial : PartialSumBound n G M_inv A_inv cA m) :
+    infNormVec (fun i =>
+      matMulVec n (matPow n G (m + 1)) e₀ i +
+        finiteForwardCorrection n G M_inv M_sor N_sor x cn_u θ_x m i) ≤
+      infNormVec (matMulVec n (matPow n G (m + 1)) e₀) +
+        cn_u * (1 + θ_x) * cA *
+          (sorForwardFactor ω * infNormVec (jacobiForwardBoundVector n A_inv A x)) := by
+  have hmain :=
+    finite_norm_form_forward_bound n G M_inv A_inv M_sor N_sor e₀ x cn_u θ_x cA
+      hcn hcA hθ m hPartial
+  have hvec :=
+    mainForwardBoundVector_norm_le_sorForwardBoundVector n A_inv A D L U M_sor N_sor x
+      ω hω_pos hDecomp hD hL hU hM hN
+  have hcoeff : 0 ≤ cn_u * (1 + θ_x) * cA := by
+    exact mul_nonneg (mul_nonneg hcn (by linarith)) hcA
+  exact hmain.trans
+    (add_le_add_right (mul_le_mul_of_nonneg_left hvec hcoeff)
+      (infNormVec (matMulVec n (matPow n G (m + 1)) e₀)))
+
 -- ============================================================
 -- §17.3  Normwise residual bound (eq 17.19)
 -- ============================================================
