@@ -40876,6 +40876,50 @@ theorem higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_exac
     (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
     heta
 
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the lower-zero
+factorization endpoint with source-oriented product smallness. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_left_zero_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the lower-zero
+factorization endpoint with exact operator norms. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_left_zero_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the upper-zero
+factorization endpoint with source-oriented product smallness. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_right_zero_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the upper-zero
+factorization endpoint with exact operator norms. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_right_zero_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the lower-zero
+factorization endpoint with ordinary factor-triangularity hypotheses and
+source-oriented product smallness. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_left_zero_opNorm_product_lt_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_product_lt_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the lower-zero
+factorization endpoint with ordinary factor-triangularity hypotheses and exact
+operator norms. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_left_zero_opNorm_exact_opNorm2_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_exact_opNorm2_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the upper-zero
+factorization endpoint with ordinary factor-triangularity hypotheses and
+source-oriented product smallness. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_right_zero_opNorm_product_lt_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_product_lt_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the upper-zero
+factorization endpoint with ordinary factor-triangularity hypotheses and exact
+operator norms. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_right_zero_opNorm_exact_opNorm2_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_exact_opNorm2_of_factor_triangularity
+
 /-- **Theorem 9.15**, printed-denominator normwise source bound from a
 componentwise `Gtilde` normalized linearized Barrlund--Sun step.
 
