@@ -586,6 +586,105 @@ theorem componentwise_forward_bound (n : ℕ)
         exact mul_le_mul_of_nonneg_left (hw _ _) (abs_nonneg _)
 
 -- ============================================================
+-- §17.2  Iterate-growth constants (eqs 17.7, 17.9)
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 17, equation (17.7):
+    candidate values for the normwise iterate-growth constant
+    `gamma_x = sup_k ||xhat_k||_inf / ||x||_inf`. -/
+def NormwiseIterateGrowthValues (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ) : Set ℝ :=
+  {rho | ∃ k : ℕ, rho = infNormVec (x_hat k) / infNormVec x}
+
+/-- Higham, 2nd ed., Chapter 17, equation (17.7):
+    normwise iterate-growth constant as the supremum of the source ratios. -/
+noncomputable def normwiseIterateGrowth (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ) : ℝ :=
+  sSup (NormwiseIterateGrowthValues n x x_hat)
+
+/-- Predicate form of the bound supplied by the source `gamma_x` definition. -/
+def NormwiseIterateGrowthBound (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ) (gamma_x : ℝ) : Prop :=
+  ∀ k : ℕ, infNormVec (x_hat k) ≤ gamma_x * infNormVec x
+
+/-- Each displayed ratio is bounded by the supremum model of `gamma_x`, provided
+    the ratio set is bounded above. -/
+theorem normwiseIterateGrowth_ratio_le (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ)
+    (hBdd : BddAbove (NormwiseIterateGrowthValues n x x_hat)) (k : ℕ) :
+    infNormVec (x_hat k) / infNormVec x ≤
+      normwiseIterateGrowth n x x_hat := by
+  unfold normwiseIterateGrowth
+  exact le_csSup hBdd ⟨k, rfl⟩
+
+/-- The supremum model of `gamma_x` supplies the normwise iterate-growth bound
+    used in the finite and q-bound forward-error wrappers when `x` is nonzero in
+    infinity norm. -/
+theorem normwiseIterateGrowthBound_of_sSup (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ)
+    (hx : 0 < infNormVec x)
+    (hBdd : BddAbove (NormwiseIterateGrowthValues n x x_hat)) :
+    NormwiseIterateGrowthBound n x x_hat
+      (normwiseIterateGrowth n x x_hat) := by
+  intro k
+  have hratio :=
+    normwiseIterateGrowth_ratio_le n x x_hat hBdd k
+  have hmul := mul_le_mul_of_nonneg_right hratio (le_of_lt hx)
+  have hx_ne : infNormVec x ≠ 0 := ne_of_gt hx
+  simpa [NormwiseIterateGrowthBound, div_mul_cancel₀, hx_ne] using hmul
+
+/-- Higham, 2nd ed., Chapter 17, equation (17.9):
+    candidate values for the componentwise iterate-growth constant
+    `theta_x = sup_k max_i |xhat_k i| / |x i|`, restricted to nonzero
+    components of `x`.  The source notes that zero components require a separate
+    compatibility condition. -/
+def ComponentwiseIterateGrowthValues (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ) : Set ℝ :=
+  {rho | ∃ (k : ℕ) (i : Fin n), x i ≠ 0 ∧ rho = |x_hat k i| / |x i|}
+
+/-- Higham, 2nd ed., Chapter 17, equation (17.9):
+    componentwise iterate-growth constant as the supremum of the nonzero-entry
+    source ratios. -/
+noncomputable def componentwiseIterateGrowth (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ) : ℝ :=
+  sSup (ComponentwiseIterateGrowthValues n x x_hat)
+
+/-- Predicate form of the componentwise bound supplied by the source
+    `theta_x` definition. -/
+def ComponentwiseIterateGrowthBound (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ) (theta_x : ℝ) : Prop :=
+  ∀ (k : ℕ) (i : Fin n), |x_hat k i| ≤ theta_x * |x i|
+
+/-- Each nonzero-entry displayed ratio is bounded by the supremum model of
+    `theta_x`, provided the ratio set is bounded above. -/
+theorem componentwiseIterateGrowth_ratio_le (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ)
+    (hBdd : BddAbove (ComponentwiseIterateGrowthValues n x x_hat))
+    (k : ℕ) (i : Fin n) (hx : x i ≠ 0) :
+    |x_hat k i| / |x i| ≤ componentwiseIterateGrowth n x x_hat := by
+  unfold componentwiseIterateGrowth
+  exact le_csSup hBdd ⟨k, i, hx, rfl⟩
+
+/-- The supremum model of `theta_x` supplies the componentwise iterate-growth
+    bound used by the local-error simplification, assuming computed iterates are
+    also zero wherever the exact solution has a zero component. -/
+theorem componentwiseIterateGrowthBound_of_sSup (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ)
+    (hzero : ∀ (k : ℕ) (i : Fin n), x i = 0 → x_hat k i = 0)
+    (hBdd : BddAbove (ComponentwiseIterateGrowthValues n x x_hat)) :
+    ComponentwiseIterateGrowthBound n x x_hat
+      (componentwiseIterateGrowth n x x_hat) := by
+  intro k i
+  by_cases hx : x i = 0
+  · simp [hx, hzero k i hx]
+  · have hratio :=
+      componentwiseIterateGrowth_ratio_le n x x_hat hBdd k i hx
+    have hden_pos : 0 < |x i| := abs_pos.mpr hx
+    have hmul := mul_le_mul_of_nonneg_right hratio (le_of_lt hden_pos)
+    have hden_ne : |x i| ≠ 0 := ne_of_gt hden_pos
+    simpa [ComponentwiseIterateGrowthBound, div_mul_cancel₀, hden_ne] using hmul
+
+-- ============================================================
 -- §17.2  Local error bound and simplification (eqs 17.2, 17.10)
 -- ============================================================
 
