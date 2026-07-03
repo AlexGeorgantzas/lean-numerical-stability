@@ -92,6 +92,53 @@ theorem A_matPow_G_eq_matPow_H_A (n : ℕ) (A M N M_inv : Fin n → Fin n → �
     rw [← matMul_assoc n A, AG_eq_HA n A M N M_inv hS,
         matMul_assoc n _ A, ih, ← matMul_assoc]
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, equation (17.4):
+    an exact solution of `Ax = b` is a fixed point of the stationary
+    affine map `x ↦ Gx + M⁻¹b`, where `G = M⁻¹N`. -/
+theorem stationary_solution_fixed_point (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i) :
+    ∀ i, x i =
+      matMulVec n (iterMatrix n M_inv N) x i + matMulVec n M_inv b i := by
+  have hMx : ∀ l, matMulVec n M x l = matMulVec n N x l + b l := by
+    intro l
+    unfold matMulVec
+    have : ∑ j : Fin n, M l j * x j - ∑ j : Fin n, N l j * x j = b l := by
+      rw [← Finset.sum_sub_distrib]
+      convert hAx l using 1
+      congr 1
+      ext j
+      rw [hS.splitting l j]
+      ring
+    linarith
+  have hApplyLeft : matMulVec n M_inv (matMulVec n M x) = x := by
+    ext i
+    calc
+      matMulVec n M_inv (matMulVec n M x) i
+          = matMulVec n (matMul n M_inv M) x i := by
+              rw [matMulVec_matMul]
+      _ = matMulVec n (idMatrix n) x i := by
+          unfold matMulVec matMul idMatrix
+          apply Finset.sum_congr rfl
+          intro j _hj
+          exact congrArg (fun t : ℝ => t * x j) (hS.inv_left i j)
+      _ = x i := by
+          simp [matMulVec, idMatrix]
+  intro i
+  calc
+    x i = matMulVec n M_inv (matMulVec n M x) i := by
+      exact (congrFun hApplyLeft i).symm
+    _ = matMulVec n M_inv (fun l => matMulVec n N x l + b l) i := by
+      congr 1
+      ext l
+      exact hMx l
+    _ = matMulVec n M_inv (matMulVec n N x) i +
+        matMulVec n M_inv b i := by
+      simpa using congrFun (matMulVec_add_right n M_inv (matMulVec n N x) b) i
+    _ = matMulVec n (iterMatrix n M_inv N) x i + matMulVec n M_inv b i := by
+      simp [iterMatrix, matMulVec_matMul]
+
 -- ============================================================
 -- §17.2  Computed iteration and one-step error
 -- ============================================================
