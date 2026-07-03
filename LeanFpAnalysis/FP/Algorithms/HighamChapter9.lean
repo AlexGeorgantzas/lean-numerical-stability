@@ -19907,6 +19907,49 @@ def higham9_21_tridiag_solve_perturbation_model (n : ℕ)
     ∑ j : Fin n, (U_hat i j + DeltaU i j) * x_hat j = y_hat i) ∧
   ∀ i j : Fin n, |DeltaU i j| ≤ (2 * u + u ^ 2) * |U_hat i j|
 
+/-- **Equation (9.20)**, coefficient monotonicity for supplied LU
+perturbation models. -/
+theorem higham9_20_tridiag_lu_perturbation_model_mono
+    (n : ℕ) (A L_hat U_hat DeltaA_LU : Fin n → Fin n → ℝ)
+    {u v : ℝ} (huv : u ≤ v)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u) :
+    higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU v := by
+  refine ⟨h20.1, ?_⟩
+  intro i j
+  have hsum_nonneg :
+      0 ≤ ∑ k : Fin n, |L_hat i k| * |U_hat k j| :=
+    Finset.sum_nonneg fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  exact le_trans (h20.2 i j)
+    (mul_le_mul_of_nonneg_right huv hsum_nonneg)
+
+/-- **Equation (9.21)**, coefficient monotonicity for supplied triangular-solve
+perturbation models. -/
+theorem higham9_21_tridiag_solve_perturbation_model_mono
+    (n : ℕ) (L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    {u v : ℝ} (hu : 0 ≤ u) (huv : u ≤ v)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u) :
+    higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU v := by
+  rcases h21 with ⟨hforward, hDeltaL, hback, hDeltaU⟩
+  have hsq : u ^ 2 ≤ v ^ 2 := by
+    have hprod : 0 ≤ (v - u) * (v + u) :=
+      mul_nonneg (sub_nonneg.mpr huv) (by linarith)
+    nlinarith
+  have hcoeff : 2 * u + u ^ 2 ≤ 2 * v + v ^ 2 := by
+    nlinarith
+  refine ⟨hforward, ?_, hback, ?_⟩
+  · intro i j
+    exact le_trans (hDeltaL i j)
+      (mul_le_mul_of_nonneg_right huv (abs_nonneg _))
+  · intro i j
+    exact le_trans (hDeltaU i j)
+      (mul_le_mul_of_nonneg_right hcoeff (abs_nonneg _))
+
 /-- **Equation (9.20)** from an existing LU backward-error certificate.
 
 Any componentwise `LUBackwardError` certificate whose coefficient is bounded by
