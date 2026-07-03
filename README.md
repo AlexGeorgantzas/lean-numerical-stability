@@ -96,7 +96,12 @@ wrapper `residualSigmaSup_le_diagonalizable_max_bound`, for the (17.20) bound,
 and the subordinate-norm stopping-test wrappers
 `stopping_test_rhs_backward_subordinate`,
 `stopping_test_matrix_backward_subordinate`, and
-`stopping_test_mixed_backward_subordinate` for (17.33a)-(17.33c).  It also
+`stopping_test_mixed_backward_subordinate` for (17.33a)-(17.33c), plus the
+componentwise absolute-value stopping-test wrappers
+`stopping_test_rhs_backward_componentwise`,
+`stopping_test_matrix_backward_componentwise`, and
+`stopping_test_mixed_backward_componentwise` from the Theorem 7.3/Oettli-Prager
+route described after (17.33).  It also
 models the iterate-growth constants from (17.7) and (17.9)
 with `normwiseIterateGrowth`, `componentwiseIterateGrowth`, and their bound
 wrappers, and adds the finite/certificate correction and infinity-norm bridge
@@ -111,8 +116,7 @@ finite norm-form surface `jacobiForwardBoundVector`,
 corollary `sorForwardFactor_one` and
 `finite_norm_form_gaussSeidel_forward_bound`.  The exact infinite-sum,
 literal infinite-sigma, and singular-system rows remain open in the Chapter 17
-ledger; the Section 17.5 componentwise absolute-value variants are not claimed
-by the new normwise stopping-test wrappers.
+ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
