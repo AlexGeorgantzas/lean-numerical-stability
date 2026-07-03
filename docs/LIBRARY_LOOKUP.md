@@ -1960,6 +1960,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_pow_two_le_completePivotWilkinsonBound_of_eq_one`
 - `higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two`
 - `higham9_14_completePivotWilkinsonBound_le_of_le`
+- `higham9_14_completePivotWilkinsonBound_ge_two_of_ge_two`
 - `higham9_14_completePivotWilkinsonBound_monotone`
 - `higham9_completePivotGrowthSet`
 - `higham9_completePivotGrowthSup`

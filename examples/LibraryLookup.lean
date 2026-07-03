@@ -13144,6 +13144,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_14_pow_two_le_completePivotWilkinsonBound_of_eq_one
 #check higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two
 #check higham9_14_completePivotWilkinsonBound_le_of_le
+#check higham9_14_completePivotWilkinsonBound_ge_two_of_ge_two
 #check higham9_14_completePivotWilkinsonBound_monotone
 #check higham9_16_rookPivotingUTraceGrowthValues
 #check higham9_16_rookPivotingUTraceGrowthSup
