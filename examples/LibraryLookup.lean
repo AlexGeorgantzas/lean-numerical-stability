@@ -13090,8 +13090,13 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_nonsingInv
 #check higham9_8_exists_CompletePivotGECPUTrace_growth_factor_ge_theta_nonsingInv
 #check higham9_5_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_det_ne_zero
+#check higham9_11_bohteBound
+#check higham9_11_bohteBound_tridiagonal
+#check higham9_11_bohteBound_pentadiagonal_formula
 #check higham9_11_bohteBound_bandwidth_three_formula
+#check higham9_11_bohteBound_bandwidth_four_formula
 #check higham9_11_bohteBound_zero
+#check higham9_11_bohteBound_nonneg
 #check higham9_11_bohteBound_ge_two
 #check higham9_11_bohteBound_pos
 #check higham9_11_bohteBound_ge_one
