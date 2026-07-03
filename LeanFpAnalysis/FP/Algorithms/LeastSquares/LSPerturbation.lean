@@ -1015,6 +1015,129 @@ theorem wedinLemma20_12_rectOpNorm2Le_complement_rangeProjection_mul_rangeProjec
     (wedinLemma20_12_rectOpNorm2Le_sub_rev A B hDelta)
     hAplus
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the complement of a symmetric projection is symmetric. -/
+theorem wedinLemma20_12_projectionComplement_symmetric
+    {m : ℕ} (P : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P) :
+    IsSymmetricFiniteMatrix (fun i j => idMatrix m i j - P i j) := by
+  intro i j
+  by_cases hij : i = j
+  · subst j
+    simp [idMatrix]
+  · have hji : j ≠ i := fun h => hij h.symm
+    simp [idMatrix, hij, hji, hP i j]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    transposing a product of symmetric square matrices reverses the product
+    order. -/
+theorem wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q) :
+    finiteTranspose (rectMatMul P Q) = rectMatMul Q P := by
+  ext i j
+  unfold finiteTranspose rectMatMul
+  apply Finset.sum_congr rfl
+  intro l _
+  rw [hP j l, hQ l i]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
+    source-oriented projection perturbation bound.
+
+    This transposes the swapped one-sided half into the printed orientation
+    `P_A (I - P_B)`, giving
+    `||P_A(I-P_B)||_2 <= ||A-B||_2 ||Aplus||_2` in the repository predicate
+    API.  The equality with the opposite cross-projection norm is still not
+    claimed. -/
+theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {delta Aplus_norm : ℝ}
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus_norm_nonneg : 0 ≤ Aplus_norm)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm) :
+    rectOpNorm2Le
+      (rectMatMul
+        (rectMatMul A Aplus)
+        (fun i j => idMatrix m i j - rectMatMul B Bplus i j))
+      (delta * Aplus_norm) := by
+  let PA : Fin m → Fin m → ℝ := rectMatMul A Aplus
+  let IPB : Fin m → Fin m → ℝ :=
+    fun i j => idMatrix m i j - rectMatMul B Bplus i j
+  have hIPB_sym : IsSymmetricFiniteMatrix IPB :=
+    wedinLemma20_12_projectionComplement_symmetric
+      (rectMatMul B Bplus) hSymB
+  have hhalf :
+      rectOpNorm2Le (rectMatMul IPB PA) (delta * Aplus_norm) := by
+    simpa [PA, IPB] using
+      wedinLemma20_12_rectOpNorm2Le_complement_rangeProjection_mul_rangeProjection_swapped
+        A B Aplus Bplus hleftB hSymB hDelta hAplus
+  have hdelta_nonneg : 0 ≤ delta :=
+    rectOpNorm2Le_radius_nonneg (M := fun i j => B i j - A i j) hDelta
+  have htrans :=
+    rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le
+      (rectMatMul IPB PA)
+      (mul_nonneg hdelta_nonneg hAplus_norm_nonneg)
+      hhalf
+  have htranspose :
+      finiteTranspose (rectMatMul IPB PA) = rectMatMul PA IPB :=
+    wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric
+      IPB PA hIPB_sym (by simpa [PA] using hSymA)
+  rw [htranspose] at htrans
+  simpa [PA, IPB] using htrans
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
+    source-oriented swapped projection perturbation bound.
+
+    This transposes the direct one-sided half into the printed orientation
+    `P_B (I - P_A)`, giving
+    `||P_B(I-P_A)||_2 <= ||A-B||_2 ||Bplus||_2` in the repository predicate
+    API. -/
+theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {delta Bplus_norm : ℝ}
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBplus_norm_nonneg : 0 ≤ Bplus_norm)
+    (hBplus : rectOpNorm2Le Bplus Bplus_norm) :
+    rectOpNorm2Le
+      (rectMatMul
+        (rectMatMul B Bplus)
+        (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+      (delta * Bplus_norm) := by
+  let PB : Fin m → Fin m → ℝ := rectMatMul B Bplus
+  let IPA : Fin m → Fin m → ℝ :=
+    fun i j => idMatrix m i j - rectMatMul A Aplus i j
+  have hIPA_sym : IsSymmetricFiniteMatrix IPA :=
+    wedinLemma20_12_projectionComplement_symmetric
+      (rectMatMul A Aplus) hSymA
+  have hhalf :
+      rectOpNorm2Le (rectMatMul IPA PB) (delta * Bplus_norm) := by
+    simpa [PB, IPA] using
+      wedinLemma20_12_rectOpNorm2Le_complement_rangeProjection_mul_rangeProjection
+        A B Aplus Bplus hleftA hSymA hDelta hBplus
+  have hdelta_nonneg : 0 ≤ delta :=
+    rectOpNorm2Le_radius_nonneg (M := fun i j => B i j - A i j) hDelta
+  have htrans :=
+    rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le
+      (rectMatMul IPA PB)
+      (mul_nonneg hdelta_nonneg hBplus_norm_nonneg)
+      hhalf
+  have htranspose :
+      finiteTranspose (rectMatMul IPA PB) = rectMatMul PB IPA :=
+    wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric
+      IPA PB hIPA_sym (by simpa [PB] using hSymB)
+  rw [htranspose] at htrans
+  simpa [PB, IPA] using htrans
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
