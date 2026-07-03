@@ -2028,6 +2028,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_pow_two_le_rookPivotFosterBound_of_le_two`
 - `higham9_16_rookPivotFosterFactor_le_of_le`
 - `higham9_16_rookPivotFosterBound_le_of_le`
+- `higham9_16_rookPivotFosterBound_ge_two_of_ge_two`
 - `higham9_16_rookPivotFosterBound_monotone`
 - `higham9_12_sineMatrix`
 - `higham9_12_sineMatrix_symm`
