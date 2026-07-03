@@ -90,9 +90,11 @@ finite-sum residual recurrence `residual_finite_sum` for (17.18), and the
 finite sigma-form residual estimate `normwise_residual_sigma_finite_bound` for
 (17.19).  It also models the iterate-growth constants from (17.7) and (17.9)
 with `normwiseIterateGrowth`, `componentwiseIterateGrowth`, and their bound
-wrappers, plus finite/q-bound forward and residual dependencies and Jacobi/SOR
-splitting identities; the exact infinite-sum, singular-system, diagonalizable,
-and stopping-test rows remain open in the Chapter 17 ledger.
+wrappers, and adds the finite/certificate correction and infinity-norm bridge
+for (17.13)-(17.15) through `finiteForwardCorrection`,
+`mainForwardBoundVector`, `finiteForwardCorrection_norm_bound`, and
+`finite_norm_form_forward_bound`.  The exact infinite-sum, singular-system,
+diagonalizable, and stopping-test rows remain open in the Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
