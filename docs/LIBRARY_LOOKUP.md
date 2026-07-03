@@ -2414,6 +2414,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growth_bound_3`
 - `higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growthFactorEntry_le_three`
 - `higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax`
+- `higham9_13_colDiagDom_wilkinson_source_bound_exists`
+- `higham9_13_rowDiagDom_transpose_wilkinson_source_bound_exists`
 - `higham9_13_LUFactSpec_of_transpose_LUFactSpec_nonzero_pivots`
 - `higham9_13_rowDiagDom_exists_LUFactSpec_growth_bound_3`
 - `higham9_13_rowDiagDom_exists_LUFactSpec_growthFactorEntry_le_three`
@@ -2482,8 +2484,18 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUFactSpec_gamma`
 - `higham9_14_tridiag_colDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves`
 - `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves`
+- `higham9_14_tridiag_colDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_colDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_data_colDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves`
 - `higham9_14_tridiag_data_rowDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves`
+- `higham9_14_tridiag_data_colDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_rowDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_colDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_data_rowDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_data_colDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_rowDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_colDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_colDiagDom_exists_LUFactSpec_fu_bound`
@@ -2512,6 +2524,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_source_f_bound`
 - `higham9_14_source_h_bound_of_absLUhat_bound`
 - `higham9_14_source_h_bound_of_absLUhat_mul_one_sub_bound`
+- `higham9_14_source_h_bound_of_9_20_9_21_models_absLUhat_bound`
+- `higham9_14_source_h_bound_of_9_20_9_21_models_absLUhat_mul_one_sub_bound`
 - `higham9_14_totalNonnegative_exists_source_h_bound_of_models`
 - `higham9_14_source_h_bound_of_absLU_le_absA_and_9_20_9_21_models`
 - `higham9_14_source_f_bound_of_absLU_le_absA_and_9_20_9_21_models`
@@ -2531,6 +2545,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_absLU_le_absA_gamma`
 - `higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma_le`
 - `higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma`
 - `higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma`
 - `higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_const_gamma_le`
@@ -2549,6 +2567,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma_le`
 - `higham9_14_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_absLU_le_absA_gamma`
 - `higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma`
 - `higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma`
 - `higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma`
 - `higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_const_gamma`
@@ -2565,6 +2587,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma_le`
 - `higham9_14_source_f_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_absLU_le_absA_gamma`
 - `higham9_14_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma`
 - `higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma`
 - `higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma`
 - `higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_const_gamma`
@@ -2576,6 +2602,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma_le`
 - `higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma`
 - `higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma`
+- `higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma`
 - `higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_const_gamma`
 - `higham9_14_tridiag_colDiagDom_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le`
 - `higham9_14_tridiag_rowDiagDom_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le`
@@ -2596,9 +2624,13 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_source_h_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_gamma`
 - `higham9_14_source_h_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_const_gamma`
 - `higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le`
+- `higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_absLU_le_absA_gamma_le`
 - `higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma`
+- `higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_absLU_le_absA_gamma`
 - `higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le`
+- `higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_absLU_le_absA_gamma_le`
 - `higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma`
+- `higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_absLU_le_absA_gamma`
 - `higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma_le`
 - `higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma`
 - `higham9_14_tridiag_colDiagDom_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le`
@@ -2806,8 +2838,18 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_recurrence_LUFactSpec_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves`
+- `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_data_colDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves`
 - `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves`
+- `higham9_14_tridiag_data_colDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_colDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_data_colDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_24_scaledMatrix`
@@ -2821,6 +2863,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_lu_perturbation_relative_bound`
 - `higham9_15_lu_perturbation_forward_bound`
 - `higham9_15_ratio_le_of_norm_bounds`
+- `higham9_27_GMatrix_frobenius_le`
+- `higham9_27_GMatrix_opNorm2Le`
 - `higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one`
 - `higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound`
 - `higham9_15_GMatrix_nonnegative_resolvent_nonsingInv_of_row_sum_bound`
@@ -3145,6 +3189,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm`
 - `higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm_product_lt`
 - `higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm_exact_opNorm2`
+- `higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_of_matrix_inverse_identities`
+- `higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_of_matrix_inverse_identities_product_lt`
+- `higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2`
+- `higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm`
+- `higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_product_lt`
+- `higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_exact_opNorm2`
 - `higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_inverse_identities`
 - `higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_inverse_identities_product_lt`
 - `higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_of_matrix_inverse_identities`
@@ -4194,6 +4244,20 @@ Source-facing Chapter 10 wrappers:
 - `min_eig_scaled_bordered_floor` (factored per-stage floor derivation: lambda_min(scaled H) -> bordered Rayleigh floor via interlacing + snoc substitution)
 - `higham10_21_fl_cholesky_success` ((10.21) source-facing lambda_min(H_11) form on the leading r-block)
 - `higham10_7_fl_cholesky_success_sharp` (Th10.7 success at the source-shaped n-constant, hypothesis-light: r = n instance)
+- `upHalf` / `upHalf_add_transpose` / `frobNormSq_upHalf_le_half` (Th10.8 route steps 1-2, CholeskyPerturbation.lean: up operator, triangular recovery up(X+X^T)=X, Frobenius halving for symmetric Y)
+- `cholesky_perturbation_gram_identity` (Th10.8 step 3: exact R^T dR + dR^T R + dR^T dR = dA)
+- `cholesky_perturbation_scalar_endgame(_display)` (Th10.8 step 4: quadratic absorption t <= a*delta/(1-a*t) under a*t < 1; printed display form)
+- `frobNormSq_matMul_left_le` / `frobNormSq_matMul_right_le` (Th10.8 step 5: ||MN||_F^2 <= c^2 ||N||_F^2 from opNorm2Le M c, and <= c^2 ||M||_F^2 from opNorm2Le N^T c)
+- `matMul_upper_upper` / `frobNormSq_transpose_mul_self_le` (Th10.8: upper*upper is upper; ||M^T M||_F^2 <= (||M||_F^2)^2)
+- `cholesky_perturbation_symmetrized` (Th10.8 step 6: X + X^T = R^{-T}(dA - dR^T dR)R^{-1} entrywise, X := dR*Rinv)
+- `frobNorm_matMul_left_le` / `frobNorm_matMul_right_le` / `frobNorm_upHalf_le` / `frobNorm_transpose_mul_self_le` / `frobNorm_congr` (unsquared-norm wrappers for the assembly)
+- `upperTriangular_inverse_exists` (Th10.8: two-sided upper-triangular inverse via Mathlib blockTriangular_inv)
+- `cholesky_perturbation_normwise_proved` (Th10.8 SUN NORMWISE BOUND, ASSEMBLED: ||dR||_F <= a||dA||_F/(1 - a||dR||_F), a := cR*cinv^2/sqrt2, from operator certs cR>=||R^T||_2, cinv>=||R^{-T}||_2 and small-root a*||dR||_F < 1; no assumed perturbation bound)
+- `symPart_skew_inverse_identity` ((10.29) core identity: A^T A_S^-1 A = A_S + A_K^T A_S^-1 A_K, abstract Matrix-ring form; foothold for the unpivoted-LU growth bound)
+- `quadForm_bilinear_cauchy_schwarz` ((10.29) per-stage SPD step: (u^T H v)^2 <= (u^T H u)(v^T H v) for symmetric PSD H, via discriminant of the shifted quadratic)
+- `spd_pivot_quadForm_bound` ((10.29) basic SPD lemma: (x_k)^2 <= H_kk (x^T Hinv x) for symmetric H with two-sided symmetric PSD inverse; applied to x=S^T e_i gives s_ik^2/H_kk <= (S Hinv S^T)_ii)
+- `pivot_product_le_sqrt` ((10.29) scalar step: p^2<=h*a, q^2<=h*b, h>0 => |p*q|/h <= sqrt(a*b) - combines row+column pivot bounds into the multiplier-product bound)
+- `diag_le_opNorm2Le` / `sqrt_diag_prod_le_opNorm2Le` ((10.29) opNorm-diag bridge: opNorm2Le Q c => Q_ii <= c and sqrt(Q_ii Q_jj) <= c for PSD-diagonal Q)
 - `kahanR` / `kahan_telescope` / `kahanR_tail_eq` ((10.20): Kahan family satisfies (10.13) with equality on the square part)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
