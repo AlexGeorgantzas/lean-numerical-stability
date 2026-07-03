@@ -181,6 +181,33 @@ noncomputable def generalizedSylvesterAXB_CXD_residual (m n : Nat)
     matMulRect m n n (matMulRect m m n A X) B i j +
       matMulRect m n n (matMulRect m m n C X) D i j - E i j
 
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.30):
+    source equation predicate for `A X B + C X D = E`. -/
+def IsGeneralizedSylvesterAXB_CXD_Solution (m n : Nat)
+    (A C : RMatFn m m) (B D : RMatFn n n) (E X : RMatFn m n) : Prop :=
+  forall i j,
+    matMulRect m n n (matMulRect m m n A X) B i j +
+      matMulRect m n n (matMulRect m m n C X) D i j = E i j
+
+/-- The residual for equation (16.30) is zero exactly when the generalized
+    Sylvester equation holds. -/
+theorem generalizedSylvesterAXB_CXD_residual_zero_iff_solution (m n : Nat)
+    (A C : RMatFn m m) (B D : RMatFn n n) (E X : RMatFn m n) :
+    (forall i j, generalizedSylvesterAXB_CXD_residual m n A C B D E X i j = 0) <->
+      IsGeneralizedSylvesterAXB_CXD_Solution m n A C B D E X := by
+  constructor
+  case mp =>
+    intro h i j
+    have hij := h i j
+    unfold generalizedSylvesterAXB_CXD_residual at hij
+    linarith
+  case mpr =>
+    intro h i j
+    have hij := h i j
+    unfold IsGeneralizedSylvesterAXB_CXD_Solution at h
+    unfold generalizedSylvesterAXB_CXD_residual
+    linarith
+
 /-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
     coupled generalized Sylvester equation predicate
     `AX - YB = C` and `DX - YE = F`. -/
@@ -201,5 +228,31 @@ noncomputable def riccatiResidual (m n : Nat)
       matMulRect m n n X B i j -
       matMulRect m m n (matMulRect m n m X F) X i j +
       G i j
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.32):
+    source equation predicate for `A X + X B - X F X + G = 0`. -/
+def IsRiccatiSolution (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (F : RMatFn n m)
+    (G X : RMatFn m n) : Prop :=
+  forall i j,
+    matMulRect m m n A X i j +
+      matMulRect m n n X B i j -
+      matMulRect m m n (matMulRect m n m X F) X i j +
+      G i j = 0
+
+/-- The residual for equation (16.32) is zero exactly when the Riccati source
+    equation holds. -/
+theorem riccatiResidual_zero_iff_solution (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (F : RMatFn n m)
+    (G X : RMatFn m n) :
+    (forall i j, riccatiResidual m n A B F G X i j = 0) <->
+      IsRiccatiSolution m n A B F G X := by
+  constructor
+  case mp =>
+    intro h i j
+    exact h i j
+  case mpr =>
+    intro h i j
+    exact h i j
 
 end LeanFpAnalysis.FP
