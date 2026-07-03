@@ -13014,6 +13014,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_13_thresholdFactor_pow_le_two_pow_of_one_le
 #check higham9_13_growthFactorEntry_bound_from_column_modifications_two_pow
 #check higham9_13_colDiagDom_wilkinson_source_bound_exists
+#check higham9_13_rowDiagDom_transpose_wilkinson_source_bound_exists
 #check higham9_1_LUFactSpec_one_explicit
 #check higham9_LUBackwardError_mono
 #check higham9_LUFactSpec_to_LUBackwardError_gamma
@@ -13102,6 +13103,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_11_bohteBound
 #check higham9_11_bohteBound_tridiagonal
 #check higham9_11_bohteBound_pentadiagonal_formula
+#check higham9_11_bohteBound_bandwidth_two_formula
 #check higham9_11_bohteBound_bandwidth_three_formula
 #check higham9_11_bohteBound_bandwidth_four_formula
 #check higham9_11_bohteBound_zero
@@ -13124,6 +13126,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal
 #check higham9_11_tridiagonal_bohte_solve_tight
 #check higham9_11_pentadiagonal_bohte_solve_tight
+#check higham9_11_bandwidth_two_bohte_solve_tight
 #check higham9_11_bandwidth_three_bohte_solve_tight
 #check higham9_11_bandwidth_four_bohte_solve_tight
 #check higham9_14_completePivotWilkinsonProduct_ge_one

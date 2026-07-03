@@ -17,6 +17,316 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators
 
 -- ============================================================
+-- §20.8  Weighted least squares row-wise QR support
+-- ============================================================
+
+private theorem theorem20_7_finUniv_nonempty_of_pos {n : ℕ} (hn : 0 < n) :
+    (Finset.univ : Finset (Fin n)).Nonempty :=
+  ⟨⟨0, hn⟩, by simp⟩
+
+private theorem theorem20_7_finProdUniv_nonempty_of_pos {n : ℕ} (hn : 0 < n) :
+    (Finset.univ : Finset (Fin n × Fin n)).Nonempty :=
+  ⟨(⟨0, hn⟩, ⟨0, hn⟩), by simp⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    source row scale `max_j |a_ij|` for a nonempty row. -/
+noncomputable def theorem20_7_initialRowMax {m n : ℕ} (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (i : Fin m) : ℝ :=
+  Finset.sup' (Finset.univ : Finset (Fin n))
+    (theorem20_7_finUniv_nonempty_of_pos hn) (fun j => |A i j|)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    finite source maximum `max_{j,k} |a_ij^(k)|` over the modeled QR stages. -/
+noncomputable def theorem20_7_stageRowMax {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (i : Fin m) : ℝ :=
+  Finset.sup' (Finset.univ : Finset (Fin n × Fin n))
+    (theorem20_7_finProdUniv_nonempty_of_pos hn)
+    (fun p => |Astage p.1.val i p.2|)
+
+/-- Each initial row entry is bounded by the source row maximum used in
+    Theorem 20.7. -/
+theorem theorem20_7_initialRowMax_entry_le {m n : ℕ} (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (i : Fin m) (j : Fin n) :
+    |A i j| ≤ theorem20_7_initialRowMax hn A i := by
+  unfold theorem20_7_initialRowMax
+  exact
+    Finset.le_sup' (s := (Finset.univ : Finset (Fin n)))
+      (f := fun j => |A i j|) (Finset.mem_univ j)
+
+/-- The initial row maximum in Theorem 20.7 is nonnegative. -/
+theorem theorem20_7_initialRowMax_nonneg {m n : ℕ} (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (i : Fin m) :
+    0 ≤ theorem20_7_initialRowMax hn A i := by
+  let j : Fin n := ⟨0, hn⟩
+  exact
+    (abs_nonneg (A i j)).trans
+      (theorem20_7_initialRowMax_entry_le hn A i j)
+
+/-- Each staged row entry is bounded by the staged row maximum used in
+    Theorem 20.7. -/
+theorem theorem20_7_stageRowMax_entry_le {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (i : Fin m)
+    (k j : Fin n) :
+    |Astage k.val i j| ≤ theorem20_7_stageRowMax hn Astage i := by
+  unfold theorem20_7_stageRowMax
+  exact
+    Finset.le_sup' (s := (Finset.univ : Finset (Fin n × Fin n)))
+      (f := fun p => |Astage p.1.val i p.2|)
+      (Finset.mem_univ (k, j))
+
+/-- The staged row maximum in Theorem 20.7 is nonnegative. -/
+theorem theorem20_7_stageRowMax_nonneg {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (i : Fin m) :
+    0 ≤ theorem20_7_stageRowMax hn Astage i := by
+  let k : Fin n := ⟨0, hn⟩
+  let j : Fin n := ⟨0, hn⟩
+  exact
+    (abs_nonneg (Astage k.val i j)).trans
+      (theorem20_7_stageRowMax_entry_le hn Astage i k j)
+
+/-- Pointwise staged entry bounds imply the finite staged-row maximum bound
+    needed for the `α_i` ratio in Theorem 20.7. -/
+theorem theorem20_7_stageRowMax_le_of_entry_le {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (i : Fin m) {C : ℝ}
+    (hbound : ∀ k j : Fin n, |Astage k.val i j| ≤ C) :
+    theorem20_7_stageRowMax hn Astage i ≤ C := by
+  unfold theorem20_7_stageRowMax
+  apply Finset.sup'_le
+  intro p _hp
+  exact hbound p.1 p.2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    the source ratio `α_i = max_{j,k}|a_ij^(k)| / max_j |a_ij|`. -/
+noncomputable def theorem20_7_alpha {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (i : Fin m) : ℝ :=
+  theorem20_7_stageRowMax hn Astage i / theorem20_7_initialRowMax hn A i
+
+/-- If the staged row maximum is at most `C` times the initial row maximum,
+    then the Theorem 20.7 source ratio `α_i` is at most `C`. -/
+theorem theorem20_7_alpha_le_of_stageRowMax_le_mul_initial {m n : ℕ}
+    (hn : 0 < n) (Astage : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (i : Fin m) {C : ℝ}
+    (hden : 0 < theorem20_7_initialRowMax hn A i)
+    (hstage :
+      theorem20_7_stageRowMax hn Astage i ≤
+        C * theorem20_7_initialRowMax hn A i) :
+    theorem20_7_alpha hn Astage A i ≤ C := by
+  dsimp [theorem20_7_alpha]
+  exact (div_le_iff₀ hden).mpr hstage
+
+/-- Pointwise row-growth bounds imply the Theorem 20.7 source ratio bound
+    for `α_i`. -/
+theorem theorem20_7_alpha_le_of_entry_growth {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (i : Fin m) {C : ℝ}
+    (hden : 0 < theorem20_7_initialRowMax hn A i)
+    (hgrowth : ∀ k j : Fin n,
+      |Astage k.val i j| ≤ C * theorem20_7_initialRowMax hn A i) :
+    theorem20_7_alpha hn Astage A i ≤ C := by
+  exact
+    theorem20_7_alpha_le_of_stageRowMax_le_mul_initial hn Astage A i hden
+      (theorem20_7_stageRowMax_le_of_entry_le hn Astage i hgrowth)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    initial weighted row scale `max(φ max_j |a_ij|, |b_i|)`. -/
+noncomputable def theorem20_7_initialWeightedRowMax {m n : ℕ} (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m) : ℝ :=
+  max (phi * theorem20_7_initialRowMax hn A i) |b i|
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    finite maximum over staged right-hand-side entries. -/
+noncomputable def theorem20_7_stageBMax {m n : ℕ} (hn : 0 < n)
+    (bstage : ℕ → Fin m → ℝ) (i : Fin m) : ℝ :=
+  Finset.sup' (Finset.univ : Finset (Fin n))
+    (theorem20_7_finUniv_nonempty_of_pos hn) (fun k => |bstage k.val i|)
+
+/-- Each staged right-hand-side entry is bounded by the finite staged `b`
+    maximum used in the Theorem 20.7 `β_i` denominator bridge. -/
+theorem theorem20_7_stageBMax_entry_le {m n : ℕ} (hn : 0 < n)
+    (bstage : ℕ → Fin m → ℝ) (i : Fin m) (k : Fin n) :
+    |bstage k.val i| ≤ theorem20_7_stageBMax hn bstage i := by
+  unfold theorem20_7_stageBMax
+  exact
+    Finset.le_sup' (s := (Finset.univ : Finset (Fin n)))
+      (f := fun k => |bstage k.val i|) (Finset.mem_univ k)
+
+/-- Pointwise staged right-hand-side bounds imply the finite staged `b`
+    maximum bound used in Theorem 20.7. -/
+theorem theorem20_7_stageBMax_le_of_entry_le {m n : ℕ} (hn : 0 < n)
+    (bstage : ℕ → Fin m → ℝ) (i : Fin m) {C : ℝ}
+    (hbound : ∀ k : Fin n, |bstage k.val i| ≤ C) :
+    theorem20_7_stageBMax hn bstage i ≤ C := by
+  unfold theorem20_7_stageBMax
+  apply Finset.sup'_le
+  intro k _hk
+  exact hbound k
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    numerator scale for the source `β_i` ratio. -/
+noncomputable def theorem20_7_stageWeightedRowMax {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (phi : ℝ) (i : Fin m) : ℝ :=
+  max (phi * theorem20_7_stageRowMax hn Astage i)
+    (theorem20_7_stageBMax hn bstage i)
+
+/-- Component bounds imply the staged weighted-row bound used for `β_i` in
+    Theorem 20.7. -/
+theorem theorem20_7_stageWeightedRowMax_le_of_bounds {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (phi : ℝ) (i : Fin m) {C : ℝ}
+    (hA : phi * theorem20_7_stageRowMax hn Astage i ≤ C)
+    (hb : theorem20_7_stageBMax hn bstage i ≤ C) :
+    theorem20_7_stageWeightedRowMax hn Astage bstage phi i ≤ C := by
+  dsimp [theorem20_7_stageWeightedRowMax]
+  exact max_le hA hb
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    source-style ratio `β_i`, written with the finite staged maxima exposed
+    above. -/
+noncomputable def theorem20_7_beta {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ)
+    (i : Fin m) : ℝ :=
+  theorem20_7_stageWeightedRowMax hn Astage bstage phi i /
+    theorem20_7_initialWeightedRowMax hn A b phi i
+
+/-- If the staged weighted-row maximum is at most `C` times the initial
+    weighted row maximum, then the Theorem 20.7 source ratio `β_i` is at most
+    `C`. -/
+theorem theorem20_7_beta_le_of_stageWeighted_le_mul_initial {m n : ℕ}
+    (hn : 0 < n) (Astage : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (b : Fin m → ℝ) (phi : ℝ) (i : Fin m) {C : ℝ}
+    (hden : 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hstage :
+      theorem20_7_stageWeightedRowMax hn Astage bstage phi i ≤
+        C * theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_beta hn Astage A bstage b phi i ≤ C := by
+  dsimp [theorem20_7_beta]
+  exact (div_le_iff₀ hden).mpr hstage
+
+/-- Component weighted bounds imply the Theorem 20.7 source ratio bound for
+    `β_i`. -/
+theorem theorem20_7_beta_le_of_component_bounds {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ)
+    (i : Fin m) {C : ℝ}
+    (hden : 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA :
+      phi * theorem20_7_stageRowMax hn Astage i ≤
+        C * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hb :
+      theorem20_7_stageBMax hn bstage i ≤
+        C * theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_beta hn Astage A bstage b phi i ≤ C := by
+  exact
+    theorem20_7_beta_le_of_stageWeighted_le_mul_initial
+      hn Astage A bstage b phi i hden
+      (theorem20_7_stageWeightedRowMax_le_of_bounds hn Astage bstage phi i
+        hA hb)
+
+/-- Finite row maximum for row-indexed Theorem 20.7 ratios. -/
+noncomputable def theorem20_7_rowRatioMax {m : ℕ} (hm : 0 < m)
+    (rho : Fin m → ℝ) : ℝ :=
+  Finset.sup' (Finset.univ : Finset (Fin m))
+    (theorem20_7_finUniv_nonempty_of_pos hm) rho
+
+/-- Each row ratio is bounded by the finite row maximum. -/
+theorem theorem20_7_rowRatioMax_entry_le {m : ℕ} (hm : 0 < m)
+    (rho : Fin m → ℝ) (i : Fin m) :
+    rho i ≤ theorem20_7_rowRatioMax hm rho := by
+  unfold theorem20_7_rowRatioMax
+  exact
+    Finset.le_sup' (s := (Finset.univ : Finset (Fin m)))
+      (f := rho) (Finset.mem_univ i)
+
+/-- Uniform row-ratio bounds imply the finite row maximum bound. -/
+theorem theorem20_7_rowRatioMax_le_of_forall {m : ℕ} (hm : 0 < m)
+    (rho : Fin m → ℝ) {C : ℝ} (h : ∀ i : Fin m, rho i ≤ C) :
+    theorem20_7_rowRatioMax hm rho ≤ C := by
+  unfold theorem20_7_rowRatioMax
+  apply Finset.sup'_le
+  intro i _hi
+  exact h i
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    finite version of `max_i {α_i, β_i}`. -/
+noncomputable def theorem20_7_alphaBetaMax {m n : ℕ} (hm : 0 < m)
+    (hn : 0 < n) (Astage : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (b : Fin m → ℝ) (phi : ℝ) : ℝ :=
+  theorem20_7_rowRatioMax hm (fun i =>
+    max (theorem20_7_alpha hn Astage A i)
+      (theorem20_7_beta hn Astage A bstage b phi i))
+
+/-- Uniform bounds for `α_i` and `β_i` imply the finite
+    `max_i {α_i, β_i}` bound from Theorem 20.7. -/
+theorem theorem20_7_alphaBetaMax_le_of_alpha_beta_le {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) {C : ℝ}
+    (halpha : ∀ i : Fin m, theorem20_7_alpha hn Astage A i ≤ C)
+    (hbeta : ∀ i : Fin m, theorem20_7_beta hn Astage A bstage b phi i ≤ C) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C := by
+  dsimp [theorem20_7_alphaBetaMax]
+  apply theorem20_7_rowRatioMax_le_of_forall
+  intro i
+  exact max_le (halpha i) (hbeta i)
+
+/-- Uniform pointwise row-growth and right-hand-side growth bounds imply the
+    finite `max_i {α_i, β_i}` bound used in Theorem 20.7.
+
+This is the algebraic handoff point for a later Ch19 row-wise QR theorem: once
+the QR analysis supplies the two displayed pointwise growth estimates, this
+lemma turns them into the source ratio bound without restating finite maxima. -/
+theorem theorem20_7_alphaBetaMax_le_of_uniform_entry_growth {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) {C : ℝ}
+    (hC : 0 ≤ C) (hphi : 0 ≤ phi)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k j : Fin n,
+      |Astage k.val i j| ≤ C * theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : Fin n,
+      |bstage k.val i| ≤
+        C * theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C := by
+  apply theorem20_7_alphaBetaMax_le_of_alpha_beta_le
+  · intro i
+    exact theorem20_7_alpha_le_of_entry_growth hn Astage A i (hdenA i)
+      (fun k j => hA i k j)
+  · intro i
+    apply theorem20_7_beta_le_of_component_bounds hn Astage A bstage b phi i
+      (hdenW i)
+    · have hstage :
+          theorem20_7_stageRowMax hn Astage i ≤
+            C * theorem20_7_initialRowMax hn A i :=
+        theorem20_7_stageRowMax_le_of_entry_le hn Astage i
+          (fun k j => hA i k j)
+      have hmul :
+          phi * theorem20_7_stageRowMax hn Astage i ≤
+            phi * (C * theorem20_7_initialRowMax hn A i) :=
+        mul_le_mul_of_nonneg_left hstage hphi
+      have hbase :
+          phi * theorem20_7_initialRowMax hn A i ≤
+            theorem20_7_initialWeightedRowMax hn A b phi i := by
+        dsimp [theorem20_7_initialWeightedRowMax]
+        exact le_max_left _ _
+      have hscaled :
+          C * (phi * theorem20_7_initialRowMax hn A i) ≤
+            C * theorem20_7_initialWeightedRowMax hn A b phi i :=
+        mul_le_mul_of_nonneg_left hbase hC
+      calc
+        phi * theorem20_7_stageRowMax hn Astage i
+            ≤ phi * (C * theorem20_7_initialRowMax hn A i) := hmul
+        _ = C * (phi * theorem20_7_initialRowMax hn A i) := by ring
+        _ ≤ C * theorem20_7_initialWeightedRowMax hn A b phi i := hscaled
+    · exact theorem20_7_stageBMax_le_of_entry_le hn bstage i (hb i)
+
+-- ============================================================
 -- §20.9  Equality-constrained least squares
 -- ============================================================
 
@@ -36,6 +346,272 @@ def IsLSEMinimizer {m n p : ℕ} (A : Fin m → Fin n → ℝ)
     (d : Fin p → ℝ) (x : Fin n → ℝ) : Prop :=
   LSEFeasible B d x ∧
   ∀ y : Fin n → ℝ, LSEFeasible B d y → lsObjective A b x ≤ lsObjective A b y
+
+-- ------------------------------------------------------------
+-- §20.9.1  Perturbation-theory scalar budget support
+-- ------------------------------------------------------------
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    the displayed maximum of relative perturbation sizes for the perturbed LSE
+    data `(A,b,B,d)`.  The four denominators are kept explicit; the bridge
+    theorem below supplies the positive-denominator side conditions. -/
+noncomputable def theorem20_8MaxRelativePerturbation {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ) : ℝ :=
+  max (frobNormRect DeltaA / frobNormRect A)
+    (max (vecNorm2 Deltab / vecNorm2 b)
+      (max (frobNormRect DeltaB / frobNormRect B)
+        (vecNorm2 Deltad / vecNorm2 d)))
+
+/-- Multiplicative form of the Theorem 20.8 relative perturbation budget,
+    avoiding repeated division once the source maximum assumption has been
+    unpacked. -/
+def theorem20_8RelativePerturbationBudget {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (eps : ℝ) : Prop :=
+  frobNormRect DeltaA ≤ eps * frobNormRect A ∧
+  vecNorm2 Deltab ≤ eps * vecNorm2 b ∧
+  frobNormRect DeltaB ≤ eps * frobNormRect B ∧
+  vecNorm2 Deltad ≤ eps * vecNorm2 d
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the displayed maximum condition implies the four individual relative
+    perturbation bounds in multiplicative form. -/
+theorem theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps) :
+    theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+      eps := by
+  dsimp [theorem20_8RelativePerturbationBudget,
+    theorem20_8MaxRelativePerturbation] at *
+  have hDeltaA_ratio :
+      frobNormRect DeltaA / frobNormRect A ≤ eps := by
+    exact (le_max_left _ _).trans hmax
+  have hDeltab_ratio :
+      vecNorm2 Deltab / vecNorm2 b ≤ eps := by
+    exact (le_trans (le_max_left _ _) (le_max_right _ _)).trans hmax
+  have hDeltaB_ratio :
+      frobNormRect DeltaB / frobNormRect B ≤ eps := by
+    have h1 :
+        frobNormRect DeltaB / frobNormRect B ≤
+          max (frobNormRect DeltaB / frobNormRect B)
+            (vecNorm2 Deltad / vecNorm2 d) :=
+      le_max_left _ _
+    have h2 :
+        max (frobNormRect DeltaB / frobNormRect B)
+            (vecNorm2 Deltad / vecNorm2 d) ≤
+          max (vecNorm2 Deltab / vecNorm2 b)
+            (max (frobNormRect DeltaB / frobNormRect B)
+              (vecNorm2 Deltad / vecNorm2 d)) :=
+      le_max_right _ _
+    have h3 :
+        max (vecNorm2 Deltab / vecNorm2 b)
+            (max (frobNormRect DeltaB / frobNormRect B)
+              (vecNorm2 Deltad / vecNorm2 d)) ≤
+          max (frobNormRect DeltaA / frobNormRect A)
+            (max (vecNorm2 Deltab / vecNorm2 b)
+              (max (frobNormRect DeltaB / frobNormRect B)
+                (vecNorm2 Deltad / vecNorm2 d))) :=
+      le_max_right _ _
+    exact (h1.trans h2 |>.trans h3).trans hmax
+  have hDeltad_ratio :
+      vecNorm2 Deltad / vecNorm2 d ≤ eps := by
+    have h1 :
+        vecNorm2 Deltad / vecNorm2 d ≤
+          max (frobNormRect DeltaB / frobNormRect B)
+            (vecNorm2 Deltad / vecNorm2 d) :=
+      le_max_right _ _
+    have h2 :
+        max (frobNormRect DeltaB / frobNormRect B)
+            (vecNorm2 Deltad / vecNorm2 d) ≤
+          max (vecNorm2 Deltab / vecNorm2 b)
+            (max (frobNormRect DeltaB / frobNormRect B)
+              (vecNorm2 Deltad / vecNorm2 d)) :=
+      le_max_right _ _
+    have h3 :
+        max (vecNorm2 Deltab / vecNorm2 b)
+            (max (frobNormRect DeltaB / frobNormRect B)
+              (vecNorm2 Deltad / vecNorm2 d)) ≤
+          max (frobNormRect DeltaA / frobNormRect A)
+            (max (vecNorm2 Deltab / vecNorm2 b)
+              (max (frobNormRect DeltaB / frobNormRect B)
+                (vecNorm2 Deltad / vecNorm2 d))) :=
+      le_max_right _ _
+    exact (h1.trans h2 |>.trans h3).trans hmax
+  exact ⟨(div_le_iff₀ hApos).mp hDeltaA_ratio,
+    (div_le_iff₀ hbpos).mp hDeltab_ratio,
+    (div_le_iff₀ hBpos).mp hDeltaB_ratio,
+    (div_le_iff₀ hdpos).mp hDeltad_ratio⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    source projector `P = I - B^+ B` used in the LSE perturbation bound.
+
+    The matrix `Bplus` is an explicit supplied table for the source
+    pseudo-inverse `B^+`; this definition does not assert the Moore--Penrose
+    equations. -/
+noncomputable def theorem20_8Projection {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j => idMatrix n i j - rectMatMul Bplus B i j
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    the source product `A P`, where `P = I - B^+ B`. -/
+noncomputable def theorem20_8AP {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) : Fin m → Fin n → ℝ :=
+  rectMatMul A (theorem20_8Projection B Bplus)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    source table `B_A^+ = (I - (AP)^+ A)B^+`.
+
+    The arguments `Bplus` and `APplus` are supplied pseudo-inverse tables for
+    `B^+` and `(AP)^+`, respectively.  The definition records the algebraic
+    expression used in the printed condition quantities. -/
+noncomputable def theorem20_8BAplus {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (_B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ) :
+    Fin n → Fin p → ℝ :=
+  rectMatMul (fun i j => idMatrix n i j - rectMatMul APplus A i j) Bplus
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    condition quantity `kappa_B(A) = ||A||_F ||(AP)^+||_2`. -/
+noncomputable def theorem20_8KappaB {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ) : ℝ :=
+  frobNormRect A * complexMatrixOp2 (realRectToCMatrix APplus)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    condition quantity `kappa_A(B) = ||B||_F ||B_A^+||_2`. -/
+noncomputable def theorem20_8KappaA {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ) : ℝ :=
+  frobNormRect B * complexMatrixOp2 (realRectToCMatrix BAplus)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    residual multiplier in the first-order coefficient of (20.25),
+    `kappa_B(A)^2 * ((||B||_F / ||A||_F) ||A B_A^+||_2 + 1)`. -/
+noncomputable def theorem20_8ResidualAmplifier {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ) : ℝ :=
+  theorem20_8KappaB A APplus ^ 2 *
+    ((frobNormRect B / frobNormRect A) *
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) + 1)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    the first-order scalar coefficient multiplying `eps`, excluding the
+    source's `O(eps^2)` remainder. -/
+noncomputable def theorem20_8FirstOrderRHS {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ) : ℝ :=
+  theorem20_8KappaA B BAplus *
+      (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) +
+    (1 + theorem20_8KappaB A APplus) *
+      (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) +
+    theorem20_8ResidualAmplifier A B APplus BAplus *
+      (vecNorm2 r / (frobNormRect A * vecNorm2 x))
+
+/-- The source quantity `kappa_B(A)` in Theorem 20.8 is nonnegative. -/
+theorem theorem20_8KappaB_nonneg {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ) :
+    0 ≤ theorem20_8KappaB A APplus := by
+  unfold theorem20_8KappaB
+  exact mul_nonneg (frobNormRect_nonneg A)
+    (complexMatrixOp2_nonneg (realRectToCMatrix APplus))
+
+/-- The source quantity `kappa_A(B)` in Theorem 20.8 is nonnegative. -/
+theorem theorem20_8KappaA_nonneg {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ) :
+    0 ≤ theorem20_8KappaA B BAplus := by
+  unfold theorem20_8KappaA
+  exact mul_nonneg (frobNormRect_nonneg B)
+    (complexMatrixOp2_nonneg (realRectToCMatrix BAplus))
+
+/-- Under the natural nonzero-`A` denominator side condition, the residual
+    amplifier in Theorem 20.8's first-order coefficient is nonnegative. -/
+theorem theorem20_8ResidualAmplifier_nonneg {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (hApos : 0 < frobNormRect A) :
+    0 ≤ theorem20_8ResidualAmplifier A B APplus BAplus := by
+  unfold theorem20_8ResidualAmplifier
+  have hratio : 0 ≤ frobNormRect B / frobNormRect A :=
+    div_nonneg (frobNormRect_nonneg B) (le_of_lt hApos)
+  have hop :
+      0 ≤ complexMatrixOp2
+        (realRectToCMatrix (rectMatMul A BAplus)) :=
+    complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul A BAplus))
+  have hinside :
+      0 ≤ (frobNormRect B / frobNormRect A) *
+          complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) + 1 := by
+    nlinarith [mul_nonneg hratio hop]
+  exact mul_nonneg (sq_nonneg _) hinside
+
+/-- Under the natural positive denominator assumptions, the first-order
+    coefficient in Theorem 20.8's perturbation bound is nonnegative. -/
+theorem theorem20_8FirstOrderRHS_nonneg {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (hApos : 0 < frobNormRect A) (hBpos : 0 < frobNormRect B)
+    (hxpos : 0 < vecNorm2 x) :
+    0 ≤ theorem20_8FirstOrderRHS A b B d x r APplus BAplus := by
+  unfold theorem20_8FirstOrderRHS
+  have hkA : 0 ≤ theorem20_8KappaA B BAplus :=
+    theorem20_8KappaA_nonneg B BAplus
+  have hkB : 0 ≤ theorem20_8KappaB A APplus :=
+    theorem20_8KappaB_nonneg A APplus
+  have hBx_pos : 0 < frobNormRect B * vecNorm2 x := mul_pos hBpos hxpos
+  have hAx_pos : 0 < frobNormRect A * vecNorm2 x := mul_pos hApos hxpos
+  have hd_term : 0 ≤ vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1 := by
+    have hdiv : 0 ≤ vecNorm2 d / (frobNormRect B * vecNorm2 x) :=
+      div_nonneg (vecNorm2_nonneg d) (le_of_lt hBx_pos)
+    linarith
+  have hb_term : 0 ≤ vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1 := by
+    have hdiv : 0 ≤ vecNorm2 b / (frobNormRect A * vecNorm2 x) :=
+      div_nonneg (vecNorm2_nonneg b) (le_of_lt hAx_pos)
+    linarith
+  have hres_ratio : 0 ≤ vecNorm2 r / (frobNormRect A * vecNorm2 x) :=
+    div_nonneg (vecNorm2_nonneg r) (le_of_lt hAx_pos)
+  have hres_amp : 0 ≤ theorem20_8ResidualAmplifier A B APplus BAplus :=
+    theorem20_8ResidualAmplifier_nonneg A B APplus BAplus hApos
+  have hfirst :
+      0 ≤ theorem20_8KappaA B BAplus *
+          (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) :=
+    mul_nonneg hkA hd_term
+  have hsecond :
+      0 ≤ (1 + theorem20_8KappaB A APplus) *
+          (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) := by
+    have hone_plus : 0 ≤ 1 + theorem20_8KappaB A APplus := by
+      linarith
+    exact mul_nonneg hone_plus hb_term
+  have hthird :
+      0 ≤ theorem20_8ResidualAmplifier A B APplus BAplus *
+          (vecNorm2 r / (frobNormRect A * vecNorm2 x)) :=
+    mul_nonneg hres_amp hres_ratio
+  exact add_nonneg (add_nonneg hfirst hsecond) hthird
+
+/-- In the zero-residual case, Theorem 20.8's first-order coefficient drops
+    its residual-amplification term. -/
+theorem theorem20_8FirstOrderRHS_of_zero_residual {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ) :
+    theorem20_8FirstOrderRHS A b B d x (fun _i : Fin m => 0) APplus BAplus =
+      theorem20_8KappaA B BAplus *
+          (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) +
+        (1 + theorem20_8KappaB A APplus) *
+          (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) := by
+  simp [theorem20_8FirstOrderRHS, vecNorm2_zero]
 
 /-- The linear constraint map `x ↦ B x` used in the equality-constrained
     least-squares problem (20.23). -/
