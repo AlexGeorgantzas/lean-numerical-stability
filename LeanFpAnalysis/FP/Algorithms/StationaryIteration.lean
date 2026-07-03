@@ -517,6 +517,32 @@ theorem one_step_error_source (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ)
         simp_rw [mul_neg]
         rw [Finset.sum_neg_distrib, neg_neg]
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, equation (17.5):
+    finite-sum forward-error recurrence for the source-sign computed
+    stationary iteration. -/
+theorem sourceComputedIteration_error_finite_sum (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
+    (hIter : SourceComputedIteration n M N b x_hat ξ)
+    (m : ℕ) :
+    ∀ i, x i - x_hat (m + 1) i =
+      matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1))
+        (fun j => x j - x_hat 0 j) i +
+      ∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n (iterMatrix n M_inv N) k)
+          (matMulVec n M_inv (ξ (m - k))) i := by
+  intro i
+  exact affine_recurrence_unroll n (iterMatrix n M_inv N)
+    (fun k => matMulVec n M_inv (ξ k))
+    (fun k j => x j - x_hat k j)
+    (by
+      intro k j
+      simpa [matMulVec] using
+        one_step_error_source n A M N M_inv hS b x hAx x_hat ξ hIter k j)
+    m i
+
 -- ============================================================
 -- §17.2  Componentwise forward bound (eq 17.6)
 -- ============================================================

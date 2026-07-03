@@ -417,6 +417,86 @@ theorem lyapunovSpectralTransform_frobNormSq (n : ℕ)
   unfold lyapunovSpectralTransform
   rw [frobNormSq_orthogonal_right _ _ hU, frobNormSq_orthogonal_left _ _ hU.transpose]
 
+/-- Spectral-coordinate transforms distribute over the `M + N - P` matrix
+    combination used in the Lyapunov perturbation residual. -/
+theorem lyapunovSpectralTransform_add_sub (n : ℕ)
+    (U M N P : Fin n → Fin n → ℝ) :
+    lyapunovSpectralTransform n U (fun i j => M i j + N i j - P i j) =
+      fun i j => lyapunovSpectralTransform n U M i j +
+        lyapunovSpectralTransform n U N i j -
+          lyapunovSpectralTransform n U P i j := by
+  ext i j
+  unfold lyapunovSpectralTransform matMul matTranspose
+  simp only [sub_eq_add_neg, add_mul, neg_mul, mul_add, mul_neg,
+    Finset.sum_add_distrib, Finset.sum_neg_distrib]
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    original-coordinate Lyapunov perturbation residual
+    `DeltaA * Y + Y * DeltaA^T - DeltaC`. -/
+noncomputable def lyapunovBackwardResidual (n : ℕ)
+    (DA DC Y : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => matMul n DA Y i j + matMul n Y (matTranspose DA) i j - DC i j
+
+/-- If `Y = U * Lambda * U^T`, the left perturbation product transforms to
+    `DeltaA_tilde * Lambda`. -/
+theorem lyapunovSpectralTransform_mul_spectral_right (n : ℕ)
+    (U DA : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (hU : IsOrthogonal n U) :
+    lyapunovSpectralTransform n U
+      (matMul n DA (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))) =
+        matMul n (lyapunovSpectralTransform n U DA) (diagMatrix lam) := by
+  unfold lyapunovSpectralTransform
+  have hUtU : matMul n (matTranspose U) U = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hU.left_inv i j
+  simp [matMul_assoc, hUtU, matMul_id_right]
+
+/-- If `Y = U * Lambda * U^T`, the right perturbation product transforms to
+    `Lambda * DeltaA_tilde^T`. -/
+theorem lyapunovSpectralTransform_spectral_left_transpose (n : ℕ)
+    (U DA : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (hU : IsOrthogonal n U) :
+    lyapunovSpectralTransform n U
+      (matMul n (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+        (matTranspose DA)) =
+        matMul n (diagMatrix lam)
+          (matTranspose (lyapunovSpectralTransform n U DA)) := by
+  unfold lyapunovSpectralTransform
+  have hUtU : matMul n (matTranspose U) U = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hU.left_inv i j
+  calc
+    matMul n (matMul n (matTranspose U)
+        (matMul n (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+          (matTranspose DA))) U
+        = matMul n (matMul n (matMul n (matTranspose U) U)
+            (matMul n (matMul n (diagMatrix lam) (matTranspose U))
+              (matTranspose DA))) U := by
+            rw [matMul_assoc n U (matMul n (diagMatrix lam) (matTranspose U))
+              (matTranspose DA)]
+            rw [(matMul_assoc n (matTranspose U) U
+              (matMul n (matMul n (diagMatrix lam) (matTranspose U))
+                (matTranspose DA))).symm]
+    _ = matMul n (matMul n (idMatrix n)
+            (matMul n (matMul n (diagMatrix lam) (matTranspose U))
+              (matTranspose DA))) U := by
+            rw [hUtU]
+    _ = matMul n
+            (matMul n (matMul n (diagMatrix lam) (matTranspose U))
+              (matTranspose DA)) U := by
+            rw [matMul_id_left]
+    _ = matMul n (diagMatrix lam)
+            (matMul n (matTranspose U) (matMul n (matTranspose DA) U)) := by
+            rw [matMul_assoc n (diagMatrix lam) (matTranspose U) (matTranspose DA)]
+            rw [matMul_assoc n (diagMatrix lam)
+              (matMul n (matTranspose U) (matTranspose DA)) U]
+            rw [matMul_assoc n (matTranspose U) (matTranspose DA) U]
+    _ = matMul n (diagMatrix lam)
+            (matTranspose (matMul n (matMul n (matTranspose U) DA) U)) := by
+            rw [matTranspose_matMul]
+            rw [matTranspose_matMul]
+            rw [matTranspose_involutive]
+
 /-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
     the transformed Lyapunov backward-error residual
     `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde`, written
@@ -441,6 +521,30 @@ theorem lyapunovSpectralBackwardResidual_eq_diagMatrix (n : ℕ)
   rw [matMul_diagMatrix_right DA lam i j,
     matMul_diagMatrix_left lam (matTranspose DA) i j]
   simp [matTranspose]
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    transforming the original-coordinate Lyapunov perturbation residual with
+    `Y = U * Lambda * U^T` gives the diagonal spectral-coordinate residual
+    `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde`. -/
+theorem lyapunovSpectralTransform_backwardResidual (n : ℕ)
+    (U DA DC : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (hU : IsOrthogonal n U) :
+    lyapunovSpectralTransform n U
+      (lyapunovBackwardResidual n DA DC
+        (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))) =
+      lyapunovSpectralBackwardResidual n
+        (lyapunovSpectralTransform n U DA)
+        (lyapunovSpectralTransform n U DC) lam := by
+  unfold lyapunovBackwardResidual
+  rw [lyapunovSpectralTransform_add_sub n U
+    (matMul n DA (matMul n U (matMul n (diagMatrix lam) (matTranspose U))))
+    (matMul n (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+      (matTranspose DA))
+    DC]
+  rw [lyapunovSpectralTransform_mul_spectral_right n U DA lam hU]
+  rw [lyapunovSpectralTransform_spectral_left_transpose n U DA lam hU]
+  rw [lyapunovSpectralBackwardResidual_eq_diagMatrix n
+    (lyapunovSpectralTransform n U DA) (lyapunovSpectralTransform n U DC) lam]
 
 /-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
     the printed scaled scalar equation in Lyapunov spectral coordinates. -/
@@ -491,6 +595,27 @@ theorem lyapunovBackwardScalarEq_iff_residual_eq (n : ℕ) (lam : Fin n → ℝ)
     exact h i j
   · intro h i j
     exact congrFun (congrFun h i) j
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    the printed scaled scalar equation follows from the original residual
+    equation after the orthogonal spectral decomposition `Y = U * Lambda * U^T`. -/
+theorem lyapunovBackwardScalarEq_of_spectral_decomposition (n : ℕ)
+    (U DA DC : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ)
+    (hU : IsOrthogonal n U) (hα : α ≠ 0) (hγ : γ ≠ 0) :
+    lyapunovBackwardScalarEq n lam α γ
+      (lyapunovSpectralTransform n U DA)
+      (lyapunovSpectralTransform n U DC)
+      (lyapunovSpectralTransform n U
+        (lyapunovBackwardResidual n DA DC
+          (matMul n U (matMul n (diagMatrix lam) (matTranspose U))))) := by
+  rw [lyapunovBackwardScalarEq_iff_residual_eq n lam α γ
+    (lyapunovSpectralTransform n U DA)
+    (lyapunovSpectralTransform n U DC)
+    (lyapunovSpectralTransform n U
+      (lyapunovBackwardResidual n DA DC
+        (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))))
+    hα hγ]
+  exact (lyapunovSpectralTransform_backwardResidual n U DA DC lam hU).symm
 
 /-- Equation (16.21) as the diagonal-matrix residual equation
     `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde = R_tilde`. -/
