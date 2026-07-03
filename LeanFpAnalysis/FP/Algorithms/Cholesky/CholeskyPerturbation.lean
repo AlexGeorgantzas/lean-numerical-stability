@@ -868,6 +868,112 @@ theorem sherman_morrison_quadForm_scalar_mono
     div_nonneg (sq_nonneg _) h1r.le
   linarith [hgap, hnn]
 
+/-- **Sherman–Morrison quadratic form, vector level** (Higham §10.4, the
+    matrix step of the (10.29) crux `Q̂ ⪯ Q₂₂`; oracle consult 4 route,
+    hand-verified).  For symmetric `Z` with a left inverse `Zinv`
+    (symmetric), the rank-one update `Ĥ = Z + u uᵀ` with right inverse
+    `Ĥinv` satisfies
+
+      `xᵀ Ĥ⁻¹ x = xᵀ Z⁻¹ x − (uᵀ Z⁻¹ x)² / (1 + uᵀ Z⁻¹ u)`.
+
+    Proved through the inverse-action vector `ξ = Ĥ⁻¹ x`:
+    `Z ξ = x − (uᵀξ) u`, so `ξ = Z⁻¹ x − s Z⁻¹ u` with `s = (uᵀZ⁻¹x)/(1+r)`;
+    no explicit Sherman–Morrison matrix identity is needed. -/
+theorem rankOne_update_quadForm_eq {m : ℕ}
+    (Z Zinv Hhat Hhatinv : Fin m → Fin m → ℝ) (u x : Fin m → ℝ)
+    (hZinvSym : ∀ i j : Fin m, Zinv i j = Zinv j i)
+    (hZinv_act : ∀ v : Fin m → ℝ,
+      matMulVec m Zinv (matMulVec m Z v) = v)
+    (hHhat : ∀ i j : Fin m, Hhat i j = Z i j + u i * u j)
+    (hHhatinv_act : matMulVec m Hhat (matMulVec m Hhatinv x) = x)
+    (hr1 : (1 : ℝ) + (∑ i : Fin m, u i * matMulVec m Zinv u i) ≠ 0) :
+    (∑ i : Fin m, x i * matMulVec m Hhatinv x i) =
+      (∑ i : Fin m, x i * matMulVec m Zinv x i) -
+        (∑ i : Fin m, u i * matMulVec m Zinv x i) ^ 2 /
+        (1 + ∑ i : Fin m, u i * matMulVec m Zinv u i) := by
+  set ξ : Fin m → ℝ := matMulVec m Hhatinv x with hξ
+  set s : ℝ := ∑ j : Fin m, u j * ξ j with hs
+  set a : Fin m → ℝ := matMulVec m Zinv x with ha
+  set e : Fin m → ℝ := matMulVec m Zinv u with he
+  set p : ℝ := ∑ i : Fin m, u i * a i with hp
+  set r : ℝ := ∑ i : Fin m, u i * e i with hr
+  -- Z ξ = x − s • u  (pointwise)
+  have hZξ : ∀ i : Fin m, matMulVec m Z ξ i = x i - s * u i := by
+    intro i
+    have hact : matMulVec m Hhat ξ i = x i := by rw [hξ]; exact congrFun hHhatinv_act i
+    have hsplit : matMulVec m Hhat ξ i = matMulVec m Z ξ i + u i * s := by
+      unfold matMulVec
+      rw [hs]
+      rw [show (∑ j : Fin m, Hhat i j * ξ j) =
+          ∑ j : Fin m, (Z i j + u i * u j) * ξ j from
+        Finset.sum_congr rfl fun j _ => by rw [hHhat i j]]
+      rw [show (∑ j : Fin m, (Z i j + u i * u j) * ξ j) =
+          (∑ j : Fin m, Z i j * ξ j) + u i * (∑ j : Fin m, u j * ξ j) from by
+        rw [Finset.mul_sum, ← Finset.sum_add_distrib]
+        exact Finset.sum_congr rfl fun j _ => by ring]
+    rw [hsplit] at hact
+    linarith
+  -- ξ = a − s • e  (apply Zinv, using Zinv ∘ Z = id)
+  have hξ_eq : ∀ i : Fin m, ξ i = a i - s * e i := by
+    have hZinvξ := hZinv_act ξ
+    have hlin : matMulVec m Zinv (matMulVec m Z ξ) =
+        fun i => a i - s * e i := by
+      funext i
+      have : matMulVec m Z ξ = fun i => x i - s * u i := funext hZξ
+      rw [this]
+      unfold matMulVec
+      rw [ha, he]
+      unfold matMulVec
+      rw [show (∑ j : Fin m, Zinv i j * (x j - s * u j)) =
+          (∑ j : Fin m, Zinv i j * x j) - s * (∑ j : Fin m, Zinv i j * u j) from by
+        rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
+        exact Finset.sum_congr rfl fun j _ => by ring]
+    rw [hZinvξ] at hlin
+    exact congrFun hlin
+  have h1r : (1 : ℝ) + r ≠ 0 := by rw [hr] at hr1 ⊢; exact hr1
+  -- s (1 + r) = p
+  have hs_eq : s * (1 + r) = p := by
+    have hstep : s = p - s * r := by
+      conv_lhs => rw [hs]
+      calc (∑ j : Fin m, u j * ξ j)
+          = ∑ j : Fin m, (u j * a j - s * (u j * e j)) :=
+            Finset.sum_congr rfl fun j _ => by rw [hξ_eq j]; ring
+        _ = (∑ j : Fin m, u j * a j) - s * ∑ j : Fin m, u j * e j := by
+            rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
+        _ = p - s * r := by rw [← hp, ← hr]
+    nlinarith [hstep]
+  -- x·e = p  (symmetry of Zinv)
+  have hxe : (∑ i : Fin m, x i * e i) = p := by
+    have lhs : (∑ i : Fin m, x i * e i) =
+        ∑ i : Fin m, ∑ j : Fin m, x i * Zinv i j * u j := by
+      rw [he]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      unfold matMulVec
+      rw [Finset.mul_sum]
+      exact Finset.sum_congr rfl fun j _ => by ring
+    have rhs : p = ∑ i : Fin m, ∑ j : Fin m, u i * Zinv i j * x j := by
+      rw [hp, ha]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      unfold matMulVec
+      rw [Finset.mul_sum]
+      exact Finset.sum_congr rfl fun j _ => by ring
+    rw [lhs, rhs, Finset.sum_comm]
+    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+    rw [hZinvSym j i]; ring
+  -- assemble: xᵀĤ⁻¹x = xᵀa − s(xᵀe) = qxx − s·p = qxx − p²/(1+r)
+  have hLHS : (∑ i : Fin m, x i * ξ i) =
+      (∑ i : Fin m, x i * a i) - s * (∑ i : Fin m, x i * e i) := by
+    rw [show (∑ i : Fin m, x i * a i) - s * (∑ i : Fin m, x i * e i) =
+        ∑ i : Fin m, (x i * a i - s * (x i * e i)) from by
+      rw [Finset.mul_sum, ← Finset.sum_sub_distrib]]
+    exact Finset.sum_congr rfl fun i _ => by rw [hξ_eq i]; ring
+  rw [hξ] at hLHS
+  rw [hLHS, hxe, ha]
+  -- s·p = p²/(1+r)
+  have hs_val : s = p / (1 + r) := by
+    rw [eq_div_iff h1r]; exact hs_eq
+  rw [hs_val, hr]; ring
+
 /-- **Scalar product step** (Higham §10.4, (10.29) per-stage): from two
     pivot bounds `p² ≤ h·a`, `q² ≤ h·b` with `h > 0` and `a, b ≥ 0`,
     `|p·q|/h ≤ √(a·b)`.  Combines the row and column instances of
