@@ -2384,6 +2384,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_18_tridiag_to_matrix_isTridiagonal`
 - `higham9_18_tridiag_to_matrix_isBanded_one_one`
 - `higham9_11_tridiag_data_bohte_solve_tight`
+- `higham9_11_tridiag_data_bohte_solve_tight_of_exact_recurrence`
 - `higham9_19_tridiag_lu`
 - `tridiag_prevIndex`
 - `TridiagExactLURecurrence`
@@ -2741,6 +2742,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_rowDiagDom_exists_LUFactSpec_source_f_bound_of_models_gamma`
 - `higham9_14_colDiagDom_exists_LUFactSpec_source_h_bound_of_models_gamma`
 - `higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_of_models_gamma`
+- `higham9_14_colDiagDom_tridiag_data_exists_LUFactSpec_source_f_bound_of_models_gamma`
+- `higham9_14_rowDiagDom_tridiag_data_exists_LUFactSpec_source_f_bound_of_models_gamma`
+- `higham9_14_colDiagDom_tridiag_data_exists_LUFactSpec_source_h_bound_of_models_gamma`
+- `higham9_14_rowDiagDom_tridiag_data_exists_LUFactSpec_source_h_bound_of_models_gamma`
 - `higham9_14_colDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves`
 - `higham9_14_rowDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves`
 - `higham9_14_colDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves`
