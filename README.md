@@ -88,9 +88,11 @@ identity `sourceComputedIteration_finite_sum` for (17.3), and the finite-sum
 error recurrence `sourceComputedIteration_error_finite_sum` for (17.5), the
 finite-sum residual recurrence `residual_finite_sum` for (17.18), and the
 finite sigma-form residual estimate `normwise_residual_sigma_finite_bound` for
-(17.19), plus finite/q-bound forward and residual dependencies and Jacobi/SOR
-splitting identities; the exact infinite-sum, singular-system, and stopping-test
-rows remain open in the Chapter 17 ledger.
+(17.19).  It also models the iterate-growth constants from (17.7) and (17.9)
+with `normwiseIterateGrowth`, `componentwiseIterateGrowth`, and their bound
+wrappers, plus finite/q-bound forward and residual dependencies and Jacobi/SOR
+splitting identities; the exact infinite-sum, singular-system, diagonalizable,
+and stopping-test rows remain open in the Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
