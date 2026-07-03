@@ -94,7 +94,11 @@ displayed finite maximum by `diagonalResidualRatioMax` and
 `finiteResidualSigma_le_diagonalizable_max_bound`, plus the supremum-envelope
 wrapper `residualSigmaSup_le_diagonalizable_max_bound`, for the (17.20) bound,
 the singular exact-iterate identity `singular_stationary_iterate_finite_sum`
-for (17.21), and the subordinate-norm stopping-test wrappers
+for (17.21), the consistent-system singular telescoping wrappers
+`singular_consistent_source_term_eq_I_sub_G`,
+`singular_consistent_second_term_telescope`, and
+`singular_stationary_iterate_consistent_split` toward (17.26), and the
+subordinate-norm stopping-test wrappers
 `stopping_test_rhs_backward_subordinate`,
 `stopping_test_matrix_backward_subordinate`, and
 `stopping_test_mixed_backward_subordinate` for (17.33a)-(17.33c), plus the
@@ -117,7 +121,7 @@ finite norm-form surface `jacobiForwardBoundVector`,
 corollary `sorForwardFactor_one` and
 `finite_norm_form_gaussSeidel_forward_bound`.  The exact infinite-sum,
 literal infinite-sigma, and singular-system Drazin/semiconvergence rows after
-(17.21) remain open in the Chapter 17 ledger.
+the finite p.333 telescoping step remain open in the Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
