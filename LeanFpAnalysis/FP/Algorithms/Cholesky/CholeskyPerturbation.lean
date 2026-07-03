@@ -843,6 +843,32 @@ theorem spd_pivot_quadForm_bound {n : ℕ} (H Hinv : Fin n → Fin n → ℝ)
   rw [hUV, hUU] at hcs
   exact hcs
 
+/-- **Scalar product step** (Higham §10.4, (10.29) per-stage): from two
+    pivot bounds `p² ≤ h·a`, `q² ≤ h·b` with `h > 0` and `a, b ≥ 0`,
+    `|p·q|/h ≤ √(a·b)`.  Combines the row and column instances of
+    `spd_pivot_quadForm_bound` into the multiplier-product bound. -/
+theorem pivot_product_le_sqrt (p q h a b : ℝ)
+    (hh : 0 < h) (ha : 0 ≤ a) (_hb : 0 ≤ b)
+    (hp : p ^ 2 ≤ h * a) (hq : q ^ 2 ≤ h * b) :
+    |p * q| / h ≤ Real.sqrt (a * b) := by
+  have hpabs : |p| ≤ Real.sqrt (h * a) := by
+    rw [← Real.sqrt_sq_eq_abs]; exact Real.sqrt_le_sqrt hp
+  have hqabs : |q| ≤ Real.sqrt (h * b) := by
+    rw [← Real.sqrt_sq_eq_abs]; exact Real.sqrt_le_sqrt hq
+  have hprod : |p * q| ≤ Real.sqrt (h * a) * Real.sqrt (h * b) := by
+    rw [abs_mul]
+    exact mul_le_mul hpabs hqabs (abs_nonneg _) (Real.sqrt_nonneg _)
+  have hsplit : Real.sqrt (h * a) * Real.sqrt (h * b) =
+      h * Real.sqrt (a * b) := by
+    rw [← Real.sqrt_mul (by positivity : (0:ℝ) ≤ h * a) (h * b)]
+    rw [show (h * a) * (h * b) = h ^ 2 * (a * b) by ring]
+    rw [Real.sqrt_mul (by positivity : (0:ℝ) ≤ h ^ 2) (a * b)]
+    rw [Real.sqrt_sq hh.le]
+  rw [div_le_iff₀ hh]
+  calc |p * q| ≤ Real.sqrt (h * a) * Real.sqrt (h * b) := hprod
+    _ = h * Real.sqrt (a * b) := hsplit
+    _ = Real.sqrt (a * b) * h := by ring
+
 open Matrix in
 /-- **The (10.29) core identity** (Higham §10.4, p. 208; proof route from
     the logged oracle consultation, Golub–Van Loan 1979):
