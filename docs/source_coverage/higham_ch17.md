@@ -9,13 +9,13 @@
 - Mode: core.
 - Parallel split: 3B.
 - Planning documents consulted: `chapter_splitting/HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`, the Split 3B section of `chapter_splitting/split_primary_contracts.md`, and the Chapter 17 rows of `chapter_splitting/chapter_index.md`.
-- Selected-scope gate: FAIL. The existing `StationaryIteration.lean` module proves several nonsingular stationary-iteration algebra, forward-error, Jacobi/SOR, and residual-bound dependencies, and this ledger now records the correct 2nd-edition Chapter 17 numbering. The full selected core pass remains open for the exact recurrence unrolling/infinite-sum statements, gamma/theta supremum definitions, diagonalizable sigma bound, singular-system Drazin/semiconvergence analysis, and stopping-test equivalences imported from Chapter 7.
+- Selected-scope gate: FAIL. The existing `StationaryIteration.lean` module proves several nonsingular stationary-iteration algebra, forward-error, Jacobi/SOR, and residual-bound dependencies, including the exact fixed-point identity behind (17.4), and this ledger records the correct 2nd-edition Chapter 17 numbering. The full selected core pass remains open for the exact recurrence unrolling/infinite-sum statements, gamma/theta supremum definitions, diagonalizable sigma bound, singular-system Drazin/semiconvergence analysis, and stopping-test equivalences imported from Chapter 7.
 
 ## Progress Snapshot
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| ch17 | core | 100 | 70 | 55 | 45 | 70 | 48 | 22+ | Exact infinite-sum and singular-system foundations are not yet formalized; current proofs cover nonsingular finite/q-bound dependencies and source-label repair | medium-low |
+| ch17 | core | 100 | 71 | 56 | 46 | 71 | 49 | 22+ | Exact finite-sum unrolling, infinite-sum, and singular-system foundations are not yet formalized; current proofs cover nonsingular fixed-point, finite/q-bound dependencies, and source-label repair | medium-low |
 
 ## Completed Selected Targets
 
@@ -24,6 +24,7 @@
 | stationary splitting setup | `SplittingSpec`, `iterMatrix`, `dualIterMatrix` | `LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean` | Structure/definitions | Models `A = M - N`, `G = M^{-1}N`, and `H = NM^{-1}` in the repository's finite function-shaped matrix API. |
 | (17.1), source sign | `SourceComputedIteration`, `computedIteration_of_sourceComputedIteration` | `StationaryIteration.lean` | Structure/theorem | Adds the source-sign convention `M xhat_{k+1} = N xhat_k + b - xi_k` and bridges it to the legacy internal `+ xi_k` convention by negating the local error term. |
 | one-step error dependency | `one_step_error`, `one_step_error_source` | `StationaryIteration.lean` | Theorems | Proves the one-step error recurrence for the legacy and source-sign conventions; this is dependency infrastructure for (17.5). |
+| (17.4), fixed-point dependency | `stationary_solution_fixed_point` | `StationaryIteration.lean` | Theorem | Proves that an exact solution of `Ax=b` is a fixed point of `x ↦ Gx + M^{-1}b`; the full finite-sum identity in (17.4) remains open. |
 | (17.2) | `LocalErrorBound` | `StationaryIteration.lean` | Predicate | Local componentwise rounding-error budget for the internal signed error. |
 | (17.6), partial | `componentwise_forward_bound` | `StationaryIteration.lean` | Theorem | Triangle-inequality componentwise finite-sum bound; full source infinite-sum closure remains open. |
 | (17.8), q-bound corollary | `normwise_forward_bound` | `StationaryIteration.lean` | Theorem | Finite q-contraction version of the normwise forward bound under `||G||_inf <= q < 1` and a uniform local-error bound. |
@@ -43,7 +44,7 @@
 | H17.Eq17_1.computed_iteration | p.325, (17.1) | equation/model | Computed stationary iteration with a signed local error term. | precise | square current API | model assumption | splitting setup | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `SourceComputedIteration`; internal legacy bridge via `computedIteration_of_sourceComputedIteration`. |
 | H17.Eq17_2.local_error_bound | p.325, (17.2) | inequality/model | Componentwise local error budget in terms of `|M|`, `|N|`, current iterates, and `|b|`. | precise | triangular `M` model | sketch/model | FP local-error model | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `LocalErrorBound`; exact triangular-solve derivation not modeled. |
 | H17.Eq17_3.iterate_solution | p.325, (17.3) | recurrence | Closed-form computed iterate recurrence from (17.1). | precise | finite m | algebra | H17.Eq17_1 | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open; one-step infrastructure exists. |
-| H17.Eq17_4.stationary_exact_solution | p.325, (17.4) | recurrence | Exact stationary solution identity using the same finite sum. | precise | nonsingular square | algebra | splitting setup | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open. |
+| H17.Eq17_4.stationary_exact_solution | p.325, (17.4) | recurrence | Exact stationary solution identity using the same finite sum. | precise | nonsingular square | algebra | splitting setup | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Partial: fixed-point identity `stationary_solution_fixed_point`; finite-sum unrolling still open. |
 | H17.Eq17_5.error_recurrence | p.325, (17.5) | recurrence | Error recurrence obtained by subtracting (17.3) and (17.4). | precise | finite m | algebra | H17.Eq17_3, H17.Eq17_4 | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Partial: `one_step_error`, `one_step_error_source`; full finite-sum closed form open. |
 | H17.Eq17_6.componentwise_forward_bound | p.325, (17.6) | inequality | Componentwise finite-sum forward-error bound. | precise | finite m | triangle inequality | H17.Eq17_5 | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Partial finite triangle wrapper `componentwise_forward_bound`. |
 | H17.Eq17_7.gamma_x | p.326, (17.7) | definition | Supremum ratio bounding the norm of computed iterates relative to the exact solution. | precise | normwise | not applicable | iterate sequence | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open; currently represented only by explicit hypotheses in downstream theorems. |
@@ -96,12 +97,13 @@
 | `SourceComputedIteration` | Records Higham's actual sign convention in (17.1). | Chapter 17 report and future source-facing recurrence wrappers. | implemented |
 | `computedIteration_of_sourceComputedIteration` | Keeps existing legacy proofs reusable without changing all downstream theorem statements. | `one_step_error_source`; future source-sign wrappers. | implemented |
 | `one_step_error_source` | Provides a source-sign one-step recurrence directly aligned with (17.1). | Future finite-sum proof of (17.5). | implemented dependency |
+| `stationary_solution_fixed_point` | Records the exact-solution affine fixed-point step behind (17.4). | Future finite-sum proof of (17.4) and the error recurrence (17.5). | implemented dependency |
 
 ## Open Selected-Scope Items
 
 | Source location | Exact claim | Current Lean status | Missing foundation | Next theorem |
 |---|---|---|---|---|
-| (17.3)-(17.5) | Closed-form computed/exact/error finite recurrences. | one-step recurrence proved for both sign conventions | finite-sum unrolling of affine stationary iteration | Prove the finite closed form for `SourceComputedIteration`, then derive (17.5). |
+| (17.3)-(17.5) | Closed-form computed/exact/error finite recurrences. | one-step recurrence proved for both sign conventions; exact fixed-point step for (17.4) proved | finite-sum unrolling of affine stationary iteration | Prove the finite closed form for `SourceComputedIteration` and the exact fixed-point recurrence, then derive (17.5). |
 | (17.7), (17.9) | Supremum iterate-growth constants `gamma_x` and `theta_x`. | represented only by explicit hypotheses | bounded/supremum API and zero-component policy | Define finite-prefix or extended-real supremum surfaces, or keep theorem statements hypothesis-based. |
 | (17.8), (17.11)-(17.13), (17.15)-(17.16) | Literal infinite-sum normwise/componentwise forward bounds and corollaries. | q-bound/certificate finite forms proved | convergence of matrix-power absolute/norm series; literal `c(A)` minimum/infimum | Add infinite-series/c(A) surface or prove selected finite-horizon equivalents clearly. |
 | (17.18)-(17.20) | Full residual finite-sum recurrence, sigma-form residual bound, diagonalizable sigma bound. | algebraic one-step and q-bound residual theorems proved | finite-sum recurrence and diagonalizable/eigenvalue API | Prove finite residual recurrence, then isolate the diagonalizable sigma bound. |
@@ -130,7 +132,10 @@
 - `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after the Chapter 17 source-label and wrapper update.
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean docs/source_coverage/higham_ch17.md`: no matches.
 - `#print axioms` for `computedIteration_of_sourceComputedIteration` and `one_step_error_source`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean README.md docs/source_coverage/higham_ch17.md`: to be rerun after this verification record is staged; earlier run passed for the tracked edits with only the usual CRLF normalization warnings.
+- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `stationary_solution_fixed_point`.
+- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding `stationary_solution_fixed_point`.
+- `#print axioms` for `stationary_solution_fixed_point`: only `propext`, `Classical.choice`, and `Quot.sound`.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding `stationary_solution_fixed_point`.
 
 ## Git and Local-Only Notes
 
