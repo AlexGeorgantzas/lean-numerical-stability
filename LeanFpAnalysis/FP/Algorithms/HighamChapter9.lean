@@ -11729,6 +11729,16 @@ lemma higham9_14_completePivotWilkinsonProduct_le_succ (n : ℕ) :
               ((k + 1 + 1 : ℕ) : ℝ) ^ ((1 : ℝ) / ((k + 1 : ℕ) : ℝ)) :=
           mul_le_mul_of_nonneg_left hfactor hprod_nonneg
 
+/-- **Equation (9.14)**, successor-ratio form of Wilkinson scalar-product
+monotonicity. -/
+lemma higham9_14_completePivotWilkinsonProduct_succ_div_ge_one (n : ℕ) :
+    (1 : ℝ) ≤
+      higham9_14_completePivotWilkinsonProduct (n + 1) /
+        higham9_14_completePivotWilkinsonProduct n := by
+  have hpos := higham9_14_completePivotWilkinsonProduct_pos n
+  rw [le_div_iff₀ hpos]
+  simpa [one_mul] using higham9_14_completePivotWilkinsonProduct_le_succ n
+
 /-- **Equation (9.14)**, Wilkinson's scalar product is monotone in the matrix
 order parameter. -/
 theorem higham9_14_completePivotWilkinsonProduct_monotone :
@@ -11828,6 +11838,18 @@ theorem higham9_14_completePivotWilkinsonBound_le_of_le {n m : ℕ}
         Real.sqrt (higham9_14_completePivotWilkinsonProduct m) :=
     Real.sqrt_le_sqrt (higham9_14_completePivotWilkinsonProduct_le_of_le hnm)
   exact mul_le_mul hsqrt_n hsqrt_prod (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+
+/-- **Equation (9.14)**, successor-ratio form of Wilkinson displayed-bound
+monotonicity. -/
+lemma higham9_14_completePivotWilkinsonBound_succ_div_ge_one {n : ℕ}
+    (hn : 0 < n) :
+    (1 : ℝ) ≤
+      higham9_14_completePivotWilkinsonBound (n + 1) /
+        higham9_14_completePivotWilkinsonBound n := by
+  have hpos := higham9_14_completePivotWilkinsonBound_pos hn
+  rw [le_div_iff₀ hpos]
+  simpa [one_mul] using
+    higham9_14_completePivotWilkinsonBound_le_of_le (Nat.le_succ n)
 
 /-- **Equation (9.14)**, Wilkinson's displayed complete-pivoting RHS is at
 least two in every dimension at least two. -/
@@ -12186,6 +12208,17 @@ theorem higham9_16_rookPivotFosterBound_le_of_le {n m : ℕ} (hnm : n ≤ m) :
             (m : ℝ) ^ ((3 / 4 : ℝ) * Real.log (m : ℝ)) :=
         higham9_16_rookPivotFosterFactor_le_of_le hn hnm
       exact mul_le_mul_of_nonneg_left hfactor (by norm_num)
+
+/-- **Equation (9.16)**, successor-ratio form of Foster displayed-bound
+monotonicity. -/
+lemma higham9_16_rookPivotFosterBound_succ_div_ge_one {n : ℕ} (hn : 0 < n) :
+    (1 : ℝ) ≤
+      higham9_16_rookPivotFosterBound (n + 1) /
+        higham9_16_rookPivotFosterBound n := by
+  have hpos := higham9_16_rookPivotFosterBound_pos hn
+  rw [le_div_iff₀ hpos]
+  simpa [one_mul] using
+    higham9_16_rookPivotFosterBound_le_of_le (Nat.le_succ n)
 
 /-- **Equation (9.16)**, Foster's scalar rook-pivoting RHS is at least two in
 every dimension at least two. -/
@@ -18216,6 +18249,37 @@ theorem higham9_11_bohte_banded_solve_tight_of_isBanded_common_growth_le
       A L_hat U_hat b ρ_bound hρ_le hL_diag hU_diag hLU hn hn3
       hGrowth
 
+/-- **Theorem 9.11**, source-facing bandwidth-one Bohte solve wrapper with
+the common-bandwidth structural hypothesis exposed.
+
+This is the `IsBanded n 1 1 A` form of the tridiagonal source case; the GEPP
+growth estimate remains the explicit Bohte-side assumption. -/
+theorem higham9_11_bandwidth_one_bohte_solve_tight_of_isBanded
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hBanded : IsBanded n 1 1 A)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        2 * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        2 * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  simpa [higham9_11_bohteBound_tridiagonal] using
+    higham9_11_bohte_banded_solve_tight_of_isBanded_common fp n 1 1 1
+      A L_hat U_hat b (by omega) (by omega) hBanded
+      hL_diag hU_diag hLU hn hn3
+      (fun i j => by
+        simpa [higham9_11_bohteBound_tridiagonal] using hGrowth i j)
+
 /-- **Theorem 9.11**, tridiagonal source-facing Bohte solve wrapper.
 
 For tridiagonal matrices the structural hypothesis is converted to the common
@@ -18299,6 +18363,37 @@ theorem higham9_11_pentadiagonal_bohte_solve_tight (fp : FPModel) (n : ℕ)
       (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
   simpa [higham9_11_bohteBound_pentadiagonal_formula] using
     higham9_11_bohte_banded_solve_tight fp n 2 A L_hat U_hat b
+      hL_diag hU_diag hLU hn hn3
+      (fun i j => by
+        simpa [higham9_11_bohteBound_pentadiagonal_formula] using hGrowth i j)
+
+/-- **Theorem 9.11**, source-facing pentadiagonal Bohte solve wrapper with
+the common-bandwidth structural hypothesis exposed.
+
+This is the named pentadiagonal alias of the bandwidth-two structural wrapper;
+the GEPP growth estimate remains the explicit Bohte-side assumption. -/
+theorem higham9_11_pentadiagonal_bohte_solve_tight_of_isBanded
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hBanded : IsBanded n 2 2 A)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        7 * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        7 * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  simpa [higham9_11_bohteBound_pentadiagonal_formula] using
+    higham9_11_bohte_banded_solve_tight_of_isBanded_common fp n 2 2 2
+      A L_hat U_hat b (by omega) (by omega) hBanded
       hL_diag hU_diag hLU hn hn3
       (fun i j => by
         simpa [higham9_11_bohteBound_pentadiagonal_formula] using hGrowth i j)

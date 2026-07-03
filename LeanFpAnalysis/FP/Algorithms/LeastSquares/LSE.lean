@@ -95,6 +95,15 @@ theorem theorem20_7_stageRowMax_le_of_entry_le {m n : ℕ} (hn : 0 < n)
   intro p _hp
   exact hbound p.1 p.2
 
+/-- Nat-indexed variant of `theorem20_7_stageRowMax_le_of_entry_le`.
+    This is the form produced by the Chapter 19 row-wise QR stage recurrences. -/
+theorem theorem20_7_stageRowMax_le_of_entry_le_nat {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (i : Fin m) {C : ℝ}
+    (hbound : ∀ k : ℕ, k < n → ∀ j : Fin n, |Astage k i j| ≤ C) :
+    theorem20_7_stageRowMax hn Astage i ≤ C := by
+  exact theorem20_7_stageRowMax_le_of_entry_le hn Astage i
+    (fun k j => hbound k.val k.isLt j)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     the source ratio `α_i = max_{j,k}|a_ij^(k)| / max_j |a_ij|`. -/
 noncomputable def theorem20_7_alpha {m n : ℕ} (hn : 0 < n)
@@ -134,6 +143,17 @@ noncomputable def theorem20_7_initialWeightedRowMax {m n : ℕ} (hn : 0 < n)
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m) : ℝ :=
   max (phi * theorem20_7_initialRowMax hn A i) |b i|
 
+/-- The initial weighted row scale in Theorem 20.7 is nonnegative when the
+    source weight parameter is nonnegative. -/
+theorem theorem20_7_initialWeightedRowMax_nonneg {m n : ℕ} (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) {phi : ℝ} (hphi : 0 ≤ phi)
+    (i : Fin m) :
+    0 ≤ theorem20_7_initialWeightedRowMax hn A b phi i := by
+  dsimp [theorem20_7_initialWeightedRowMax]
+  exact
+    (mul_nonneg hphi (theorem20_7_initialRowMax_nonneg hn A i)).trans
+      (le_max_left _ _)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     finite maximum over staged right-hand-side entries. -/
 noncomputable def theorem20_7_stageBMax {m n : ℕ} (hn : 0 < n)
@@ -161,6 +181,15 @@ theorem theorem20_7_stageBMax_le_of_entry_le {m n : ℕ} (hn : 0 < n)
   apply Finset.sup'_le
   intro k _hk
   exact hbound k
+
+/-- Nat-indexed variant of `theorem20_7_stageBMax_le_of_entry_le`.
+    This matches the stage indexing of the Chapter 19 row-wise QR wrappers. -/
+theorem theorem20_7_stageBMax_le_of_entry_le_nat {m n : ℕ} (hn : 0 < n)
+    (bstage : ℕ → Fin m → ℝ) (i : Fin m) {C : ℝ}
+    (hbound : ∀ k : ℕ, k < n → |bstage k i| ≤ C) :
+    theorem20_7_stageBMax hn bstage i ≤ C := by
+  exact theorem20_7_stageBMax_le_of_entry_le hn bstage i
+    (fun k => hbound k.val k.isLt)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     numerator scale for the source `β_i` ratio. -/
@@ -274,6 +303,207 @@ theorem theorem20_7_alphaBetaMax_le_of_alpha_beta_le {m n : ℕ}
   intro i
   exact max_le (halpha i) (hbeta i)
 
+/-- The finite `max_i {α_i, β_i}` coefficient controls each source `α_i`
+    ratio from Theorem 20.7. -/
+theorem theorem20_7_alpha_le_alphaBetaMax {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m) :
+    theorem20_7_alpha hn Astage A i ≤
+      theorem20_7_alphaBetaMax hm hn Astage A bstage b phi := by
+  dsimp [theorem20_7_alphaBetaMax]
+  exact
+    (le_max_left _ _).trans
+      (theorem20_7_rowRatioMax_entry_le hm
+        (fun i => max (theorem20_7_alpha hn Astage A i)
+          (theorem20_7_beta hn Astage A bstage b phi i)) i)
+
+/-- The finite `max_i {α_i, β_i}` coefficient controls each source `β_i`
+    ratio from Theorem 20.7. -/
+theorem theorem20_7_beta_le_alphaBetaMax {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m) :
+    theorem20_7_beta hn Astage A bstage b phi i ≤
+      theorem20_7_alphaBetaMax hm hn Astage A bstage b phi := by
+  dsimp [theorem20_7_alphaBetaMax]
+  exact
+    (le_max_right _ _).trans
+      (theorem20_7_rowRatioMax_entry_le hm
+        (fun i => max (theorem20_7_alpha hn Astage A i)
+          (theorem20_7_beta hn Astage A bstage b phi i)) i)
+
+/-- A global finite `max_i {α_i, β_i}` bound gives the corresponding per-row
+    `α_i` bound. -/
+theorem theorem20_7_alpha_le_of_alphaBetaMax_le {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m)
+    {C : ℝ}
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C) :
+    theorem20_7_alpha hn Astage A i ≤ C :=
+  (theorem20_7_alpha_le_alphaBetaMax
+    hm hn Astage A bstage b phi i).trans hmax
+
+/-- A global finite `max_i {α_i, β_i}` bound gives the corresponding per-row
+    `β_i` bound. -/
+theorem theorem20_7_beta_le_of_alphaBetaMax_le {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m)
+    {C : ℝ}
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C) :
+    theorem20_7_beta hn Astage A bstage b phi i ≤ C :=
+  (theorem20_7_beta_le_alphaBetaMax
+    hm hn Astage A bstage b phi i).trans hmax
+
+/-- If `α_i ≤ C`, the staged row maximum is bounded by `C` times the initial
+    row maximum.  This is the reverse direction needed when a Theorem 20.7
+    ratio bound has already been established. -/
+theorem theorem20_7_stageRowMax_le_mul_initial_of_alpha_le {m n : ℕ}
+    (hn : 0 < n) (Astage : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (i : Fin m) {C : ℝ}
+    (hden : 0 < theorem20_7_initialRowMax hn A i)
+    (halpha : theorem20_7_alpha hn Astage A i ≤ C) :
+    theorem20_7_stageRowMax hn Astage i ≤
+      C * theorem20_7_initialRowMax hn A i := by
+  have hEq :
+      theorem20_7_alpha hn Astage A i *
+          theorem20_7_initialRowMax hn A i =
+        theorem20_7_stageRowMax hn Astage i := by
+    dsimp [theorem20_7_alpha]
+    exact div_mul_cancel₀ _ (ne_of_gt hden)
+  calc
+    theorem20_7_stageRowMax hn Astage i
+        = theorem20_7_alpha hn Astage A i *
+            theorem20_7_initialRowMax hn A i := hEq.symm
+    _ ≤ C * theorem20_7_initialRowMax hn A i :=
+        mul_le_mul_of_nonneg_right halpha hden.le
+
+/-- The staged `b` maximum is bounded by the staged weighted-row maximum used
+    in the source `β_i` numerator. -/
+theorem theorem20_7_stageBMax_le_stageWeightedRowMax {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (phi : ℝ) (i : Fin m) :
+    theorem20_7_stageBMax hn bstage i ≤
+      theorem20_7_stageWeightedRowMax hn Astage bstage phi i := by
+  dsimp [theorem20_7_stageWeightedRowMax]
+  exact le_max_right _ _
+
+/-- If `β_i ≤ C`, the staged weighted-row maximum is bounded by `C` times the
+    initial weighted row scale. -/
+theorem theorem20_7_stageWeightedRowMax_le_mul_initialWeighted_of_beta_le
+    {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m)
+    {C : ℝ}
+    (hden : 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hbeta : theorem20_7_beta hn Astage A bstage b phi i ≤ C) :
+    theorem20_7_stageWeightedRowMax hn Astage bstage phi i ≤
+      C * theorem20_7_initialWeightedRowMax hn A b phi i := by
+  have hEq :
+      theorem20_7_beta hn Astage A bstage b phi i *
+          theorem20_7_initialWeightedRowMax hn A b phi i =
+        theorem20_7_stageWeightedRowMax hn Astage bstage phi i := by
+    dsimp [theorem20_7_beta]
+    exact div_mul_cancel₀ _ (ne_of_gt hden)
+  calc
+    theorem20_7_stageWeightedRowMax hn Astage bstage phi i
+        = theorem20_7_beta hn Astage A bstage b phi i *
+            theorem20_7_initialWeightedRowMax hn A b phi i := hEq.symm
+    _ ≤ C * theorem20_7_initialWeightedRowMax hn A b phi i :=
+        mul_le_mul_of_nonneg_right hbeta hden.le
+
+/-- A finite `max_i {α_i, β_i}` bound controls the staged row maximum. -/
+theorem theorem20_7_stageRowMax_le_mul_initial_of_alphaBetaMax_le {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m)
+    {C : ℝ}
+    (hden : 0 < theorem20_7_initialRowMax hn A i)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C) :
+    theorem20_7_stageRowMax hn Astage i ≤
+      C * theorem20_7_initialRowMax hn A i :=
+  theorem20_7_stageRowMax_le_mul_initial_of_alpha_le hn Astage A i hden
+    (theorem20_7_alpha_le_of_alphaBetaMax_le
+      hm hn Astage A bstage b phi i hmax)
+
+/-- A finite `max_i {α_i, β_i}` bound controls the staged weighted-row maximum. -/
+theorem theorem20_7_stageWeightedRowMax_le_mul_initialWeighted_of_alphaBetaMax_le
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m)
+    {C : ℝ}
+    (hden : 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C) :
+    theorem20_7_stageWeightedRowMax hn Astage bstage phi i ≤
+      C * theorem20_7_initialWeightedRowMax hn A b phi i :=
+  theorem20_7_stageWeightedRowMax_le_mul_initialWeighted_of_beta_le
+    hn Astage A bstage b phi i hden
+    (theorem20_7_beta_le_of_alphaBetaMax_le
+      hm hn Astage A bstage b phi i hmax)
+
+/-- A finite `max_i {α_i, β_i}` bound controls each staged matrix entry. -/
+theorem theorem20_7_stageAEntry_le_mul_initial_of_alphaBetaMax_le {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m)
+    (k j : Fin n) {C : ℝ}
+    (hden : 0 < theorem20_7_initialRowMax hn A i)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C) :
+    |Astage k.val i j| ≤ C * theorem20_7_initialRowMax hn A i :=
+  (theorem20_7_stageRowMax_entry_le hn Astage i k j).trans
+    (theorem20_7_stageRowMax_le_mul_initial_of_alphaBetaMax_le
+      hm hn Astage A bstage b phi i hden hmax)
+
+/-- Nat-indexed version of
+    `theorem20_7_stageAEntry_le_mul_initial_of_alphaBetaMax_le`. -/
+theorem theorem20_7_stageAEntry_le_mul_initial_of_alphaBetaMax_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m)
+    (k : ℕ) (hk : k < n) (j : Fin n) {C : ℝ}
+    (hden : 0 < theorem20_7_initialRowMax hn A i)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C) :
+    |Astage k i j| ≤ C * theorem20_7_initialRowMax hn A i := by
+  let kk : Fin n := ⟨k, hk⟩
+  simpa [kk] using
+    theorem20_7_stageAEntry_le_mul_initial_of_alphaBetaMax_le
+      hm hn Astage A bstage b phi i kk j hden hmax
+
+/-- A finite `max_i {α_i, β_i}` bound controls each staged right-hand-side
+    entry by the source weighted initial row scale. -/
+theorem theorem20_7_stageBEntry_le_mul_initialWeighted_of_alphaBetaMax_le
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m)
+    (k : Fin n) {C : ℝ}
+    (hden : 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C) :
+    |bstage k.val i| ≤
+      C * theorem20_7_initialWeightedRowMax hn A b phi i :=
+  (theorem20_7_stageBMax_entry_le hn bstage i k).trans
+    ((theorem20_7_stageBMax_le_stageWeightedRowMax
+      hn Astage bstage phi i).trans
+      (theorem20_7_stageWeightedRowMax_le_mul_initialWeighted_of_alphaBetaMax_le
+        hm hn Astage A bstage b phi i hden hmax))
+
+/-- Nat-indexed version of
+    `theorem20_7_stageBEntry_le_mul_initialWeighted_of_alphaBetaMax_le`. -/
+theorem theorem20_7_stageBEntry_le_mul_initialWeighted_of_alphaBetaMax_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m)
+    (k : ℕ) (hk : k < n) {C : ℝ}
+    (hden : 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C) :
+    |bstage k i| ≤
+      C * theorem20_7_initialWeightedRowMax hn A b phi i := by
+  let kk : Fin n := ⟨k, hk⟩
+  simpa [kk] using
+    theorem20_7_stageBEntry_le_mul_initialWeighted_of_alphaBetaMax_le
+      hm hn Astage A bstage b phi i kk hden hmax
+
 /-- Uniform pointwise row-growth and right-hand-side growth bounds imply the
     finite `max_i {α_i, β_i}` bound used in Theorem 20.7.
 
@@ -325,6 +555,169 @@ theorem theorem20_7_alphaBetaMax_le_of_uniform_entry_growth {m n : ℕ}
         _ = C * (phi * theorem20_7_initialRowMax hn A i) := by ring
         _ ≤ C * theorem20_7_initialWeightedRowMax hn A b phi i := hscaled
     · exact theorem20_7_stageBMax_le_of_entry_le hn bstage i (hb i)
+
+/-- Nat-indexed version of
+    `theorem20_7_alphaBetaMax_le_of_uniform_entry_growth`.
+
+The Chapter 19 row-wise QR dependencies are naturally stated with `Nat` stage
+indices and a side condition `k < n`; this bridge converts those bounds into the
+finite `max_i {α_i, β_i}` surface used by Higham Theorem 20.7. -/
+theorem theorem20_7_alphaBetaMax_le_of_uniform_entry_growth_nat {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) {C : ℝ}
+    (hC : 0 ≤ C) (hphi : 0 ≤ phi)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤ C * theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        C * theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C := by
+  exact
+    theorem20_7_alphaBetaMax_le_of_uniform_entry_growth
+      hm hn Astage A bstage b phi hC hphi hdenA hdenW
+      (fun i k j => hA i k.val k.isLt j)
+      (fun i k => hb i k.val k.isLt)
+
+/-- Geometric Nat-indexed row-growth bounds imply the fixed-horizon
+    `max_i {α_i, β_i}` coefficient used in Theorem 20.7.
+
+This is a source-facing bridge for Chapter 19 row-wise QR dependencies whose
+stage bounds have the form `G^k`; it converts those stagewise bounds to the
+single horizon coefficient `G^(n-1)`. -/
+theorem theorem20_7_alphaBetaMax_le_of_uniform_geometric_entry_growth_nat {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) {G : ℝ}
+    (hG : 1 ≤ G) (hphi : 0 ≤ phi)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤ G ^ k * theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤ G ^ k * theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ G ^ (n - 1) := by
+  have hG0 : 0 ≤ G := le_trans zero_le_one hG
+  have hC : 0 ≤ G ^ (n - 1) := pow_nonneg hG0 _
+  apply theorem20_7_alphaBetaMax_le_of_uniform_entry_growth_nat
+    hm hn Astage A bstage b phi hC hphi hdenA hdenW
+  · intro i k hk j
+    have hk_le : k ≤ n - 1 := Nat.le_sub_one_of_lt hk
+    have hpow : G ^ k ≤ G ^ (n - 1) := pow_le_pow_right₀ hG hk_le
+    exact
+      (hA i k hk j).trans
+        (mul_le_mul_of_nonneg_right hpow
+          (theorem20_7_initialRowMax_nonneg hn A i))
+  · intro i k hk
+    have hk_le : k ≤ n - 1 := Nat.le_sub_one_of_lt hk
+    have hpow : G ^ k ≤ G ^ (n - 1) := pow_le_pow_right₀ hG hk_le
+    exact
+      (hb i k hk).trans
+        (mul_le_mul_of_nonneg_right hpow
+          (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
+
+/-- Theorem 20.7 bridge for the printed row-sorting constant
+    `sqrt(m) * (1 + sqrt 2)^(n-1)`.
+
+If a Chapter 19 row-sorting dependency supplies staged row and right-hand-side
+bounds with a one-time ambient `sqrt(m)` factor and the Cox--Higham per-step
+factor `(1 + sqrt 2)^k`, then the source finite `max_i {α_i, β_i}` coefficient
+is bounded by the printed horizon constant. -/
+theorem theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ)
+    (hphi : 0 ≤ phi)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        (Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ k) *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        (Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ k) *
+          theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤
+      Real.sqrt (m : ℝ) *
+        H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) := by
+  have hsqrt_nonneg : 0 ≤ Real.sqrt (m : ℝ) := Real.sqrt_nonneg _
+  have hG0 : 0 ≤ H19.Theorem19_6.rowwise_step_growth_factor :=
+    H19.Theorem19_6.rowwise_step_growth_factor_nonneg
+  have hG1 : 1 ≤ H19.Theorem19_6.rowwise_step_growth_factor := by
+    dsimp [H19.Theorem19_6.rowwise_step_growth_factor]
+    exact le_add_of_nonneg_right (Real.sqrt_nonneg (2 : ℝ))
+  have hC :
+      0 ≤ Real.sqrt (m : ℝ) *
+        H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+    mul_nonneg hsqrt_nonneg (pow_nonneg hG0 _)
+  apply theorem20_7_alphaBetaMax_le_of_uniform_entry_growth_nat
+    hm hn Astage A bstage b phi hC hphi hdenA hdenW
+  · intro i k hk j
+    have hk_le : k ≤ n - 1 := Nat.le_sub_one_of_lt hk
+    have hpow :
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k ≤
+          H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+      pow_le_pow_right₀ hG1 hk_le
+    have hfactor :
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k ≤
+          Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+      mul_le_mul_of_nonneg_left hpow hsqrt_nonneg
+    exact
+      (hA i k hk j).trans
+        (mul_le_mul_of_nonneg_right hfactor
+          (theorem20_7_initialRowMax_nonneg hn A i))
+  · intro i k hk
+    have hk_le : k ≤ n - 1 := Nat.le_sub_one_of_lt hk
+    have hpow :
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k ≤
+          H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+      pow_le_pow_right₀ hG1 hk_le
+    have hfactor :
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k ≤
+          Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+      mul_le_mul_of_nonneg_left hpow hsqrt_nonneg
+    exact
+      (hb i k hk).trans
+        (mul_le_mul_of_nonneg_right hfactor
+          (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
+
+/-- Theorem 20.7 bridge specialized to the Chapter 19.6 active-row Cox--Higham
+    growth factor. -/
+theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ)
+    (hphi : 0 ≤ phi)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤
+      H19.Theorem19_6.active_row_growth_factor m ^ (n - 1) := by
+  exact
+    theorem20_7_alphaBetaMax_le_of_uniform_geometric_entry_growth_nat
+      hm hn Astage A bstage b phi
+      (H19.Theorem19_6.one_le_active_row_growth_factor m)
+      hphi hdenA hdenW hA hb
 
 -- ============================================================
 -- §20.9  Equality-constrained least squares

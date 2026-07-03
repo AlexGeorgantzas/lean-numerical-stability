@@ -1951,6 +1951,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_completePivotWilkinsonProduct_succ`
 - `higham9_14_completePivotWilkinsonProduct_factor_ge_one`
 - `higham9_14_completePivotWilkinsonProduct_le_succ`
+- `higham9_14_completePivotWilkinsonProduct_succ_div_ge_one`
 - `higham9_14_completePivotWilkinsonProduct_monotone`
 - `higham9_14_completePivotWilkinsonProduct_le_of_le`
 - `higham9_14_completePivotWilkinsonBound_ge_sqrt`
@@ -1960,6 +1961,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_pow_two_le_completePivotWilkinsonBound_of_eq_one`
 - `higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two`
 - `higham9_14_completePivotWilkinsonBound_le_of_le`
+- `higham9_14_completePivotWilkinsonBound_succ_div_ge_one`
 - `higham9_14_completePivotWilkinsonBound_ge_two_of_ge_two`
 - `higham9_14_completePivotWilkinsonBound_monotone`
 - `higham9_completePivotGrowthSet`
@@ -2029,6 +2031,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_pow_two_le_rookPivotFosterBound_of_le_two`
 - `higham9_16_rookPivotFosterFactor_le_of_le`
 - `higham9_16_rookPivotFosterBound_le_of_le`
+- `higham9_16_rookPivotFosterBound_succ_div_ge_one`
 - `higham9_16_rookPivotFosterBound_ge_two_of_ge_two`
 - `higham9_16_rookPivotFosterBound_monotone`
 - `higham9_12_sineMatrix`
@@ -2338,9 +2341,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohte_banded_solve_tight_of_bandwidth_le`
 - `higham9_11_bohte_banded_solve_tight_of_isBanded_common`
 - `higham9_11_bohte_banded_solve_tight_of_isBanded_common_growth_le`
+- `higham9_11_bandwidth_one_bohte_solve_tight_of_isBanded`
 - `higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal`
 - `higham9_11_tridiagonal_bohte_solve_tight`
 - `higham9_11_pentadiagonal_bohte_solve_tight`
+- `higham9_11_pentadiagonal_bohte_solve_tight_of_isBanded`
 - `higham9_11_bandwidth_two_bohte_solve_tight`
 - `higham9_11_bandwidth_two_bohte_solve_tight_of_isBanded`
 - `higham9_11_bandwidth_three_bohte_solve_tight`
