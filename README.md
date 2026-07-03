@@ -92,7 +92,11 @@ finite sigma-form residual estimate `normwise_residual_sigma_finite_bound` for
 `finiteResidualSigma_le_diagonalizable_bound`, now instantiated with the
 displayed finite maximum by `diagonalResidualRatioMax` and
 `finiteResidualSigma_le_diagonalizable_max_bound`, plus the supremum-envelope
-wrapper `residualSigmaSup_le_diagonalizable_max_bound`, for the (17.20) bound.  It also
+wrapper `residualSigmaSup_le_diagonalizable_max_bound`, for the (17.20) bound,
+and the subordinate-norm stopping-test wrappers
+`stopping_test_rhs_backward_subordinate`,
+`stopping_test_matrix_backward_subordinate`, and
+`stopping_test_mixed_backward_subordinate` for (17.33a)-(17.33c).  It also
 models the iterate-growth constants from (17.7) and (17.9)
 with `normwiseIterateGrowth`, `componentwiseIterateGrowth`, and their bound
 wrappers, and adds the finite/certificate correction and infinity-norm bridge
@@ -106,8 +110,9 @@ finite norm-form surface `jacobiForwardBoundVector`,
 `finite_norm_form_sor_forward_bound`, with the Gauss-Seidel `omega = 1`
 corollary `sorForwardFactor_one` and
 `finite_norm_form_gaussSeidel_forward_bound`.  The exact infinite-sum,
-literal infinite-sigma, singular-system, and stopping-test rows remain open in
-the Chapter 17 ledger.
+literal infinite-sigma, and singular-system rows remain open in the Chapter 17
+ledger; the Section 17.5 componentwise absolute-value variants are not claimed
+by the new normwise stopping-test wrappers.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
