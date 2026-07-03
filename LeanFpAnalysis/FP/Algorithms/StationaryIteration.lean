@@ -838,6 +838,54 @@ theorem one_step_residual (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ)
       matMulVec n (matSub_id n (dualIterMatrix n N M_inv)) (ξ k) i
     rw [← matMulVec_matMul, A_matMul_Minv_eq_sub n A M N M_inv hS]
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.18):
+    finite-sum residual recurrence
+    `r_{m+1} = H^(m+1) r_0 - sum_{k=0}^m H^k (I-H) ξ_{m-k}`. -/
+theorem residual_finite_sum (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
+    (hIter : ComputedIteration n M N b x_hat ξ)
+    (m : ℕ) :
+    ∀ i, b i - ∑ j : Fin n, A i j * x_hat (m + 1) j =
+      matMulVec n (matPow n (dualIterMatrix n N M_inv) (m + 1))
+        (fun j => b j - ∑ l : Fin n, A j l * x_hat 0 l) i -
+      ∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n (dualIterMatrix n N M_inv) k)
+          (matMulVec n (matSub_id n (dualIterMatrix n N M_inv))
+            (ξ (m - k))) i := by
+  intro i
+  let H := dualIterMatrix n N M_inv
+  let C := matSub_id n H
+  let R : ℕ → Fin n → ℝ :=
+    fun k j => b j - ∑ l : Fin n, A j l * x_hat k l
+  have hsource :
+      (∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n H k)
+          (fun j => -matMulVec n C (ξ (m - k)) j) i) =
+      - ∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n H k)
+          (matMulVec n C (ξ (m - k))) i := by
+    rw [← Finset.sum_neg_distrib]
+    apply Finset.sum_congr rfl
+    intro k _hk
+    unfold matMulVec
+    rw [← Finset.sum_neg_distrib]
+    apply Finset.sum_congr rfl
+    intro j _hj
+    ring
+  have hunroll := affine_recurrence_unroll n H
+    (fun k j => -matMulVec n C (ξ k) j)
+    R
+    (by
+      intro k j
+      have hres := one_step_residual n A M N M_inv hS b x hAx x_hat ξ hIter k j
+      simpa [R, H, C, sub_eq_add_neg] using hres)
+    m i
+  rw [hsource] at hunroll
+  simpa [R, H, C, sub_eq_add_neg] using hunroll
+
 -- ============================================================
 -- §17.2  Normwise one-step bound and forward bound (eqs 17.5, 17.8)
 -- ============================================================

@@ -49,8 +49,10 @@ bound `xiSq_le_mu_relative_residual_sq`. It also constructs the coordinatewise
 SVD optimizer through `svdOptimalDeltaA`, `svdOptimalDeltaB`,
 `svdOptimalDeltaC`, `svdOptimalPerturbations_cost_eq_xiSq`, and
 `exists_svdOptimalPerturbations`, plus the component bounds
-`svdOptimalPerturbations_frobNormSq_bounds`, while leaving the global eta
-minimum/infimum bridge open. It also connects square Frobenius
+`svdOptimalPerturbations_frobNormSq_bounds`, and lifts that optimizer to an
+original-coordinate backward-error certificate via
+`isBackwardError_sqrt_xiSq_of_svdOptimalPerturbations`, while leaving the eta
+minimum/infimum order bridge open. It also connects square Frobenius
 backward-error certificates to the SVD-coordinate lower-direction bridge through
 `sylvesterBackwardResidual`, `svdResidual_backwardResidual`, and
 `xiSq_le_three_eta_sq_of_backward_error`. The Lyapunov subsection now also has
@@ -76,10 +78,11 @@ nonsingular splitting algebra, the exact-solution affine fixed-point identity
 `stationary_solution_fixed_point` behind (17.4), the exact finite-sum solution
 identity `stationary_solution_finite_sum`, the source-sign computed finite-sum
 identity `sourceComputedIteration_finite_sum` for (17.3), and the finite-sum
-error recurrence `sourceComputedIteration_error_finite_sum` for (17.5),
-finite/q-bound forward and residual dependencies, and Jacobi/SOR splitting
-identities; the exact infinite-sum, singular-system, and stopping-test rows
-remain open in the Chapter 17 ledger.
+error recurrence `sourceComputedIteration_error_finite_sum` for (17.5), the
+finite-sum residual recurrence `residual_finite_sum` for (17.18), finite/q-bound
+forward and residual dependencies, and Jacobi/SOR splitting identities; the
+exact infinite-sum, singular-system, and stopping-test rows remain open in the
+Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
