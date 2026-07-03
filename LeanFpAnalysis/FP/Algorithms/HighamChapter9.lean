@@ -40121,6 +40121,66 @@ theorem higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opN
     (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
     heta
 
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-residual
+factorization handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_of_matrix_inverse_identities :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_matrix_inverse_identities
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the no-smallness
+exact-residual factorization handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_of_matrix_inverse_identities_no_smallness :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_matrix_inverse_identities_no_smallness
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+exact-residual factorization handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_of_matrix_inverse_identities_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_matrix_inverse_identities_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+exact-residual factorization handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_of_matrix_inverse_identities_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_matrix_inverse_identities_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+exact-residual factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+no-smallness exact-residual factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_no_smallness :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_no_smallness
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+product-smallness exact-residual factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+exact-operator exact-residual factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-residual
+factorization handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the no-smallness
+exact-residual handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_no_smallness_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_no_smallness_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+exact-residual handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_product_lt_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_product_lt_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+exact-residual handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_exact_opNorm2_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_exact_opNorm2_of_factor_triangularity
+
 /-- **Theorem 9.15**, source-facing product-smallness endpoint from the
 original `G` factorization equations when the inverse-normalized lower
 perturbation is identically zero. -/
