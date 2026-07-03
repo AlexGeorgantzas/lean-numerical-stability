@@ -178,6 +178,265 @@ theorem sylvesterVecCoeff_diagonal (m n : Nat)
     case neg =>
       simp [sylvesterVecCoeff, Matrix.kronecker, Matrix.diagonal, h1, h1', h2, hpq]
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    determinant of the diagonal-basis vec/Kronecker coefficient. -/
+theorem sylvesterVecCoeff_diagonal_det (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b)).det =
+      Finset.prod Finset.univ (fun p : Prod (Fin n) (Fin m) => a p.2 - b p.1) := by
+  rw [sylvesterVecCoeff_diagonal, Matrix.det_diagonal]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    the diagonal-basis vec/Kronecker coefficient is nonsingular exactly when
+    no diagonal entry of `A` equals a diagonal entry of `B`. -/
+theorem sylvesterVecCoeff_diagonal_det_ne_zero_iff (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    Not ((sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b)).det = 0) <->
+      forall i j, Not (a i - b j = 0) := by
+  rw [sylvesterVecCoeff_diagonal_det]
+  constructor
+  case mp =>
+    intro h i j
+    have hall := Finset.prod_ne_zero_iff.mp h
+    exact hall (j, i) (by simp)
+  case mpr =>
+    intro h
+    exact Finset.prod_ne_zero_iff.mpr (by
+      intro p _hp
+      exact h p.2 p.1)
+
+-- ============================================================
+-- Exact Schur-coordinate algebra from Chapter 16.1
+-- ============================================================
+
+private theorem rectMatMul_left_right_sub {m n p q : Nat}
+    (A : Fin m -> Fin n -> Real) (B C : Fin n -> Fin p -> Real)
+    (D : Fin p -> Fin q -> Real) :
+    rectMatMul A (rectMatMul (fun i j => B i j - C i j) D) =
+      fun i j => rectMatMul A (rectMatMul B D) i j -
+        rectMatMul A (rectMatMul C D) i j := by
+  ext i j
+  unfold rectMatMul
+  rw [(Finset.sum_sub_distrib (s := Finset.univ)
+    (f := fun k : Fin n => A i k * Finset.sum Finset.univ (fun k1 : Fin p =>
+      B k k1 * D k1 j))
+    (g := fun k : Fin n => A i k * Finset.sum Finset.univ (fun k1 : Fin p =>
+      C k k1 * D k1 j))).symm]
+  apply Finset.sum_congr rfl
+  intro k _
+  rw [(mul_sub (A i k)
+    (Finset.sum Finset.univ (fun k1 : Fin p => B k k1 * D k1 j))
+    (Finset.sum Finset.univ (fun k1 : Fin p => C k k1 * D k1 j))).symm]
+  apply congrArg (fun z => A i k * z)
+  rw [(Finset.sum_sub_distrib (s := Finset.univ)
+    (f := fun k1 : Fin p => B k k1 * D k1 j)
+    (g := fun k1 : Fin p => C k k1 * D k1 j)).symm]
+  apply Finset.sum_congr rfl
+  intro k1 _
+  ring
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5):
+    exact Sylvester-operator algebra in supplied Schur coordinates.  If
+    `A = U R U^T`, `B = V S V^T`, and `U,V` are orthogonal, then
+    substituting `X = U Y V^T` transforms `AX - XB` into
+    `U (RY - YS) V^T`.  This conditional wrapper does not assert existence
+    of Schur decompositions or any triangular/quasi-triangular structure. -/
+theorem sylvester_schur_transform_identity (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n) (Y : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V))) :
+    sylvesterOpRect m n A B (rectMatMul U (rectMatMul Y (matTranspose V))) =
+      rectMatMul U (rectMatMul (sylvesterOpRect m n R S Y) (matTranspose V)) := by
+  subst A
+  subst B
+  have hUtU : rectMatMul (matTranspose U) U = idMatrix m := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hU.left_inv i j
+  have hVtV : rectMatMul (matTranspose V) V = idMatrix n := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hV.left_inv i j
+  have hleft :
+      rectMatMul (rectMatMul U (rectMatMul R (matTranspose U)))
+          (rectMatMul U (rectMatMul Y (matTranspose V))) =
+        rectMatMul U (rectMatMul (rectMatMul R Y) (matTranspose V)) := by
+    calc
+      rectMatMul (rectMatMul U (rectMatMul R (matTranspose U)))
+          (rectMatMul U (rectMatMul Y (matTranspose V)))
+          = rectMatMul U (rectMatMul (rectMatMul R (matTranspose U))
+              (rectMatMul U (rectMatMul Y (matTranspose V)))) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul U (rectMatMul R
+              (rectMatMul (matTranspose U) (rectMatMul U (rectMatMul Y (matTranspose V))))) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul U (rectMatMul R
+              (rectMatMul (rectMatMul (matTranspose U) U) (rectMatMul Y (matTranspose V)))) := by
+              exact congrArg (fun Z => rectMatMul U (rectMatMul R Z))
+                (rectMatMul_assoc (matTranspose U) U (rectMatMul Y (matTranspose V))).symm
+      _ = rectMatMul U (rectMatMul R
+              (rectMatMul (idMatrix m) (rectMatMul Y (matTranspose V)))) := by
+              rw [hUtU]
+      _ = rectMatMul U (rectMatMul R (rectMatMul Y (matTranspose V))) := by
+              rw [rectMatMul_id_left]
+      _ = rectMatMul U (rectMatMul (rectMatMul R Y) (matTranspose V)) := by
+              exact congrArg (rectMatMul U) (rectMatMul_assoc R Y (matTranspose V)).symm
+  have hright :
+      rectMatMul (rectMatMul U (rectMatMul Y (matTranspose V)))
+          (rectMatMul V (rectMatMul S (matTranspose V))) =
+        rectMatMul U (rectMatMul (rectMatMul Y S) (matTranspose V)) := by
+    calc
+      rectMatMul (rectMatMul U (rectMatMul Y (matTranspose V)))
+          (rectMatMul V (rectMatMul S (matTranspose V)))
+          = rectMatMul U (rectMatMul (rectMatMul Y (matTranspose V))
+              (rectMatMul V (rectMatMul S (matTranspose V)))) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul U (rectMatMul Y
+              (rectMatMul (matTranspose V) (rectMatMul V (rectMatMul S (matTranspose V))))) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul U (rectMatMul Y
+              (rectMatMul (rectMatMul (matTranspose V) V) (rectMatMul S (matTranspose V)))) := by
+              exact congrArg (fun Z => rectMatMul U (rectMatMul Y Z))
+                (rectMatMul_assoc (matTranspose V) V (rectMatMul S (matTranspose V))).symm
+      _ = rectMatMul U (rectMatMul Y
+              (rectMatMul (idMatrix n) (rectMatMul S (matTranspose V)))) := by
+              rw [hVtV]
+      _ = rectMatMul U (rectMatMul Y (rectMatMul S (matTranspose V))) := by
+              rw [rectMatMul_id_left]
+      _ = rectMatMul U (rectMatMul (rectMatMul Y S) (matTranspose V)) := by
+              exact congrArg (rectMatMul U) (rectMatMul_assoc Y S (matTranspose V)).symm
+  have hcombine :
+      rectMatMul U (rectMatMul (sylvesterOpRect m n R S Y) (matTranspose V)) =
+        fun i j => rectMatMul U (rectMatMul (rectMatMul R Y) (matTranspose V)) i j -
+          rectMatMul U (rectMatMul (rectMatMul Y S) (matTranspose V)) i j := by
+    simpa [sylvesterOpRect, matMulRect_eq_rectMatMul] using
+      (rectMatMul_left_right_sub U (rectMatMul R Y) (rectMatMul Y S) (matTranspose V))
+  unfold sylvesterOpRect
+  simp only [matMulRect_eq_rectMatMul]
+  rw [hleft, hright]
+  exact hcombine.symm
+
+private theorem rectMatMul_schur_coords_cancel {m n : Nat}
+    (U : RMatFn m m) (V : RMatFn n n) (M : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V) :
+    rectMatMul (matTranspose U)
+      (rectMatMul (rectMatMul U (rectMatMul M (matTranspose V))) V) = M := by
+  have hUtU : rectMatMul (matTranspose U) U = idMatrix m := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hU.left_inv i j
+  have hVtV : rectMatMul (matTranspose V) V = idMatrix n := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hV.left_inv i j
+  calc
+    rectMatMul (matTranspose U)
+        (rectMatMul (rectMatMul U (rectMatMul M (matTranspose V))) V)
+        = rectMatMul (rectMatMul (matTranspose U)
+            (rectMatMul U (rectMatMul M (matTranspose V)))) V := by
+            exact (rectMatMul_assoc (matTranspose U)
+              (rectMatMul U (rectMatMul M (matTranspose V))) V).symm
+    _ = rectMatMul (rectMatMul (rectMatMul (matTranspose U) U)
+            (rectMatMul M (matTranspose V))) V := by
+            exact congrArg (fun Z => rectMatMul Z V)
+              (rectMatMul_assoc (matTranspose U) U (rectMatMul M (matTranspose V))).symm
+    _ = rectMatMul (rectMatMul (idMatrix m) (rectMatMul M (matTranspose V))) V := by
+            rw [hUtU]
+    _ = rectMatMul (rectMatMul M (matTranspose V)) V := by
+            rw [rectMatMul_id_left]
+    _ = rectMatMul M (rectMatMul (matTranspose V) V) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul M (idMatrix n) := by
+            rw [hVtV]
+    _ = M := by
+            rw [rectMatMul_id_right]
+
+private theorem rectMatMul_schur_coords_expand {m n : Nat}
+    (U : RMatFn m m) (V : RMatFn n n) (C : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V) :
+    rectMatMul U
+      (rectMatMul (rectMatMul (matTranspose U) (rectMatMul C V)) (matTranspose V)) = C := by
+  have hUUt : rectMatMul U (matTranspose U) = idMatrix m := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hU.right_inv i j
+  have hVVt : rectMatMul V (matTranspose V) = idMatrix n := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hV.right_inv i j
+  calc
+    rectMatMul U
+        (rectMatMul (rectMatMul (matTranspose U) (rectMatMul C V)) (matTranspose V))
+        = rectMatMul (rectMatMul U
+            (rectMatMul (matTranspose U) (rectMatMul C V))) (matTranspose V) := by
+            exact (rectMatMul_assoc U
+              (rectMatMul (matTranspose U) (rectMatMul C V)) (matTranspose V)).symm
+    _ = rectMatMul (rectMatMul (rectMatMul U (matTranspose U))
+            (rectMatMul C V)) (matTranspose V) := by
+            exact congrArg (fun Z => rectMatMul Z (matTranspose V))
+              (rectMatMul_assoc U (matTranspose U) (rectMatMul C V)).symm
+    _ = rectMatMul (rectMatMul (idMatrix m) (rectMatMul C V)) (matTranspose V) := by
+            rw [hUUt]
+    _ = rectMatMul (rectMatMul C V) (matTranspose V) := by
+            rw [rectMatMul_id_left]
+    _ = rectMatMul C (rectMatMul V (matTranspose V)) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul C (idMatrix n) := by
+            rw [hVVt]
+    _ = C := by
+            rw [rectMatMul_id_right]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5):
+    equation-level Schur-coordinate form.  Under supplied orthogonal
+    factorizations `A = U R U^T` and `B = V S V^T`, the substitution
+    `X = U Y V^T` solves `AX - XB = C` exactly when `Y` solves
+    `RY - YS = U^T C V`. -/
+theorem sylvester_schur_transform_solution_iff (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n) (C Y : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V))) :
+    IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul Y (matTranspose V))) <->
+      IsSylvesterSolutionRect m n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) Y := by
+  constructor
+  case mp =>
+    intro h
+    have htrans := sylvester_schur_transform_identity m n U R A V S B Y hU hV hA hB
+    have hUMVt :
+        rectMatMul U (rectMatMul (sylvesterOpRect m n R S Y) (matTranspose V)) = C := by
+      rw [htrans.symm]
+      ext i j
+      exact h i j
+    have hM :
+        sylvesterOpRect m n R S Y =
+          rectMatMul (matTranspose U) (rectMatMul C V) := by
+      calc
+        sylvesterOpRect m n R S Y =
+            rectMatMul (matTranspose U)
+              (rectMatMul (rectMatMul U
+                (rectMatMul (sylvesterOpRect m n R S Y) (matTranspose V))) V) := by
+                exact (rectMatMul_schur_coords_cancel U V
+                  (sylvesterOpRect m n R S Y) hU hV).symm
+        _ = rectMatMul (matTranspose U) (rectMatMul C V) := by
+                rw [hUMVt]
+    intro i j
+    exact congrFun (congrFun hM i) j
+  case mpr =>
+    intro h
+    have hM :
+        sylvesterOpRect m n R S Y =
+          rectMatMul (matTranspose U) (rectMatMul C V) := by
+      ext i j
+      exact h i j
+    have hUMVt :
+        rectMatMul U (rectMatMul (sylvesterOpRect m n R S Y) (matTranspose V)) = C := by
+      rw [hM]
+      exact rectMatMul_schur_coords_expand U V C hU hV
+    have htrans := sylvester_schur_transform_identity m n U R A V S B Y hU hV hA hB
+    have hsol :
+        sylvesterOpRect m n A B (rectMatMul U (rectMatMul Y (matTranspose V))) = C := by
+      rw [htrans]
+      exact hUMVt
+    intro i j
+    exact congrFun (congrFun hsol i) j
+
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
 -- ============================================================
@@ -267,6 +526,155 @@ theorem lyapunov_solution_symmetric_of_symmetric_rhs (n : Nat)
     lyapunov_unique_solution_of_sep n A sigma hSep C X (matTranspose X) hX hXT
   intro i j
   exact huniq i j
+
+-- ============================================================
+-- Separation infimum from Chapter 16.4
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    feasible Frobenius ratios for `sep(A,B)`.  The nonzero condition is
+    represented by `frobNormSq X` to match the existing square infrastructure. -/
+def sylvesterSepRatios (n : Nat) (A B : Fin n -> Fin n -> Real) : Set Real :=
+  {rho | exists X : Fin n -> Fin n -> Real,
+    Not (frobNormSq X = 0) /\
+      rho = frobNorm (sylvesterOp n A B X) / frobNorm X}
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    `sep(A,B)` modeled as the infimum of the nonzero Frobenius ratios.
+    This records the exact source object without asserting that the infimum is
+    attained by a minimizing matrix. -/
+noncomputable def sylvesterSepInf (n : Nat) (A B : Fin n -> Fin n -> Real) : Real :=
+  sInf (sylvesterSepRatios n A B)
+
+/-- The exact `sep(A,B)` ratio set is bounded below by zero. -/
+theorem sylvesterSepRatios_bddBelow (n : Nat) (A B : Fin n -> Fin n -> Real) :
+    BddBelow (sylvesterSepRatios n A B) := by
+  refine Exists.intro 0 ?_
+  intro rho hrho
+  cases hrho with
+  | intro X hrest =>
+      cases hrest with
+      | intro _hX hrho_eq =>
+          rw [hrho_eq]
+          exact div_nonneg (frobNorm_nonneg _) (frobNorm_nonneg _)
+
+/-- The exact infimum model of `sep(A,B)` from equation (16.26) is
+    nonnegative, since every feasible Frobenius ratio is nonnegative. -/
+theorem sylvesterSepInf_nonneg (n : Nat) (A B : Fin n -> Fin n -> Real) :
+    0 <= sylvesterSepInf n A B := by
+  unfold sylvesterSepInf
+  apply Real.sInf_nonneg
+  intro rho hrho
+  rcases hrho with ⟨X, _hX, hrho_eq⟩
+  rw [hrho_eq]
+  exact div_nonneg (frobNorm_nonneg _) (frobNorm_nonneg _)
+
+/-- Every nonzero Frobenius ratio is above the infimum model of `sep(A,B)`. -/
+theorem sylvesterSepInf_le_ratio (n : Nat) (A B X : Fin n -> Fin n -> Real)
+    (hX : Not (frobNormSq X = 0)) :
+    sylvesterSepInf n A B <= frobNorm (sylvesterOp n A B X) / frobNorm X := by
+  unfold sylvesterSepInf
+  exact csInf_le (sylvesterSepRatios_bddBelow n A B)
+    (Exists.intro X (And.intro hX rfl))
+
+/-- A positive `SepLowerBound` certificate is below the exact infimum model,
+    whenever the feasible ratio set is nonempty. -/
+theorem SepLowerBound_le_sylvesterSepInf_of_nonempty (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma)
+    (hne : (sylvesterSepRatios n A B).Nonempty) :
+    sigma <= sylvesterSepInf n A B := by
+  unfold sylvesterSepInf
+  apply le_csInf hne
+  intro rho hrho
+  cases hrho with
+  | intro X hrest =>
+      cases hrest with
+      | intro hX hrho_eq =>
+          rw [hrho_eq]
+          have hXsq_pos : 0 < frobNormSq X :=
+            lt_of_le_of_ne (frobNormSq_nonneg X) (Ne.symm hX)
+          have hXnorm_pos : 0 < frobNorm X := by
+            have hs : 0 < frobNorm X ^ 2 := by
+              rw [frobNorm_sq]
+              exact hXsq_pos
+            have hne_norm : Not (frobNorm X = 0) := sq_pos_iff.mp hs
+            exact lt_of_le_of_ne (frobNorm_nonneg X) (Ne.symm hne_norm)
+          have hsq := hSep.2 X hX
+          have hsq_norms : (sigma * frobNorm X) ^ 2 <=
+              frobNorm (sylvesterOp n A B X) ^ 2 := by
+            rw [mul_pow, frobNorm_sq, frobNorm_sq]
+            exact hsq
+          have hleft_nonneg : 0 <= sigma * frobNorm X :=
+            mul_nonneg (le_of_lt hSep.1) (frobNorm_nonneg X)
+          have hright_nonneg : 0 <= frobNorm (sylvesterOp n A B X) :=
+            frobNorm_nonneg _
+          have hnorm_le :
+              sigma * frobNorm X <= frobNorm (sylvesterOp n A B X) := by
+            nlinarith [sq_nonneg
+              (frobNorm (sylvesterOp n A B X) - sigma * frobNorm X)]
+          have hXnorm_ne : Not (frobNorm X = 0) := ne_of_gt hXnorm_pos
+          calc
+            sigma = sigma * frobNorm X / frobNorm X := by
+              field_simp [hXnorm_ne]
+            _ <= frobNorm (sylvesterOp n A B X) / frobNorm X := by
+              exact div_le_div_of_nonneg_right hnorm_le (le_of_lt hXnorm_pos)
+
+/-- Any positive number below the exact infimum model of `sep(A,B)` is a valid
+    `SepLowerBound` certificate for the existing perturbation infrastructure. -/
+theorem SepLowerBound_of_pos_le_sylvesterSepInf (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B) :
+    SepLowerBound n A B sigma := by
+  refine And.intro hsigma ?_
+  intro X hX
+  have hXsq_pos : 0 < frobNormSq X :=
+    lt_of_le_of_ne (frobNormSq_nonneg X) (Ne.symm hX)
+  have hXnorm_pos : 0 < frobNorm X := by
+    have hs : 0 < frobNorm X ^ 2 := by
+      rw [frobNorm_sq]
+      exact hXsq_pos
+    have hne_norm : Not (frobNorm X = 0) := sq_pos_iff.mp hs
+    exact lt_of_le_of_ne (frobNorm_nonneg X) (Ne.symm hne_norm)
+  have hratio :
+      sigma <= frobNorm (sylvesterOp n A B X) / frobNorm X :=
+    le_trans hle (sylvesterSepInf_le_ratio n A B X hX)
+  have hnorm_le :
+      sigma * frobNorm X <= frobNorm (sylvesterOp n A B X) := by
+    have hmul :=
+      mul_le_mul_of_nonneg_right hratio (le_of_lt hXnorm_pos)
+    have hXnorm_ne : Not (frobNorm X = 0) := ne_of_gt hXnorm_pos
+    have hcancel :
+        frobNorm (sylvesterOp n A B X) / frobNorm X * frobNorm X =
+          frobNorm (sylvesterOp n A B X) := by
+      field_simp [hXnorm_ne]
+    simpa [hcancel] using hmul
+  have hleft_nonneg : 0 <= sigma * frobNorm X :=
+    mul_nonneg (le_of_lt hsigma) (frobNorm_nonneg X)
+  have hright_nonneg : 0 <= frobNorm (sylvesterOp n A B X) :=
+    frobNorm_nonneg _
+  have hsq_norms : (sigma * frobNorm X) ^ 2 <=
+      frobNorm (sylvesterOp n A B X) ^ 2 := by
+    nlinarith [sq_nonneg
+      (frobNorm (sylvesterOp n A B X) - sigma * frobNorm X)]
+  rw [mul_pow, frobNorm_sq, frobNorm_sq] at hsq_norms
+  exact hsq_norms
+
+/-- For a nonempty feasible ratio set, the existing positive lower-bound
+    predicate is equivalent to being a positive lower bound of the exact
+    infimum model.  This is an infimum bridge, not an attained-minimum claim. -/
+theorem SepLowerBound_iff_pos_le_sylvesterSepInf_of_nonempty (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hne : (sylvesterSepRatios n A B).Nonempty) :
+    SepLowerBound n A B sigma <->
+      0 < sigma /\ sigma <= sylvesterSepInf n A B := by
+  constructor
+  · intro hSep
+    exact And.intro hSep.1
+      (SepLowerBound_le_sylvesterSepInf_of_nonempty n A B sigma hSep hne)
+  · intro h
+    exact SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma h.1 h.2
 
 -- ============================================================
 -- A posteriori source wrapper from Chapter 16.4

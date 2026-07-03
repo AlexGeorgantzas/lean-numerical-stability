@@ -33,6 +33,53 @@ during gradual migration.
 
 The library formalizes reusable results and stability contracts from **Chapter 1**, selected **Chapter 2** model algebra, core **Chapters 3-6** results, **Chapters 8 and 9** of Higham, plus selected higher-chapter interfaces used for compositional stability proofs. It also includes a RandNLA case study for the explicit meta-algorithms in Drineas and Mahoney's CACM survey, ["RandNLA: Randomized Numerical Linear Algebra"](https://dl.acm.org/doi/10.1145/2842602).
 
+Chapter 16 Sylvester-equation work is tracked in
+[`docs/source_coverage/higham_ch16.md`](docs/source_coverage/higham_ch16.md).
+The current Split 3B surface includes the rectangular Sylvester equation,
+vec/Kronecker wrappers, diagonal-coefficient and supplied-Schur foundations,
+Lyapunov specialization, nonnegative sep-infimum/lower-bound bridge
+infrastructure, a posteriori residual bounds, generalized/Riccati residual
+predicates, and the SVD-coordinate
+backward-error amplification vocabulary. The latter now names Higham's
+Chapter 16.2 amplification factor `sylvesterAmplificationMu`, its square-case
+specialization `sylvesterAmplificationMuSquare`, and the source formula bridge
+`sylvesterAmplificationMu_square_eq`, the conditional square-case
+`one_le_sylvesterAmplificationMuSquare`, plus the xi-level μ-relative-residual
+bound `xiSq_le_mu_relative_residual_sq`. It also constructs the coordinatewise
+SVD optimizer through `svdOptimalDeltaA`, `svdOptimalDeltaB`,
+`svdOptimalDeltaC`, `svdOptimalPerturbations_cost_eq_xiSq`, and
+`exists_svdOptimalPerturbations`, while leaving the global eta minimum/infimum
+bridge open. It also connects square Frobenius
+backward-error certificates to the SVD-coordinate lower-direction bridge through
+`sylvesterBackwardResidual`, `svdResidual_backwardResidual`, and
+`xiSq_le_three_eta_sq_of_backward_error`. The Lyapunov subsection now also has
+the spectral-coordinate equation surface `lyapunovBackwardScalarEq` and its
+residual/diagonal bridges `lyapunovBackwardScalarEq_iff_residual_eq` and
+`lyapunovBackwardScalarEq_iff_diagMatrix_eq`, plus the `lyapunovXiSq`,
+`lyapunovAmplificationMu`, and `lyapunovXiSq_le_mu_relative_residual_sq`
+surfaces. It also bridges the original-coordinate perturbation residual
+`lyapunovBackwardResidual` to the diagonal spectral residual via
+`lyapunovSpectralTransform_backwardResidual` and
+`lyapunovBackwardScalarEq_of_spectral_decomposition`; the full eta amplification
+theorem and several condition/practical-bound rows remain open in the Chapter 16
+ledger.
+
+Chapter 17 stationary-iteration work is tracked in
+[`docs/source_coverage/higham_ch17.md`](docs/source_coverage/higham_ch17.md).
+The existing `StationaryIteration.lean` module now carries the correct
+2nd-edition Chapter 17 source labels and exposes a source-sign wrapper
+`SourceComputedIteration` for equation (17.1), plus a bridge
+`computedIteration_of_sourceComputedIteration` and source-sign one-step error
+recurrence `one_step_error_source`. The current proved surface covers
+nonsingular splitting algebra, the exact-solution affine fixed-point identity
+`stationary_solution_fixed_point` behind (17.4), the exact finite-sum solution
+identity `stationary_solution_finite_sum`, the source-sign computed finite-sum
+identity `sourceComputedIteration_finite_sum` for (17.3), and the finite-sum
+error recurrence `sourceComputedIteration_error_finite_sum` for (17.5),
+finite/q-bound forward and residual dependencies, and Jacobi/SOR splitting
+identities; the exact infinite-sum, singular-system, and stopping-test rows
+remain open in the Chapter 17 ledger.
+
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
 The current Split 3B route has checked source-faithful Householder
@@ -77,7 +124,11 @@ certifies the normalized vector produced from the signed active vector and
 certificate route now has leading-block variants that discharge the nonzero
 active-column premise from first leading-block determinant nonbreakdown, so
 callers can use the standard stored-loop nonbreakdown surface instead of
-supplying a separate nonzero-column fact. That bridge is now threaded through the
+supplying a separate nonzero-column fact. The same certificate surface now has
+tail-leading-block variants for successor panels, deriving the once-shrunk
+panel's nonzero source-column premise from determinant nonbreakdown of
+`qrLeadingBlock (trailingPanel A)` under the same exact primitive-operation and
+computed-alpha/exact-alpha hypotheses. That bridge is now threaded through the
 first-pivot signed stored-panel handoff under the same exact-operation and
 update-compatibility surfaces, so the first QR storage step can consume the
 computed normalized vector while the stored route keeps the signed active vector
@@ -92,7 +143,13 @@ same exact-operation and update-compatibility/exact-add-mul surfaces. Exact-alph
 variants expose the same bridge when the successor alpha is stated as Higham's
 exact `householderAlpha` rather than the computed `fl_householderAlpha`. Exact
 subtraction also discharges the subtract-zero copy premise for those
-computed-alpha and exact-alpha successor QR recursion wrappers. The
+computed-alpha and exact-alpha successor QR recursion wrappers. The lower
+successor stored-panel handoff now has matching tail-leading-block variants
+that derive the nonzero trailing source-column premise from determinant
+nonbreakdown of the once-shrunk trailing leading block. The tail-leading-block
+successor QR variants also derive the same premise from the successor
+leading-block determinant, so callers can use the determinant nonbreakdown
+surface instead of supplying that column fact separately. The
 full rounded stored-loop proof remains open until the per-stage certificate
 fields are proved from a source-faithful model or replaced by a separate
 compatibility/perturbation theorem.

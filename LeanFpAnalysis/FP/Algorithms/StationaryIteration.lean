@@ -1,8 +1,8 @@
 -- Algorithms/StationaryIteration.lean
 --
--- Higham Chapter 16: Error analysis of stationary iterative methods.
+-- Higham Chapter 17: Error analysis of stationary iterative methods.
 --
--- Covers §16.2 (forward error analysis) and §16.3 (backward/residual error
+-- Covers §17.2 (forward error analysis) and §17.3 (backward/residual error
 -- analysis) for iterations of the form  Mx_{k+1} = Nx_k + b  where A = M − N.
 
 import Mathlib.Data.Real.Basic
@@ -20,7 +20,7 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators
 
 -- ============================================================
--- §16.2  Splitting specification and iteration matrices
+-- §17.2  Splitting specification and iteration matrices
 -- ============================================================
 
 /-- A splitting A = M − N with M invertible. -/
@@ -92,15 +92,341 @@ theorem A_matPow_G_eq_matPow_H_A (n : ℕ) (A M N M_inv : Fin n → Fin n → �
     rw [← matMul_assoc n A, AG_eq_HA n A M N M_inv hS,
         matMul_assoc n _ A, ih, ← matMul_assoc]
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, equation (17.4):
+    an exact solution of `Ax = b` is a fixed point of the stationary
+    affine map `x ↦ Gx + M⁻¹b`, where `G = M⁻¹N`. -/
+theorem stationary_solution_fixed_point (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i) :
+    ∀ i, x i =
+      matMulVec n (iterMatrix n M_inv N) x i + matMulVec n M_inv b i := by
+  have hMx : ∀ l, matMulVec n M x l = matMulVec n N x l + b l := by
+    intro l
+    unfold matMulVec
+    have : ∑ j : Fin n, M l j * x j - ∑ j : Fin n, N l j * x j = b l := by
+      rw [← Finset.sum_sub_distrib]
+      convert hAx l using 1
+      congr 1
+      ext j
+      rw [hS.splitting l j]
+      ring
+    linarith
+  have hApplyLeft : matMulVec n M_inv (matMulVec n M x) = x := by
+    ext i
+    calc
+      matMulVec n M_inv (matMulVec n M x) i
+          = matMulVec n (matMul n M_inv M) x i := by
+              rw [matMulVec_matMul]
+      _ = matMulVec n (idMatrix n) x i := by
+          unfold matMulVec matMul idMatrix
+          apply Finset.sum_congr rfl
+          intro j _hj
+          exact congrArg (fun t : ℝ => t * x j) (hS.inv_left i j)
+      _ = x i := by
+          simp [matMulVec, idMatrix]
+  intro i
+  calc
+    x i = matMulVec n M_inv (matMulVec n M x) i := by
+      exact (congrFun hApplyLeft i).symm
+    _ = matMulVec n M_inv (fun l => matMulVec n N x l + b l) i := by
+      congr 1
+      ext l
+      exact hMx l
+    _ = matMulVec n M_inv (matMulVec n N x) i +
+        matMulVec n M_inv b i := by
+      simpa using congrFun (matMulVec_add_right n M_inv (matMulVec n N x) b) i
+    _ = matMulVec n (iterMatrix n M_inv N) x i + matMulVec n M_inv b i := by
+      simp [iterMatrix, matMulVec_matMul]
+
+/-- Finite unrolling of an affine fixed point `x = Gx + c`. -/
+theorem affine_fixed_point_unroll (n : ℕ)
+    (G : Fin n → Fin n → ℝ) (c x : Fin n → ℝ)
+    (hfix : ∀ i, x i = matMulVec n G x i + c i) :
+    ∀ m i, x i =
+      matMulVec n (matPow n G m) x i +
+      ∑ k ∈ Finset.range m, matMulVec n (matPow n G k) c i := by
+  intro m
+  induction m with
+  | zero =>
+      intro i
+      simp [matPow, matMulVec, idMatrix]
+  | succ m ih =>
+      intro i
+      have htail :
+          matMulVec n (matPow n G m) x i =
+            matMulVec n (matPow n G (m + 1)) x i +
+              matMulVec n (matPow n G m) c i := by
+        have hx :
+            x = fun j => matMulVec n G x j + c j := by
+          ext j
+          exact hfix j
+        calc
+          matMulVec n (matPow n G m) x i
+              = matMulVec n (matPow n G m)
+                  (fun j => matMulVec n G x j + c j) i := by
+                  exact congrArg (fun y => matMulVec n (matPow n G m) y i) hx
+          _ = matMulVec n (matPow n G m) (matMulVec n G x) i +
+                matMulVec n (matPow n G m) c i := by
+                  simpa using
+                    congrFun
+                      (matMulVec_add_right n (matPow n G m)
+                        (matMulVec n G x) c) i
+          _ = matMulVec n (matPow n G (m + 1)) x i +
+                matMulVec n (matPow n G m) c i := by
+                  congr 1
+                  rw [← matMulVec_matMul n (matPow n G m) G x i]
+                  rw [← matPow_succ_right n G m]
+      calc
+        x i = matMulVec n (matPow n G m) x i +
+            ∑ k ∈ Finset.range m, matMulVec n (matPow n G k) c i := ih i
+        _ = (matMulVec n (matPow n G (m + 1)) x i +
+              matMulVec n (matPow n G m) c i) +
+            ∑ k ∈ Finset.range m, matMulVec n (matPow n G k) c i := by
+              rw [htail]
+        _ = matMulVec n (matPow n G (m + 1)) x i +
+            ∑ k ∈ Finset.range (m + 1),
+              matMulVec n (matPow n G k) c i := by
+              rw [Finset.sum_range_succ]
+              ring
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, equation (17.4):
+    finite-sum identity for an exact stationary solution, obtained by
+    unrolling the affine fixed-point equation. -/
+theorem stationary_solution_finite_sum (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (m : ℕ) :
+    ∀ i, x i =
+      matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1)) x i +
+      ∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n (iterMatrix n M_inv N) k)
+          (matMulVec n M_inv b) i := by
+  intro i
+  exact affine_fixed_point_unroll n (iterMatrix n M_inv N)
+    (matMulVec n M_inv b) x
+    (stationary_solution_fixed_point n A M N M_inv hS b x hAx)
+    (m + 1) i
+
+/-- Matrix-vector multiplication distributes over a finite sum in the vector
+    argument. -/
+theorem matMulVec_finset_sum_right {α : Type*} [DecidableEq α] (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (s : Finset α) (v : α → Fin n → ℝ) :
+    matMulVec n A (fun i => ∑ a ∈ s, v a i) =
+      fun i => ∑ a ∈ s, matMulVec n A (v a) i := by
+  classical
+  induction s using Finset.induction with
+  | empty =>
+      ext i
+      simp [matMulVec]
+  | insert a s ha ih =>
+      ext i
+      simp [ha, matMulVec_add_right, ih]
+
+/-- Finite unrolling of an affine recurrence with a time-varying source term. -/
+theorem affine_recurrence_unroll (n : ℕ)
+    (G : Fin n → Fin n → ℝ) (d : ℕ → Fin n → ℝ)
+    (y : ℕ → Fin n → ℝ)
+    (hstep : ∀ k i, y (k + 1) i = matMulVec n G (y k) i + d k i) :
+    ∀ m i, y (m + 1) i =
+      matMulVec n (matPow n G (m + 1)) (y 0) i +
+      ∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n G k) (d (m - k)) i := by
+  intro m
+  induction m with
+  | zero =>
+      intro i
+      rw [Finset.sum_range_one, matPow_one]
+      simpa [matPow_zero, matMulVec, idMatrix] using hstep 0 i
+  | succ m ih =>
+      intro i
+      have hy :
+          y (m + 1) =
+            fun j => matMulVec n (matPow n G (m + 1)) (y 0) j +
+              ∑ k ∈ Finset.range (m + 1),
+                matMulVec n (matPow n G k) (d (m - k)) j := by
+        ext j
+        exact ih j
+      have hlead :
+          matMulVec n G
+              (matMulVec n (matPow n G (m + 1)) (y 0)) i =
+            matMulVec n (matPow n G ((m + 1) + 1)) (y 0) i := by
+        rw [← matMulVec_matMul n G (matPow n G (m + 1)) (y 0) i]
+        rw [← matPow_succ n G (m + 1)]
+      have hsum :
+          matMulVec n G
+              (fun j => ∑ k ∈ Finset.range (m + 1),
+                matMulVec n (matPow n G k) (d (m - k)) j) i =
+            ∑ k ∈ Finset.range (m + 1),
+              matMulVec n (matPow n G (k + 1)) (d (m - k)) i := by
+        calc
+          matMulVec n G
+              (fun j => ∑ k ∈ Finset.range (m + 1),
+                matMulVec n (matPow n G k) (d (m - k)) j) i
+              = ∑ k ∈ Finset.range (m + 1),
+                  matMulVec n G
+                    (matMulVec n (matPow n G k) (d (m - k))) i := by
+                  simpa using
+                    congrFun
+                      (matMulVec_finset_sum_right n G (Finset.range (m + 1))
+                        (fun k => matMulVec n (matPow n G k) (d (m - k)))) i
+          _ = ∑ k ∈ Finset.range (m + 1),
+                matMulVec n (matPow n G (k + 1)) (d (m - k)) i := by
+              apply Finset.sum_congr rfl
+              intro k _hk
+              rw [← matMulVec_matMul n G (matPow n G k) (d (m - k)) i]
+              rw [← matPow_succ n G k]
+      have hfull :
+          (∑ k ∈ Finset.range ((m + 1) + 1),
+            matMulVec n (matPow n G k) (d ((m + 1) - k)) i) =
+            d (m + 1) i +
+            ∑ k ∈ Finset.range (m + 1),
+              matMulVec n (matPow n G (k + 1)) (d (m - k)) i := by
+        have hzero :
+            matMulVec n (matPow n G 0) (d ((m + 1) - 0)) i =
+              d (m + 1) i := by
+          simp [matPow_zero, matMulVec, idMatrix]
+        have htail :
+            (∑ k ∈ Finset.range (m + 1),
+              matMulVec n (matPow n G (k + 1))
+                (d ((m + 1) - (k + 1))) i) =
+              ∑ k ∈ Finset.range (m + 1),
+                matMulVec n (matPow n G (k + 1)) (d (m - k)) i := by
+          apply Finset.sum_congr rfl
+          intro k _hk
+          simp [Nat.succ_sub_succ_eq_sub]
+        rw [Finset.sum_range_succ']
+        rw [hzero, htail]
+        ring
+      calc
+        y ((m + 1) + 1) i =
+            matMulVec n G (y (m + 1)) i + d (m + 1) i := hstep (m + 1) i
+        _ = matMulVec n G
+              (fun j => matMulVec n (matPow n G (m + 1)) (y 0) j +
+                ∑ k ∈ Finset.range (m + 1),
+                  matMulVec n (matPow n G k) (d (m - k)) j) i +
+            d (m + 1) i := by
+              rw [hy]
+        _ = (matMulVec n G
+                (matMulVec n (matPow n G (m + 1)) (y 0)) i +
+              matMulVec n G
+                (fun j => ∑ k ∈ Finset.range (m + 1),
+                  matMulVec n (matPow n G k) (d (m - k)) j) i) +
+            d (m + 1) i := by
+              rw [congrFun
+                (matMulVec_add_right n G
+                  (matMulVec n (matPow n G (m + 1)) (y 0))
+                  (fun j => ∑ k ∈ Finset.range (m + 1),
+                    matMulVec n (matPow n G k) (d (m - k)) j)) i]
+        _ = (matMulVec n (matPow n G ((m + 1) + 1)) (y 0) i +
+              ∑ k ∈ Finset.range (m + 1),
+                matMulVec n (matPow n G (k + 1)) (d (m - k)) i) +
+            d (m + 1) i := by
+              rw [hlead, hsum]
+        _ = matMulVec n (matPow n G ((m + 1) + 1)) (y 0) i +
+            ∑ k ∈ Finset.range ((m + 1) + 1),
+              matMulVec n (matPow n G k) (d ((m + 1) - k)) i := by
+              rw [hfull]
+              ring
+
 -- ============================================================
--- §16.2  Computed iteration and one-step error
+-- §17.2  Computed iteration and one-step error
 -- ============================================================
 
-/-- Computed stationary iteration with local errors (eq 16.1). -/
+/-- Computed stationary iteration with local errors, using the repository's
+    legacy sign convention `M xhat_{k+1} = N xhat_k + b + xi_k`. -/
 structure ComputedIteration (n : ℕ) (M N : Fin n → Fin n → ℝ)
     (b : Fin n → ℝ) (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ)) : Prop where
   step : ∀ k i, ∑ j : Fin n, M i j * x_hat (k + 1) j =
          ∑ j : Fin n, N i j * x_hat k j + b i + ξ k i
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, equation (17.1):
+    source-sign form of the computed stationary iteration,
+    `M xhat_{k+1} = N xhat_k + b - xi_k`. -/
+structure SourceComputedIteration (n : ℕ) (M N : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ)) : Prop where
+  step : ∀ k i, ∑ j : Fin n, M i j * x_hat (k + 1) j =
+         ∑ j : Fin n, N i j * x_hat k j + b i - ξ k i
+
+/-- The source-sign convention in Higham's equation (17.1) is the legacy
+    `ComputedIteration` convention with the local error term negated. -/
+theorem computedIteration_of_sourceComputedIteration (n : ℕ)
+    (M N : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
+    (hIter : SourceComputedIteration n M N b x_hat ξ) :
+    ComputedIteration n M N b x_hat (fun k i => -ξ k i) := by
+  constructor
+  intro k i
+  simpa [sub_eq_add_neg] using hIter.step k i
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, equation (17.1):
+    applying `M⁻¹` to the source-sign computed iteration gives the affine
+    step `xhat_{k+1} = G xhat_k + M⁻¹(b - xi_k)`. -/
+theorem sourceComputedIteration_step_affine (n : ℕ)
+    (M N M_inv : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (x_hat ξ : ℕ → Fin n → ℝ)
+    (hLeft : IsLeftInverse n M M_inv)
+    (hIter : SourceComputedIteration n M N b x_hat ξ) :
+    ∀ k i, x_hat (k + 1) i =
+      matMulVec n (iterMatrix n M_inv N) (x_hat k) i +
+      matMulVec n M_inv (fun j => b j - ξ k j) i := by
+  intro k i
+  have hApplyLeft :
+      matMulVec n M_inv (matMulVec n M (x_hat (k + 1))) =
+        x_hat (k + 1) := by
+    ext r
+    calc
+      matMulVec n M_inv (matMulVec n M (x_hat (k + 1))) r
+          = matMulVec n (matMul n M_inv M) (x_hat (k + 1)) r := by
+              rw [matMulVec_matMul]
+      _ = matMulVec n (idMatrix n) (x_hat (k + 1)) r := by
+          unfold matMulVec matMul idMatrix
+          apply Finset.sum_congr rfl
+          intro j _hj
+          exact congrArg (fun t : ℝ => t * x_hat (k + 1) j) (hLeft r j)
+      _ = x_hat (k + 1) r := by
+          simp [matMulVec, idMatrix]
+  calc
+    x_hat (k + 1) i =
+        matMulVec n M_inv (matMulVec n M (x_hat (k + 1))) i := by
+          exact (congrFun hApplyLeft i).symm
+    _ = matMulVec n M_inv
+          (fun l => matMulVec n N (x_hat k) l + (b l - ξ k l)) i := by
+          congr 1
+          ext l
+          have h := hIter.step k l
+          dsimp [matMulVec] at h ⊢
+          linarith
+    _ = matMulVec n M_inv (matMulVec n N (x_hat k)) i +
+        matMulVec n M_inv (fun l => b l - ξ k l) i := by
+          simpa using
+            congrFun
+              (matMulVec_add_right n M_inv (matMulVec n N (x_hat k))
+                (fun l => b l - ξ k l)) i
+    _ = matMulVec n (iterMatrix n M_inv N) (x_hat k) i +
+        matMulVec n M_inv (fun l => b l - ξ k l) i := by
+          simp [iterMatrix, matMulVec_matMul]
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, equation (17.3):
+    finite-sum closed form for the source-sign computed stationary iteration. -/
+theorem sourceComputedIteration_finite_sum (n : ℕ)
+    (M N M_inv : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (x_hat ξ : ℕ → Fin n → ℝ)
+    (hLeft : IsLeftInverse n M M_inv)
+    (hIter : SourceComputedIteration n M N b x_hat ξ)
+    (m : ℕ) :
+    ∀ i, x_hat (m + 1) i =
+      matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1)) (x_hat 0) i +
+      ∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n (iterMatrix n M_inv N) k)
+          (matMulVec n M_inv (fun j => b j - ξ (m - k) j)) i := by
+  intro i
+  exact affine_recurrence_unroll n (iterMatrix n M_inv N)
+    (fun k => matMulVec n M_inv (fun j => b j - ξ k j))
+    x_hat
+    (sourceComputedIteration_step_affine n M N M_inv b x_hat ξ hLeft hIter)
+    m i
 
 /-- One-step error: x_i − x̂_{k+1,i} = ∑_j G_{ij}(x_j − x̂_{k,j}) − ∑_j M⁻¹_{ij} ξ_{k,j}. -/
 theorem one_step_error (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ)
@@ -166,11 +492,62 @@ theorem one_step_error (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ)
       M_inv i l * N l j * (x j - x_hat k j) from fun l => by ring]
   rw [← Finset.sum_mul]; rfl
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, equation (17.1):
+    one-step error recurrence for the source-sign local error convention. -/
+theorem one_step_error_source (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
+    (hIter : SourceComputedIteration n M N b x_hat ξ) :
+    ∀ k i, x i - x_hat (k + 1) i =
+      ∑ j : Fin n, (iterMatrix n M_inv N) i j * (x j - x_hat k j) +
+      ∑ j : Fin n, M_inv i j * ξ k j := by
+  intro k i
+  have hOld := one_step_error n A M N M_inv hS b x hAx x_hat
+    (fun k i => -ξ k i)
+    (computedIteration_of_sourceComputedIteration n M N b x_hat ξ hIter) k i
+  calc
+    x i - x_hat (k + 1) i =
+        ∑ j : Fin n, (iterMatrix n M_inv N) i j * (x j - x_hat k j) -
+        ∑ j : Fin n, M_inv i j * (-ξ k j) := hOld
+    _ = ∑ j : Fin n, (iterMatrix n M_inv N) i j * (x j - x_hat k j) +
+        ∑ j : Fin n, M_inv i j * ξ k j := by
+        rw [sub_eq_add_neg]
+        congr 1
+        simp_rw [mul_neg]
+        rw [Finset.sum_neg_distrib, neg_neg]
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, equation (17.5):
+    finite-sum forward-error recurrence for the source-sign computed
+    stationary iteration. -/
+theorem sourceComputedIteration_error_finite_sum (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
+    (hIter : SourceComputedIteration n M N b x_hat ξ)
+    (m : ℕ) :
+    ∀ i, x i - x_hat (m + 1) i =
+      matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1))
+        (fun j => x j - x_hat 0 j) i +
+      ∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n (iterMatrix n M_inv N) k)
+          (matMulVec n M_inv (ξ (m - k))) i := by
+  intro i
+  exact affine_recurrence_unroll n (iterMatrix n M_inv N)
+    (fun k => matMulVec n M_inv (ξ k))
+    (fun k j => x j - x_hat k j)
+    (by
+      intro k j
+      simpa [matMulVec] using
+        one_step_error_source n A M N M_inv hS b x hAx x_hat ξ hIter k j)
+    m i
+
 -- ============================================================
--- §16.2  Componentwise forward bound (eq 16.6)
+-- §17.2  Componentwise forward bound (eq 17.6)
 -- ============================================================
 
-/-- **Eq. 16.6 (Componentwise forward bound)**: triangle inequality bound on
+/-- **Eq. 17.6 (Componentwise forward bound)**: triangle inequality bound on
     |∑_j G^{m+1}_{ij} e_{0,j} + ∑_{k=0}^m ∑_j G^k_{ij} w_{m-k,j}|. -/
 theorem componentwise_forward_bound (n : ℕ)
     (G : Fin n → Fin n → ℝ) (e₀ : Fin n → ℝ) (m : ℕ)
@@ -209,17 +586,17 @@ theorem componentwise_forward_bound (n : ℕ)
         exact mul_le_mul_of_nonneg_left (hw _ _) (abs_nonneg _)
 
 -- ============================================================
--- §16.2  Local error bound and simplification (eqs 16.2, 16.10)
+-- §17.2  Local error bound and simplification (eqs 17.2, 17.10)
 -- ============================================================
 
-/-- Eq. 16.2: local rounding error bound. -/
+/-- Eq. 17.2: local rounding error bound. -/
 def LocalErrorBound (n : ℕ) (M N : Fin n → Fin n → ℝ)
     (b : Fin n → ℝ) (x_hat : ℕ → (Fin n → ℝ))
     (ξ : ℕ → (Fin n → ℝ)) (cn_u : ℝ) : Prop :=
   ∀ k i, |ξ k i| ≤ cn_u * (∑ j : Fin n, |M i j| * |x_hat (k + 1) j| +
                               ∑ j : Fin n, |N i j| * |x_hat k j| + |b i|)
 
-/-- **Eq. 16.10**: |ξ_k,i| ≤ c_n u(1+θ_x) ∑_j (|M_{ij}|+|N_{ij}|)|x_j|. -/
+/-- **Eq. 17.10**: |ξ_k,i| ≤ c_n u(1+θ_x) ∑_j (|M_{ij}|+|N_{ij}|)|x_j|. -/
 theorem local_error_simplified (n : ℕ) (M N : Fin n → Fin n → ℝ)
     (b x : Fin n → ℝ)
     (hAx : ∀ i, ∑ j : Fin n, (M i j - N i j) * x j = b i)
@@ -270,20 +647,20 @@ theorem local_error_simplified (n : ℕ) (M N : Fin n → Fin n → ℝ)
     _ = cn_u * (1 + θ_x) * ∑ j, (|M i j| + |N i j|) * |x j| := by ring
 
 -- ============================================================
--- §16.2  c(A) constant and main bound (eqs 16.12–16.13)
+-- §17.2  c(A) constant and main bound (eqs 17.12–17.13)
 -- ============================================================
 
-/-- Partial sum bound (eq 16.12): ∑_{k=0}^m |G^k M⁻¹|_{ij} ≤ cA · |A⁻¹_{ij}|. -/
+/-- Partial sum bound (eq 17.12): ∑_{k=0}^m |G^k M⁻¹|_{ij} ≤ cA · |A⁻¹_{ij}|. -/
 def PartialSumBound (n : ℕ) (G M_inv A_inv : Fin n → Fin n → ℝ)
     (cA : ℝ) (m : ℕ) : Prop :=
   ∀ i j, ∑ k ∈ Finset.range (m + 1),
     ∑ l : Fin n, |matPow n G k i l| * |M_inv l j| ≤ cA * |A_inv i j|
 
 -- ============================================================
--- §16.2.1  Jacobi specialization
+-- §17.2.1  Jacobi specialization
 -- ============================================================
 
-/-- **Eq. 16.16 (Jacobi)**: |M| + |N| = |A| for M = diag(A), N = diag(A) − A. -/
+/-- **Eq. 17.16 (Jacobi)**: |M| + |N| = |A| for M = diag(A), N = diag(A) − A. -/
 theorem jacobi_splitting_abs (n : ℕ) (A : Fin n → Fin n → ℝ)
     (M N : Fin n → Fin n → ℝ)
     (hM : ∀ i j, M i j = if i = j then A i i else 0)
@@ -296,10 +673,10 @@ theorem jacobi_splitting_abs (n : ℕ) (A : Fin n → Fin n → ℝ)
   · rw [hM i j, if_neg hij, hN i j, hM i j, if_neg hij, zero_sub, abs_zero, zero_add, abs_neg]
 
 -- ============================================================
--- §16.2.2  SOR specialization
+-- §17.2.2  SOR specialization
 -- ============================================================
 
-/-- **Eq. 16.17 (SOR)**: |M| + |N| ≤ f(ω)|A| where f(ω) = (1+|1−ω|)/ω. -/
+/-- **Eq. 17.17 (SOR)**: |M| + |N| ≤ f(ω)|A| where f(ω) = (1+|1−ω|)/ω. -/
 theorem sor_splitting_bound (n : ℕ) (A : Fin n → Fin n → ℝ)
     (ω : ℝ) (hω_pos : 0 < ω)
     (D L U : Fin n → Fin n → ℝ)
@@ -359,7 +736,7 @@ theorem sor_splitting_bound (n : ℕ) (A : Fin n → Fin n → ℝ)
       exact le_mul_of_one_le_left (abs_nonneg _) hfω
 
 -- ============================================================
--- §16.3  Backward error — residual identity and sigma bound
+-- §17.3  Backward error — residual identity and sigma bound
 -- ============================================================
 
 /-- The residual r_k = b − Ax̂_k equals A(x − x̂_k). -/
@@ -387,7 +764,7 @@ private theorem geom_partial_sum_le (q : ℝ) (hq : 0 ≤ q) (hq1 : q < 1) (m : 
           rw [Finset.sum_range_succ]; linarith
     _ ≤ 1 := by linarith [pow_nonneg hq (m + 1)]
 
-/-- **σ bound** (§16.3): ∑_{k=0}^m ‖H^k(I−H)‖∞ ≤ ‖I−H‖∞/(1−q) when ‖H‖∞ ≤ q < 1. -/
+/-- **σ bound** (§17.3): ∑_{k=0}^m ‖H^k(I−H)‖∞ ≤ ‖I−H‖∞/(1−q) when ‖H‖∞ ≤ q < 1. -/
 theorem sigma_bound (n : ℕ) (hn : 0 < n)
     (H : Fin n → Fin n → ℝ)
     (q : ℝ) (hq : 0 ≤ q) (hq1 : q < 1)
@@ -415,7 +792,7 @@ theorem sigma_bound (n : ℕ) (hn : 0 < n)
         rw [one_div, mul_comm, div_eq_mul_inv]
 
 -- ============================================================
--- §16.3  Residual recurrence: r_{k+1} = Hr_k − (I−H)ξ_k
+-- §17.3  Residual recurrence: r_{k+1} = Hr_k − (I−H)ξ_k
 -- ============================================================
 
 /-- AM⁻¹ = I − H: since A = M − N, AM⁻¹ = MM⁻¹ − NM⁻¹ = I − H. -/
@@ -427,7 +804,7 @@ theorem A_matMul_Minv_eq_sub (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ)
   simp_rw [hS.splitting, sub_mul, Finset.sum_sub_distrib]
   have hMM := hS.inv_right i j; unfold idMatrix at *; linarith
 
-/-- **One-step residual recurrence** (eq 16.18 base case): r_{k+1} = Hr_k − (I−H)ξ_k.
+/-- **One-step residual recurrence** (eq 17.18 base case): r_{k+1} = Hr_k − (I−H)ξ_k.
     Obtained by left-multiplying e_{k+1} = Ge_k − M⁻¹ξ_k by A
     and using AG = HA, AM⁻¹ = I − H. -/
 theorem one_step_residual (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ)
@@ -462,7 +839,7 @@ theorem one_step_residual (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ)
     rw [← matMulVec_matMul, A_matMul_Minv_eq_sub n A M N M_inv hS]
 
 -- ============================================================
--- §16.2  Normwise one-step bound and forward bound (eqs 16.5, 16.8)
+-- §17.2  Normwise one-step bound and forward bound (eqs 17.5, 17.8)
 -- ============================================================
 
 /-- Normwise one-step error bound from `one_step_error`:
@@ -527,7 +904,7 @@ theorem normwise_one_step_bound (n : ℕ) (_hn : 0 < n)
           exact mul_le_mul_of_nonneg_right (row_sum_le_infNorm _ i)
             (infNormVec_nonneg _)
 
-/-- **Eq. 16.8 (Normwise forward bound)**: ‖e_{m+1}‖∞ ≤ q^{m+1}·‖e₀‖∞ + μ·‖M⁻¹‖∞/(1−q)
+/-- **Eq. 17.8 (Normwise forward bound)**: ‖e_{m+1}‖∞ ≤ q^{m+1}·‖e₀‖∞ + μ·‖M⁻¹‖∞/(1−q)
     where q ≥ ‖G‖∞ and μ ≥ ‖ξ_k‖∞ for all k.  Proved by induction
     from `normwise_one_step_bound` using geometric contraction. -/
 theorem normwise_forward_bound (n : ℕ) (hn : 0 < n)
@@ -587,12 +964,12 @@ theorem normwise_forward_bound (n : ℕ) (hn : 0 < n)
           ring
 
 -- ============================================================
--- §16.2  Main forward bound (eq 16.13)
+-- §17.2  Main forward bound (eq 17.13)
 -- ============================================================
 
-/-- **Eq. 16.13 (Main componentwise forward bound)**: Composes the componentwise
-    forward bound (eq 16.6) with local error simplification (eq 16.10) and the
-    partial-sum bound c(A) (eq 16.12).  Given as hypotheses rather than
+/-- **Eq. 17.13 (Main componentwise forward bound)**: Composes the componentwise
+    forward bound (eq 17.6) with local error simplification (eq 17.10) and the
+    partial-sum bound c(A) (eq 17.12).  Given as hypotheses rather than
     re-deriving; this is a straightforward composition. -/
 theorem main_forward_bound (n : ℕ) (G M_inv A_inv : Fin n → Fin n → ℝ)
     (x : Fin n → ℝ) (M N : Fin n → Fin n → ℝ)
@@ -626,7 +1003,7 @@ theorem main_forward_bound (n : ℕ) (G M_inv A_inv : Fin n → Fin n → ℝ)
           ∑ j, |A_inv i j| * ∑ p, (|M j p| + |N j p|) * |x p| := by ring
 
 -- ============================================================
--- §16.3  Normwise residual bound (eq 16.19)
+-- §17.3  Normwise residual bound (eq 17.19)
 -- ============================================================
 
 /-- Normwise one-step residual bound from `one_step_residual`:
@@ -704,7 +1081,7 @@ theorem normwise_one_step_residual_bound (n : ℕ) (_hn : 0 < n)
             (infNormVec_nonneg _)
   linarith
 
-/-- **Eq. 16.19 (Normwise residual bound)**: ‖r_{m+1}‖∞ ≤ q^{m+1}·‖r₀‖∞ + μ·‖I−H‖∞/(1−q)
+/-- **Eq. 17.19 (Normwise residual bound)**: ‖r_{m+1}‖∞ ≤ q^{m+1}·‖r₀‖∞ + μ·‖I−H‖∞/(1−q)
     where q ≥ ‖H‖∞ and μ ≥ ‖ξ_k‖∞ for all k.  Derived by induction
     from `normwise_one_step_residual_bound` using geometric contraction. -/
 theorem normwise_residual_bound (n : ℕ) (hn : 0 < n)

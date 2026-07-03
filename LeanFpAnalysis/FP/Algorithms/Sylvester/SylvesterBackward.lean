@@ -1,8 +1,9 @@
 -- Algorithms/Sylvester/SylvesterBackward.lean
 --
--- SVD-based backward error analysis for the Sylvester equation (Higham §15.2).
--- Eqs 15.15-15.19: backward error characterization via SVD coordinates,
--- lower/upper bounds on η(Y), and amplification factor μ.
+-- SVD-based backward error analysis for the Sylvester equation (Higham §16.2).
+-- Eqs 16.13-16.19: backward error characterization via SVD coordinates,
+-- lower/upper bounds on η(Y), amplification factor μ, and the Lyapunov
+-- scalar-coordinate and xi/mu analogues in §16.2.1.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
@@ -20,7 +21,7 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
--- SVD representation (§15.2, eq 15.13)
+-- SVD representation (§16.2, eq 16.13)
 -- ============================================================
 
 /-- **SVD representation**: Y = U · diag(σ) · Vᵀ.
@@ -33,7 +34,7 @@ def IsSVD (n : ℕ) (Y : Fin n → Fin n → ℝ)
   (∀ i, 0 ≤ σ i)
 
 -- ============================================================
--- Transformed residual in SVD coordinates (§15.2, eq 15.14)
+-- Transformed residual in SVD coordinates (§16.2, eq 16.13)
 -- ============================================================
 
 /-- **Transformed residual** in SVD coordinates: R̃ = UᵀRV where
@@ -53,10 +54,10 @@ theorem svdResidual_frobNormSq (n : ℕ) (U V R : Fin n → Fin n → ℝ)
   rw [frobNormSq_orthogonal_right _ _ hV, frobNormSq_orthogonal_left _ _ hU.transpose]
 
 -- ============================================================
--- Backward error ξ² definition (§15.2, eq 15.15)
+-- Backward error ξ² definition (§16.2, eq 16.16)
 -- ============================================================
 
-/-- **ξ² functional** (eq 15.15): given transformed residual R̃ and
+/-- **ξ² functional** (eq 16.16): given transformed residual R̃ and
     singular values σ, with tolerances α, β, γ:
       ξ² = ∑_{i,j} r̃²_{ij} / (α²σ²_j + β²σ²_i + γ²). -/
 noncomputable def xiSq (n : ℕ) (R_tilde : Fin n → Fin n → ℝ)
@@ -75,10 +76,10 @@ lemma xiSq_nonneg {n : ℕ} (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → 
   exact div_nonneg (sq_nonneg _) (le_of_lt (hpos i j))
 
 -- ============================================================
--- Backward error lower bound (§15.2, eq 15.16 lower)
+-- Backward error lower bound (§16.2, eq 16.15 lower)
 -- ============================================================
 
-/-- **Backward error lower bound** (eq 15.16, lower direction):
+/-- **Backward error lower bound** (eq 16.15, lower direction):
     For ANY perturbations ΔÃ, ΔB̃, ΔC̃ satisfying the entry-wise
     backward error equation ΔÃ_{ij}σ_j - σ_iΔB̃_{ij} - ΔC̃_{ij} = R̃_{ij},
     we have ξ² ≤ ‖ΔÃ‖²_F/α² + ‖ΔB̃‖²_F/β² + ‖ΔC̃‖²_F/γ².
@@ -128,10 +129,10 @@ theorem backward_error_lower_sq (n : ℕ)
              sq_nonneg ((-β * σ i) * DC i j * α * β - (-γ) * DB i j * α * γ)]
 
 -- ============================================================
--- Backward error upper bound (§15.2, eq 15.16 upper)
+-- Backward error upper bound (§16.2, eq 16.15 upper)
 -- ============================================================
 
-/-- **Backward error upper bound** (eq 15.16, upper direction):
+/-- **Backward error upper bound** (eq 16.15, upper direction):
     The optimal perturbations in SVD coordinates achieve cost exactly ξ².
     We prove one component: ∑ (Δã_opt)² ≤ α² · ξ² where
       Δã_opt_{ij} = α²σ_j · r̃_{ij} / (α²σ²_j + β²σ²_i + γ²). -/
@@ -175,11 +176,156 @@ theorem backward_error_upper_component (n : ℕ)
         (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)) := by
         rw [mul_div_assoc]
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15):
+    optimal SVD-coordinate perturbation in the `DeltaA` slot. -/
+noncomputable def svdOptimalDeltaA (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    α ^ 2 * σ j * R_tilde i j /
+      (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15):
+    optimal SVD-coordinate perturbation in the `DeltaB` slot. -/
+noncomputable def svdOptimalDeltaB (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    -(β ^ 2 * σ i * R_tilde i j) /
+      (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15):
+    optimal SVD-coordinate perturbation in the `DeltaC` slot. -/
+noncomputable def svdOptimalDeltaC (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    -(γ ^ 2 * R_tilde i j) /
+      (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)
+
+/-- The coordinatewise optimal perturbations solve the uncoupled residual
+    equation used in (16.14)-(16.15). -/
+theorem svdOptimalPerturbations_scalar_eq (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) :
+    ∀ i j : Fin n,
+      svdOptimalDeltaA n R_tilde σ α β γ i j * σ j -
+          σ i * svdOptimalDeltaB n R_tilde σ α β γ i j -
+            svdOptimalDeltaC n R_tilde σ α β γ i j =
+        R_tilde i j := by
+  intro i j
+  unfold svdOptimalDeltaA svdOptimalDeltaB svdOptimalDeltaC
+  have hd_ne :
+      α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2 ≠ 0 :=
+    ne_of_gt (hpos i j)
+  field_simp [hd_ne]
+  ring
+
+/-- The coordinatewise optimal perturbations attain total normalized squared
+    cost exactly `xiSq`.  This is the constructive upper-side dependency for
+    Higham's equation (16.15). -/
+theorem svdOptimalPerturbations_cost_eq_xiSq (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) :
+    ∑ i : Fin n, ∑ j : Fin n,
+      (svdOptimalDeltaA n R_tilde σ α β γ i j ^ 2 / α ^ 2 +
+        svdOptimalDeltaB n R_tilde σ α β γ i j ^ 2 / β ^ 2 +
+          svdOptimalDeltaC n R_tilde σ α β γ i j ^ 2 / γ ^ 2) =
+      xiSq n R_tilde σ α β γ := by
+  unfold xiSq
+  apply Finset.sum_congr rfl
+  intro i _
+  apply Finset.sum_congr rfl
+  intro j _
+  unfold svdOptimalDeltaA svdOptimalDeltaB svdOptimalDeltaC
+  have hd_ne :
+      α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2 ≠ 0 :=
+    ne_of_gt (hpos i j)
+  field_simp [hd_ne]
+
+/-- Existence form of the optimal SVD-coordinate perturbations: they solve the
+    uncoupled equation and have total normalized squared cost `xiSq`. -/
+theorem exists_svdOptimalPerturbations (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) :
+    ∃ DA DB DC : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, DA i j * σ j - σ i * DB i j - DC i j = R_tilde i j) ∧
+        (∑ i : Fin n, ∑ j : Fin n,
+          (DA i j ^ 2 / α ^ 2 + DB i j ^ 2 / β ^ 2 + DC i j ^ 2 / γ ^ 2)) =
+          xiSq n R_tilde σ α β γ := by
+  refine ⟨svdOptimalDeltaA n R_tilde σ α β γ,
+    svdOptimalDeltaB n R_tilde σ α β γ,
+    svdOptimalDeltaC n R_tilde σ α β γ, ?_, ?_⟩
+  · exact svdOptimalPerturbations_scalar_eq n R_tilde σ α β γ hpos
+  · exact svdOptimalPerturbations_cost_eq_xiSq n R_tilde σ α β γ hpos
+
 -- ============================================================
--- Amplification factor (§15.2, eqs 15.17-15.19)
+-- Amplification factor (§16.2, eqs 16.17-16.19)
 -- ============================================================
 
-/-- **Amplification factor bound** (eq 15.17-15.18):
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.18):
+    scalar amplification factor `mu` comparing the backward error scale with
+    the normwise relative residual.  The singular-value arguments are the
+    source's zero-extended `sigma_m` and `sigma_n` slots for an `m x n`
+    approximate solution. -/
+noncomputable def sylvesterAmplificationMu
+    (α β γ yNorm σm σn : ℝ) : ℝ :=
+  ((α + β) * yNorm + γ) /
+    Real.sqrt (α ^ 2 * σn ^ 2 + β ^ 2 * σm ^ 2 + γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.19):
+    square-case specialization of the amplification factor. -/
+noncomputable def sylvesterAmplificationMuSquare
+    (α β γ yNorm σmin : ℝ) : ℝ :=
+  ((α + β) * yNorm + γ) /
+    Real.sqrt ((α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2)
+
+/-- In the square case, the two singular-value slots in (16.18) coincide,
+    giving the source formula (16.19). -/
+theorem sylvesterAmplificationMu_square_eq
+    (α β γ yNorm σmin : ℝ) :
+    sylvesterAmplificationMu α β γ yNorm σmin σmin =
+      sylvesterAmplificationMuSquare α β γ yNorm σmin := by
+  unfold sylvesterAmplificationMu sylvesterAmplificationMuSquare
+  rw [show α ^ 2 * σmin ^ 2 + β ^ 2 * σmin ^ 2 + γ ^ 2 =
+      (α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2 by ring]
+
+/-- Higham, 2nd ed., Chapter 16.2, prose after equation (16.18):
+    in the square case the amplification factor is at least one, provided the
+    singular-value slot is bounded by the Frobenius norm of the approximate
+    solution.  The latter is the singular-value foundation still kept explicit
+    in this square API. -/
+theorem one_le_sylvesterAmplificationMuSquare
+    (α β γ yNorm σmin : ℝ)
+    (hα : 0 ≤ α) (hβ : 0 ≤ β) (hγ : 0 ≤ γ)
+    (hy : 0 ≤ yNorm) (hσ : 0 ≤ σmin) (hσ_le : σmin ≤ yNorm)
+    (hDenom : 0 < (α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2) :
+    1 ≤ sylvesterAmplificationMuSquare α β γ yNorm σmin := by
+  unfold sylvesterAmplificationMuSquare
+  have hsqrt_pos :
+      0 < Real.sqrt ((α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2) :=
+    Real.sqrt_pos.2 hDenom
+  have hσsq : σmin ^ 2 ≤ yNorm ^ 2 :=
+    (sq_le_sq₀ hσ hy).mpr hσ_le
+  have hN_nonneg : 0 ≤ (α + β) * yNorm + γ := by
+    nlinarith [mul_nonneg (add_nonneg hα hβ) hy]
+  have hD_le :
+      (α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2 ≤
+        ((α + β) * yNorm + γ) ^ 2 := by
+    nlinarith [mul_le_mul_of_nonneg_left hσsq (sq_nonneg α),
+      mul_le_mul_of_nonneg_left hσsq (sq_nonneg β),
+      mul_nonneg hα hβ,
+      mul_nonneg (add_nonneg hα hβ) hy,
+      mul_nonneg hγ (mul_nonneg (add_nonneg hα hβ) hy)]
+  have hsqrt_le :
+      Real.sqrt ((α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2) ≤
+        (α + β) * yNorm + γ := by
+    apply (sq_le_sq₀ (Real.sqrt_nonneg _) hN_nonneg).mp
+    rw [Real.sq_sqrt (le_of_lt hDenom)]
+    exact hD_le
+  exact (one_le_div hsqrt_pos).mpr hsqrt_le
+
+/-- **Amplification factor bound** (eqs 16.17-16.18):
     ξ² ≤ ‖R̃‖²_F / ((α²+β²)σ²_min + γ²)
     when all singular values satisfy σ_i ≥ σ_min.
 
@@ -219,7 +365,7 @@ theorem xiSq_amplification_bound (n : ℕ)
       α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2 := by nlinarith [sq_nonneg α, sq_nonneg β]
   exact div_le_div_of_nonneg_left (sq_nonneg _) hDenom hdenom_le
 
-/-- **Amplification factor with orthogonal invariance** (eq 15.19, m=n case):
+/-- **Amplification factor with orthogonal invariance** (eq 16.19, m=n case):
     ξ² ≤ ‖R‖²_F / ((α²+β²)σ²_min + γ²). -/
 theorem amplification_factor_bound (n : ℕ)
     (Y R : Fin n → Fin n → ℝ)
@@ -235,8 +381,49 @@ theorem amplification_factor_bound (n : ℕ)
   rw [svdResidual_frobNormSq n U V R hSVD.1 hSVD.2.1] at hle
   exact hle
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.17)-(16.19):
+    the existing square xi-squared residual bound written with the source's
+    amplification factor `mu`.  This is still a bound for `xi`; the separate
+    optimizer step relating `eta(Y)` and `xi` remains the open part of
+    equation (16.15). -/
+theorem xiSq_le_mu_relative_residual_sq (n : ℕ)
+    (Y R : Fin n → Fin n → ℝ)
+    (U V : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (α β γ σ_min : ℝ)
+    (hSVD : IsSVD n Y U V σ)
+    (hσ_min : ∀ i : Fin n, σ_min ≤ σ i) (hσ_min_nn : 0 ≤ σ_min)
+    (hDenom : 0 < (α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2)
+    (hScale : 0 < (α + β) * frobNorm Y + γ) :
+    xiSq n (svdResidual n U V R) σ α β γ ≤
+      (sylvesterAmplificationMuSquare α β γ (frobNorm Y) σ_min *
+        (frobNorm R / ((α + β) * frobNorm Y + γ))) ^ 2 := by
+  have hle := amplification_factor_bound n Y R U V σ α β γ σ_min
+    hSVD hσ_min hσ_min_nn hDenom
+  have hScale_ne : (α + β) * frobNorm Y + γ ≠ 0 := ne_of_gt hScale
+  have hD_ne : (α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2 ≠ 0 := ne_of_gt hDenom
+  have hSqrt_ne : Real.sqrt ((α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2) ≠ 0 :=
+    ne_of_gt (Real.sqrt_pos.2 hDenom)
+  have hSqrt_sq :
+      Real.sqrt ((α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2) ^ 2 =
+        (α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2 :=
+    Real.sq_sqrt (le_of_lt hDenom)
+  calc
+    xiSq n (svdResidual n U V R) σ α β γ ≤
+        frobNormSq R / ((α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2) := hle
+    _ = (sylvesterAmplificationMuSquare α β γ (frobNorm Y) σ_min *
+        (frobNorm R / ((α + β) * frobNorm Y + γ))) ^ 2 := by
+        unfold sylvesterAmplificationMuSquare
+        have hmul :
+            ((α + β) * frobNorm Y + γ) /
+                Real.sqrt ((α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2) *
+              (frobNorm R / ((α + β) * frobNorm Y + γ)) =
+                frobNorm R /
+                  Real.sqrt ((α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2) := by
+          field_simp [hScale_ne, hSqrt_ne]
+        rw [hmul, div_pow, hSqrt_sq, frobNorm_sq]
+
 -- ============================================================
--- Backward error η bound via cost (§15.2)
+-- Backward error η bound via cost (§16.2)
 -- ============================================================
 
 /-- **Backward error η bound via perturbation cost**:
@@ -273,11 +460,196 @@ theorem backward_error_eta_bound (n : ℕ)
     rw [div_le_iff₀ hγ2]; nlinarith
   linarith
 
+/-- Higham, 2nd ed., Chapter 16.2:
+    original-coordinate Sylvester perturbation residual
+    `DeltaA * Y - Y * DeltaB - DeltaC`. -/
+noncomputable def sylvesterBackwardResidual (n : ℕ)
+    (DA DB DC Y : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => matMul n DA Y i j - matMul n Y DB i j - DC i j
+
+/-- The `IsSVD` representation is the diagonal matrix identity
+    `Y = U * diag(sigma) * V^T` in the repository matrix product. -/
+theorem isSVD_eq_matMul_diag (n : ℕ)
+    (Y U V : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (hSVD : IsSVD n Y U V σ) :
+    Y = matMul n U (matMul n (diagMatrix σ) (matTranspose V)) := by
+  have hdiag :
+      matMul n (diagMatrix σ) (matTranspose V) =
+        fun k j => σ k * V j k := by
+    ext k j
+    rw [matMul_diagMatrix_left σ (matTranspose V) k j]
+    rfl
+  ext i j
+  rw [hdiag]
+  exact hSVD.2.2.1 i j
+
+/-- The SVD residual transform distributes over the `M - N - P` matrix
+    combination used in the Sylvester perturbation residual. -/
+theorem svdResidual_sub_sub (n : ℕ)
+    (U V M N P : Fin n → Fin n → ℝ) :
+    svdResidual n U V (fun i j => M i j - N i j - P i j) =
+      fun i j => svdResidual n U V M i j -
+        svdResidual n U V N i j -
+          svdResidual n U V P i j := by
+  ext i j
+  unfold svdResidual matMul matTranspose
+  simp only [sub_eq_add_neg, add_mul, neg_mul, mul_add, mul_neg,
+    Finset.sum_add_distrib, Finset.sum_neg_distrib]
+
+/-- In SVD coordinates, the left perturbation product becomes
+    `DeltaA_tilde * diag(sigma)`. -/
+theorem svdResidual_mul_svd_right (n : ℕ)
+    (U V DA : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (hV : IsOrthogonal n V) :
+    svdResidual n U V
+      (matMul n DA (matMul n U (matMul n (diagMatrix σ) (matTranspose V)))) =
+        matMul n (matMul n (matMul n (matTranspose U) DA) U) (diagMatrix σ) := by
+  unfold svdResidual
+  have hVtV : matMul n (matTranspose V) V = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hV.left_inv i j
+  simp [matMul_assoc, hVtV, matMul_id_right]
+
+/-- In SVD coordinates, the right perturbation product becomes
+    `diag(sigma) * DeltaB_tilde`. -/
+theorem svdResidual_svd_left_mul (n : ℕ)
+    (U V DB : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (hU : IsOrthogonal n U) :
+    svdResidual n U V
+      (matMul n (matMul n U (matMul n (diagMatrix σ) (matTranspose V))) DB) =
+        matMul n (diagMatrix σ)
+          (matMul n (matMul n (matTranspose V) DB) V) := by
+  unfold svdResidual
+  have hUtU : matMul n (matTranspose U) U = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hU.left_inv i j
+  calc
+    matMul n (matMul n (matTranspose U)
+        (matMul n (matMul n U (matMul n (diagMatrix σ) (matTranspose V))) DB)) V
+        = matMul n (matMul n (matMul n (matTranspose U) U)
+            (matMul n (matMul n (diagMatrix σ) (matTranspose V)) DB)) V := by
+            rw [matMul_assoc n U (matMul n (diagMatrix σ) (matTranspose V)) DB]
+            rw [(matMul_assoc n (matTranspose U) U
+              (matMul n (matMul n (diagMatrix σ) (matTranspose V)) DB)).symm]
+    _ = matMul n (matMul n (idMatrix n)
+            (matMul n (matMul n (diagMatrix σ) (matTranspose V)) DB)) V := by
+            rw [hUtU]
+    _ = matMul n (matMul n (matMul n (diagMatrix σ) (matTranspose V)) DB) V := by
+            rw [matMul_id_left]
+    _ = matMul n (diagMatrix σ)
+            (matMul n (matMul n (matTranspose V) DB) V) := by
+            rw [matMul_assoc n (diagMatrix σ) (matTranspose V) DB]
+            rw [matMul_assoc n (diagMatrix σ)
+              (matMul n (matTranspose V) DB) V]
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.13):
+    transforming the original perturbation residual through an SVD of `Y`
+    yields the uncoupled SVD-coordinate residual equations. -/
+theorem svdResidual_backwardResidual (n : ℕ)
+    (Y U V DA DB DC : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (hSVD : IsSVD n Y U V σ) :
+    svdResidual n U V (sylvesterBackwardResidual n DA DB DC Y) =
+      fun i j =>
+        matMul n (matMul n (matTranspose U) DA) U i j * σ j -
+          σ i * matMul n (matMul n (matTranspose V) DB) V i j -
+            svdResidual n U V DC i j := by
+  have hY := isSVD_eq_matMul_diag n Y U V σ hSVD
+  unfold sylvesterBackwardResidual
+  rw [hY]
+  rw [svdResidual_sub_sub n U V
+    (matMul n DA (matMul n U (matMul n (diagMatrix σ) (matTranspose V))))
+    (matMul n (matMul n U (matMul n (diagMatrix σ) (matTranspose V))) DB)
+    DC]
+  rw [svdResidual_mul_svd_right n U V DA σ hSVD.2.1]
+  rw [svdResidual_svd_left_mul n U V DB σ hSVD.1]
+  ext i j
+  rw [matMul_diagMatrix_right
+    (matMul n (matMul n (matTranspose U) DA) U) σ i j]
+  rw [matMul_diagMatrix_left σ
+    (matMul n (matMul n (matTranspose V) DB) V) i j]
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15), lower direction:
+    an original-coordinate perturbation residual feasible at cost `eta`
+    implies the SVD-coordinate `xi^2` cost is bounded by `3 * eta^2`. -/
+theorem xiSq_le_three_eta_sq_of_original_residual (n : ℕ)
+    (Y R U V : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (α β γ η : ℝ) (DA DB DC : Fin n → Fin n → ℝ)
+    (hSVD : IsSVD n Y U V σ)
+    (hα : 0 < α) (hβ : 0 < β) (hγ : 0 < γ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)
+    (hResidual : sylvesterBackwardResidual n DA DB DC Y = R)
+    (hDA : frobNormSq DA ≤ (η * α) ^ 2)
+    (hDB : frobNormSq DB ≤ (η * β) ^ 2)
+    (hDC : frobNormSq DC ≤ (η * γ) ^ 2) :
+    xiSq n (svdResidual n U V R) σ α β γ ≤ 3 * η ^ 2 := by
+  have hbridge := svdResidual_backwardResidual n Y U V DA DB DC σ hSVD
+  have hmat :
+      svdResidual n U V R =
+        fun i j =>
+          matMul n (matMul n (matTranspose U) DA) U i j * σ j -
+            σ i * matMul n (matMul n (matTranspose V) DB) V i j -
+              svdResidual n U V DC i j := by
+    rw [← hResidual]
+    exact hbridge
+  have hEq : ∀ i j : Fin n,
+      matMul n (matMul n (matTranspose U) DA) U i j * σ j -
+          σ i * matMul n (matMul n (matTranspose V) DB) V i j -
+            svdResidual n U V DC i j =
+        svdResidual n U V R i j := by
+    intro i j
+    exact (congrFun (congrFun hmat i) j).symm
+  have hDAnorm :
+      frobNormSq (matMul n (matMul n (matTranspose U) DA) U) =
+        frobNormSq DA := by
+    rw [frobNormSq_orthogonal_right _ _ hSVD.1,
+      frobNormSq_orthogonal_left _ _ hSVD.1.transpose]
+  have hDBnorm :
+      frobNormSq (matMul n (matMul n (matTranspose V) DB) V) =
+        frobNormSq DB := by
+    rw [frobNormSq_orthogonal_right _ _ hSVD.2.1,
+      frobNormSq_orthogonal_left _ _ hSVD.2.1.transpose]
+  have hDCnorm :
+      frobNormSq (svdResidual n U V DC) = frobNormSq DC :=
+    svdResidual_frobNormSq n U V DC hSVD.1 hSVD.2.1
+  exact backward_error_eta_bound n (svdResidual n U V R) σ α β γ η
+    hα hβ hγ
+    (matMul n (matMul n (matTranspose U) DA) U)
+    (matMul n (matMul n (matTranspose V) DB) V)
+    (svdResidual n U V DC)
+    hpos hEq
+    (by rwa [hDAnorm])
+    (by rwa [hDBnorm])
+    (by rwa [hDCnorm])
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.10), (16.13), and (16.15):
+    every square Frobenius backward-error certificate at cost `eta` gives the
+    SVD-coordinate lower-bound inequality `xi^2 <= 3 * eta^2`. -/
+theorem xiSq_le_three_eta_sq_of_backward_error (n : ℕ)
+    (A B C Y U V : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (α β γ η : ℝ)
+    (hSVD : IsSVD n Y U V σ)
+    (hBack : IsBackwardError n A B C Y α β γ η)
+    (hα : 0 < α) (hβ : 0 < β) (hγ : 0 < γ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) :
+    xiSq n (svdResidual n U V (sylvesterResidual n A B C Y)) σ α β γ ≤
+      3 * η ^ 2 := by
+  rcases hBack with ⟨DA, DB, DC, hEq, hDA, hDB, hDC⟩
+  have hResidualPoint := residual_decomposition n A B C Y DA DB DC hEq
+  have hResidual :
+      sylvesterBackwardResidual n DA DB DC Y =
+        sylvesterResidual n A B C Y := by
+    ext i j
+    unfold sylvesterBackwardResidual
+    exact (hResidualPoint i j).symm
+  exact xiSq_le_three_eta_sq_of_original_residual n Y
+    (sylvesterResidual n A B C Y) U V σ α β γ η DA DB DC
+    hSVD hα hβ hγ hpos hResidual hDA hDB hDC
+
 -- ============================================================
--- Residual-based backward error bound (combining eqs 15.12 + 15.16)
+-- Residual-based backward error bound (combining eqs 16.12 + 16.16)
 -- ============================================================
 
-/-- **Combined backward error bound** (eqs 15.12 + 15.16):
+/-- **Combined backward error bound** (eqs 16.12 + 16.16):
     If the backward error equation holds with cost η, then
     η ≥ ‖R‖_F / ((α+β)‖Y‖_F + γ)
     (from residual_bound, rearranged). This is the easy lower bound. -/
@@ -294,5 +666,398 @@ theorem backward_error_residual_lower (n : ℕ)
     frobNorm (sylvesterResidual n A B C Y) ≤
     ((α + β) * frobNorm Y + γ) * η := by
   exact residual_bound n A B C Y ΔA ΔB ΔC α β γ η hα hβ hγ hη hEq hΔA hΔB hΔC
+
+-- ============================================================
+-- Lyapunov spectral-coordinate backward error (§16.2.1, eq 16.21)
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    spectral-coordinate transform `U^T M U` used for the Lyapunov residual and
+    perturbations. -/
+noncomputable def lyapunovSpectralTransform (n : ℕ)
+    (U M : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  matMul n (matMul n (matTranspose U) M) U
+
+/-- Orthogonal spectral coordinates preserve the squared Frobenius norm. -/
+theorem lyapunovSpectralTransform_frobNormSq (n : ℕ)
+    (U M : Fin n → Fin n → ℝ) (hU : IsOrthogonal n U) :
+    frobNormSq (lyapunovSpectralTransform n U M) = frobNormSq M := by
+  unfold lyapunovSpectralTransform
+  rw [frobNormSq_orthogonal_right _ _ hU, frobNormSq_orthogonal_left _ _ hU.transpose]
+
+/-- Spectral-coordinate transforms distribute over the `M + N - P` matrix
+    combination used in the Lyapunov perturbation residual. -/
+theorem lyapunovSpectralTransform_add_sub (n : ℕ)
+    (U M N P : Fin n → Fin n → ℝ) :
+    lyapunovSpectralTransform n U (fun i j => M i j + N i j - P i j) =
+      fun i j => lyapunovSpectralTransform n U M i j +
+        lyapunovSpectralTransform n U N i j -
+          lyapunovSpectralTransform n U P i j := by
+  ext i j
+  unfold lyapunovSpectralTransform matMul matTranspose
+  simp only [sub_eq_add_neg, add_mul, neg_mul, mul_add, mul_neg,
+    Finset.sum_add_distrib, Finset.sum_neg_distrib]
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    original-coordinate Lyapunov perturbation residual
+    `DeltaA * Y + Y * DeltaA^T - DeltaC`. -/
+noncomputable def lyapunovBackwardResidual (n : ℕ)
+    (DA DC Y : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => matMul n DA Y i j + matMul n Y (matTranspose DA) i j - DC i j
+
+/-- If `Y = U * Lambda * U^T`, the left perturbation product transforms to
+    `DeltaA_tilde * Lambda`. -/
+theorem lyapunovSpectralTransform_mul_spectral_right (n : ℕ)
+    (U DA : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (hU : IsOrthogonal n U) :
+    lyapunovSpectralTransform n U
+      (matMul n DA (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))) =
+        matMul n (lyapunovSpectralTransform n U DA) (diagMatrix lam) := by
+  unfold lyapunovSpectralTransform
+  have hUtU : matMul n (matTranspose U) U = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hU.left_inv i j
+  simp [matMul_assoc, hUtU, matMul_id_right]
+
+/-- If `Y = U * Lambda * U^T`, the right perturbation product transforms to
+    `Lambda * DeltaA_tilde^T`. -/
+theorem lyapunovSpectralTransform_spectral_left_transpose (n : ℕ)
+    (U DA : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (hU : IsOrthogonal n U) :
+    lyapunovSpectralTransform n U
+      (matMul n (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+        (matTranspose DA)) =
+        matMul n (diagMatrix lam)
+          (matTranspose (lyapunovSpectralTransform n U DA)) := by
+  unfold lyapunovSpectralTransform
+  have hUtU : matMul n (matTranspose U) U = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hU.left_inv i j
+  calc
+    matMul n (matMul n (matTranspose U)
+        (matMul n (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+          (matTranspose DA))) U
+        = matMul n (matMul n (matMul n (matTranspose U) U)
+            (matMul n (matMul n (diagMatrix lam) (matTranspose U))
+              (matTranspose DA))) U := by
+            rw [matMul_assoc n U (matMul n (diagMatrix lam) (matTranspose U))
+              (matTranspose DA)]
+            rw [(matMul_assoc n (matTranspose U) U
+              (matMul n (matMul n (diagMatrix lam) (matTranspose U))
+                (matTranspose DA))).symm]
+    _ = matMul n (matMul n (idMatrix n)
+            (matMul n (matMul n (diagMatrix lam) (matTranspose U))
+              (matTranspose DA))) U := by
+            rw [hUtU]
+    _ = matMul n
+            (matMul n (matMul n (diagMatrix lam) (matTranspose U))
+              (matTranspose DA)) U := by
+            rw [matMul_id_left]
+    _ = matMul n (diagMatrix lam)
+            (matMul n (matTranspose U) (matMul n (matTranspose DA) U)) := by
+            rw [matMul_assoc n (diagMatrix lam) (matTranspose U) (matTranspose DA)]
+            rw [matMul_assoc n (diagMatrix lam)
+              (matMul n (matTranspose U) (matTranspose DA)) U]
+            rw [matMul_assoc n (matTranspose U) (matTranspose DA) U]
+    _ = matMul n (diagMatrix lam)
+            (matTranspose (matMul n (matMul n (matTranspose U) DA) U)) := by
+            rw [matTranspose_matMul]
+            rw [matTranspose_matMul]
+            rw [matTranspose_involutive]
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    the transformed Lyapunov backward-error residual
+    `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde`, written
+    entrywise in the diagonal spectral coordinates of the symmetric approximate
+    solution. -/
+noncomputable def lyapunovSpectralBackwardResidual (n : ℕ)
+    (DA DC : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j => DA i j * lam j + lam i * DA j i - DC i j
+
+/-- The entrywise residual from equation (16.21) is the diagonal-matrix
+    expression `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde`. -/
+theorem lyapunovSpectralBackwardResidual_eq_diagMatrix (n : ℕ)
+    (DA DC : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) :
+    lyapunovSpectralBackwardResidual n DA DC lam =
+      fun i j =>
+        matMul n DA (diagMatrix lam) i j +
+          matMul n (diagMatrix lam) (matTranspose DA) i j -
+            DC i j := by
+  ext i j
+  unfold lyapunovSpectralBackwardResidual
+  rw [matMul_diagMatrix_right DA lam i j,
+    matMul_diagMatrix_left lam (matTranspose DA) i j]
+  simp [matTranspose]
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    transforming the original-coordinate Lyapunov perturbation residual with
+    `Y = U * Lambda * U^T` gives the diagonal spectral-coordinate residual
+    `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde`. -/
+theorem lyapunovSpectralTransform_backwardResidual (n : ℕ)
+    (U DA DC : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (hU : IsOrthogonal n U) :
+    lyapunovSpectralTransform n U
+      (lyapunovBackwardResidual n DA DC
+        (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))) =
+      lyapunovSpectralBackwardResidual n
+        (lyapunovSpectralTransform n U DA)
+        (lyapunovSpectralTransform n U DC) lam := by
+  unfold lyapunovBackwardResidual
+  rw [lyapunovSpectralTransform_add_sub n U
+    (matMul n DA (matMul n U (matMul n (diagMatrix lam) (matTranspose U))))
+    (matMul n (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+      (matTranspose DA))
+    DC]
+  rw [lyapunovSpectralTransform_mul_spectral_right n U DA lam hU]
+  rw [lyapunovSpectralTransform_spectral_left_transpose n U DA lam hU]
+  rw [lyapunovSpectralBackwardResidual_eq_diagMatrix n
+    (lyapunovSpectralTransform n U DA) (lyapunovSpectralTransform n U DC) lam]
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    the printed scaled scalar equation in Lyapunov spectral coordinates. -/
+def lyapunovBackwardScalarEq (n : ℕ) (lam : Fin n → ℝ) (α γ : ℝ)
+    (DA DC R_tilde : Fin n → Fin n → ℝ) : Prop :=
+  ∀ i j : Fin n,
+    (DA i j / α) * (α * lam j) +
+      (α * lam i) * (DA j i / α) -
+        γ * (DC i j / γ) = R_tilde i j
+
+/-- Equation (16.21) is equivalent to the unscaled transformed residual equation
+    when the source scaling parameters are nonzero. -/
+theorem lyapunovBackwardScalarEq_iff_unscaled (n : ℕ) (lam : Fin n → ℝ)
+    (α γ : ℝ) (DA DC R_tilde : Fin n → Fin n → ℝ)
+    (hα : α ≠ 0) (hγ : γ ≠ 0) :
+    lyapunovBackwardScalarEq n lam α γ DA DC R_tilde ↔
+      ∀ i j : Fin n, DA i j * lam j + lam i * DA j i - DC i j = R_tilde i j := by
+  constructor
+  · intro h i j
+    have hscale :
+        (DA i j / α) * (α * lam j) +
+          (α * lam i) * (DA j i / α) -
+            γ * (DC i j / γ) =
+          DA i j * lam j + lam i * DA j i - DC i j := by
+      field_simp [hα, hγ]
+    simpa [hscale] using h i j
+  · intro h i j
+    have hscale :
+        (DA i j / α) * (α * lam j) +
+          (α * lam i) * (DA j i / α) -
+            γ * (DC i j / γ) =
+          DA i j * lam j + lam i * DA j i - DC i j := by
+      field_simp [hα, hγ]
+    rw [hscale]
+    exact h i j
+
+/-- Equation (16.21) as an equality between the transformed Lyapunov residual
+    matrix and the transformed residual right-hand side. -/
+theorem lyapunovBackwardScalarEq_iff_residual_eq (n : ℕ) (lam : Fin n → ℝ)
+    (α γ : ℝ) (DA DC R_tilde : Fin n → Fin n → ℝ)
+    (hα : α ≠ 0) (hγ : γ ≠ 0) :
+    lyapunovBackwardScalarEq n lam α γ DA DC R_tilde ↔
+      lyapunovSpectralBackwardResidual n DA DC lam = R_tilde := by
+  rw [lyapunovBackwardScalarEq_iff_unscaled n lam α γ DA DC R_tilde hα hγ]
+  constructor
+  · intro h
+    ext i j
+    exact h i j
+  · intro h i j
+    exact congrFun (congrFun h i) j
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    the printed scaled scalar equation follows from the original residual
+    equation after the orthogonal spectral decomposition `Y = U * Lambda * U^T`. -/
+theorem lyapunovBackwardScalarEq_of_spectral_decomposition (n : ℕ)
+    (U DA DC : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ)
+    (hU : IsOrthogonal n U) (hα : α ≠ 0) (hγ : γ ≠ 0) :
+    lyapunovBackwardScalarEq n lam α γ
+      (lyapunovSpectralTransform n U DA)
+      (lyapunovSpectralTransform n U DC)
+      (lyapunovSpectralTransform n U
+        (lyapunovBackwardResidual n DA DC
+          (matMul n U (matMul n (diagMatrix lam) (matTranspose U))))) := by
+  rw [lyapunovBackwardScalarEq_iff_residual_eq n lam α γ
+    (lyapunovSpectralTransform n U DA)
+    (lyapunovSpectralTransform n U DC)
+    (lyapunovSpectralTransform n U
+      (lyapunovBackwardResidual n DA DC
+        (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))))
+    hα hγ]
+  exact (lyapunovSpectralTransform_backwardResidual n U DA DC lam hU).symm
+
+/-- Equation (16.21) as the diagonal-matrix residual equation
+    `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde = R_tilde`. -/
+theorem lyapunovBackwardScalarEq_iff_diagMatrix_eq (n : ℕ) (lam : Fin n → ℝ)
+    (α γ : ℝ) (DA DC R_tilde : Fin n → Fin n → ℝ)
+    (hα : α ≠ 0) (hγ : γ ≠ 0) :
+    lyapunovBackwardScalarEq n lam α γ DA DC R_tilde ↔
+      (fun i j =>
+        matMul n DA (diagMatrix lam) i j +
+          matMul n (diagMatrix lam) (matTranspose DA) i j -
+            DC i j) = R_tilde := by
+  rw [lyapunovBackwardScalarEq_iff_residual_eq n lam α γ DA DC R_tilde hα hγ]
+  rw [lyapunovSpectralBackwardResidual_eq_diagMatrix n DA DC lam]
+
+/-- Higham, 2nd ed., Chapter 16.2.1, unnumbered formula after equation (16.21):
+    Lyapunov-structured squared `xi` functional in spectral coordinates. -/
+noncomputable def lyapunovXiSq (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ) : ℝ :=
+  ∑ i : Fin n, ∑ j : Fin n,
+    ((4 * α ^ 2 * lam j ^ 2 + γ ^ 2) * R_tilde i j ^ 2) /
+      (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2) ^ 2
+
+/-- The simple upper summand appearing after the Lyapunov `xi^2` formula. -/
+noncomputable def lyapunovXiSqSimpleBound (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ) : ℝ :=
+  ∑ i : Fin n, ∑ j : Fin n,
+    (2 * R_tilde i j ^ 2) /
+      (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.2.1, unnumbered inequality after equation
+    (16.21): the exact Lyapunov `xi^2` summand is bounded by the simpler
+    residual-weighted summand when the displayed denominators are positive. -/
+theorem lyapunovXiSq_le_simple_bound (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ)
+    (hpos : ∀ i j : Fin n, 0 < 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2) :
+    lyapunovXiSq n R_tilde lam α γ ≤
+      lyapunovXiSqSimpleBound n R_tilde lam α γ := by
+  unfold lyapunovXiSq lyapunovXiSqSimpleBound
+  apply Finset.sum_le_sum
+  intro i _
+  apply Finset.sum_le_sum
+  intro j _
+  let D : ℝ := 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2
+  have hD : 0 < D := hpos i j
+  have hD2 : 0 < D ^ 2 := sq_pos_of_pos hD
+  have hD_ne : D ≠ 0 := ne_of_gt hD
+  have hkey :
+      (4 * α ^ 2 * lam j ^ 2 + γ ^ 2) * R_tilde i j ^ 2 ≤
+        (2 * R_tilde i j ^ 2) * D := by
+    nlinarith [sq_nonneg (R_tilde i j * α * lam i),
+      sq_nonneg (R_tilde i j * γ)]
+  have hright :
+      (2 * R_tilde i j ^ 2 / D) * D ^ 2 =
+        (2 * R_tilde i j ^ 2) * D := by
+    field_simp [hD_ne]
+  rw [div_le_iff₀ hD2]
+  rw [hright]
+  exact hkey
+
+/-- Higham, 2nd ed., Chapter 16.2.1, final display:
+    Lyapunov analogue of the amplification factor `mu`. -/
+noncomputable def lyapunovAmplificationMu (α γ yNorm lamStar : ℝ) : ℝ :=
+  Real.sqrt 2 * (2 * α * yNorm + γ) /
+    Real.sqrt (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)
+
+/-- Lyapunov xi-squared residual bound using an explicit lower square bound on
+    the spectral magnitudes.  This is the xi-level foundation behind the final
+    Lyapunov analogue of equations (16.17)-(16.18). -/
+theorem lyapunovXiSq_le_min_eigen_bound (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (α γ lamStar : ℝ)
+    (hLam : ∀ i : Fin n, lamStar ^ 2 ≤ lam i ^ 2)
+    (hDenom : 0 < 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) :
+    lyapunovXiSq n R_tilde lam α γ ≤
+      2 * frobNormSq R_tilde / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := by
+  have hdenom_le : ∀ i j : Fin n,
+      4 * α ^ 2 * lamStar ^ 2 + γ ^ 2 ≤
+        2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2 := by
+    intro i j
+    nlinarith [sq_nonneg α, hLam i, hLam j]
+  have hpos : ∀ i j : Fin n, 0 < 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2 := by
+    intro i j
+    exact lt_of_lt_of_le hDenom (hdenom_le i j)
+  have hsimple := lyapunovXiSq_le_simple_bound n R_tilde lam α γ hpos
+  have hD_ne : 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2 ≠ 0 := ne_of_gt hDenom
+  have hbound :
+      lyapunovXiSqSimpleBound n R_tilde lam α γ ≤
+        2 * frobNormSq R_tilde / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := by
+    unfold lyapunovXiSqSimpleBound
+    suffices h :
+        (∑ i : Fin n, ∑ j : Fin n,
+          (2 * R_tilde i j ^ 2) /
+            (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2)) ≤
+          (∑ i : Fin n, ∑ j : Fin n,
+            (2 * R_tilde i j ^ 2) /
+              (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)) by
+      rwa [show
+          (∑ i : Fin n, ∑ j : Fin n,
+            (2 * R_tilde i j ^ 2) /
+              (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)) =
+            2 * frobNormSq R_tilde / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) from by
+        unfold frobNormSq
+        rw [eq_div_iff hD_ne]
+        rw [Finset.sum_mul]
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro i _
+        rw [Finset.sum_mul]
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro j _
+        exact div_mul_cancel₀ _ hD_ne] at h
+    apply Finset.sum_le_sum
+    intro i _
+    apply Finset.sum_le_sum
+    intro j _
+    exact div_le_div_of_nonneg_left (by positivity) hDenom (hdenom_le i j)
+  exact le_trans hsimple hbound
+
+/-- Lyapunov xi-squared residual bound after the orthogonal spectral transform
+    `R_tilde = U^T R U`. -/
+theorem lyapunovXiSq_spectral_le_min_eigen_bound (n : ℕ)
+    (R U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (α γ lamStar : ℝ)
+    (hU : IsOrthogonal n U)
+    (hLam : ∀ i : Fin n, lamStar ^ 2 ≤ lam i ^ 2)
+    (hDenom : 0 < 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) :
+    lyapunovXiSq n (lyapunovSpectralTransform n U R) lam α γ ≤
+      2 * frobNormSq R / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := by
+  have hle :=
+    lyapunovXiSq_le_min_eigen_bound n (lyapunovSpectralTransform n U R) lam
+      α γ lamStar hLam hDenom
+  rw [lyapunovSpectralTransform_frobNormSq n U R hU] at hle
+  exact hle
+
+/-- Higham, 2nd ed., Chapter 16.2.1, final display:
+    the Lyapunov xi-squared residual bound written with the source amplification
+    factor `mu`.  This is still an xi-level result; the eta optimizer bridge
+    remains open. -/
+theorem lyapunovXiSq_le_mu_relative_residual_sq (n : ℕ)
+    (Y R U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (α γ lamStar : ℝ)
+    (hU : IsOrthogonal n U)
+    (hLam : ∀ i : Fin n, lamStar ^ 2 ≤ lam i ^ 2)
+    (hDenom : 0 < 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)
+    (hScale : 0 < 2 * α * frobNorm Y + γ) :
+    lyapunovXiSq n (lyapunovSpectralTransform n U R) lam α γ ≤
+      (lyapunovAmplificationMu α γ (frobNorm Y) lamStar *
+        (frobNorm R / (2 * α * frobNorm Y + γ))) ^ 2 := by
+  have hle :=
+    lyapunovXiSq_spectral_le_min_eigen_bound n R U lam α γ lamStar
+      hU hLam hDenom
+  have hScale_ne : 2 * α * frobNorm Y + γ ≠ 0 := ne_of_gt hScale
+  have hSqrt_ne : Real.sqrt (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) ≠ 0 :=
+    ne_of_gt (Real.sqrt_pos.2 hDenom)
+  have hSqrt_sq :
+      Real.sqrt (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) ^ 2 =
+        4 * α ^ 2 * lamStar ^ 2 + γ ^ 2 :=
+    Real.sq_sqrt (le_of_lt hDenom)
+  have hsqrt_two_sq : Real.sqrt 2 ^ 2 = (2 : ℝ) :=
+    Real.sq_sqrt (by linarith)
+  calc
+    lyapunovXiSq n (lyapunovSpectralTransform n U R) lam α γ ≤
+        2 * frobNormSq R / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := hle
+    _ = (lyapunovAmplificationMu α γ (frobNorm Y) lamStar *
+        (frobNorm R / (2 * α * frobNorm Y + γ))) ^ 2 := by
+        unfold lyapunovAmplificationMu
+        have hmul :
+            (Real.sqrt 2 * (2 * α * frobNorm Y + γ) /
+                Real.sqrt (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)) *
+              (frobNorm R / (2 * α * frobNorm Y + γ)) =
+                Real.sqrt 2 * frobNorm R /
+                  Real.sqrt (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := by
+          field_simp [hScale_ne, hSqrt_ne]
+        rw [hmul, div_pow, mul_pow, hsqrt_two_sq, hSqrt_sq, frobNorm_sq]
 
 end LeanFpAnalysis.FP

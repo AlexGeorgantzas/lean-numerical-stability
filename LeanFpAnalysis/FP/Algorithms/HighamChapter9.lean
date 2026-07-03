@@ -19907,6 +19907,49 @@ def higham9_21_tridiag_solve_perturbation_model (n : ℕ)
     ∑ j : Fin n, (U_hat i j + DeltaU i j) * x_hat j = y_hat i) ∧
   ∀ i j : Fin n, |DeltaU i j| ≤ (2 * u + u ^ 2) * |U_hat i j|
 
+/-- **Equation (9.20)**, coefficient monotonicity for supplied LU
+perturbation models. -/
+theorem higham9_20_tridiag_lu_perturbation_model_mono
+    (n : ℕ) (A L_hat U_hat DeltaA_LU : Fin n → Fin n → ℝ)
+    {u v : ℝ} (huv : u ≤ v)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u) :
+    higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU v := by
+  refine ⟨h20.1, ?_⟩
+  intro i j
+  have hsum_nonneg :
+      0 ≤ ∑ k : Fin n, |L_hat i k| * |U_hat k j| :=
+    Finset.sum_nonneg fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  exact le_trans (h20.2 i j)
+    (mul_le_mul_of_nonneg_right huv hsum_nonneg)
+
+/-- **Equation (9.21)**, coefficient monotonicity for supplied triangular-solve
+perturbation models. -/
+theorem higham9_21_tridiag_solve_perturbation_model_mono
+    (n : ℕ) (L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (DeltaL DeltaU : Fin n → Fin n → ℝ)
+    {u v : ℝ} (hu : 0 ≤ u) (huv : u ≤ v)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u) :
+    higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU v := by
+  rcases h21 with ⟨hforward, hDeltaL, hback, hDeltaU⟩
+  have hsq : u ^ 2 ≤ v ^ 2 := by
+    have hprod : 0 ≤ (v - u) * (v + u) :=
+      mul_nonneg (sub_nonneg.mpr huv) (by linarith)
+    nlinarith
+  have hcoeff : 2 * u + u ^ 2 ≤ 2 * v + v ^ 2 := by
+    nlinarith
+  refine ⟨hforward, ?_, hback, ?_⟩
+  · intro i j
+    exact le_trans (hDeltaL i j)
+      (mul_le_mul_of_nonneg_right huv (abs_nonneg _))
+  · intro i j
+    exact le_trans (hDeltaU i j)
+      (mul_le_mul_of_nonneg_right hcoeff (abs_nonneg _))
+
 /-- **Equation (9.20)** from an existing LU backward-error certificate.
 
 Any componentwise `LUBackwardError` certificate whose coefficient is bounded by
@@ -20495,6 +20538,165 @@ theorem higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
   exact (hDeltaA_bound i j).trans
     (mul_le_mul_of_nonneg_right hc_bound (abs_nonneg (A i j)))
 
+/-- **Theorem 9.14**, optimal-growth model bridge to the equation-(9.22)
+`f(u)` source bound.
+
+If a special tridiagonal class supplies the exact-arithmetic comparison
+`|Lhat||Uhat| <= |A|`, then the source equation (9.20)/(9.21) models imply
+the `f(u)|A|` backward-error bound from equation (9.22). -/
+theorem higham9_14_source_f_bound_of_absLU_le_absA_and_9_20_9_21_models
+    (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A L_hat U_hat y_hat x_hat b 1 u hu
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j)
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Equations (9.20)--(9.22)**, source-coefficient weakening for explicit
+perturbation models.
+
+If the equation (9.20) and (9.21) models are established with coefficient
+`u0`, then the same witnesses produce the equation-(9.22) `f(u)` source bound
+for any larger coefficient `u`. -/
+theorem higham9_22_source_f_bound_of_9_20_9_21_models_le (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (u0 u : ℝ) (hu0 : 0 ≤ u0) (hu0_le_u : u0 ≤ u)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u0)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u0) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f u * ∑ k : Fin n, |L_hat i k| * |U_hat k j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  have hu : 0 ≤ u := hu0.trans hu0_le_u
+  exact higham9_22_source_f_bound_of_9_20_9_21_models n A L_hat U_hat
+    y_hat x_hat b u hu DeltaA_LU DeltaL DeltaU
+    (higham9_20_tridiag_lu_perturbation_model_mono
+      n A L_hat U_hat DeltaA_LU hu0_le_u h20)
+    (higham9_21_tridiag_solve_perturbation_model_mono
+      n L_hat U_hat y_hat x_hat b DeltaL DeltaU hu0 hu0_le_u h21)
+
+/-- **Theorem 9.14**, constant-growth model source bound under coefficient
+weakening.
+
+This is the coefficient-weakened counterpart of
+`higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models`:
+models proved at `u0` may be consumed at any larger printed coefficient `u`. -/
+theorem higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models_le
+    (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (c u0 u : ℝ) (hu0 : 0 ≤ u0) (hu0_le_u : u0 ≤ u)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u0)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u0) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  have hu : 0 ≤ u := hu0.trans hu0_le_u
+  exact higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+    n A L_hat U_hat y_hat x_hat b c u hu hAbsLU_le
+    DeltaA_LU DeltaL DeltaU
+    (higham9_20_tridiag_lu_perturbation_model_mono
+      n A L_hat U_hat DeltaA_LU hu0_le_u h20)
+    (higham9_21_tridiag_solve_perturbation_model_mono
+      n L_hat U_hat y_hat x_hat b DeltaL DeltaU hu0 hu0_le_u h21)
+
+/-- **Theorem 9.14**, constant-growth final source bound under coefficient
+weakening. -/
+theorem higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models_le
+    (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (c u0 u : ℝ) (hc : 0 ≤ c) (hu0 : 0 ≤ u0) (hu0_le_u : u0 ≤ u)
+    (hu_lt_one : u < 1)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u0)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u0) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  have hu : 0 ≤ u := hu0.trans hu0_le_u
+  exact higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+    n A L_hat U_hat y_hat x_hat b c u hc hu hu_lt_one hAbsLU_le
+    DeltaA_LU DeltaL DeltaU
+    (higham9_20_tridiag_lu_perturbation_model_mono
+      n A L_hat U_hat DeltaA_LU hu0_le_u h20)
+    (higham9_21_tridiag_solve_perturbation_model_mono
+      n L_hat U_hat y_hat x_hat b DeltaL DeltaU hu0 hu0_le_u h21)
+
+/-- **Theorem 9.14**, optimal-growth model source bound under coefficient
+weakening. -/
+theorem higham9_14_source_f_bound_of_absLU_le_absA_and_9_20_9_21_models_le
+    (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (u0 u : ℝ) (hu0 : 0 ≤ u0) (hu0_le_u : u0 ≤ u)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u0)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u0) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models_le
+      n A L_hat U_hat y_hat x_hat b 1 u0 u hu0 hu0_le_u
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j)
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Theorem 9.14**, optimal-growth final source bound under coefficient
+weakening. -/
+theorem higham9_14_source_h_bound_of_absLU_le_absA_and_9_20_9_21_models_le
+    (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (u0 u : ℝ) (hu0 : 0 ≤ u0) (hu0_le_u : u0 ≤ u)
+    (hu_lt_one : u < 1)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u0)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u0) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models_le
+      n A L_hat U_hat y_hat x_hat b 1 u0 u (by norm_num) hu0 hu0_le_u
+      hu_lt_one
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j)
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
 /-- **Theorem 9.14**, source-model production from LU and triangular-solve
 certificates.
 
@@ -20613,6 +20815,97 @@ theorem higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma
   higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
     fp n A L_hat U_hat b c (gamma fp n) (gamma_nonneg fp hn) hn
     hLU le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, LU-backward-error plus actual triangular solves with
+optimal growth and source `f(u)` coefficient. -/
+theorem higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hLU : LUBackwardError n A L_hat U_hat ε)
+    (hε_le_u : ε ≤ u)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
+      fp n A L_hat U_hat b 1 ε u hu hn hLU hε_le_u hγ_le_u hU_diag
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, LU-backward-error plus actual triangular solves with
+optimal growth and the natural source `f(γ_n)` coefficient. -/
+theorem higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma
+      fp n A L_hat U_hat b 1 hn hLU hU_diag
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with
+optimal growth and source `f(u)` coefficient. -/
+theorem higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
+      fp n A L_hat U_hat b 1 u hu hn hLU hγ_le_u hU_diag
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with
+optimal growth and the natural source `f(γ_n)` coefficient. -/
+theorem higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma
+      fp n A L_hat U_hat b 1 hn hLU hU_diag
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
 
 /-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with a
 constant-growth final `h(u)` coefficient.
@@ -20847,6 +21140,96 @@ theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma
     fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
     hγ_lt_one hn hLU le_rfl hU_diag hAbsLU_le
 
+/-- **Theorem 9.14**, LU-backward-error plus actual triangular solves with
+optimal growth and final `h(u)` coefficient.
+
+This is the explicit `|Lhat||Uhat| <= |A|` alias of
+`higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le`,
+matching the corresponding source-`f` surface. -/
+theorem higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hLU : LUBackwardError n A L_hat U_hat ε)
+    (hε_le_u : ε ≤ u)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b ε u hu hu_lt_one hn hLU
+    hε_le_u hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, LU-backward-error plus actual triangular solves with
+optimal growth and final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b hn hγ_lt_one hLU hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with
+optimal growth and final `h(u)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b u hu hu_lt_one hn hLU hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with
+optimal growth and final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b hn hγ_lt_one hLU hU_diag hAbsLU_le
+
 /-- **Theorem 9.14**, dense Doolittle certificate plus actual triangular solves.
 
 This is the source-facing `f(u)` specialization of
@@ -21058,6 +21441,101 @@ theorem higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_t
     fp n A L_hat U_hat b BU BL c (gamma fp n)
     (gamma_nonneg fp hn) hn hC le_rfl hU_diag hAbsLU_le
 
+/-- **Theorem 9.14**, dense Doolittle certificate plus actual triangular
+solves with optimal growth and source `f(u)` coefficient. -/
+theorem higham9_14_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le
+      fp n A L_hat U_hat b 1 u hu hn hC hγ_le_u hU_diag
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate plus actual
+triangular solves with optimal growth and source `f(u)` coefficient. -/
+theorem higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le
+      fp n A L_hat U_hat b BU BL 1 u hu hn hC hγ_le_u hU_diag
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, dense Doolittle certificate plus actual triangular
+solves with optimal growth and the natural source `f(γ_n)` coefficient. -/
+theorem higham9_14_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma
+      fp n A L_hat U_hat b 1 hn hC hU_diag
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate plus actual
+triangular solves with optimal growth and the natural source `f(γ_n)`
+coefficient. -/
+theorem higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma
+      fp n A L_hat U_hat b BU BL 1 hn hC hU_diag
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
 /-- **Theorem 9.14**, dense Doolittle certificate with Higham's final
 `h(γ_n)` coefficient. -/
 theorem higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma
@@ -21103,6 +21581,94 @@ theorem higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_t
   higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le
     fp n A L_hat U_hat b BU BL (gamma fp n)
     (gamma_nonneg fp hn) hγ_lt_one hn hC le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, dense Doolittle certificate plus actual triangular
+solves with optimal growth and final `h(u)` coefficient. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b u hu hu_lt_one hn hC hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate plus actual
+triangular solves with optimal growth and final `h(u)` coefficient. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b BU BL u hu hu_lt_one hn hC hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, dense Doolittle certificate plus actual triangular
+solves with optimal growth and final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b hn hγ_lt_one hC hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate plus actual
+triangular solves with optimal growth and final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b BU BL hn hγ_lt_one hC hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, dense Doolittle certificate with a constant-growth
 final `h(γ_n)` coefficient. -/
@@ -21352,6 +21918,106 @@ theorem higham9_14_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_
     (gamma_nonneg fp hn) hn hC le_rfl hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
+certificate plus actual triangular solves with optimal growth and source
+`f(u)` coefficient. -/
+theorem higham9_14_source_f_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma_le
+      fp n A L_hat U_hat b 1 u hu hn hC hγ_le_u hU_diag
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, square-specialized rectangular absolute-budget
+Doolittle certificate plus actual triangular solves with optimal growth and
+source `f(u)` coefficient. -/
+theorem higham9_14_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma_le
+      fp n A L_hat U_hat b BU BL 1 u hu hn hC hγ_le_u hU_diag
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
+certificate plus actual triangular solves with optimal growth and the natural
+source `f(γ_n)` coefficient. -/
+theorem higham9_14_source_f_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma
+      fp n A L_hat U_hat b 1 hn hC hU_diag
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, square-specialized rectangular absolute-budget
+Doolittle certificate plus actual triangular solves with optimal growth and
+the natural source `f(γ_n)` coefficient. -/
+theorem higham9_14_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L_hat U_hat fp BU BL)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma
+      fp n A L_hat U_hat b BU BL 1 hn hC hU_diag
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
 certificate with Higham's final `h(γ_n)` coefficient. -/
 theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma
     (fp : FPModel) (n : ℕ)
@@ -21397,6 +22063,100 @@ theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_
   higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma_le
     fp n A L_hat U_hat b BU BL (gamma fp n)
     (gamma_nonneg fp hn) hγ_lt_one hn hC le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
+certificate plus actual triangular solves with optimal growth and final
+`h(u)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b u hu hu_lt_one hn hC hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular absolute-budget
+Doolittle certificate plus actual triangular solves with optimal growth and
+final `h(u)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b BU BL u hu hu_lt_one hn hC hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
+certificate plus actual triangular solves with optimal growth and final
+`h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b hn hγ_lt_one hC hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular absolute-budget
+Doolittle certificate plus actual triangular solves with optimal growth and
+final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L_hat U_hat fp BU BL)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b BU BL hn hγ_lt_one hC hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
 certificate with a constant-growth final `h(γ_n)` coefficient. -/
@@ -21574,6 +22334,66 @@ theorem higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_tr
     hn hT hU_diag hU_budget_le hL_budget_le le_rfl hAbsLU_le
 
 /-- **Theorem 9.14**, square-specialized rectangular rounded-stage trace with
+optimal growth and source `f(u)` coefficient. -/
+theorem higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+      fp n A L_hat U_hat b 1 u hu hn hT hU_diag hU_budget_le
+      hL_budget_le hγ_le_u
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, square-specialized rectangular rounded-stage trace with
+optimal growth and the natural source `f(γ_n)` coefficient. -/
+theorem higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma
+      fp n A L_hat U_hat b 1 hn hT hU_diag hU_budget_le hL_budget_le
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, square-specialized rectangular rounded-stage trace with
 Higham's final `h(γ_n)` coefficient. -/
 theorem higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma
     (fp : FPModel) (n : ℕ)
@@ -21601,6 +22421,64 @@ theorem higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_tr
   higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
     fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
     hγ_lt_one hn hT hU_diag hU_budget_le hL_budget_le le_rfl hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular rounded-stage trace with
+optimal growth and final `h(u)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b u hu hu_lt_one hn hT hU_diag hU_budget_le
+    hL_budget_le hγ_le_u hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular rounded-stage trace with
+optimal growth and final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b hn hγ_lt_one hT hU_diag hU_budget_le
+    hL_budget_le hAbsLU_le
 
 /-- **Theorem 9.14**, square-specialized rectangular rounded-stage trace with
 a constant-growth final `h(γ_n)` coefficient. -/
@@ -40876,6 +41754,50 @@ theorem higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_exac
     (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
     heta
 
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the lower-zero
+factorization endpoint with source-oriented product smallness. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_left_zero_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the lower-zero
+factorization endpoint with exact operator norms. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_left_zero_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the upper-zero
+factorization endpoint with source-oriented product smallness. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_right_zero_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the upper-zero
+factorization endpoint with exact operator norms. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_right_zero_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the lower-zero
+factorization endpoint with ordinary factor-triangularity hypotheses and
+source-oriented product smallness. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_left_zero_opNorm_product_lt_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_product_lt_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the lower-zero
+factorization endpoint with ordinary factor-triangularity hypotheses and exact
+operator norms. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_left_zero_opNorm_exact_opNorm2_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_exact_opNorm2_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the upper-zero
+factorization endpoint with ordinary factor-triangularity hypotheses and
+source-oriented product smallness. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_right_zero_opNorm_product_lt_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_product_lt_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the upper-zero
+factorization endpoint with ordinary factor-triangularity hypotheses and exact
+operator norms. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_right_zero_opNorm_exact_opNorm2_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_exact_opNorm2_of_factor_triangularity
+
 /-- **Theorem 9.15**, printed-denominator normwise source bound from a
 componentwise `Gtilde` normalized linearized Barrlund--Sun step.
 
@@ -49490,6 +50412,178 @@ theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_s
       U Uinv hUright)
     hfact hXtri hYtri hR hYzero
 
+/-- **Theorem 9.15**, split-level `G` supplied-resolvent left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_left_zero
+      L U Linv Uinv ΔA ΔL ΔU R hLright hUleft hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, split-level `G` supplied-resolvent right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_right_zero
+      L U Linv Uinv ΔA ΔL ΔU R hLright hUleft hfact hXtri hYtri hR hYzero
+
+/-- **Theorem 9.15**, source-oriented `G` supplied-resolvent left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_left_zero
+      L U Linv Uinv ΔA ΔL ΔU R hLleft hUright hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, source-oriented `G` supplied-resolvent right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_right_zero
+      L U Linv Uinv ΔA ΔL ΔU R hLleft hUright hfact hXtri hYtri hR hYzero
+
 /-- **Theorem 9.15**, split-level spectral-radius `G` canonical-resolvent
 endpoint.  The normalized route no longer requires a caller-supplied
 nonnegative resolvent: `rho(|G|) < 1` supplies the canonical repository inverse
@@ -54593,6 +55687,186 @@ theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant
       Uhat UhatInv hUright)
     hfact hXtri hYtri hR hYzero
 
+/-- **Theorem 9.15**, split-level `Gtilde` supplied-resolvent left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_left_zero
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+      hLright hUleft hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, split-level `Gtilde` supplied-resolvent right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_right_zero
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+      hLright hUleft hfact hXtri hYtri hR hYzero
+
+/-- **Theorem 9.15**, source-oriented `Gtilde` supplied-resolvent left-zero
+endpoint with normalized triangular support discharged from ordinary
+triangularity of `Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_left_zero
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+      hLleft hUright hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, source-oriented `Gtilde` supplied-resolvent right-zero
+endpoint with normalized triangular support discharged from ordinary
+triangularity of `Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_right_zero
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+      hLleft hUright hfact hXtri hYtri hR hYzero
+
 /-- **Theorem 9.15**, split-level spectral-radius `Gtilde`
 canonical-resolvent endpoint.  The normalized route no longer requires a
 caller-supplied nonnegative resolvent: `rho(|Gtilde|) < 1` supplies the
@@ -59379,6 +60653,174 @@ theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse U Uinv hUright)
     hfact hXtri hYtri hYzero
 
+/-- **Theorem 9.15**, split-level first-order `G` left-zero endpoint with
+normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_left_zero
+      u L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, split-level first-order `G` right-zero endpoint with
+normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_right_zero
+      u L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri hYzero
+
+/-- **Theorem 9.15**, source-oriented first-order `G` left-zero endpoint with
+normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_left_zero
+      u L U Linv Uinv ΔA ΔL ΔU hLleft hUright hfact hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, source-oriented first-order `G` right-zero endpoint with
+normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_right_zero
+      u L U Linv Uinv ΔA ΔL ΔU hLleft hUright hfact hXtri hYtri hYzero
+
 /-- **Theorem 9.15**, source-facing first-order componentwise endpoint from the
 original `G` factorization equations. -/
 theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant
@@ -59564,6 +61006,80 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majo
     higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant
       u A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
       hXtri hYtri hquad.1 hquad.2
+
+/-- **Theorem 9.15**, factorization-level first-order `G` left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant_left_zero
+      u A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
+      hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, factorization-level first-order `G` right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant_right_zero
+      u A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
+      hXtri hYtri hYzero
 
 /-- **Theorem 9.15**, source-oriented inverse-identity form of the first-order
 componentwise `Gtilde` split wrapper. -/
@@ -59911,6 +61427,182 @@ theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majoran
       Uhat UhatInv hUright)
     hfact hXtri hYtri hYzero
 
+/-- **Theorem 9.15**, split-level first-order `Gtilde` left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_left_zero
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLright hUleft hfact hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, split-level first-order `Gtilde` right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_right_zero
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLright hUleft hfact hXtri hYtri hYzero
+
+/-- **Theorem 9.15**, source-oriented first-order `Gtilde` left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_left_zero
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLleft hUright hfact hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, source-oriented first-order `Gtilde` right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_right_zero
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLleft hUright hfact hXtri hYtri hYzero
+
 /-- **Theorem 9.15**, source-facing first-order componentwise endpoint from the
 original `Gtilde` factorization equations. -/
 theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant
@@ -60096,6 +61788,82 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local
     higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant
       u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
       hXtri hYtri hquad.1 hquad.2
+
+/-- **Theorem 9.15**, factorization-level first-order `Gtilde` left-zero
+endpoint with normalized triangular support discharged from ordinary
+triangularity of `Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant_left_zero
+      u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+      hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, factorization-level first-order `Gtilde` right-zero
+endpoint with normalized triangular support discharged from ordinary
+triangularity of `Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant_right_zero
+      u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+      hXtri hYtri hYzero
 
 /-- **Theorem 9.15 support**, exact componentwise perturbation envelopes can
 be read as first-order envelopes with the same leading term. -/
@@ -60432,6 +62200,92 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_
     (higham9_15_componentwise_product_majorant_of_right_zero
       (higham9_27_GMatrix Linv ΔA Uinv)
       (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
+
+/-- **Theorem 9.15**, factorization-level first-order componentwise `G`
+supplied-resolvent left-zero endpoint with triangular support discharged from
+ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_majorant_of_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul R
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_majorant_of_left_zero
+      u A L U Linv Uinv ΔA ΔL ΔU R hLU hPert hLleft hUright hXtri hYtri
+      hR hXzero
+
+/-- **Theorem 9.15**, factorization-level first-order componentwise `G`
+supplied-resolvent right-zero endpoint with triangular support discharged from
+ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_majorant_of_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul R
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_majorant_of_right_zero
+      u A L U Linv Uinv ΔA ΔL ΔU R hLU hPert hLleft hUright hXtri hYtri
+      hR hYzero
 
 /-- **Theorem 9.15**, factorization-level first-order componentwise `G`
 endpoint with the canonical nonsingular Neumann inverse from an infinity-norm
@@ -62159,6 +64013,94 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_resol
     (higham9_15_componentwise_product_majorant_of_right_zero
       (higham9_27_GMatrix LhatInv ΔA UhatInv)
       (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
+
+/-- **Theorem 9.15**, factorization-level first-order componentwise `Gtilde`
+supplied-resolvent left-zero endpoint with triangular support discharged from
+ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_resolvent_majorant_of_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul R
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_resolvent_majorant_of_left_zero
+      u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R hA hPert hLleft hUright
+      hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, factorization-level first-order componentwise `Gtilde`
+supplied-resolvent right-zero endpoint with triangular support discharged from
+ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_resolvent_majorant_of_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul R
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_resolvent_majorant_of_right_zero
+      u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R hA hPert hLleft hUright
+      hXtri hYtri hR hYzero
 
 /-- **Theorem 9.15**, factorization-level first-order componentwise `Gtilde`
 endpoint with the canonical nonsingular Neumann inverse from an infinity-norm
