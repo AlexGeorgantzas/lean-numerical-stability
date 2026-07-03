@@ -558,6 +558,17 @@ theorem sylvesterSepRatios_bddBelow (n : Nat) (A B : Fin n -> Fin n -> Real) :
           rw [hrho_eq]
           exact div_nonneg (frobNorm_nonneg _) (frobNorm_nonneg _)
 
+/-- The exact infimum model of `sep(A,B)` from equation (16.26) is
+    nonnegative, since every feasible Frobenius ratio is nonnegative. -/
+theorem sylvesterSepInf_nonneg (n : Nat) (A B : Fin n -> Fin n -> Real) :
+    0 <= sylvesterSepInf n A B := by
+  unfold sylvesterSepInf
+  apply Real.sInf_nonneg
+  intro rho hrho
+  rcases hrho with ⟨X, _hX, hrho_eq⟩
+  rw [hrho_eq]
+  exact div_nonneg (frobNorm_nonneg _) (frobNorm_nonneg _)
+
 /-- Every nonzero Frobenius ratio is above the infimum model of `sep(A,B)`. -/
 theorem sylvesterSepInf_le_ratio (n : Nat) (A B X : Fin n -> Fin n -> Real)
     (hX : Not (frobNormSq X = 0)) :
