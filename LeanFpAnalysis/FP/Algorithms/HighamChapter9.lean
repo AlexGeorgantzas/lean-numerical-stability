@@ -11829,6 +11829,14 @@ theorem higham9_14_completePivotWilkinsonBound_le_of_le {n m : ℕ}
     Real.sqrt_le_sqrt (higham9_14_completePivotWilkinsonProduct_le_of_le hnm)
   exact mul_le_mul hsqrt_n hsqrt_prod (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
 
+/-- **Equation (9.14)**, Wilkinson's displayed complete-pivoting RHS is at
+least two in every dimension at least two. -/
+lemma higham9_14_completePivotWilkinsonBound_ge_two_of_ge_two {n : ℕ}
+    (hn : 2 ≤ n) :
+    (2 : ℝ) ≤ higham9_14_completePivotWilkinsonBound n := by
+  rw [← higham9_14_completePivotWilkinsonBound_two]
+  exact higham9_14_completePivotWilkinsonBound_le_of_le hn
+
 /-- **Equation (9.14)**, Wilkinson's displayed complete-pivoting RHS is
 monotone in the matrix order parameter. -/
 theorem higham9_14_completePivotWilkinsonBound_monotone :
