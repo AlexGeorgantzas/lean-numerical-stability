@@ -795,6 +795,54 @@ theorem quadForm_bilinear_cauchy_schwarz {n : ℕ} (H : Fin n → Fin n → ℝ)
   simp only [discrim] at hdisc
   nlinarith [hdisc]
 
+/-- **SPD pivot quadratic-form bound** (Higham §10.4, the basic SPD
+    lemma of the (10.29) per-stage bound; oracle route): for `H`
+    symmetric with two-sided inverse `Hinv` (also symmetric, PSD),
+    `(x_k)² ≤ H_kk · (xᵀ Hinv x)`.  Applying `x = Sᵀe_i` gives
+    `s_{ik}²/H_kk ≤ (S Hinv Sᵀ)_ii`. -/
+theorem spd_pivot_quadForm_bound {n : ℕ} (H Hinv : Fin n → Fin n → ℝ)
+    (hHsym : ∀ i j : Fin n, H i j = H j i)
+    (hHinvSym : ∀ i j : Fin n, Hinv i j = Hinv j i)
+    (hHinvPSD : ∀ z : Fin n → ℝ,
+      0 ≤ ∑ i : Fin n, ∑ j : Fin n, z i * Hinv i j * z j)
+    (hHHinv : ∀ i k : Fin n,
+      (∑ j : Fin n, H i j * Hinv j k) = if i = k then 1 else 0)
+    (hHinvH : ∀ i k : Fin n,
+      (∑ j : Fin n, Hinv i j * H j k) = if i = k then 1 else 0)
+    (k : Fin n) (x : Fin n → ℝ) :
+    (x k) ^ 2 ≤ H k k * (∑ i : Fin n, ∑ j : Fin n, x i * Hinv i j * x j) := by
+  set u : Fin n → ℝ := fun i => H i k with hu
+  have hcs := quadForm_bilinear_cauchy_schwarz Hinv hHinvSym hHinvPSD u x
+  -- uᵀ Hinv x = x k, using H·Hinv = I and symmetry
+  have hUV : (∑ i : Fin n, ∑ j : Fin n, u i * Hinv i j * x j) = x k := by
+    have e1 : (∑ i : Fin n, ∑ j : Fin n, u i * Hinv i j * x j) =
+        ∑ j : Fin n, (∑ i : Fin n, H k i * Hinv i j) * x j := by
+      rw [Finset.sum_comm]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [Finset.sum_mul]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      simp only [hu, hHsym i k]
+    rw [e1, Finset.sum_congr rfl fun j _ => by rw [hHHinv k j]]
+    rw [Finset.sum_eq_single k]
+    · rw [if_pos rfl, one_mul]
+    · intro b _ hb; rw [if_neg (fun h => hb h.symm), zero_mul]
+    · intro h; exact absurd (Finset.mem_univ k) h
+  -- uᵀ Hinv u = H k k, using Hinv·H = I and symmetry
+  have hUU : (∑ i : Fin n, ∑ j : Fin n, u i * Hinv i j * u j) = H k k := by
+    have e1 : (∑ i : Fin n, ∑ j : Fin n, u i * Hinv i j * u j) =
+        ∑ i : Fin n, H k i * (∑ j : Fin n, Hinv i j * H j k) := by
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      simp only [hu]; rw [hHsym i k]; ring
+    rw [e1, Finset.sum_congr rfl fun i _ => by rw [hHinvH i k]]
+    rw [Finset.sum_eq_single k]
+    · rw [if_pos rfl, mul_one]
+    · intro b _ hb; rw [if_neg hb, mul_zero]
+    · intro h; exact absurd (Finset.mem_univ k) h
+  rw [hUV, hUU] at hcs
+  exact hcs
+
 open Matrix in
 /-- **The (10.29) core identity** (Higham §10.4, p. 208; proof route from
     the logged oracle consultation, Golub–Van Loan 1979):
