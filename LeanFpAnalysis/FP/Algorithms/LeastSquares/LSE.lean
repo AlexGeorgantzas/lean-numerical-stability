@@ -1463,6 +1463,138 @@ theorem theorem20_8AP_feasible_step_action {m n p : ℕ}
   rw [rectMatMulVec_add]
   rw [theorem20_8AP, rectMatMulVec_rectMatMul]
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual identity for the nullspace parametrization `x = x0 + P z`.
+
+    The reduced unconstrained least-squares right-hand side is `b - A x0`,
+    matching the source transformation of the feasible LSE problem (20.23). -/
+theorem theorem20_8AP_feasible_step_residual {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (x0 z : Fin n → ℝ) :
+    lsResidual A b
+        (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) =
+      lsResidual (theorem20_8AP A B Bplus)
+        (fun i => b i - rectMatMulVec A x0 i) z := by
+  ext i
+  unfold lsResidual
+  have hact := congrFun (theorem20_8AP_feasible_step_action A B Bplus x0 z) i
+  rw [hact]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    objective identity for the nullspace parametrization of the LSE problem.
+
+    This is the exact algebraic reduction of feasible steps in (20.23) to the
+    unconstrained least-squares objective with matrix `AP`. -/
+theorem theorem20_8AP_feasible_step_objective {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (x0 z : Fin n → ℝ) :
+    lsObjective A b
+        (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) =
+      lsObjective (theorem20_8AP A B Bplus)
+        (fun i => b i - rectMatMulVec A x0 i) z := by
+  unfold lsObjective
+  rw [theorem20_8AP_feasible_step_residual A b B Bplus x0 z]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if `x0` and `y` are feasible for the same equality constraint, then the
+    nullspace projector reconstructs `y` from the feasible base point `x0`. -/
+theorem theorem20_8Projection_feasible_difference_decomp {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d : Fin p → ℝ) (x0 y : Fin n → ℝ)
+    (hx0 : LSEFeasible B d x0) (hy : LSEFeasible B d y) :
+    (fun j => x0 j +
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k => y k - x0 k) j) =
+      y := by
+  have hproj :=
+    theorem20_8Projection_apply_feasible_difference B Bplus d y x0 hy hx0
+  ext j
+  have hj := congrFun hproj j
+  rw [hj]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    an exact minimizer of the reduced unconstrained problem in the nullspace
+    variable lifts to an exact LSE minimizer. -/
+theorem theorem20_8AP_unconstrained_minimizer_lifts {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d : Fin p → ℝ) (x0 z : Fin n → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hx0 : LSEFeasible B d x0)
+    (hmin : IsLeastSquaresMinimizer (theorem20_8AP A B Bplus)
+      (fun i => b i - rectMatMulVec A x0 i) z) :
+    IsLSEMinimizer A b B d
+      (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) := by
+  constructor
+  · exact theorem20_8Projection_feasible_step B Bplus d x0 z hright hx0
+  · intro y hy
+    calc
+      lsObjective A b
+          (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j)
+          =
+        lsObjective (theorem20_8AP A B Bplus)
+          (fun i => b i - rectMatMulVec A x0 i) z := by
+          exact theorem20_8AP_feasible_step_objective A b B Bplus x0 z
+      _ ≤ lsObjective (theorem20_8AP A B Bplus)
+            (fun i => b i - rectMatMulVec A x0 i)
+            (fun j => y j - x0 j) :=
+          hmin (fun j => y j - x0 j)
+      _ = lsObjective A b
+            (fun j => x0 j +
+              rectMatMulVec (theorem20_8Projection B Bplus)
+                (fun k => y k - x0 k) j) := by
+          exact (theorem20_8AP_feasible_step_objective A b B Bplus
+            x0 (fun j => y j - x0 j)).symm
+      _ = lsObjective A b y := by
+          rw [theorem20_8Projection_feasible_difference_decomp
+            B Bplus d x0 y hx0 hy]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    every exact LSE minimizer gives an exact minimizer of the reduced
+    unconstrained problem when written relative to a feasible base point. -/
+theorem theorem20_8AP_unconstrained_minimizer_of_lse_minimizer {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d : Fin p → ℝ) (x0 x : Fin n → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hx0 : LSEFeasible B d x0)
+    (hx : IsLSEMinimizer A b B d x) :
+    IsLeastSquaresMinimizer (theorem20_8AP A B Bplus)
+      (fun i => b i - rectMatMulVec A x0 i)
+      (fun j => x j - x0 j) := by
+  intro z
+  have hstep :
+      LSEFeasible B d
+        (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) :=
+    theorem20_8Projection_feasible_step B Bplus d x0 z hright hx0
+  have hx_feas : LSEFeasible B d x := hx.1
+  have hle := hx.2
+    (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) hstep
+  calc
+    lsObjective (theorem20_8AP A B Bplus)
+        (fun i => b i - rectMatMulVec A x0 i)
+        (fun j => x j - x0 j)
+        =
+      lsObjective A b
+        (fun j => x0 j +
+          rectMatMulVec (theorem20_8Projection B Bplus)
+            (fun k => x k - x0 k) j) := by
+        exact (theorem20_8AP_feasible_step_objective A b B Bplus
+          x0 (fun j => x j - x0 j)).symm
+    _ = lsObjective A b x := by
+        rw [theorem20_8Projection_feasible_difference_decomp
+          B Bplus d x0 x hx0 hx_feas]
+    _ ≤ lsObjective A b
+          (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) :=
+        hle
+    _ = lsObjective (theorem20_8AP A B Bplus)
+          (fun i => b i - rectMatMulVec A x0 i) z := by
+        exact theorem20_8AP_feasible_step_objective A b B Bplus x0 z
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     source table `B_A^+ = (I - (AP)^+ A)B^+`.
 
