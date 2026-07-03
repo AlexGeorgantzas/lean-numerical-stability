@@ -333,6 +333,121 @@ theorem frobNormSq_transpose_mul_self_le {n : ℕ}
         rw [show (∑ i : Fin n, ∑ k : Fin n, M k i ^ 2) = frobNormSq M
           from Finset.sum_comm, sq]
 
+/-- **Symmetrized congruence identity** (Theorem 10.8 proof, step 8):
+    with `X := ΔR·R⁻¹`, congruence of the Gram identity by `R⁻ᵀ·(·)·R⁻¹`
+    collapses to `X + Xᵀ = R⁻ᵀ(ΔA − ΔRᵀΔR)R⁻¹` entrywise. -/
+theorem cholesky_perturbation_symmetrized {n : ℕ}
+    (A ΔA R ΔR Rinv : Fin n → Fin n → ℝ)
+    (hA : ∀ i j : Fin n, ∑ k : Fin n, R k i * R k j = A i j)
+    (hAΔ : ∀ i j : Fin n, ∑ k : Fin n,
+      (R k i + ΔR k i) * (R k j + ΔR k j) = A i j + ΔA i j)
+    (hRight : IsRightInverse n R Rinv) :
+    ∀ i j : Fin n,
+      matMul n ΔR Rinv i j + matMul n ΔR Rinv j i =
+      ∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+        (ΔA p q - ∑ k : Fin n, ΔR k p * ΔR k q) * Rinv q j := by
+  intro i j
+  have hG := cholesky_perturbation_gram_identity A ΔA R ΔR hA hAΔ
+  -- pointwise rearrangement of the Gram identity
+  have hpt : ∀ p q : Fin n,
+      ΔA p q - ∑ k : Fin n, ΔR k p * ΔR k q =
+      (∑ k : Fin n, R k p * ΔR k q) + ∑ k : Fin n, ΔR k p * R k q := by
+    intro p q
+    have h := hG p q
+    linarith
+  -- split the congruence sum along hpt
+  have hsplit : ∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+      (ΔA p q - ∑ k : Fin n, ΔR k p * ΔR k q) * Rinv q j =
+      (∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+        (∑ k : Fin n, R k p * ΔR k q) * Rinv q j) +
+      ∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+        (∑ k : Fin n, ΔR k p * R k q) * Rinv q j := by
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun p _ => ?_
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun q _ => ?_
+    rw [hpt p q]
+    ring
+  -- first term collapses to X i j via the right inverse at row i
+  have hterm1 : ∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+      (∑ k : Fin n, R k p * ΔR k q) * Rinv q j =
+      matMul n ΔR Rinv i j := by
+    have hflat : ∀ p q : Fin n,
+        Rinv p i * (∑ k : Fin n, R k p * ΔR k q) * Rinv q j =
+        ∑ k : Fin n, R k p * Rinv p i * (ΔR k q * Rinv q j) := by
+      intro p q
+      rw [Finset.mul_sum, Finset.sum_mul]
+      exact Finset.sum_congr rfl fun k _ => by ring
+    calc ∑ p : Fin n, ∑ q : Fin n,
+        Rinv p i * (∑ k : Fin n, R k p * ΔR k q) * Rinv q j
+        = ∑ p : Fin n, ∑ q : Fin n, ∑ k : Fin n,
+            R k p * Rinv p i * (ΔR k q * Rinv q j) :=
+          Finset.sum_congr rfl fun p _ =>
+            Finset.sum_congr rfl fun q _ => hflat p q
+      _ = ∑ q : Fin n, ∑ p : Fin n, ∑ k : Fin n,
+            R k p * Rinv p i * (ΔR k q * Rinv q j) := Finset.sum_comm
+      _ = ∑ q : Fin n, ∑ k : Fin n, ∑ p : Fin n,
+            R k p * Rinv p i * (ΔR k q * Rinv q j) :=
+          Finset.sum_congr rfl fun q _ => Finset.sum_comm
+      _ = ∑ q : Fin n, ∑ k : Fin n,
+            (∑ p : Fin n, R k p * Rinv p i) * (ΔR k q * Rinv q j) := by
+          refine Finset.sum_congr rfl fun q _ =>
+            Finset.sum_congr rfl fun k _ => ?_
+          rw [Finset.sum_mul]
+      _ = ∑ q : Fin n, ∑ k : Fin n,
+            (if k = i then (1:ℝ) else 0) * (ΔR k q * Rinv q j) := by
+          refine Finset.sum_congr rfl fun q _ =>
+            Finset.sum_congr rfl fun k _ => ?_
+          rw [hRight k i]
+      _ = ∑ q : Fin n, ΔR i q * Rinv q j := by
+          refine Finset.sum_congr rfl fun q _ => ?_
+          rw [Finset.sum_eq_single i]
+          · rw [if_pos rfl, one_mul]
+          · intro b _ hb
+            rw [if_neg hb, zero_mul]
+          · intro hni
+            exact absurd (Finset.mem_univ i) hni
+      _ = matMul n ΔR Rinv i j := rfl
+  -- second term collapses to X j i via the right inverse at row j
+  have hterm2 : ∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+      (∑ k : Fin n, ΔR k p * R k q) * Rinv q j =
+      matMul n ΔR Rinv j i := by
+    have hflat : ∀ p q : Fin n,
+        Rinv p i * (∑ k : Fin n, ΔR k p * R k q) * Rinv q j =
+        ∑ k : Fin n, R k q * Rinv q j * (ΔR k p * Rinv p i) := by
+      intro p q
+      rw [Finset.mul_sum, Finset.sum_mul]
+      exact Finset.sum_congr rfl fun k _ => by ring
+    calc ∑ p : Fin n, ∑ q : Fin n,
+        Rinv p i * (∑ k : Fin n, ΔR k p * R k q) * Rinv q j
+        = ∑ p : Fin n, ∑ q : Fin n, ∑ k : Fin n,
+            R k q * Rinv q j * (ΔR k p * Rinv p i) :=
+          Finset.sum_congr rfl fun p _ =>
+            Finset.sum_congr rfl fun q _ => hflat p q
+      _ = ∑ p : Fin n, ∑ k : Fin n, ∑ q : Fin n,
+            R k q * Rinv q j * (ΔR k p * Rinv p i) :=
+          Finset.sum_congr rfl fun p _ => Finset.sum_comm
+      _ = ∑ p : Fin n, ∑ k : Fin n,
+            (∑ q : Fin n, R k q * Rinv q j) * (ΔR k p * Rinv p i) := by
+          refine Finset.sum_congr rfl fun p _ =>
+            Finset.sum_congr rfl fun k _ => ?_
+          rw [Finset.sum_mul]
+      _ = ∑ p : Fin n, ∑ k : Fin n,
+            (if k = j then (1:ℝ) else 0) * (ΔR k p * Rinv p i) := by
+          refine Finset.sum_congr rfl fun p _ =>
+            Finset.sum_congr rfl fun k _ => ?_
+          rw [hRight k j]
+      _ = ∑ p : Fin n, ΔR j p * Rinv p i := by
+          refine Finset.sum_congr rfl fun p _ => ?_
+          rw [Finset.sum_eq_single j]
+          · rw [if_pos rfl, one_mul]
+          · intro b _ hb
+            rw [if_neg hb, zero_mul]
+          · intro hnj
+            exact absurd (Finset.mem_univ j) hnj
+      _ = matMul n ΔR Rinv j i := rfl
+  rw [hsplit, hterm1, hterm2]
+
 -- ============================================================
 -- §10.2  Theorem 10.8: Sun perturbation bound (normwise)
 -- ============================================================
