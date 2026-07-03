@@ -4942,3 +4942,27 @@ and
 use this table adapter so the final witness surface no longer needs an explicit
 local positivity hypothesis.  The hard inverse/condition ratio itself remains
 open.
+
+## Higham Chapter 18: Matrix Powers
+
+This section is a human-readable companion to `examples/LibraryLookup.lean`
+for the Chapter 18 declarations.
+
+Primary module: `LeanFpAnalysis/FP/Algorithms/MatrixPowers.lean`
+
+Coverage ledger: `docs/source_coverage/higham_ch18.md`.
+
+Current reusable declarations:
+
+| Topic | Declarations |
+|---|---|
+| Eq (18.10) computed-power error model | `ComputedMatPowVec` (per-step perturbed recurrence `v_{k+1} = (A+ΔA_k)v_k`, componentwise budget `c`); `ComputedMatPowVec.mono` weakens the budget. |
+| Eqs (18.10)–(18.11) concrete floating-point realization | `fl_matPowVecSeq` iterates `fl_matVec`; `computedMatPowVec_fl_matVec` proves the model with per-step constant `gamma fp n` from `matVec_backward_error`; `computedMatPowVec_fl_matVec_gamma_add_two` restates it with the book's printed constant `γ_{n+2}`. |
+| Componentwise/normwise power chains (§18.2, p. 346) | `one_step_matpow_bound`, `matPow_componentwise_bound` (`\|v_m\| ≤ (1+c)^m (\|A\|^m \|v_0\|)` componentwise), `matPow_matrix_bound` (matrix/column form), `matPow_nonneg_componentwise_bound`, `matPow_normwise_bound`, `matPow_convergence_bound` (norm surrogate of eq (18.12); the exact `ρ(\|A\|)` form is open). |
+| Eq (18.14) telescoping engine | `similarity_product_bound`, `similarity_normwise_bound`: given a per-step contracting similarity `‖S⁻¹(A+ΔA)S‖∞ ≤ q < 1`, computed powers decay as `κ∞(S)·q^m`. |
+| Geometric decay ⇒ limit conclusion | `computedMatPow_tendsto_zero_of_geometric`: any bound `‖v_m‖∞ ≤ C·q^m·‖v_0‖∞` with `q < 1` yields `Tendsto (infNormVec ∘ v) atTop (𝓝 0)` — the form in which Theorems 18.1/18.2 state their conclusion. |
+| Theorem 18.1 conditional reduction (crux flagged) | `JordanFormSpec` carries Jordan data plus the explicitly flagged ASSUMED field `similarity_absorbs` (the S = X·P(ε) construction of pp. 347–348); `higham_knight_18_1` and `higham_knight_18_1_fl_tendsto` are conditional reductions of Theorem 18.1, NOT closures. |
+| Theorem 18.2 algebraic reduction target | `higham_knight_18_2_diagonalizable`: the t = 1 form `4·c·κ∞(X)·‖A‖∞ < 1 − ρ` with limit conclusion; the printed pseudospectral statement is deferred (no pseudospectra in Mathlib/repo). |
+| Matrix ∞-norm helpers | `infNorm_add_le` (triangle inequality), `infNorm_le_mul_of_abs_le_mul_abs` (componentwise domination transfer `\|ΔA\| ≤ η\|A\| ⇒ ‖ΔA‖∞ ≤ η‖A‖∞`), `infNorm_diagonal_le`. |
+| Theorem 18.1 DISCHARGED real-diagonalizable case (t = 1) | `JordanFormSpec.ofRealDiagonal` proves `similarity_absorbs` for `X⁻¹AX = J` diagonal with `\|J i i\| ≤ ρ < 1` (S = X, no scaling); axiom-free end-to-end forms `higham_18_1_real_diagonalizable_tendsto` and `higham_18_1_real_diagonalizable_fl_tendsto` (actual `fl_matVec` iteration, printed `γ_{n+2}` constant, conclusion `‖fl(Aᵐv₀)‖∞ → 0`). |
+| Eq (18.4) exact-arithmetic bounds, real-diagonalizable ∞-norm case | `matPow_diagonal` (diagonal powers), `matPow_similarity` (`Aᵏ = X Jᵏ X⁻¹` transport), `higham_eq_18_4_upper_real_diagonalizable` (`‖Aᵏ‖∞ ≤ κ∞(X)ρᵏ`), `higham_eq_18_4_lower_real_diagonalizable` (`\|J j j\|ᵏ ≤ ‖Aᵏ‖∞`, the printed `ρ(A)ᵏ` lower bound at the dominant eigencolumn). |

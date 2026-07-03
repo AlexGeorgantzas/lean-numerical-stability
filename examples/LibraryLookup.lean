@@ -14529,3 +14529,30 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham12_3_exact_one_step_residual_bound
 #check higham12_4_conditional_two_gamma_bound
 #check higham12_problem_12_1_square
+
+-- Higham Chapter 18 source-facing declarations.
+#check ComputedMatPowVec
+#check ComputedMatPowVec.mono
+#check fl_matPowVecSeq
+#check computedMatPowVec_fl_matVec
+#check computedMatPowVec_fl_matVec_gamma_add_two
+#check matPow_componentwise_bound
+#check matPow_matrix_bound
+#check matPow_normwise_bound
+#check matPow_convergence_bound
+#check similarity_product_bound
+#check similarity_normwise_bound
+#check computedMatPow_tendsto_zero_of_geometric
+#check higham_knight_18_1
+#check higham_knight_18_1_fl_tendsto
+#check higham_knight_18_2_diagonalizable
+#check infNorm_add_le
+#check infNorm_le_mul_of_abs_le_mul_abs
+#check infNorm_diagonal_le
+#check JordanFormSpec.ofRealDiagonal
+#check higham_18_1_real_diagonalizable_tendsto
+#check higham_18_1_real_diagonalizable_fl_tendsto
+#check matPow_diagonal
+#check matPow_similarity
+#check higham_eq_18_4_upper_real_diagonalizable
+#check higham_eq_18_4_lower_real_diagonalizable
