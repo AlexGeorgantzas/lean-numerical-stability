@@ -152,6 +152,187 @@ theorem frobNormSq_upHalf_le_half {n : ℕ} (Y : Fin n → Fin n → ℝ)
   rw [hRfix] at hsum'
   linarith
 
+/-- **Perturbed Gram identity** (Theorem 10.8 proof, step 3): if
+    `RᵀR = A` and `(R+ΔR)ᵀ(R+ΔR) = A + ΔA` entrywise, the perturbation
+    satisfies `RᵀΔR + ΔRᵀR + ΔRᵀΔR = ΔA` entrywise — the exact identity
+    the `up`-operator route symmetrizes. -/
+theorem cholesky_perturbation_gram_identity {n : ℕ}
+    (A ΔA R ΔR : Fin n → Fin n → ℝ)
+    (hA : ∀ i j : Fin n, ∑ k : Fin n, R k i * R k j = A i j)
+    (hAΔ : ∀ i j : Fin n, ∑ k : Fin n,
+      (R k i + ΔR k i) * (R k j + ΔR k j) = A i j + ΔA i j) :
+    ∀ i j : Fin n,
+      (∑ k : Fin n, R k i * ΔR k j) + (∑ k : Fin n, ΔR k i * R k j) +
+      (∑ k : Fin n, ΔR k i * ΔR k j) = ΔA i j := by
+  intro i j
+  have h := hAΔ i j
+  have hsplit : ∑ k : Fin n,
+      (R k i + ΔR k i) * (R k j + ΔR k j) =
+      (∑ k : Fin n, R k i * R k j) +
+      ((∑ k : Fin n, R k i * ΔR k j) + (∑ k : Fin n, ΔR k i * R k j) +
+       (∑ k : Fin n, ΔR k i * ΔR k j)) := by
+    rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib,
+      ← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun k _ => by ring
+  rw [hsplit, hA i j] at h
+  linarith
+
+/-- **Scalar absorption endgame** (Theorem 10.8 proof, step 4): from
+    the quadratic self-bound `t ≤ a(δ + t²)` and the small-root
+    certificate `a·t < 1`, `t ≤ aδ/(1 − a·t)`. -/
+theorem cholesky_perturbation_scalar_endgame (a δ t : ℝ)
+    (hquad : t ≤ a * (δ + t ^ 2)) (hat : a * t < 1) :
+    t ≤ a * δ / (1 - a * t) := by
+  rw [le_div_iff₀ (by linarith)]
+  nlinarith
+
+/-- **Scalar endgame, display form** (Theorem 10.8, printed display
+    shape): if moreover `a·t ≤ c < 1` with `a, δ ≥ 0`, the bound takes
+    the source's monotone form `t ≤ aδ/(1 − c)`. -/
+theorem cholesky_perturbation_scalar_endgame_display (a δ t c : ℝ)
+    (ha : 0 ≤ a) (hδ : 0 ≤ δ)
+    (hquad : t ≤ a * (δ + t ^ 2))
+    (hac : a * t ≤ c) (hc1 : c < 1) :
+    t ≤ a * δ / (1 - c) := by
+  have hat : a * t < 1 := lt_of_le_of_lt hac hc1
+  have h1 := cholesky_perturbation_scalar_endgame a δ t hquad hat
+  have h2 : a * δ / (1 - a * t) ≤ a * δ / (1 - c) :=
+    div_le_div₀ (mul_nonneg ha hδ) le_rfl (by linarith) (by linarith)
+  exact h1.trans h2
+
+/-- **Frobenius–operator product bound, left factor** (Theorem 10.8
+    proof, step 5): an operator-2-norm certificate on `M` gives
+    `‖M·N‖_F² ≤ c²·‖N‖_F²`, column by column. -/
+theorem frobNormSq_matMul_left_le {n : ℕ}
+    (M N : Fin n → Fin n → ℝ) (c : ℝ)
+    (hM : opNorm2Le M c) :
+    frobNormSq (matMul n M N) ≤ c ^ 2 * frobNormSq N := by
+  have hcol : ∀ j : Fin n,
+      (∑ i : Fin n, matMul n M N i j ^ 2) ≤
+      c ^ 2 * ∑ k : Fin n, N k j ^ 2 := by
+    intro j
+    have h := hM (fun k => N k j)
+    have hveq : matMulVec n M (fun k => N k j) =
+        fun i => matMul n M N i j := rfl
+    rw [hveq] at h
+    have h0 := vecNorm2_nonneg (fun i => matMul n M N i j)
+    have h2 : vecNorm2 (fun i => matMul n M N i j) ^ 2 ≤
+        (c * vecNorm2 (fun k => N k j)) ^ 2 := by nlinarith [h]
+    rw [vecNorm2_sq, mul_pow, vecNorm2_sq] at h2
+    exact h2
+  calc frobNormSq (matMul n M N)
+      = ∑ j : Fin n, ∑ i : Fin n, matMul n M N i j ^ 2 :=
+        Finset.sum_comm
+    _ ≤ ∑ j : Fin n, c ^ 2 * ∑ k : Fin n, N k j ^ 2 :=
+        Finset.sum_le_sum fun j _ => hcol j
+    _ = c ^ 2 * ∑ j : Fin n, ∑ k : Fin n, N k j ^ 2 := by
+        rw [Finset.mul_sum]
+    _ = c ^ 2 * frobNormSq N := by
+        rw [show (∑ j : Fin n, ∑ k : Fin n, N k j ^ 2) = frobNormSq N from
+          Finset.sum_comm]
+
+/-- **Frobenius–operator product bound, right factor** (Theorem 10.8
+    proof, step 5): an operator-2-norm certificate on `Nᵀ` gives
+    `‖M·N‖_F² ≤ c²·‖M‖_F²`, row by row. -/
+theorem frobNormSq_matMul_right_le {n : ℕ}
+    (M N : Fin n → Fin n → ℝ) (c : ℝ)
+    (hNT : opNorm2Le (fun i j => N j i) c) :
+    frobNormSq (matMul n M N) ≤ c ^ 2 * frobNormSq M := by
+  have hrow : ∀ i : Fin n,
+      (∑ j : Fin n, matMul n M N i j ^ 2) ≤
+      c ^ 2 * ∑ k : Fin n, M i k ^ 2 := by
+    intro i
+    have h := hNT (fun k => M i k)
+    have hveq : matMulVec n (fun p q => N q p) (fun k => M i k) =
+        fun j => matMul n M N i j := by
+      funext j
+      unfold matMulVec matMul
+      exact Finset.sum_congr rfl fun k _ => mul_comm _ _
+    rw [hveq] at h
+    have h0 := vecNorm2_nonneg (fun j => matMul n M N i j)
+    have h2 : vecNorm2 (fun j => matMul n M N i j) ^ 2 ≤
+        (c * vecNorm2 (fun k => M i k)) ^ 2 := by nlinarith [h]
+    rw [vecNorm2_sq, mul_pow, vecNorm2_sq] at h2
+    exact h2
+  calc frobNormSq (matMul n M N)
+      ≤ ∑ i : Fin n, c ^ 2 * ∑ k : Fin n, M i k ^ 2 :=
+        Finset.sum_le_sum fun i _ => hrow i
+    _ = c ^ 2 * frobNormSq M := by
+        rw [← Finset.mul_sum]
+        rfl
+
+/-- **Packaged upper-triangular inverse** (Theorem 10.8 proof, step 6):
+    an upper-triangular matrix with nonzero diagonal has a two-sided
+    inverse that is itself upper triangular — Mathlib's
+    block-triangular inverse, exported in the repository's
+    function-matrix predicates. -/
+theorem upperTriangular_inverse_exists (k : ℕ) (U : Fin k → Fin k → ℝ)
+    (hupper : ∀ i j : Fin k, j.val < i.val → U i j = 0)
+    (hdiag : ∀ i, U i i ≠ 0) :
+    ∃ V : Fin k → Fin k → ℝ,
+      (∀ i j : Fin k, j.val < i.val → V i j = 0) ∧
+      IsRightInverse k U V ∧ IsLeftInverse k U V := by
+  let M : Matrix (Fin k) (Fin k) ℝ := Matrix.of U
+  have hBT : M.BlockTriangular id := fun i j hij => hupper i j hij
+  have hdet : IsUnit M.det := by
+    rw [Matrix.det_of_upperTriangular hBT]
+    exact isUnit_iff_ne_zero.mpr
+      (Finset.prod_ne_zero_iff.mpr fun i _ => hdiag i)
+  haveI : Invertible M := M.invertibleOfIsUnitDet hdet
+  refine ⟨fun i j => M⁻¹ i j, ?_, ?_, ?_⟩
+  · intro i j hij
+    exact Matrix.blockTriangular_inv_of_blockTriangular hBT hij
+  · intro i j
+    have hmul := Matrix.mul_nonsing_inv M hdet
+    have h := congrArg (fun A : Matrix (Fin k) (Fin k) ℝ => A i j) hmul
+    simp only [Matrix.mul_apply, Matrix.one_apply] at h
+    exact h
+  · intro i j
+    have hmul := Matrix.nonsing_inv_mul M hdet
+    have h := congrArg (fun A : Matrix (Fin k) (Fin k) ℝ => A i j) hmul
+    simp only [Matrix.mul_apply, Matrix.one_apply] at h
+    exact h
+
+/-- Product of upper-triangular matrices is upper triangular. -/
+lemma matMul_upper_upper {n : ℕ} (M N : Fin n → Fin n → ℝ)
+    (hM : ∀ i j : Fin n, j.val < i.val → M i j = 0)
+    (hN : ∀ i j : Fin n, j.val < i.val → N i j = 0) :
+    ∀ i j : Fin n, j.val < i.val → matMul n M N i j = 0 := by
+  intro i j hij
+  unfold matMul
+  refine Finset.sum_eq_zero fun k _ => ?_
+  rcases Nat.lt_or_ge k.val i.val with hk | hk
+  · rw [hM i k hk, zero_mul]
+  · rw [hN k j (by omega), mul_zero]
+
+/-- **Frobenius submultiplicativity for the Gram square** (Theorem 10.8
+    proof, step 7): `‖MᵀM‖_F² ≤ (‖M‖_F²)²`, by per-entry Cauchy–Schwarz
+    over columns. -/
+theorem frobNormSq_transpose_mul_self_le {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    frobNormSq (matMul n (fun i j => M j i) M) ≤ frobNormSq M ^ 2 := by
+  have hentry : ∀ i j : Fin n,
+      (matMul n (fun p q => M q p) M i j) ^ 2 ≤
+      (∑ k : Fin n, M k i ^ 2) * ∑ k : Fin n, M k j ^ 2 := by
+    intro i j
+    have hcs := Finset.sum_mul_sq_le_sq_mul_sq
+      (Finset.univ : Finset (Fin n)) (fun k => M k i) (fun k => M k j)
+    have hsq : (matMul n (fun p q => M q p) M i j) ^ 2 =
+        (∑ k : Fin n, M k i * M k j) ^ 2 := rfl
+    rw [hsq]
+    exact hcs
+  calc frobNormSq (matMul n (fun i j => M j i) M)
+      ≤ ∑ i : Fin n, ∑ j : Fin n,
+        (∑ k : Fin n, M k i ^ 2) * ∑ k : Fin n, M k j ^ 2 :=
+        Finset.sum_le_sum fun i _ => Finset.sum_le_sum fun j _ =>
+          hentry i j
+    _ = (∑ i : Fin n, ∑ k : Fin n, M k i ^ 2) *
+        ∑ j : Fin n, ∑ k : Fin n, M k j ^ 2 := by
+        rw [Finset.sum_mul_sum]
+    _ = frobNormSq M ^ 2 := by
+        rw [show (∑ i : Fin n, ∑ k : Fin n, M k i ^ 2) = frobNormSq M
+          from Finset.sum_comm, sq]
+
 -- ============================================================
 -- §10.2  Theorem 10.8: Sun perturbation bound (normwise)
 -- ============================================================
