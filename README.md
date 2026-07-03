@@ -92,11 +92,13 @@ same exact-operation and update-compatibility/exact-add-mul surfaces. Exact-alph
 variants expose the same bridge when the successor alpha is stated as Higham's
 exact `householderAlpha` rather than the computed `fl_householderAlpha`. Exact
 subtraction also discharges the subtract-zero copy premise for those
-computed-alpha and exact-alpha successor QR recursion wrappers. The
-tail-leading-block successor QR variants now also derive the nonzero trailing
-source-column premise from the successor leading-block determinant, so callers
-can use the same determinant nonbreakdown surface instead of supplying that
-column fact separately. The
+computed-alpha and exact-alpha successor QR recursion wrappers. The lower
+successor stored-panel handoff now has matching tail-leading-block variants
+that derive the nonzero trailing source-column premise from determinant
+nonbreakdown of the once-shrunk trailing leading block. The tail-leading-block
+successor QR variants also derive the same premise from the successor
+leading-block determinant, so callers can use the determinant nonbreakdown
+surface instead of supplying that column fact separately. The
 full rounded stored-loop proof remains open until the per-stage certificate
 fields are proved from a source-faithful model or replaced by a separate
 compatibility/perturbation theorem.
