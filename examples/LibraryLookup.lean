@@ -8,7 +8,9 @@ import LeanFpAnalysis.FP.Algorithms.HighamChapter10
 import LeanFpAnalysis.FP.Algorithms.HighamChapter11
 import LeanFpAnalysis.FP.Algorithms.HighamChapter12
 import LeanFpAnalysis.FP.Algorithms.MatrixPowers
+import LeanFpAnalysis.FP.Algorithms.MatrixPowersComplex
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersJordan
+import LeanFpAnalysis.FP.Algorithms.MatrixPowersSpectral
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
 
