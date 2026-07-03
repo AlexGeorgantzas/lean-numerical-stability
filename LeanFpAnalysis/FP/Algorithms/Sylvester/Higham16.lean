@@ -315,6 +315,128 @@ theorem sylvester_schur_transform_identity (m n : Nat)
   rw [hleft, hright]
   exact hcombine.symm
 
+private theorem rectMatMul_schur_coords_cancel {m n : Nat}
+    (U : RMatFn m m) (V : RMatFn n n) (M : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V) :
+    rectMatMul (matTranspose U)
+      (rectMatMul (rectMatMul U (rectMatMul M (matTranspose V))) V) = M := by
+  have hUtU : rectMatMul (matTranspose U) U = idMatrix m := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hU.left_inv i j
+  have hVtV : rectMatMul (matTranspose V) V = idMatrix n := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hV.left_inv i j
+  calc
+    rectMatMul (matTranspose U)
+        (rectMatMul (rectMatMul U (rectMatMul M (matTranspose V))) V)
+        = rectMatMul (rectMatMul (matTranspose U)
+            (rectMatMul U (rectMatMul M (matTranspose V)))) V := by
+            exact (rectMatMul_assoc (matTranspose U)
+              (rectMatMul U (rectMatMul M (matTranspose V))) V).symm
+    _ = rectMatMul (rectMatMul (rectMatMul (matTranspose U) U)
+            (rectMatMul M (matTranspose V))) V := by
+            exact congrArg (fun Z => rectMatMul Z V)
+              (rectMatMul_assoc (matTranspose U) U (rectMatMul M (matTranspose V))).symm
+    _ = rectMatMul (rectMatMul (idMatrix m) (rectMatMul M (matTranspose V))) V := by
+            rw [hUtU]
+    _ = rectMatMul (rectMatMul M (matTranspose V)) V := by
+            rw [rectMatMul_id_left]
+    _ = rectMatMul M (rectMatMul (matTranspose V) V) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul M (idMatrix n) := by
+            rw [hVtV]
+    _ = M := by
+            rw [rectMatMul_id_right]
+
+private theorem rectMatMul_schur_coords_expand {m n : Nat}
+    (U : RMatFn m m) (V : RMatFn n n) (C : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V) :
+    rectMatMul U
+      (rectMatMul (rectMatMul (matTranspose U) (rectMatMul C V)) (matTranspose V)) = C := by
+  have hUUt : rectMatMul U (matTranspose U) = idMatrix m := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hU.right_inv i j
+  have hVVt : rectMatMul V (matTranspose V) = idMatrix n := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hV.right_inv i j
+  calc
+    rectMatMul U
+        (rectMatMul (rectMatMul (matTranspose U) (rectMatMul C V)) (matTranspose V))
+        = rectMatMul (rectMatMul U
+            (rectMatMul (matTranspose U) (rectMatMul C V))) (matTranspose V) := by
+            exact (rectMatMul_assoc U
+              (rectMatMul (matTranspose U) (rectMatMul C V)) (matTranspose V)).symm
+    _ = rectMatMul (rectMatMul (rectMatMul U (matTranspose U))
+            (rectMatMul C V)) (matTranspose V) := by
+            exact congrArg (fun Z => rectMatMul Z (matTranspose V))
+              (rectMatMul_assoc U (matTranspose U) (rectMatMul C V)).symm
+    _ = rectMatMul (rectMatMul (idMatrix m) (rectMatMul C V)) (matTranspose V) := by
+            rw [hUUt]
+    _ = rectMatMul (rectMatMul C V) (matTranspose V) := by
+            rw [rectMatMul_id_left]
+    _ = rectMatMul C (rectMatMul V (matTranspose V)) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul C (idMatrix n) := by
+            rw [hVVt]
+    _ = C := by
+            rw [rectMatMul_id_right]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5):
+    equation-level Schur-coordinate form.  Under supplied orthogonal
+    factorizations `A = U R U^T` and `B = V S V^T`, the substitution
+    `X = U Y V^T` solves `AX - XB = C` exactly when `Y` solves
+    `RY - YS = U^T C V`. -/
+theorem sylvester_schur_transform_solution_iff (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n) (C Y : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V))) :
+    IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul Y (matTranspose V))) <->
+      IsSylvesterSolutionRect m n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) Y := by
+  constructor
+  case mp =>
+    intro h
+    have htrans := sylvester_schur_transform_identity m n U R A V S B Y hU hV hA hB
+    have hUMVt :
+        rectMatMul U (rectMatMul (sylvesterOpRect m n R S Y) (matTranspose V)) = C := by
+      rw [htrans.symm]
+      ext i j
+      exact h i j
+    have hM :
+        sylvesterOpRect m n R S Y =
+          rectMatMul (matTranspose U) (rectMatMul C V) := by
+      calc
+        sylvesterOpRect m n R S Y =
+            rectMatMul (matTranspose U)
+              (rectMatMul (rectMatMul U
+                (rectMatMul (sylvesterOpRect m n R S Y) (matTranspose V))) V) := by
+                exact (rectMatMul_schur_coords_cancel U V
+                  (sylvesterOpRect m n R S Y) hU hV).symm
+        _ = rectMatMul (matTranspose U) (rectMatMul C V) := by
+                rw [hUMVt]
+    intro i j
+    exact congrFun (congrFun hM i) j
+  case mpr =>
+    intro h
+    have hM :
+        sylvesterOpRect m n R S Y =
+          rectMatMul (matTranspose U) (rectMatMul C V) := by
+      ext i j
+      exact h i j
+    have hUMVt :
+        rectMatMul U (rectMatMul (sylvesterOpRect m n R S Y) (matTranspose V)) = C := by
+      rw [hM]
+      exact rectMatMul_schur_coords_expand U V C hU hV
+    have htrans := sylvester_schur_transform_identity m n U R A V S B Y hU hV hA hB
+    have hsol :
+        sylvesterOpRect m n A B (rectMatMul U (rectMatMul Y (matTranspose V))) = C := by
+      rw [htrans]
+      exact hUMVt
+    intro i j
+    exact congrFun (congrFun hsol i) j
+
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
 -- ============================================================
