@@ -43,6 +43,608 @@ lemma triuPart_diag_and_above {n : ℕ} (A : Fin n → Fin n → ℝ) :
   simp [hij]
 
 -- ============================================================
+-- §10.2  The `up` operator (Theorem 10.8 proof machinery)
+-- ============================================================
+
+/-- **The `up` operator** (proof route for Theorem 10.8; Sun, BIT 31
+    (1991), advisory route logged in the chapter report): the upper
+    triangular part with halved diagonal,
+    `up(Y)_{ij} = Y_{ij}` for `i < j`, `Y_{ii}/2` on the diagonal, `0`
+    below. -/
+noncomputable def upHalf {n : ℕ} (Y : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    if i.val < j.val then Y i j
+    else if i = j then Y i j / 2
+    else 0
+
+lemma upHalf_strict_lower {n : ℕ} (Y : Fin n → Fin n → ℝ)
+    (i j : Fin n) (hij : j.val < i.val) : upHalf Y i j = 0 := by
+  unfold upHalf
+  rw [if_neg (by omega : ¬ i.val < j.val),
+    if_neg (fun he : i = j => by subst he; omega)]
+
+lemma upHalf_strict_upper {n : ℕ} (Y : Fin n → Fin n → ℝ)
+    (i j : Fin n) (hij : i.val < j.val) : upHalf Y i j = Y i j := by
+  unfold upHalf
+  rw [if_pos hij]
+
+lemma upHalf_diag {n : ℕ} (Y : Fin n → Fin n → ℝ) (i : Fin n) :
+    upHalf Y i i = Y i i / 2 := by
+  unfold upHalf
+  rw [if_neg (lt_irrefl _), if_pos rfl]
+
+/-- **Triangular recovery** (Theorem 10.8 proof, step 1): an upper
+    triangular `X` is recovered from its symmetrization,
+    `up(X + Xᵀ) = X`. -/
+theorem upHalf_add_transpose {n : ℕ} (X : Fin n → Fin n → ℝ)
+    (hX : ∀ i j : Fin n, j.val < i.val → X i j = 0) :
+    ∀ i j : Fin n, upHalf (fun p q => X p q + X q p) i j = X i j := by
+  intro i j
+  rcases lt_trichotomy i.val j.val with h | h | h
+  · rw [upHalf_strict_upper _ i j h]
+    rw [hX j i h, add_zero]
+  · have hij : i = j := Fin.ext h
+    subst hij
+    rw [upHalf_diag]
+    ring
+  · rw [upHalf_strict_lower _ i j h, hX i j h]
+
+/-- **Frobenius halving** (Theorem 10.8 proof, step 2): for a symmetric
+    matrix `Y`, `‖up(Y)‖_F² ≤ ‖Y‖_F²/2` — the strict upper part carries
+    at most half of the off-diagonal mass and the halved diagonal at
+    most a quarter of the diagonal mass. -/
+theorem frobNormSq_upHalf_le_half {n : ℕ} (Y : Fin n → Fin n → ℝ)
+    (hY : ∀ i j : Fin n, Y i j = Y j i) :
+    frobNormSq (upHalf Y) ≤ frobNormSq Y / 2 := by
+  have hpoint : ∀ i j : Fin n,
+      2 * upHalf Y i j ^ 2 + 2 * upHalf Y j i ^ 2 ≤
+      Y i j ^ 2 + Y j i ^ 2 := by
+    intro i j
+    rcases lt_trichotomy i.val j.val with h | h | h
+    · rw [upHalf_strict_upper Y i j h, upHalf_strict_lower Y j i h,
+        hY j i]
+      nlinarith [sq_nonneg (Y i j)]
+    · have hij : i = j := Fin.ext h
+      subst hij
+      rw [upHalf_diag]
+      nlinarith [sq_nonneg (Y i i)]
+    · rw [upHalf_strict_lower Y i j h, upHalf_strict_upper Y j i h,
+        hY j i]
+      nlinarith [sq_nonneg (Y i j)]
+  have hsum : ∑ i : Fin n, ∑ j : Fin n,
+      (2 * upHalf Y i j ^ 2 + 2 * upHalf Y j i ^ 2) ≤
+      ∑ i : Fin n, ∑ j : Fin n, (Y i j ^ 2 + Y j i ^ 2) :=
+    Finset.sum_le_sum fun i _ => Finset.sum_le_sum fun j _ => hpoint i j
+  have hsplit : ∀ (M : Fin n → Fin n → ℝ) (c : ℝ),
+      ∑ i : Fin n, ∑ j : Fin n, (c * M i j ^ 2 + c * M j i ^ 2) =
+      c * (∑ i : Fin n, ∑ j : Fin n, M i j ^ 2) +
+      c * (∑ i : Fin n, ∑ j : Fin n, M j i ^ 2) := by
+    intro M c
+    have inner : ∀ i : Fin n, ∑ j : Fin n,
+        (c * M i j ^ 2 + c * M j i ^ 2) =
+        c * (∑ j : Fin n, M i j ^ 2) +
+        c * (∑ j : Fin n, M j i ^ 2) := by
+      intro i
+      rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum]
+    rw [Finset.sum_congr rfl fun i _ => inner i,
+      Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum]
+  have hswapU : ∑ i : Fin n, ∑ j : Fin n, upHalf Y j i ^ 2 =
+      ∑ i : Fin n, ∑ j : Fin n, upHalf Y i j ^ 2 :=
+    Finset.sum_comm
+  have hswapY : ∑ i : Fin n, ∑ j : Fin n, Y j i ^ 2 =
+      ∑ i : Fin n, ∑ j : Fin n, Y i j ^ 2 :=
+    Finset.sum_comm
+  have hL := hsplit (upHalf Y) 2
+  have hR := hsplit Y 1
+  rw [hswapU] at hL
+  rw [hswapY] at hR
+  simp only [one_mul] at hR
+  unfold frobNormSq
+  have hsum' := hsum
+  rw [hL] at hsum'
+  have hRfix : ∑ i : Fin n, ∑ j : Fin n, (Y i j ^ 2 + Y j i ^ 2) =
+      (∑ i : Fin n, ∑ j : Fin n, Y i j ^ 2) +
+      ∑ i : Fin n, ∑ j : Fin n, Y i j ^ 2 := by
+    have := hsplit Y 1
+    simp only [one_mul] at this
+    rw [this, hswapY]
+  rw [hRfix] at hsum'
+  linarith
+
+/-- **Perturbed Gram identity** (Theorem 10.8 proof, step 3): if
+    `RᵀR = A` and `(R+ΔR)ᵀ(R+ΔR) = A + ΔA` entrywise, the perturbation
+    satisfies `RᵀΔR + ΔRᵀR + ΔRᵀΔR = ΔA` entrywise — the exact identity
+    the `up`-operator route symmetrizes. -/
+theorem cholesky_perturbation_gram_identity {n : ℕ}
+    (A ΔA R ΔR : Fin n → Fin n → ℝ)
+    (hA : ∀ i j : Fin n, ∑ k : Fin n, R k i * R k j = A i j)
+    (hAΔ : ∀ i j : Fin n, ∑ k : Fin n,
+      (R k i + ΔR k i) * (R k j + ΔR k j) = A i j + ΔA i j) :
+    ∀ i j : Fin n,
+      (∑ k : Fin n, R k i * ΔR k j) + (∑ k : Fin n, ΔR k i * R k j) +
+      (∑ k : Fin n, ΔR k i * ΔR k j) = ΔA i j := by
+  intro i j
+  have h := hAΔ i j
+  have hsplit : ∑ k : Fin n,
+      (R k i + ΔR k i) * (R k j + ΔR k j) =
+      (∑ k : Fin n, R k i * R k j) +
+      ((∑ k : Fin n, R k i * ΔR k j) + (∑ k : Fin n, ΔR k i * R k j) +
+       (∑ k : Fin n, ΔR k i * ΔR k j)) := by
+    rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib,
+      ← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun k _ => by ring
+  rw [hsplit, hA i j] at h
+  linarith
+
+/-- **Scalar absorption endgame** (Theorem 10.8 proof, step 4): from
+    the quadratic self-bound `t ≤ a(δ + t²)` and the small-root
+    certificate `a·t < 1`, `t ≤ aδ/(1 − a·t)`. -/
+theorem cholesky_perturbation_scalar_endgame (a δ t : ℝ)
+    (hquad : t ≤ a * (δ + t ^ 2)) (hat : a * t < 1) :
+    t ≤ a * δ / (1 - a * t) := by
+  rw [le_div_iff₀ (by linarith)]
+  nlinarith
+
+/-- **Scalar endgame, display form** (Theorem 10.8, printed display
+    shape): if moreover `a·t ≤ c < 1` with `a, δ ≥ 0`, the bound takes
+    the source's monotone form `t ≤ aδ/(1 − c)`. -/
+theorem cholesky_perturbation_scalar_endgame_display (a δ t c : ℝ)
+    (ha : 0 ≤ a) (hδ : 0 ≤ δ)
+    (hquad : t ≤ a * (δ + t ^ 2))
+    (hac : a * t ≤ c) (hc1 : c < 1) :
+    t ≤ a * δ / (1 - c) := by
+  have hat : a * t < 1 := lt_of_le_of_lt hac hc1
+  have h1 := cholesky_perturbation_scalar_endgame a δ t hquad hat
+  have h2 : a * δ / (1 - a * t) ≤ a * δ / (1 - c) :=
+    div_le_div₀ (mul_nonneg ha hδ) le_rfl (by linarith) (by linarith)
+  exact h1.trans h2
+
+/-- **Frobenius–operator product bound, left factor** (Theorem 10.8
+    proof, step 5): an operator-2-norm certificate on `M` gives
+    `‖M·N‖_F² ≤ c²·‖N‖_F²`, column by column. -/
+theorem frobNormSq_matMul_left_le {n : ℕ}
+    (M N : Fin n → Fin n → ℝ) (c : ℝ)
+    (hM : opNorm2Le M c) :
+    frobNormSq (matMul n M N) ≤ c ^ 2 * frobNormSq N := by
+  have hcol : ∀ j : Fin n,
+      (∑ i : Fin n, matMul n M N i j ^ 2) ≤
+      c ^ 2 * ∑ k : Fin n, N k j ^ 2 := by
+    intro j
+    have h := hM (fun k => N k j)
+    have hveq : matMulVec n M (fun k => N k j) =
+        fun i => matMul n M N i j := rfl
+    rw [hveq] at h
+    have h0 := vecNorm2_nonneg (fun i => matMul n M N i j)
+    have h2 : vecNorm2 (fun i => matMul n M N i j) ^ 2 ≤
+        (c * vecNorm2 (fun k => N k j)) ^ 2 := by nlinarith [h]
+    rw [vecNorm2_sq, mul_pow, vecNorm2_sq] at h2
+    exact h2
+  calc frobNormSq (matMul n M N)
+      = ∑ j : Fin n, ∑ i : Fin n, matMul n M N i j ^ 2 :=
+        Finset.sum_comm
+    _ ≤ ∑ j : Fin n, c ^ 2 * ∑ k : Fin n, N k j ^ 2 :=
+        Finset.sum_le_sum fun j _ => hcol j
+    _ = c ^ 2 * ∑ j : Fin n, ∑ k : Fin n, N k j ^ 2 := by
+        rw [Finset.mul_sum]
+    _ = c ^ 2 * frobNormSq N := by
+        rw [show (∑ j : Fin n, ∑ k : Fin n, N k j ^ 2) = frobNormSq N from
+          Finset.sum_comm]
+
+/-- **Frobenius–operator product bound, right factor** (Theorem 10.8
+    proof, step 5): an operator-2-norm certificate on `Nᵀ` gives
+    `‖M·N‖_F² ≤ c²·‖M‖_F²`, row by row. -/
+theorem frobNormSq_matMul_right_le {n : ℕ}
+    (M N : Fin n → Fin n → ℝ) (c : ℝ)
+    (hNT : opNorm2Le (fun i j => N j i) c) :
+    frobNormSq (matMul n M N) ≤ c ^ 2 * frobNormSq M := by
+  have hrow : ∀ i : Fin n,
+      (∑ j : Fin n, matMul n M N i j ^ 2) ≤
+      c ^ 2 * ∑ k : Fin n, M i k ^ 2 := by
+    intro i
+    have h := hNT (fun k => M i k)
+    have hveq : matMulVec n (fun p q => N q p) (fun k => M i k) =
+        fun j => matMul n M N i j := by
+      funext j
+      unfold matMulVec matMul
+      exact Finset.sum_congr rfl fun k _ => mul_comm _ _
+    rw [hveq] at h
+    have h0 := vecNorm2_nonneg (fun j => matMul n M N i j)
+    have h2 : vecNorm2 (fun j => matMul n M N i j) ^ 2 ≤
+        (c * vecNorm2 (fun k => M i k)) ^ 2 := by nlinarith [h]
+    rw [vecNorm2_sq, mul_pow, vecNorm2_sq] at h2
+    exact h2
+  calc frobNormSq (matMul n M N)
+      ≤ ∑ i : Fin n, c ^ 2 * ∑ k : Fin n, M i k ^ 2 :=
+        Finset.sum_le_sum fun i _ => hrow i
+    _ = c ^ 2 * frobNormSq M := by
+        rw [← Finset.mul_sum]
+        rfl
+
+/-- **Packaged upper-triangular inverse** (Theorem 10.8 proof, step 6):
+    an upper-triangular matrix with nonzero diagonal has a two-sided
+    inverse that is itself upper triangular — Mathlib's
+    block-triangular inverse, exported in the repository's
+    function-matrix predicates. -/
+theorem upperTriangular_inverse_exists (k : ℕ) (U : Fin k → Fin k → ℝ)
+    (hupper : ∀ i j : Fin k, j.val < i.val → U i j = 0)
+    (hdiag : ∀ i, U i i ≠ 0) :
+    ∃ V : Fin k → Fin k → ℝ,
+      (∀ i j : Fin k, j.val < i.val → V i j = 0) ∧
+      IsRightInverse k U V ∧ IsLeftInverse k U V := by
+  let M : Matrix (Fin k) (Fin k) ℝ := Matrix.of U
+  have hBT : M.BlockTriangular id := fun i j hij => hupper i j hij
+  have hdet : IsUnit M.det := by
+    rw [Matrix.det_of_upperTriangular hBT]
+    exact isUnit_iff_ne_zero.mpr
+      (Finset.prod_ne_zero_iff.mpr fun i _ => hdiag i)
+  haveI : Invertible M := M.invertibleOfIsUnitDet hdet
+  refine ⟨fun i j => M⁻¹ i j, ?_, ?_, ?_⟩
+  · intro i j hij
+    exact Matrix.blockTriangular_inv_of_blockTriangular hBT hij
+  · intro i j
+    have hmul := Matrix.mul_nonsing_inv M hdet
+    have h := congrArg (fun A : Matrix (Fin k) (Fin k) ℝ => A i j) hmul
+    simp only [Matrix.mul_apply, Matrix.one_apply] at h
+    exact h
+  · intro i j
+    have hmul := Matrix.nonsing_inv_mul M hdet
+    have h := congrArg (fun A : Matrix (Fin k) (Fin k) ℝ => A i j) hmul
+    simp only [Matrix.mul_apply, Matrix.one_apply] at h
+    exact h
+
+/-- Product of upper-triangular matrices is upper triangular. -/
+lemma matMul_upper_upper {n : ℕ} (M N : Fin n → Fin n → ℝ)
+    (hM : ∀ i j : Fin n, j.val < i.val → M i j = 0)
+    (hN : ∀ i j : Fin n, j.val < i.val → N i j = 0) :
+    ∀ i j : Fin n, j.val < i.val → matMul n M N i j = 0 := by
+  intro i j hij
+  unfold matMul
+  refine Finset.sum_eq_zero fun k _ => ?_
+  rcases Nat.lt_or_ge k.val i.val with hk | hk
+  · rw [hM i k hk, zero_mul]
+  · rw [hN k j (by omega), mul_zero]
+
+/-- **Frobenius submultiplicativity for the Gram square** (Theorem 10.8
+    proof, step 7): `‖MᵀM‖_F² ≤ (‖M‖_F²)²`, by per-entry Cauchy–Schwarz
+    over columns. -/
+theorem frobNormSq_transpose_mul_self_le {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    frobNormSq (matMul n (fun i j => M j i) M) ≤ frobNormSq M ^ 2 := by
+  have hentry : ∀ i j : Fin n,
+      (matMul n (fun p q => M q p) M i j) ^ 2 ≤
+      (∑ k : Fin n, M k i ^ 2) * ∑ k : Fin n, M k j ^ 2 := by
+    intro i j
+    have hcs := Finset.sum_mul_sq_le_sq_mul_sq
+      (Finset.univ : Finset (Fin n)) (fun k => M k i) (fun k => M k j)
+    have hsq : (matMul n (fun p q => M q p) M i j) ^ 2 =
+        (∑ k : Fin n, M k i * M k j) ^ 2 := rfl
+    rw [hsq]
+    exact hcs
+  calc frobNormSq (matMul n (fun i j => M j i) M)
+      ≤ ∑ i : Fin n, ∑ j : Fin n,
+        (∑ k : Fin n, M k i ^ 2) * ∑ k : Fin n, M k j ^ 2 :=
+        Finset.sum_le_sum fun i _ => Finset.sum_le_sum fun j _ =>
+          hentry i j
+    _ = (∑ i : Fin n, ∑ k : Fin n, M k i ^ 2) *
+        ∑ j : Fin n, ∑ k : Fin n, M k j ^ 2 := by
+        rw [Finset.sum_mul_sum]
+    _ = frobNormSq M ^ 2 := by
+        rw [show (∑ i : Fin n, ∑ k : Fin n, M k i ^ 2) = frobNormSq M
+          from Finset.sum_comm, sq]
+
+/-- **Symmetrized congruence identity** (Theorem 10.8 proof, step 8):
+    with `X := ΔR·R⁻¹`, congruence of the Gram identity by `R⁻ᵀ·(·)·R⁻¹`
+    collapses to `X + Xᵀ = R⁻ᵀ(ΔA − ΔRᵀΔR)R⁻¹` entrywise. -/
+theorem cholesky_perturbation_symmetrized {n : ℕ}
+    (A ΔA R ΔR Rinv : Fin n → Fin n → ℝ)
+    (hA : ∀ i j : Fin n, ∑ k : Fin n, R k i * R k j = A i j)
+    (hAΔ : ∀ i j : Fin n, ∑ k : Fin n,
+      (R k i + ΔR k i) * (R k j + ΔR k j) = A i j + ΔA i j)
+    (hRight : IsRightInverse n R Rinv) :
+    ∀ i j : Fin n,
+      matMul n ΔR Rinv i j + matMul n ΔR Rinv j i =
+      ∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+        (ΔA p q - ∑ k : Fin n, ΔR k p * ΔR k q) * Rinv q j := by
+  intro i j
+  have hG := cholesky_perturbation_gram_identity A ΔA R ΔR hA hAΔ
+  -- pointwise rearrangement of the Gram identity
+  have hpt : ∀ p q : Fin n,
+      ΔA p q - ∑ k : Fin n, ΔR k p * ΔR k q =
+      (∑ k : Fin n, R k p * ΔR k q) + ∑ k : Fin n, ΔR k p * R k q := by
+    intro p q
+    have h := hG p q
+    linarith
+  -- split the congruence sum along hpt
+  have hsplit : ∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+      (ΔA p q - ∑ k : Fin n, ΔR k p * ΔR k q) * Rinv q j =
+      (∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+        (∑ k : Fin n, R k p * ΔR k q) * Rinv q j) +
+      ∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+        (∑ k : Fin n, ΔR k p * R k q) * Rinv q j := by
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun p _ => ?_
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun q _ => ?_
+    rw [hpt p q]
+    ring
+  -- first term collapses to X i j via the right inverse at row i
+  have hterm1 : ∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+      (∑ k : Fin n, R k p * ΔR k q) * Rinv q j =
+      matMul n ΔR Rinv i j := by
+    have hflat : ∀ p q : Fin n,
+        Rinv p i * (∑ k : Fin n, R k p * ΔR k q) * Rinv q j =
+        ∑ k : Fin n, R k p * Rinv p i * (ΔR k q * Rinv q j) := by
+      intro p q
+      rw [Finset.mul_sum, Finset.sum_mul]
+      exact Finset.sum_congr rfl fun k _ => by ring
+    calc ∑ p : Fin n, ∑ q : Fin n,
+        Rinv p i * (∑ k : Fin n, R k p * ΔR k q) * Rinv q j
+        = ∑ p : Fin n, ∑ q : Fin n, ∑ k : Fin n,
+            R k p * Rinv p i * (ΔR k q * Rinv q j) :=
+          Finset.sum_congr rfl fun p _ =>
+            Finset.sum_congr rfl fun q _ => hflat p q
+      _ = ∑ q : Fin n, ∑ p : Fin n, ∑ k : Fin n,
+            R k p * Rinv p i * (ΔR k q * Rinv q j) := Finset.sum_comm
+      _ = ∑ q : Fin n, ∑ k : Fin n, ∑ p : Fin n,
+            R k p * Rinv p i * (ΔR k q * Rinv q j) :=
+          Finset.sum_congr rfl fun q _ => Finset.sum_comm
+      _ = ∑ q : Fin n, ∑ k : Fin n,
+            (∑ p : Fin n, R k p * Rinv p i) * (ΔR k q * Rinv q j) := by
+          refine Finset.sum_congr rfl fun q _ =>
+            Finset.sum_congr rfl fun k _ => ?_
+          rw [Finset.sum_mul]
+      _ = ∑ q : Fin n, ∑ k : Fin n,
+            (if k = i then (1:ℝ) else 0) * (ΔR k q * Rinv q j) := by
+          refine Finset.sum_congr rfl fun q _ =>
+            Finset.sum_congr rfl fun k _ => ?_
+          rw [hRight k i]
+      _ = ∑ q : Fin n, ΔR i q * Rinv q j := by
+          refine Finset.sum_congr rfl fun q _ => ?_
+          rw [Finset.sum_eq_single i]
+          · rw [if_pos rfl, one_mul]
+          · intro b _ hb
+            rw [if_neg hb, zero_mul]
+          · intro hni
+            exact absurd (Finset.mem_univ i) hni
+      _ = matMul n ΔR Rinv i j := rfl
+  -- second term collapses to X j i via the right inverse at row j
+  have hterm2 : ∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+      (∑ k : Fin n, ΔR k p * R k q) * Rinv q j =
+      matMul n ΔR Rinv j i := by
+    have hflat : ∀ p q : Fin n,
+        Rinv p i * (∑ k : Fin n, ΔR k p * R k q) * Rinv q j =
+        ∑ k : Fin n, R k q * Rinv q j * (ΔR k p * Rinv p i) := by
+      intro p q
+      rw [Finset.mul_sum, Finset.sum_mul]
+      exact Finset.sum_congr rfl fun k _ => by ring
+    calc ∑ p : Fin n, ∑ q : Fin n,
+        Rinv p i * (∑ k : Fin n, ΔR k p * R k q) * Rinv q j
+        = ∑ p : Fin n, ∑ q : Fin n, ∑ k : Fin n,
+            R k q * Rinv q j * (ΔR k p * Rinv p i) :=
+          Finset.sum_congr rfl fun p _ =>
+            Finset.sum_congr rfl fun q _ => hflat p q
+      _ = ∑ p : Fin n, ∑ k : Fin n, ∑ q : Fin n,
+            R k q * Rinv q j * (ΔR k p * Rinv p i) :=
+          Finset.sum_congr rfl fun p _ => Finset.sum_comm
+      _ = ∑ p : Fin n, ∑ k : Fin n,
+            (∑ q : Fin n, R k q * Rinv q j) * (ΔR k p * Rinv p i) := by
+          refine Finset.sum_congr rfl fun p _ =>
+            Finset.sum_congr rfl fun k _ => ?_
+          rw [Finset.sum_mul]
+      _ = ∑ p : Fin n, ∑ k : Fin n,
+            (if k = j then (1:ℝ) else 0) * (ΔR k p * Rinv p i) := by
+          refine Finset.sum_congr rfl fun p _ =>
+            Finset.sum_congr rfl fun k _ => ?_
+          rw [hRight k j]
+      _ = ∑ p : Fin n, ΔR j p * Rinv p i := by
+          refine Finset.sum_congr rfl fun p _ => ?_
+          rw [Finset.sum_eq_single j]
+          · rw [if_pos rfl, one_mul]
+          · intro b _ hb
+            rw [if_neg hb, zero_mul]
+          · intro hnj
+            exact absurd (Finset.mem_univ j) hnj
+      _ = matMul n ΔR Rinv j i := rfl
+  rw [hsplit, hterm1, hterm2]
+
+/-- Unsquared-norm form of the left Frobenius–operator bound. -/
+theorem frobNorm_matMul_left_le {n : ℕ}
+    (M N : Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c)
+    (hM : opNorm2Le M c) :
+    frobNorm (matMul n M N) ≤ c * frobNorm N := by
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq]
+  calc Real.sqrt (frobNormSq (matMul n M N))
+      ≤ Real.sqrt (c ^ 2 * frobNormSq N) :=
+        Real.sqrt_le_sqrt (frobNormSq_matMul_left_le M N c hM)
+    _ = c * Real.sqrt (frobNormSq N) := by
+        rw [Real.sqrt_mul (sq_nonneg c), Real.sqrt_sq hc]
+
+/-- Unsquared-norm form of the right Frobenius–operator bound. -/
+theorem frobNorm_matMul_right_le {n : ℕ}
+    (M N : Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c)
+    (hNT : opNorm2Le (fun i j => N j i) c) :
+    frobNorm (matMul n M N) ≤ c * frobNorm M := by
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq]
+  calc Real.sqrt (frobNormSq (matMul n M N))
+      ≤ Real.sqrt (c ^ 2 * frobNormSq M) :=
+        Real.sqrt_le_sqrt (frobNormSq_matMul_right_le M N c hNT)
+    _ = c * Real.sqrt (frobNormSq M) := by
+        rw [Real.sqrt_mul (sq_nonneg c), Real.sqrt_sq hc]
+
+/-- Unsquared-norm form of the `up`-operator halving:
+    `‖up(Y)‖_F ≤ ‖Y‖_F / √2` for symmetric `Y`. -/
+theorem frobNorm_upHalf_le {n : ℕ} (Y : Fin n → Fin n → ℝ)
+    (hY : ∀ i j : Fin n, Y i j = Y j i) :
+    frobNorm (upHalf Y) ≤ frobNorm Y / Real.sqrt 2 := by
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq]
+  calc Real.sqrt (frobNormSq (upHalf Y))
+      ≤ Real.sqrt (frobNormSq Y / 2) :=
+        Real.sqrt_le_sqrt (frobNormSq_upHalf_le_half Y hY)
+    _ = Real.sqrt (frobNormSq Y) / Real.sqrt 2 :=
+        Real.sqrt_div (frobNormSq_nonneg Y) 2
+
+/-- Unsquared-norm form of the Gram-square bound:
+    `‖MᵀM‖_F ≤ ‖M‖_F²`. -/
+theorem frobNorm_transpose_mul_self_le {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    frobNorm (matMul n (fun i j => M j i) M) ≤ frobNorm M ^ 2 := by
+  rw [frobNorm_eq_sqrt_frobNormSq]
+  calc Real.sqrt (frobNormSq (matMul n (fun i j => M j i) M))
+      ≤ Real.sqrt (frobNormSq M ^ 2) :=
+        Real.sqrt_le_sqrt (frobNormSq_transpose_mul_self_le M)
+    _ = frobNormSq M := Real.sqrt_sq (frobNormSq_nonneg M)
+    _ = frobNorm M ^ 2 := by
+        rw [frobNorm_eq_sqrt_frobNormSq, Real.sq_sqrt (frobNormSq_nonneg M)]
+
+/-- `frobNorm` equals the sum-of-squares norm entrywise, so entrywise
+    equal matrices have equal Frobenius norm. -/
+theorem frobNorm_congr {n : ℕ} (M N : Fin n → Fin n → ℝ)
+    (h : ∀ i j : Fin n, M i j = N i j) : frobNorm M = frobNorm N := by
+  have : M = N := by funext i j; exact h i j
+  rw [this]
+
+/-- **Theorem 10.8 (Sun), normwise bound — assembled proof** (Higham
+    §10.2). Let `A = RᵀR` be a Cholesky factorization (`R` upper
+    triangular), `Rinv` a two-sided upper-triangular inverse of `R`, and
+    `R + ΔR` a perturbed factor with `(R+ΔR)ᵀ(R+ΔR) = A + ΔA`.  With
+    operator-2-norm certificates `cR ≥ ‖Rᵀ‖₂` and `cinv ≥ ‖R⁻ᵀ‖₂`, and
+    the small-root certificate `a·‖ΔR‖_F < 1` where
+    `a := cR·cinv²/√2`, the Frobenius norm of the factor perturbation
+    obeys the implicit Sun bound
+
+      `‖ΔR‖_F ≤ a·‖ΔA‖_F / (1 − a·‖ΔR‖_F)`.
+
+    Route (logged oracle consultation, Sun BIT 31 (1991)):
+    `X := ΔR·R⁻¹` is upper triangular, `X = up(X + Xᵀ)`, and
+    `X + Xᵀ = R⁻ᵀ(ΔA − ΔRᵀΔR)R⁻¹`; the Frobenius halving `‖up(Y)‖_F ≤
+    ‖Y‖_F/√2`, the congruence estimates, and the Gram-square bound give
+    the quadratic self-bound `t ≤ a(‖ΔA‖_F + t²)` in `t := ‖ΔR‖_F`,
+    which the scalar endgame absorbs.
+
+    Honest deltas (recorded): the smallness enters as `a·t < 1` rather
+    than Sun's continuity/branch argument; `cR`, `cinv` are supplied
+    operator certificates (`cR² = ‖A‖₂`, `cinv² = ‖A⁻¹‖₂`, so
+    `a = ‖A‖₂^{1/2}‖A⁻¹‖₂/√2`, first-order comparable to the printed
+    `2^{-1/2}κ₂(A)ε/‖A‖`). -/
+theorem cholesky_perturbation_normwise_proved {n : ℕ}
+    (R ΔR Rinv ΔA : Fin n → Fin n → ℝ)
+    (_hR_upper : ∀ i j : Fin n, j.val < i.val → R i j = 0)
+    (hΔR_upper : ∀ i j : Fin n, j.val < i.val → ΔR i j = 0)
+    (hRinv_upper : ∀ i j : Fin n, j.val < i.val → Rinv i j = 0)
+    (hRinvR : IsLeftInverse n R Rinv)
+    (hRRinv : IsRightInverse n R Rinv)
+    (hGram : ∀ i j : Fin n, ∑ k : Fin n,
+      (R k i + ΔR k i) * (R k j + ΔR k j) =
+      (∑ k : Fin n, R k i * R k j) + ΔA i j)
+    (cR cinv : ℝ) (hcR : 0 ≤ cR) (hcinv : 0 ≤ cinv)
+    (hopR : opNorm2Le (fun i j => R j i) cR)
+    (hopRinv : opNorm2Le (fun i j => Rinv j i) cinv)
+    (hsmall : (cR * cinv ^ 2 / Real.sqrt 2) * frobNorm ΔR < 1) :
+    frobNorm ΔR ≤
+      (cR * cinv ^ 2 / Real.sqrt 2) * frobNorm ΔA /
+      (1 - (cR * cinv ^ 2 / Real.sqrt 2) * frobNorm ΔR) := by
+  set a : ℝ := cR * cinv ^ 2 / Real.sqrt 2 with ha
+  set t : ℝ := frobNorm ΔR with ht
+  set δ : ℝ := frobNorm ΔA with hδ
+  have hs2 : (0:ℝ) < Real.sqrt 2 := Real.sqrt_pos.mpr (by norm_num)
+  have hδ0 : 0 ≤ δ := frobNorm_nonneg _
+  have ha0 : 0 ≤ a := by
+    rw [ha]; positivity
+  -- X := ΔR · Rinv, upper triangular
+  set X : Fin n → Fin n → ℝ := matMul n ΔR Rinv with hX
+  have hX_upper : ∀ i j : Fin n, j.val < i.val → X i j = 0 :=
+    matMul_upper_upper ΔR Rinv hΔR_upper hRinv_upper
+  -- ΔR = X · R  (inverse cancellation)
+  have hRinvR_id : matMul n Rinv R = idMatrix n := by
+    funext i j
+    show (∑ k : Fin n, Rinv i k * R k j) = idMatrix n i j
+    rw [hRinvR i j]; rfl
+  have hXR : matMul n X R = ΔR := by
+    rw [hX, matMul_assoc, hRinvR_id, matMul_id_right]
+  -- step 3: t = ‖ΔR‖_F = ‖X·R‖_F ≤ cR ‖X‖_F
+  have hstep3 : t ≤ cR * frobNorm X := by
+    rw [ht, ← hXR]
+    exact frobNorm_matMul_right_le X R cR hcR hopR
+  -- step 4: ‖X‖_F ≤ ‖Y‖_F/√2, Y = X + Xᵀ symmetric, X = up(Y)
+  set Y : Fin n → Fin n → ℝ := fun i j => X i j + X j i with hY
+  have hY_sym : ∀ i j : Fin n, Y i j = Y j i := fun i j => by
+    simp only [hY]; ring
+  have hX_recover : ∀ i j : Fin n, X i j = upHalf Y i j := fun i j =>
+    (upHalf_add_transpose X hX_upper i j).symm
+  have hstep4 : frobNorm X ≤ frobNorm Y / Real.sqrt 2 := by
+    rw [frobNorm_congr X (upHalf Y) hX_recover]
+    exact frobNorm_upHalf_le Y hY_sym
+  -- step 5-7: ‖Y‖_F ≤ cinv² ‖M‖_F, M = ΔA - ΔRᵀΔR
+  set M : Fin n → Fin n → ℝ :=
+    fun p q => ΔA p q - ∑ k : Fin n, ΔR k p * ΔR k q with hM
+  have hRinvT_op : opNorm2Le (fun i j => Rinv j i) cinv := hopRinv
+  have hY_eq : ∀ i j : Fin n,
+      Y i j = matMul n (fun p q => Rinv q p) (matMul n M Rinv) i j := by
+    intro i j
+    have hsym := cholesky_perturbation_symmetrized
+      (fun i j => ∑ k : Fin n, R k i * R k j) ΔA R ΔR Rinv
+      (fun i j => rfl) hGram hRRinv i j
+    show X i j + X j i = _
+    rw [hsym]
+    show (∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+      (ΔA p q - ∑ k : Fin n, ΔR k p * ΔR k q) * Rinv q j) = _
+    unfold matMul
+    refine Finset.sum_congr rfl fun p _ => ?_
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun q _ => ?_
+    show Rinv p i * M p q * Rinv q j = Rinv p i * (M p q * Rinv q j)
+    ring
+  have hstep567 : frobNorm Y ≤ cinv ^ 2 * frobNorm M := by
+    have h1 : frobNorm Y =
+        frobNorm (matMul n (fun p q => Rinv q p) (matMul n M Rinv)) :=
+      frobNorm_congr Y _ hY_eq
+    have h2 : frobNorm (matMul n (fun p q => Rinv q p) (matMul n M Rinv))
+        ≤ cinv * frobNorm (matMul n M Rinv) :=
+      frobNorm_matMul_left_le (fun p q => Rinv q p) (matMul n M Rinv)
+        cinv hcinv hRinvT_op
+    have h3 : frobNorm (matMul n M Rinv) ≤ cinv * frobNorm M :=
+      frobNorm_matMul_right_le M Rinv cinv hcinv hRinvT_op
+    calc frobNorm Y = frobNorm (matMul n (fun p q => Rinv q p)
+          (matMul n M Rinv)) := h1
+      _ ≤ cinv * frobNorm (matMul n M Rinv) := h2
+      _ ≤ cinv * (cinv * frobNorm M) :=
+          mul_le_mul_of_nonneg_left h3 hcinv
+      _ = cinv ^ 2 * frobNorm M := by ring
+  -- step 8: ‖M‖_F ≤ δ + t²
+  have hstep8 : frobNorm M ≤ δ + t ^ 2 := by
+    set N : Fin n → Fin n → ℝ :=
+      matMul n (fun i j => ΔR j i) ΔR with hN
+    have htri : frobNorm M ≤ frobNorm ΔA + frobNorm N := by
+      have := frobNorm_sub_le ΔA N
+      have heq : frobNorm M = frobNorm (fun i j => ΔA i j - N i j) :=
+        frobNorm_congr M _ (fun i j => rfl)
+      rw [heq]; exact this
+    have hN2 : frobNorm N ≤ t ^ 2 := by
+      rw [hN, ht]
+      exact frobNorm_transpose_mul_self_le ΔR
+    calc frobNorm M ≤ frobNorm ΔA + frobNorm N := htri
+      _ ≤ δ + t ^ 2 := by rw [hδ]; linarith
+  -- assemble the quadratic self-bound t ≤ a(δ + t²)
+  have hquad : t ≤ a * (δ + t ^ 2) := by
+    have hchain : t ≤ cR * (cinv ^ 2 * frobNorm M / Real.sqrt 2) := by
+      calc t ≤ cR * frobNorm X := hstep3
+        _ ≤ cR * (frobNorm Y / Real.sqrt 2) :=
+            mul_le_mul_of_nonneg_left hstep4 hcR
+        _ ≤ cR * (cinv ^ 2 * frobNorm M / Real.sqrt 2) := by
+            refine mul_le_mul_of_nonneg_left ?_ hcR
+            exact div_le_div_of_nonneg_right hstep567 hs2.le
+    have hfM : cinv ^ 2 * frobNorm M ≤ cinv ^ 2 * (δ + t ^ 2) :=
+      mul_le_mul_of_nonneg_left hstep8 (by positivity)
+    calc t ≤ cR * (cinv ^ 2 * frobNorm M / Real.sqrt 2) := hchain
+      _ ≤ cR * (cinv ^ 2 * (δ + t ^ 2) / Real.sqrt 2) := by
+          refine mul_le_mul_of_nonneg_left ?_ hcR
+          exact div_le_div_of_nonneg_right hfM hs2.le
+      _ = a * (δ + t ^ 2) := by rw [ha]; ring
+  have hat : a * t < 1 := hsmall
+  exact cholesky_perturbation_scalar_endgame a δ t hquad hat
+
+-- ============================================================
 -- §10.2  Theorem 10.8: Sun perturbation bound (normwise)
 -- ============================================================
 
@@ -145,5 +747,80 @@ theorem cholesky_cond_monotone
     calc κ k₁ ≤ κ (k₁ + d) := ih (by omega)
       _ ≤ κ (k₁ + d + 1) := _hκ_mono _
       _ = κ (k₁ + (d + 1)) := by ring_nf
+
+-- ============================================================
+-- §10.4  Display (10.29): matrices with positive definite symmetric part
+-- ============================================================
+
+/-- **PSD-bilinear Cauchy–Schwarz** (Higham §10.4, the SPD step of the
+    (10.29) per-stage bound; oracle-provided route): for a symmetric
+    positive-semidefinite matrix `H`, the bilinear form obeys
+    `(uᵀHv)² ≤ (uᵀHu)(vᵀHv)`.  Proved by the discriminant of the
+    nonnegative quadratic `t ↦ (u+tv)ᵀH(u+tv)`. -/
+theorem quadForm_bilinear_cauchy_schwarz {n : ℕ} (H : Fin n → Fin n → ℝ)
+    (hSym : ∀ i j : Fin n, H i j = H j i)
+    (hPSD : ∀ z : Fin n → ℝ, 0 ≤ ∑ i : Fin n, ∑ j : Fin n, z i * H i j * z j)
+    (u v : Fin n → ℝ) :
+    (∑ i : Fin n, ∑ j : Fin n, u i * H i j * v j) ^ 2 ≤
+      (∑ i : Fin n, ∑ j : Fin n, u i * H i j * u j) *
+      (∑ i : Fin n, ∑ j : Fin n, v i * H i j * v j) := by
+  set Buu := ∑ i : Fin n, ∑ j : Fin n, u i * H i j * u j with hBuu
+  set Buv := ∑ i : Fin n, ∑ j : Fin n, u i * H i j * v j with hBuv
+  set Bvv := ∑ i : Fin n, ∑ j : Fin n, v i * H i j * v j with hBvv
+  -- the cross form is symmetric: ∑∑ v i H i j u j = Buv
+  have hsymBil : (∑ i : Fin n, ∑ j : Fin n, v i * H i j * u j) = Buv := by
+    rw [hBuv, Finset.sum_comm]
+    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+    rw [hSym j i]; ring
+  -- quadratic expansion of the shifted PSD form
+  have hexp : ∀ t : ℝ,
+      (∑ i : Fin n, ∑ j : Fin n,
+        (u i + t * v i) * H i j * (u j + t * v j)) =
+      Bvv * (t * t) + 2 * Buv * t + Buu := by
+    intro t
+    have pt : ∀ i j : Fin n,
+        (u i + t * v i) * H i j * (u j + t * v j) =
+        u i * H i j * u j + t * (u i * H i j * v j) +
+        t * (v i * H i j * u j) + (t * t) * (v i * H i j * v j) := by
+      intro i j; ring
+    simp_rw [pt, Finset.sum_add_distrib, ← Finset.mul_sum]
+    rw [← hBuu, ← hBuv, ← hBvv, hsymBil]
+    ring
+  have hquad : ∀ t : ℝ, 0 ≤ Bvv * (t * t) + 2 * Buv * t + Buu := by
+    intro t
+    rw [← hexp t]
+    exact hPSD _
+  have hdisc := discrim_le_zero (a := Bvv) (b := 2 * Buv) (c := Buu)
+    (by intro t; have := hquad t; linarith [hquad t])
+  simp only [discrim] at hdisc
+  nlinarith [hdisc]
+
+open Matrix in
+/-- **The (10.29) core identity** (Higham §10.4, p. 208; proof route from
+    the logged oracle consultation, Golub–Van Loan 1979):
+    `Aᵀ A_S⁻¹ A = A_S + A_Kᵀ A_S⁻¹ A_K`, for any splitting `A = A_S + A_K`
+    with `A_S` symmetric (`A_Sᵀ = A_S`), `A_K` skew (`A_Kᵀ = −A_K`), and
+    `A_S⁻¹` a two-sided inverse of `A_S`.  This is the matrix whose
+    operator norm bounds the unpivoted-LU growth in display (10.29). -/
+theorem symPart_skew_inverse_identity {n : ℕ}
+    (Amat AS AK ASinv : Matrix (Fin n) (Fin n) ℝ)
+    (hA : Amat = AS + AK)
+    (hAS_sym : ASᵀ = AS)
+    (hAK_skew : AKᵀ = -AK)
+    (hinv1 : AS * ASinv = 1)
+    (hinv2 : ASinv * AS = 1) :
+    Amatᵀ * ASinv * Amat = AS + AKᵀ * ASinv * AK := by
+  have hAT : Amatᵀ = AS - AK := by
+    rw [hA, Matrix.transpose_add, hAS_sym, hAK_skew]; abel
+  rw [hAT, hA]
+  -- expand the noncommutative product, treating AS, AK, ASinv as atoms
+  have hexp : (AS - AK) * ASinv * (AS + AK) =
+      (AS * ASinv) * AS + (AS * ASinv) * AK
+        - AK * (ASinv * AS) - AK * ASinv * AK := by
+    noncomm_ring
+  rw [hexp, hinv1, hinv2, Matrix.one_mul, Matrix.mul_one]
+  -- now: AS + AK - AK - AK * ASinv * AK = AS + AKᵀ * ASinv * AK
+  rw [hAK_skew]
+  noncomm_ring
 
 end LeanFpAnalysis.FP

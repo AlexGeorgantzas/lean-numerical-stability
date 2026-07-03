@@ -2382,6 +2382,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_18_TridiagData`
 - `higham9_18_tridiag_to_matrix`
 - `higham9_18_tridiag_to_matrix_isTridiagonal`
+- `higham9_18_tridiag_to_matrix_isBanded_one_one`
+- `higham9_11_tridiag_data_bohte_solve_tight`
+- `higham9_11_tridiag_data_bohte_solve_tight_of_exact_recurrence`
 - `higham9_19_tridiag_lu`
 - `tridiag_prevIndex`
 - `TridiagExactLURecurrence`
@@ -2415,6 +2418,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_13_rowDiagDom_exists_LUFactSpec_growth_bound_3`
 - `higham9_13_rowDiagDom_exists_LUFactSpec_growthFactorEntry_le_three`
 - `higham9_13_rowDiagDom_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax`
+- `higham9_13_colDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax`
+- `higham9_13_rowDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax`
 - `higham9_13_rowDiagDom_transpose_tridiag_growth_bound_3`
 - `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three`
 - `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three_of_Amax`
@@ -2469,10 +2474,26 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_rowDiagDom_fu_bound_from_LUFactSpec`
 - `higham9_14_tridiag_colDiagDom_source_f_bound_from_LUFactSpec`
 - `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUFactSpec`
+- `higham9_14_tridiag_data_colDiagDom_source_f_bound_from_LUFactSpec`
+- `higham9_14_tridiag_data_rowDiagDom_source_f_bound_from_LUFactSpec`
+- `higham9_14_tridiag_data_colDiagDom_source_f_bound_from_LUFactSpec_gamma`
+- `higham9_14_tridiag_data_rowDiagDom_source_f_bound_from_LUFactSpec_gamma`
 - `higham9_14_tridiag_colDiagDom_source_f_bound_from_LUFactSpec_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUFactSpec_gamma`
 - `higham9_14_tridiag_colDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves`
 - `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves`
+- `higham9_14_tridiag_colDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_colDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_colDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves`
+- `higham9_14_tridiag_data_rowDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves`
+- `higham9_14_tridiag_data_colDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_rowDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_colDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_data_rowDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_data_colDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_rowDiagDom_source_f_bound_from_LUFactSpec_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_colDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_colDiagDom_exists_LUFactSpec_fu_bound`
@@ -2733,18 +2754,34 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_rowDiagDom_exists_LUFactSpec_source_f_bound_of_models`
 - `higham9_14_colDiagDom_exists_LUFactSpec_source_h_bound_of_models`
 - `higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_of_models`
+- `higham9_14_colDiagDom_tridiag_data_exists_LUFactSpec_source_f_bound_of_models`
+- `higham9_14_rowDiagDom_tridiag_data_exists_LUFactSpec_source_f_bound_of_models`
+- `higham9_14_colDiagDom_tridiag_data_exists_LUFactSpec_source_h_bound_of_models`
+- `higham9_14_rowDiagDom_tridiag_data_exists_LUFactSpec_source_h_bound_of_models`
 - `higham9_14_colDiagDom_exists_LUFactSpec_source_f_bound_of_models_gamma`
 - `higham9_14_rowDiagDom_exists_LUFactSpec_source_f_bound_of_models_gamma`
 - `higham9_14_colDiagDom_exists_LUFactSpec_source_h_bound_of_models_gamma`
 - `higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_of_models_gamma`
+- `higham9_14_colDiagDom_tridiag_data_exists_LUFactSpec_source_f_bound_of_models_gamma`
+- `higham9_14_rowDiagDom_tridiag_data_exists_LUFactSpec_source_f_bound_of_models_gamma`
+- `higham9_14_colDiagDom_tridiag_data_exists_LUFactSpec_source_h_bound_of_models_gamma`
+- `higham9_14_rowDiagDom_tridiag_data_exists_LUFactSpec_source_h_bound_of_models_gamma`
 - `higham9_14_colDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves`
 - `higham9_14_rowDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves`
 - `higham9_14_colDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves`
 - `higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves`
+- `higham9_14_colDiagDom_tridiag_data_exists_LUFactSpec_source_f_bound_actual_triangular_solves`
+- `higham9_14_rowDiagDom_tridiag_data_exists_LUFactSpec_source_f_bound_actual_triangular_solves`
+- `higham9_14_colDiagDom_tridiag_data_exists_LUFactSpec_source_h_bound_actual_triangular_solves`
+- `higham9_14_rowDiagDom_tridiag_data_exists_LUFactSpec_source_h_bound_actual_triangular_solves`
 - `higham9_14_colDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves_gamma`
 - `higham9_14_rowDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves_gamma`
 - `higham9_14_colDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves_gamma`
 - `higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves_gamma`
+- `higham9_14_colDiagDom_tridiag_data_exists_LUFactSpec_source_f_bound_actual_triangular_solves_gamma`
+- `higham9_14_rowDiagDom_tridiag_data_exists_LUFactSpec_source_f_bound_actual_triangular_solves_gamma`
+- `higham9_14_colDiagDom_tridiag_data_exists_LUFactSpec_source_h_bound_actual_triangular_solves_gamma`
+- `higham9_14_rowDiagDom_tridiag_data_exists_LUFactSpec_source_h_bound_actual_triangular_solves_gamma`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_builders`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_builders`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_recurrence`
@@ -2755,6 +2792,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_recurrence_gamma`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUFactSpec`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUFactSpec`
+- `higham9_14_tridiag_data_colDiagDom_source_h_bound_from_LUFactSpec`
+- `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUFactSpec`
+- `higham9_14_tridiag_data_colDiagDom_source_h_bound_from_LUFactSpec_gamma`
+- `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUFactSpec_gamma`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUFactSpec_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUFactSpec_gamma`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_builders_LUBackwardError_fl_triangular_solves`
@@ -2775,6 +2816,18 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_recurrence_LUFactSpec_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves`
+- `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_colDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves`
+- `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves`
+- `higham9_14_tridiag_data_colDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_colDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves`
+- `higham9_14_tridiag_data_colDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves_gamma`
+- `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_24_scaledMatrix`
@@ -4156,6 +4209,22 @@ Source-facing Chapter 10 wrappers:
 - `higham10_18_matrix` / `higham10_18_isPosSemiDef` / `higham10_18_w_arbitrarily_large` ((10.18) example: PSD [[aI,I],[I,a^-1 I]], W = a^-1 I unbounded)
 - `opNorm2Le_add` / `higham10_25_componentwise_to_normwise` / `higham10_25_absorption` ((10.25): componentwise (10.24) -> normwise cert via Lemma 6.6, then gamma/(1-r gamma) absorption)
 - `quadForm_cert_of_entrywise` ((10.21) engine: entrywise c -> quadForm cert c*m, ones-vector Cauchy-Schwarz)
+- `higham10_21_stage_interior_mass` / `higham10_21_stage_border_mass` ((10.21) stage masses derived from the running IH: Th10.3 block certificate + Demmel entrywise -> quadForm engine; border via the (j+1)-block truncated bound at gamma_{j+2})
+- `higham10_21_fl_cholesky_leading_pivots_pos` ((10.21) ASSEMBLED: self-feeding induction, stages j < r positive at lam > r gamma_{r+1}/(1-gamma_{r+1}) + 2 gamma_{n+1}, NO run-level certificate hypotheses)
+- `min_eig_scaled_bordered_floor` (factored per-stage floor derivation: lambda_min(scaled H) -> bordered Rayleigh floor via interlacing + snoc substitution)
+- `higham10_21_fl_cholesky_success` ((10.21) source-facing lambda_min(H_11) form on the leading r-block)
+- `higham10_7_fl_cholesky_success_sharp` (Th10.7 success at the source-shaped n-constant, hypothesis-light: r = n instance)
+- `upHalf` / `upHalf_add_transpose` / `frobNormSq_upHalf_le_half` (Th10.8 route steps 1-2, CholeskyPerturbation.lean: up operator, triangular recovery up(X+X^T)=X, Frobenius halving for symmetric Y)
+- `cholesky_perturbation_gram_identity` (Th10.8 step 3: exact R^T dR + dR^T R + dR^T dR = dA)
+- `cholesky_perturbation_scalar_endgame(_display)` (Th10.8 step 4: quadratic absorption t <= a*delta/(1-a*t) under a*t < 1; printed display form)
+- `frobNormSq_matMul_left_le` / `frobNormSq_matMul_right_le` (Th10.8 step 5: ||MN||_F^2 <= c^2 ||N||_F^2 from opNorm2Le M c, and <= c^2 ||M||_F^2 from opNorm2Le N^T c)
+- `matMul_upper_upper` / `frobNormSq_transpose_mul_self_le` (Th10.8: upper*upper is upper; ||M^T M||_F^2 <= (||M||_F^2)^2)
+- `cholesky_perturbation_symmetrized` (Th10.8 step 6: X + X^T = R^{-T}(dA - dR^T dR)R^{-1} entrywise, X := dR*Rinv)
+- `frobNorm_matMul_left_le` / `frobNorm_matMul_right_le` / `frobNorm_upHalf_le` / `frobNorm_transpose_mul_self_le` / `frobNorm_congr` (unsquared-norm wrappers for the assembly)
+- `upperTriangular_inverse_exists` (Th10.8: two-sided upper-triangular inverse via Mathlib blockTriangular_inv)
+- `cholesky_perturbation_normwise_proved` (Th10.8 SUN NORMWISE BOUND, ASSEMBLED: ||dR||_F <= a||dA||_F/(1 - a||dR||_F), a := cR*cinv^2/sqrt2, from operator certs cR>=||R^T||_2, cinv>=||R^{-T}||_2 and small-root a*||dR||_F < 1; no assumed perturbation bound)
+- `symPart_skew_inverse_identity` ((10.29) core identity: A^T A_S^-1 A = A_S + A_K^T A_S^-1 A_K, abstract Matrix-ring form; foothold for the unpivoted-LU growth bound)
+- `quadForm_bilinear_cauchy_schwarz` ((10.29) per-stage SPD step: (u^T H v)^2 <= (u^T H u)(v^T H v) for symmetric PSD H, via discriminant of the shifted quadratic)
 - `kahanR` / `kahan_telescope` / `kahanR_tail_eq` ((10.20): Kahan family satisfies (10.13) with equality on the square part)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
