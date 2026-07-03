@@ -566,6 +566,49 @@ theorem sylvesterSepInf_le_ratio (n : Nat) (A B X : Fin n -> Fin n -> Real)
   exact csInf_le (sylvesterSepRatios_bddBelow n A B)
     (Exists.intro X (And.intro hX rfl))
 
+/-- A positive `SepLowerBound` certificate is below the exact infimum model,
+    whenever the feasible ratio set is nonempty. -/
+theorem SepLowerBound_le_sylvesterSepInf_of_nonempty (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma)
+    (hne : (sylvesterSepRatios n A B).Nonempty) :
+    sigma <= sylvesterSepInf n A B := by
+  unfold sylvesterSepInf
+  apply le_csInf hne
+  intro rho hrho
+  cases hrho with
+  | intro X hrest =>
+      cases hrest with
+      | intro hX hrho_eq =>
+          rw [hrho_eq]
+          have hXsq_pos : 0 < frobNormSq X :=
+            lt_of_le_of_ne (frobNormSq_nonneg X) (Ne.symm hX)
+          have hXnorm_pos : 0 < frobNorm X := by
+            have hs : 0 < frobNorm X ^ 2 := by
+              rw [frobNorm_sq]
+              exact hXsq_pos
+            have hne_norm : Not (frobNorm X = 0) := sq_pos_iff.mp hs
+            exact lt_of_le_of_ne (frobNorm_nonneg X) (Ne.symm hne_norm)
+          have hsq := hSep.2 X hX
+          have hsq_norms : (sigma * frobNorm X) ^ 2 <=
+              frobNorm (sylvesterOp n A B X) ^ 2 := by
+            rw [mul_pow, frobNorm_sq, frobNorm_sq]
+            exact hsq
+          have hleft_nonneg : 0 <= sigma * frobNorm X :=
+            mul_nonneg (le_of_lt hSep.1) (frobNorm_nonneg X)
+          have hright_nonneg : 0 <= frobNorm (sylvesterOp n A B X) :=
+            frobNorm_nonneg _
+          have hnorm_le :
+              sigma * frobNorm X <= frobNorm (sylvesterOp n A B X) := by
+            nlinarith [sq_nonneg
+              (frobNorm (sylvesterOp n A B X) - sigma * frobNorm X)]
+          have hXnorm_ne : Not (frobNorm X = 0) := ne_of_gt hXnorm_pos
+          calc
+            sigma = sigma * frobNorm X / frobNorm X := by
+              field_simp [hXnorm_ne]
+            _ <= frobNorm (sylvesterOp n A B X) / frobNorm X := by
+              exact div_le_div_of_nonneg_right hnorm_le (le_of_lt hXnorm_pos)
+
 -- ============================================================
 -- A posteriori source wrapper from Chapter 16.4
 -- ============================================================
