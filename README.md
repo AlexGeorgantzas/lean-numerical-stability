@@ -47,6 +47,17 @@ specialization `sylvesterAmplificationMuSquare`, and the source formula bridge
 bound `xiSq_le_mu_relative_residual_sq`; the full eta amplification theorem
 and several condition/practical-bound rows remain open in the Chapter 16 ledger.
 
+Chapter 17 stationary-iteration work is tracked in
+[`docs/source_coverage/higham_ch17.md`](docs/source_coverage/higham_ch17.md).
+The existing `StationaryIteration.lean` module now carries the correct
+2nd-edition Chapter 17 source labels and exposes a source-sign wrapper
+`SourceComputedIteration` for equation (17.1), plus a bridge
+`computedIteration_of_sourceComputedIteration` and source-sign one-step error
+recurrence `one_step_error_source`. The current proved surface covers
+nonsingular splitting algebra, finite/q-bound forward and residual dependencies,
+and Jacobi/SOR splitting identities; the exact infinite-sum, singular-system,
+and stopping-test rows remain open in the Chapter 17 ledger.
+
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
 The current Split 3B route has checked source-faithful Householder
