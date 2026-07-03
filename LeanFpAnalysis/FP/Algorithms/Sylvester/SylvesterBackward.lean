@@ -1085,6 +1085,113 @@ theorem isBackwardError_sqrt_xiSq_of_svdOptimalPerturbations (n : ℕ)
           rw [mul_pow, Real.sq_sqrt hxi]
           ring
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15):
+    nonnegative feasible values for the normwise Sylvester backward error
+    `eta(Y)`.  The nonnegativity guard avoids the symmetric square-bound
+    predicate admitting negative costs. -/
+def sylvesterBackwardErrorValues (n : ℕ)
+    (A B C Y : Fin n → Fin n → ℝ) (alpha beta gamma : ℝ) : Set ℝ :=
+  {eta | 0 ≤ eta ∧ IsBackwardError n A B C Y alpha beta gamma eta}
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15):
+    `eta(Y)` modeled as the infimum of the nonnegative feasible backward-error
+    certificates.  This is an infimum model, not an attained-minimum claim. -/
+noncomputable def sylvesterBackwardErrorInf (n : ℕ)
+    (A B C Y : Fin n → Fin n → ℝ) (alpha beta gamma : ℝ) : ℝ :=
+  sInf (sylvesterBackwardErrorValues n A B C Y alpha beta gamma)
+
+/-- The nonnegative feasible-value set for `eta(Y)` is bounded below by zero. -/
+theorem sylvesterBackwardErrorValues_bddBelow (n : ℕ)
+    (A B C Y : Fin n → Fin n → ℝ) (alpha beta gamma : ℝ) :
+    BddBelow (sylvesterBackwardErrorValues n A B C Y alpha beta gamma) := by
+  refine ⟨0, ?_⟩
+  intro eta heta
+  exact heta.1
+
+/-- The infimum model of `eta(Y)` is nonnegative because all feasible costs are
+    restricted to be nonnegative. -/
+theorem sylvesterBackwardErrorInf_nonneg (n : ℕ)
+    (A B C Y : Fin n → Fin n → ℝ) (alpha beta gamma : ℝ) :
+    0 ≤ sylvesterBackwardErrorInf n A B C Y alpha beta gamma := by
+  unfold sylvesterBackwardErrorInf sylvesterBackwardErrorValues
+  apply Real.sInf_nonneg
+  intro eta heta
+  exact heta.1
+
+/-- Any nonnegative backward-error certificate lies above the infimum model. -/
+theorem sylvesterBackwardErrorInf_le_of_backwardError (n : ℕ)
+    (A B C Y : Fin n → Fin n → ℝ) (alpha beta gamma eta : ℝ)
+    (heta_nonneg : 0 ≤ eta)
+    (hBack : IsBackwardError n A B C Y alpha beta gamma eta) :
+    sylvesterBackwardErrorInf n A B C Y alpha beta gamma ≤ eta := by
+  unfold sylvesterBackwardErrorInf
+  exact csInf_le
+    (sylvesterBackwardErrorValues_bddBelow n A B C Y alpha beta gamma)
+    ⟨heta_nonneg, hBack⟩
+
+/-- The SVD optimizer supplies a nonempty feasible set for the infimum model of
+    `eta(Y)`. -/
+theorem sylvesterBackwardErrorValues_nonempty_of_svdOptimalPerturbations (n : ℕ)
+    (A B C Y U V : Fin n → Fin n → ℝ) (sigma : Fin n → ℝ) (alpha beta gamma : ℝ)
+    (hSVD : IsSVD n Y U V sigma)
+    (hpos : ∀ i j : Fin n,
+      0 < alpha ^ 2 * sigma j ^ 2 + beta ^ 2 * sigma i ^ 2 + gamma ^ 2) :
+    (sylvesterBackwardErrorValues n A B C Y alpha beta gamma).Nonempty := by
+  refine ⟨Real.sqrt
+      (xiSq n (svdResidual n U V (sylvesterResidual n A B C Y))
+        sigma alpha beta gamma), ?_⟩
+  exact ⟨Real.sqrt_nonneg _,
+    isBackwardError_sqrt_xiSq_of_svdOptimalPerturbations n A B C Y U V
+      sigma alpha beta gamma hSVD hpos⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15), upper infimum direction:
+    the infimum model of `eta(Y)` is bounded above by `sqrt xiSq`. -/
+theorem sylvesterBackwardErrorInf_le_sqrt_xiSq_of_svdOptimalPerturbations (n : ℕ)
+    (A B C Y U V : Fin n → Fin n → ℝ) (sigma : Fin n → ℝ) (alpha beta gamma : ℝ)
+    (hSVD : IsSVD n Y U V sigma)
+    (hpos : ∀ i j : Fin n,
+      0 < alpha ^ 2 * sigma j ^ 2 + beta ^ 2 * sigma i ^ 2 + gamma ^ 2) :
+    sylvesterBackwardErrorInf n A B C Y alpha beta gamma ≤
+      Real.sqrt
+        (xiSq n (svdResidual n U V (sylvesterResidual n A B C Y))
+          sigma alpha beta gamma) :=
+  sylvesterBackwardErrorInf_le_of_backwardError n A B C Y alpha beta gamma
+    (Real.sqrt
+      (xiSq n (svdResidual n U V (sylvesterResidual n A B C Y))
+        sigma alpha beta gamma))
+    (Real.sqrt_nonneg _)
+    (isBackwardError_sqrt_xiSq_of_svdOptimalPerturbations n A B C Y U V
+      sigma alpha beta gamma hSVD hpos)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15), lower infimum direction:
+    `sqrt (xiSq / 3)` is a lower bound for the nonnegative feasible backward
+    error costs, hence it is below the infimum model of `eta(Y)`. -/
+theorem sqrt_xiSq_div_three_le_sylvesterBackwardErrorInf_of_svd (n : ℕ)
+    (A B C Y U V : Fin n → Fin n → ℝ) (sigma : Fin n → ℝ) (alpha beta gamma : ℝ)
+    (hSVD : IsSVD n Y U V sigma)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hpos : ∀ i j : Fin n,
+      0 < alpha ^ 2 * sigma j ^ 2 + beta ^ 2 * sigma i ^ 2 + gamma ^ 2) :
+    Real.sqrt
+        (xiSq n (svdResidual n U V (sylvesterResidual n A B C Y))
+          sigma alpha beta gamma / 3) ≤
+      sylvesterBackwardErrorInf n A B C Y alpha beta gamma := by
+  unfold sylvesterBackwardErrorInf
+  apply le_csInf
+    (sylvesterBackwardErrorValues_nonempty_of_svdOptimalPerturbations n
+      A B C Y U V sigma alpha beta gamma hSVD hpos)
+  intro eta heta
+  rcases heta with ⟨heta_nonneg, hBack⟩
+  have hle := xiSq_le_three_eta_sq_of_backward_error n A B C Y U V sigma
+    alpha beta gamma eta hSVD hBack halpha hbeta hgamma hpos
+  have hdiv :
+      xiSq n (svdResidual n U V (sylvesterResidual n A B C Y))
+          sigma alpha beta gamma / 3 ≤ eta ^ 2 := by
+    nlinarith
+  have hsqrt := Real.sqrt_le_sqrt hdiv
+  rw [Real.sqrt_sq_eq_abs, abs_of_nonneg heta_nonneg] at hsqrt
+  exact hsqrt
+
 -- ============================================================
 -- Residual-based backward error bound (combining eqs 16.12 + 16.16)
 -- ============================================================
