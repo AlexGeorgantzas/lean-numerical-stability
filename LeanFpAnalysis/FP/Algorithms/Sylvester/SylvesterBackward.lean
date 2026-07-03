@@ -556,4 +556,115 @@ noncomputable def lyapunovAmplificationMu (α γ yNorm lamStar : ℝ) : ℝ :=
   Real.sqrt 2 * (2 * α * yNorm + γ) /
     Real.sqrt (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)
 
+/-- Lyapunov xi-squared residual bound using an explicit lower square bound on
+    the spectral magnitudes.  This is the xi-level foundation behind the final
+    Lyapunov analogue of equations (16.17)-(16.18). -/
+theorem lyapunovXiSq_le_min_eigen_bound (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (α γ lamStar : ℝ)
+    (hLam : ∀ i : Fin n, lamStar ^ 2 ≤ lam i ^ 2)
+    (hDenom : 0 < 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) :
+    lyapunovXiSq n R_tilde lam α γ ≤
+      2 * frobNormSq R_tilde / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := by
+  have hdenom_le : ∀ i j : Fin n,
+      4 * α ^ 2 * lamStar ^ 2 + γ ^ 2 ≤
+        2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2 := by
+    intro i j
+    nlinarith [sq_nonneg α, hLam i, hLam j]
+  have hpos : ∀ i j : Fin n, 0 < 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2 := by
+    intro i j
+    exact lt_of_lt_of_le hDenom (hdenom_le i j)
+  have hsimple := lyapunovXiSq_le_simple_bound n R_tilde lam α γ hpos
+  have hD_ne : 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2 ≠ 0 := ne_of_gt hDenom
+  have hbound :
+      lyapunovXiSqSimpleBound n R_tilde lam α γ ≤
+        2 * frobNormSq R_tilde / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := by
+    unfold lyapunovXiSqSimpleBound
+    suffices h :
+        (∑ i : Fin n, ∑ j : Fin n,
+          (2 * R_tilde i j ^ 2) /
+            (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2)) ≤
+          (∑ i : Fin n, ∑ j : Fin n,
+            (2 * R_tilde i j ^ 2) /
+              (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)) by
+      rwa [show
+          (∑ i : Fin n, ∑ j : Fin n,
+            (2 * R_tilde i j ^ 2) /
+              (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)) =
+            2 * frobNormSq R_tilde / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) from by
+        unfold frobNormSq
+        rw [eq_div_iff hD_ne]
+        rw [Finset.sum_mul]
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro i _
+        rw [Finset.sum_mul]
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro j _
+        exact div_mul_cancel₀ _ hD_ne] at h
+    apply Finset.sum_le_sum
+    intro i _
+    apply Finset.sum_le_sum
+    intro j _
+    exact div_le_div_of_nonneg_left (by positivity) hDenom (hdenom_le i j)
+  exact le_trans hsimple hbound
+
+/-- Lyapunov xi-squared residual bound after the orthogonal spectral transform
+    `R_tilde = U^T R U`. -/
+theorem lyapunovXiSq_spectral_le_min_eigen_bound (n : ℕ)
+    (R U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (α γ lamStar : ℝ)
+    (hU : IsOrthogonal n U)
+    (hLam : ∀ i : Fin n, lamStar ^ 2 ≤ lam i ^ 2)
+    (hDenom : 0 < 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) :
+    lyapunovXiSq n (lyapunovSpectralTransform n U R) lam α γ ≤
+      2 * frobNormSq R / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := by
+  have hle :=
+    lyapunovXiSq_le_min_eigen_bound n (lyapunovSpectralTransform n U R) lam
+      α γ lamStar hLam hDenom
+  rw [lyapunovSpectralTransform_frobNormSq n U R hU] at hle
+  exact hle
+
+/-- Higham, 2nd ed., Chapter 16.2.1, final display:
+    the Lyapunov xi-squared residual bound written with the source amplification
+    factor `mu`.  This is still an xi-level result; the eta optimizer bridge
+    remains open. -/
+theorem lyapunovXiSq_le_mu_relative_residual_sq (n : ℕ)
+    (Y R U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (α γ lamStar : ℝ)
+    (hU : IsOrthogonal n U)
+    (hLam : ∀ i : Fin n, lamStar ^ 2 ≤ lam i ^ 2)
+    (hDenom : 0 < 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)
+    (hScale : 0 < 2 * α * frobNorm Y + γ) :
+    lyapunovXiSq n (lyapunovSpectralTransform n U R) lam α γ ≤
+      (lyapunovAmplificationMu α γ (frobNorm Y) lamStar *
+        (frobNorm R / (2 * α * frobNorm Y + γ))) ^ 2 := by
+  have hle :=
+    lyapunovXiSq_spectral_le_min_eigen_bound n R U lam α γ lamStar
+      hU hLam hDenom
+  have hScale_ne : 2 * α * frobNorm Y + γ ≠ 0 := ne_of_gt hScale
+  have hSqrt_ne : Real.sqrt (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) ≠ 0 :=
+    ne_of_gt (Real.sqrt_pos.2 hDenom)
+  have hSqrt_sq :
+      Real.sqrt (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) ^ 2 =
+        4 * α ^ 2 * lamStar ^ 2 + γ ^ 2 :=
+    Real.sq_sqrt (le_of_lt hDenom)
+  have hsqrt_two_sq : Real.sqrt 2 ^ 2 = (2 : ℝ) :=
+    Real.sq_sqrt (by linarith)
+  calc
+    lyapunovXiSq n (lyapunovSpectralTransform n U R) lam α γ ≤
+        2 * frobNormSq R / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := hle
+    _ = (lyapunovAmplificationMu α γ (frobNorm Y) lamStar *
+        (frobNorm R / (2 * α * frobNorm Y + γ))) ^ 2 := by
+        unfold lyapunovAmplificationMu
+        have hmul :
+            (Real.sqrt 2 * (2 * α * frobNorm Y + γ) /
+                Real.sqrt (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)) *
+              (frobNorm R / (2 * α * frobNorm Y + γ)) =
+                Real.sqrt 2 * frobNorm R /
+                  Real.sqrt (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := by
+          field_simp [hScale_ne, hSqrt_ne]
+        rw [hmul, div_pow, mul_pow, hsqrt_two_sq, hSqrt_sq, frobNorm_sq]
+
 end LeanFpAnalysis.FP
