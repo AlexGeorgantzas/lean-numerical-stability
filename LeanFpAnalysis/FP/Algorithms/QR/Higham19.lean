@@ -6404,6 +6404,178 @@ theorem
     fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
     hadd hmul hdiv hsqrt x alpha hx halpha A
 
+/-- First-leading-block nonbreakdown variant of the computed-alpha
+first-pivot signed-active storage handoff.
+
+The determinant hypothesis supplies the nonzero first-column premise consumed
+by the normalized betaSpec bridge.  This is still an exact primitive-operation
+and explicit update-compatibility statement, not a rounded-loop closure. -/
+theorem
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_fl_householderAlpha_of_first_leadingBlock_det_ne_zero_updateCompatible_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat} (A : Fin (m + 1) -> Fin (p + 1) -> Real) (alpha : Real)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (halpha :
+      alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+      (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+        (panelFirstColumn (Nat.succ_pos p) A) alpha)
+      (householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+          (panelFirstColumn (Nat.succ_pos p) A) alpha))
+      A := by
+  have hx : Ne (panelFirstColumn (Nat.succ_pos p) A) 0 :=
+    panelFirstColumn_ne_zero_of_first_leadingBlock_det_ne_zero A hdetLead
+  exact
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+      fp hcompat hadd hmul hdiv hsqrt
+      (panelFirstColumn (Nat.succ_pos p) A) alpha hx halpha A
+
+/-- First-leading-block nonbreakdown variant of the exact-alpha first-pivot
+signed-active storage handoff, under explicit update compatibility.
+
+The leading-block determinant condition discharges the separate nonzero active
+column premise while keeping the theorem conditional on exact primitive
+operations and the normalized betaSpec update compatibility. -/
+theorem
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_householderAlpha_of_first_leadingBlock_det_ne_zero_updateCompatible_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat} (A : Fin (m + 1) -> Fin (p + 1) -> Real) (alpha : Real)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (halpha :
+      alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+      (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+        (panelFirstColumn (Nat.succ_pos p) A) alpha)
+      (householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+          (panelFirstColumn (Nat.succ_pos p) A) alpha))
+      A := by
+  have hx : Ne (panelFirstColumn (Nat.succ_pos p) A) 0 :=
+    panelFirstColumn_ne_zero_of_first_leadingBlock_det_ne_zero A hdetLead
+  exact
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+      fp hcompat hadd hmul hdiv hsqrt
+      (panelFirstColumn (Nat.succ_pos p) A) alpha hx halpha A
+
+/-- First-leading-block nonbreakdown variant of the computed-alpha
+first-pivot signed-active storage handoff, with exact add/mul operations
+discharging update compatibility. -/
+theorem
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_fl_householderAlpha_of_first_leadingBlock_det_ne_zero_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat} (A : Fin (m + 1) -> Fin (p + 1) -> Real) (alpha : Real)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (halpha :
+      alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+      (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+        (panelFirstColumn (Nat.succ_pos p) A) alpha)
+      (householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+          (panelFirstColumn (Nat.succ_pos p) A) alpha))
+      A := by
+  exact
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_fl_householderAlpha_of_first_leadingBlock_det_ne_zero_updateCompatible_exact_add_mul_div_sqrt
+      fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
+      hadd hmul hdiv hsqrt A alpha hdetLead halpha
+
+/-- First-leading-block nonbreakdown variant of the exact-alpha first-pivot
+signed-active storage handoff, with exact add/mul operations discharging update
+compatibility. -/
+theorem
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_householderAlpha_of_first_leadingBlock_det_ne_zero_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat} (A : Fin (m + 1) -> Fin (p + 1) -> Real) (alpha : Real)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (halpha :
+      alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+      (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+        (panelFirstColumn (Nat.succ_pos p) A) alpha)
+      (householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+          (panelFirstColumn (Nat.succ_pos p) A) alpha))
+      A := by
+  exact
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_householderAlpha_of_first_leadingBlock_det_ne_zero_updateCompatible_exact_add_mul_div_sqrt
+      fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
+      hadd hmul hdiv hsqrt A alpha hdetLead halpha
+
 /-- Exact arithmetic satisfies the explicit normalized-beta update
 compatibility surface. -/
 theorem normalizedBetaSpecCompactUpdateCompatible_exactWithUnitRoundoff
