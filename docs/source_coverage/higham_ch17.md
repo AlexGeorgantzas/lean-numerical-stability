@@ -9,13 +9,13 @@
 - Mode: core.
 - Parallel split: 3B.
 - Planning documents consulted: `chapter_splitting/HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`, the Split 3B section of `chapter_splitting/split_primary_contracts.md`, and the Chapter 17 rows of `chapter_splitting/chapter_index.md`.
-- Selected-scope gate: FAIL. The existing `StationaryIteration.lean` module proves several nonsingular stationary-iteration algebra, forward-error, Jacobi/SOR, and residual-bound dependencies, including the exact fixed-point and finite-sum solution identity for (17.4), and this ledger records the correct 2nd-edition Chapter 17 numbering. The full selected core pass remains open for the computed finite-sum recurrence/error unrolling, infinite-sum statements, gamma/theta supremum definitions, diagonalizable sigma bound, singular-system Drazin/semiconvergence analysis, and stopping-test equivalences imported from Chapter 7.
+- Selected-scope gate: FAIL. The existing `StationaryIteration.lean` module proves several nonsingular stationary-iteration algebra, forward-error, Jacobi/SOR, and residual-bound dependencies, including the source-sign computed finite-sum identity for (17.3) and the exact fixed-point/finite-sum solution identity for (17.4), and this ledger records the correct 2nd-edition Chapter 17 numbering. The full selected core pass remains open for the finite-sum error recurrence (17.5), infinite-sum statements, gamma/theta supremum definitions, diagonalizable sigma bound, singular-system Drazin/semiconvergence analysis, and stopping-test equivalences imported from Chapter 7.
 
 ## Progress Snapshot
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| ch17 | core | 100 | 74 | 59 | 50 | 74 | 52 | 21+ | Computed finite-sum iterate/error recurrences, infinite-sum, and singular-system foundations are not yet formalized; current proofs cover nonsingular exact finite-sum solution algebra, finite/q-bound dependencies, and source-label repair | medium-low |
+| ch17 | core | 100 | 76 | 62 | 53 | 78 | 55 | 20+ | Finite-sum error recurrence, infinite-sum, and singular-system foundations are not yet formalized; current proofs cover nonsingular computed/exact finite-sum iterate algebra, finite/q-bound dependencies, and source-label repair | medium-low |
 
 ## Completed Selected Targets
 
@@ -23,6 +23,7 @@
 |---|---|---|---|---|
 | stationary splitting setup | `SplittingSpec`, `iterMatrix`, `dualIterMatrix` | `LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean` | Structure/definitions | Models `A = M - N`, `G = M^{-1}N`, and `H = NM^{-1}` in the repository's finite function-shaped matrix API. |
 | (17.1), source sign | `SourceComputedIteration`, `computedIteration_of_sourceComputedIteration` | `StationaryIteration.lean` | Structure/theorem | Adds the source-sign convention `M xhat_{k+1} = N xhat_k + b - xi_k` and bridges it to the legacy internal `+ xi_k` convention by negating the local error term. |
+| (17.3), computed finite-sum recurrence | `sourceComputedIteration_step_affine`, `sourceComputedIteration_finite_sum` | `StationaryIteration.lean` | Theorems | Applies the left-inverse certificate for `M` to (17.1), then unrolls the time-varying affine recurrence to the source-sign finite-sum formula. |
 | one-step error dependency | `one_step_error`, `one_step_error_source` | `StationaryIteration.lean` | Theorems | Proves the one-step error recurrence for the legacy and source-sign conventions; this is dependency infrastructure for (17.5). |
 | (17.4), exact solution recurrence | `stationary_solution_fixed_point`, `stationary_solution_finite_sum` | `StationaryIteration.lean` | Theorems | Proves that an exact solution of `Ax=b` is a fixed point of `x ↦ Gx + M^{-1}b`, then unrolls that affine fixed point into the finite-sum identity for (17.4). |
 | (17.2) | `LocalErrorBound` | `StationaryIteration.lean` | Predicate | Local componentwise rounding-error budget for the internal signed error. |
@@ -43,9 +44,9 @@
 | H17.Setup.stationary_iteration | p.325, Section 17.2 | definition | Stationary method `M x_{k+1} = N x_k + b`, `A = M - N`, with `M` nonsingular and `G = M^{-1}N`. | precise | nonsingular square | not applicable | matrix product/inverse certificate | FORMALIZE_CORE | DEP-REQUIRED | `SplittingSpec`, `iterMatrix`; spectral-radius convergence assumption not yet modeled. |
 | H17.Eq17_1.computed_iteration | p.325, (17.1) | equation/model | Computed stationary iteration with a signed local error term. | precise | square current API | model assumption | splitting setup | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `SourceComputedIteration`; internal legacy bridge via `computedIteration_of_sourceComputedIteration`. |
 | H17.Eq17_2.local_error_bound | p.325, (17.2) | inequality/model | Componentwise local error budget in terms of `|M|`, `|N|`, current iterates, and `|b|`. | precise | triangular `M` model | sketch/model | FP local-error model | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `LocalErrorBound`; exact triangular-solve derivation not modeled. |
-| H17.Eq17_3.iterate_solution | p.325, (17.3) | recurrence | Closed-form computed iterate recurrence from (17.1). | precise | finite m | algebra | H17.Eq17_1 | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open; one-step infrastructure exists. |
+| H17.Eq17_3.iterate_solution | p.325, (17.3) | recurrence | Closed-form computed iterate recurrence from (17.1). | precise | finite m | algebra | H17.Eq17_1 | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `sourceComputedIteration_step_affine` and `sourceComputedIteration_finite_sum`; source-sign finite-sum recurrence closed. |
 | H17.Eq17_4.stationary_exact_solution | p.325, (17.4) | recurrence | Exact stationary solution identity using the same finite sum. | precise | nonsingular square | algebra | splitting setup | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `stationary_solution_fixed_point` and `stationary_solution_finite_sum`; exact finite-sum side closed. |
-| H17.Eq17_5.error_recurrence | p.325, (17.5) | recurrence | Error recurrence obtained by subtracting (17.3) and (17.4). | precise | finite m | algebra | H17.Eq17_3, H17.Eq17_4 | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Partial: `one_step_error`, `one_step_error_source`; exact (17.4) side closed, but computed (17.3) and full finite-sum error closed form remain open. |
+| H17.Eq17_5.error_recurrence | p.325, (17.5) | recurrence | Error recurrence obtained by subtracting (17.3) and (17.4). | precise | finite m | algebra | H17.Eq17_3, H17.Eq17_4 | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Partial: `one_step_error`, `one_step_error_source`; computed (17.3) and exact (17.4) finite-sum sides are closed, but the full finite-sum error closed form remains open. |
 | H17.Eq17_6.componentwise_forward_bound | p.325, (17.6) | inequality | Componentwise finite-sum forward-error bound. | precise | finite m | triangle inequality | H17.Eq17_5 | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Partial finite triangle wrapper `componentwise_forward_bound`. |
 | H17.Eq17_7.gamma_x | p.326, (17.7) | definition | Supremum ratio bounding the norm of computed iterates relative to the exact solution. | precise | normwise | not applicable | iterate sequence | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open; currently represented only by explicit hypotheses in downstream theorems. |
 | H17.Eq17_8.normwise_forward_bound | p.326, (17.8) | inequality | Normwise forward-error bound with an infinite sum of `||G^k M^{-1}||_inf`. | precise | nonsingular square | norm bound | H17.Eq17_6, H17.Eq17_7 | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Partial q-bound corollary: `normwise_forward_bound`; literal infinite-sum version open. |
@@ -100,12 +101,16 @@
 | `stationary_solution_fixed_point` | Records the exact-solution affine fixed-point step behind (17.4). | `stationary_solution_finite_sum` and future error recurrence (17.5). | implemented dependency |
 | `affine_fixed_point_unroll` | Generic finite unrolling lemma for fixed points of `x = Gx + c`. | `stationary_solution_finite_sum`; future computed/source recurrences may reuse the pattern. | implemented dependency |
 | `stationary_solution_finite_sum` | Closes the exact finite-sum identity in (17.4) from `Ax=b` and the splitting certificate. | Future finite-sum error recurrence (17.5). | implemented |
+| `matMulVec_finset_sum_right` | Distributes matrix-vector multiplication over finite sums in the vector argument. | `affine_recurrence_unroll`. | implemented dependency |
+| `affine_recurrence_unroll` | Generic finite unrolling lemma for affine recurrences with a time-varying source term. | `sourceComputedIteration_finite_sum`; future residual/error finite-sum recurrences. | implemented dependency |
+| `sourceComputedIteration_step_affine` | Applies the left inverse of `M` to Higham's source-sign computed iteration. | `sourceComputedIteration_finite_sum`. | implemented dependency |
+| `sourceComputedIteration_finite_sum` | Closes the computed finite-sum identity in (17.3) from the source-sign iteration model. | Future finite-sum error recurrence (17.5). | implemented |
 
 ## Open Selected-Scope Items
 
 | Source location | Exact claim | Current Lean status | Missing foundation | Next theorem |
 |---|---|---|---|---|
-| (17.3)-(17.5) | Closed-form computed/exact/error finite recurrences. | one-step recurrence proved for both sign conventions; exact fixed-point and finite-sum recurrence for (17.4) proved | finite-sum unrolling for `SourceComputedIteration` and subtraction bridge for the error closed form | Prove the finite closed form for `SourceComputedIteration`, then derive the finite-sum error recurrence (17.5). |
+| (17.5) | Closed-form finite-sum error recurrence from subtracting (17.3) and (17.4). | one-step recurrence proved for both sign conventions; computed finite-sum recurrence for (17.3) and exact finite-sum recurrence for (17.4) proved | subtraction bridge aligning the two finite sums into the error closed form | Derive the finite-sum error recurrence (17.5) from `sourceComputedIteration_finite_sum` and `stationary_solution_finite_sum`. |
 | (17.7), (17.9) | Supremum iterate-growth constants `gamma_x` and `theta_x`. | represented only by explicit hypotheses | bounded/supremum API and zero-component policy | Define finite-prefix or extended-real supremum surfaces, or keep theorem statements hypothesis-based. |
 | (17.8), (17.11)-(17.13), (17.15)-(17.16) | Literal infinite-sum normwise/componentwise forward bounds and corollaries. | q-bound/certificate finite forms proved | convergence of matrix-power absolute/norm series; literal `c(A)` minimum/infimum | Add infinite-series/c(A) surface or prove selected finite-horizon equivalents clearly. |
 | (17.18)-(17.20) | Full residual finite-sum recurrence, sigma-form residual bound, diagonalizable sigma bound. | algebraic one-step and q-bound residual theorems proved | finite-sum recurrence and diagonalizable/eigenvalue API | Prove finite residual recurrence, then isolate the diagonalizable sigma bound. |
@@ -124,6 +129,7 @@
 ## Hidden-Hypothesis and Weak-Component Summary
 
 - The legacy `ComputedIteration` sign convention is intentionally not presented as identical to source equation (17.1). The new `SourceComputedIteration` wrapper records the source sign and bridges by negating the local error term.
+- `sourceComputedIteration_finite_sum` is exact algebra from the source-sign recurrence plus an explicit left-inverse certificate for `M`; it does not assume convergence, a floating-point model, the local-error bound (17.2), or the target error recurrence (17.5).
 - `stationary_solution_finite_sum` is exact algebra: its final theorem assumptions are the splitting certificate and `Ax=b`; it does not assume convergence, a floating-point model, or the target finite-sum conclusion.
 - Current q-bound forward/residual theorems are stronger-assumption corollaries of the source's infinite-sum style, not closures of the literal (17.8), (17.11), or (17.19) statements.
 - `PartialSumBound` is a finite/certificate surface; it does not prove existence of the literal minimum in (17.12).
@@ -145,8 +151,15 @@
 - `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `stationary_solution_finite_sum`, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `affine_fixed_point_unroll` and `stationary_solution_finite_sum`: only `propext`, `Classical.choice`, and `Quot.sound`.
 - Post-merge broad check note: `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration LeanFpAnalysis.FP.Algorithms.HighamChapter9` exceeded the local timeout while compiling the incoming Chapter 9 side; the lingering Lean/lake processes were stopped. The standalone Chapter 17 file and module checks above passed after the merge.
+- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding the source-sign computed finite-sum recurrence for (17.3).
+- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding `sourceComputedIteration_finite_sum`.
+- Merge rebuild after synchronizing with `origin/main`: `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation` passed; the second target covered the incoming Chapter 20 merge.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding `sourceComputedIteration_finite_sum`.
+- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `sourceComputedIteration_finite_sum`, with only the usual CRLF normalization warning before the commit.
+- `#print axioms` for `matMulVec_finset_sum_right`, `affine_recurrence_unroll`, `sourceComputedIteration_step_affine`, and `sourceComputedIteration_finite_sum`: only `propext`, `Classical.choice`, and `Quot.sound`.
 
 ## Git and Local-Only Notes
 
 - `chapter_splitting/` and `References/` are local-only context and must not be staged or pushed.
+- Latest synchronized Chapter 17 proof milestone: `sourceComputedIteration_finite_sum`, pushed to both `origin/main` and `origin/codex/split3b-ch19-main-sync`.
 - Remaining local untracked file at this point: `.codex/config.toml`.
