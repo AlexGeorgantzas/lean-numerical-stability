@@ -2472,6 +2472,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_f_nonneg`
 - `higham9_14_h_mul_one_sub_eq_f`
 - `higham9_14_f_le_h`
+- `higham9_20_tridiag_lu_perturbation_model_mono`
+- `higham9_21_tridiag_solve_perturbation_model_mono`
 - `higham9_20_tridiag_lu_perturbation_model_of_LUBackwardError_le`
 - `higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopCertificate`
 - `higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopAbsBudgetCertificate`
