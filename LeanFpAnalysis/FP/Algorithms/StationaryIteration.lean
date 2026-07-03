@@ -906,6 +906,32 @@ noncomputable def finiteResidualSigma (n : ℕ)
     (H : Fin n → Fin n → ℝ) (m : ℕ) : ℝ :=
   infNorm (finiteResidualSigmaMatrix n H m)
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.3:
+    candidate finite partial norms for the source residual sigma.  This is the
+    `sSup`-based wrapper around the finite matrices `sum_{k=0}^m |H^k(I-H)|`;
+    it does not assert a separate `tsum` representation. -/
+def ResidualSigmaValues (n : ℕ) (H : Fin n → Fin n → ℝ) : Set ℝ :=
+  {sigma | ∃ m : ℕ, sigma = finiteResidualSigma n H m}
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3:
+    supremum of the finite source-sigma partial norms. -/
+noncomputable def residualSigmaSup (n : ℕ)
+    (H : Fin n → Fin n → ℝ) : ℝ :=
+  sSup (ResidualSigmaValues n H)
+
+/-- A uniform finite-partial bound also bounds the supremum model of the source
+    residual sigma. -/
+theorem residualSigmaSup_le_of_finiteResidualSigma_le (n : ℕ)
+    (H : Fin n → Fin n → ℝ) (sigma : ℝ)
+    (hbound : ∀ m : ℕ, finiteResidualSigma n H m ≤ sigma) :
+    residualSigmaSup n H ≤ sigma := by
+  unfold residualSigmaSup
+  apply csSup_le
+  · exact ⟨finiteResidualSigma n H 0, ⟨0, rfl⟩⟩
+  · intro y hy
+    rcases hy with ⟨m, rfl⟩
+    exact hbound m
+
 /-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20):
     finite maximum `max_i |1 - lambda_i| / (1 - |lambda_i|)` appearing in the
     diagonalizable bound for the source residual sigma. -/
@@ -1133,6 +1159,24 @@ theorem finiteResidualSigma_le_diagonalizable_max_bound (n : ℕ) (hn : 0 < n)
     hXr hXl hsim hdiag (diagonalResidualRatioMax n J hn)
     (diagonalResidualRatioMax_nonneg n J hn hLam) hLam
     (diagonalResidualRatio_le_max n J hn) m
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20), supremum
+    wrapper: the supremum of all finite source-sigma partial norms is bounded by
+    `kappa_infty(X)` times the displayed maximum eigenvalue ratio.  This is a
+    source-facing infinite-sigma envelope, not a proof that an entrywise infinite
+    matrix series has been constructed as a `tsum`. -/
+theorem residualSigmaSup_le_diagonalizable_max_bound (n : ℕ) (hn : 0 < n)
+    (H X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
+    (hsim : matMul n X_inv (matMul n H X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (hLam : ∀ i : Fin n, |J i i| < 1) :
+    residualSigmaSup n H ≤
+      (infNorm X * infNorm X_inv) * diagonalResidualRatioMax n J hn := by
+  apply residualSigmaSup_le_of_finiteResidualSigma_le
+  intro m
+  exact finiteResidualSigma_le_diagonalizable_max_bound n hn H X X_inv J
+    hXr hXl hsim hdiag hLam m
 
 -- ============================================================
 -- §17.3  Residual recurrence: r_{k+1} = Hr_k − (I−H)ξ_k
