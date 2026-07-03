@@ -5497,6 +5497,75 @@ theorem sourceFaithfulHouseholderNormalizationModel_of_exact_add_mul_div_sqrt
       fl_householderBeta_eq_of_exact_add_mul_div_sqrt
         fp hadd hmul hdiv hsqrt hn sourceColumn)
 
+/-- Computed-alpha normalized signed-active vectors give a source-faithful
+certificate under exact primitive Householder operations.
+
+This packages the normalized-vector bridge above with the stronger
+source-faithful normalization model; it certifies the normalized signed-active
+vector, not the raw unnormalized stored vector. -/
+theorem
+    sourceFaithfulHouseholderNormalization_of_normalized_trailingActiveVector_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) (alpha : Real)
+    (hx : Ne x 0)
+    (halpha : alpha = fl_householderAlpha fp hn x) :
+    sourceFaithfulHouseholderNormalization fp hn x
+      (householderNormalizedVector n
+        (householderTrailingActiveVector n (Fin.mk 0 hn) x alpha)
+        (householderBetaSpec n
+          (householderTrailingActiveVector n (Fin.mk 0 hn) x alpha))) := by
+  exact
+    sourceFaithfulHouseholderNormalization_of_vector_eq_of_normalizationModel
+      fp
+      (sourceFaithfulHouseholderNormalizationModel_of_exact_add_mul_div_sqrt
+        fp hadd hmul hdiv hsqrt)
+      hn x
+      (householderNormalizedVector n
+        (householderTrailingActiveVector n (Fin.mk 0 hn) x alpha)
+        (householderBetaSpec n
+          (householderTrailingActiveVector n (Fin.mk 0 hn) x alpha)))
+      (householderTrailingActiveVector_zero_normalized_eq_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+        fp hadd hmul hdiv hsqrt hn x alpha hx halpha)
+      hx
+
+/-- Exact-alpha normalized signed-active vectors give a source-faithful
+certificate under exact primitive Householder operations.
+
+This is the exact-alpha sibling of
+`sourceFaithfulHouseholderNormalization_of_normalized_trailingActiveVector_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt`. -/
+theorem
+    sourceFaithfulHouseholderNormalization_of_normalized_trailingActiveVector_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) (alpha : Real)
+    (hx : Ne x 0)
+    (halpha : alpha = householderAlpha hn x) :
+    sourceFaithfulHouseholderNormalization fp hn x
+      (householderNormalizedVector n
+        (householderTrailingActiveVector n (Fin.mk 0 hn) x alpha)
+        (householderBetaSpec n
+          (householderTrailingActiveVector n (Fin.mk 0 hn) x alpha))) := by
+  exact
+    sourceFaithfulHouseholderNormalization_of_vector_eq_of_normalizationModel
+      fp
+      (sourceFaithfulHouseholderNormalizationModel_of_exact_add_mul_div_sqrt
+        fp hadd hmul hdiv hsqrt)
+      hn x
+      (householderNormalizedVector n
+        (householderTrailingActiveVector n (Fin.mk 0 hn) x alpha)
+        (householderBetaSpec n
+          (householderTrailingActiveVector n (Fin.mk 0 hn) x alpha)))
+      (householderTrailingActiveVector_zero_normalized_eq_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+        fp hadd hmul hdiv hsqrt hn x alpha hx halpha)
+      hx
+
 /-- Under `exactWithUnitRoundoff`, the computed Householder scale is the
 mathematical Householder scale. -/
 theorem fl_householderScale_exactWithUnitRoundoff_eq
