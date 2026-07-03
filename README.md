@@ -93,8 +93,12 @@ with `normwiseIterateGrowth`, `componentwiseIterateGrowth`, and their bound
 wrappers, and adds the finite/certificate correction and infinity-norm bridge
 for (17.13)-(17.15) through `finiteForwardCorrection`,
 `mainForwardBoundVector`, `finiteForwardCorrection_norm_bound`, and
-`finite_norm_form_forward_bound`.  The exact infinite-sum, singular-system,
-diagonalizable, and stopping-test rows remain open in the Chapter 17 ledger.
+`finite_norm_form_forward_bound`.  The Jacobi specialization now also has the
+finite norm-form surface `jacobiForwardBoundVector`,
+`mainForwardBoundVector_eq_jacobiForwardBoundVector`, and
+`finite_norm_form_jacobi_forward_bound`.  The exact infinite-sum,
+singular-system, diagonalizable, and stopping-test rows remain open in the
+Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
