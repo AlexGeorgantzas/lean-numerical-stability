@@ -558,6 +558,17 @@ theorem sylvesterSepRatios_bddBelow (n : Nat) (A B : Fin n -> Fin n -> Real) :
           rw [hrho_eq]
           exact div_nonneg (frobNorm_nonneg _) (frobNorm_nonneg _)
 
+/-- The exact infimum model of `sep(A,B)` from equation (16.26) is
+    nonnegative, since every feasible Frobenius ratio is nonnegative. -/
+theorem sylvesterSepInf_nonneg (n : Nat) (A B : Fin n -> Fin n -> Real) :
+    0 <= sylvesterSepInf n A B := by
+  unfold sylvesterSepInf
+  apply Real.sInf_nonneg
+  intro rho hrho
+  rcases hrho with ⟨X, _hX, hrho_eq⟩
+  rw [hrho_eq]
+  exact div_nonneg (frobNorm_nonneg _) (frobNorm_nonneg _)
+
 /-- Every nonzero Frobenius ratio is above the infimum model of `sep(A,B)`. -/
 theorem sylvesterSepInf_le_ratio (n : Nat) (A B X : Fin n -> Fin n -> Real)
     (hX : Not (frobNormSq X = 0)) :
@@ -608,6 +619,62 @@ theorem SepLowerBound_le_sylvesterSepInf_of_nonempty (n : Nat)
               field_simp [hXnorm_ne]
             _ <= frobNorm (sylvesterOp n A B X) / frobNorm X := by
               exact div_le_div_of_nonneg_right hnorm_le (le_of_lt hXnorm_pos)
+
+/-- Any positive number below the exact infimum model of `sep(A,B)` is a valid
+    `SepLowerBound` certificate for the existing perturbation infrastructure. -/
+theorem SepLowerBound_of_pos_le_sylvesterSepInf (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B) :
+    SepLowerBound n A B sigma := by
+  refine And.intro hsigma ?_
+  intro X hX
+  have hXsq_pos : 0 < frobNormSq X :=
+    lt_of_le_of_ne (frobNormSq_nonneg X) (Ne.symm hX)
+  have hXnorm_pos : 0 < frobNorm X := by
+    have hs : 0 < frobNorm X ^ 2 := by
+      rw [frobNorm_sq]
+      exact hXsq_pos
+    have hne_norm : Not (frobNorm X = 0) := sq_pos_iff.mp hs
+    exact lt_of_le_of_ne (frobNorm_nonneg X) (Ne.symm hne_norm)
+  have hratio :
+      sigma <= frobNorm (sylvesterOp n A B X) / frobNorm X :=
+    le_trans hle (sylvesterSepInf_le_ratio n A B X hX)
+  have hnorm_le :
+      sigma * frobNorm X <= frobNorm (sylvesterOp n A B X) := by
+    have hmul :=
+      mul_le_mul_of_nonneg_right hratio (le_of_lt hXnorm_pos)
+    have hXnorm_ne : Not (frobNorm X = 0) := ne_of_gt hXnorm_pos
+    have hcancel :
+        frobNorm (sylvesterOp n A B X) / frobNorm X * frobNorm X =
+          frobNorm (sylvesterOp n A B X) := by
+      field_simp [hXnorm_ne]
+    simpa [hcancel] using hmul
+  have hleft_nonneg : 0 <= sigma * frobNorm X :=
+    mul_nonneg (le_of_lt hsigma) (frobNorm_nonneg X)
+  have hright_nonneg : 0 <= frobNorm (sylvesterOp n A B X) :=
+    frobNorm_nonneg _
+  have hsq_norms : (sigma * frobNorm X) ^ 2 <=
+      frobNorm (sylvesterOp n A B X) ^ 2 := by
+    nlinarith [sq_nonneg
+      (frobNorm (sylvesterOp n A B X) - sigma * frobNorm X)]
+  rw [mul_pow, frobNorm_sq, frobNorm_sq] at hsq_norms
+  exact hsq_norms
+
+/-- For a nonempty feasible ratio set, the existing positive lower-bound
+    predicate is equivalent to being a positive lower bound of the exact
+    infimum model.  This is an infimum bridge, not an attained-minimum claim. -/
+theorem SepLowerBound_iff_pos_le_sylvesterSepInf_of_nonempty (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hne : (sylvesterSepRatios n A B).Nonempty) :
+    SepLowerBound n A B sigma <->
+      0 < sigma /\ sigma <= sylvesterSepInf n A B := by
+  constructor
+  · intro hSep
+    exact And.intro hSep.1
+      (SepLowerBound_le_sylvesterSepInf_of_nonempty n A B sigma hSep hne)
+  · intro h
+    exact SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma h.1 h.2
 
 -- ============================================================
 -- A posteriori source wrapper from Chapter 16.4
