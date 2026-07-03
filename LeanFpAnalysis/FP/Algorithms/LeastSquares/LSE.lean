@@ -1791,6 +1791,126 @@ theorem theorem20_8_perturbed_feasible_residual_decomp {m n p : ℕ}
   rw [hmat, hA]
   ring
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the constraint-defect vector `Deltad - DeltaB*y` is bounded by the
+    supplied perturbation radii. -/
+theorem theorem20_8_vecNorm2_constraint_defect_le {n p : ℕ}
+    (DeltaB : Fin p → Fin n → ℝ) (Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) {DeltaB_norm Deltad_norm : ℝ}
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm) :
+    vecNorm2 (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) ≤
+      Deltad_norm + DeltaB_norm * vecNorm2 y := by
+  calc
+    vecNorm2 (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)
+        ≤ vecNorm2 Deltad +
+            vecNorm2 (fun i : Fin p => -rectMatMulVec DeltaB y i) := by
+            simpa [sub_eq_add_neg] using
+              vecNorm2_add_le Deltad
+                (fun i : Fin p => -rectMatMulVec DeltaB y i)
+    _ = vecNorm2 Deltad + vecNorm2 (rectMatMulVec DeltaB y) := by
+            rw [vecNorm2_neg]
+    _ ≤ Deltad_norm + DeltaB_norm * vecNorm2 y :=
+            add_le_add hDeltad (hDeltaB y)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    applying `A*Bplus` to a constraint-defect vector is controlled by an
+    operator-2 bound for the product. -/
+theorem theorem20_8_vecNorm2_ABplus_apply_le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (e : Fin p → ℝ) {ABplus_norm : ℝ}
+    (hABplus : rectOpNorm2Le (rectMatMul A Bplus) ABplus_norm) :
+    vecNorm2 (rectMatMulVec A (rectMatMulVec Bplus e)) ≤
+      ABplus_norm * vecNorm2 e := by
+  simpa [rectMatMulVec_rectMatMul] using hABplus e
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the explicit `A*Bplus*(Deltad-DeltaB*y)` correction term is bounded by
+    perturbation radii and an operator-2 bound for `A*Bplus`. -/
+theorem theorem20_8_vecNorm2_ABplus_constraint_defect_le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (DeltaB : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) {ABplus_norm DeltaB_norm Deltad_norm : ℝ}
+    (hABplus_nonneg : 0 ≤ ABplus_norm)
+    (hABplus : rectOpNorm2Le (rectMatMul A Bplus) ABplus_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm) :
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec Bplus
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i))) ≤
+      ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) := by
+  let defect : Fin p → ℝ :=
+    fun i => Deltad i - rectMatMulVec DeltaB y i
+  have hdefect :
+      vecNorm2 defect ≤ Deltad_norm + DeltaB_norm * vecNorm2 y := by
+    exact theorem20_8_vecNorm2_constraint_defect_le DeltaB Deltad y
+      hDeltaB hDeltad
+  calc
+    vecNorm2 (rectMatMulVec A (rectMatMulVec Bplus defect))
+        ≤ ABplus_norm * vecNorm2 defect :=
+            theorem20_8_vecNorm2_ABplus_apply_le A Bplus defect hABplus
+    _ ≤ ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) :=
+            mul_le_mul_of_nonneg_left hdefect hABplus_nonneg
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the three explicit correction terms in the perturbed residual decomposition
+    are bounded by supplied operator and vector perturbation radii. -/
+theorem theorem20_8_vecNorm2_perturbed_residual_correction_le {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (Deltad : Fin p → ℝ) (y : Fin n → ℝ)
+    {ABplus_norm DeltaA_norm DeltaB_norm Deltad_norm Deltab_norm : ℝ}
+    (hABplus_nonneg : 0 ≤ ABplus_norm)
+    (hABplus : rectOpNorm2Le (rectMatMul A Bplus) ABplus_norm)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm) :
+    vecNorm2
+        (fun i : Fin m =>
+          rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p => Deltad l - rectMatMulVec DeltaB y l)) i +
+            rectMatMulVec DeltaA y i - Deltab i) ≤
+      ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+        DeltaA_norm * vecNorm2 y + Deltab_norm := by
+  let defect : Fin p → ℝ :=
+    fun l => Deltad l - rectMatMulVec DeltaB y l
+  let correction : Fin m → ℝ :=
+    rectMatMulVec A (rectMatMulVec Bplus defect)
+  let deltaAction : Fin m → ℝ := rectMatMulVec DeltaA y
+  have hcorrection :
+      vecNorm2 correction ≤
+        ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) := by
+    exact theorem20_8_vecNorm2_ABplus_constraint_defect_le
+      A DeltaB Bplus Deltad y hABplus_nonneg hABplus hDeltaB hDeltad
+  have hdelta :
+      vecNorm2 deltaAction ≤ DeltaA_norm * vecNorm2 y := hDeltaA y
+  have htwo :
+      vecNorm2 (fun i : Fin m => correction i + deltaAction i) ≤
+        ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+          DeltaA_norm * vecNorm2 y := by
+    exact (vecNorm2_add_le correction deltaAction).trans
+      (add_le_add hcorrection hdelta)
+  calc
+    vecNorm2 (fun i : Fin m => correction i + deltaAction i - Deltab i)
+        ≤ vecNorm2 (fun i : Fin m => correction i + deltaAction i) +
+            vecNorm2 (fun i : Fin m => -Deltab i) := by
+            simpa [sub_eq_add_neg] using
+              vecNorm2_add_le
+                (fun i : Fin m => correction i + deltaAction i)
+                (fun i : Fin m => -Deltab i)
+    _ = vecNorm2 (fun i : Fin m => correction i + deltaAction i) +
+          vecNorm2 Deltab := by
+            rw [vecNorm2_neg]
+    _ ≤ (ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+          DeltaA_norm * vecNorm2 y) + Deltab_norm :=
+            add_le_add htwo hDeltab
+    _ = ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+          DeltaA_norm * vecNorm2 y + Deltab_norm := by
+            ring
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     source table `B_A^+ = (I - (AP)^+ A)B^+`.
 
