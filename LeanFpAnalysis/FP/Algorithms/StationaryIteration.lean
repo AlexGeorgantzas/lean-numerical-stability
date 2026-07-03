@@ -2158,4 +2158,117 @@ theorem stopping_test_mixed_backward_subordinate
     (n := n) (ν := ν) (A := A) (E := E) (y := y) (b := b)
     (f := b) (e := e) (ε := ε) hn hν hε hE
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.5, after equation (17.33):
+    componentwise absolute-value version of (17.33a), perturbing the right-hand
+    side only. -/
+theorem stopping_test_rhs_backward_componentwise
+    {n : ℕ} (A : Fin n → Fin n → ℝ) (y b : Fin n → ℝ)
+    {ε : ℝ} (_hε : 0 ≤ ε) :
+    (∀ i : Fin n, |residualVec n A y b i| ≤ ε * |b i|) ↔
+    (∃ Δb : Fin n → ℝ,
+      (∀ i : Fin n, |Δb i| ≤ ε * |b i|) ∧
+      (∀ i : Fin n, ∑ j : Fin n, A i j * y j = b i + Δb i)) := by
+  constructor
+  · intro h
+    let Δb : Fin n → ℝ := fun i => ∑ j : Fin n, A i j * y j - b i
+    refine ⟨Δb, ?_, ?_⟩
+    · intro i
+      have hres : Δb i = -residualVec n A y b i := by
+        simp [Δb, residualVec]
+      calc
+        |Δb i| = |residualVec n A y b i| := by rw [hres, abs_neg]
+        _ ≤ ε * |b i| := h i
+    · intro i
+      simp [Δb]
+  · intro h
+    obtain ⟨Δb, hΔb, hExact⟩ := h
+    intro i
+    have hi := hExact i
+    have hres : residualVec n A y b i = -Δb i := by
+      simp [residualVec, hi]
+    calc
+      |residualVec n A y b i| = |Δb i| := by rw [hres, abs_neg]
+      _ ≤ ε * |b i| := hΔb i
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.5, after equation (17.33):
+    componentwise absolute-value version of (17.33b), perturbing the matrix
+    only.  This is the Oettli-Prager theorem with zero right-hand-side budget. -/
+theorem stopping_test_matrix_backward_componentwise
+    {n : ℕ} (A : Fin n → Fin n → ℝ) (y b : Fin n → ℝ)
+    {ε : ℝ} (hε : 0 ≤ ε) :
+    (∀ i : Fin n,
+      |residualVec n A y b i| ≤ ε * (∑ j : Fin n, |A i j| * |y j|)) ↔
+    (∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ ε * |A i j|) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * y j = b i)) := by
+  have hE : ∀ i j : Fin n, 0 ≤ absMatrix n A i j := by
+    intro i j
+    exact abs_nonneg (A i j)
+  have hf : ∀ i : Fin n, 0 ≤ (0 : Fin n → ℝ) i := by
+    intro i
+    exact le_rfl
+  constructor
+  · intro h
+    have hBound :
+        ∀ i : Fin n, |residualVec n A y b i| ≤
+          ε * (∑ j : Fin n, absMatrix n A i j * |y j| + (0 : Fin n → ℝ) i) := by
+      intro i
+      simpa [absMatrix] using h i
+    obtain ⟨ΔA, Δb, hΔA, hΔb, hExact⟩ :=
+      oettli_prager_sufficient n A y b (absMatrix n A) (fun _ => 0) ε hε hE hf hBound
+    have hΔb_zero : Δb = 0 := by
+      ext i
+      have hzero : |Δb i| = 0 := by
+        apply le_antisymm
+        · simpa using hΔb i
+        · exact abs_nonneg (Δb i)
+      exact abs_eq_zero.mp hzero
+    refine ⟨ΔA, ?_, ?_⟩
+    · intro i j
+      simpa [absMatrix] using hΔA i j
+    · intro i
+      have hi := hExact i
+      rw [hΔb_zero] at hi
+      simpa using hi
+  · intro h
+    obtain ⟨ΔA, hΔA, hExact⟩ := h
+    have hΔA' : ∀ i j : Fin n, |ΔA i j| ≤ ε * absMatrix n A i j := by
+      intro i j
+      simpa [absMatrix] using hΔA i j
+    have hΔb' : ∀ i : Fin n, |(0 : Fin n → ℝ) i| ≤ ε * (0 : Fin n → ℝ) i := by
+      intro i
+      simp
+    have hExact' :
+        ∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * y j =
+          b i + (0 : Fin n → ℝ) i := by
+      intro i
+      simpa using hExact i
+    have hBound :=
+      oettli_prager_necessary n A y b ΔA (fun _ => 0)
+        (absMatrix n A) (fun _ => 0) ε hε hΔA' hΔb' hE hf hExact'
+    intro i
+    simpa [absMatrix] using hBound i
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.5, after equation (17.33):
+    componentwise absolute-value version of (17.33c), perturbing both the matrix
+    and right-hand side. -/
+theorem stopping_test_mixed_backward_componentwise
+    {n : ℕ} (A : Fin n → Fin n → ℝ) (y b : Fin n → ℝ)
+    {ε : ℝ} (hε : 0 ≤ ε) :
+    (∀ i : Fin n,
+      |residualVec n A y b i| ≤
+        ε * (∑ j : Fin n, |A i j| * |y j| + |b i|)) ↔
+    (∃ ΔA : Fin n → Fin n → ℝ, ∃ Δb : Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ ε * |A i j|) ∧
+      (∀ i : Fin n, |Δb i| ≤ ε * |b i|) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * y j = b i + Δb i)) := by
+  have hE : ∀ i j : Fin n, 0 ≤ absMatrix n A i j := by
+    intro i j
+    exact abs_nonneg (A i j)
+  have hf : ∀ i : Fin n, 0 ≤ absVec n b i := by
+    intro i
+    exact abs_nonneg (b i)
+  simpa [absMatrix, absVec] using
+    (oettli_prager n A y b (absMatrix n A) (absVec n b) ε hε hE hf)
+
 end LeanFpAnalysis.FP
