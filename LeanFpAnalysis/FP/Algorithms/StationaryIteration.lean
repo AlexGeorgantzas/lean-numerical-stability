@@ -14,6 +14,7 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
+import LeanFpAnalysis.FP.Algorithms.MatrixPowers
 
 namespace LeanFpAnalysis.FP
 
@@ -889,6 +890,200 @@ theorem sigma_bound (n : ℕ) (hn : 0 < n)
         apply mul_le_mul_of_nonneg_right (geom_partial_sum_le q hq hq1 m) (infNorm_nonneg _)
     _ = infNorm (matSub_id n H) / (1 - q) := by
         rw [one_div, mul_comm, div_eq_mul_inv]
+
+/-- Finite source-sigma matrix from Higham, 2nd ed., Chapter 17, Section 17.3:
+    the partial matrix `sum_{k=0}^m |H^k(I-H)|` underlying the infinite
+    sigma in the paragraph before equation (17.20). -/
+noncomputable def finiteResidualSigmaMatrix (n : ℕ)
+    (H : Fin n → Fin n → ℝ) (m : ℕ) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    ∑ k ∈ Finset.range (m + 1),
+      |matMul n (matPow n H k) (matSub_id n H) i j|
+
+/-- Finite source-sigma scalar `||sum_{k=0}^m |H^k(I-H)||_infty`. -/
+noncomputable def finiteResidualSigma (n : ℕ)
+    (H : Fin n → Fin n → ℝ) (m : ℕ) : ℝ :=
+  infNorm (finiteResidualSigmaMatrix n H m)
+
+private theorem residual_geometric_partial_le_ratio (lam : ℝ)
+    (hLam : |lam| < 1) (m : ℕ) :
+    ∑ k ∈ Finset.range (m + 1), |lam| ^ k * |1 - lam| ≤
+      |1 - lam| / (1 - |lam|) := by
+  have hden : 0 < 1 - |lam| := by linarith
+  calc
+    ∑ k ∈ Finset.range (m + 1), |lam| ^ k * |1 - lam|
+        = (∑ k ∈ Finset.range (m + 1), |lam| ^ k) * |1 - lam| := by
+            rw [Finset.sum_mul]
+    _ ≤ (1 / (1 - |lam|)) * |1 - lam| := by
+            exact mul_le_mul_of_nonneg_right
+              (geom_partial_sum_le |lam| (abs_nonneg lam) hLam m) (abs_nonneg _)
+    _ = |1 - lam| / (1 - |lam|) := by
+            rw [one_div, div_eq_mul_inv]
+            ring
+
+private theorem residual_term_entry_abs_le_of_real_diagonalization (n : ℕ)
+    (H X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
+    (hsim : matMul n X_inv (matMul n H X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (k : ℕ) (i j : Fin n) :
+    |matMul n (matPow n H k) (matSub_id n H) i j| ≤
+      ∑ a : Fin n, |X i a| * (|J a a| ^ k * |1 - J a a|) * |X_inv a j| := by
+  have hterm :
+      matMul n (matPow n H k) (matSub_id n H) i j =
+        matPow n H k i j - matPow n H (k + 1) i j := by
+    unfold matMul matSub_id
+    simp_rw [mul_sub, Finset.sum_sub_distrib]
+    have hid :
+        (∑ l : Fin n, matPow n H k i l * idMatrix n l j) =
+          matPow n H k i j := by
+      unfold idMatrix
+      simp [Finset.sum_ite_eq', Finset.mem_univ]
+    have hmul :
+        (∑ l : Fin n, matPow n H k i l * H l j) =
+          matPow n H (k + 1) i j := by
+      rw [matPow_succ_right n H k]
+      rfl
+    rw [hid, hmul]
+  have hpow_entry :
+      ∀ p (r c : Fin n),
+        matPow n H p r c =
+          ∑ a : Fin n, X r a * (J a a ^ p * X_inv a c) := by
+    intro p r c
+    have hpow := congrFun
+      (congrFun (matPow_similarity n H X X_inv J hXr hXl hsim p) r) c
+    rw [hpow]
+    unfold matMul
+    apply Finset.sum_congr rfl
+    intro a _ha
+    congr 1
+    have hinner :
+        (∑ b : Fin n, matPow n J p a b * X_inv b c) =
+          J a a ^ p * X_inv a c := by
+      rw [Finset.sum_eq_single a]
+      · rw [matPow_diagonal n J hdiag p a a, if_pos rfl]
+      · intro b _hb hba
+        rw [matPow_diagonal n J hdiag p a b, if_neg (Ne.symm hba), zero_mul]
+      · intro hnot
+        exact absurd (Finset.mem_univ a) hnot
+    exact hinner
+  have hsource :
+      matMul n (matPow n H k) (matSub_id n H) i j =
+        ∑ a : Fin n, X i a * (J a a ^ k * (1 - J a a) * X_inv a j) := by
+    rw [hterm, hpow_entry k i j, hpow_entry (k + 1) i j]
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro a _ha
+    rw [pow_succ]
+    ring
+  rw [hsource]
+  calc
+    |∑ a : Fin n, X i a * (J a a ^ k * (1 - J a a) * X_inv a j)|
+        ≤ ∑ a : Fin n, |X i a * (J a a ^ k * (1 - J a a) * X_inv a j)| :=
+          Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ a : Fin n,
+          |X i a| * (|J a a| ^ k * |1 - J a a|) * |X_inv a j| := by
+          apply Finset.sum_congr rfl
+          intro a _ha
+          rw [abs_mul, abs_mul, abs_mul, abs_pow]
+          ring
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20), finite
+    diagonalization-certificate form: if `H = X J X^{-1}` with diagonal `J`
+    and `|lambda_i| < 1`, then every finite source-sigma partial matrix is
+    bounded by `kappa_infty(X) * max_i |1-lambda_i|/(1-|lambda_i|)`.
+
+    The theorem takes the displayed maximum as an explicit scalar upper bound
+    `sigmaDiag`; the literal infinite-series sigma is still a later wrapper. -/
+theorem finiteResidualSigma_le_diagonalizable_bound (n : ℕ) (_hn : 0 < n)
+    (H X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
+    (hsim : matMul n X_inv (matMul n H X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (sigmaDiag : ℝ) (hsigma : 0 ≤ sigmaDiag)
+    (hLam : ∀ i : Fin n, |J i i| < 1)
+    (hratio : ∀ i : Fin n, |1 - J i i| / (1 - |J i i|) ≤ sigmaDiag)
+    (m : ℕ) :
+    finiteResidualSigma n H m ≤ (infNorm X * infNorm X_inv) * sigmaDiag := by
+  unfold finiteResidualSigma
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    have hrowEntry_nonneg :
+        ∀ j : Fin n, 0 ≤ finiteResidualSigmaMatrix n H m i j := by
+      intro j
+      unfold finiteResidualSigmaMatrix
+      exact Finset.sum_nonneg (fun k _hk => abs_nonneg _)
+    calc
+      ∑ j : Fin n, |finiteResidualSigmaMatrix n H m i j|
+          = ∑ j : Fin n, finiteResidualSigmaMatrix n H m i j := by
+              apply Finset.sum_congr rfl
+              intro j _hj
+              exact abs_of_nonneg (hrowEntry_nonneg j)
+      _ = ∑ j : Fin n, ∑ k ∈ Finset.range (m + 1),
+            |matMul n (matPow n H k) (matSub_id n H) i j| := by
+              rfl
+      _ ≤ ∑ j : Fin n, ∑ a : Fin n,
+            |X i a| * sigmaDiag * |X_inv a j| := by
+              apply Finset.sum_le_sum
+              intro j _hj
+              calc
+                ∑ k ∈ Finset.range (m + 1),
+                    |matMul n (matPow n H k) (matSub_id n H) i j|
+                    ≤ ∑ k ∈ Finset.range (m + 1), ∑ a : Fin n,
+                        |X i a| * (|J a a| ^ k * |1 - J a a|) *
+                          |X_inv a j| := by
+                        apply Finset.sum_le_sum
+                        intro k _hk
+                        exact residual_term_entry_abs_le_of_real_diagonalization
+                          n H X X_inv J hXr hXl hsim hdiag k i j
+                _ = ∑ a : Fin n, ∑ k ∈ Finset.range (m + 1),
+                        |X i a| * (|J a a| ^ k * |1 - J a a|) *
+                          |X_inv a j| := by
+                        rw [Finset.sum_comm]
+                _ ≤ ∑ a : Fin n, |X i a| * sigmaDiag * |X_inv a j| := by
+                        apply Finset.sum_le_sum
+                        intro a _ha
+                        have hgeom :
+                            ∑ k ∈ Finset.range (m + 1),
+                              |J a a| ^ k * |1 - J a a| ≤ sigmaDiag :=
+                            (residual_geometric_partial_le_ratio (J a a)
+                            (hLam a) m).trans (hratio a)
+                        calc
+                          ∑ k ∈ Finset.range (m + 1),
+                              |X i a| * (|J a a| ^ k * |1 - J a a|) *
+                                |X_inv a j|
+                              = |X i a| *
+                                  (∑ k ∈ Finset.range (m + 1),
+                                    |J a a| ^ k * |1 - J a a|) *
+                                  |X_inv a j| := by
+                                  rw [Finset.mul_sum, Finset.sum_mul]
+                          _ ≤ |X i a| * sigmaDiag * |X_inv a j| := by
+                                  exact mul_le_mul_of_nonneg_right
+                                    (mul_le_mul_of_nonneg_left hgeom (abs_nonneg _))
+                                    (abs_nonneg _)
+      _ = ∑ a : Fin n, |X i a| * sigmaDiag * (∑ j : Fin n, |X_inv a j|) := by
+              rw [Finset.sum_comm]
+              apply Finset.sum_congr rfl
+              intro a _ha
+              rw [← Finset.mul_sum]
+      _ ≤ ∑ a : Fin n, |X i a| * sigmaDiag * infNorm X_inv := by
+              apply Finset.sum_le_sum
+              intro a _ha
+              exact mul_le_mul_of_nonneg_left
+                (row_sum_le_infNorm X_inv a)
+                (mul_nonneg (abs_nonneg _) hsigma)
+      _ = sigmaDiag * infNorm X_inv * (∑ a : Fin n, |X i a|) := by
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro a _ha
+              ring
+      _ ≤ sigmaDiag * infNorm X_inv * infNorm X := by
+              exact mul_le_mul_of_nonneg_left
+                (row_sum_le_infNorm X i)
+                (mul_nonneg hsigma (infNorm_nonneg _))
+      _ = (infNorm X * infNorm X_inv) * sigmaDiag := by
+              ring
+  · exact mul_nonneg (mul_nonneg (infNorm_nonneg X) (infNorm_nonneg X_inv)) hsigma
 
 -- ============================================================
 -- §17.3  Residual recurrence: r_{k+1} = Hr_k − (I−H)ξ_k
