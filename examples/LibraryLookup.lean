@@ -14725,3 +14725,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check complex_jordan_similarity_absorbs
 #check higham_18_1_complex_jordan_tendsto
 #check higham_18_1_complex_jordan_fl_tendsto
+#check PseudospectrumModulusSet
+#check PseudospectralRadiusLt
+#check eigenvalueModulusSet_subset_pseudospectrum
+#check pseudospectral_gap
+#check higham_knight_18_2_pseudospectral
