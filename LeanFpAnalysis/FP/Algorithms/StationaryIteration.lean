@@ -1224,6 +1224,147 @@ theorem main_forward_bound (n : ℕ) (G M_inv A_inv : Fin n → Fin n → ℝ)
     _ = cn_u * (1 + θ_x) * cA *
           ∑ j, |A_inv i j| * ∑ p, (|M j p| + |N j p|) * |x p| := by ring
 
+/-- Finite correction term obtained from the local-error bound in Higham,
+    2nd ed., Chapter 17, equations (17.11) and (17.13).  This is the
+    finite, certified counterpart of the infinite-series correction term. -/
+noncomputable def finiteForwardCorrection (n : ℕ)
+    (G M_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (cn_u θ_x : ℝ) (m : ℕ) : Fin n → ℝ :=
+  fun i => ∑ k ∈ Finset.range (m + 1),
+    ∑ j : Fin n, (∑ l : Fin n, |matPow n G k i l| * |M_inv l j|) *
+      (cn_u * (1 + θ_x) * ∑ p : Fin n, (|M j p| + |N j p|) * |x p|)
+
+/-- Vector form of the source factor
+    `|A^{-1}| (|M| + |N|) |x|` in Higham, 2nd ed., Chapter 17,
+    equations (17.13) and (17.15). -/
+noncomputable def mainForwardBoundVector (n : ℕ)
+    (A_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ) : Fin n → ℝ :=
+  fun i => ∑ j : Fin n, |A_inv i j| *
+    ∑ p : Fin n, (|M j p| + |N j p|) * |x p|
+
+/-- The vector `|A^{-1}| (|M| + |N|) |x|` is componentwise nonnegative. -/
+theorem mainForwardBoundVector_nonneg (n : ℕ)
+    (A_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    ∀ i, 0 ≤ mainForwardBoundVector n A_inv M N x i := by
+  intro i
+  unfold mainForwardBoundVector
+  apply Finset.sum_nonneg
+  intro j _
+  apply mul_nonneg (abs_nonneg _)
+  apply Finset.sum_nonneg
+  intro p _
+  exact mul_nonneg (add_nonneg (abs_nonneg _) (abs_nonneg _)) (abs_nonneg _)
+
+/-- The finite Chapter 17 correction term is componentwise nonnegative under
+    the standard nonnegativity hypotheses on `c_n u` and `θ_x`. -/
+theorem finiteForwardCorrection_nonneg (n : ℕ)
+    (G M_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (cn_u θ_x : ℝ) (hcn : 0 ≤ cn_u) (hθ : 0 ≤ θ_x) (m : ℕ) :
+    ∀ i, 0 ≤ finiteForwardCorrection n G M_inv M N x cn_u θ_x m i := by
+  have hcoeff : 0 ≤ cn_u * (1 + θ_x) := mul_nonneg hcn (by linarith)
+  intro i
+  unfold finiteForwardCorrection
+  apply Finset.sum_nonneg
+  intro k _
+  apply Finset.sum_nonneg
+  intro j _
+  apply mul_nonneg
+  · apply Finset.sum_nonneg
+    intro l _
+    exact mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  · apply mul_nonneg hcoeff
+    apply Finset.sum_nonneg
+    intro p _
+    exact mul_nonneg (add_nonneg (abs_nonneg _) (abs_nonneg _)) (abs_nonneg _)
+
+/-- Finite, componentwise version of the `(17.13)` correction estimate:
+    the finite correction term is bounded by the `c(A)`-weighted source vector. -/
+theorem finiteForwardCorrection_le_mainForwardBoundVector (n : ℕ)
+    (G M_inv A_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (cn_u θ_x cA : ℝ) (hcn : 0 ≤ cn_u) (hcA : 0 ≤ cA) (hθ : 0 ≤ θ_x)
+    (m : ℕ) (hPartial : PartialSumBound n G M_inv A_inv cA m) :
+    ∀ i, finiteForwardCorrection n G M_inv M N x cn_u θ_x m i ≤
+      cn_u * (1 + θ_x) * cA * mainForwardBoundVector n A_inv M N x i := by
+  intro i
+  simpa [finiteForwardCorrection, mainForwardBoundVector] using
+    main_forward_bound n G M_inv A_inv x M N cn_u θ_x cA hcn hcA hθ m hPartial i
+
+/-- Infinity-norm form of the finite `(17.13)` correction estimate. -/
+theorem finiteForwardCorrection_norm_bound (n : ℕ)
+    (G M_inv A_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (cn_u θ_x cA : ℝ) (hcn : 0 ≤ cn_u) (hcA : 0 ≤ cA) (hθ : 0 ≤ θ_x)
+    (m : ℕ) (hPartial : PartialSumBound n G M_inv A_inv cA m) :
+    infNormVec (finiteForwardCorrection n G M_inv M N x cn_u θ_x m) ≤
+      cn_u * (1 + θ_x) * cA * infNormVec (mainForwardBoundVector n A_inv M N x) := by
+  have hcoeff : 0 ≤ cn_u * (1 + θ_x) * cA := by
+    exact mul_nonneg (mul_nonneg hcn (by linarith)) hcA
+  have hcorr_nonneg :=
+    finiteForwardCorrection_nonneg n G M_inv M N x cn_u θ_x hcn hθ m
+  have hbound_nonneg := mainForwardBoundVector_nonneg n A_inv M N x
+  have hcomp :=
+    finiteForwardCorrection_le_mainForwardBoundVector n G M_inv A_inv M N x
+      cn_u θ_x cA hcn hcA hθ m hPartial
+  apply infNormVec_le_of_abs_le
+  · intro i
+    have hbound_abs :
+        |mainForwardBoundVector n A_inv M N x i| =
+          mainForwardBoundVector n A_inv M N x i :=
+      abs_of_nonneg (hbound_nonneg i)
+    have hbound_le_norm :
+        mainForwardBoundVector n A_inv M N x i ≤
+          infNormVec (mainForwardBoundVector n A_inv M N x) := by
+      simpa [hbound_abs] using
+        abs_le_infNormVec (mainForwardBoundVector n A_inv M N x) i
+    calc
+      |finiteForwardCorrection n G M_inv M N x cn_u θ_x m i|
+          = finiteForwardCorrection n G M_inv M N x cn_u θ_x m i :=
+            abs_of_nonneg (hcorr_nonneg i)
+      _ ≤ cn_u * (1 + θ_x) * cA * mainForwardBoundVector n A_inv M N x i :=
+            hcomp i
+      _ ≤ cn_u * (1 + θ_x) * cA *
+          infNormVec (mainForwardBoundVector n A_inv M N x) :=
+            mul_le_mul_of_nonneg_left hbound_le_norm hcoeff
+  · exact mul_nonneg hcoeff (infNormVec_nonneg _)
+
+/-- Finite normwise form corresponding to Higham, 2nd ed., Chapter 17,
+    equation (17.15): taking the infinity norm of the propagated initial
+    error plus the finite, `c(A)`-certified correction term. -/
+theorem finite_norm_form_forward_bound (n : ℕ)
+    (G M_inv A_inv M N : Fin n → Fin n → ℝ) (e₀ x : Fin n → ℝ)
+    (cn_u θ_x cA : ℝ) (hcn : 0 ≤ cn_u) (hcA : 0 ≤ cA) (hθ : 0 ≤ θ_x)
+    (m : ℕ) (hPartial : PartialSumBound n G M_inv A_inv cA m) :
+    infNormVec (fun i =>
+      matMulVec n (matPow n G (m + 1)) e₀ i +
+        finiteForwardCorrection n G M_inv M N x cn_u θ_x m i) ≤
+      infNormVec (matMulVec n (matPow n G (m + 1)) e₀) +
+        cn_u * (1 + θ_x) * cA * infNormVec (mainForwardBoundVector n A_inv M N x) := by
+  have hcorrNorm :=
+    finiteForwardCorrection_norm_bound n G M_inv A_inv M N x cn_u θ_x cA
+      hcn hcA hθ m hPartial
+  have hcorr_abs :
+      ∀ i, |finiteForwardCorrection n G M_inv M N x cn_u θ_x m i| ≤
+        cn_u * (1 + θ_x) * cA * infNormVec (mainForwardBoundVector n A_inv M N x) := by
+    intro i
+    exact le_trans
+      (abs_le_infNormVec (finiteForwardCorrection n G M_inv M N x cn_u θ_x m) i)
+      hcorrNorm
+  apply infNormVec_le_of_abs_le
+  · intro i
+    calc
+      |matMulVec n (matPow n G (m + 1)) e₀ i +
+          finiteForwardCorrection n G M_inv M N x cn_u θ_x m i|
+          ≤ |matMulVec n (matPow n G (m + 1)) e₀ i| +
+              |finiteForwardCorrection n G M_inv M N x cn_u θ_x m i| :=
+            abs_add_le _ _
+      _ ≤ infNormVec (matMulVec n (matPow n G (m + 1)) e₀) +
+          cn_u * (1 + θ_x) * cA * infNormVec (mainForwardBoundVector n A_inv M N x) :=
+            add_le_add (abs_le_infNormVec (matMulVec n (matPow n G (m + 1)) e₀) i)
+              (hcorr_abs i)
+  · exact add_nonneg (infNormVec_nonneg _)
+      (mul_nonneg
+        (mul_nonneg (mul_nonneg hcn (by linarith)) hcA)
+        (infNormVec_nonneg _))
+
 -- ============================================================
 -- §17.3  Normwise residual bound (eq 17.19)
 -- ============================================================
