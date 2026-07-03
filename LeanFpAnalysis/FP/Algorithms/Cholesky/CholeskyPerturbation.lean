@@ -1152,6 +1152,88 @@ theorem block_quadForm_schur_eq {m : ℕ} (α : ℝ) (hα : α ≠ 0)
     rw [hexpand]; field_simp; ring
   rw [hQF, hfinal, hξt_eq]
 
+/-- **Stage Loewner monotonicity `Q̂ ⪯ Q₂₂`, quadratic-form level**
+    (Higham §10.4, the (10.29) crux, assembled; oracle consult 4).
+    For a symmetric PD `(1+m)`-block `H = [[α, fᵀ],[f, G]]` with Schur
+    complement `Z = G − ffᵀ/α`, skew data `k`, computed Schur complement
+    action `Ŝy = v − (β/α)(f − k)` and its symmetric-part rank-one update
+    `Ĥ = Z + kkᵀ/α`, the stage Gram form never exceeds the trailing-block
+    Gram form:
+
+      `(Ŝy)ᵀ Ĥ⁻¹ (Ŝy) ≤ [β; v]ᵀ H⁻¹ [β; v]`.
+
+    Combines `block_quadForm_schur_eq` (`= β²/α + wᵀZ⁻¹w`) with
+    `rankOne_update_auxiliary_le` (`≤ wᵀZ⁻¹w + γ²`, `γ² = β²/α`), setting
+    `u = k/√α`, `γ = β/√α` so `uuᵀ = kkᵀ/α` and `Ŝy = w + γu`. -/
+theorem schur_gram_stage_le {m : ℕ} (α : ℝ) (hα : 0 < α)
+    (f k : Fin m → ℝ) (G : Fin m → Fin m → ℝ)
+    (H Hinv : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (Z Zinv Hhat Hhatinv : Fin m → Fin m → ℝ)
+    (hH00 : H 0 0 = α)
+    (hH0s : ∀ j : Fin m, H 0 j.succ = f j)
+    (hHs0 : ∀ i : Fin m, H i.succ 0 = f i)
+    (hHss : ∀ i j : Fin m, H i.succ j.succ = G i j)
+    (hZ : ∀ i j : Fin m, Z i j = G i j - f i * f j / α)
+    (hZinvSym : ∀ i j : Fin m, Zinv i j = Zinv j i)
+    (hZinv_act : ∀ vv : Fin m → ℝ, matMulVec m Zinv (matMulVec m Z vv) = vv)
+    (hZinv_psd_k : 0 ≤ ∑ i : Fin m, (k i / Real.sqrt α) *
+      matMulVec m Zinv (fun j => k j / Real.sqrt α) i)
+    (hHhat : ∀ i j : Fin m,
+      Hhat i j = Z i j + (k i / Real.sqrt α) * (k j / Real.sqrt α))
+    (β : ℝ) (v : Fin m → ℝ)
+    (hHinv_act : matMulVec (m + 1) H
+      (matMulVec (m + 1) Hinv (Fin.cons β v : Fin (m + 1) → ℝ)) =
+      (Fin.cons β v : Fin (m + 1) → ℝ))
+    (hHhatinv_act : matMulVec m Hhat
+      (matMulVec m Hhatinv
+        (fun i => (v i - β / α * f i) + β / Real.sqrt α *
+          (k i / Real.sqrt α))) =
+      (fun i => (v i - β / α * f i) + β / Real.sqrt α *
+        (k i / Real.sqrt α))) :
+    (∑ i : Fin m, (v i - β / α * (f i - k i)) *
+        matMulVec m Hhatinv
+          (fun j => v j - β / α * (f j - k j)) i) ≤
+      (∑ i : Fin (m + 1),
+        (Fin.cons β v : Fin (m + 1) → ℝ) i *
+        matMulVec (m + 1) Hinv (Fin.cons β v : Fin (m + 1) → ℝ) i) := by
+  set u : Fin m → ℝ := fun i => k i / Real.sqrt α with hu
+  set γ : ℝ := β / Real.sqrt α with hγ
+  set w : Fin m → ℝ := fun i => v i - β / α * f i with hw
+  have hsqrtα : Real.sqrt α * Real.sqrt α = α := Real.mul_self_sqrt hα.le
+  have hsqrtα_ne : Real.sqrt α ≠ 0 := by positivity
+  -- Ŝy = w + γ u (pointwise and as functions)
+  have hŜy_pt : ∀ i : Fin m,
+      v i - β / α * (f i - k i) = w i + γ * u i := by
+    intro i
+    simp only [hw, hu, hγ]
+    rw [div_mul_div_comm, hsqrtα]
+    ring
+  have hŜy : (fun i => v i - β / α * (f i - k i)) =
+      (fun i => w i + γ * u i) := funext hŜy_pt
+  -- γ² = β²/α
+  have hγ2 : γ ^ 2 = β ^ 2 / α := by
+    rw [hγ, div_pow, Real.sq_sqrt hα.le]
+  -- block-inverse form of the trailing quadratic form
+  have hblock := block_quadForm_schur_eq α hα.ne' f G H Hinv Z Zinv
+    hH00 hH0s hHs0 hHss hZ hZinv_act β v hHinv_act
+  -- auxiliary inequality on the stage form
+  have haux := rankOne_update_auxiliary_le Z Zinv Hhat Hhatinv u w γ
+    hZinvSym hZinv_psd_k hZinv_act hHhat hHhatinv_act
+  -- rewrite the goal's stage form into the (w + γu) shape
+  have hLHSeq : (∑ i : Fin m, (v i - β / α * (f i - k i)) *
+        matMulVec m Hhatinv (fun j => v j - β / α * (f j - k j)) i) =
+      ∑ i : Fin m, (w i + γ * u i) *
+        matMulVec m Hhatinv (fun j => w j + γ * u j) i := by
+    rw [hŜy]
+    exact Finset.sum_congr rfl fun i _ => by rw [hŜy_pt i]
+  rw [hLHSeq]
+  refine le_trans haux ?_
+  rw [hblock, hγ2]
+  have hww : (∑ i : Fin m, w i * matMulVec m Zinv w i) =
+      ∑ i : Fin m, (v i - β / α * f i) *
+        matMulVec m Zinv (fun j => v j - β / α * f j) i := rfl
+  linarith [hww]
+
 /-- **Scalar product step** (Higham §10.4, (10.29) per-stage): from two
     pivot bounds `p² ≤ h·a`, `q² ≤ h·b` with `h > 0` and `a, b ≥ 0`,
     `|p·q|/h ≤ √(a·b)`.  Combines the row and column instances of
