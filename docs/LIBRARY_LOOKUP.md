@@ -4260,6 +4260,7 @@ Source-facing Chapter 10 wrappers:
 - `diag_le_opNorm2Le` / `sqrt_diag_prod_le_opNorm2Le` ((10.29) opNorm-diag bridge: opNorm2Le Q c => Q_ii <= c and sqrt(Q_ii Q_jj) <= c for PSD-diagonal Q)
 - `stage_multiplier_product_le` ((10.29) ASSEMBLED per-stage bound: |S_ik S_kj|/H_kk <= c given opNorm2Le Q c and the row/col Gram-diagonal identifications Q = S Hinv S^T = S^T Hinv S)
 - `finiteMaxEigenvalue_trailing_principal_le` ((10.29) Schur monotonicity, ||Q22||_2 <= ||Q||_2 half: trailing m-block max-eigenvalue <= full, via Fin.cons 0 v padding)
+- `sherman_morrison_quadForm_scalar_mono` ((10.29) crux scalar core: Sherman-Morrison rank-one-update monotonicity, gap (gamma-p)^2/(1+r) >= 0 - the algebraic heart of Q_hat <= Q_22)
 - `kahanR` / `kahan_telescope` / `kahanR_tail_eq` ((10.20): Kahan family satisfies (10.13) with equality on the square part)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)

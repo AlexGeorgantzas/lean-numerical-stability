@@ -843,6 +843,31 @@ theorem spd_pivot_quadForm_bound {n : ℕ} (H Hinv : Fin n → Fin n → ℝ)
   rw [hUV, hUU] at hcs
   exact hcs
 
+/-- **Sherman–Morrison quadratic-form monotonicity, scalar core**
+    (Higham §10.4, the algebraic heart of the (10.29) stage Loewner
+    monotonicity `Q̂ ⪯ Q₂₂`; oracle consult 4 route, hand-verified).
+
+    After the block-inverse reduction, `yᵀ Q̂ y` equals the
+    Sherman–Morrison expansion
+    `qww + 2γp + γ²r − (p+γr)²/(1+r)` (rank-one update `Z + uuᵀ` of the
+    SPD Schur complement `Z`, with `qww = wᵀZ⁻¹w`, `r = uᵀZ⁻¹u ≥ 0`,
+    `p = uᵀZ⁻¹w`), while `yᵀ Q₂₂ y = qww + γ²`.  The exact gap is
+    `(γ − p)²/(1+r) ≥ 0`, so the stage form never exceeds the trailing
+    block. -/
+theorem sherman_morrison_quadForm_scalar_mono
+    (qww r p γ : ℝ) (hr : 0 ≤ r) :
+    qww + 2 * γ * p + γ ^ 2 * r - (p + γ * r) ^ 2 / (1 + r) ≤
+      qww + γ ^ 2 := by
+  have h1r : (0:ℝ) < 1 + r := by linarith
+  have hgap : (qww + γ ^ 2) -
+      (qww + 2 * γ * p + γ ^ 2 * r - (p + γ * r) ^ 2 / (1 + r)) =
+      (γ - p) ^ 2 / (1 + r) := by
+    field_simp
+    ring
+  have hnn : 0 ≤ (γ - p) ^ 2 / (1 + r) :=
+    div_nonneg (sq_nonneg _) h1r.le
+  linarith [hgap, hnn]
+
 /-- **Scalar product step** (Higham §10.4, (10.29) per-stage): from two
     pivot bounds `p² ≤ h·a`, `q² ≤ h·b` with `h > 0` and `a, b ≥ 0`,
     `|p·q|/h ≤ √(a·b)`.  Combines the row and column instances of
