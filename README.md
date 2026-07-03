@@ -73,7 +73,11 @@ computed normalized Householder vector. The normalized signed-active vector is
 now also packaged as a source-faithful normalization certificate under the same
 computed-alpha or exact-alpha exact primitive-operation hypotheses; this
 certifies the normalized vector produced from the signed active vector and
-`householderBetaSpec`, not the raw unnormalized stored vector. That bridge is now threaded through the
+`householderBetaSpec`, not the raw unnormalized stored vector. The same
+certificate route now has leading-block variants that discharge the nonzero
+active-column premise from first leading-block determinant nonbreakdown, so
+callers can use the standard stored-loop nonbreakdown surface instead of
+supplying a separate nonzero-column fact. That bridge is now threaded through the
 first-pivot signed stored-panel handoff under the same exact-operation and
 update-compatibility surfaces, so the first QR storage step can consume the
 computed normalized vector while the stored route keeps the signed active vector
@@ -96,10 +100,10 @@ compatibility/perturbation theorem.
 For a searchable map from stability-analysis goals to files, definitions, and
 theorem names, see [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).  For a
 Lean `#check` companion index, see [`examples/LibraryLookup.lean`](examples/LibraryLookup.lean).
-Current build status: `lake build LeanFpAnalysis.FP` and full `lake build` pass;
-representative Slot 1 checks for Chapters 1-6 pass. The full
-`examples/LibraryLookup.lean` check currently needs a stale Stewart QR lookup
-refresh around lines 5442-5464, outside the selected Slot 1 rows.
+Recent verification for the current synchronized head includes the focused
+Chapter 19 check, rebuilt Chapter 9/10 and matrix-powers merge dependencies, and
+the full `examples/LibraryLookup.lean` smoke check. Representative Slot 1 checks
+for Chapters 1-6 pass.
 Chapter 1-6 audit summary: Chapter 1 empirical-output rows remain
 experiment/model artifacts; Chapter 2 finite-format, IEEE, and guard-digit
 selector work is current; Chapter 3 covers Problems 3.1--3.12 with historical

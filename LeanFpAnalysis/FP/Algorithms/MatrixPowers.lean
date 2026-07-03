@@ -17,6 +17,7 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Analysis.SpecificLimits.Basic
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Analysis.Rounding
+import LeanFpAnalysis.FP.Algorithms.MatVec
 namespace LeanFpAnalysis.FP
 
 open scoped BigOperators
@@ -38,6 +39,58 @@ structure ComputedMatPowVec (n : ℕ) (A : Fin n → Fin n → ℝ)
   step : ∀ k, ∃ ΔA : Fin n → Fin n → ℝ,
     (∀ i j, |ΔA i j| ≤ c * |A i j|) ∧
     (∀ i, v (k + 1) i = ∑ j : Fin n, (A i j + ΔA i j) * v k j)
+
+/-- Weakening the per-step perturbation constant: a computed-power sequence
+    with componentwise budget `c` also satisfies any larger budget `c'`. -/
+theorem ComputedMatPowVec.mono {n : ℕ} {A : Fin n → Fin n → ℝ}
+    {v : ℕ → (Fin n → ℝ)} {c c' : ℝ} (hcc : c ≤ c')
+    (h : ComputedMatPowVec n A v c) : ComputedMatPowVec n A v c' := by
+  constructor
+  intro k
+  obtain ⟨ΔA, hΔ, heq⟩ := h.step k
+  exact ⟨ΔA, fun i j =>
+    (hΔ i j).trans (mul_le_mul_of_nonneg_right hcc (abs_nonneg _)), heq⟩
+
+-- ============================================================
+-- §18.2  Concrete floating-point realization of (18.10)–(18.11)
+-- ============================================================
+
+/-- The computed iteration `v_{k+1} = fl(A · v_k)` by repeated floating-point
+    matrix–vector products, starting from `v0`.  This is the concrete
+    algorithm whose error recurrence is eq (18.10). -/
+noncomputable def fl_matPowVecSeq (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (v0 : Fin n → ℝ) : ℕ → (Fin n → ℝ)
+  | 0 => v0
+  | k + 1 => fl_matVec fp n n A (fl_matPowVecSeq fp n A v0 k)
+
+/-- **Concrete realization of the error model (18.10)–(18.11)**: the
+    floating-point iteration `v_{k+1} = fl(A v_k)` satisfies the perturbed
+    recurrence `v_{k+1} = (A + ΔA_k) v_k` with `|ΔA_k| ≤ γ_n |A|`
+    componentwise.  Each step is one `fl_matVec` with inner dimension `n`
+    (from `matVec_backward_error`), so the per-step constant is `γ_n`;
+    the book's (18.11) uses the weaker constant `γ_{n+2}`, recovered in
+    `computedMatPowVec_fl_matVec_gamma_add_two` by monotonicity. -/
+theorem computedMatPowVec_fl_matVec (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (v0 : Fin n → ℝ) (hn : gammaValid fp n) :
+    ComputedMatPowVec n A (fl_matPowVecSeq fp n A v0) (gamma fp n) := by
+  constructor
+  intro k
+  obtain ⟨ΔA, hΔ, heq⟩ :=
+    matVec_backward_error fp n n A (fl_matPowVecSeq fp n A v0 k) hn
+  refine ⟨ΔA, hΔ, fun i => ?_⟩
+  show fl_matPowVecSeq fp n A v0 (k + 1) i = _
+  simp only [fl_matPowVecSeq]
+  exact heq i
+
+/-- The concrete realization stated with the book's (18.11) constant
+    `γ_{n+2}` (valid since `γ_n ≤ γ_{n+2}`). -/
+theorem computedMatPowVec_fl_matVec_gamma_add_two (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (v0 : Fin n → ℝ)
+    (hn2 : gammaValid fp (n + 2)) :
+    ComputedMatPowVec n A (fl_matPowVecSeq fp n A v0) (gamma fp (n + 2)) :=
+  (computedMatPowVec_fl_matVec fp n A v0
+      (gammaValid_mono fp (Nat.le_add_right n 2) hn2)).mono
+    (gamma_mono fp (Nat.le_add_right n 2) hn2)
 
 -- ============================================================
 -- One-step componentwise bound
@@ -482,5 +535,235 @@ theorem computedMatPow_tendsto_zero_of_geometric (n : ℕ)
       Filter.atTop (nhds 0) := by
     simpa using (hpow.const_mul C).mul_const (infNormVec (v 0))
   exact squeeze_zero (fun m => infNormVec_nonneg _) hbound htop
+
+-- ============================================================
+-- §18.2  End-to-end conditional forms with the limit conclusion
+-- ============================================================
+
+/-- **End-to-end conditional form of Theorem 18.1 for the actual
+    floating-point iteration.**  Composes the concrete (18.10)–(18.11)
+    realization (`fl_matPowVecSeq`, per-step constant `γ_{n+2}`), the
+    conditional reduction `higham_knight_18_1`, and the limit wrapper: under
+    the Jordan-data hypothesis (including the ASSUMED `similarity_absorbs`
+    construction — see `JordanFormSpec`) and the Higham–Knight condition
+    (18.13) with the printed constant `γ_{n+2}`, the computed vectors
+    satisfy `‖fl(Aᵐ v₀)‖∞ → 0`.
+
+    Still conditional on the `similarity_absorbs` axiom; the Theorem 18.1
+    source row remains OPEN until that construction is discharged. -/
+theorem higham_knight_18_1_fl_tendsto (fp : FPModel) (n : ℕ) (hn : 0 < n)
+    (A X X_inv : Fin n → Fin n → ℝ)
+    (hJ : JordanFormSpec n hn A X X_inv)
+    (v0 : Fin n → ℝ) (hval : gammaValid fp (n + 2))
+    (hCond : 4 * hJ.max_block_size * gamma fp (n + 2) *
+      (infNorm X * infNorm X_inv) * infNorm A <
+      (1 - hJ.spectral_radius) ^ hJ.max_block_size) :
+    Filter.Tendsto
+      (fun m => infNormVec (fl_matPowVecSeq fp n A v0 m))
+      Filter.atTop (nhds 0) := by
+  obtain ⟨C, q, hC, hq0, hq1, hbound⟩ :=
+    higham_knight_18_1 n hn A X X_inv hJ
+      (fl_matPowVecSeq fp n A v0) (gamma fp (n + 2))
+      (gamma_nonneg fp hval)
+      (computedMatPowVec_fl_matVec_gamma_add_two fp n A v0 hval)
+      hCond
+  exact computedMatPow_tendsto_zero_of_geometric n
+    (fl_matPowVecSeq fp n A v0) C q hq0 hq1 hbound
+
+/-- **Conditional reduction of Theorem 18.2** (Higham–Knight), algebraic
+    `t = 1` form.  The book's proof of Theorem 18.2 reduces the
+    pseudospectral hypothesis to Theorem 18.1 with `t = 1` (diagonalizable
+    `A`), where condition (18.13) becomes
+    `4 · c · κ∞(X) · ‖A‖∞ < 1 − ρ(A)`.  This theorem formalizes exactly
+    that reduction target with the limit conclusion `‖v_m‖∞ → 0`.
+
+    NOT the full printed Theorem 18.2: the pseudospectral packaging
+    (`ρ_ε(A) < 1` with `ε = cₙu‖A‖₂`, eqs (18.8)–(18.9), the unique dominant
+    eigenvalue and norm normalizations, and the O(ε²) proviso) is deferred —
+    pseudospectra are absent from Mathlib and this repository.  Also
+    conditional on the `similarity_absorbs` axiom via `higham_knight_18_1`;
+    the Theorem 18.2 source row remains OPEN. -/
+theorem higham_knight_18_2_diagonalizable (n : ℕ) (hn : 0 < n)
+    (A X X_inv : Fin n → Fin n → ℝ)
+    (hJ : JordanFormSpec n hn A X X_inv)
+    (ht : hJ.max_block_size = 1)
+    (v : ℕ → (Fin n → ℝ)) (c : ℝ) (hc : 0 ≤ c)
+    (hComp : ComputedMatPowVec n A v c)
+    (hCond : 4 * c * (infNorm X * infNorm X_inv) * infNorm A <
+      1 - hJ.spectral_radius) :
+    Filter.Tendsto (fun m => infNormVec (v m)) Filter.atTop (nhds 0) := by
+  have hCond1 : 4 * hJ.max_block_size * c *
+      (infNorm X * infNorm X_inv) * infNorm A <
+      (1 - hJ.spectral_radius) ^ hJ.max_block_size := by
+    rw [ht]
+    simpa using hCond
+  obtain ⟨C, q, hC, hq0, hq1, hbound⟩ :=
+    higham_knight_18_1 n hn A X X_inv hJ v c hc hComp hCond1
+  exact computedMatPow_tendsto_zero_of_geometric n v C q hq0 hq1 hbound
+
+-- ============================================================
+-- §18.2  Discharging `similarity_absorbs`: real-diagonalizable case (t = 1)
+-- ============================================================
+
+/-- Triangle inequality for the matrix ∞-norm (entrywise sum). -/
+theorem infNorm_add_le {n : ℕ} (M N : Fin n → Fin n → ℝ) :
+    infNorm (fun i j => M i j + N i j) ≤ infNorm M + infNorm N := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc ∑ j : Fin n, |M i j + N i j|
+        ≤ ∑ j : Fin n, (|M i j| + |N i j|) :=
+          Finset.sum_le_sum (fun j _ => abs_add_le _ _)
+      _ = (∑ j : Fin n, |M i j|) + ∑ j : Fin n, |N i j| :=
+          Finset.sum_add_distrib
+      _ ≤ infNorm M + infNorm N :=
+          add_le_add (row_sum_le_infNorm M i) (row_sum_le_infNorm N i)
+  · exact add_nonneg (infNorm_nonneg M) (infNorm_nonneg N)
+
+/-- Componentwise domination `|ΔA| ≤ η|A|` transfers to the matrix ∞-norm:
+    `‖ΔA‖∞ ≤ η‖A‖∞`. -/
+theorem infNorm_le_mul_of_abs_le_mul_abs {n : ℕ}
+    (ΔA A : Fin n → Fin n → ℝ) {η : ℝ} (hη : 0 ≤ η)
+    (hΔ : ∀ i j, |ΔA i j| ≤ η * |A i j|) :
+    infNorm ΔA ≤ η * infNorm A := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc ∑ j : Fin n, |ΔA i j|
+        ≤ ∑ j : Fin n, η * |A i j| :=
+          Finset.sum_le_sum (fun j _ => hΔ i j)
+      _ = η * ∑ j : Fin n, |A i j| := (Finset.mul_sum ..).symm
+      _ ≤ η * infNorm A :=
+          mul_le_mul_of_nonneg_left (row_sum_le_infNorm A i) hη
+  · exact mul_nonneg hη (infNorm_nonneg A)
+
+/-- A diagonal matrix with entries of modulus at most `ρ ≥ 0` has
+    ∞-norm at most `ρ`. -/
+theorem infNorm_diagonal_le {n : ℕ} (J : Fin n → Fin n → ℝ) {ρ : ℝ}
+    (hρ0 : 0 ≤ ρ) (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (hlam : ∀ i, |J i i| ≤ ρ) : infNorm J ≤ ρ := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    have hsingle : ∑ j : Fin n, |J i j| = |J i i| := by
+      refine Finset.sum_eq_single i (fun b _ hb => ?_) (fun h => ?_)
+      · rw [hdiag i b (Ne.symm hb)]; exact abs_zero
+      · exact absurd (Finset.mem_univ i) h
+    rw [hsingle]; exact hlam i
+  · exact hρ0
+
+/-- **Discharged `t = 1` construction (real-diagonalizable case).**
+
+    If `A` is explicitly diagonalized over ℝ — `X⁻¹AX = J` with `J` diagonal
+    and `|J i i| ≤ ρ < 1` — then the perturbation-absorbing similarity of
+    Theorem 18.1's proof exists with `S = X` and NO scaling construction:
+    for `|ΔA| ≤ η|A|`,
+      `‖X⁻¹(A+ΔA)X‖∞ ≤ ‖J‖∞ + κ∞(X)·η·‖A‖∞ ≤ ρ + η·κ∞(X)·‖A‖∞ < 1`
+    under the `t = 1` Higham–Knight condition `4·η·κ∞(X)·‖A‖∞ < 1 − ρ`.
+
+    This PROVES `similarity_absorbs` (no assumption) for this class, covering
+    e.g. symmetric matrices and any real matrix with real eigenvalues and a
+    full real eigenbasis.  Here `ρ` is any bound on the eigenvalue moduli
+    (the printed theorem uses `ρ(A)` itself, which is the sharpest choice).
+    The general case (complex spectrum / defective `A`, `t > 1`) still
+    requires the Jordan δ-scaling over ℂ and remains an open obligation. -/
+def JordanFormSpec.ofRealDiagonal (n : ℕ) (hn : 0 < n)
+    (A X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv)
+    (hsim : matMul n X_inv (matMul n A X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (ρ : ℝ) (hρ0 : 0 ≤ ρ) (hρ1 : ρ < 1)
+    (hlam : ∀ i, |J i i| ≤ ρ) :
+    JordanFormSpec n hn A X X_inv where
+  inv_right := hXr
+  spectral_radius := ρ
+  hr_nonneg := hρ0
+  hr_lt_one := hρ1
+  max_block_size := 1
+  ht_pos := one_pos
+  similarity_absorbs := by
+    intro η hη hcond
+    -- The t = 1 condition: 4·η·κ∞(X)·‖A‖∞ < 1 − ρ.
+    have hcond' : 4 * (η * (infNorm X * infNorm X_inv) * infNorm A) < 1 - ρ := by
+      have := hcond
+      simpa [mul_assoc, Nat.cast_one] using this
+    set K : ℝ := η * (infNorm X * infNorm X_inv) * infNorm A with hK
+    have hK0 : 0 ≤ K := by
+      apply mul_nonneg (mul_nonneg hη _) (infNorm_nonneg A)
+      exact mul_nonneg (infNorm_nonneg X) (infNorm_nonneg X_inv)
+    have hKlt : K < 1 - ρ := by linarith
+    refine ⟨X, X_inv, ρ + K, hXr, by linarith, by linarith, ?_⟩
+    intro ΔA hΔ
+    -- X⁻¹(A+ΔA)X = J + X⁻¹ΔA X, entrywise.
+    have hsplit : matMul n X_inv (matMul n (fun i j => A i j + ΔA i j) X) =
+        fun i j => J i j + matMul n X_inv (matMul n ΔA X) i j := by
+      rw [matMul_add_left n A ΔA X, matMul_add_right n X_inv
+        (matMul n A X) (matMul n ΔA X), hsim]
+    rw [hsplit]
+    -- ‖X⁻¹ΔA X‖∞ ≤ κ∞(X)·η·‖A‖∞
+    have hΔnorm : infNorm ΔA ≤ η * infNorm A :=
+      infNorm_le_mul_of_abs_le_mul_abs ΔA A hη hΔ
+    have h1 : infNorm (matMul n ΔA X) ≤ infNorm ΔA * infNorm X :=
+      infNorm_matMul_le hn ΔA X
+    have h2 : infNorm (matMul n X_inv (matMul n ΔA X)) ≤
+        infNorm X_inv * (infNorm ΔA * infNorm X) :=
+      (infNorm_matMul_le hn X_inv (matMul n ΔA X)).trans
+        (mul_le_mul_of_nonneg_left h1 (infNorm_nonneg X_inv))
+    have h3 : infNorm X_inv * (infNorm ΔA * infNorm X) ≤
+        infNorm X_inv * ((η * infNorm A) * infNorm X) :=
+      mul_le_mul_of_nonneg_left
+        (mul_le_mul_of_nonneg_right hΔnorm (infNorm_nonneg X))
+        (infNorm_nonneg X_inv)
+    have hEq : infNorm X_inv * ((η * infNorm A) * infNorm X) = K := by
+      rw [hK]; ring
+    calc infNorm (fun i j => J i j + matMul n X_inv (matMul n ΔA X) i j)
+        ≤ infNorm J + infNorm (matMul n X_inv (matMul n ΔA X)) :=
+          infNorm_add_le J _
+      _ ≤ ρ + K := by
+          have hJn : infNorm J ≤ ρ := infNorm_diagonal_le J hρ0 hdiag hlam
+          have := h2.trans h3
+          rw [hEq] at this
+          linarith
+
+/-- **Axiom-free real-diagonalizable case of Theorem 18.1** (limit form,
+    abstract error model): if `X⁻¹AX = J` is diagonal with `|J i i| ≤ ρ < 1`
+    and the `t = 1` Higham–Knight condition `4·c·κ∞(X)·‖A‖∞ < 1 − ρ` holds,
+    then any computed-power sequence with per-step budget `c` satisfies
+    `‖v_m‖∞ → 0`.  No `similarity_absorbs` assumption: the construction is
+    discharged by `JordanFormSpec.ofRealDiagonal`. -/
+theorem higham_18_1_real_diagonalizable_tendsto (n : ℕ) (hn : 0 < n)
+    (A X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv)
+    (hsim : matMul n X_inv (matMul n A X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (ρ : ℝ) (hρ0 : 0 ≤ ρ) (hρ1 : ρ < 1) (hlam : ∀ i, |J i i| ≤ ρ)
+    (v : ℕ → (Fin n → ℝ)) (c : ℝ) (hc : 0 ≤ c)
+    (hComp : ComputedMatPowVec n A v c)
+    (hCond : 4 * c * (infNorm X * infNorm X_inv) * infNorm A < 1 - ρ) :
+    Filter.Tendsto (fun m => infNormVec (v m)) Filter.atTop (nhds 0) :=
+  higham_knight_18_2_diagonalizable n hn A X X_inv
+    (JordanFormSpec.ofRealDiagonal n hn A X X_inv J hXr hsim hdiag ρ hρ0 hρ1 hlam)
+    rfl v c hc hComp hCond
+
+/-- **Axiom-free real-diagonalizable case of Theorem 18.1 for the actual
+    floating-point iteration**: with `X⁻¹AX = J` diagonal, `|J i i| ≤ ρ < 1`,
+    and `4·γ_{n+2}·κ∞(X)·‖A‖∞ < 1 − ρ`, the computed vectors
+    `fl(Aᵐ v₀)` (repeated `fl_matVec`) satisfy `‖fl(Aᵐ v₀)‖∞ → 0`.
+    Fully end-to-end: concrete algorithm, concrete rounding model,
+    no assumed construction. -/
+theorem higham_18_1_real_diagonalizable_fl_tendsto (fp : FPModel)
+    (n : ℕ) (hn : 0 < n)
+    (A X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv)
+    (hsim : matMul n X_inv (matMul n A X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (ρ : ℝ) (hρ0 : 0 ≤ ρ) (hρ1 : ρ < 1) (hlam : ∀ i, |J i i| ≤ ρ)
+    (v0 : Fin n → ℝ) (hval : gammaValid fp (n + 2))
+    (hCond : 4 * gamma fp (n + 2) * (infNorm X * infNorm X_inv) *
+      infNorm A < 1 - ρ) :
+    Filter.Tendsto
+      (fun m => infNormVec (fl_matPowVecSeq fp n A v0 m))
+      Filter.atTop (nhds 0) :=
+  higham_18_1_real_diagonalizable_tendsto n hn A X X_inv J hXr hsim hdiag
+    ρ hρ0 hρ1 hlam (fl_matPowVecSeq fp n A v0) (gamma fp (n + 2))
+    (gamma_nonneg fp hval)
+    (computedMatPowVec_fl_matVec_gamma_add_two fp n A v0 hval) hCond
 
 end LeanFpAnalysis.FP

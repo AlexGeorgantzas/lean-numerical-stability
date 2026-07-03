@@ -5566,6 +5566,88 @@ theorem
         fp hadd hmul hdiv hsqrt hn x alpha hx halpha)
       hx
 
+/-- Computed-alpha normalized signed-active certificate from first-leading-block
+nonbreakdown.
+
+This removes the separate nonzero active-column premise in the common stored
+panel situation: a nonzero first leading block determinant already selects the
+nonzero Householder branch.  The certified vector is the betaSpec-normalized
+signed active vector, not the raw unnormalized stored vector. -/
+theorem
+    sourceFaithfulHouseholderNormalization_of_normalized_trailingActiveVector_alpha_eq_fl_householderAlpha_of_first_leadingBlock_det_ne_zero_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) (alpha : Real)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (halpha :
+      alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) :
+    sourceFaithfulHouseholderNormalization fp (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos p) A)
+      (householderNormalizedVector (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+          (panelFirstColumn (Nat.succ_pos p) A) alpha)
+        (householderBetaSpec (m + 1)
+          (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+            (panelFirstColumn (Nat.succ_pos p) A) alpha))) := by
+  have hx : Ne (panelFirstColumn (Nat.succ_pos p) A) 0 :=
+    panelFirstColumn_ne_zero_of_first_leadingBlock_det_ne_zero A hdetLead
+  exact
+    sourceFaithfulHouseholderNormalization_of_normalized_trailingActiveVector_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos p) A) alpha hx halpha
+
+/-- Exact-alpha normalized signed-active certificate from first-leading-block
+nonbreakdown.
+
+This is the exact-alpha sibling of
+`sourceFaithfulHouseholderNormalization_of_normalized_trailingActiveVector_alpha_eq_fl_householderAlpha_of_first_leadingBlock_det_ne_zero_exact_add_mul_div_sqrt`. -/
+theorem
+    sourceFaithfulHouseholderNormalization_of_normalized_trailingActiveVector_alpha_eq_householderAlpha_of_first_leadingBlock_det_ne_zero_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) (alpha : Real)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (halpha :
+      alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) :
+    sourceFaithfulHouseholderNormalization fp (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos p) A)
+      (householderNormalizedVector (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+          (panelFirstColumn (Nat.succ_pos p) A) alpha)
+        (householderBetaSpec (m + 1)
+          (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+            (panelFirstColumn (Nat.succ_pos p) A) alpha))) := by
+  have hx : Ne (panelFirstColumn (Nat.succ_pos p) A) 0 :=
+    panelFirstColumn_ne_zero_of_first_leadingBlock_det_ne_zero A hdetLead
+  exact
+    sourceFaithfulHouseholderNormalization_of_normalized_trailingActiveVector_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos p) A) alpha hx halpha
+
 /-- Under `exactWithUnitRoundoff`, the computed Householder scale is the
 mathematical Householder scale. -/
 theorem fl_householderScale_exactWithUnitRoundoff_eq
