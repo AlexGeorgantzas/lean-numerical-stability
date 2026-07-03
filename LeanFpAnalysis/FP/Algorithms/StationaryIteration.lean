@@ -431,6 +431,30 @@ theorem sourceComputedIteration_finite_sum (n : ℕ)
     (sourceComputedIteration_step_affine n M N M_inv b x_hat ξ hLeft hIter)
     m i
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.21):
+    exact stationary iterates for a consistent singular system satisfy the
+    same finite affine unrolling
+    `x_{m+1} = G^{m+1} x_0 + sum_{k=0}^m G^k M⁻¹ b`.
+
+    The proof uses only the nonsingularity of `M`, not nonsingularity of `A`,
+    which is precisely why the identity remains valid at the start of the
+    singular-system analysis. -/
+theorem singular_stationary_iterate_finite_sum (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b : Fin n → ℝ) (x_seq : ℕ → Fin n → ℝ)
+    (hIter : SourceComputedIteration n M N b x_seq (fun _ _ => 0))
+    (m : ℕ) :
+    ∀ i, x_seq (m + 1) i =
+      matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1)) (x_seq 0) i +
+      ∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n (iterMatrix n M_inv N) k)
+          (matMulVec n M_inv b) i := by
+  intro i
+  have h := sourceComputedIteration_finite_sum n M N M_inv b x_seq
+    (fun _ _ => 0) hS.inv_left hIter m i
+  simpa using h
+
 /-- One-step error: x_i − x̂_{k+1,i} = ∑_j G_{ij}(x_j − x̂_{k,j}) − ∑_j M⁻¹_{ij} ξ_{k,j}. -/
 theorem one_step_error (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ)
     (hS : SplittingSpec n A M N M_inv)
