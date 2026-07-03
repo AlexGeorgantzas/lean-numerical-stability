@@ -6,6 +6,7 @@
 -- analysis) for iterations of the form  Mx_{k+1} = Nx_k + b  where A = M − N.
 
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Finset.Max
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
@@ -905,6 +906,36 @@ noncomputable def finiteResidualSigma (n : ℕ)
     (H : Fin n → Fin n → ℝ) (m : ℕ) : ℝ :=
   infNorm (finiteResidualSigmaMatrix n H m)
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20):
+    finite maximum `max_i |1 - lambda_i| / (1 - |lambda_i|)` appearing in the
+    diagonalizable bound for the source residual sigma. -/
+noncomputable def diagonalResidualRatioMax (n : ℕ)
+    (J : Fin n → Fin n → ℝ) (hn : 0 < n) : ℝ :=
+  Finset.sup' (Finset.univ : Finset (Fin n))
+    (by exact ⟨⟨0, hn⟩, Finset.mem_univ _⟩)
+    (fun i => |1 - J i i| / (1 - |J i i|))
+
+/-- Each eigenvalue ratio in Higham (17.20) is bounded by the displayed finite
+    maximum. -/
+theorem diagonalResidualRatio_le_max (n : ℕ)
+    (J : Fin n → Fin n → ℝ) (hn : 0 < n) (i : Fin n) :
+    |1 - J i i| / (1 - |J i i|) ≤ diagonalResidualRatioMax n J hn := by
+  unfold diagonalResidualRatioMax
+  exact Finset.le_sup' (fun i => |1 - J i i| / (1 - |J i i|)) (Finset.mem_univ i)
+
+/-- The finite maximum in Higham (17.20) is nonnegative when all diagonal
+    eigenvalue moduli are strictly below one. -/
+theorem diagonalResidualRatioMax_nonneg (n : ℕ)
+    (J : Fin n → Fin n → ℝ) (hn : 0 < n)
+    (hLam : ∀ i : Fin n, |J i i| < 1) :
+    0 ≤ diagonalResidualRatioMax n J hn := by
+  let i0 : Fin n := ⟨0, hn⟩
+  have hden : 0 ≤ 1 - |J i0 i0| := by
+    linarith [hLam i0]
+  have hratio : 0 ≤ |1 - J i0 i0| / (1 - |J i0 i0|) :=
+    div_nonneg (abs_nonneg _) hden
+  exact hratio.trans (diagonalResidualRatio_le_max n J hn i0)
+
 private theorem residual_geometric_partial_le_ratio (lam : ℝ)
     (hLam : |lam| < 1) (m : ℕ) :
     ∑ k ∈ Finset.range (m + 1), |lam| ^ k * |1 - lam| ≤
@@ -1084,6 +1115,24 @@ theorem finiteResidualSigma_le_diagonalizable_bound (n : ℕ) (_hn : 0 < n)
       _ = (infNorm X * infNorm X_inv) * sigmaDiag := by
               ring
   · exact mul_nonneg (mul_nonneg (infNorm_nonneg X) (infNorm_nonneg X_inv)) hsigma
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20), finite
+    maximum form: if `H = X J X^{-1}` with diagonal `J` and `|lambda_i| < 1`,
+    then every finite source-sigma partial norm is bounded by
+    `kappa_infty(X)` times the displayed maximum eigenvalue ratio. -/
+theorem finiteResidualSigma_le_diagonalizable_max_bound (n : ℕ) (hn : 0 < n)
+    (H X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
+    (hsim : matMul n X_inv (matMul n H X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (hLam : ∀ i : Fin n, |J i i| < 1)
+    (m : ℕ) :
+    finiteResidualSigma n H m ≤
+      (infNorm X * infNorm X_inv) * diagonalResidualRatioMax n J hn := by
+  exact finiteResidualSigma_le_diagonalizable_bound n hn H X X_inv J
+    hXr hXl hsim hdiag (diagonalResidualRatioMax n J hn)
+    (diagonalResidualRatioMax_nonneg n J hn hLam) hLam
+    (diagonalResidualRatio_le_max n J hn) m
 
 -- ============================================================
 -- §17.3  Residual recurrence: r_{k+1} = Hr_k − (I−H)ξ_k
