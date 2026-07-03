@@ -143,6 +143,41 @@ theorem sylvester_vec_system_iff_solution (m n : Nat)
     ext p
     exact h p.2 p.1
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    if `A` and `B` are diagonal in the chosen bases, the vec/Kronecker
+    Sylvester coefficient is diagonal with entries `a_i - b_j`.
+    This is the algebraic finite-index core of the general eigenvalue
+    difference formula. -/
+theorem sylvesterVecCoeff_diagonal (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b) =
+      Matrix.diagonal (fun p : Prod (Fin n) (Fin m) => a p.2 - b p.1) := by
+  ext p q
+  by_cases h1 : p.1 = q.1
+  case pos =>
+    by_cases h2 : p.2 = q.2
+    case pos =>
+      cases p
+      cases q
+      simp_all [sylvesterVecCoeff, Matrix.kronecker, Matrix.diagonal]
+    case neg =>
+      have hpq : Not (p = q) := by
+        intro hpq
+        exact h2 (congrArg Prod.snd hpq)
+      simp [sylvesterVecCoeff, Matrix.kronecker, Matrix.diagonal, h1, h2, hpq]
+  case neg =>
+    have h1' : Not (q.1 = p.1) := by
+      intro h
+      exact h1 h.symm
+    have hpq : Not (p = q) := by
+      intro hpq
+      exact h1 (congrArg Prod.fst hpq)
+    by_cases h2 : p.2 = q.2
+    case pos =>
+      simp [sylvesterVecCoeff, Matrix.kronecker, Matrix.diagonal, h1, h1', h2, hpq]
+    case neg =>
+      simp [sylvesterVecCoeff, Matrix.kronecker, Matrix.diagonal, h1, h1', h2, hpq]
+
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
 -- ============================================================
