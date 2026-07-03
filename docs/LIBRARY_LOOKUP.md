@@ -3099,6 +3099,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_product_lt_one_residual`
 - `higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_exact_opNorm2_one_residual`
 - `higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_exact_opNorm2_one_residual`
+- `higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_one_residual_of_factor_triangularity`
+- `higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_one_residual_of_factor_triangularity`
+- `higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_product_lt_one_residual_of_factor_triangularity`
+- `higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_product_lt_one_residual_of_factor_triangularity`
+- `higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_exact_opNorm2_one_residual_of_factor_triangularity`
+- `higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_exact_opNorm2_one_residual_of_factor_triangularity`
 - `higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_matrix_inverse_identities`
 - `higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_matrix_inverse_identities_no_smallness`
 - `higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_matrix_inverse_identities_product_lt`
@@ -3107,6 +3113,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_no_smallness`
 - `higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_product_lt`
 - `higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_exact_opNorm2`
+- `higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_factor_triangularity`
+- `higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_no_smallness_of_factor_triangularity`
+- `higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_product_lt_of_factor_triangularity`
+- `higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_exact_opNorm2_of_factor_triangularity`
 - `higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_product_lt`
 - `higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_exact_opNorm2`
 - `higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_product_lt`
@@ -4007,6 +4017,7 @@ Source-facing Chapter 10 wrappers:
 - `fl_cholesky_pivots_pos_sharp_certified` (Th10.7 SHARP FINAL FORM: all pivots positive at lam > eps + 2 gamma_{n+1} from run-level certificates only) / `gram_sum_stage_trunc`
 - `higham10_18_matrix` / `higham10_18_isPosSemiDef` / `higham10_18_w_arbitrarily_large` ((10.18) example: PSD [[aI,I],[I,a^-1 I]], W = a^-1 I unbounded)
 - `opNorm2Le_add` / `higham10_25_componentwise_to_normwise` / `higham10_25_absorption` ((10.25): componentwise (10.24) -> normwise cert via Lemma 6.6, then gamma/(1-r gamma) absorption)
+- `quadForm_cert_of_entrywise` ((10.21) engine: entrywise c -> quadForm cert c*m, ones-vector Cauchy-Schwarz)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)
