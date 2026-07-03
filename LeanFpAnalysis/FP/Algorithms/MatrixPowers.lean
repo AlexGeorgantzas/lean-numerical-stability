@@ -601,4 +601,169 @@ theorem higham_knight_18_2_diagonalizable (n : ℕ) (hn : 0 < n)
     higham_knight_18_1 n hn A X X_inv hJ v c hc hComp hCond1
   exact computedMatPow_tendsto_zero_of_geometric n v C q hq0 hq1 hbound
 
+-- ============================================================
+-- §18.2  Discharging `similarity_absorbs`: real-diagonalizable case (t = 1)
+-- ============================================================
+
+/-- Triangle inequality for the matrix ∞-norm (entrywise sum). -/
+theorem infNorm_add_le {n : ℕ} (M N : Fin n → Fin n → ℝ) :
+    infNorm (fun i j => M i j + N i j) ≤ infNorm M + infNorm N := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc ∑ j : Fin n, |M i j + N i j|
+        ≤ ∑ j : Fin n, (|M i j| + |N i j|) :=
+          Finset.sum_le_sum (fun j _ => abs_add_le _ _)
+      _ = (∑ j : Fin n, |M i j|) + ∑ j : Fin n, |N i j| :=
+          Finset.sum_add_distrib
+      _ ≤ infNorm M + infNorm N :=
+          add_le_add (row_sum_le_infNorm M i) (row_sum_le_infNorm N i)
+  · exact add_nonneg (infNorm_nonneg M) (infNorm_nonneg N)
+
+/-- Componentwise domination `|ΔA| ≤ η|A|` transfers to the matrix ∞-norm:
+    `‖ΔA‖∞ ≤ η‖A‖∞`. -/
+theorem infNorm_le_mul_of_abs_le_mul_abs {n : ℕ}
+    (ΔA A : Fin n → Fin n → ℝ) {η : ℝ} (hη : 0 ≤ η)
+    (hΔ : ∀ i j, |ΔA i j| ≤ η * |A i j|) :
+    infNorm ΔA ≤ η * infNorm A := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc ∑ j : Fin n, |ΔA i j|
+        ≤ ∑ j : Fin n, η * |A i j| :=
+          Finset.sum_le_sum (fun j _ => hΔ i j)
+      _ = η * ∑ j : Fin n, |A i j| := (Finset.mul_sum ..).symm
+      _ ≤ η * infNorm A :=
+          mul_le_mul_of_nonneg_left (row_sum_le_infNorm A i) hη
+  · exact mul_nonneg hη (infNorm_nonneg A)
+
+/-- A diagonal matrix with entries of modulus at most `ρ ≥ 0` has
+    ∞-norm at most `ρ`. -/
+theorem infNorm_diagonal_le {n : ℕ} (J : Fin n → Fin n → ℝ) {ρ : ℝ}
+    (hρ0 : 0 ≤ ρ) (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (hlam : ∀ i, |J i i| ≤ ρ) : infNorm J ≤ ρ := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    have hsingle : ∑ j : Fin n, |J i j| = |J i i| := by
+      refine Finset.sum_eq_single i (fun b _ hb => ?_) (fun h => ?_)
+      · rw [hdiag i b (Ne.symm hb)]; exact abs_zero
+      · exact absurd (Finset.mem_univ i) h
+    rw [hsingle]; exact hlam i
+  · exact hρ0
+
+/-- **Discharged `t = 1` construction (real-diagonalizable case).**
+
+    If `A` is explicitly diagonalized over ℝ — `X⁻¹AX = J` with `J` diagonal
+    and `|J i i| ≤ ρ < 1` — then the perturbation-absorbing similarity of
+    Theorem 18.1's proof exists with `S = X` and NO scaling construction:
+    for `|ΔA| ≤ η|A|`,
+      `‖X⁻¹(A+ΔA)X‖∞ ≤ ‖J‖∞ + κ∞(X)·η·‖A‖∞ ≤ ρ + η·κ∞(X)·‖A‖∞ < 1`
+    under the `t = 1` Higham–Knight condition `4·η·κ∞(X)·‖A‖∞ < 1 − ρ`.
+
+    This PROVES `similarity_absorbs` (no assumption) for this class, covering
+    e.g. symmetric matrices and any real matrix with real eigenvalues and a
+    full real eigenbasis.  Here `ρ` is any bound on the eigenvalue moduli
+    (the printed theorem uses `ρ(A)` itself, which is the sharpest choice).
+    The general case (complex spectrum / defective `A`, `t > 1`) still
+    requires the Jordan δ-scaling over ℂ and remains an open obligation. -/
+def JordanFormSpec.ofRealDiagonal (n : ℕ) (hn : 0 < n)
+    (A X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv)
+    (hsim : matMul n X_inv (matMul n A X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (ρ : ℝ) (hρ0 : 0 ≤ ρ) (hρ1 : ρ < 1)
+    (hlam : ∀ i, |J i i| ≤ ρ) :
+    JordanFormSpec n hn A X X_inv where
+  inv_right := hXr
+  spectral_radius := ρ
+  hr_nonneg := hρ0
+  hr_lt_one := hρ1
+  max_block_size := 1
+  ht_pos := one_pos
+  similarity_absorbs := by
+    intro η hη hcond
+    -- The t = 1 condition: 4·η·κ∞(X)·‖A‖∞ < 1 − ρ.
+    have hcond' : 4 * (η * (infNorm X * infNorm X_inv) * infNorm A) < 1 - ρ := by
+      have := hcond
+      simpa [mul_assoc, Nat.cast_one] using this
+    set K : ℝ := η * (infNorm X * infNorm X_inv) * infNorm A with hK
+    have hK0 : 0 ≤ K := by
+      apply mul_nonneg (mul_nonneg hη _) (infNorm_nonneg A)
+      exact mul_nonneg (infNorm_nonneg X) (infNorm_nonneg X_inv)
+    have hKlt : K < 1 - ρ := by linarith
+    refine ⟨X, X_inv, ρ + K, hXr, by linarith, by linarith, ?_⟩
+    intro ΔA hΔ
+    -- X⁻¹(A+ΔA)X = J + X⁻¹ΔA X, entrywise.
+    have hsplit : matMul n X_inv (matMul n (fun i j => A i j + ΔA i j) X) =
+        fun i j => J i j + matMul n X_inv (matMul n ΔA X) i j := by
+      rw [matMul_add_left n A ΔA X, matMul_add_right n X_inv
+        (matMul n A X) (matMul n ΔA X), hsim]
+    rw [hsplit]
+    -- ‖X⁻¹ΔA X‖∞ ≤ κ∞(X)·η·‖A‖∞
+    have hΔnorm : infNorm ΔA ≤ η * infNorm A :=
+      infNorm_le_mul_of_abs_le_mul_abs ΔA A hη hΔ
+    have h1 : infNorm (matMul n ΔA X) ≤ infNorm ΔA * infNorm X :=
+      infNorm_matMul_le hn ΔA X
+    have h2 : infNorm (matMul n X_inv (matMul n ΔA X)) ≤
+        infNorm X_inv * (infNorm ΔA * infNorm X) :=
+      (infNorm_matMul_le hn X_inv (matMul n ΔA X)).trans
+        (mul_le_mul_of_nonneg_left h1 (infNorm_nonneg X_inv))
+    have h3 : infNorm X_inv * (infNorm ΔA * infNorm X) ≤
+        infNorm X_inv * ((η * infNorm A) * infNorm X) :=
+      mul_le_mul_of_nonneg_left
+        (mul_le_mul_of_nonneg_right hΔnorm (infNorm_nonneg X))
+        (infNorm_nonneg X_inv)
+    have hEq : infNorm X_inv * ((η * infNorm A) * infNorm X) = K := by
+      rw [hK]; ring
+    calc infNorm (fun i j => J i j + matMul n X_inv (matMul n ΔA X) i j)
+        ≤ infNorm J + infNorm (matMul n X_inv (matMul n ΔA X)) :=
+          infNorm_add_le J _
+      _ ≤ ρ + K := by
+          have hJn : infNorm J ≤ ρ := infNorm_diagonal_le J hρ0 hdiag hlam
+          have := h2.trans h3
+          rw [hEq] at this
+          linarith
+
+/-- **Axiom-free real-diagonalizable case of Theorem 18.1** (limit form,
+    abstract error model): if `X⁻¹AX = J` is diagonal with `|J i i| ≤ ρ < 1`
+    and the `t = 1` Higham–Knight condition `4·c·κ∞(X)·‖A‖∞ < 1 − ρ` holds,
+    then any computed-power sequence with per-step budget `c` satisfies
+    `‖v_m‖∞ → 0`.  No `similarity_absorbs` assumption: the construction is
+    discharged by `JordanFormSpec.ofRealDiagonal`. -/
+theorem higham_18_1_real_diagonalizable_tendsto (n : ℕ) (hn : 0 < n)
+    (A X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv)
+    (hsim : matMul n X_inv (matMul n A X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (ρ : ℝ) (hρ0 : 0 ≤ ρ) (hρ1 : ρ < 1) (hlam : ∀ i, |J i i| ≤ ρ)
+    (v : ℕ → (Fin n → ℝ)) (c : ℝ) (hc : 0 ≤ c)
+    (hComp : ComputedMatPowVec n A v c)
+    (hCond : 4 * c * (infNorm X * infNorm X_inv) * infNorm A < 1 - ρ) :
+    Filter.Tendsto (fun m => infNormVec (v m)) Filter.atTop (nhds 0) :=
+  higham_knight_18_2_diagonalizable n hn A X X_inv
+    (JordanFormSpec.ofRealDiagonal n hn A X X_inv J hXr hsim hdiag ρ hρ0 hρ1 hlam)
+    rfl v c hc hComp hCond
+
+/-- **Axiom-free real-diagonalizable case of Theorem 18.1 for the actual
+    floating-point iteration**: with `X⁻¹AX = J` diagonal, `|J i i| ≤ ρ < 1`,
+    and `4·γ_{n+2}·κ∞(X)·‖A‖∞ < 1 − ρ`, the computed vectors
+    `fl(Aᵐ v₀)` (repeated `fl_matVec`) satisfy `‖fl(Aᵐ v₀)‖∞ → 0`.
+    Fully end-to-end: concrete algorithm, concrete rounding model,
+    no assumed construction. -/
+theorem higham_18_1_real_diagonalizable_fl_tendsto (fp : FPModel)
+    (n : ℕ) (hn : 0 < n)
+    (A X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv)
+    (hsim : matMul n X_inv (matMul n A X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (ρ : ℝ) (hρ0 : 0 ≤ ρ) (hρ1 : ρ < 1) (hlam : ∀ i, |J i i| ≤ ρ)
+    (v0 : Fin n → ℝ) (hval : gammaValid fp (n + 2))
+    (hCond : 4 * gamma fp (n + 2) * (infNorm X * infNorm X_inv) *
+      infNorm A < 1 - ρ) :
+    Filter.Tendsto
+      (fun m => infNormVec (fl_matPowVecSeq fp n A v0 m))
+      Filter.atTop (nhds 0) :=
+  higham_18_1_real_diagonalizable_tendsto n hn A X X_inv J hXr hsim hdiag
+    ρ hρ0 hρ1 hlam (fl_matPowVecSeq fp n A v0) (gamma fp (n + 2))
+    (gamma_nonneg fp hval)
+    (computedMatPowVec_fl_matVec_gamma_add_two fp n A v0 hval) hCond
+
 end LeanFpAnalysis.FP
