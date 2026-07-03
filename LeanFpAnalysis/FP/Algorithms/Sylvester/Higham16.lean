@@ -206,6 +206,116 @@ theorem sylvesterVecCoeff_diagonal_det_ne_zero_iff (m n : Nat)
       exact h p.2 p.1)
 
 -- ============================================================
+-- Exact Schur-coordinate algebra from Chapter 16.1
+-- ============================================================
+
+private theorem rectMatMul_left_right_sub {m n p q : Nat}
+    (A : Fin m -> Fin n -> Real) (B C : Fin n -> Fin p -> Real)
+    (D : Fin p -> Fin q -> Real) :
+    rectMatMul A (rectMatMul (fun i j => B i j - C i j) D) =
+      fun i j => rectMatMul A (rectMatMul B D) i j -
+        rectMatMul A (rectMatMul C D) i j := by
+  ext i j
+  unfold rectMatMul
+  rw [(Finset.sum_sub_distrib (s := Finset.univ)
+    (f := fun k : Fin n => A i k * Finset.sum Finset.univ (fun k1 : Fin p =>
+      B k k1 * D k1 j))
+    (g := fun k : Fin n => A i k * Finset.sum Finset.univ (fun k1 : Fin p =>
+      C k k1 * D k1 j))).symm]
+  apply Finset.sum_congr rfl
+  intro k _
+  rw [(mul_sub (A i k)
+    (Finset.sum Finset.univ (fun k1 : Fin p => B k k1 * D k1 j))
+    (Finset.sum Finset.univ (fun k1 : Fin p => C k k1 * D k1 j))).symm]
+  apply congrArg (fun z => A i k * z)
+  rw [(Finset.sum_sub_distrib (s := Finset.univ)
+    (f := fun k1 : Fin p => B k k1 * D k1 j)
+    (g := fun k1 : Fin p => C k k1 * D k1 j)).symm]
+  apply Finset.sum_congr rfl
+  intro k1 _
+  ring
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5):
+    exact Sylvester-operator algebra in supplied Schur coordinates.  If
+    `A = U R U^T`, `B = V S V^T`, and `U,V` are orthogonal, then
+    substituting `X = U Y V^T` transforms `AX - XB` into
+    `U (RY - YS) V^T`.  This conditional wrapper does not assert existence
+    of Schur decompositions or any triangular/quasi-triangular structure. -/
+theorem sylvester_schur_transform_identity (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n) (Y : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V))) :
+    sylvesterOpRect m n A B (rectMatMul U (rectMatMul Y (matTranspose V))) =
+      rectMatMul U (rectMatMul (sylvesterOpRect m n R S Y) (matTranspose V)) := by
+  subst A
+  subst B
+  have hUtU : rectMatMul (matTranspose U) U = idMatrix m := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hU.left_inv i j
+  have hVtV : rectMatMul (matTranspose V) V = idMatrix n := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hV.left_inv i j
+  have hleft :
+      rectMatMul (rectMatMul U (rectMatMul R (matTranspose U)))
+          (rectMatMul U (rectMatMul Y (matTranspose V))) =
+        rectMatMul U (rectMatMul (rectMatMul R Y) (matTranspose V)) := by
+    calc
+      rectMatMul (rectMatMul U (rectMatMul R (matTranspose U)))
+          (rectMatMul U (rectMatMul Y (matTranspose V)))
+          = rectMatMul U (rectMatMul (rectMatMul R (matTranspose U))
+              (rectMatMul U (rectMatMul Y (matTranspose V)))) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul U (rectMatMul R
+              (rectMatMul (matTranspose U) (rectMatMul U (rectMatMul Y (matTranspose V))))) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul U (rectMatMul R
+              (rectMatMul (rectMatMul (matTranspose U) U) (rectMatMul Y (matTranspose V)))) := by
+              exact congrArg (fun Z => rectMatMul U (rectMatMul R Z))
+                (rectMatMul_assoc (matTranspose U) U (rectMatMul Y (matTranspose V))).symm
+      _ = rectMatMul U (rectMatMul R
+              (rectMatMul (idMatrix m) (rectMatMul Y (matTranspose V)))) := by
+              rw [hUtU]
+      _ = rectMatMul U (rectMatMul R (rectMatMul Y (matTranspose V))) := by
+              rw [rectMatMul_id_left]
+      _ = rectMatMul U (rectMatMul (rectMatMul R Y) (matTranspose V)) := by
+              exact congrArg (rectMatMul U) (rectMatMul_assoc R Y (matTranspose V)).symm
+  have hright :
+      rectMatMul (rectMatMul U (rectMatMul Y (matTranspose V)))
+          (rectMatMul V (rectMatMul S (matTranspose V))) =
+        rectMatMul U (rectMatMul (rectMatMul Y S) (matTranspose V)) := by
+    calc
+      rectMatMul (rectMatMul U (rectMatMul Y (matTranspose V)))
+          (rectMatMul V (rectMatMul S (matTranspose V)))
+          = rectMatMul U (rectMatMul (rectMatMul Y (matTranspose V))
+              (rectMatMul V (rectMatMul S (matTranspose V)))) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul U (rectMatMul Y
+              (rectMatMul (matTranspose V) (rectMatMul V (rectMatMul S (matTranspose V))))) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul U (rectMatMul Y
+              (rectMatMul (rectMatMul (matTranspose V) V) (rectMatMul S (matTranspose V)))) := by
+              exact congrArg (fun Z => rectMatMul U (rectMatMul Y Z))
+                (rectMatMul_assoc (matTranspose V) V (rectMatMul S (matTranspose V))).symm
+      _ = rectMatMul U (rectMatMul Y
+              (rectMatMul (idMatrix n) (rectMatMul S (matTranspose V)))) := by
+              rw [hVtV]
+      _ = rectMatMul U (rectMatMul Y (rectMatMul S (matTranspose V))) := by
+              rw [rectMatMul_id_left]
+      _ = rectMatMul U (rectMatMul (rectMatMul Y S) (matTranspose V)) := by
+              exact congrArg (rectMatMul U) (rectMatMul_assoc Y S (matTranspose V)).symm
+  have hcombine :
+      rectMatMul U (rectMatMul (sylvesterOpRect m n R S Y) (matTranspose V)) =
+        fun i j => rectMatMul U (rectMatMul (rectMatMul R Y) (matTranspose V)) i j -
+          rectMatMul U (rectMatMul (rectMatMul Y S) (matTranspose V)) i j := by
+    simpa [sylvesterOpRect, matMulRect_eq_rectMatMul] using
+      (rectMatMul_left_right_sub U (rectMatMul R Y) (rectMatMul Y S) (matTranspose V))
+  unfold sylvesterOpRect
+  simp only [matMulRect_eq_rectMatMul]
+  rw [hleft, hright]
+  exact hcombine.symm
+
+-- ============================================================
 -- Lyapunov specialization from Chapter 16.3
 -- ============================================================
 
