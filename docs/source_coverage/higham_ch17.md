@@ -9,13 +9,13 @@
 - Mode: core.
 - Parallel split: 3B.
 - Planning documents consulted: `chapter_splitting/HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`, the Split 3B section of `chapter_splitting/split_primary_contracts.md`, and the Chapter 17 rows of `chapter_splitting/chapter_index.md`.
-- Selected-scope gate: FAIL. The existing `StationaryIteration.lean` module proves several nonsingular stationary-iteration algebra, forward-error, Jacobi/SOR, and residual-bound dependencies, including the source-sign computed finite-sum identity for (17.3), the exact fixed-point/finite-sum solution identity for (17.4), the finite-sum error recurrence for (17.5), and the finite-sum residual recurrence for (17.18), and this ledger records the correct 2nd-edition Chapter 17 numbering. The full selected core pass remains open for infinite-sum statements, gamma/theta supremum definitions, residual sigma/diagonalizable bounds, singular-system Drazin/semiconvergence analysis, and stopping-test equivalences imported from Chapter 7.
+- Selected-scope gate: FAIL. The existing `StationaryIteration.lean` module proves several nonsingular stationary-iteration algebra, forward-error, Jacobi/SOR, and residual-bound dependencies, including the source-sign computed finite-sum identity for (17.3), the exact fixed-point/finite-sum solution identity for (17.4), the finite-sum error recurrence for (17.5), the finite-sum residual recurrence for (17.18), and a finite sigma-form residual bound for (17.19), and this ledger records the correct 2nd-edition Chapter 17 numbering. The full selected core pass remains open for infinite-sum statements, gamma/theta supremum definitions, diagonalizable sigma bounds, singular-system Drazin/semiconvergence analysis, and stopping-test equivalences imported from Chapter 7.
 
 ## Progress Snapshot
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| ch17 | core | 100 | 79 | 65 | 57 | 81 | 59 | 19+ | Infinite-sum bounds, residual sigma/diagonalizable forms, and singular-system foundations are not yet formalized; current proofs cover nonsingular computed/exact/error/residual finite-sum algebra, finite/q-bound dependencies, and source-label repair | medium-low |
+| ch17 | core | 100 | 80 | 66 | 58 | 82 | 60 | 18+ | Infinite-sum bounds, diagonalizable residual sigma forms, and singular-system foundations are not yet formalized; current proofs cover nonsingular computed/exact/error/residual finite-sum algebra, finite sigma/q-bound residuals, finite/q-bound forward dependencies, and source-label repair | medium-low |
 
 ## Completed Selected Targets
 
@@ -36,7 +36,7 @@
 | (17.16), Jacobi specialization | `jacobi_splitting_abs` | `StationaryIteration.lean` | Theorem | Proves the absolute splitting identity for Jacobi's method. |
 | (17.17), SOR specialization | `sor_splitting_bound` | `StationaryIteration.lean` | Theorem | Proves the source SOR componentwise splitting factor under the explicit diagonal/lower/upper decomposition hypotheses. |
 | (17.18), residual recurrence | `AG_eq_HA`, `A_matPow_G_eq_matPow_H_A`, `A_matMul_Minv_eq_sub`, `one_step_residual`, `residual_finite_sum` | `StationaryIteration.lean` | Theorems | Proves the algebra behind the residual recurrence, the one-step residual form, and the finite-sum residual recurrence `r_{m+1} = H^(m+1) r_0 - sum H^k (I-H) xi_{m-k}`. |
-| (17.19), q-bound corollary | `sigma_bound`, `normwise_one_step_residual_bound`, `normwise_residual_bound` | `StationaryIteration.lean` | Theorems | Proves a geometric q-bound on the sigma sum and the corresponding normwise residual bound. |
+| (17.19), sigma/q-bound residual corollaries | `normwise_residual_sigma_finite_bound`, `sigma_bound`, `normwise_one_step_residual_bound`, `normwise_residual_bound` | `StationaryIteration.lean` | Theorems | Proves the finite sigma-form normwise residual bound from `residual_finite_sum`, plus a geometric q-bound on the sigma sum and the corresponding q-style normwise residual bound. |
 
 ## Source Inventory
 
@@ -62,7 +62,7 @@
 | H17.Eq17_16.jacobi_bound | p.328, (17.16) | inequality/corollary | Jacobi specialization of the main componentwise forward-error bound. | precise | Jacobi method | follows from (17.15) | H17.Eq17_15, Jacobi splitting | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Partial dependency `jacobi_splitting_abs`; full bound open. |
 | H17.Eq17_17.sor_splitting_factor | p.329, (17.17) | inequality | SOR componentwise splitting factor `(1 + |1 - omega|) / omega`. | precise | SOR method | algebra | diagonal/lower/upper split | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `sor_splitting_bound`; downstream SOR forward bound open. |
 | H17.Eq17_18.residual_recurrence | p.330, (17.18) | recurrence | Residual recurrence using `H = NM^{-1}` and `(I-H)xi`. | precise | nonsingular square | algebra | `AG = HA`, `AM^{-1} = I-H` | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `residual_finite_sum`, supported by `AG_eq_HA`, `A_matPow_G_eq_matPow_H_A`, `A_matMul_Minv_eq_sub`, and `one_step_residual`; finite-sum recurrence closed. |
-| H17.Eq17_19.normwise_residual_bound | p.330, (17.19) | inequality | Normwise residual bound using sigma. | precise | nonsingular square | norm bound | H17.Eq17_18 | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Partial q-bound theorem `normwise_residual_bound`; literal sigma-form open. |
+| H17.Eq17_19.normwise_residual_bound | p.330, (17.19) | inequality | Normwise residual bound using sigma. | precise | nonsingular square | norm bound | H17.Eq17_18 | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `normwise_residual_sigma_finite_bound` proves the finite sigma-form bound; `sigma_bound` and `normwise_residual_bound` provide q-style corollaries. |
 | H17.Eq17_20.diagonalizable_sigma_bound | p.330, (17.20) | inequality | Diagonalizable `H` sigma bound with eigenvector conditioning and eigenvalues. | precise | diagonalizable | sketch | eigendecomposition/spectrum | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open. |
 | H17.Eq17_21.singular_exact_iterate | p.332, (17.21) | recurrence | Exact stationary iterate recurrence for singular consistent systems. | precise | singular square | algebra | splitting setup | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open. |
 | H17.Eq17_22.semiconvergent_form | p.332, (17.22) | decomposition | Semiconvergent `G` block form. | precise | singular square | cited lemma | Jordan/decomposition theory | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open; missing semiconvergence/Jordan foundation. |
@@ -108,6 +108,7 @@
 | `sourceComputedIteration_finite_sum` | Closes the computed finite-sum identity in (17.3) from the source-sign iteration model. | Future finite-sum error recurrence (17.5). | implemented |
 | `sourceComputedIteration_error_finite_sum` | Closes the finite-sum error recurrence in (17.5) by unrolling `one_step_error_source`. | Componentwise finite-sum bounds and future infinite-sum forward-error wrappers. | implemented |
 | `residual_finite_sum` | Closes the finite-sum residual recurrence in (17.18) by unrolling `one_step_residual`. | Sigma-form residual bound (17.19) and diagonalizable sigma bound (17.20). | implemented |
+| `normwise_residual_sigma_finite_bound` | Converts the closed residual recurrence into the finite sigma-form normwise residual estimate. | Diagonalizable sigma bound (17.20) and future named sigma wrappers. | implemented |
 
 ## Open Selected-Scope Items
 
@@ -115,7 +116,7 @@
 |---|---|---|---|---|
 | (17.7), (17.9) | Supremum iterate-growth constants `gamma_x` and `theta_x`. | represented only by explicit hypotheses | bounded/supremum API and zero-component policy | Define finite-prefix or extended-real supremum surfaces, or keep theorem statements hypothesis-based. |
 | (17.8), (17.11)-(17.13), (17.15)-(17.16) | Literal infinite-sum normwise/componentwise forward bounds and corollaries. | q-bound/certificate finite forms proved | convergence of matrix-power absolute/norm series; literal `c(A)` minimum/infimum | Add infinite-series/c(A) surface or prove selected finite-horizon equivalents clearly. |
-| (17.19)-(17.20) | Sigma-form residual bound and diagonalizable sigma bound. | finite-sum residual recurrence and q-bound residual theorem proved | literal sigma surface and diagonalizable/eigenvalue API | Prove a sigma finite-sum wrapper from `residual_finite_sum`, then isolate the diagonalizable sigma bound. |
+| (17.20) | Diagonalizable sigma bound. | finite-sum residual recurrence, finite sigma-form bound, and q-bound residual theorem proved | diagonalizable/eigenvalue API | Isolate the diagonalizable sigma bound on top of `normwise_residual_sigma_finite_bound`. |
 | (17.21)-(17.32) | Singular-system semiconvergence, Drazin inverse, and range/null forward-error bounds. | unstarted | Drazin inverse, semiconvergent matrix powers, index-one decomposition | Create a foundation feasibility table before proof work; likely depends on Ch18/Jordan infrastructure. |
 | (17.33a)-(17.33c) | Stopping-test equivalences. | unstarted in Ch17 | reusable Chapter 7 normwise backward-error theorem exposed in compatible norm API | Add thin wrappers over existing Ch7 theorem if available; otherwise keep open. |
 
@@ -135,7 +136,8 @@
 - `stationary_solution_finite_sum` is exact algebra: its final theorem assumptions are the splitting certificate and `Ax=b`; it does not assume convergence, a floating-point model, or the target finite-sum conclusion.
 - `sourceComputedIteration_error_finite_sum` is exact algebra from `one_step_error_source`; it assumes the source-sign iteration model, splitting certificate, and exact solution equation, but does not assume convergence, an infinite series, or any forward-error bound.
 - `residual_finite_sum` is exact algebra from `one_step_residual`; it assumes the splitting certificate, exact solution equation, and legacy computed-iteration sign convention, but does not assume convergence, a local-error bound, or any residual norm estimate.
-- Current q-bound forward/residual theorems are stronger-assumption corollaries of the source's infinite-sum style, not closures of the literal (17.8), (17.11), or (17.19) statements.
+- `normwise_residual_sigma_finite_bound` is a finite sigma-form normwise wrapper over `residual_finite_sum`; it does not introduce a named scalar sigma definition or a diagonalizable eigenvalue estimate.
+- Current q-bound forward/residual theorems are stronger-assumption corollaries of the source's infinite-sum style, not closures of the literal (17.8) or (17.11) statements.
 - `PartialSumBound` is a finite/certificate surface; it does not prove existence of the literal minimum in (17.12).
 - Singular-system claims are all open until a Drazin/semiconvergence foundation is designed and verified.
 
@@ -169,6 +171,11 @@
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding `residual_finite_sum`.
 - `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `residual_finite_sum`, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `residual_finite_sum`: only `propext`, `Classical.choice`, and `Quot.sound`.
+- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `normwise_residual_sigma_finite_bound`.
+- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding `normwise_residual_sigma_finite_bound` and again after the latest `origin/main` merge.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding `normwise_residual_sigma_finite_bound`.
+- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `normwise_residual_sigma_finite_bound`, with only the usual CRLF normalization warning before the commit.
+- `#print axioms` for `normwise_residual_sigma_finite_bound`: only `propext`, `Classical.choice`, and `Quot.sound`.
 - Final merge validation for the same milestone: `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration LeanFpAnalysis.FP.Algorithms.HighamChapter9 LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve` passed at synchronized commit `32fb112b`; `lake env lean examples/LibraryLookup.lean` also passed.
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean LeanFpAnalysis/FP/Algorithms/LeastSquares/LSPerturbation.lean LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean examples/LibraryLookup.lean`: one inspected false-positive prose occurrence of `admit` in an incoming least-squares docstring; no unfinished proof or unsafe placeholder found.
 - `git diff --check` over the final merge range passed for the incoming Chapter 9, least-squares, lookup, and Chapter 20 documentation files.
@@ -176,5 +183,5 @@
 ## Git and Local-Only Notes
 
 - `chapter_splitting/` and `References/` are local-only context and must not be staged or pushed.
-- Latest synchronized Chapter 17 proof milestone: `residual_finite_sum`, pushed to both `origin/main` and `origin/codex/split3b-ch19-main-sync`.
+- Latest synchronized Chapter 17 proof milestone: `normwise_residual_sigma_finite_bound`, pushed to both `origin/main` and `origin/codex/split3b-ch19-main-sync`.
 - Remaining local untracked file at this point: `.codex/config.toml`.
