@@ -2239,6 +2239,213 @@ theorem wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_projecto
       (hr_budget := hr_budget)
       (hvec := hvec)
 
+/-- Higham, 2nd ed., Chapter 20, proof of Theorem 20.1:
+    the exact least-squares residual orthogonality and residual definition
+    identify the solution as `Aplus*b`. -/
+theorem wedinTheorem20_1_solution_eq_Aplus_b_of_residual_definition
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ)
+    (Aplus : Fin (k + 1) → Fin m → ℝ)
+    (b r : Fin m → ℝ) (x : Fin (k + 1) → ℝ)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hr : r = fun i => b i - rectMatMulVec A x i) :
+    x = rectMatMulVec Aplus b := by
+  have hAplusPA : rectMatMul Aplus (rectMatMul A Aplus) = Aplus := by
+    calc
+      rectMatMul Aplus (rectMatMul A Aplus)
+          = rectMatMul (rectMatMul Aplus A) Aplus := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul (idMatrix (k + 1)) Aplus := by
+              rw [hleftA]
+      _ = Aplus := rectMatMul_id_left Aplus
+  have hAplus_r : rectMatMulVec Aplus r = 0 := by
+    calc
+      rectMatMulVec Aplus r
+          = rectMatMulVec (rectMatMul Aplus (rectMatMul A Aplus)) r := by
+              rw [hAplusPA]
+      _ = rectMatMulVec Aplus (rectMatMulVec (rectMatMul A Aplus) r) := by
+              rw [rectMatMulVec_rectMatMul]
+      _ = 0 := by
+              rw [hrangeA_residual]
+              ext j
+              simp [rectMatMulVec]
+  have hb_decomp : b = fun i => rectMatMulVec A x i + r i := by
+    ext i
+    have hri : r i = b i - rectMatMulVec A x i := by
+      simpa using congrFun hr i
+    linarith
+  symm
+  calc
+    rectMatMulVec Aplus b
+        = rectMatMulVec Aplus
+            (fun i => rectMatMulVec A x i + r i) := by
+            rw [hb_decomp]
+    _ = fun j =>
+          rectMatMulVec Aplus (rectMatMulVec A x) j +
+            rectMatMulVec Aplus r j := by
+            rw [rectMatMulVec_add]
+    _ = rectMatMulVec Aplus (rectMatMulVec A x) := by
+            rw [hAplus_r]
+            ext j
+            simp
+    _ = rectMatMulVec (rectMatMul Aplus A) x := by
+            rw [rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec (idMatrix (k + 1)) x := by
+            rw [hleftA]
+    _ = x := rectMatMulVec_idMatrix x
+
+/-- Higham, 2nd ed., Chapter 20, proof of Theorem 20.1:
+    exact least-squares residuals are no larger than the right-hand side in
+    Euclidean norm. -/
+theorem wedinTheorem20_1_vecNorm2_residual_le_b_of_residual_definition
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ)
+    (Aplus : Fin (k + 1) → Fin m → ℝ)
+    (b r : Fin m → ℝ) (x : Fin (k + 1) → ℝ)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hr : r = fun i => b i - rectMatMulVec A x i) :
+    vecNorm2 r ≤ vecNorm2 b := by
+  let PA : Fin m → Fin m → ℝ := rectMatMul A Aplus
+  have hb_decomp : b = fun i => rectMatMulVec A x i + r i := by
+    ext i
+    have hri : r i = b i - rectMatMulVec A x i := by
+      simpa using congrFun hr i
+    linarith
+  have hPA_Ax :
+      rectMatMulVec PA (rectMatMulVec A x) = rectMatMulVec A x := by
+    simpa [PA] using
+      rectMatMulVec_rangeProjection_apply_range_of_left_inverse A Aplus
+        hleftA x
+  have hPA_b : rectMatMulVec PA b = rectMatMulVec A x := by
+    calc
+      rectMatMulVec PA b
+          = rectMatMulVec PA
+              (fun i => rectMatMulVec A x i + r i) := by
+              rw [hb_decomp]
+      _ = fun i =>
+            rectMatMulVec PA (rectMatMulVec A x) i +
+              rectMatMulVec PA r i := by
+              rw [rectMatMulVec_add]
+      _ = rectMatMulVec A x := by
+              rw [hPA_Ax, show rectMatMulVec PA r = 0 by
+                simpa [PA] using hrangeA_residual]
+              ext i
+              simp
+  have hresid_eq :
+      (fun i => b i - rectMatMulVec PA b i) = r := by
+    ext i
+    have hri : r i = b i - rectMatMulVec A x i := by
+      simpa using congrFun hr i
+    have hPAi : rectMatMulVec PA b i = rectMatMulVec A x i := by
+      exact congrFun hPA_b i
+    rw [hPAi]
+    exact hri.symm
+  have hzero :
+      (fun i : Fin m => b i - rectMatMulVec A (fun _ : Fin (k + 1) => 0) i) =
+        b := by
+    ext i
+    simp [rectMatMulVec]
+  have hbest :=
+    rectMatMulVec_rangeProjection_residual_norm_le_range_residual_of_symmetric_left_inverse
+      A Aplus hleftA hSymA b (fun _ : Fin (k + 1) => 0)
+  simpa [PA, hresid_eq, hzero] using hbest
+
+/-- Higham, 2nd ed., Chapter 20, proof of Theorem 20.1:
+    the source `||A|| ||x|| <= kappa ||b||` geometry bound follows from
+    `x = Aplus*b` and `kappa = ||Aplus|| ||A||`. -/
+theorem wedinTheorem20_1_A_norm_mul_solution_norm_le_kappa_b_of_residual_definition
+    {m k : ℕ} (A : Fin m → Fin (k + 1) → ℝ)
+    (Aplus : Fin (k + 1) → Fin m → ℝ)
+    (b r : Fin m → ℝ) (x : Fin (k + 1) → ℝ)
+    {Aplus_norm A_norm kappa : ℝ}
+    (hA_norm_nonneg : 0 ≤ A_norm)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hr : r = fun i => b i - rectMatMulVec A x i) :
+    A_norm * vecNorm2 x ≤ kappa * vecNorm2 b := by
+  have hx_eq :
+      x = rectMatMulVec Aplus b :=
+    wedinTheorem20_1_solution_eq_Aplus_b_of_residual_definition
+      A Aplus b r x hleftA hrangeA_residual hr
+  have hx_norm :
+      vecNorm2 x ≤ Aplus_norm * vecNorm2 b := by
+    rw [hx_eq]
+    exact hAplus b
+  calc
+    A_norm * vecNorm2 x
+        ≤ A_norm * (Aplus_norm * vecNorm2 b) :=
+            mul_le_mul_of_nonneg_left hx_norm hA_norm_nonneg
+    _ = kappa * vecNorm2 b := by
+            rw [hkappa]
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2):
+    residual perturbation bound with the standard LS geometry bounds derived
+    from the residual definition and exact-residual projection orthogonality.
+
+The remaining explicit blocker is the source-strength projector estimate
+`||P_B(I-P_A)|| <= ||Delta A|| ||Aplus||`, i.e. the full Lemma 20.12
+equality/min surface. -/
+theorem wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_projector_bound_geometry
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {delta Aplus_norm DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hb_norm_pos : 0 < vecNorm2 b)
+    (hA_norm_nonneg : 0 ≤ A_norm)
+    (heps_nonneg : 0 ≤ eps)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget : Deltab_norm ≤ eps * vecNorm2 b)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hPBIPA :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm))
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i)
+    (hproj_s : rectMatMulVec (rectMatMul B Bplus) s = 0) :
+    vecNorm2 (fun i => r i - s i) / vecNorm2 b ≤
+      wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+  have hAplus_norm_nonneg : 0 ≤ Aplus_norm :=
+    by
+      have hright_nonneg :
+          0 ≤ Aplus_norm * vecNorm2 b :=
+        le_trans (vecNorm2_nonneg (rectMatMulVec Aplus b)) (hAplus b)
+      nlinarith [hb_norm_pos]
+  have hkappa_nonneg : 0 ≤ kappa := by
+    rw [hkappa]
+    exact mul_nonneg hAplus_norm_nonneg hA_norm_nonneg
+  have hx_budget :
+      A_norm * vecNorm2 x ≤ kappa * vecNorm2 b :=
+    wedinTheorem20_1_A_norm_mul_solution_norm_le_kappa_b_of_residual_definition
+      A Aplus b r x hA_norm_nonneg hkappa hAplus hleftA
+      hrangeA_residual hr
+  have hr_budget : vecNorm2 r ≤ vecNorm2 b :=
+    wedinTheorem20_1_vecNorm2_residual_le_b_of_residual_definition
+      A Aplus b r x hleftA hSymA hrangeA_residual hr
+  exact
+    wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_projector_bound
+      A B Aplus Bplus DeltaA b Deltab r s x y hb_norm_pos heps_nonneg
+      hkappa_nonneg hkappa hdelta hDeltaA hDeltab hDeltaA_norm_budget
+      hDeltab_norm_budget hx_budget hr_budget hleftB hSymB
+      hrangeA_residual hPBIPA hB hr hs hproj_s
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
