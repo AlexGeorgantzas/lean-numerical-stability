@@ -3,7 +3,7 @@
 -- SVD-based backward error analysis for the Sylvester equation (Higham §16.2).
 -- Eqs 16.13-16.19: backward error characterization via SVD coordinates,
 -- lower/upper bounds on η(Y), amplification factor μ, and the Lyapunov
--- scalar-coordinate analogue in eq. 16.21.
+-- scalar-coordinate and xi/mu analogues in §16.2.1.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
@@ -504,5 +504,56 @@ theorem lyapunovBackwardScalarEq_iff_diagMatrix_eq (n : ℕ) (lam : Fin n → �
             DC i j) = R_tilde := by
   rw [lyapunovBackwardScalarEq_iff_residual_eq n lam α γ DA DC R_tilde hα hγ]
   rw [lyapunovSpectralBackwardResidual_eq_diagMatrix n DA DC lam]
+
+/-- Higham, 2nd ed., Chapter 16.2.1, unnumbered formula after equation (16.21):
+    Lyapunov-structured squared `xi` functional in spectral coordinates. -/
+noncomputable def lyapunovXiSq (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ) : ℝ :=
+  ∑ i : Fin n, ∑ j : Fin n,
+    ((4 * α ^ 2 * lam j ^ 2 + γ ^ 2) * R_tilde i j ^ 2) /
+      (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2) ^ 2
+
+/-- The simple upper summand appearing after the Lyapunov `xi^2` formula. -/
+noncomputable def lyapunovXiSqSimpleBound (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ) : ℝ :=
+  ∑ i : Fin n, ∑ j : Fin n,
+    (2 * R_tilde i j ^ 2) /
+      (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.2.1, unnumbered inequality after equation
+    (16.21): the exact Lyapunov `xi^2` summand is bounded by the simpler
+    residual-weighted summand when the displayed denominators are positive. -/
+theorem lyapunovXiSq_le_simple_bound (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ)
+    (hpos : ∀ i j : Fin n, 0 < 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2) :
+    lyapunovXiSq n R_tilde lam α γ ≤
+      lyapunovXiSqSimpleBound n R_tilde lam α γ := by
+  unfold lyapunovXiSq lyapunovXiSqSimpleBound
+  apply Finset.sum_le_sum
+  intro i _
+  apply Finset.sum_le_sum
+  intro j _
+  let D : ℝ := 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2
+  have hD : 0 < D := hpos i j
+  have hD2 : 0 < D ^ 2 := sq_pos_of_pos hD
+  have hD_ne : D ≠ 0 := ne_of_gt hD
+  have hkey :
+      (4 * α ^ 2 * lam j ^ 2 + γ ^ 2) * R_tilde i j ^ 2 ≤
+        (2 * R_tilde i j ^ 2) * D := by
+    nlinarith [sq_nonneg (R_tilde i j * α * lam i),
+      sq_nonneg (R_tilde i j * γ)]
+  have hright :
+      (2 * R_tilde i j ^ 2 / D) * D ^ 2 =
+        (2 * R_tilde i j ^ 2) * D := by
+    field_simp [hD_ne]
+  rw [div_le_iff₀ hD2]
+  rw [hright]
+  exact hkey
+
+/-- Higham, 2nd ed., Chapter 16.2.1, final display:
+    Lyapunov analogue of the amplification factor `mu`. -/
+noncomputable def lyapunovAmplificationMu (α γ yNorm lamStar : ℝ) : ℝ :=
+  Real.sqrt 2 * (2 * α * yNorm + γ) /
+    Real.sqrt (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)
 
 end LeanFpAnalysis.FP
