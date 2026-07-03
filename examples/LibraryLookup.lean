@@ -13020,6 +13020,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_LUBackwardError_mono
 #check higham9_LUFactSpec_to_LUBackwardError_gamma
 #check higham9_9_growthFactorEntry_le_two_of_upper_entry_bound_exists_hAmax
+#check higham9_9_colDiagDominant_luFirstStepL_unit_bound_of_tail_unit_bound
 #check higham9_9_luFirstStepU_entry_bound_of_tail_entry_bound
 #check higham9_9_luFirstStepU_growthFactorEntry_le_two_of_tail_entry_bound_exists_hAmax
 #check higham9_9_colDiagDominant_fin_two_exists_LUFactSpec_growthFactorEntry_le_two
@@ -14812,3 +14813,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check cMatPow_similarity
 #check higham_eq_18_4_upper_lp_diagonalizable
 #check higham_eq_18_4_lower_lp_diagonalizable
+#check cShiftVec
+#check complexVecLpNorm_shift_le
+#check complexMatrixLpNormOfReal_bidiagonal_le
+#check higham_eq_18_5_alt_lp_jordan
