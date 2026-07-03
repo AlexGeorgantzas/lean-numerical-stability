@@ -37,13 +37,26 @@ Chapter 16 Sylvester-equation work is tracked in
 [`docs/source_coverage/higham_ch16.md`](docs/source_coverage/higham_ch16.md).
 The current Split 3B surface includes the rectangular Sylvester equation,
 vec/Kronecker wrappers, diagonal-coefficient and supplied-Schur foundations,
-Lyapunov specialization, nonnegative sep-infimum infrastructure, a posteriori
-residual bounds, generalized/Riccati residual predicates, and the SVD-coordinate
+Lyapunov specialization, nonnegative sep-infimum/lower-bound bridge
+infrastructure, a posteriori residual bounds, generalized/Riccati residual
+predicates, and the SVD-coordinate
 backward-error amplification vocabulary. The latter now names Higham's
 Chapter 16.2 amplification factor `sylvesterAmplificationMu`, its square-case
 specialization `sylvesterAmplificationMuSquare`, and the source formula bridge
-`sylvesterAmplificationMu_square_eq`; the full eta amplification theorem and
-several condition/practical-bound rows remain open in the Chapter 16 ledger.
+`sylvesterAmplificationMu_square_eq`, plus the xi-level μ-relative-residual
+bound `xiSq_le_mu_relative_residual_sq`; the full eta amplification theorem
+and several condition/practical-bound rows remain open in the Chapter 16 ledger.
+
+Chapter 17 stationary-iteration work is tracked in
+[`docs/source_coverage/higham_ch17.md`](docs/source_coverage/higham_ch17.md).
+The existing `StationaryIteration.lean` module now carries the correct
+2nd-edition Chapter 17 source labels and exposes a source-sign wrapper
+`SourceComputedIteration` for equation (17.1), plus a bridge
+`computedIteration_of_sourceComputedIteration` and source-sign one-step error
+recurrence `one_step_error_source`. The current proved surface covers
+nonsingular splitting algebra, finite/q-bound forward and residual dependencies,
+and Jacobi/SOR splitting identities; the exact infinite-sum, singular-system,
+and stopping-test rows remain open in the Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
