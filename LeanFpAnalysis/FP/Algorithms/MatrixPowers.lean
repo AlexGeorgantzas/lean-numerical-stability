@@ -17,6 +17,7 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Analysis.SpecificLimits.Basic
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Analysis.Rounding
+import LeanFpAnalysis.FP.Algorithms.MatVec
 namespace LeanFpAnalysis.FP
 
 open scoped BigOperators
@@ -38,6 +39,58 @@ structure ComputedMatPowVec (n : ℕ) (A : Fin n → Fin n → ℝ)
   step : ∀ k, ∃ ΔA : Fin n → Fin n → ℝ,
     (∀ i j, |ΔA i j| ≤ c * |A i j|) ∧
     (∀ i, v (k + 1) i = ∑ j : Fin n, (A i j + ΔA i j) * v k j)
+
+/-- Weakening the per-step perturbation constant: a computed-power sequence
+    with componentwise budget `c` also satisfies any larger budget `c'`. -/
+theorem ComputedMatPowVec.mono {n : ℕ} {A : Fin n → Fin n → ℝ}
+    {v : ℕ → (Fin n → ℝ)} {c c' : ℝ} (hcc : c ≤ c')
+    (h : ComputedMatPowVec n A v c) : ComputedMatPowVec n A v c' := by
+  constructor
+  intro k
+  obtain ⟨ΔA, hΔ, heq⟩ := h.step k
+  exact ⟨ΔA, fun i j =>
+    (hΔ i j).trans (mul_le_mul_of_nonneg_right hcc (abs_nonneg _)), heq⟩
+
+-- ============================================================
+-- §18.2  Concrete floating-point realization of (18.10)–(18.11)
+-- ============================================================
+
+/-- The computed iteration `v_{k+1} = fl(A · v_k)` by repeated floating-point
+    matrix–vector products, starting from `v0`.  This is the concrete
+    algorithm whose error recurrence is eq (18.10). -/
+noncomputable def fl_matPowVecSeq (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (v0 : Fin n → ℝ) : ℕ → (Fin n → ℝ)
+  | 0 => v0
+  | k + 1 => fl_matVec fp n n A (fl_matPowVecSeq fp n A v0 k)
+
+/-- **Concrete realization of the error model (18.10)–(18.11)**: the
+    floating-point iteration `v_{k+1} = fl(A v_k)` satisfies the perturbed
+    recurrence `v_{k+1} = (A + ΔA_k) v_k` with `|ΔA_k| ≤ γ_n |A|`
+    componentwise.  Each step is one `fl_matVec` with inner dimension `n`
+    (from `matVec_backward_error`), so the per-step constant is `γ_n`;
+    the book's (18.11) uses the weaker constant `γ_{n+2}`, recovered in
+    `computedMatPowVec_fl_matVec_gamma_add_two` by monotonicity. -/
+theorem computedMatPowVec_fl_matVec (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (v0 : Fin n → ℝ) (hn : gammaValid fp n) :
+    ComputedMatPowVec n A (fl_matPowVecSeq fp n A v0) (gamma fp n) := by
+  constructor
+  intro k
+  obtain ⟨ΔA, hΔ, heq⟩ :=
+    matVec_backward_error fp n n A (fl_matPowVecSeq fp n A v0 k) hn
+  refine ⟨ΔA, hΔ, fun i => ?_⟩
+  show fl_matPowVecSeq fp n A v0 (k + 1) i = _
+  simp only [fl_matPowVecSeq]
+  exact heq i
+
+/-- The concrete realization stated with the book's (18.11) constant
+    `γ_{n+2}` (valid since `γ_n ≤ γ_{n+2}`). -/
+theorem computedMatPowVec_fl_matVec_gamma_add_two (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (v0 : Fin n → ℝ)
+    (hn2 : gammaValid fp (n + 2)) :
+    ComputedMatPowVec n A (fl_matPowVecSeq fp n A v0) (gamma fp (n + 2)) :=
+  (computedMatPowVec_fl_matVec fp n A v0
+      (gammaValid_mono fp (Nat.le_add_right n 2) hn2)).mono
+    (gamma_mono fp (Nat.le_add_right n 2) hn2)
 
 -- ============================================================
 -- One-step componentwise bound
@@ -482,5 +535,70 @@ theorem computedMatPow_tendsto_zero_of_geometric (n : ℕ)
       Filter.atTop (nhds 0) := by
     simpa using (hpow.const_mul C).mul_const (infNormVec (v 0))
   exact squeeze_zero (fun m => infNormVec_nonneg _) hbound htop
+
+-- ============================================================
+-- §18.2  End-to-end conditional forms with the limit conclusion
+-- ============================================================
+
+/-- **End-to-end conditional form of Theorem 18.1 for the actual
+    floating-point iteration.**  Composes the concrete (18.10)–(18.11)
+    realization (`fl_matPowVecSeq`, per-step constant `γ_{n+2}`), the
+    conditional reduction `higham_knight_18_1`, and the limit wrapper: under
+    the Jordan-data hypothesis (including the ASSUMED `similarity_absorbs`
+    construction — see `JordanFormSpec`) and the Higham–Knight condition
+    (18.13) with the printed constant `γ_{n+2}`, the computed vectors
+    satisfy `‖fl(Aᵐ v₀)‖∞ → 0`.
+
+    Still conditional on the `similarity_absorbs` axiom; the Theorem 18.1
+    source row remains OPEN until that construction is discharged. -/
+theorem higham_knight_18_1_fl_tendsto (fp : FPModel) (n : ℕ) (hn : 0 < n)
+    (A X X_inv : Fin n → Fin n → ℝ)
+    (hJ : JordanFormSpec n hn A X X_inv)
+    (v0 : Fin n → ℝ) (hval : gammaValid fp (n + 2))
+    (hCond : 4 * hJ.max_block_size * gamma fp (n + 2) *
+      (infNorm X * infNorm X_inv) * infNorm A <
+      (1 - hJ.spectral_radius) ^ hJ.max_block_size) :
+    Filter.Tendsto
+      (fun m => infNormVec (fl_matPowVecSeq fp n A v0 m))
+      Filter.atTop (nhds 0) := by
+  obtain ⟨C, q, hC, hq0, hq1, hbound⟩ :=
+    higham_knight_18_1 n hn A X X_inv hJ
+      (fl_matPowVecSeq fp n A v0) (gamma fp (n + 2))
+      (gamma_nonneg fp hval)
+      (computedMatPowVec_fl_matVec_gamma_add_two fp n A v0 hval)
+      hCond
+  exact computedMatPow_tendsto_zero_of_geometric n
+    (fl_matPowVecSeq fp n A v0) C q hq0 hq1 hbound
+
+/-- **Conditional reduction of Theorem 18.2** (Higham–Knight), algebraic
+    `t = 1` form.  The book's proof of Theorem 18.2 reduces the
+    pseudospectral hypothesis to Theorem 18.1 with `t = 1` (diagonalizable
+    `A`), where condition (18.13) becomes
+    `4 · c · κ∞(X) · ‖A‖∞ < 1 − ρ(A)`.  This theorem formalizes exactly
+    that reduction target with the limit conclusion `‖v_m‖∞ → 0`.
+
+    NOT the full printed Theorem 18.2: the pseudospectral packaging
+    (`ρ_ε(A) < 1` with `ε = cₙu‖A‖₂`, eqs (18.8)–(18.9), the unique dominant
+    eigenvalue and norm normalizations, and the O(ε²) proviso) is deferred —
+    pseudospectra are absent from Mathlib and this repository.  Also
+    conditional on the `similarity_absorbs` axiom via `higham_knight_18_1`;
+    the Theorem 18.2 source row remains OPEN. -/
+theorem higham_knight_18_2_diagonalizable (n : ℕ) (hn : 0 < n)
+    (A X X_inv : Fin n → Fin n → ℝ)
+    (hJ : JordanFormSpec n hn A X X_inv)
+    (ht : hJ.max_block_size = 1)
+    (v : ℕ → (Fin n → ℝ)) (c : ℝ) (hc : 0 ≤ c)
+    (hComp : ComputedMatPowVec n A v c)
+    (hCond : 4 * c * (infNorm X * infNorm X_inv) * infNorm A <
+      1 - hJ.spectral_radius) :
+    Filter.Tendsto (fun m => infNormVec (v m)) Filter.atTop (nhds 0) := by
+  have hCond1 : 4 * hJ.max_block_size * c *
+      (infNorm X * infNorm X_inv) * infNorm A <
+      (1 - hJ.spectral_radius) ^ hJ.max_block_size := by
+    rw [ht]
+    simpa using hCond
+  obtain ⟨C, q, hC, hq0, hq1, hbound⟩ :=
+    higham_knight_18_1 n hn A X X_inv hJ v c hc hComp hCond1
+  exact computedMatPow_tendsto_zero_of_geometric n v C q hq0 hq1 hbound
 
 end LeanFpAnalysis.FP
