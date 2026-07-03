@@ -15,6 +15,7 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
+import LeanFpAnalysis.FP.Analysis.HighamChapter7
 import LeanFpAnalysis.FP.Algorithms.MatrixPowers
 
 namespace LeanFpAnalysis.FP
@@ -2039,5 +2040,122 @@ theorem normwise_residual_bound (n : ℕ) (hn : 0 < n)
           μ * infNorm (matSub_id n (dualIterMatrix n N M_inv)) /
             (1 - q) := by
           congr 1; field_simp; ring
+
+-- ============================================================
+-- §17.5  Stopping tests (eqs. 17.33a-c)
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.5, equation (17.33a):
+    a small residual relative to the right-hand side is equivalent to an
+    exact solve for a right-hand-side perturbation with the same norm budget. -/
+theorem stopping_test_rhs_backward_subordinate
+    {n : ℕ} (_hn : 0 < n) {ν : CVec n → ℝ} (hν : IsComplexVectorNorm ν)
+    {A : CMatrix n n} {y b : CVec n} {ε : ℝ} (_hε : 0 ≤ ε) :
+    (ν (fun i => b i - complexMatrixVecMul A y i) ≤ ε * ν b) ↔
+    (∃ Δb : CVec n,
+      ν Δb ≤ ε * ν b ∧
+      complexMatrixVecMul A y = fun i => b i + Δb i) := by
+  constructor
+  · intro h
+    let r : CVec n := fun i => b i - complexMatrixVecMul A y i
+    let Δb : CVec n := complexVecSMul (-1 : ℂ) r
+    refine ⟨Δb, ?_, ?_⟩
+    · calc
+        ν Δb = ν r := by
+          dsimp [Δb]
+          rw [hν.smul (-1 : ℂ) r]
+          norm_num
+        _ ≤ ε * ν b := by simpa [r] using h
+    · ext i
+      dsimp [Δb, r, complexVecSMul]
+      ring
+  · intro h
+    obtain ⟨Δb, hΔb, hExact⟩ := h
+    have hr :
+        (fun i => b i - complexMatrixVecMul A y i) =
+          complexVecSMul (-1 : ℂ) Δb := by
+      ext i
+      have hi := congrFun hExact i
+      rw [hi]
+      simp [complexVecSMul]
+    calc
+      ν (fun i => b i - complexMatrixVecMul A y i)
+          = ν (complexVecSMul (-1 : ℂ) Δb) := by rw [hr]
+      _ = ν Δb := by
+        rw [hν.smul (-1 : ℂ) Δb]
+        norm_num
+      _ ≤ ε * ν b := hΔb
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.5, equation (17.33b):
+    a small residual relative to `‖A‖‖y‖` is equivalent to an exact solve for
+    a matrix perturbation with the same subordinate-norm budget. -/
+theorem stopping_test_matrix_backward_subordinate
+    {n : ℕ} (hn : 0 < n) {ν : CVec n → ℝ} (hν : IsComplexVectorNorm ν)
+    {A E : CMatrix n n} {y b : CVec n} {e ε : ℝ}
+    (hε : 0 ≤ ε)
+    (hE : IsMixedSubordinateMatrixNormValue ν ν E e) :
+    (ν (fun i => b i - complexMatrixVecMul A y i) ≤ ε * (e * ν y)) ↔
+    (∃ ΔA : CMatrix n n,
+      MixedSubordinateMatrixBound ν ν ΔA (ε * e) ∧
+      complexMatrixVecMul (fun i j => A i j + ΔA i j) y = b) := by
+  have hzeroν : ν (0 : CVec n) = 0 := (hν.eq_zero_iff (0 : CVec n)).2 rfl
+  constructor
+  · intro h
+    have hBound :
+        ν (fun i => b i - complexMatrixVecMul A y i) ≤
+          ε * (e * ν y + ν (0 : CVec n)) := by
+      simpa [hzeroν] using h
+    obtain ⟨ΔA, Δb, hΔA, hΔb, hExact⟩ :=
+      theorem7_1_subordinate_sufficient
+        (n := n) (ν := ν) (A := A) (E := E) (y := y) (b := b)
+        (f := 0) (e := e) (ε := ε) hn hν hε hE hBound
+    have hΔb_norm_zero : ν Δb = 0 := by
+      apply le_antisymm
+      · calc
+          ν Δb ≤ ε * ν (0 : CVec n) := hΔb
+          _ = 0 := by rw [hzeroν, mul_zero]
+      · exact hν.nonneg Δb
+    have hΔb_zero : Δb = 0 := (hν.eq_zero_iff Δb).1 hΔb_norm_zero
+    refine ⟨ΔA, hΔA, ?_⟩
+    ext i
+    have hi := congrFun hExact i
+    rw [hΔb_zero] at hi
+    simpa using hi
+  · intro h
+    obtain ⟨ΔA, hΔA, hExact⟩ := h
+    have hΔb : ν (0 : CVec n) ≤ ε * ν (0 : CVec n) := by
+      rw [hzeroν, mul_zero]
+    have hPerturbed :
+        complexMatrixVecMul (fun i j => A i j + ΔA i j) y =
+          fun i => b i + (0 : CVec n) i := by
+      ext i
+      simpa using congrFun hExact i
+    have hBound :
+        ν (fun i => b i - complexMatrixVecMul A y i) ≤
+          ε * (e * ν y + ν (0 : CVec n)) :=
+      theorem7_1_subordinate_necessary
+        (n := n) (ν := ν) (A := A) (E := E) (ΔA := ΔA)
+        (y := y) (b := b) (f := 0) (Δb := 0) (e := e) (ε := ε)
+        hn hν hε hE hΔA hΔb hPerturbed
+    simpa [hzeroν] using hBound
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.5, equation (17.33c):
+    the mixed stopping test is exactly the Chapter 7 normwise backward-error
+    equivalence specialized with the right-hand-side budget `f = b`. -/
+theorem stopping_test_mixed_backward_subordinate
+    {n : ℕ} (hn : 0 < n) {ν : CVec n → ℝ} (hν : IsComplexVectorNorm ν)
+    {A E : CMatrix n n} {y b : CVec n} {e ε : ℝ}
+    (hε : 0 ≤ ε)
+    (hE : IsMixedSubordinateMatrixNormValue ν ν E e) :
+    (ν (fun i => b i - complexMatrixVecMul A y i) ≤
+      ε * (e * ν y + ν b)) ↔
+    (∃ ΔA : CMatrix n n, ∃ Δb : CVec n,
+      MixedSubordinateMatrixBound ν ν ΔA (ε * e) ∧
+      ν Δb ≤ ε * ν b ∧
+      complexMatrixVecMul (fun i j => A i j + ΔA i j) y =
+        fun i => b i + Δb i) := by
+  exact theorem7_1_subordinate
+    (n := n) (ν := ν) (A := A) (E := E) (y := y) (b := b)
+    (f := b) (e := e) (ε := ε) hn hν hε hE
 
 end LeanFpAnalysis.FP
