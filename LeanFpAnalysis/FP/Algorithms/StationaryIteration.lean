@@ -139,6 +139,76 @@ theorem stationary_solution_fixed_point (n : ℕ)
     _ = matMulVec n (iterMatrix n M_inv N) x i + matMulVec n M_inv b i := by
       simp [iterMatrix, matMulVec_matMul]
 
+/-- Finite unrolling of an affine fixed point `x = Gx + c`. -/
+theorem affine_fixed_point_unroll (n : ℕ)
+    (G : Fin n → Fin n → ℝ) (c x : Fin n → ℝ)
+    (hfix : ∀ i, x i = matMulVec n G x i + c i) :
+    ∀ m i, x i =
+      matMulVec n (matPow n G m) x i +
+      ∑ k ∈ Finset.range m, matMulVec n (matPow n G k) c i := by
+  intro m
+  induction m with
+  | zero =>
+      intro i
+      simp [matPow, matMulVec, idMatrix]
+  | succ m ih =>
+      intro i
+      have htail :
+          matMulVec n (matPow n G m) x i =
+            matMulVec n (matPow n G (m + 1)) x i +
+              matMulVec n (matPow n G m) c i := by
+        have hx :
+            x = fun j => matMulVec n G x j + c j := by
+          ext j
+          exact hfix j
+        calc
+          matMulVec n (matPow n G m) x i
+              = matMulVec n (matPow n G m)
+                  (fun j => matMulVec n G x j + c j) i := by
+                  exact congrArg (fun y => matMulVec n (matPow n G m) y i) hx
+          _ = matMulVec n (matPow n G m) (matMulVec n G x) i +
+                matMulVec n (matPow n G m) c i := by
+                  simpa using
+                    congrFun
+                      (matMulVec_add_right n (matPow n G m)
+                        (matMulVec n G x) c) i
+          _ = matMulVec n (matPow n G (m + 1)) x i +
+                matMulVec n (matPow n G m) c i := by
+                  congr 1
+                  rw [← matMulVec_matMul n (matPow n G m) G x i]
+                  rw [← matPow_succ_right n G m]
+      calc
+        x i = matMulVec n (matPow n G m) x i +
+            ∑ k ∈ Finset.range m, matMulVec n (matPow n G k) c i := ih i
+        _ = (matMulVec n (matPow n G (m + 1)) x i +
+              matMulVec n (matPow n G m) c i) +
+            ∑ k ∈ Finset.range m, matMulVec n (matPow n G k) c i := by
+              rw [htail]
+        _ = matMulVec n (matPow n G (m + 1)) x i +
+            ∑ k ∈ Finset.range (m + 1),
+              matMulVec n (matPow n G k) c i := by
+              rw [Finset.sum_range_succ]
+              ring
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, equation (17.4):
+    finite-sum identity for an exact stationary solution, obtained by
+    unrolling the affine fixed-point equation. -/
+theorem stationary_solution_finite_sum (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (m : ℕ) :
+    ∀ i, x i =
+      matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1)) x i +
+      ∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n (iterMatrix n M_inv N) k)
+          (matMulVec n M_inv b) i := by
+  intro i
+  exact affine_fixed_point_unroll n (iterMatrix n M_inv N)
+    (matMulVec n M_inv b) x
+    (stationary_solution_fixed_point n A M N M_inv hS b x hAx)
+    (m + 1) i
+
 -- ============================================================
 -- §17.2  Computed iteration and one-step error
 -- ============================================================
