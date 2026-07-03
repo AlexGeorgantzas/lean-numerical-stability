@@ -26,6 +26,7 @@
 | (16.16) | `xiSq`, `xiSq_nonneg` | `SylvesterBackward.lean` | Definition/lemma | Squared xi functional. |
 | (16.17)-(16.19), partial | `xiSq_amplification_bound`, `amplification_factor_bound` | `SylvesterBackward.lean` | Theorems | Bounds xi-squared via residual; does not close the full eta/mu statement. |
 | Lyapunov specialization | `lyapunovOp`, `lyapunovOp_eq_sylvesterOp` | `SylvesterSpec.lean` | Definition/theorem | Models the Lyapunov operator as a Sylvester special case. |
+| Lyapunov p.312 symmetric uniqueness | `lyapunov_solution_iff_sylvester_special`, `lyapunov_unique_solution_of_sep`, `lyapunov_transpose_solution_of_symmetric_rhs`, `lyapunov_solution_symmetric_of_symmetric_rhs` | `Higham16.lean` | Theorems | Uses `sep(A,-A^T)` to prove uniqueness and symmetry for symmetric right-hand sides. |
 | (16.22), algebraic perturbation identity | `sylvester_perturbation_equation`, `sylvester_perturbation_first_order` | `SylvesterPerturbation.lean` | Theorems | Matrix-form Kronecker statement is still open. |
 | (16.25), sep-weakened perturbation route | `sylvester_perturbation_bound`, `sylvester_relative_perturbation`, `condSylvester` | `SylvesterPerturbation.lean` | Theorem/definition | Uses `SepLowerBound`; exact `P^{-1}` condition-number surface remains open. |
 | (16.26), lower-bound form | `SepLowerBound` | `SylvesterSpec.lean` | Predicate | Honest lower-bound predicate, not an attained minimum. |
@@ -61,7 +62,7 @@
 | H16.Eq16_19.square_mu | p.310, (16.19) | equation | Square-case amplification factor. | precise | square | follows | H16.Eq16_18 | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Partial: `amplification_factor_bound`; exact formula open. |
 | H16.Eq16_20.large_mu_conditions | p.310, (16.20) | heuristic inequalities | Qualitative "large" regime using much-greater notation. | partly precise | qualitative | explanatory | none | SKIP | SKIP-QUALITATIVE | Not encoded in core. |
 | H16.LyapunovDefinition | pp.311-312 | definition | Lyapunov equation as Sylvester special case. | precise | square | not applicable | transpose | FORMALIZE_CORE | DEP-REQUIRED | `lyapunovOp`, `lyapunovOp_eq_sylvesterOp`. |
-| H16.LyapunovSymmetricUniqueness | p.312 | precise prose | Symmetric right-hand side and nonsingularity imply unique symmetric solution. | precise | square | sketch | uniqueness, spectrum | FORMALIZE_CORE | CORE-PRECISE-PROSE | Open; only supporting definitions exist. |
+| H16.LyapunovSymmetricUniqueness | p.312 | precise prose | Symmetric right-hand side and nonsingularity imply unique symmetric solution. | precise | square | sketch | uniqueness, spectrum | FORMALIZE_CORE | CORE-PRECISE-PROSE | `lyapunov_unique_solution_of_sep`, `lyapunov_solution_symmetric_of_symmetric_rhs`; uses `SepLowerBound` as the nonsingularity certificate. |
 | H16.Eq16_21.lyapunov_uncoupled | p.312, (16.21) | equation | Lyapunov backward-error scalar equations. | precise | square | derivation | spectral decomposition | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open. |
 | H16.Eq16_22.perturbation_kronecker | p.313, (16.22) | equation | First-order perturbation system in vec/Kronecker form. | precise | general | derivation | Kronecker/vec | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Partial algebraic identity: `sylvester_perturbation_equation`, `sylvester_perturbation_first_order`; Kronecker form open. |
 | H16.Eq16_23.psi_bound | p.313, (16.23) | inequality | Sharp first-order perturbation bound. | precise | condition-number route | sketch | `Psi`, operator norm | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open. |
@@ -94,6 +95,7 @@
 |---|---|---|---|
 | `sylvesterOpRect` | Avoids presenting square-only infrastructure as the full source shape. | `IsSylvesterSolutionRect`, `sylvesterResidualRect` | implemented |
 | `sylvesterResidualRect` | Records residual semantics for rectangular source rows. | inventory rows for (16.9), (16.11), (16.29) | implemented |
+| `lyapunov_solution_iff_sylvester_special` | Provides a source-facing bridge from Lyapunov equations to the proved Sylvester uniqueness theorem. | `lyapunov_unique_solution_of_sep`, `lyapunov_solution_symmetric_of_symmetric_rhs` | implemented |
 
 ## Empirical Source Outputs
 
@@ -110,7 +112,7 @@
 | (16.4)-(16.8) | Schur/Bartels-Stewart solve route and triangular/quasi-triangular error propagation. | unstarted | Schur decomposition surface, block quasi-triangular API, Ch8 triangular solve instantiation | Start with exact Schur-transform equation wrapper or defer until QR stability surface is reusable. |
 | (16.9) | Floating-point residual guarantee for computed solution. | unstarted | computed Schur method path and Ch19-style QR backward stability | State a conditional theorem only after computed quantities are inventoried. |
 | (16.15), (16.17)-(16.19) | Full eta/xi/mu backward-error amplification theorem. | partial foundation | optimizer/minimum surface relating `IsBackwardError` to `xiSq`; `mu` definition | Prove the missing eta upper/lower wrapper or reclassify as infimum-based. |
-| Lyapunov p.312 and (16.21), (16.27) | Lyapunov symmetric uniqueness and Lyapunov-specific backward-error/condition formulas. | partial definitions | spectral decomposition and vec-permutation API | Prove symmetric-solution uniqueness from existing `sep_implies_unique_solution`. |
+| (16.21), (16.27) | Lyapunov-specific backward-error and condition formulas. | uniqueness/symmetry complete; formulas open | spectral decomposition and vec-permutation API | Add the Lyapunov scalar-equation and condition-number surfaces after vec/permutation foundations exist. |
 | (16.23)-(16.24) | Structured condition number Psi and sharp perturbation bound. | unstarted | operator norm and inverse-panel API | Define `Psi` after vec/Kronecker surface exists. |
 | (16.26) | Exact sep as a minimum/infimum. | partial foundation | existence of minimizer or infimum modeling choice | Add `sepInf` or prove existence before using a true minimum. |
 | (16.28) | Relative a posteriori bound in source form. | partial foundation | rectangular/source relative norm statement | Add nonzero-solution relative wrapper around `sylvester_aposteriori_bound`. |
@@ -128,7 +130,8 @@
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/SylvesterSpec.lean`: passed.
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/SylvesterBackward.lean`: passed.
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/SylvesterPerturbation.lean`: passed.
-- Milestone verification after the Chapter 16 companion module is recorded separately in the sync log once checks pass.
+- Current milestone:
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16.lean`: passed after adding the Lyapunov uniqueness/symmetry wrappers.
 
 ## Git and Local-Only Notes
 
