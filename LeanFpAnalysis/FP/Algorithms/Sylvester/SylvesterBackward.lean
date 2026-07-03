@@ -377,6 +377,191 @@ theorem backward_error_eta_bound (n : ℕ)
     rw [div_le_iff₀ hγ2]; nlinarith
   linarith
 
+/-- Higham, 2nd ed., Chapter 16.2:
+    original-coordinate Sylvester perturbation residual
+    `DeltaA * Y - Y * DeltaB - DeltaC`. -/
+noncomputable def sylvesterBackwardResidual (n : ℕ)
+    (DA DB DC Y : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => matMul n DA Y i j - matMul n Y DB i j - DC i j
+
+/-- The `IsSVD` representation is the diagonal matrix identity
+    `Y = U * diag(sigma) * V^T` in the repository matrix product. -/
+theorem isSVD_eq_matMul_diag (n : ℕ)
+    (Y U V : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (hSVD : IsSVD n Y U V σ) :
+    Y = matMul n U (matMul n (diagMatrix σ) (matTranspose V)) := by
+  have hdiag :
+      matMul n (diagMatrix σ) (matTranspose V) =
+        fun k j => σ k * V j k := by
+    ext k j
+    rw [matMul_diagMatrix_left σ (matTranspose V) k j]
+    rfl
+  ext i j
+  rw [hdiag]
+  exact hSVD.2.2.1 i j
+
+/-- The SVD residual transform distributes over the `M - N - P` matrix
+    combination used in the Sylvester perturbation residual. -/
+theorem svdResidual_sub_sub (n : ℕ)
+    (U V M N P : Fin n → Fin n → ℝ) :
+    svdResidual n U V (fun i j => M i j - N i j - P i j) =
+      fun i j => svdResidual n U V M i j -
+        svdResidual n U V N i j -
+          svdResidual n U V P i j := by
+  ext i j
+  unfold svdResidual matMul matTranspose
+  simp only [sub_eq_add_neg, add_mul, neg_mul, mul_add, mul_neg,
+    Finset.sum_add_distrib, Finset.sum_neg_distrib]
+
+/-- In SVD coordinates, the left perturbation product becomes
+    `DeltaA_tilde * diag(sigma)`. -/
+theorem svdResidual_mul_svd_right (n : ℕ)
+    (U V DA : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (hV : IsOrthogonal n V) :
+    svdResidual n U V
+      (matMul n DA (matMul n U (matMul n (diagMatrix σ) (matTranspose V)))) =
+        matMul n (matMul n (matMul n (matTranspose U) DA) U) (diagMatrix σ) := by
+  unfold svdResidual
+  have hVtV : matMul n (matTranspose V) V = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hV.left_inv i j
+  simp [matMul_assoc, hVtV, matMul_id_right]
+
+/-- In SVD coordinates, the right perturbation product becomes
+    `diag(sigma) * DeltaB_tilde`. -/
+theorem svdResidual_svd_left_mul (n : ℕ)
+    (U V DB : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (hU : IsOrthogonal n U) :
+    svdResidual n U V
+      (matMul n (matMul n U (matMul n (diagMatrix σ) (matTranspose V))) DB) =
+        matMul n (diagMatrix σ)
+          (matMul n (matMul n (matTranspose V) DB) V) := by
+  unfold svdResidual
+  have hUtU : matMul n (matTranspose U) U = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hU.left_inv i j
+  calc
+    matMul n (matMul n (matTranspose U)
+        (matMul n (matMul n U (matMul n (diagMatrix σ) (matTranspose V))) DB)) V
+        = matMul n (matMul n (matMul n (matTranspose U) U)
+            (matMul n (matMul n (diagMatrix σ) (matTranspose V)) DB)) V := by
+            rw [matMul_assoc n U (matMul n (diagMatrix σ) (matTranspose V)) DB]
+            rw [(matMul_assoc n (matTranspose U) U
+              (matMul n (matMul n (diagMatrix σ) (matTranspose V)) DB)).symm]
+    _ = matMul n (matMul n (idMatrix n)
+            (matMul n (matMul n (diagMatrix σ) (matTranspose V)) DB)) V := by
+            rw [hUtU]
+    _ = matMul n (matMul n (matMul n (diagMatrix σ) (matTranspose V)) DB) V := by
+            rw [matMul_id_left]
+    _ = matMul n (diagMatrix σ)
+            (matMul n (matMul n (matTranspose V) DB) V) := by
+            rw [matMul_assoc n (diagMatrix σ) (matTranspose V) DB]
+            rw [matMul_assoc n (diagMatrix σ)
+              (matMul n (matTranspose V) DB) V]
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.13):
+    transforming the original perturbation residual through an SVD of `Y`
+    yields the uncoupled SVD-coordinate residual equations. -/
+theorem svdResidual_backwardResidual (n : ℕ)
+    (Y U V DA DB DC : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (hSVD : IsSVD n Y U V σ) :
+    svdResidual n U V (sylvesterBackwardResidual n DA DB DC Y) =
+      fun i j =>
+        matMul n (matMul n (matTranspose U) DA) U i j * σ j -
+          σ i * matMul n (matMul n (matTranspose V) DB) V i j -
+            svdResidual n U V DC i j := by
+  have hY := isSVD_eq_matMul_diag n Y U V σ hSVD
+  unfold sylvesterBackwardResidual
+  rw [hY]
+  rw [svdResidual_sub_sub n U V
+    (matMul n DA (matMul n U (matMul n (diagMatrix σ) (matTranspose V))))
+    (matMul n (matMul n U (matMul n (diagMatrix σ) (matTranspose V))) DB)
+    DC]
+  rw [svdResidual_mul_svd_right n U V DA σ hSVD.2.1]
+  rw [svdResidual_svd_left_mul n U V DB σ hSVD.1]
+  ext i j
+  rw [matMul_diagMatrix_right
+    (matMul n (matMul n (matTranspose U) DA) U) σ i j]
+  rw [matMul_diagMatrix_left σ
+    (matMul n (matMul n (matTranspose V) DB) V) i j]
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15), lower direction:
+    an original-coordinate perturbation residual feasible at cost `eta`
+    implies the SVD-coordinate `xi^2` cost is bounded by `3 * eta^2`. -/
+theorem xiSq_le_three_eta_sq_of_original_residual (n : ℕ)
+    (Y R U V : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (α β γ η : ℝ) (DA DB DC : Fin n → Fin n → ℝ)
+    (hSVD : IsSVD n Y U V σ)
+    (hα : 0 < α) (hβ : 0 < β) (hγ : 0 < γ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)
+    (hResidual : sylvesterBackwardResidual n DA DB DC Y = R)
+    (hDA : frobNormSq DA ≤ (η * α) ^ 2)
+    (hDB : frobNormSq DB ≤ (η * β) ^ 2)
+    (hDC : frobNormSq DC ≤ (η * γ) ^ 2) :
+    xiSq n (svdResidual n U V R) σ α β γ ≤ 3 * η ^ 2 := by
+  have hbridge := svdResidual_backwardResidual n Y U V DA DB DC σ hSVD
+  have hmat :
+      svdResidual n U V R =
+        fun i j =>
+          matMul n (matMul n (matTranspose U) DA) U i j * σ j -
+            σ i * matMul n (matMul n (matTranspose V) DB) V i j -
+              svdResidual n U V DC i j := by
+    rw [← hResidual]
+    exact hbridge
+  have hEq : ∀ i j : Fin n,
+      matMul n (matMul n (matTranspose U) DA) U i j * σ j -
+          σ i * matMul n (matMul n (matTranspose V) DB) V i j -
+            svdResidual n U V DC i j =
+        svdResidual n U V R i j := by
+    intro i j
+    exact (congrFun (congrFun hmat i) j).symm
+  have hDAnorm :
+      frobNormSq (matMul n (matMul n (matTranspose U) DA) U) =
+        frobNormSq DA := by
+    rw [frobNormSq_orthogonal_right _ _ hSVD.1,
+      frobNormSq_orthogonal_left _ _ hSVD.1.transpose]
+  have hDBnorm :
+      frobNormSq (matMul n (matMul n (matTranspose V) DB) V) =
+        frobNormSq DB := by
+    rw [frobNormSq_orthogonal_right _ _ hSVD.2.1,
+      frobNormSq_orthogonal_left _ _ hSVD.2.1.transpose]
+  have hDCnorm :
+      frobNormSq (svdResidual n U V DC) = frobNormSq DC :=
+    svdResidual_frobNormSq n U V DC hSVD.1 hSVD.2.1
+  exact backward_error_eta_bound n (svdResidual n U V R) σ α β γ η
+    hα hβ hγ
+    (matMul n (matMul n (matTranspose U) DA) U)
+    (matMul n (matMul n (matTranspose V) DB) V)
+    (svdResidual n U V DC)
+    hpos hEq
+    (by rwa [hDAnorm])
+    (by rwa [hDBnorm])
+    (by rwa [hDCnorm])
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.10), (16.13), and (16.15):
+    every square Frobenius backward-error certificate at cost `eta` gives the
+    SVD-coordinate lower-bound inequality `xi^2 <= 3 * eta^2`. -/
+theorem xiSq_le_three_eta_sq_of_backward_error (n : ℕ)
+    (A B C Y U V : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (α β γ η : ℝ)
+    (hSVD : IsSVD n Y U V σ)
+    (hBack : IsBackwardError n A B C Y α β γ η)
+    (hα : 0 < α) (hβ : 0 < β) (hγ : 0 < γ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) :
+    xiSq n (svdResidual n U V (sylvesterResidual n A B C Y)) σ α β γ ≤
+      3 * η ^ 2 := by
+  rcases hBack with ⟨DA, DB, DC, hEq, hDA, hDB, hDC⟩
+  have hResidualPoint := residual_decomposition n A B C Y DA DB DC hEq
+  have hResidual :
+      sylvesterBackwardResidual n DA DB DC Y =
+        sylvesterResidual n A B C Y := by
+    ext i j
+    unfold sylvesterBackwardResidual
+    exact (hResidualPoint i j).symm
+  exact xiSq_le_three_eta_sq_of_original_residual n Y
+    (sylvesterResidual n A B C Y) U V σ α β γ η DA DB DC
+    hSVD hα hβ hγ hpos hResidual hDA hDB hDC
+
 -- ============================================================
 -- Residual-based backward error bound (combining eqs 16.12 + 16.16)
 -- ============================================================
