@@ -98,8 +98,11 @@ finite norm-form surface `jacobiForwardBoundVector`,
 `mainForwardBoundVector_eq_jacobiForwardBoundVector`, and
 `finite_norm_form_jacobi_forward_bound`; the SOR specialization now adds
 `sorForwardFactor`, `mainForwardBoundVector_norm_le_sorForwardBoundVector`, and
-`finite_norm_form_sor_forward_bound`.  The exact infinite-sum, singular-system,
-diagonalizable, and stopping-test rows remain open in the Chapter 17 ledger.
+`finite_norm_form_sor_forward_bound`, with the Gauss-Seidel `omega = 1`
+corollary `sorForwardFactor_one` and
+`finite_norm_form_gaussSeidel_forward_bound`.  The exact infinite-sum,
+singular-system, diagonalizable, and stopping-test rows remain open in the
+Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
