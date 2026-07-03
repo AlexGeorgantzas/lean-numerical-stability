@@ -748,4 +748,36 @@ theorem cholesky_cond_monotone
       _ ≤ κ (k₁ + d + 1) := _hκ_mono _
       _ = κ (k₁ + (d + 1)) := by ring_nf
 
+-- ============================================================
+-- §10.4  Display (10.29): matrices with positive definite symmetric part
+-- ============================================================
+
+open Matrix in
+/-- **The (10.29) core identity** (Higham §10.4, p. 208; proof route from
+    the logged oracle consultation, Golub–Van Loan 1979):
+    `Aᵀ A_S⁻¹ A = A_S + A_Kᵀ A_S⁻¹ A_K`, for any splitting `A = A_S + A_K`
+    with `A_S` symmetric (`A_Sᵀ = A_S`), `A_K` skew (`A_Kᵀ = −A_K`), and
+    `A_S⁻¹` a two-sided inverse of `A_S`.  This is the matrix whose
+    operator norm bounds the unpivoted-LU growth in display (10.29). -/
+theorem symPart_skew_inverse_identity {n : ℕ}
+    (Amat AS AK ASinv : Matrix (Fin n) (Fin n) ℝ)
+    (hA : Amat = AS + AK)
+    (hAS_sym : ASᵀ = AS)
+    (hAK_skew : AKᵀ = -AK)
+    (hinv1 : AS * ASinv = 1)
+    (hinv2 : ASinv * AS = 1) :
+    Amatᵀ * ASinv * Amat = AS + AKᵀ * ASinv * AK := by
+  have hAT : Amatᵀ = AS - AK := by
+    rw [hA, Matrix.transpose_add, hAS_sym, hAK_skew]; abel
+  rw [hAT, hA]
+  -- expand the noncommutative product, treating AS, AK, ASinv as atoms
+  have hexp : (AS - AK) * ASinv * (AS + AK) =
+      (AS * ASinv) * AS + (AS * ASinv) * AK
+        - AK * (ASinv * AS) - AK * ASinv * AK := by
+    noncomm_ring
+  rw [hexp, hinv1, hinv2, Matrix.one_mul, Matrix.mul_one]
+  -- now: AS + AK - AK - AK * ASinv * AK = AS + AKᵀ * ASinv * AK
+  rw [hAK_skew]
+  noncomm_ring
+
 end LeanFpAnalysis.FP
