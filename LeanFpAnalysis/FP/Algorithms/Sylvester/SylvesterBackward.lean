@@ -262,6 +262,47 @@ theorem amplification_factor_bound (n : ℕ)
   rw [svdResidual_frobNormSq n U V R hSVD.1 hSVD.2.1] at hle
   exact hle
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.17)-(16.19):
+    the existing square xi-squared residual bound written with the source's
+    amplification factor `mu`.  This is still a bound for `xi`; the separate
+    optimizer step relating `eta(Y)` and `xi` remains the open part of
+    equation (16.15). -/
+theorem xiSq_le_mu_relative_residual_sq (n : ℕ)
+    (Y R : Fin n → Fin n → ℝ)
+    (U V : Fin n → Fin n → ℝ) (σ : Fin n → ℝ)
+    (α β γ σ_min : ℝ)
+    (hSVD : IsSVD n Y U V σ)
+    (hσ_min : ∀ i : Fin n, σ_min ≤ σ i) (hσ_min_nn : 0 ≤ σ_min)
+    (hDenom : 0 < (α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2)
+    (hScale : 0 < (α + β) * frobNorm Y + γ) :
+    xiSq n (svdResidual n U V R) σ α β γ ≤
+      (sylvesterAmplificationMuSquare α β γ (frobNorm Y) σ_min *
+        (frobNorm R / ((α + β) * frobNorm Y + γ))) ^ 2 := by
+  have hle := amplification_factor_bound n Y R U V σ α β γ σ_min
+    hSVD hσ_min hσ_min_nn hDenom
+  have hScale_ne : (α + β) * frobNorm Y + γ ≠ 0 := ne_of_gt hScale
+  have hD_ne : (α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2 ≠ 0 := ne_of_gt hDenom
+  have hSqrt_ne : Real.sqrt ((α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2) ≠ 0 :=
+    ne_of_gt (Real.sqrt_pos.2 hDenom)
+  have hSqrt_sq :
+      Real.sqrt ((α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2) ^ 2 =
+        (α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2 :=
+    Real.sq_sqrt (le_of_lt hDenom)
+  calc
+    xiSq n (svdResidual n U V R) σ α β γ ≤
+        frobNormSq R / ((α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2) := hle
+    _ = (sylvesterAmplificationMuSquare α β γ (frobNorm Y) σ_min *
+        (frobNorm R / ((α + β) * frobNorm Y + γ))) ^ 2 := by
+        unfold sylvesterAmplificationMuSquare
+        have hmul :
+            ((α + β) * frobNorm Y + γ) /
+                Real.sqrt ((α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2) *
+              (frobNorm R / ((α + β) * frobNorm Y + γ)) =
+                frobNorm R /
+                  Real.sqrt ((α ^ 2 + β ^ 2) * σ_min ^ 2 + γ ^ 2) := by
+          field_simp [hScale_ne, hSqrt_ne]
+        rw [hmul, div_pow, hSqrt_sq, frobNorm_sq]
+
 -- ============================================================
 -- Backward error η bound via cost (§16.2)
 -- ============================================================
