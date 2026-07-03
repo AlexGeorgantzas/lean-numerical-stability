@@ -7,6 +7,7 @@
 
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterPerturbation
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterBackward
+import Mathlib.LinearAlgebra.Matrix.Vec
 
 namespace LeanFpAnalysis.FP
 
@@ -57,6 +58,90 @@ theorem sylvesterResidualRect_eq (m n : Nat)
   ext i j
   unfold sylvesterResidualRect sylvesterOpRect
   ring
+
+-- ============================================================
+-- Vec/Kronecker formulation from Chapter 16.1
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2):
+    the product-index coefficient matrix
+    `I_n kron A - B^T kron I_m` for vectorized rectangular Sylvester systems.
+    The product index follows Mathlib's column-stacking `Matrix.vec` convention:
+    `(j,i)` denotes entry `(i,j)`. -/
+noncomputable def sylvesterVecCoeff (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) :
+    Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real :=
+  Matrix.kronecker (1 : Matrix (Fin n) (Fin n) Real) A -
+    Matrix.kronecker (Matrix.transpose B) (1 : Matrix (Fin m) (Fin m) Real)
+
+/-- Higham, 2nd ed., Chapter 16.1, prose following equation (16.2):
+    `vec(A X B) = (B^T kron A) vec(X)` for finite matrices. -/
+theorem vec_triple_product_rect (m k n p : Nat)
+    (A : Matrix (Fin m) (Fin k) Real)
+    (X : Matrix (Fin k) (Fin n) Real)
+    (B : Matrix (Fin n) (Fin p) Real) :
+    Matrix.vec (A * X * B) =
+      Matrix.mulVec (Matrix.kronecker (Matrix.transpose B) A) (Matrix.vec X) := by
+  simpa [Matrix.kronecker] using
+    (Matrix.kronecker_mulVec_vec A X (Matrix.transpose B)).symm
+
+/-- Left multiplication by `A` in vectorized form, the `I_n kron A` half of
+    equation (16.2). -/
+theorem vec_left_mul_rect (m k n : Nat)
+    (A : Matrix (Fin m) (Fin k) Real)
+    (X : Matrix (Fin k) (Fin n) Real) :
+    Matrix.vec (A * X) =
+      Matrix.mulVec
+        (Matrix.kronecker (1 : Matrix (Fin n) (Fin n) Real) A)
+        (Matrix.vec X) := by
+  simpa [Matrix.kronecker] using Matrix.vec_mul_eq_mulVec A X
+
+/-- Right multiplication by `B` in vectorized form, the `B^T kron I_m` half of
+    equation (16.2). -/
+theorem vec_right_mul_rect (m n p : Nat)
+    (X : Matrix (Fin m) (Fin n) Real)
+    (B : Matrix (Fin n) (Fin p) Real) :
+    Matrix.vec (X * B) =
+      Matrix.mulVec
+        (Matrix.kronecker (Matrix.transpose B)
+          (1 : Matrix (Fin m) (Fin m) Real))
+        (Matrix.vec X) := by
+  simpa [Matrix.kronecker] using
+    (Matrix.kronecker_mulVec_vec (1 : Matrix (Fin m) (Fin m) Real)
+      X (Matrix.transpose B)).symm
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2):
+    applying `I_n kron A - B^T kron I_m` to `vec(X)` gives
+    `vec(AX - XB)`. -/
+theorem sylvesterVecCoeff_mulVec_vec (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (X : RMatFn m n) :
+    Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec X) =
+      Matrix.vec (sylvesterOpRect m n A B X) := by
+  ext p
+  have hleft := congrFun (vec_left_mul_rect m m n A X) p
+  have hright := congrFun (vec_right_mul_rect m n n X B) p
+  unfold sylvesterVecCoeff
+  simp only [Pi.sub_apply, Matrix.sub_mulVec, hleft.symm, hright.symm]
+  simp [sylvesterOpRect, matMulRect, Matrix.vec, Matrix.mul_apply]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2):
+    the vectorized linear system is equivalent to the rectangular Sylvester
+    equation. -/
+theorem sylvester_vec_system_iff_solution (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X : RMatFn m n) :
+    Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec X) = Matrix.vec C <->
+      IsSylvesterSolutionRect m n A B C X := by
+  constructor
+  case mp =>
+    intro h i j
+    have hp := congrFun h (j, i)
+    rw [sylvesterVecCoeff_mulVec_vec] at hp
+    exact hp
+  case mpr =>
+    intro h
+    rw [sylvesterVecCoeff_mulVec_vec]
+    ext p
+    exact h p.2 p.1
 
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
