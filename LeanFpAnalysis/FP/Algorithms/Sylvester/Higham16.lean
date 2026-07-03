@@ -528,6 +528,45 @@ theorem lyapunov_solution_symmetric_of_symmetric_rhs (n : Nat)
   exact huniq i j
 
 -- ============================================================
+-- Separation infimum from Chapter 16.4
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    feasible Frobenius ratios for `sep(A,B)`.  The nonzero condition is
+    represented by `frobNormSq X` to match the existing square infrastructure. -/
+def sylvesterSepRatios (n : Nat) (A B : Fin n -> Fin n -> Real) : Set Real :=
+  {rho | exists X : Fin n -> Fin n -> Real,
+    Not (frobNormSq X = 0) /\
+      rho = frobNorm (sylvesterOp n A B X) / frobNorm X}
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    `sep(A,B)` modeled as the infimum of the nonzero Frobenius ratios.
+    This records the exact source object without asserting that the infimum is
+    attained by a minimizing matrix. -/
+noncomputable def sylvesterSepInf (n : Nat) (A B : Fin n -> Fin n -> Real) : Real :=
+  sInf (sylvesterSepRatios n A B)
+
+/-- The exact `sep(A,B)` ratio set is bounded below by zero. -/
+theorem sylvesterSepRatios_bddBelow (n : Nat) (A B : Fin n -> Fin n -> Real) :
+    BddBelow (sylvesterSepRatios n A B) := by
+  refine Exists.intro 0 ?_
+  intro rho hrho
+  cases hrho with
+  | intro X hrest =>
+      cases hrest with
+      | intro _hX hrho_eq =>
+          rw [hrho_eq]
+          exact div_nonneg (frobNorm_nonneg _) (frobNorm_nonneg _)
+
+/-- Every nonzero Frobenius ratio is above the infimum model of `sep(A,B)`. -/
+theorem sylvesterSepInf_le_ratio (n : Nat) (A B X : Fin n -> Fin n -> Real)
+    (hX : Not (frobNormSq X = 0)) :
+    sylvesterSepInf n A B <= frobNorm (sylvesterOp n A B X) / frobNorm X := by
+  unfold sylvesterSepInf
+  exact csInf_le (sylvesterSepRatios_bddBelow n A B)
+    (Exists.intro X (And.intro hX rfl))
+
+-- ============================================================
 -- A posteriori source wrapper from Chapter 16.4
 -- ============================================================
 
