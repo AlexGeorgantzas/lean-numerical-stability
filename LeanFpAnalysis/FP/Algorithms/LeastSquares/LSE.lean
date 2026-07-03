@@ -1911,6 +1911,67 @@ theorem theorem20_8_vecNorm2_perturbed_residual_correction_le {m n p : ℕ}
           DeltaA_norm * vecNorm2 y + Deltab_norm := by
             ring
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the relative perturbation budget supplies the operator-2 bound for
+    `DeltaA` needed by the residual-correction estimate. -/
+theorem theorem20_8_rectOpNorm2Le_DeltaA_of_relativePerturbationBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    rectOpNorm2Le DeltaA (eps * frobNormRect A) := by
+  exact rectOpNorm2Le_of_frobNormRect_le DeltaA hbudget.1
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the relative perturbation budget supplies the operator-2 bound for
+    `DeltaB` needed by the constraint-defect estimate. -/
+theorem theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    rectOpNorm2Le DeltaB (eps * frobNormRect B) := by
+  exact rectOpNorm2Le_of_frobNormRect_le DeltaB hbudget.2.2.1
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    specialization of the explicit residual-correction bound to the source
+    relative perturbation budget. -/
+theorem theorem20_8_vecNorm2_perturbed_residual_correction_le_of_relativeBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (y : Fin n → ℝ)
+    {eps ABplus_norm : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hABplus_nonneg : 0 ≤ ABplus_norm)
+    (hABplus : rectOpNorm2Le (rectMatMul A Bplus) ABplus_norm) :
+    vecNorm2
+        (fun i : Fin m =>
+          rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p => Deltad l - rectMatMulVec DeltaB y l)) i +
+            rectMatMulVec DeltaA y i - Deltab i) ≤
+      ABplus_norm *
+          (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        (eps * frobNormRect A) * vecNorm2 y +
+        eps * vecNorm2 b := by
+  exact theorem20_8_vecNorm2_perturbed_residual_correction_le
+    A DeltaA Deltab DeltaB Bplus Deltad y
+    hABplus_nonneg hABplus
+    (theorem20_8_rectOpNorm2Le_DeltaA_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    hbudget.2.2.2 hbudget.2.1
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     source table `B_A^+ = (I - (AP)^+ A)B^+`.
 
