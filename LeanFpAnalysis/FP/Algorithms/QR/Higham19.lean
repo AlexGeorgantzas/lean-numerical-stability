@@ -21210,6 +21210,25 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_of_sourceClosureData
       fp r p A_hat alpha hdata)
     hcopy
 
+/-- Exact subtraction discharges the zero-copy convention for the raw
+source-closure final predicate.
+
+This is an exact-operation adapter only: the recursive source-closure data
+remains the explicit stored-loop obligation. -/
+theorem storedSignedSequenceTwiceTrailingFinalClosed_of_sourceClosureData_of_exact_sub
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceTwiceTrailingSourceClosureData fp r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_sourceClosureData
+    fp r p A_hat alpha hdata
+    (subtractZeroExact_of_exact_sub fp hsub)
+
 /-- Named tail-local normalized records imply the twice-trailing final-closure
 predicate.
 
@@ -21229,6 +21248,23 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRecord
     (storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRecords
       fp r p A_hat alpha hrecords)
     hcopy
+
+/-- Exact subtraction discharges the zero-copy convention for the
+tail-normalized-record final predicate. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRecords_of_exact_sub
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrecords :
+      storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRecords
+    fp r p A_hat alpha hrecords
+    (subtractZeroExact_of_exact_sub fp hsub)
 
 /-- Raw tail-local normalized loop facts imply the twice-trailing final-closure
 predicate.
@@ -21251,6 +21287,23 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRawFac
       fp r p A_hat alpha hraw)
     hcopy
 
+/-- Exact subtraction discharges the zero-copy convention for the raw
+tail-normalized final predicate. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRawFacts_of_exact_sub
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hraw :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRawFacts
+    fp r p A_hat alpha hraw
+    (subtractZeroExact_of_exact_sub fp hsub)
+
 /-- Source-faithful tail-normalization certificates imply the twice-trailing
 final-closure predicate. -/
 theorem
@@ -21269,6 +21322,24 @@ theorem
     (storedSignedSequenceTailNormalizedLoopRawFacts_of_sourceFaithfulNormalizations
       fp r p A_hat alpha hsrcs)
     hcopy
+
+/-- Exact subtraction discharges the zero-copy convention for the
+source-faithful certificate final predicate. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_sourceFaithfulNormalizations_of_exact_sub
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hsrcs :
+      storedSignedSequenceTailSourceFaithfulNormalizations fp r p
+        A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_sourceFaithfulNormalizations
+    fp r p A_hat alpha hsrcs
+    (subtractZeroExact_of_exact_sub fp hsub)
 
 /-- Tail-local vector equalities imply the twice-trailing final-closure
 predicate under any model satisfying the source-faithful normalization
@@ -21290,6 +21361,24 @@ theorem
     (storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_of_normalizationModel
       fp hmodel r p A_hat alpha hvecs)
     hcopy
+
+/-- Exact subtraction discharges the zero-copy convention for the
+stronger-normalization-model final predicate from tail-vector loop facts. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_of_normalizationModel_of_exact_sub
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_of_normalizationModel
+    fp hmodel r p A_hat alpha hvecs
+    (subtractZeroExact_of_exact_sub fp hsub)
 
 /-- Stronger-model final-panel bridge from tail-vector loop facts.
 
@@ -21828,6 +21917,28 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_of_fullStageSourceClosureDa
     (storedSignedSequenceTwiceTrailingClosureData_of_fullStageSourceClosureData
       fp r p A_hat alpha hdata)
     hcopy
+
+/-- Exact subtraction discharges the zero-copy convention for the full-stage
+source-closure final predicate.
+
+This keeps the full-stage source-closure package visible as the real induction
+obligation while removing the separate copy-convention premise for exact
+subtraction models. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_fullStageSourceClosureData_of_exact_sub
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceTwiceTrailingFullStageSourceClosureData fp r p
+        A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_fullStageSourceClosureData
+    fp r p A_hat alpha hdata
+    (subtractZeroExact_of_exact_sub fp hsub)
 
 /-- Full-stage source-facing final-panel bridge.
 
