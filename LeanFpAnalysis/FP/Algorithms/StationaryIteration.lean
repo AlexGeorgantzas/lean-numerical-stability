@@ -455,6 +455,114 @@ theorem singular_stationary_iterate_finite_sum (n : ℕ)
     (fun _ _ => 0) hS.inv_left hIter m i
   simpa using h
 
+/-- Applying a Neumann partial sum to a vector is the same as summing the
+    displayed matrix-power actions. -/
+theorem matMulVec_neumannSum_range (n : ℕ)
+    (G : Fin n → Fin n → ℝ) (m : ℕ) (v : Fin n → ℝ) :
+    ∀ i, matMulVec n (neumannSum n G m) v i =
+      ∑ k ∈ Finset.range (m + 1), matMulVec n (matPow n G k) v i := by
+  induction m with
+  | zero =>
+      intro i
+      rw [Finset.sum_range_one]
+      simp [neumannSum_zero, matPow_zero, matMulVec_id]
+  | succ m ih =>
+      intro i
+      rw [neumannSum_succ]
+      rw [congrFun (matMulVec_add_left n (neumannSum n G m)
+        (matPow n G (m + 1)) v) i]
+      rw [ih i]
+      exact (Finset.sum_range_succ
+        (fun k => matMulVec n (matPow n G k) v i) (m + 1)).symm
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, printed page 333:
+    for a consistent system `Ax = b`, the source term in the singular-system
+    exact iteration satisfies `M⁻¹ b = (I - G)x`. -/
+theorem singular_consistent_source_term_eq_I_sub_G (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i) :
+    matMulVec n M_inv b =
+      matMulVec n (matSub_id n (iterMatrix n M_inv N)) x := by
+  ext i
+  have hfix := stationary_solution_fixed_point n A M N M_inv hS b x hAx i
+  have hsub :
+      matMulVec n (matSub_id n (iterMatrix n M_inv N)) x i =
+        x i - matMulVec n (iterMatrix n M_inv N) x i := by
+    unfold matMulVec matSub_id
+    simp_rw [sub_mul, Finset.sum_sub_distrib]
+    have hid : ∑ j : Fin n, idMatrix n i j * x j = x i := by
+      have h := congrFun (matMulVec_id n x) i
+      simpa [matMulVec] using h
+    rw [hid]
+  rw [hsub]
+  linarith
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, printed page 333:
+    the consistent-system source term in (17.21) telescopes as
+    `sum_{k=0}^m G^k M⁻¹ b = (I - G^(m+1))x`. -/
+theorem singular_consistent_second_term_telescope (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (m : ℕ) :
+    ∀ i, (∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n (iterMatrix n M_inv N) k)
+          (matMulVec n M_inv b) i) =
+      x i - matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1)) x i := by
+  intro i
+  let G := iterMatrix n M_inv N
+  have hsource :
+      matMulVec n M_inv b = matMulVec n (matSub_id n G) x := by
+    simpa [G] using singular_consistent_source_term_eq_I_sub_G n A M N M_inv hS b x hAx
+  have hsum := matMulVec_neumannSum_range n G m (matMulVec n M_inv b) i
+  have htel :
+      matMulVec n (neumannSum n G m) (matMulVec n (matSub_id n G) x) i =
+        x i - matMulVec n (matPow n G (m + 1)) x i := by
+    calc
+      matMulVec n (neumannSum n G m) (matMulVec n (matSub_id n G) x) i
+          = matMulVec n (matMul n (neumannSum n G m) (matSub_id n G)) x i := by
+              rw [matMulVec_matMul]
+      _ = matMulVec n (fun a b => idMatrix n a b - matPow n G (m + 1) a b) x i := by
+              rw [neumann_telescope_right n G m]
+      _ = x i - matMulVec n (matPow n G (m + 1)) x i := by
+              unfold matMulVec
+              simp_rw [sub_mul, Finset.sum_sub_distrib]
+              have hid : ∑ j : Fin n, idMatrix n i j * x j = x i := by
+                have h := congrFun (matMulVec_id n x) i
+                simpa [matMulVec] using h
+              rw [hid]
+  calc
+    (∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n (iterMatrix n M_inv N) k)
+          (matMulVec n M_inv b) i)
+        = matMulVec n (neumannSum n G m) (matMulVec n M_inv b) i := by
+            simpa [G] using hsum.symm
+    _ = matMulVec n (neumannSum n G m) (matMulVec n (matSub_id n G) x) i := by
+            rw [hsource]
+    _ = x i - matMulVec n (matPow n G (m + 1)) x i := htel
+    _ = x i - matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1)) x i := by
+            rfl
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equations (17.21)-(17.26):
+    before taking the semiconvergent/Drazin limit, a consistent exact singular
+    iteration splits into a propagated initial term plus the telescoped
+    consistent solution contribution. -/
+theorem singular_stationary_iterate_consistent_split (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (x_seq : ℕ → Fin n → ℝ)
+    (hIter : SourceComputedIteration n M N b x_seq (fun _ _ => 0))
+    (m : ℕ) :
+    ∀ i, x_seq (m + 1) i =
+      matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1)) (x_seq 0) i +
+        (x i - matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1)) x i) := by
+  intro i
+  have hiter := singular_stationary_iterate_finite_sum n A M N M_inv hS b x_seq hIter m i
+  have htel := singular_consistent_second_term_telescope n A M N M_inv hS b x hAx m i
+  rw [hiter, htel]
+
 /-- One-step error: x_i − x̂_{k+1,i} = ∑_j G_{ij}(x_j − x̂_{k,j}) − ∑_j M⁻¹_{ij} ξ_{k,j}. -/
 theorem one_step_error (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ)
     (hS : SplittingSpec n A M N M_inv)
