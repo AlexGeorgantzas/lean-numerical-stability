@@ -22062,6 +22062,66 @@ theorem higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_tr
     hn hT hU_diag hU_budget_le hL_budget_le le_rfl hAbsLU_le
 
 /-- **Theorem 9.14**, square-specialized rectangular rounded-stage trace with
+optimal growth and source `f(u)` coefficient. -/
+theorem higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+      fp n A L_hat U_hat b 1 u hu hn hT hU_diag hU_budget_le
+      hL_budget_le hγ_le_u
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, square-specialized rectangular rounded-stage trace with
+optimal growth and the natural source `f(γ_n)` coefficient. -/
+theorem higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma
+      fp n A L_hat U_hat b 1 hn hT hU_diag hU_budget_le hL_budget_le
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j))
+
+/-- **Theorem 9.14**, square-specialized rectangular rounded-stage trace with
 Higham's final `h(γ_n)` coefficient. -/
 theorem higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma
     (fp : FPModel) (n : ℕ)
