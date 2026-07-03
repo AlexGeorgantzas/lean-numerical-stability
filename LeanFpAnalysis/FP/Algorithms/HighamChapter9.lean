@@ -47820,6 +47820,214 @@ theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_ma
       (higham9_27_GMatrix Linv ΔA Uinv)
       (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
 
+/-- **Theorem 9.15**, split-level spectral-radius `G`
+canonical-resolvent endpoint when the normalized lower perturbation is zero,
+with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) < 1)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero
+      hn L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri
+      hrho hXzero
+
+/-- **Theorem 9.15**, split-level spectral-radius `G`
+canonical-resolvent endpoint when the normalized upper perturbation is zero,
+with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) < 1)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero
+      hn L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri
+      hrho hYzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity spectral-radius `G`
+endpoint when the normalized lower perturbation is zero, with triangular
+support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) < 1)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_left_zero
+      hn L U Linv Uinv ΔA ΔL ΔU hLleft hUright hfact hXtri hYtri
+      hrho hXzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity spectral-radius `G`
+endpoint when the normalized upper perturbation is zero, with triangular
+support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) < 1)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_right_zero
+      hn L U Linv Uinv ΔA ΔL ΔU hLleft hUright hfact hXtri hYtri
+      hrho hYzero
+
 /-- **Theorem 9.15**, split-level infinity-norm `G` canonical-resolvent
 endpoint.  A contraction of `|G|` in infinity norm builds the concrete
 nonnegative resolvent `nonsingInv (I - |G|)`, leaving the explicit local
@@ -48457,6 +48665,128 @@ theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_ma
       U Uinv hUright)
     hfact hXtri hYtri hc_nn hc_lt hbound hquad
 
+/-- **Theorem 9.15**, split-level infinity-norm/product-majorant `G`
+canonical-resolvent endpoint with normalized triangular support discharged
+from ordinary triangularity of `Linv`, `ΔL`, `ΔU`, and `Uinv`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_infNormBound_product_majorant_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+            (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_infNormBound_product_majorant
+      hn L U Linv Uinv ΔA ΔL ΔU c hLright hUleft hfact hXtri hYtri
+      hc_nn hc_lt hbound hquad
+
+/-- **Theorem 9.15**, source-oriented infinity-norm/product-majorant `G`
+canonical-resolvent endpoint with normalized triangular support discharged
+from ordinary triangularity of `Linv`, `ΔL`, `ΔU`, and `Uinv`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_product_majorant_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+            (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_product_majorant
+      hn L U Linv Uinv ΔA ΔL ΔU c hLleft hUright hfact hXtri hYtri
+      hc_nn hc_lt hbound hquad
+
 /-- **Theorem 9.15**, split-level infinity-norm `G` canonical-resolvent
 endpoint when the normalized lower perturbation is identically zero. -/
 theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_infNormBound_left_zero
@@ -48653,6 +48983,210 @@ theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_ma
       (higham9_27_GMatrix Linv ΔA Uinv)
       (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
 
+/-- **Theorem 9.15**, split-level infinity-norm `G` canonical-resolvent
+endpoint when the normalized lower perturbation is zero, with triangular
+support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_infNormBound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_infNormBound_left_zero
+      hn L U Linv Uinv ΔA ΔL ΔU c hLright hUleft hfact hXtri hYtri
+      hc_nn hc_lt hbound hXzero
+
+/-- **Theorem 9.15**, split-level infinity-norm `G` canonical-resolvent
+endpoint when the normalized upper perturbation is zero, with triangular
+support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_infNormBound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_infNormBound_right_zero
+      hn L U Linv Uinv ΔA ΔL ΔU c hLright hUleft hfact hXtri hYtri
+      hc_nn hc_lt hbound hYzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity infinity-norm `G`
+endpoint when the normalized lower perturbation is zero, with triangular
+support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_left_zero
+      hn L U Linv Uinv ΔA ΔL ΔU c hLleft hUright hfact hXtri hYtri
+      hc_nn hc_lt hbound hXzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity infinity-norm `G`
+endpoint when the normalized upper perturbation is zero, with triangular
+support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_right_zero
+      hn L U Linv Uinv ΔA ΔL ΔU c hLleft hUright hfact hXtri hYtri
+      hc_nn hc_lt hbound hYzero
+
 /-- **Theorem 9.15**, split-level row-sum/product-majorant `G`
 canonical-resolvent endpoint.  The row-sum contraction is converted to the
 infinity-norm endpoint for `|G|`. -/
@@ -48776,6 +49310,128 @@ theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_ma
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
       U Uinv hUright)
     hfact hXtri hYtri hc_nn hc_lt hrows hquad
+
+/-- **Theorem 9.15**, split-level row-sum/product-majorant `G`
+canonical-resolvent endpoint with normalized triangular support discharged
+from ordinary triangularity of `Linv`, `ΔL`, `ΔU`, and `Uinv`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_row_sum_product_majorant_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+            (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_row_sum_product_majorant
+      hn L U Linv Uinv ΔA ΔL ΔU c hLright hUleft hfact hXtri hYtri
+      hc_nn hc_lt hrows hquad
+
+/-- **Theorem 9.15**, source-oriented row-sum/product-majorant `G`
+canonical-resolvent endpoint with normalized triangular support discharged
+from ordinary triangularity of `Linv`, `ΔL`, `ΔU`, and `Uinv`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_product_majorant_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+            (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_product_majorant
+      hn L U Linv Uinv ΔA ΔL ΔU c hLleft hUright hfact hXtri hYtri
+      hc_nn hc_lt hrows hquad
 
 /-- **Theorem 9.15**, split-level row-sum `G` canonical-resolvent endpoint
 when the normalized lower perturbation is identically zero. -/
@@ -48973,6 +49629,210 @@ theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_ma
       (higham9_27_GMatrix Linv ΔA Uinv)
       (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
 
+/-- **Theorem 9.15**, split-level row-sum `G` canonical-resolvent endpoint
+when the normalized lower perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero
+      hn L U Linv Uinv ΔA ΔL ΔU c hLright hUleft hfact hXtri hYtri
+      hc_nn hc_lt hrows hXzero
+
+/-- **Theorem 9.15**, split-level row-sum `G` canonical-resolvent endpoint
+when the normalized upper perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero
+      hn L U Linv Uinv ΔA ΔL ΔU c hLright hUleft hfact hXtri hYtri
+      hc_nn hc_lt hrows hYzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity row-sum `G` endpoint
+when the normalized lower perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_left_zero
+      hn L U Linv Uinv ΔA ΔL ΔU c hLleft hUright hfact hXtri hYtri
+      hc_nn hc_lt hrows hXzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity row-sum `G` endpoint
+when the normalized upper perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_right_zero
+      hn L U Linv Uinv ΔA ΔL ΔU c hLleft hUright hfact hXtri hYtri
+      hc_nn hc_lt hrows hYzero
+
 /-- **Theorem 9.15**, factorization-level componentwise `G`
 resolvent-majorant endpoint.  The normalized `I + G` split identity is derived
 from the source and perturbed factorizations, and the remaining nonlinear
@@ -49162,6 +50022,82 @@ theorem higham9_15_componentwise_source_bound_of_factorization_G_resolvent_major
     (higham9_15_componentwise_product_majorant_of_right_zero
       (higham9_27_GMatrix Linv ΔA Uinv)
       (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
+
+/-- **Theorem 9.15**, factorization-level `G` supplied-resolvent endpoint
+when the inverse-normalized lower perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_resolvent_majorant_of_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_G_resolvent_majorant_of_left_zero
+      A L U Linv Uinv ΔA ΔL ΔU R hLU hPert hLleft hUright hXtri
+      hYtri hR hXzero
+
+/-- **Theorem 9.15**, factorization-level `G` supplied-resolvent endpoint
+when the inverse-normalized upper perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_resolvent_majorant_of_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_G_resolvent_majorant_of_right_zero
+      A L U Linv Uinv ΔA ΔL ΔU R hLU hPert hLleft hUright hXtri
+      hYtri hR hYzero
 
 /-- **Theorem 9.15**, factorization-level componentwise `G` endpoint with the
 canonical nonsingular Neumann inverse.  A row-sum/infinity-norm contraction for
@@ -49384,6 +50320,96 @@ theorem higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_reso
     (higham9_15_componentwise_product_majorant_of_right_zero
       (higham9_27_GMatrix Linv ΔA Uinv)
       (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
+
+/-- **Theorem 9.15**, factorization-level infinity-norm `G`
+canonical-resolvent endpoint when the inverse-normalized lower perturbation is
+zero, with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_infNormBound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_infNormBound_left_zero
+      hn A L U Linv Uinv ΔA ΔL ΔU c hLU hPert hLleft hUright hXtri
+      hYtri hc_nn hc_lt hbound hXzero
+
+/-- **Theorem 9.15**, factorization-level infinity-norm `G`
+canonical-resolvent endpoint when the inverse-normalized upper perturbation is
+zero, with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_infNormBound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_infNormBound_right_zero
+      hn A L U Linv Uinv ΔA ΔL ΔU c hLU hPert hLleft hUright hXtri
+      hYtri hc_nn hc_lt hbound hYzero
 
 /-- **Theorem 9.15**, spectral-radius canonical-resolvent endpoint for the
 `G` componentwise route.  A nonnegative spectral contraction for `|G|`
@@ -49611,6 +50637,98 @@ theorem higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_reso
       (higham9_27_GMatrix Linv ΔA Uinv)
       (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
 
+/-- **Theorem 9.15**, factorization-level spectral-radius `G`
+canonical-resolvent endpoint when the inverse-normalized lower perturbation is
+zero, with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) < 1)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero
+      hn A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright hXtri
+      hYtri hrho hXzero
+
+/-- **Theorem 9.15**, factorization-level spectral-radius `G`
+canonical-resolvent endpoint when the inverse-normalized upper perturbation is
+zero, with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) < 1)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero
+      hn A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright hXtri
+      hYtri hrho hYzero
+
 /-- **Theorem 9.15**, row-sum form of the `G` canonical-resolvent endpoint.
 The source-side contraction can be supplied directly as
 `sum_j |G i j| <= c`; the wrapper builds the infinity-norm hypothesis used by
@@ -49827,6 +50945,96 @@ theorem higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_reso
     (higham9_15_componentwise_product_majorant_of_right_zero
       (higham9_27_GMatrix Linv ΔA Uinv)
       (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
+
+/-- **Theorem 9.15**, factorization-level row-sum `G`
+canonical-resolvent endpoint when the inverse-normalized lower perturbation is
+zero, with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero
+      hn A L U Linv Uinv ΔA ΔL ΔU c hLU hPert hLleft hUright hXtri
+      hYtri hc_nn hc_lt hrows hXzero
+
+/-- **Theorem 9.15**, factorization-level row-sum `G`
+canonical-resolvent endpoint when the inverse-normalized upper perturbation is
+zero, with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero
+      hn A L U Linv Uinv ΔA ΔL ΔU c hLU hPert hLleft hUright hXtri
+      hYtri hc_nn hc_lt hrows hYzero
 
 /-- **Theorem 9.15**, source-facing componentwise endpoint from the original
 perturbed factorization equations and a supplied normalized `G` majorant.
@@ -51729,6 +52937,218 @@ theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolve
       (higham9_27_GMatrix LhatInv ΔA UhatInv)
       (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
 
+/-- **Theorem 9.15**, split-level spectral-radius `Gtilde`
+canonical-resolvent endpoint when the normalized lower perturbation is zero,
+with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) < 1)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLright hUleft hfact
+      hXtri hYtri hrho hXzero
+
+/-- **Theorem 9.15**, split-level spectral-radius `Gtilde`
+canonical-resolvent endpoint when the normalized upper perturbation is zero,
+with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) < 1)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLright hUleft hfact
+      hXtri hYtri hrho hYzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity spectral-radius
+`Gtilde` endpoint when the normalized lower perturbation is zero, with
+triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) < 1)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_left_zero
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLleft hUright hfact
+      hXtri hYtri hrho hXzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity spectral-radius
+`Gtilde` endpoint when the normalized upper perturbation is zero, with
+triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) < 1)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_right_zero
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLleft hUright hfact
+      hXtri hYtri hrho hYzero
+
 /-- **Theorem 9.15**, split-level infinity-norm `Gtilde`
 canonical-resolvent endpoint.  A contraction of `|Gtilde|` in infinity norm
 builds the concrete nonnegative resolvent `nonsingInv (I - |Gtilde|)`,
@@ -52373,6 +53793,130 @@ theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolve
       Uhat UhatInv hUright)
     hfact hXtri hYtri hc_nn hc_lt hbound hquad
 
+/-- **Theorem 9.15**, split-level infinity-norm/product-majorant `Gtilde`
+canonical-resolvent endpoint with normalized triangular support discharged
+from ordinary triangularity of `LhatInv`, `ΔL`, `ΔU`, and `UhatInv`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound_product_majorant_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) c)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+            (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound_product_majorant
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hLright hUleft hfact
+      hXtri hYtri hc_nn hc_lt hbound hquad
+
+/-- **Theorem 9.15**, source-oriented infinity-norm/product-majorant `Gtilde`
+canonical-resolvent endpoint with normalized triangular support discharged
+from ordinary triangularity of `LhatInv`, `ΔL`, `ΔU`, and `UhatInv`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_product_majorant_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) c)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+            (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_product_majorant
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hLleft hUright hfact
+      hXtri hYtri hc_nn hc_lt hbound hquad
+
 /-- **Theorem 9.15**, split-level infinity-norm `Gtilde`
 canonical-resolvent endpoint when the normalized lower perturbation is
 identically zero. -/
@@ -52571,6 +54115,214 @@ theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolve
       (higham9_27_GMatrix LhatInv ΔA UhatInv)
       (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
 
+/-- **Theorem 9.15**, split-level infinity-norm `Gtilde`
+canonical-resolvent endpoint when the normalized lower perturbation is zero,
+with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) c)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound_left_zero
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hLright hUleft hfact
+      hXtri hYtri hc_nn hc_lt hbound hXzero
+
+/-- **Theorem 9.15**, split-level infinity-norm `Gtilde`
+canonical-resolvent endpoint when the normalized upper perturbation is zero,
+with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound_right_zero
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hLright hUleft hfact
+      hXtri hYtri hc_nn hc_lt hbound hYzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity infinity-norm
+`Gtilde` endpoint when the normalized lower perturbation is zero, with
+triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) c)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_left_zero
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hLleft hUright hfact
+      hXtri hYtri hc_nn hc_lt hbound hXzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity infinity-norm
+`Gtilde` endpoint when the normalized upper perturbation is zero, with
+triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_right_zero
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hLleft hUright hfact
+      hXtri hYtri hc_nn hc_lt hbound hYzero
+
 /-- **Theorem 9.15**, split-level row-sum/product-majorant `Gtilde`
 canonical-resolvent endpoint.  The row-sum contraction is converted to the
 infinity-norm endpoint for `|Gtilde|`. -/
@@ -52694,6 +54446,130 @@ theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolve
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
       Uhat UhatInv hUright)
     hfact hXtri hYtri hc_nn hc_lt hrows hquad
+
+/-- **Theorem 9.15**, split-level row-sum/product-majorant `Gtilde`
+canonical-resolvent endpoint with normalized triangular support discharged
+from ordinary triangularity of `LhatInv`, `ΔL`, `ΔU`, and `UhatInv`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_product_majorant_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix LhatInv ΔA UhatInv i j| ≤ c)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+            (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_product_majorant
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hLright hUleft hfact
+      hXtri hYtri hc_nn hc_lt hrows hquad
+
+/-- **Theorem 9.15**, source-oriented row-sum/product-majorant `Gtilde`
+canonical-resolvent endpoint with normalized triangular support discharged
+from ordinary triangularity of `LhatInv`, `ΔL`, `ΔU`, and `UhatInv`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_product_majorant_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix LhatInv ΔA UhatInv i j| ≤ c)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+            (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_product_majorant
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hLleft hUright hfact
+      hXtri hYtri hc_nn hc_lt hrows hquad
 
 /-- **Theorem 9.15**, split-level row-sum `Gtilde` canonical-resolvent
 endpoint when the normalized lower perturbation is identically zero. -/
@@ -52891,6 +54767,214 @@ theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolve
       (higham9_27_GMatrix LhatInv ΔA UhatInv)
       (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
 
+/-- **Theorem 9.15**, split-level row-sum `Gtilde` canonical-resolvent
+endpoint when the normalized lower perturbation is zero, with triangular
+support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix LhatInv ΔA UhatInv i j| ≤ c)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hLright hUleft hfact
+      hXtri hYtri hc_nn hc_lt hrows hXzero
+
+/-- **Theorem 9.15**, split-level row-sum `Gtilde` canonical-resolvent
+endpoint when the normalized upper perturbation is zero, with triangular
+support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix LhatInv ΔA UhatInv i j| ≤ c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hLright hUleft hfact
+      hXtri hYtri hc_nn hc_lt hrows hYzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity row-sum `Gtilde`
+endpoint when the normalized lower perturbation is zero, with triangular
+support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix LhatInv ΔA UhatInv i j| ≤ c)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_left_zero
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hLleft hUright hfact
+      hXtri hYtri hc_nn hc_lt hrows hXzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity row-sum `Gtilde`
+endpoint when the normalized upper perturbation is zero, with triangular
+support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix LhatInv ΔA UhatInv i j| ≤ c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_right_zero
+      hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hLleft hUright hfact
+      hXtri hYtri hc_nn hc_lt hrows hYzero
+
 /-- **Theorem 9.15**, factorization-level componentwise `Gtilde`
 resolvent-majorant endpoint.  The normalized `I - Gtilde` split identity is
 derived from the two source factorizations, and the remaining nonlinear
@@ -53083,6 +55167,84 @@ theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_
     (higham9_15_componentwise_product_majorant_of_right_zero
       (higham9_27_GMatrix LhatInv ΔA UhatInv)
       (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
+
+/-- **Theorem 9.15**, factorization-level `Gtilde` supplied-resolvent endpoint
+when the inverse-normalized lower perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_majorant_of_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_majorant_of_left_zero
+      A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R hA hPert hLleft
+      hUright hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, factorization-level `Gtilde` supplied-resolvent endpoint
+when the inverse-normalized upper perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_majorant_of_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_majorant_of_right_zero
+      A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R hA hPert hLleft
+      hUright hXtri hYtri hR hYzero
 
 /-- **Theorem 9.15**, factorization-level componentwise `Gtilde` endpoint with
 the canonical nonsingular Neumann inverse.  A row-sum/infinity-norm contraction
@@ -53306,6 +55468,98 @@ theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv
     (higham9_15_componentwise_product_majorant_of_right_zero
       (higham9_27_GMatrix LhatInv ΔA UhatInv)
       (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
+
+/-- **Theorem 9.15**, factorization-level infinity-norm `Gtilde`
+canonical-resolvent endpoint when the inverse-normalized lower perturbation is
+zero, with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_infNormBound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) c)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_infNormBound_left_zero
+      hn A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hA hPert hLleft
+      hUright hXtri hYtri hc_nn hc_lt hbound hXzero
+
+/-- **Theorem 9.15**, factorization-level infinity-norm `Gtilde`
+canonical-resolvent endpoint when the inverse-normalized upper perturbation is
+zero, with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_infNormBound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_infNormBound_right_zero
+      hn A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hA hPert hLleft
+      hUright hXtri hYtri hc_nn hc_lt hbound hYzero
 
 /-- **Theorem 9.15**, spectral-radius canonical-resolvent endpoint for the
 `Gtilde` componentwise route.  A nonnegative spectral contraction for
@@ -53535,6 +55789,100 @@ theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv
       (higham9_27_GMatrix LhatInv ΔA UhatInv)
       (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
 
+/-- **Theorem 9.15**, factorization-level spectral-radius `Gtilde`
+canonical-resolvent endpoint when the inverse-normalized lower perturbation is
+zero, with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) < 1)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU hLhatInv_lower hΔL_strict hΔU_upper
+      hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero
+      hn A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft
+      hUright hXtri hYtri hrho hXzero
+
+/-- **Theorem 9.15**, factorization-level spectral-radius `Gtilde`
+canonical-resolvent endpoint when the inverse-normalized upper perturbation is
+zero, with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) < 1)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU hLhatInv_lower hΔL_strict hΔU_upper
+      hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero
+      hn A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft
+      hUright hXtri hYtri hrho hYzero
+
 /-- **Theorem 9.15**, row-sum form of the `Gtilde` canonical-resolvent
 endpoint.  The source-side contraction can be supplied directly as
 `sum_j |Gtilde i j| <= c`; the wrapper builds the infinity-norm hypothesis
@@ -53751,6 +56099,98 @@ theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv
     (higham9_15_componentwise_product_majorant_of_right_zero
       (higham9_27_GMatrix LhatInv ΔA UhatInv)
       (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
+
+/-- **Theorem 9.15**, factorization-level row-sum `Gtilde`
+canonical-resolvent endpoint when the inverse-normalized lower perturbation is
+zero, with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix LhatInv ΔA UhatInv i j| ≤ c)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero
+      hn A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hA hPert hLleft
+      hUright hXtri hYtri hc_nn hc_lt hrows hXzero
+
+/-- **Theorem 9.15**, factorization-level row-sum `Gtilde`
+canonical-resolvent endpoint when the inverse-normalized upper perturbation is
+zero, with triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix LhatInv ΔA UhatInv i j| ≤ c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero
+      hn A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hA hPert hLleft
+      hUright hXtri hYtri hc_nn hc_lt hrows hYzero
 
 /-- **Theorem 9.15**, source-facing componentwise endpoint from the original
 perturbed factorization equations and a supplied normalized majorant.
@@ -55979,6 +58419,106 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv
       (higham9_27_GMatrix Linv ΔA Uinv)
       (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
 
+/-- **Theorem 9.15**, infinity-norm first-order componentwise `G` endpoint
+when the inverse-normalized lower perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv_resolvent_majorant_of_infNormBound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul
+                (nonsingInv n
+                  (matSub_id n
+                    (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv_resolvent_majorant_of_infNormBound_left_zero
+      hn u A L U Linv Uinv ΔA ΔL ΔU c hLU hPert hLleft hUright hXtri
+      hYtri hc_nn hc_lt hbound hXzero
+
+/-- **Theorem 9.15**, infinity-norm first-order componentwise `G` endpoint
+when the inverse-normalized upper perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv_resolvent_majorant_of_infNormBound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul
+                (nonsingInv n
+                  (matSub_id n
+                    (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv_resolvent_majorant_of_infNormBound_right_zero
+      hn u A L U Linv Uinv ΔA ΔL ΔU c hLU hPert hLleft hUright hXtri
+      hYtri hc_nn hc_lt hbound hYzero
+
 /-- **Theorem 9.15**, factorization-level first-order componentwise `G`
 endpoint with the canonical nonsingular Neumann inverse from a spectral-radius
 contraction. -/
@@ -56352,6 +58892,108 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv
       (higham9_27_GMatrix Linv ΔA Uinv)
       (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
 
+/-- **Theorem 9.15**, spectral-radius first-order componentwise `G` endpoint
+when the inverse-normalized lower perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) < 1)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul
+                (nonsingInv n
+                  (matSub_id n
+                    (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero
+      hn u A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright hXtri
+      hYtri hrho hXzero
+
+/-- **Theorem 9.15**, spectral-radius first-order componentwise `G` endpoint
+when the inverse-normalized upper perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) < 1)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul
+                (nonsingInv n
+                  (matSub_id n
+                    (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero
+      hn u A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright hXtri
+      hYtri hrho hYzero
+
 /-- **Theorem 9.15**, factorization-level first-order componentwise `G`
 endpoint with the canonical nonsingular Neumann inverse from row-sum bounds. -/
 theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv_resolvent_majorant_of_row_sum_bound
@@ -56717,6 +59359,106 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv
     (higham9_15_componentwise_product_majorant_of_right_zero
       (higham9_27_GMatrix Linv ΔA Uinv)
       (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
+
+/-- **Theorem 9.15**, row-sum first-order componentwise `G` endpoint when the
+inverse-normalized lower perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul
+                (nonsingInv n
+                  (matSub_id n
+                    (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero
+      hn u A L U Linv Uinv ΔA ΔL ΔU c hLU hPert hLleft hUright hXtri
+      hYtri hc_nn hc_lt hrows hXzero
+
+/-- **Theorem 9.15**, row-sum first-order componentwise `G` endpoint when the
+inverse-normalized upper perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul
+                (nonsingInv n
+                  (matSub_id n
+                    (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero
+      hn u A L U Linv Uinv ΔA ΔL ΔU c hLU hPert hLleft hUright hXtri
+      hYtri hc_nn hc_lt hrows hYzero
 
 /-- **Theorem 9.15**, factorization-level first-order componentwise `Gtilde`
 endpoint from a supplied nonnegative resolvent majorant. -/
@@ -57405,6 +60147,108 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsi
       (higham9_27_GMatrix LhatInv ΔA UhatInv)
       (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
 
+/-- **Theorem 9.15**, infinity-norm first-order componentwise `Gtilde`
+endpoint when the inverse-normalized lower perturbation is zero, with
+triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_infNormBound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) c)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul
+                (nonsingInv n
+                  (matSub_id n
+                    (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_infNormBound_left_zero
+      hn u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hA hPert hLleft
+      hUright hXtri hYtri hc_nn hc_lt hbound hXzero
+
+/-- **Theorem 9.15**, infinity-norm first-order componentwise `Gtilde`
+endpoint when the inverse-normalized upper perturbation is zero, with
+triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_infNormBound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul
+                (nonsingInv n
+                  (matSub_id n
+                    (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_infNormBound_right_zero
+      hn u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hA hPert hLleft
+      hUright hXtri hYtri hc_nn hc_lt hbound hYzero
+
 /-- **Theorem 9.15**, factorization-level first-order componentwise `Gtilde`
 endpoint with the canonical nonsingular Neumann inverse from a spectral-radius
 contraction. -/
@@ -57779,6 +60623,110 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsi
       (higham9_27_GMatrix LhatInv ΔA UhatInv)
       (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
 
+/-- **Theorem 9.15**, spectral-radius first-order componentwise `Gtilde`
+endpoint when the inverse-normalized lower perturbation is zero, with
+triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) < 1)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul
+                (nonsingInv n
+                  (matSub_id n
+                    (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero
+      hn u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft
+      hUright hXtri hYtri hrho hXzero
+
+/-- **Theorem 9.15**, spectral-radius first-order componentwise `Gtilde`
+endpoint when the inverse-normalized upper perturbation is zero, with
+triangular support discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) < 1)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul
+                (nonsingInv n
+                  (matSub_id n
+                    (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero
+      hn u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft
+      hUright hXtri hYtri hrho hYzero
+
 /-- **Theorem 9.15**, factorization-level first-order componentwise `Gtilde`
 endpoint with the canonical nonsingular Neumann inverse from row-sum bounds. -/
 theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_row_sum_bound
@@ -58145,6 +61093,108 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsi
     (higham9_15_componentwise_product_majorant_of_right_zero
       (higham9_27_GMatrix LhatInv ΔA UhatInv)
       (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
+
+/-- **Theorem 9.15**, row-sum first-order componentwise `Gtilde` endpoint
+when the inverse-normalized lower perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix LhatInv ΔA UhatInv i j| ≤ c)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul
+                (nonsingInv n
+                  (matSub_id n
+                    (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero
+      hn u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hA hPert hLleft
+      hUright hXtri hYtri hc_nn hc_lt hrows hXzero
+
+/-- **Theorem 9.15**, row-sum first-order componentwise `Gtilde` endpoint
+when the inverse-normalized upper perturbation is zero, with triangular support
+discharged from ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero_of_factor_triangularity
+    {n : ℕ} (hn : 0 < n)
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n, |higham9_27_GMatrix LhatInv ΔA UhatInv i j| ≤ c)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul
+                (nonsingInv n
+                  (matSub_id n
+                    (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero
+      hn u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hA hPert hLleft
+      hUright hXtri hYtri hc_nn hc_lt hrows hYzero
 
 /-! ## Appendix A, Problem 9.2 -/
 
