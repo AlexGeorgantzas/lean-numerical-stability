@@ -12179,6 +12179,14 @@ theorem higham9_16_rookPivotFosterBound_le_of_le {n m : ℕ} (hnm : n ≤ m) :
         higham9_16_rookPivotFosterFactor_le_of_le hn hnm
       exact mul_le_mul_of_nonneg_left hfactor (by norm_num)
 
+/-- **Equation (9.16)**, Foster's scalar rook-pivoting RHS is at least two in
+every dimension at least two. -/
+lemma higham9_16_rookPivotFosterBound_ge_two_of_ge_two {n : ℕ}
+    (hn : 2 ≤ n) :
+    (2 : ℝ) ≤ higham9_16_rookPivotFosterBound n :=
+  le_trans higham9_16_rookPivotFosterBound_two_ge_two
+    (higham9_16_rookPivotFosterBound_le_of_le hn)
+
 /-- **Equation (9.16)**, Foster's scalar rook-pivoting RHS is monotone in the
 matrix order parameter. -/
 theorem higham9_16_rookPivotFosterBound_monotone :

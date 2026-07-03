@@ -13173,6 +13173,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_16_pow_two_le_rookPivotFosterBound_of_le_two
 #check higham9_16_rookPivotFosterFactor_le_of_le
 #check higham9_16_rookPivotFosterBound_le_of_le
+#check higham9_16_rookPivotFosterBound_ge_two_of_ge_two
 #check higham9_16_rookPivotFosterBound_monotone
 #check higham9_idMatrix_LUFactSpec
 #check higham9_noPivotingLUFactSpecGrowthValues
