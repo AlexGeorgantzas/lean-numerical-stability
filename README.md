@@ -104,10 +104,12 @@ range/null source split under the explicit fixed-null component hypothesis.
 It also adds the finite (17.29) `S_m` bound surfaces
 `singularErrorSourceNormSum`, `singularErrorSourceComponentBound`,
 `singularErrorSourceTerm_norm_bound`,
+`local_error_normwise_simplified`,
+`singularErrorSourceTerm_norm_bound_of_local_error`,
 `singularErrorSourceTerm_componentwise_bound`, and
-`singularErrorSourceTerm_componentwise_bound_of_local_error`, with the
-componentwise form instantiated from the local-error model and the exact
-normwise `gamma_x` local-error instantiation still visible as an open wrapper.
+`singularErrorSourceTerm_componentwise_bound_of_local_error`, with both the
+normwise and componentwise forms instantiated from the local-error model and
+iterate-growth hypotheses.
 The module also contains the
 subordinate-norm stopping-test wrappers
 `stopping_test_rhs_backward_subordinate`,
