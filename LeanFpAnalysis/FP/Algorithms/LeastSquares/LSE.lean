@@ -8207,6 +8207,106 @@ private theorem lseDual_eval_eq_sum {p : ℕ}
       rw [hsingle, map_smul]
       rfl
 
+private noncomputable def lseKernelFactorDual {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (hB : LSEFullRowRank B)
+    (g : Fin n → ℝ)
+    (hker : ∀ v : Fin n → ℝ, rectMatMulVec B v = 0 →
+      lseDotDual g v = 0) :
+    Module.Dual ℝ (Fin p → ℝ) where
+  toFun y := lseDotDual g (Classical.choose (hB y))
+  map_add' := by
+    intro y z
+    let xy : Fin n → ℝ := Classical.choose (hB y)
+    let xz : Fin n → ℝ := Classical.choose (hB z)
+    let xyz : Fin n → ℝ := Classical.choose (hB (y + z))
+    have hxy_lm : lseConstraintLinearMap B xy = y :=
+      Classical.choose_spec (hB y)
+    have hxz_lm : lseConstraintLinearMap B xz = z :=
+      Classical.choose_spec (hB z)
+    have hxyz_lm : lseConstraintLinearMap B xyz = y + z :=
+      Classical.choose_spec (hB (y + z))
+    let w : Fin n → ℝ := xyz - (xy + xz)
+    have hBw_lm : lseConstraintLinearMap B w = 0 := by
+      dsimp [w]
+      rw [map_sub, map_add, hxyz_lm, hxy_lm, hxz_lm]
+      ext r
+      simp
+    have hBw : rectMatMulVec B w = 0 := by
+      simpa [lseConstraintLinearMap] using hBw_lm
+    have hw0 : lseDotDual g w = 0 := hker w hBw
+    have hxyz_eq : lseDotDual g xyz = lseDotDual g (xy + xz) := by
+      have hw0' : lseDotDual g (xyz - (xy + xz)) = 0 := by
+        simpa [w] using hw0
+      rw [map_sub] at hw0'
+      exact sub_eq_zero.mp hw0'
+    calc
+      lseDotDual g (Classical.choose (hB (y + z)))
+          = lseDotDual g xyz := rfl
+      _ = lseDotDual g (xy + xz) := hxyz_eq
+      _ = lseDotDual g xy + lseDotDual g xz := by rw [map_add]
+      _ = lseDotDual g (Classical.choose (hB y)) +
+          lseDotDual g (Classical.choose (hB z)) := rfl
+  map_smul' := by
+    intro a y
+    let xy : Fin n → ℝ := Classical.choose (hB y)
+    let xay : Fin n → ℝ := Classical.choose (hB (a • y))
+    have hxy_lm : lseConstraintLinearMap B xy = y :=
+      Classical.choose_spec (hB y)
+    have hxay_lm : lseConstraintLinearMap B xay = a • y :=
+      Classical.choose_spec (hB (a • y))
+    let w : Fin n → ℝ := xay - a • xy
+    have hBw_lm : lseConstraintLinearMap B w = 0 := by
+      dsimp [w]
+      rw [map_sub, map_smul, hxay_lm, hxy_lm]
+      ext r
+      simp
+    have hBw : rectMatMulVec B w = 0 := by
+      simpa [lseConstraintLinearMap] using hBw_lm
+    have hw0 : lseDotDual g w = 0 := hker w hBw
+    have hxay_eq : lseDotDual g xay = lseDotDual g (a • xy) := by
+      have hw0' : lseDotDual g (xay - a • xy) = 0 := by
+        simpa [w] using hw0
+      rw [map_sub] at hw0'
+      exact sub_eq_zero.mp hw0'
+    calc
+      lseDotDual g (Classical.choose (hB (a • y)))
+          = lseDotDual g xay := rfl
+      _ = lseDotDual g (a • xy) := hxay_eq
+      _ = a • lseDotDual g xy := by rw [map_smul]
+      _ = a •
+          lseDotDual g (Classical.choose (hB y)) := rfl
+
+private theorem lseKernelFactorDual_apply_constraint {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (hB : LSEFullRowRank B)
+    (g : Fin n → ℝ)
+    (hker : ∀ v : Fin n → ℝ, rectMatMulVec B v = 0 →
+      lseDotDual g v = 0)
+    (v : Fin n → ℝ) :
+    lseKernelFactorDual B hB g hker (rectMatMulVec B v) =
+      lseDotDual g v := by
+  let x : Fin n → ℝ := Classical.choose (hB (rectMatMulVec B v))
+  have hx_lm :
+      lseConstraintLinearMap B x = rectMatMulVec B v :=
+    Classical.choose_spec (hB (rectMatMulVec B v))
+  let w : Fin n → ℝ := x - v
+  have hBw_lm : lseConstraintLinearMap B w = 0 := by
+    dsimp [w]
+    rw [map_sub, hx_lm]
+    ext r
+    simp [lseConstraintLinearMap]
+  have hBw : rectMatMulVec B w = 0 := by
+    simpa [lseConstraintLinearMap] using hBw_lm
+  have hw0 : lseDotDual g w = 0 := hker w hBw
+  have hx_eq : lseDotDual g x = lseDotDual g v := by
+    have hw0' : lseDotDual g (x - v) = 0 := by
+      simpa [w] using hw0
+    rw [map_sub] at hw0'
+    exact sub_eq_zero.mp hw0'
+  calc
+    lseKernelFactorDual B hB g hker (rectMatMulVec B v)
+        = lseDotDual g x := rfl
+    _ = lseDotDual g v := hx_eq
+
 /-- An exact equality-constrained least-squares minimizer has zero objective
     first variation along every feasible direction `v` satisfying `B v = 0`. -/
 theorem IsLSEMinimizer.feasible_direction_stationarity {m n p : ℕ}
@@ -8339,6 +8439,107 @@ theorem IsLSEMinimizer.of_lagrange_normal_equations {m n p : ℕ}
   have hnonneg : 0 ≤ vecNorm2Sq (rectMatMulVec A v) :=
     vecNorm2Sq_nonneg (rectMatMulVec A v)
   nlinarith
+
+/-- Higham, 2nd ed., Chapter 20, Problem 20.10, necessity direction under
+    the source full-row-rank constraint qualification: an LSE minimizer admits
+    Lagrange multipliers satisfying the normal equations
+    `A^T (b - A*x) = B^T lambda`, together with feasibility `B*x = d`. -/
+theorem IsLSEMinimizer.exists_lagrange_normal_equations_of_fullRowRank
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {d : Fin p → ℝ}
+    {x : Fin n → ℝ}
+    (hmin : IsLSEMinimizer A b B d x)
+    (hB : LSEFullRowRank B) :
+    ∃ lambda : Fin p → ℝ,
+      LSEFeasible B d x ∧
+        ∀ j : Fin n,
+          ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+            ∑ r : Fin p, B r j * lambda r := by
+  let g : Fin n → ℝ :=
+    fun j => ∑ i : Fin m, A i j * lsResidual A b x i
+  have hker : ∀ v : Fin n → ℝ, rectMatMulVec B v = 0 →
+      lseDotDual g v = 0 := by
+    intro v hv
+    have hstat := hmin.feasible_direction_stationarity hv
+    simpa [lseDotDual, g, mul_comm] using hstat
+  let psi : Module.Dual ℝ (Fin p → ℝ) :=
+    lseKernelFactorDual B hB g hker
+  let lambda : Fin p → ℝ :=
+    fun r => -psi (Pi.single r (1 : ℝ) : Fin p → ℝ)
+  refine ⟨lambda, hmin.1, ?_⟩
+  intro j
+  have hpsi_j : psi (fun r : Fin p => B r j) = g j := by
+    have hBbasis :
+        rectMatMulVec B (Pi.single j (1 : ℝ) : Fin n → ℝ) =
+          fun r : Fin p => B r j := by
+      simpa [lseConstraintLinearMap] using
+        lseConstraintLinearMap_basis B j
+    have happly :=
+      lseKernelFactorDual_apply_constraint B hB g hker
+        (Pi.single j (1 : ℝ) : Fin n → ℝ)
+    have hdot := lseDotDual_basis g j
+    change lseKernelFactorDual B hB g hker
+        (fun r : Fin p => B r j) = g j
+    rw [← hBbasis]
+    exact happly.trans hdot
+  have hhigham :
+      (∑ i : Fin m, A i j * lsResidualHigham A b x i) = -g j := by
+    calc
+      (∑ i : Fin m, A i j * lsResidualHigham A b x i)
+          = ∑ i : Fin m, A i j * (-lsResidual A b x i) := by
+            rw [lsResidualHigham_eq_neg_lsResidual A b x]
+      _ = - (∑ i : Fin m, A i j * lsResidual A b x i) := by
+            rw [← Finset.sum_neg_distrib]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+      _ = -g j := rfl
+  have hsum_lambda :
+      (∑ r : Fin p, B r j * lambda r) =
+        -psi (fun r : Fin p => B r j) := by
+    have hpsi_sum := lseDual_eval_eq_sum psi (fun r : Fin p => B r j)
+    dsimp [lambda]
+    calc
+      (∑ r : Fin p, B r j *
+          -psi (Pi.single r (1 : ℝ) : Fin p → ℝ))
+          =
+            - (∑ r : Fin p, B r j *
+              psi (Pi.single r (1 : ℝ) : Fin p → ℝ)) := by
+            rw [← Finset.sum_neg_distrib]
+            apply Finset.sum_congr rfl
+            intro r _
+            ring
+      _ = -psi (fun r : Fin p => B r j) := by
+            rw [← hpsi_sum]
+  calc
+    (∑ i : Fin m, A i j * lsResidualHigham A b x i)
+        = -g j := hhigham
+    _ = -psi (fun r : Fin p => B r j) := by rw [hpsi_j]
+    _ = ∑ r : Fin p, B r j * lambda r := hsum_lambda.symm
+
+/-- Higham, 2nd ed., Chapter 20, Problem 20.10: under full row rank of the
+    constraint matrix, solving the equality-constrained least-squares problem
+    (20.23) is equivalent to feasibility plus the Lagrange-multiplier normal
+    equations `A^T (b - A*x) = B^T lambda`. -/
+theorem isLSEMinimizer_iff_exists_lagrange_normal_equations_of_fullRowRank
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {d : Fin p → ℝ}
+    {x : Fin n → ℝ}
+    (hB : LSEFullRowRank B) :
+    IsLSEMinimizer A b B d x ↔
+      ∃ lambda : Fin p → ℝ,
+        LSEFeasible B d x ∧
+          ∀ j : Fin n,
+            ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+              ∑ r : Fin p, B r j * lambda r := by
+  constructor
+  · intro hmin
+    exact hmin.exists_lagrange_normal_equations_of_fullRowRank hB
+  · rintro ⟨lambda, hfeas, hnormal⟩
+    exact IsLSEMinimizer.of_lagrange_normal_equations
+      (lambda := lambda) hfeas hnormal
 
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
