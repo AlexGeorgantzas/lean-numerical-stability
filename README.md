@@ -45,7 +45,10 @@ Chapter 16.2 amplification factor `sylvesterAmplificationMu`, its square-case
 specialization `sylvesterAmplificationMuSquare`, and the source formula bridge
 `sylvesterAmplificationMu_square_eq`, the conditional square-case
 `one_le_sylvesterAmplificationMuSquare`, plus the xi-level μ-relative-residual
-bound `xiSq_le_mu_relative_residual_sq`.  The Lyapunov subsection now also has
+bound `xiSq_le_mu_relative_residual_sq`. It also connects square Frobenius
+backward-error certificates to the SVD-coordinate lower-direction bridge through
+`sylvesterBackwardResidual`, `svdResidual_backwardResidual`, and
+`xiSq_le_three_eta_sq_of_backward_error`. The Lyapunov subsection now also has
 the spectral-coordinate equation surface `lyapunovBackwardScalarEq` and its
 residual/diagonal bridges `lyapunovBackwardScalarEq_iff_residual_eq` and
 `lyapunovBackwardScalarEq_iff_diagMatrix_eq`, plus the `lyapunovXiSq`,
@@ -67,9 +70,10 @@ recurrence `one_step_error_source`. The current proved surface covers
 nonsingular splitting algebra, the exact-solution affine fixed-point identity
 `stationary_solution_fixed_point` behind (17.4), the exact finite-sum solution
 identity `stationary_solution_finite_sum`, the source-sign computed finite-sum
-identity `sourceComputedIteration_finite_sum` for (17.3), finite/q-bound forward
-and residual dependencies, and Jacobi/SOR splitting identities; the finite-sum
-error recurrence, exact infinite-sum, singular-system, and stopping-test rows
+identity `sourceComputedIteration_finite_sum` for (17.3), and the finite-sum
+error recurrence `sourceComputedIteration_error_finite_sum` for (17.5),
+finite/q-bound forward and residual dependencies, and Jacobi/SOR splitting
+identities; the exact infinite-sum, singular-system, and stopping-test rows
 remain open in the Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
