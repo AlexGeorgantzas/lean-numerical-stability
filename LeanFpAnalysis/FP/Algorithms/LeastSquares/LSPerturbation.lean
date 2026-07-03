@@ -1834,6 +1834,75 @@ theorem wedinTheorem20_1_vecNorm2_solution_difference_le_of_residual_definitions
       hleftA hleftB hSymA hSymB hDelta hBplus hDeltaA hDeltab
       hrangeA_residual hB hr hs hproj_s
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1), conservative
+    relative solution perturbation bound assembled from the currently proved
+    Wedin vector route.
+
+The result uses residual definitions, normal-equation column orthogonality for
+the perturbed residual, relative perturbation budgets, and `kappa =
+Aplus_norm*A_norm`.  The conclusion is the conservative scalar RHS rather than
+the printed (20.1) RHS because the residual-transfer path still carries the
+extra one-sided Lemma 20.12 denominator. -/
+theorem wedinTheorem20_1_solutionRelativeRHSConservative_le_of_residual_definitions_column_orthogonal
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (hA_norm_pos : 0 < A_norm)
+    (hx_norm_pos : 0 < vecNorm2 x)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget :
+      Deltab_norm ≤ eps * (A_norm * vecNorm2 x + vecNorm2 r))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i)
+    (horth_s : ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      wedinTheorem20_1SolutionRelativeRHSConservative
+        kappa eps A_norm (vecNorm2 x) (vecNorm2 r) := by
+  have hvec :
+      vecNorm2 (fun j => y j - x j) ≤
+        (Aplus_norm / (1 - eta)) *
+            (DeltaA_norm * vecNorm2 x + Deltab_norm) +
+          (eta * Aplus_norm / (1 - eta) ^ 2) * vecNorm2 r :=
+    wedinTheorem20_1_vecNorm2_solution_difference_le_of_residual_definitions_column_orthogonal
+      A B Aplus Bplus DeltaA b Deltab r s x y hAplus_pos heta hsmall
+      hleftA hleftB hSymA hSymB hDelta hBplus hDeltaA hDeltab
+      hrangeA_residual hB hr hs horth_s
+  have heta_scalar : eta = kappa * eps := by
+    rw [heta, hdelta, hkappa]
+    ring
+  have hsmall_scalar : kappa * eps < 1 := by
+    rw [← heta_scalar]
+    exact hsmall
+  exact
+    wedinTheorem20_1_solutionRelativeRHSConservative_of_vector_bound
+      (hAplus_nonneg := le_of_lt hAplus_pos)
+      (hA_norm_pos := hA_norm_pos)
+      (hx_norm_pos := hx_norm_pos)
+      (hkappa := hkappa)
+      (heta := heta_scalar)
+      (hsmall := hsmall_scalar)
+      (hDeltaA_norm := hDeltaA_norm_budget)
+      (hDeltab_norm := hDeltab_norm_budget)
+      (hvec := hvec)
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
