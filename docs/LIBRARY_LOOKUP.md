@@ -4263,6 +4263,7 @@ Source-facing Chapter 10 wrappers:
 - `pivot_product_le_sqrt` ((10.29) scalar step: p^2<=h*a, q^2<=h*b, h>0 => |p*q|/h <= sqrt(a*b) - combines row+column pivot bounds into the multiplier-product bound)
 - `diag_le_opNorm2Le` / `sqrt_diag_prod_le_opNorm2Le` ((10.29) opNorm-diag bridge: opNorm2Le Q c => Q_ii <= c and sqrt(Q_ii Q_jj) <= c for PSD-diagonal Q)
 - `stage_multiplier_product_le` ((10.29) ASSEMBLED per-stage bound: |S_ik S_kj|/H_kk <= c given opNorm2Le Q c and the row/col Gram-diagonal identifications Q = S Hinv S^T = S^T Hinv S)
+- `finiteMaxEigenvalue_mono_of_quadForm_le` ((10.29) Loewner->opNorm step: y^T A y <= y^T B y forall y => lambda_max(A) <= lambda_max(B); converts schur_gram_stage_le into operator-norm stage monotonicity)
 - `finiteMaxEigenvalue_trailing_principal_le` ((10.29) Schur monotonicity, ||Q22||_2 <= ||Q||_2 half: trailing m-block max-eigenvalue <= full, via Fin.cons 0 v padding)
 - `sherman_morrison_quadForm_scalar_mono` ((10.29) crux scalar core: Sherman-Morrison rank-one-update monotonicity, gap (gamma-p)^2/(1+r) >= 0 - the algebraic heart of Q_hat <= Q_22)
 - `rankOne_update_quadForm_eq` ((10.29) crux matrix step: x^T (Z+uu^T)^{-1} x = x^T Z^{-1} x - (u^T Z^{-1} x)^2/(1+u^T Z^{-1} u), via the inverse-action vector; no explicit Sherman-Morrison matrix identity)
