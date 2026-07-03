@@ -51,8 +51,13 @@ SVD optimizer through `svdOptimalDeltaA`, `svdOptimalDeltaB`,
 `exists_svdOptimalPerturbations`, plus the component bounds
 `svdOptimalPerturbations_frobNormSq_bounds`, and lifts that optimizer to an
 original-coordinate backward-error certificate via
-`isBackwardError_sqrt_xiSq_of_svdOptimalPerturbations`, while leaving the eta
-minimum/infimum order bridge open. It also connects square Frobenius
+`isBackwardError_sqrt_xiSq_of_svdOptimalPerturbations`. It now models eta as the
+infimum `sylvesterBackwardErrorInf` over nonnegative backward-error certificates
+and proves the two-sided xi bridge with
+`sylvesterBackwardErrorInf_le_sqrt_xiSq_of_svdOptimalPerturbations` and
+`sqrt_xiSq_div_three_le_sylvesterBackwardErrorInf_of_svd`, while leaving an
+attained-minimum theorem and the direct eta-residual amplification wrapper open.
+It also connects square Frobenius
 backward-error certificates to the SVD-coordinate lower-direction bridge through
 `sylvesterBackwardResidual`, `svdResidual_backwardResidual`, and
 `xiSq_le_three_eta_sq_of_backward_error`. The Lyapunov subsection now also has
