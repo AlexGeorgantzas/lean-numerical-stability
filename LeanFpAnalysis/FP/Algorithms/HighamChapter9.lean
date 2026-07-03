@@ -18986,6 +18986,47 @@ theorem higham9_18_tridiag_to_matrix_isTridiagonal {n : ℕ}
     IsTridiagonal n (higham9_18_tridiag_to_matrix T) :=
   tridiag_to_matrix_isTridiagonal T
 
+/-- **Equation (9.18)**, the matrix assembled from tridiagonal source data is
+also a common-bandwidth-one matrix. -/
+theorem higham9_18_tridiag_to_matrix_isBanded_one_one {n : ℕ}
+    (T : higham9_18_TridiagData n) :
+    IsBanded n 1 1 (higham9_18_tridiag_to_matrix T) :=
+  isBanded_one_one_of_isTridiagonal
+    (higham9_18_tridiag_to_matrix_isTridiagonal T)
+
+/-- **Theorem 9.11 / equation (9.18)**, source-data tridiagonal Bohte solve
+wrapper.
+
+This instantiates the bandwidth-one Bohte solve interface for matrices
+assembled from `TridiagData`; the tridiagonal GEPP growth estimate remains an
+explicit source hypothesis. -/
+theorem higham9_11_tridiag_data_bohte_solve_tight
+    (fp : FPModel) {n : ℕ}
+    (T : higham9_18_TridiagData n)
+    (L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n (higham9_18_tridiag_to_matrix T)
+      L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        2 * |higham9_18_tridiag_to_matrix T i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        2 * gamma fp (3 * n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + ΔA i j) * x_hat j = b i) :=
+  higham9_11_bandwidth_one_bohte_solve_tight_of_isBanded fp n
+    (higham9_18_tridiag_to_matrix T) L_hat U_hat b
+    (higham9_18_tridiag_to_matrix_isBanded_one_one T)
+    hL_diag hU_diag hLU hn hn3 hGrowth
+
 /-- **Equation (9.19)**: computed tridiagonal LU recurrence. -/
 noncomputable def higham9_19_tridiag_lu (fp : FPModel) {n : ℕ}
     (T : higham9_18_TridiagData n) : (Fin n → ℝ) × (Fin n → ℝ) :=
