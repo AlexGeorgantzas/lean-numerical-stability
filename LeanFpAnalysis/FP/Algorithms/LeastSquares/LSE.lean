@@ -17307,6 +17307,58 @@ theorem theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_half_bo
   nlinarith
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    a compact sufficient condition for the rank-preservation smallness
+    hypothesis.  If the larger of the two Householder gamma coefficients times
+    `||A||_F + ||B||_F` is below the source-rank radius, then the combined
+    Householder rank budget is below that radius. -/
+theorem theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      max (theorem20_10_householder_gammaA fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) *
+          (frobNormRect A + frobNormRect B) <
+        theorem20_10_householder_sourceRankRadius hB hStack) :
+    theorem20_10_householder_sourceRankBudget fp A B <
+      theorem20_10_householder_sourceRankRadius hB hStack := by
+  dsimp [theorem20_10_householder_sourceRankBudget]
+  have hA :
+      theorem20_10_householder_gammaA fp r p q * frobNormRect A ≤
+        max (theorem20_10_householder_gammaA fp r p q)
+            (theorem20_10_householder_gammaB fp r p q) *
+          frobNormRect A :=
+    mul_le_mul_of_nonneg_right (le_max_left _ _) (frobNormRect_nonneg A)
+  have hBterm :
+      theorem20_10_householder_gammaB fp r p q * frobNormRect B ≤
+        max (theorem20_10_householder_gammaA fp r p q)
+            (theorem20_10_householder_gammaB fp r p q) *
+          frobNormRect B :=
+    mul_le_mul_of_nonneg_right (le_max_right _ _) (frobNormRect_nonneg B)
+  have hbudget_le :
+      theorem20_10_householder_gammaA fp r p q * frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B ≤
+        max (theorem20_10_householder_gammaA fp r p q)
+            (theorem20_10_householder_gammaB fp r p q) *
+          (frobNormRect A + frobNormRect B) := by
+    calc
+      theorem20_10_householder_gammaA fp r p q * frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B
+          ≤ max (theorem20_10_householder_gammaA fp r p q)
+                (theorem20_10_householder_gammaB fp r p q) *
+              frobNormRect A +
+            max (theorem20_10_householder_gammaA fp r p q)
+                (theorem20_10_householder_gammaB fp r p q) *
+              frobNormRect B :=
+            add_le_add hA hBterm
+      _ = max (theorem20_10_householder_gammaA fp r p q)
+              (theorem20_10_householder_gammaB fp r p q) *
+            (frobNormRect A + frobNormRect B) := by ring
+  exact lt_of_le_of_lt hbudget_le hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank margin-radius wrapper for the constructed rounded Householder
     GQR Part B returned-vector theorem.
 
