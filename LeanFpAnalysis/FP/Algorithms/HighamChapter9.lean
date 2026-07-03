@@ -11729,6 +11729,16 @@ lemma higham9_14_completePivotWilkinsonProduct_le_succ (n : ℕ) :
               ((k + 1 + 1 : ℕ) : ℝ) ^ ((1 : ℝ) / ((k + 1 : ℕ) : ℝ)) :=
           mul_le_mul_of_nonneg_left hfactor hprod_nonneg
 
+/-- **Equation (9.14)**, successor-ratio form of Wilkinson scalar-product
+monotonicity. -/
+lemma higham9_14_completePivotWilkinsonProduct_succ_div_ge_one (n : ℕ) :
+    (1 : ℝ) ≤
+      higham9_14_completePivotWilkinsonProduct (n + 1) /
+        higham9_14_completePivotWilkinsonProduct n := by
+  have hpos := higham9_14_completePivotWilkinsonProduct_pos n
+  rw [le_div_iff₀ hpos]
+  simpa [one_mul] using higham9_14_completePivotWilkinsonProduct_le_succ n
+
 /-- **Equation (9.14)**, Wilkinson's scalar product is monotone in the matrix
 order parameter. -/
 theorem higham9_14_completePivotWilkinsonProduct_monotone :
@@ -11828,6 +11838,18 @@ theorem higham9_14_completePivotWilkinsonBound_le_of_le {n m : ℕ}
         Real.sqrt (higham9_14_completePivotWilkinsonProduct m) :=
     Real.sqrt_le_sqrt (higham9_14_completePivotWilkinsonProduct_le_of_le hnm)
   exact mul_le_mul hsqrt_n hsqrt_prod (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+
+/-- **Equation (9.14)**, successor-ratio form of Wilkinson displayed-bound
+monotonicity. -/
+lemma higham9_14_completePivotWilkinsonBound_succ_div_ge_one {n : ℕ}
+    (hn : 0 < n) :
+    (1 : ℝ) ≤
+      higham9_14_completePivotWilkinsonBound (n + 1) /
+        higham9_14_completePivotWilkinsonBound n := by
+  have hpos := higham9_14_completePivotWilkinsonBound_pos hn
+  rw [le_div_iff₀ hpos]
+  simpa [one_mul] using
+    higham9_14_completePivotWilkinsonBound_le_of_le (Nat.le_succ n)
 
 /-- **Equation (9.14)**, Wilkinson's displayed complete-pivoting RHS is at
 least two in every dimension at least two. -/
@@ -12186,6 +12208,17 @@ theorem higham9_16_rookPivotFosterBound_le_of_le {n m : ℕ} (hnm : n ≤ m) :
             (m : ℝ) ^ ((3 / 4 : ℝ) * Real.log (m : ℝ)) :=
         higham9_16_rookPivotFosterFactor_le_of_le hn hnm
       exact mul_le_mul_of_nonneg_left hfactor (by norm_num)
+
+/-- **Equation (9.16)**, successor-ratio form of Foster displayed-bound
+monotonicity. -/
+lemma higham9_16_rookPivotFosterBound_succ_div_ge_one {n : ℕ} (hn : 0 < n) :
+    (1 : ℝ) ≤
+      higham9_16_rookPivotFosterBound (n + 1) /
+        higham9_16_rookPivotFosterBound n := by
+  have hpos := higham9_16_rookPivotFosterBound_pos hn
+  rw [le_div_iff₀ hpos]
+  simpa [one_mul] using
+    higham9_16_rookPivotFosterBound_le_of_le (Nat.le_succ n)
 
 /-- **Equation (9.16)**, Foster's scalar rook-pivoting RHS is at least two in
 every dimension at least two. -/
