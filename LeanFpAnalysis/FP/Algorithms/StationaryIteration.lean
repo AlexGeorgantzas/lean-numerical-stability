@@ -224,6 +224,58 @@ theorem stationaryScaledIterMatrix_similarity (n : ℕ)
         (matMul n (matMul n M_inv N) (diagMatrix dRight)) := by
           rw [matMul_assoc]
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, p. 327, scale-independence
+    passage: the scaled iteration matrix has the same characteristic polynomial
+    as the original `M^{-1}N`, so the eigenvalue data encoded by the
+    characteristic polynomial is unchanged. -/
+theorem stationaryScaledIterMatrix_charpoly_eq (n : ℕ)
+    (M_inv N : Fin n → Fin n → ℝ)
+    (dLeft dLeftInv dRight dRightInv : Fin n → ℝ)
+    (hdLeft : ∀ i, dLeftInv i * dLeft i = 1)
+    (hdRight : ∀ i, dRightInv i * dRight i = 1) :
+    Matrix.charpoly
+      (iterMatrix n
+        (stationaryScaledInverse n dLeftInv dRightInv M_inv)
+        (stationaryRowColumnScale n dLeft dRight N) :
+        Matrix (Fin n) (Fin n) ℝ) =
+      Matrix.charpoly (iterMatrix n M_inv N : Matrix (Fin n) (Fin n) ℝ) := by
+  let G : Fin n → Fin n → ℝ := iterMatrix n M_inv N
+  let D : Fin n → Fin n → ℝ := diagMatrix dRight
+  let Dinv : Fin n → Fin n → ℝ := diagMatrix dRightInv
+  have hDRight : matMul n D Dinv = idMatrix n :=
+    diagMatrix_mul_diagMatrix_eq_id n dRight dRightInv
+      (fun i => by rw [mul_comm]; exact hdRight i)
+  have hsim :
+      iterMatrix n
+        (stationaryScaledInverse n dLeftInv dRightInv M_inv)
+        (stationaryRowColumnScale n dLeft dRight N) =
+        matMul n Dinv (matMul n G D) := by
+    simpa [G, D, Dinv] using
+      stationaryScaledIterMatrix_similarity n M_inv N dLeft dLeftInv dRight
+        dRightInv hdLeft hdRight
+  have hcomm :
+      Matrix.charpoly (matMul n Dinv (matMul n G D) : Matrix (Fin n) (Fin n) ℝ) =
+        Matrix.charpoly (matMul n (matMul n G D) Dinv :
+          Matrix (Fin n) (Fin n) ℝ) := by
+    simpa [matMul, Matrix.mul_apply] using
+      (Matrix.charpoly_mul_comm
+        (A := (Dinv : Matrix (Fin n) (Fin n) ℝ))
+        (B := (matMul n G D : Matrix (Fin n) (Fin n) ℝ)))
+  have hcollapse : matMul n (matMul n G D) Dinv = G := by
+    rw [matMul_assoc, hDRight, matMul_id_right]
+  calc
+    Matrix.charpoly
+      (iterMatrix n
+        (stationaryScaledInverse n dLeftInv dRightInv M_inv)
+        (stationaryRowColumnScale n dLeft dRight N) :
+        Matrix (Fin n) (Fin n) ℝ)
+        = Matrix.charpoly (matMul n Dinv (matMul n G D) :
+            Matrix (Fin n) (Fin n) ℝ) := by rw [hsim]
+    _ = Matrix.charpoly (matMul n (matMul n G D) Dinv :
+            Matrix (Fin n) (Fin n) ℝ) := hcomm
+    _ = Matrix.charpoly (iterMatrix n M_inv N : Matrix (Fin n) (Fin n) ℝ) := by
+          rw [hcollapse]
+
 -- ============================================================
 -- AG = HA identity
 -- ============================================================
