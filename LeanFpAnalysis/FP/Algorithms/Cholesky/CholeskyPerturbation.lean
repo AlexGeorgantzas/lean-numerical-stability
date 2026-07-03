@@ -152,6 +152,54 @@ theorem frobNormSq_upHalf_le_half {n : ℕ} (Y : Fin n → Fin n → ℝ)
   rw [hRfix] at hsum'
   linarith
 
+/-- **Perturbed Gram identity** (Theorem 10.8 proof, step 3): if
+    `RᵀR = A` and `(R+ΔR)ᵀ(R+ΔR) = A + ΔA` entrywise, the perturbation
+    satisfies `RᵀΔR + ΔRᵀR + ΔRᵀΔR = ΔA` entrywise — the exact identity
+    the `up`-operator route symmetrizes. -/
+theorem cholesky_perturbation_gram_identity {n : ℕ}
+    (A ΔA R ΔR : Fin n → Fin n → ℝ)
+    (hA : ∀ i j : Fin n, ∑ k : Fin n, R k i * R k j = A i j)
+    (hAΔ : ∀ i j : Fin n, ∑ k : Fin n,
+      (R k i + ΔR k i) * (R k j + ΔR k j) = A i j + ΔA i j) :
+    ∀ i j : Fin n,
+      (∑ k : Fin n, R k i * ΔR k j) + (∑ k : Fin n, ΔR k i * R k j) +
+      (∑ k : Fin n, ΔR k i * ΔR k j) = ΔA i j := by
+  intro i j
+  have h := hAΔ i j
+  have hsplit : ∑ k : Fin n,
+      (R k i + ΔR k i) * (R k j + ΔR k j) =
+      (∑ k : Fin n, R k i * R k j) +
+      ((∑ k : Fin n, R k i * ΔR k j) + (∑ k : Fin n, ΔR k i * R k j) +
+       (∑ k : Fin n, ΔR k i * ΔR k j)) := by
+    rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib,
+      ← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun k _ => by ring
+  rw [hsplit, hA i j] at h
+  linarith
+
+/-- **Scalar absorption endgame** (Theorem 10.8 proof, step 4): from
+    the quadratic self-bound `t ≤ a(δ + t²)` and the small-root
+    certificate `a·t < 1`, `t ≤ aδ/(1 − a·t)`. -/
+theorem cholesky_perturbation_scalar_endgame (a δ t : ℝ)
+    (hquad : t ≤ a * (δ + t ^ 2)) (hat : a * t < 1) :
+    t ≤ a * δ / (1 - a * t) := by
+  rw [le_div_iff₀ (by linarith)]
+  nlinarith
+
+/-- **Scalar endgame, display form** (Theorem 10.8, printed display
+    shape): if moreover `a·t ≤ c < 1` with `a, δ ≥ 0`, the bound takes
+    the source's monotone form `t ≤ aδ/(1 − c)`. -/
+theorem cholesky_perturbation_scalar_endgame_display (a δ t c : ℝ)
+    (ha : 0 ≤ a) (hδ : 0 ≤ δ)
+    (hquad : t ≤ a * (δ + t ^ 2))
+    (hac : a * t ≤ c) (hc1 : c < 1) :
+    t ≤ a * δ / (1 - c) := by
+  have hat : a * t < 1 := lt_of_le_of_lt hac hc1
+  have h1 := cholesky_perturbation_scalar_endgame a δ t hquad hat
+  have h2 : a * δ / (1 - a * t) ≤ a * δ / (1 - c) :=
+    div_le_div₀ (mul_nonneg ha hδ) le_rfl (by linarith) (by linarith)
+  exact h1.trans h2
+
 -- ============================================================
 -- §10.2  Theorem 10.8: Sun perturbation bound (normwise)
 -- ============================================================
