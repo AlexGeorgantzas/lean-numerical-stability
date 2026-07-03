@@ -19624,6 +19624,58 @@ theorem IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_projector_bound_
       hDeltab_norm_budget hleftA hleftB hSymA hSymB hrangeA_residual
       hPBIPA hB hr hs horth_s
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2), conservative
+    residual-side Wedin bound with perturbed least-squares optimality as the
+    caller-facing hypothesis.
+
+This is the minimizer-facing version of
+`wedinTheorem20_1_residualRelativeRHSConservative_le_of_residual_definitions_Bplus_bound_geometry_column_orthogonal`.
+It discharges residual column orthogonality from exact optimality and uses the
+available one-sided Lemma 20.12 plus a Lemma 20.11-style `Bplus` radius.  The
+conclusion is conservative, not the printed `(1+2*kappa)*eps` RHS. -/
+theorem IsLeastSquaresMinimizer.wedin_residualRelativeRHSConservative_le_of_Bplus_bound_geometry
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {delta Aplus_norm DeltaA_norm Deltab_norm kappa eps A_norm eta : ℝ}
+    (hPertMin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
+    (hb_norm_pos : 0 < vecNorm2 b)
+    (hA_norm_nonneg : 0 ≤ A_norm)
+    (heps_nonneg : 0 ≤ eps)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (heta : eta = kappa * eps)
+    (hsmall : kappa * eps < 1)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hBplus : rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget : Deltab_norm ≤ eps * vecNorm2 b)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
+    vecNorm2 (fun i => r i - s i) / vecNorm2 b ≤
+      wedinTheorem20_1ResidualRelativeRHSConservative kappa eps := by
+  have horth_s :
+      ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0 :=
+    IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
+      (B := B) (b := b) (Deltab := Deltab) (s := s) (y := y)
+      hPertMin hs
+  exact
+    wedinTheorem20_1_residualRelativeRHSConservative_le_of_residual_definitions_Bplus_bound_geometry_column_orthogonal
+      A B Aplus Bplus DeltaA b Deltab r s x y hb_norm_pos hA_norm_nonneg
+      heps_nonneg hkappa hdelta heta hsmall hAplus hBplus hDelta hDeltaA
+      hDeltab hDeltaA_norm_budget hDeltab_norm_budget hleftA hleftB
+      hSymA hSymB hrangeA_residual hB hr hs horth_s
+
 /-- Perturbed-data expansion of Higham's signed residual:
     `(b + Delta b) - (A + Delta A)y = (b - A y) + Delta b - Delta A y`. -/
 theorem lsResidualHigham_perturbed_eq {m n : ℕ}
