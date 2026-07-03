@@ -2474,6 +2474,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_rowDiagDom_fu_bound_from_LUFactSpec`
 - `higham9_14_tridiag_colDiagDom_source_f_bound_from_LUFactSpec`
 - `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUFactSpec`
+- `higham9_14_tridiag_data_colDiagDom_source_f_bound_from_LUFactSpec`
+- `higham9_14_tridiag_data_rowDiagDom_source_f_bound_from_LUFactSpec`
 - `higham9_14_tridiag_colDiagDom_source_f_bound_from_LUFactSpec_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUFactSpec_gamma`
 - `higham9_14_tridiag_colDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves`
@@ -2776,6 +2778,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_recurrence_gamma`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUFactSpec`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUFactSpec`
+- `higham9_14_tridiag_data_colDiagDom_source_h_bound_from_LUFactSpec`
+- `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUFactSpec`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUFactSpec_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUFactSpec_gamma`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_builders_LUBackwardError_fl_triangular_solves`
