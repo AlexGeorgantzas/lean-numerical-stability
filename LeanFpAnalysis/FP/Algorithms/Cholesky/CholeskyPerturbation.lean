@@ -43,6 +43,116 @@ lemma triuPart_diag_and_above {n : ℕ} (A : Fin n → Fin n → ℝ) :
   simp [hij]
 
 -- ============================================================
+-- §10.2  The `up` operator (Theorem 10.8 proof machinery)
+-- ============================================================
+
+/-- **The `up` operator** (proof route for Theorem 10.8; Sun, BIT 31
+    (1991), advisory route logged in the chapter report): the upper
+    triangular part with halved diagonal,
+    `up(Y)_{ij} = Y_{ij}` for `i < j`, `Y_{ii}/2` on the diagonal, `0`
+    below. -/
+noncomputable def upHalf {n : ℕ} (Y : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    if i.val < j.val then Y i j
+    else if i = j then Y i j / 2
+    else 0
+
+lemma upHalf_strict_lower {n : ℕ} (Y : Fin n → Fin n → ℝ)
+    (i j : Fin n) (hij : j.val < i.val) : upHalf Y i j = 0 := by
+  unfold upHalf
+  rw [if_neg (by omega : ¬ i.val < j.val),
+    if_neg (fun he : i = j => by subst he; omega)]
+
+lemma upHalf_strict_upper {n : ℕ} (Y : Fin n → Fin n → ℝ)
+    (i j : Fin n) (hij : i.val < j.val) : upHalf Y i j = Y i j := by
+  unfold upHalf
+  rw [if_pos hij]
+
+lemma upHalf_diag {n : ℕ} (Y : Fin n → Fin n → ℝ) (i : Fin n) :
+    upHalf Y i i = Y i i / 2 := by
+  unfold upHalf
+  rw [if_neg (lt_irrefl _), if_pos rfl]
+
+/-- **Triangular recovery** (Theorem 10.8 proof, step 1): an upper
+    triangular `X` is recovered from its symmetrization,
+    `up(X + Xᵀ) = X`. -/
+theorem upHalf_add_transpose {n : ℕ} (X : Fin n → Fin n → ℝ)
+    (hX : ∀ i j : Fin n, j.val < i.val → X i j = 0) :
+    ∀ i j : Fin n, upHalf (fun p q => X p q + X q p) i j = X i j := by
+  intro i j
+  rcases lt_trichotomy i.val j.val with h | h | h
+  · rw [upHalf_strict_upper _ i j h]
+    rw [hX j i h, add_zero]
+  · have hij : i = j := Fin.ext h
+    subst hij
+    rw [upHalf_diag]
+    ring
+  · rw [upHalf_strict_lower _ i j h, hX i j h]
+
+/-- **Frobenius halving** (Theorem 10.8 proof, step 2): for a symmetric
+    matrix `Y`, `‖up(Y)‖_F² ≤ ‖Y‖_F²/2` — the strict upper part carries
+    at most half of the off-diagonal mass and the halved diagonal at
+    most a quarter of the diagonal mass. -/
+theorem frobNormSq_upHalf_le_half {n : ℕ} (Y : Fin n → Fin n → ℝ)
+    (hY : ∀ i j : Fin n, Y i j = Y j i) :
+    frobNormSq (upHalf Y) ≤ frobNormSq Y / 2 := by
+  have hpoint : ∀ i j : Fin n,
+      2 * upHalf Y i j ^ 2 + 2 * upHalf Y j i ^ 2 ≤
+      Y i j ^ 2 + Y j i ^ 2 := by
+    intro i j
+    rcases lt_trichotomy i.val j.val with h | h | h
+    · rw [upHalf_strict_upper Y i j h, upHalf_strict_lower Y j i h,
+        hY j i]
+      nlinarith [sq_nonneg (Y i j)]
+    · have hij : i = j := Fin.ext h
+      subst hij
+      rw [upHalf_diag]
+      nlinarith [sq_nonneg (Y i i)]
+    · rw [upHalf_strict_lower Y i j h, upHalf_strict_upper Y j i h,
+        hY j i]
+      nlinarith [sq_nonneg (Y i j)]
+  have hsum : ∑ i : Fin n, ∑ j : Fin n,
+      (2 * upHalf Y i j ^ 2 + 2 * upHalf Y j i ^ 2) ≤
+      ∑ i : Fin n, ∑ j : Fin n, (Y i j ^ 2 + Y j i ^ 2) :=
+    Finset.sum_le_sum fun i _ => Finset.sum_le_sum fun j _ => hpoint i j
+  have hsplit : ∀ (M : Fin n → Fin n → ℝ) (c : ℝ),
+      ∑ i : Fin n, ∑ j : Fin n, (c * M i j ^ 2 + c * M j i ^ 2) =
+      c * (∑ i : Fin n, ∑ j : Fin n, M i j ^ 2) +
+      c * (∑ i : Fin n, ∑ j : Fin n, M j i ^ 2) := by
+    intro M c
+    have inner : ∀ i : Fin n, ∑ j : Fin n,
+        (c * M i j ^ 2 + c * M j i ^ 2) =
+        c * (∑ j : Fin n, M i j ^ 2) +
+        c * (∑ j : Fin n, M j i ^ 2) := by
+      intro i
+      rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum]
+    rw [Finset.sum_congr rfl fun i _ => inner i,
+      Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum]
+  have hswapU : ∑ i : Fin n, ∑ j : Fin n, upHalf Y j i ^ 2 =
+      ∑ i : Fin n, ∑ j : Fin n, upHalf Y i j ^ 2 :=
+    Finset.sum_comm
+  have hswapY : ∑ i : Fin n, ∑ j : Fin n, Y j i ^ 2 =
+      ∑ i : Fin n, ∑ j : Fin n, Y i j ^ 2 :=
+    Finset.sum_comm
+  have hL := hsplit (upHalf Y) 2
+  have hR := hsplit Y 1
+  rw [hswapU] at hL
+  rw [hswapY] at hR
+  simp only [one_mul] at hR
+  unfold frobNormSq
+  have hsum' := hsum
+  rw [hL] at hsum'
+  have hRfix : ∑ i : Fin n, ∑ j : Fin n, (Y i j ^ 2 + Y j i ^ 2) =
+      (∑ i : Fin n, ∑ j : Fin n, Y i j ^ 2) +
+      ∑ i : Fin n, ∑ j : Fin n, Y i j ^ 2 := by
+    have := hsplit Y 1
+    simp only [one_mul] at this
+    rw [this, hswapY]
+  rw [hRfix] at hsum'
+  linarith
+
+-- ============================================================
 -- §10.2  Theorem 10.8: Sun perturbation bound (normwise)
 -- ============================================================
 
