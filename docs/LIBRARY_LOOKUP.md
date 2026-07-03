@@ -1960,6 +1960,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_pow_two_le_completePivotWilkinsonBound_of_eq_one`
 - `higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two`
 - `higham9_14_completePivotWilkinsonBound_le_of_le`
+- `higham9_14_completePivotWilkinsonBound_ge_two_of_ge_two`
 - `higham9_14_completePivotWilkinsonBound_monotone`
 - `higham9_completePivotGrowthSet`
 - `higham9_completePivotGrowthSup`
@@ -2028,6 +2029,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_pow_two_le_rookPivotFosterBound_of_le_two`
 - `higham9_16_rookPivotFosterFactor_le_of_le`
 - `higham9_16_rookPivotFosterBound_le_of_le`
+- `higham9_16_rookPivotFosterBound_ge_two_of_ge_two`
 - `higham9_16_rookPivotFosterBound_monotone`
 - `higham9_12_sineMatrix`
 - `higham9_12_sineMatrix_symm`
@@ -2315,6 +2317,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohteBound`
 - `higham9_11_bohteBound_tridiagonal`
 - `higham9_11_bohteBound_pentadiagonal_formula`
+- `higham9_11_bohteBound_bandwidth_two_formula`
 - `higham9_11_bohteBound_bandwidth_three_formula`
 - `higham9_11_bohteBound_bandwidth_four_formula`
 - `higham9_11_bohteBound_zero`
@@ -2334,9 +2337,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohte_banded_solve_tight_of_growth_le`
 - `higham9_11_bohte_banded_solve_tight_of_bandwidth_le`
 - `higham9_11_bohte_banded_solve_tight_of_isBanded_common`
+- `higham9_11_bohte_banded_solve_tight_of_isBanded_common_growth_le`
 - `higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal`
 - `higham9_11_tridiagonal_bohte_solve_tight`
 - `higham9_11_pentadiagonal_bohte_solve_tight`
+- `higham9_11_bandwidth_two_bohte_solve_tight`
 - `higham9_11_bandwidth_three_bohte_solve_tight`
 - `higham9_11_bandwidth_four_bohte_solve_tight`
 - `higham9_12_spd_lu_backward_error`

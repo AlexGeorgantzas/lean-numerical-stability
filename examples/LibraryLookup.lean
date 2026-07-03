@@ -13123,6 +13123,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_11_bohte_banded_solve_tight_of_growth_le
 #check higham9_11_bohte_banded_solve_tight_of_bandwidth_le
 #check higham9_11_bohte_banded_solve_tight_of_isBanded_common
+#check higham9_11_bohte_banded_solve_tight_of_isBanded_common_growth_le
 #check higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal
 #check higham9_11_tridiagonal_bohte_solve_tight
 #check higham9_11_pentadiagonal_bohte_solve_tight
@@ -13143,6 +13144,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_14_pow_two_le_completePivotWilkinsonBound_of_eq_one
 #check higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two
 #check higham9_14_completePivotWilkinsonBound_le_of_le
+#check higham9_14_completePivotWilkinsonBound_ge_two_of_ge_two
 #check higham9_14_completePivotWilkinsonBound_monotone
 #check higham9_16_rookPivotingUTraceGrowthValues
 #check higham9_16_rookPivotingUTraceGrowthSup
@@ -13172,6 +13174,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_16_pow_two_le_rookPivotFosterBound_of_le_two
 #check higham9_16_rookPivotFosterFactor_le_of_le
 #check higham9_16_rookPivotFosterBound_le_of_le
+#check higham9_16_rookPivotFosterBound_ge_two_of_ge_two
 #check higham9_16_rookPivotFosterBound_monotone
 #check higham9_idMatrix_LUFactSpec
 #check higham9_noPivotingLUFactSpecGrowthValues

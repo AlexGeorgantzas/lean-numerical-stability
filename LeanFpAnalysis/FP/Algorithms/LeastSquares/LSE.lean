@@ -451,6 +451,168 @@ theorem theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
     (div_le_iff₀ hBpos).mp hDeltaB_ratio,
     (div_le_iff₀ hdpos).mp hDeltad_ratio⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    source projector `P = I - B^+ B` used in the LSE perturbation bound.
+
+    The matrix `Bplus` is an explicit supplied table for the source
+    pseudo-inverse `B^+`; this definition does not assert the Moore--Penrose
+    equations. -/
+noncomputable def theorem20_8Projection {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j => idMatrix n i j - rectMatMul Bplus B i j
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    the source product `A P`, where `P = I - B^+ B`. -/
+noncomputable def theorem20_8AP {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) : Fin m → Fin n → ℝ :=
+  rectMatMul A (theorem20_8Projection B Bplus)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    source table `B_A^+ = (I - (AP)^+ A)B^+`.
+
+    The arguments `Bplus` and `APplus` are supplied pseudo-inverse tables for
+    `B^+` and `(AP)^+`, respectively.  The definition records the algebraic
+    expression used in the printed condition quantities. -/
+noncomputable def theorem20_8BAplus {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (_B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ) :
+    Fin n → Fin p → ℝ :=
+  rectMatMul (fun i j => idMatrix n i j - rectMatMul APplus A i j) Bplus
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    condition quantity `kappa_B(A) = ||A||_F ||(AP)^+||_2`. -/
+noncomputable def theorem20_8KappaB {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ) : ℝ :=
+  frobNormRect A * complexMatrixOp2 (realRectToCMatrix APplus)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    condition quantity `kappa_A(B) = ||B||_F ||B_A^+||_2`. -/
+noncomputable def theorem20_8KappaA {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ) : ℝ :=
+  frobNormRect B * complexMatrixOp2 (realRectToCMatrix BAplus)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    residual multiplier in the first-order coefficient of (20.25),
+    `kappa_B(A)^2 * ((||B||_F / ||A||_F) ||A B_A^+||_2 + 1)`. -/
+noncomputable def theorem20_8ResidualAmplifier {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ) : ℝ :=
+  theorem20_8KappaB A APplus ^ 2 *
+    ((frobNormRect B / frobNormRect A) *
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) + 1)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    the first-order scalar coefficient multiplying `eps`, excluding the
+    source's `O(eps^2)` remainder. -/
+noncomputable def theorem20_8FirstOrderRHS {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ) : ℝ :=
+  theorem20_8KappaA B BAplus *
+      (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) +
+    (1 + theorem20_8KappaB A APplus) *
+      (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) +
+    theorem20_8ResidualAmplifier A B APplus BAplus *
+      (vecNorm2 r / (frobNormRect A * vecNorm2 x))
+
+/-- The source quantity `kappa_B(A)` in Theorem 20.8 is nonnegative. -/
+theorem theorem20_8KappaB_nonneg {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ) :
+    0 ≤ theorem20_8KappaB A APplus := by
+  unfold theorem20_8KappaB
+  exact mul_nonneg (frobNormRect_nonneg A)
+    (complexMatrixOp2_nonneg (realRectToCMatrix APplus))
+
+/-- The source quantity `kappa_A(B)` in Theorem 20.8 is nonnegative. -/
+theorem theorem20_8KappaA_nonneg {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ) :
+    0 ≤ theorem20_8KappaA B BAplus := by
+  unfold theorem20_8KappaA
+  exact mul_nonneg (frobNormRect_nonneg B)
+    (complexMatrixOp2_nonneg (realRectToCMatrix BAplus))
+
+/-- Under the natural nonzero-`A` denominator side condition, the residual
+    amplifier in Theorem 20.8's first-order coefficient is nonnegative. -/
+theorem theorem20_8ResidualAmplifier_nonneg {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (hApos : 0 < frobNormRect A) :
+    0 ≤ theorem20_8ResidualAmplifier A B APplus BAplus := by
+  unfold theorem20_8ResidualAmplifier
+  have hratio : 0 ≤ frobNormRect B / frobNormRect A :=
+    div_nonneg (frobNormRect_nonneg B) (le_of_lt hApos)
+  have hop :
+      0 ≤ complexMatrixOp2
+        (realRectToCMatrix (rectMatMul A BAplus)) :=
+    complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul A BAplus))
+  have hinside :
+      0 ≤ (frobNormRect B / frobNormRect A) *
+          complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) + 1 := by
+    nlinarith [mul_nonneg hratio hop]
+  exact mul_nonneg (sq_nonneg _) hinside
+
+/-- Under the natural positive denominator assumptions, the first-order
+    coefficient in Theorem 20.8's perturbation bound is nonnegative. -/
+theorem theorem20_8FirstOrderRHS_nonneg {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (hApos : 0 < frobNormRect A) (hBpos : 0 < frobNormRect B)
+    (hxpos : 0 < vecNorm2 x) :
+    0 ≤ theorem20_8FirstOrderRHS A b B d x r APplus BAplus := by
+  unfold theorem20_8FirstOrderRHS
+  have hkA : 0 ≤ theorem20_8KappaA B BAplus :=
+    theorem20_8KappaA_nonneg B BAplus
+  have hkB : 0 ≤ theorem20_8KappaB A APplus :=
+    theorem20_8KappaB_nonneg A APplus
+  have hBx_pos : 0 < frobNormRect B * vecNorm2 x := mul_pos hBpos hxpos
+  have hAx_pos : 0 < frobNormRect A * vecNorm2 x := mul_pos hApos hxpos
+  have hd_term : 0 ≤ vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1 := by
+    have hdiv : 0 ≤ vecNorm2 d / (frobNormRect B * vecNorm2 x) :=
+      div_nonneg (vecNorm2_nonneg d) (le_of_lt hBx_pos)
+    linarith
+  have hb_term : 0 ≤ vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1 := by
+    have hdiv : 0 ≤ vecNorm2 b / (frobNormRect A * vecNorm2 x) :=
+      div_nonneg (vecNorm2_nonneg b) (le_of_lt hAx_pos)
+    linarith
+  have hres_ratio : 0 ≤ vecNorm2 r / (frobNormRect A * vecNorm2 x) :=
+    div_nonneg (vecNorm2_nonneg r) (le_of_lt hAx_pos)
+  have hres_amp : 0 ≤ theorem20_8ResidualAmplifier A B APplus BAplus :=
+    theorem20_8ResidualAmplifier_nonneg A B APplus BAplus hApos
+  have hfirst :
+      0 ≤ theorem20_8KappaA B BAplus *
+          (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) :=
+    mul_nonneg hkA hd_term
+  have hsecond :
+      0 ≤ (1 + theorem20_8KappaB A APplus) *
+          (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) := by
+    have hone_plus : 0 ≤ 1 + theorem20_8KappaB A APplus := by
+      linarith
+    exact mul_nonneg hone_plus hb_term
+  have hthird :
+      0 ≤ theorem20_8ResidualAmplifier A B APplus BAplus *
+          (vecNorm2 r / (frobNormRect A * vecNorm2 x)) :=
+    mul_nonneg hres_amp hres_ratio
+  exact add_nonneg (add_nonneg hfirst hsecond) hthird
+
+/-- In the zero-residual case, Theorem 20.8's first-order coefficient drops
+    its residual-amplification term. -/
+theorem theorem20_8FirstOrderRHS_of_zero_residual {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ) :
+    theorem20_8FirstOrderRHS A b B d x (fun _i : Fin m => 0) APplus BAplus =
+      theorem20_8KappaA B BAplus *
+          (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) +
+        (1 + theorem20_8KappaB A APplus) *
+          (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) := by
+  simp [theorem20_8FirstOrderRHS, vecNorm2_zero]
+
 /-- The linear constraint map `x ↦ B x` used in the equality-constrained
     least-squares problem (20.23). -/
 noncomputable def lseConstraintLinearMap {p n : ℕ}
@@ -8045,6 +8207,106 @@ private theorem lseDual_eval_eq_sum {p : ℕ}
       rw [hsingle, map_smul]
       rfl
 
+private noncomputable def lseKernelFactorDual {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (hB : LSEFullRowRank B)
+    (g : Fin n → ℝ)
+    (hker : ∀ v : Fin n → ℝ, rectMatMulVec B v = 0 →
+      lseDotDual g v = 0) :
+    Module.Dual ℝ (Fin p → ℝ) where
+  toFun y := lseDotDual g (Classical.choose (hB y))
+  map_add' := by
+    intro y z
+    let xy : Fin n → ℝ := Classical.choose (hB y)
+    let xz : Fin n → ℝ := Classical.choose (hB z)
+    let xyz : Fin n → ℝ := Classical.choose (hB (y + z))
+    have hxy_lm : lseConstraintLinearMap B xy = y :=
+      Classical.choose_spec (hB y)
+    have hxz_lm : lseConstraintLinearMap B xz = z :=
+      Classical.choose_spec (hB z)
+    have hxyz_lm : lseConstraintLinearMap B xyz = y + z :=
+      Classical.choose_spec (hB (y + z))
+    let w : Fin n → ℝ := xyz - (xy + xz)
+    have hBw_lm : lseConstraintLinearMap B w = 0 := by
+      dsimp [w]
+      rw [map_sub, map_add, hxyz_lm, hxy_lm, hxz_lm]
+      ext r
+      simp
+    have hBw : rectMatMulVec B w = 0 := by
+      simpa [lseConstraintLinearMap] using hBw_lm
+    have hw0 : lseDotDual g w = 0 := hker w hBw
+    have hxyz_eq : lseDotDual g xyz = lseDotDual g (xy + xz) := by
+      have hw0' : lseDotDual g (xyz - (xy + xz)) = 0 := by
+        simpa [w] using hw0
+      rw [map_sub] at hw0'
+      exact sub_eq_zero.mp hw0'
+    calc
+      lseDotDual g (Classical.choose (hB (y + z)))
+          = lseDotDual g xyz := rfl
+      _ = lseDotDual g (xy + xz) := hxyz_eq
+      _ = lseDotDual g xy + lseDotDual g xz := by rw [map_add]
+      _ = lseDotDual g (Classical.choose (hB y)) +
+          lseDotDual g (Classical.choose (hB z)) := rfl
+  map_smul' := by
+    intro a y
+    let xy : Fin n → ℝ := Classical.choose (hB y)
+    let xay : Fin n → ℝ := Classical.choose (hB (a • y))
+    have hxy_lm : lseConstraintLinearMap B xy = y :=
+      Classical.choose_spec (hB y)
+    have hxay_lm : lseConstraintLinearMap B xay = a • y :=
+      Classical.choose_spec (hB (a • y))
+    let w : Fin n → ℝ := xay - a • xy
+    have hBw_lm : lseConstraintLinearMap B w = 0 := by
+      dsimp [w]
+      rw [map_sub, map_smul, hxay_lm, hxy_lm]
+      ext r
+      simp
+    have hBw : rectMatMulVec B w = 0 := by
+      simpa [lseConstraintLinearMap] using hBw_lm
+    have hw0 : lseDotDual g w = 0 := hker w hBw
+    have hxay_eq : lseDotDual g xay = lseDotDual g (a • xy) := by
+      have hw0' : lseDotDual g (xay - a • xy) = 0 := by
+        simpa [w] using hw0
+      rw [map_sub] at hw0'
+      exact sub_eq_zero.mp hw0'
+    calc
+      lseDotDual g (Classical.choose (hB (a • y)))
+          = lseDotDual g xay := rfl
+      _ = lseDotDual g (a • xy) := hxay_eq
+      _ = a • lseDotDual g xy := by rw [map_smul]
+      _ = a •
+          lseDotDual g (Classical.choose (hB y)) := rfl
+
+private theorem lseKernelFactorDual_apply_constraint {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (hB : LSEFullRowRank B)
+    (g : Fin n → ℝ)
+    (hker : ∀ v : Fin n → ℝ, rectMatMulVec B v = 0 →
+      lseDotDual g v = 0)
+    (v : Fin n → ℝ) :
+    lseKernelFactorDual B hB g hker (rectMatMulVec B v) =
+      lseDotDual g v := by
+  let x : Fin n → ℝ := Classical.choose (hB (rectMatMulVec B v))
+  have hx_lm :
+      lseConstraintLinearMap B x = rectMatMulVec B v :=
+    Classical.choose_spec (hB (rectMatMulVec B v))
+  let w : Fin n → ℝ := x - v
+  have hBw_lm : lseConstraintLinearMap B w = 0 := by
+    dsimp [w]
+    rw [map_sub, hx_lm]
+    ext r
+    simp [lseConstraintLinearMap]
+  have hBw : rectMatMulVec B w = 0 := by
+    simpa [lseConstraintLinearMap] using hBw_lm
+  have hw0 : lseDotDual g w = 0 := hker w hBw
+  have hx_eq : lseDotDual g x = lseDotDual g v := by
+    have hw0' : lseDotDual g (x - v) = 0 := by
+      simpa [w] using hw0
+    rw [map_sub] at hw0'
+    exact sub_eq_zero.mp hw0'
+  calc
+    lseKernelFactorDual B hB g hker (rectMatMulVec B v)
+        = lseDotDual g x := rfl
+    _ = lseDotDual g v := hx_eq
+
 /-- An exact equality-constrained least-squares minimizer has zero objective
     first variation along every feasible direction `v` satisfying `B v = 0`. -/
 theorem IsLSEMinimizer.feasible_direction_stationarity {m n p : ℕ}
@@ -8082,6 +8344,202 @@ theorem IsLSEMinimizer.feasible_direction_stationarity {m n p : ℕ}
     rw [hexp, hcross, hnorm] at hobj
     nlinarith
   exact lse_linear_term_eq_zero_of_quadratic_nonneg ha hquad
+
+/-- Higham, 2nd ed., Chapter 20, Problem 20.10, sufficiency direction:
+    feasibility together with a Lagrange multiplier satisfying
+    `A^T (b - A*x) = B^T lambda` implies that `x` solves the LSE problem
+    (20.23).  The converse multiplier-existence direction is a separate
+    dual-space factorization obligation. -/
+theorem IsLSEMinimizer.of_lagrange_normal_equations {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {d : Fin p → ℝ}
+    {x : Fin n → ℝ} {lambda : Fin p → ℝ}
+    (hfeas : LSEFeasible B d x)
+    (hlambda : ∀ j : Fin n,
+      ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+        ∑ r : Fin p, B r j * lambda r) :
+    IsLSEMinimizer A b B d x := by
+  refine ⟨hfeas, ?_⟩
+  intro y hy
+  let v : Fin n → ℝ := fun j => y j - x j
+  have hy_eq : y = fun j => x j + v j := by
+    ext j
+    dsimp [v]
+    ring
+  have hBv : rectMatMulVec B v = 0 := by
+    dsimp [v]
+    exact LSEFeasible.direction_zero hfeas hy
+  have hhigham :
+      (∑ j : Fin n,
+        v j * (∑ i : Fin m, A i j * lsResidualHigham A b x i)) = 0 := by
+    calc
+      (∑ j : Fin n,
+        v j * (∑ i : Fin m, A i j * lsResidualHigham A b x i))
+          = ∑ j : Fin n,
+              v j * (∑ r : Fin p, B r j * lambda r) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [hlambda j]
+      _ = ∑ r : Fin p, lambda r * rectMatMulVec B v r := by
+            calc
+              (∑ j : Fin n, v j * (∑ r : Fin p, B r j * lambda r))
+                  = ∑ j : Fin n, ∑ r : Fin p,
+                      v j * (B r j * lambda r) := by
+                    apply Finset.sum_congr rfl
+                    intro j _
+                    rw [Finset.mul_sum]
+              _ = ∑ r : Fin p, ∑ j : Fin n,
+                      v j * (B r j * lambda r) := by
+                    rw [Finset.sum_comm]
+              _ = ∑ r : Fin p, lambda r * rectMatMulVec B v r := by
+                    apply Finset.sum_congr rfl
+                    intro r _
+                    unfold rectMatMulVec
+                    rw [Finset.mul_sum]
+                    apply Finset.sum_congr rfl
+                    intro j _
+                    ring
+      _ = 0 := by
+            apply Finset.sum_eq_zero
+            intro r _
+            have hr : rectMatMulVec B v r = 0 := by
+              simpa using congrFun hBv r
+            rw [hr]
+            ring
+  have hcross :
+      (∑ j : Fin n,
+        v j * (∑ i : Fin m, A i j * lsResidual A b x i)) = 0 := by
+    have hsign :
+        (∑ j : Fin n,
+          v j * (∑ i : Fin m, A i j * lsResidual A b x i)) =
+          - (∑ j : Fin n,
+            v j * (∑ i : Fin m, A i j * lsResidualHigham A b x i)) := by
+      calc
+        (∑ j : Fin n,
+          v j * (∑ i : Fin m, A i j * lsResidual A b x i))
+            = ∑ j : Fin n,
+                v j * (-(∑ i : Fin m,
+                  A i j * lsResidualHigham A b x i)) := by
+              apply Finset.sum_congr rfl
+              intro j _
+              congr 1
+              rw [lsResidualHigham_eq_neg_lsResidual A b x]
+              simp
+        _ = - (∑ j : Fin n,
+            v j * (∑ i : Fin m, A i j * lsResidualHigham A b x i)) := by
+              rw [← Finset.sum_neg_distrib]
+              apply Finset.sum_congr rfl
+              intro j _
+              ring
+    rw [hsign, hhigham]
+    ring
+  have hexp := lsObjective_add_direction_eq A b x v
+  rw [← hy_eq] at hexp
+  rw [hexp, hcross]
+  have hnonneg : 0 ≤ vecNorm2Sq (rectMatMulVec A v) :=
+    vecNorm2Sq_nonneg (rectMatMulVec A v)
+  nlinarith
+
+/-- Higham, 2nd ed., Chapter 20, Problem 20.10, necessity direction under
+    the source full-row-rank constraint qualification: an LSE minimizer admits
+    Lagrange multipliers satisfying the normal equations
+    `A^T (b - A*x) = B^T lambda`, together with feasibility `B*x = d`. -/
+theorem IsLSEMinimizer.exists_lagrange_normal_equations_of_fullRowRank
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {d : Fin p → ℝ}
+    {x : Fin n → ℝ}
+    (hmin : IsLSEMinimizer A b B d x)
+    (hB : LSEFullRowRank B) :
+    ∃ lambda : Fin p → ℝ,
+      LSEFeasible B d x ∧
+        ∀ j : Fin n,
+          ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+            ∑ r : Fin p, B r j * lambda r := by
+  let g : Fin n → ℝ :=
+    fun j => ∑ i : Fin m, A i j * lsResidual A b x i
+  have hker : ∀ v : Fin n → ℝ, rectMatMulVec B v = 0 →
+      lseDotDual g v = 0 := by
+    intro v hv
+    have hstat := hmin.feasible_direction_stationarity hv
+    simpa [lseDotDual, g, mul_comm] using hstat
+  let psi : Module.Dual ℝ (Fin p → ℝ) :=
+    lseKernelFactorDual B hB g hker
+  let lambda : Fin p → ℝ :=
+    fun r => -psi (Pi.single r (1 : ℝ) : Fin p → ℝ)
+  refine ⟨lambda, hmin.1, ?_⟩
+  intro j
+  have hpsi_j : psi (fun r : Fin p => B r j) = g j := by
+    have hBbasis :
+        rectMatMulVec B (Pi.single j (1 : ℝ) : Fin n → ℝ) =
+          fun r : Fin p => B r j := by
+      simpa [lseConstraintLinearMap] using
+        lseConstraintLinearMap_basis B j
+    have happly :=
+      lseKernelFactorDual_apply_constraint B hB g hker
+        (Pi.single j (1 : ℝ) : Fin n → ℝ)
+    have hdot := lseDotDual_basis g j
+    change lseKernelFactorDual B hB g hker
+        (fun r : Fin p => B r j) = g j
+    rw [← hBbasis]
+    exact happly.trans hdot
+  have hhigham :
+      (∑ i : Fin m, A i j * lsResidualHigham A b x i) = -g j := by
+    calc
+      (∑ i : Fin m, A i j * lsResidualHigham A b x i)
+          = ∑ i : Fin m, A i j * (-lsResidual A b x i) := by
+            rw [lsResidualHigham_eq_neg_lsResidual A b x]
+      _ = - (∑ i : Fin m, A i j * lsResidual A b x i) := by
+            rw [← Finset.sum_neg_distrib]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+      _ = -g j := rfl
+  have hsum_lambda :
+      (∑ r : Fin p, B r j * lambda r) =
+        -psi (fun r : Fin p => B r j) := by
+    have hpsi_sum := lseDual_eval_eq_sum psi (fun r : Fin p => B r j)
+    dsimp [lambda]
+    calc
+      (∑ r : Fin p, B r j *
+          -psi (Pi.single r (1 : ℝ) : Fin p → ℝ))
+          =
+            - (∑ r : Fin p, B r j *
+              psi (Pi.single r (1 : ℝ) : Fin p → ℝ)) := by
+            rw [← Finset.sum_neg_distrib]
+            apply Finset.sum_congr rfl
+            intro r _
+            ring
+      _ = -psi (fun r : Fin p => B r j) := by
+            rw [← hpsi_sum]
+  calc
+    (∑ i : Fin m, A i j * lsResidualHigham A b x i)
+        = -g j := hhigham
+    _ = -psi (fun r : Fin p => B r j) := by rw [hpsi_j]
+    _ = ∑ r : Fin p, B r j * lambda r := hsum_lambda.symm
+
+/-- Higham, 2nd ed., Chapter 20, Problem 20.10: under full row rank of the
+    constraint matrix, solving the equality-constrained least-squares problem
+    (20.23) is equivalent to feasibility plus the Lagrange-multiplier normal
+    equations `A^T (b - A*x) = B^T lambda`. -/
+theorem isLSEMinimizer_iff_exists_lagrange_normal_equations_of_fullRowRank
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {d : Fin p → ℝ}
+    {x : Fin n → ℝ}
+    (hB : LSEFullRowRank B) :
+    IsLSEMinimizer A b B d x ↔
+      ∃ lambda : Fin p → ℝ,
+        LSEFeasible B d x ∧
+          ∀ j : Fin n,
+            ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+              ∑ r : Fin p, B r j * lambda r := by
+  constructor
+  · intro hmin
+    exact hmin.exists_lagrange_normal_equations_of_fullRowRank hB
+  · rintro ⟨lambda, hfeas, hnormal⟩
+    exact IsLSEMinimizer.of_lagrange_normal_equations
+      (lambda := lambda) hfeas hnormal
 
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
