@@ -14631,3 +14631,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check matPow_abs_weighted_bound
 #check matPow_convergence_weighted
 #check matPow_convergence_weighted_fl
+#check absMatrixComplexified
+#check matPow_eq_matrix_pow
+#check eventually_matPow_abs_le_of_spectralRadius_le
+#check matPow_convergence_spectral
+#check matPow_convergence_spectral_fl
