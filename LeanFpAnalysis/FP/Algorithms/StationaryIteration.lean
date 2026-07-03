@@ -40,6 +40,190 @@ noncomputable def iterMatrix (n : ℕ) (M_inv N : Fin n → Fin n → ℝ) :
 noncomputable def dualIterMatrix (n : ℕ) (N M_inv : Fin n → Fin n → ℝ) :
     Fin n → Fin n → ℝ := matMul n N M_inv
 
+/-- Row/column diagonal scaling of a square matrix, `D_left A D_right`.
+    This is the matrix part of Higham's scaled system
+    `A x = b -> D1 A D2 (D2^{-1} x) = D1 b`. -/
+noncomputable def stationaryRowColumnScale (n : ℕ)
+    (dLeft dRight : Fin n → ℝ) (A : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  matMul n (diagMatrix dLeft) (matMul n A (diagMatrix dRight))
+
+/-- Inverse candidate for a row/column-scaled splitting matrix:
+    `(D1 M D2)^{-1} = D2^{-1} M^{-1} D1^{-1}`. -/
+noncomputable def stationaryScaledInverse (n : ℕ)
+    (dLeftInv dRightInv : Fin n → ℝ) (M_inv : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  matMul n (diagMatrix dRightInv) (matMul n M_inv (diagMatrix dLeftInv))
+
+/-- A diagonal matrix times its reciprocal diagonal is the identity. -/
+theorem diagMatrix_mul_diagMatrix_eq_id (n : ℕ) (d e : Fin n → ℝ)
+    (h : ∀ i, d i * e i = 1) :
+    matMul n (diagMatrix d) (diagMatrix e) = idMatrix n := by
+  ext i j
+  rw [matMul_diagMatrix_left]
+  by_cases hij : i = j
+  · subst j
+    simp [diagMatrix, idMatrix, h i]
+  · simp [diagMatrix, idMatrix, hij]
+
+/-- Entrywise form of the row/column diagonal scaling used for stationary
+    iteration. -/
+theorem stationaryRowColumnScale_apply (n : ℕ)
+    (dLeft dRight : Fin n → ℝ) (A : Fin n → Fin n → ℝ) (i j : Fin n) :
+    stationaryRowColumnScale n dLeft dRight A i j =
+      dLeft i * A i j * dRight j := by
+  unfold stationaryRowColumnScale
+  rw [matMul_diagMatrix_left]
+  rw [matMul_diagMatrix_right]
+  ring
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, p. 327, scale-independence
+    passage: a diagonal row/column scaling preserves the splitting structure
+    when `A`, `M`, and `N` are scaled in corresponding positions. -/
+theorem stationaryRowColumnScale_splittingSpec (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ) (hS : SplittingSpec n A M N M_inv)
+    (dLeft dLeftInv dRight dRightInv : Fin n → ℝ)
+    (hdLeft : ∀ i, dLeftInv i * dLeft i = 1)
+    (hdRight : ∀ i, dRightInv i * dRight i = 1) :
+    SplittingSpec n
+      (stationaryRowColumnScale n dLeft dRight A)
+      (stationaryRowColumnScale n dLeft dRight M)
+      (stationaryRowColumnScale n dLeft dRight N)
+      (stationaryScaledInverse n dLeftInv dRightInv M_inv) where
+  splitting := by
+    intro i j
+    repeat rw [stationaryRowColumnScale_apply]
+    rw [hS.splitting i j]
+    ring
+  inv_left := by
+    have hDLeft :
+        matMul n (diagMatrix dLeftInv) (diagMatrix dLeft) = idMatrix n :=
+      diagMatrix_mul_diagMatrix_eq_id n dLeftInv dLeft hdLeft
+    have hDRight :
+        matMul n (diagMatrix dRightInv) (diagMatrix dRight) = idMatrix n :=
+      diagMatrix_mul_diagMatrix_eq_id n dRightInv dRight hdRight
+    have hMLeft : matMul n M_inv M = idMatrix n := by
+      ext i j
+      exact hS.inv_left i j
+    have hLeftMat :
+        matMul n (stationaryScaledInverse n dLeftInv dRightInv M_inv)
+          (stationaryRowColumnScale n dLeft dRight M) = idMatrix n := by
+      unfold stationaryScaledInverse stationaryRowColumnScale
+      calc
+        matMul n (matMul n (diagMatrix dRightInv)
+              (matMul n M_inv (diagMatrix dLeftInv)))
+            (matMul n (diagMatrix dLeft) (matMul n M (diagMatrix dRight)))
+            =
+          matMul n (diagMatrix dRightInv)
+            (matMul n M_inv
+              (matMul n (diagMatrix dLeftInv)
+                (matMul n (diagMatrix dLeft)
+                  (matMul n M (diagMatrix dRight))))) := by
+              rw [matMul_assoc]
+              rw [matMul_assoc]
+        _ =
+          matMul n (diagMatrix dRightInv)
+            (matMul n M_inv (matMul n M (diagMatrix dRight))) := by
+              rw [← matMul_assoc n (diagMatrix dLeftInv) (diagMatrix dLeft)
+                (matMul n M (diagMatrix dRight))]
+              rw [hDLeft, matMul_id_left]
+        _ =
+          matMul n (diagMatrix dRightInv)
+            (matMul n (matMul n M_inv M) (diagMatrix dRight)) := by
+              rw [matMul_assoc]
+        _ = matMul n (diagMatrix dRightInv) (diagMatrix dRight) := by
+              rw [hMLeft, matMul_id_left]
+        _ = idMatrix n := hDRight
+    intro i j
+    have hentry := congrArg (fun T : Fin n → Fin n → ℝ => T i j) hLeftMat
+    simpa [matMul, idMatrix] using hentry
+  inv_right := by
+    have hDLeft :
+        matMul n (diagMatrix dLeft) (diagMatrix dLeftInv) = idMatrix n :=
+      diagMatrix_mul_diagMatrix_eq_id n dLeft dLeftInv
+        (fun i => by rw [mul_comm]; exact hdLeft i)
+    have hDRight :
+        matMul n (diagMatrix dRight) (diagMatrix dRightInv) = idMatrix n :=
+      diagMatrix_mul_diagMatrix_eq_id n dRight dRightInv
+        (fun i => by rw [mul_comm]; exact hdRight i)
+    have hMRight : matMul n M M_inv = idMatrix n := by
+      ext i j
+      exact hS.inv_right i j
+    have hRightMat :
+        matMul n (stationaryRowColumnScale n dLeft dRight M)
+          (stationaryScaledInverse n dLeftInv dRightInv M_inv) = idMatrix n := by
+      unfold stationaryScaledInverse stationaryRowColumnScale
+      calc
+        matMul n (matMul n (diagMatrix dLeft)
+              (matMul n M (diagMatrix dRight)))
+            (matMul n (diagMatrix dRightInv)
+              (matMul n M_inv (diagMatrix dLeftInv)))
+            =
+          matMul n (diagMatrix dLeft)
+            (matMul n M
+              (matMul n (diagMatrix dRight)
+                (matMul n (diagMatrix dRightInv)
+                  (matMul n M_inv (diagMatrix dLeftInv))))) := by
+              rw [matMul_assoc]
+              rw [matMul_assoc]
+        _ =
+          matMul n (diagMatrix dLeft)
+            (matMul n M (matMul n M_inv (diagMatrix dLeftInv))) := by
+              rw [← matMul_assoc n (diagMatrix dRight) (diagMatrix dRightInv)
+                (matMul n M_inv (diagMatrix dLeftInv))]
+              rw [hDRight, matMul_id_left]
+        _ =
+          matMul n (diagMatrix dLeft)
+            (matMul n (matMul n M M_inv) (diagMatrix dLeftInv)) := by
+              rw [matMul_assoc]
+        _ = matMul n (diagMatrix dLeft) (diagMatrix dLeftInv) := by
+              rw [hMRight, matMul_id_left]
+        _ = idMatrix n := hDLeft
+    intro i j
+    have hentry := congrArg (fun T : Fin n → Fin n → ℝ => T i j) hRightMat
+    simpa [matMul, idMatrix] using hentry
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, p. 327, scale-independence
+    passage: after row/column diagonal scaling, the new iteration matrix is
+    similar to the old one by the column scaling matrix. This is the algebraic
+    certificate behind the statement that the eigenvalues of `M^{-1}N` are
+    unchanged. -/
+theorem stationaryScaledIterMatrix_similarity (n : ℕ)
+    (M_inv N : Fin n → Fin n → ℝ)
+    (dLeft dLeftInv dRight dRightInv : Fin n → ℝ)
+    (hdLeft : ∀ i, dLeftInv i * dLeft i = 1)
+    (_hdRight : ∀ i, dRightInv i * dRight i = 1) :
+    iterMatrix n
+      (stationaryScaledInverse n dLeftInv dRightInv M_inv)
+      (stationaryRowColumnScale n dLeft dRight N) =
+      matMul n (diagMatrix dRightInv)
+        (matMul n (iterMatrix n M_inv N) (diagMatrix dRight)) := by
+  have hDLeft :
+      matMul n (diagMatrix dLeftInv) (diagMatrix dLeft) = idMatrix n :=
+    diagMatrix_mul_diagMatrix_eq_id n dLeftInv dLeft hdLeft
+  unfold iterMatrix stationaryScaledInverse stationaryRowColumnScale
+  calc
+    matMul n (matMul n (diagMatrix dRightInv)
+          (matMul n M_inv (diagMatrix dLeftInv)))
+        (matMul n (diagMatrix dLeft) (matMul n N (diagMatrix dRight)))
+        =
+      matMul n (diagMatrix dRightInv)
+        (matMul n M_inv
+          (matMul n (diagMatrix dLeftInv)
+            (matMul n (diagMatrix dLeft) (matMul n N (diagMatrix dRight))))) := by
+          rw [matMul_assoc]
+          rw [matMul_assoc]
+    _ =
+      matMul n (diagMatrix dRightInv)
+        (matMul n M_inv (matMul n N (diagMatrix dRight))) := by
+          rw [← matMul_assoc n (diagMatrix dLeftInv) (diagMatrix dLeft)
+            (matMul n N (diagMatrix dRight))]
+          rw [hDLeft, matMul_id_left]
+    _ =
+      matMul n (diagMatrix dRightInv)
+        (matMul n (matMul n M_inv N) (diagMatrix dRight)) := by
+          rw [matMul_assoc]
+
 -- ============================================================
 -- AG = HA identity
 -- ============================================================
