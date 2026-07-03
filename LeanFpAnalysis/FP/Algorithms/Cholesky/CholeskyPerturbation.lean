@@ -922,6 +922,48 @@ theorem sqrt_diag_prod_le_opNorm2Le {n : ℕ} (Q : Fin n → Fin n → ℝ) (c :
         Real.sqrt_le_sqrt (mul_le_mul hi hj (hdiag_nonneg j) hc)
     _ = c := by rw [← sq, Real.sqrt_sq hc]
 
+/-- **Per-stage multiplier-product bound** (Higham §10.4, the assembled
+    (10.29) per-stage inequality): for a GE stage matrix `S` with SPD
+    symmetric part `H` (two-sided symmetric PSD inverse `Hinv`) and pivot
+    `H_kk > 0`, if the row/column quadratic forms of `S` under `Hinv`
+    coincide with the diagonal of a PSD matrix `Q` carrying `opNorm2Le Q c`,
+    the multiplier product obeys `|S_ik · S_kj| / H_kk ≤ c`.
+
+    (`Q = S Hinv Sᵀ = Sᵀ Hinv S = H + Kᵀ Hinv K`; the `hrow`/`hcol`
+    hypotheses record the two Gram-diagonal identifications, discharged
+    from `symPart_skew_inverse_identity` at instantiation.) -/
+theorem stage_multiplier_product_le {n : ℕ}
+    (H Hinv S Q : Fin n → Fin n → ℝ) (c : ℝ)
+    (hHsym : ∀ i j : Fin n, H i j = H j i)
+    (hHinvSym : ∀ i j : Fin n, Hinv i j = Hinv j i)
+    (hHinvPSD : ∀ z : Fin n → ℝ,
+      0 ≤ ∑ i : Fin n, ∑ j : Fin n, z i * Hinv i j * z j)
+    (hHHinv : ∀ i k : Fin n,
+      (∑ j : Fin n, H i j * Hinv j k) = if i = k then 1 else 0)
+    (hHinvH : ∀ i k : Fin n,
+      (∑ j : Fin n, Hinv i j * H j k) = if i = k then 1 else 0)
+    (k : Fin n) (hk : 0 < H k k)
+    (hrow : ∀ i : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, S i p * Hinv p q * S i q) = Q i i)
+    (hcol : ∀ j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, S p j * Hinv p q * S q j) = Q j j)
+    (hc : 0 ≤ c) (hQ : opNorm2Le Q c) (hQd : ∀ i : Fin n, 0 ≤ Q i i)
+    (i j : Fin n) :
+    |S i k * S k j| / H k k ≤ c := by
+  have hp : (S i k) ^ 2 ≤ H k k * Q i i := by
+    have h := spd_pivot_quadForm_bound H Hinv hHsym hHinvSym hHinvPSD
+      hHHinv hHinvH k (fun m => S i m)
+    rw [hrow i] at h
+    exact h
+  have hq : (S k j) ^ 2 ≤ H k k * Q j j := by
+    have h := spd_pivot_quadForm_bound H Hinv hHsym hHinvSym hHinvPSD
+      hHHinv hHinvH k (fun m => S m j)
+    rw [hcol j] at h
+    exact h
+  have hpp := pivot_product_le_sqrt (S i k) (S k j) (H k k)
+    (Q i i) (Q j j) hk (hQd i) (hQd j) hp hq
+  exact le_trans hpp (sqrt_diag_prod_le_opNorm2Le Q c hc hQ hQd i j)
+
 open Matrix in
 /-- **The (10.29) core identity** (Higham §10.4, p. 208; proof route from
     the logged oracle consultation, Golub–Van Loan 1979):
