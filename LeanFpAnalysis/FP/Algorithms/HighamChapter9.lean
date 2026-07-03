@@ -79623,6 +79623,50 @@ theorem higham9_9_colDiagDominant_wilkinson_source_bound_exists_of_eq_one
   higham9_9_colDiagDominant_wilkinson_source_bound_exists_of_le_two
     fp hn_pos (by omega) A b hDD hdet hn hn3
 
+/-- **Theorem 9.9 / Theorem 9.5**, dimension-one row diagonally dominant
+solve-bound endpoint.
+
+For `n = 1`, the unit-lower multiplier bound required by the Wilkinson
+solve theorem follows directly from the exact LU diagonal field, so the row
+diagonal-dominance growth package can be handed to Theorem 9.5. -/
+theorem higham9_9_rowDiagDominant_wilkinson_source_bound_exists_of_eq_one
+    (fp : FPModel) {n : ℕ} (hn_pos : 0 < n) (hone : n = 1)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hDD : IsRowDiagDominant n A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      let y_hat := fl_forwardSub fp n L_hat b
+      let x_hat := fl_backSub fp n U_hat y_hat
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (infNorm ΔA ≤ (↑n) ^ 2 * gamma fp (3 * n) * 2 * infNorm A) ∧
+        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  subst n
+  obtain ⟨L_hat, U_hat, hLU, hAmax, hgrowth⟩ :=
+    higham9_9_rowDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_eq_one
+      hn_pos rfl A hDD hdet
+  have hL_bound : ∀ i j : Fin 1, |L_hat i j| ≤ 1 := by
+    intro i j
+    have hij : i = j := Subsingleton.elim i j
+    subst j
+    rw [hLU.L_diag i]
+    norm_num
+  have hL_diag : ∀ i : Fin 1, L_hat i i ≠ 0 := by
+    intro i
+    rw [hLU.L_diag i]
+    norm_num
+  have hU_diag : ∀ i : Fin 1, U_hat i i ≠ 0 :=
+    hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdet
+  refine ⟨L_hat, U_hat, hLU, hL_bound, ?_⟩
+  exact
+    higham9_5_wilkinson_source_bound_of_entry_growth fp 1 hn_pos
+      A L_hat U_hat b 2 hAmax (by norm_num) hgrowth hL_diag hU_diag
+      (higham9_LUFactSpec_to_LUBackwardError_gamma fp 1 hn hLU)
+      hn hn3 hL_bound
+
 /-- **Theorem 9.13**, source-facing exact-LU existence and componentwise
 growth package for nonsingular column-diagonally-dominant tridiagonal
 matrices.  The no-pivot LU existence theorem supplies exact factors with
@@ -79688,6 +79732,47 @@ theorem higham9_13_colDiagDom_exists_LUFactSpec_growthFactorEntry_le_three_exist
     higham9_13_colDiagDom_exists_LUFactSpec_growthFactorEntry_le_three
       hn A hdetA hA_tridiag hColDom hAmax
   exact ⟨hAmax, L, U, hLU, hL_bound, hGrowth, hρ⟩
+
+/-- **Theorem 9.13 / Theorem 9.5**, source-shaped Wilkinson solve bound for
+nonsingular column diagonally dominant tridiagonal matrices.
+
+Theorem 9.13 supplies exact no-pivot LU factors with unit-bounded lower factor,
+componentwise tridiagonal growth `|L||U| <= 3|A|`, and max-entry growth
+`ρ <= 3`; Theorem 9.5 then gives the normwise backward-error perturbation for
+the rounded triangular solves. -/
+theorem higham9_13_colDiagDom_wilkinson_source_bound_exists
+    (fp : FPModel) {n : ℕ} (hn_pos : 0 < n)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 3 * |A i j|) ∧
+      let y_hat := fl_forwardSub fp n L_hat b
+      let x_hat := fl_backSub fp n U_hat y_hat
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (infNorm ΔA ≤ (↑n) ^ 2 * gamma fp (3 * n) * 3 * infNorm A) ∧
+        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  obtain ⟨hAmax, L_hat, U_hat, hLU, hL_bound, hGrowth, hρ⟩ :=
+    higham9_13_colDiagDom_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax
+      hn_pos A hdetA hA_tridiag hColDom
+  have hL_diag : ∀ i : Fin n, L_hat i i ≠ 0 := by
+    intro i
+    rw [hLU.L_diag i]
+    norm_num
+  have hU_diag : ∀ i : Fin n, U_hat i i ≠ 0 :=
+    hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA
+  refine ⟨L_hat, U_hat, hLU, hL_bound, hGrowth, ?_⟩
+  exact
+    higham9_5_wilkinson_source_bound_of_entry_growth fp n hn_pos
+      A L_hat U_hat b 3 hAmax (by norm_num) hρ hL_diag hU_diag
+      (higham9_LUFactSpec_to_LUBackwardError_gamma fp n hn hLU)
+      hn hn3 hL_bound
 
 /-- **Theorem 9.13**, source-facing row-dominant transpose exact-LU and
 componentwise growth package.

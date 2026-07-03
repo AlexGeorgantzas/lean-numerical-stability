@@ -8,7 +8,9 @@ import LeanFpAnalysis.FP.Algorithms.HighamChapter10
 import LeanFpAnalysis.FP.Algorithms.HighamChapter11
 import LeanFpAnalysis.FP.Algorithms.HighamChapter12
 import LeanFpAnalysis.FP.Algorithms.MatrixPowers
+import LeanFpAnalysis.FP.Algorithms.MatrixPowersComplex
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersJordan
+import LeanFpAnalysis.FP.Algorithms.MatrixPowersSpectral
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
 
@@ -13010,6 +13012,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_13_thresholdFactor_le_two_of_one_le
 #check higham9_13_thresholdFactor_pow_le_two_pow_of_one_le
 #check higham9_13_growthFactorEntry_bound_from_column_modifications_two_pow
+#check higham9_13_colDiagDom_wilkinson_source_bound_exists
 #check higham9_1_LUFactSpec_one_explicit
 #check higham9_LUBackwardError_mono
 #check higham9_LUFactSpec_to_LUBackwardError_gamma
@@ -13022,6 +13025,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_9_rowDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_eq_one
 #check higham9_9_colDiagDominant_wilkinson_source_bound_exists_of_le_two
 #check higham9_9_colDiagDominant_wilkinson_source_bound_exists_of_eq_one
+#check higham9_9_rowDiagDominant_wilkinson_source_bound_exists_of_eq_one
 #check higham9_12_spd_tridiag_growthFactorEntry_le_one_of_spd
 #check higham9_12_spd_tridiag_builder_growthFactorEntry_le_one_of_spd
 #check higham9_12_spd_tridiag_builder_growthFactorEntry_le_one_of_spd_recurrence
