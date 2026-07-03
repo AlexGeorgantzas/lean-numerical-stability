@@ -1595,6 +1595,114 @@ theorem theorem20_8AP_unconstrained_minimizer_of_lse_minimizer {m n p : ℕ}
           (fun i => b i - rectMatMulVec A x0 i) z := by
         exact theorem20_8AP_feasible_step_objective A b B Bplus x0 z
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    applying `P = I - B^+B` to a vector with a known constraint residual
+    subtracts the supplied `B^+` correction. -/
+theorem theorem20_8Projection_apply_of_constraint {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (v : Fin n → ℝ) (e : Fin p → ℝ)
+    (hBv : rectMatMulVec B v = e) :
+    rectMatMulVec (theorem20_8Projection B Bplus) v =
+      fun j => v j - rectMatMulVec Bplus e j := by
+  ext j
+  calc
+    rectMatMulVec (theorem20_8Projection B Bplus) v j
+        = rectMatMulVec (idMatrix n) v j -
+            rectMatMulVec (rectMatMul Bplus B) v j := by
+            unfold theorem20_8Projection rectMatMulVec
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+    _ = v j - rectMatMulVec Bplus (rectMatMulVec B v) j := by
+            rw [rectMatMulVec_idMatrix]
+            rw [rectMatMulVec_rectMatMul]
+    _ = v j - rectMatMulVec Bplus e j := by
+            rw [hBv]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if `x` is feasible for `(B,d)` and `y` is feasible for the perturbed
+    constraint `(B + DeltaB)y = d + Deltad`, then the solution difference has
+    constraint defect `Deltad - DeltaB*y` for the original constraint matrix. -/
+theorem theorem20_8_perturbed_feasible_difference_constraint {n p : ℕ}
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec B (fun j => y j - x j) =
+      fun i => Deltad i - rectMatMulVec DeltaB y i := by
+  ext i
+  have hdiff := congrFun (rectMatMulVec_sub B y x) i
+  have hy_add :
+      rectMatMulVec B y i + rectMatMulVec DeltaB y i = d i + Deltad i := by
+    have hmat := congrFun (rectMatMulVec_mat_add B DeltaB y) i
+    have hyi := hy i
+    rw [hmat] at hyi
+    exact hyi
+  rw [hdiff, hx i]
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    projection of a difference between an original feasible point and a
+    perturbed feasible point. -/
+theorem theorem20_8Projection_apply_perturbed_feasible_difference {n p : ℕ}
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec (theorem20_8Projection B Bplus) (fun j => y j - x j) =
+      fun j =>
+        (y j - x j) -
+          rectMatMulVec Bplus (fun i => Deltad i - rectMatMulVec DeltaB y i) j :=
+  theorem20_8Projection_apply_of_constraint B Bplus (fun j => y j - x j)
+    (fun i => Deltad i - rectMatMulVec DeltaB y i)
+    (theorem20_8_perturbed_feasible_difference_constraint
+      B DeltaB d Deltad x y hx hy)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the difference between an original feasible point and a perturbed feasible
+    point splits into a nullspace-projected part plus the supplied `B^+`
+    correction for the constraint defect. -/
+theorem theorem20_8_perturbed_feasible_difference_decomp {n p : ℕ}
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    (fun j => y j - x j) =
+      fun j =>
+        rectMatMulVec (theorem20_8Projection B Bplus) (fun k => y k - x k) j +
+          rectMatMulVec Bplus (fun i => Deltad i - rectMatMulVec DeltaB y i) j := by
+  have hproj :=
+    theorem20_8Projection_apply_perturbed_feasible_difference
+      B DeltaB Bplus d Deltad x y hx hy
+  ext j
+  have hj := congrFun hproj j
+  rw [hj]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    point form of the perturbed-feasible decomposition. -/
+theorem theorem20_8_perturbed_feasible_point_decomp {n p : ℕ}
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    y =
+      fun j =>
+        x j +
+          rectMatMulVec (theorem20_8Projection B Bplus) (fun k => y k - x k) j +
+          rectMatMulVec Bplus (fun i => Deltad i - rectMatMulVec DeltaB y i) j := by
+  have hdecomp :=
+    theorem20_8_perturbed_feasible_difference_decomp
+      B DeltaB Bplus d Deltad x y hx hy
+  ext j
+  have hj := congrFun hdecomp j
+  linarith
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     source table `B_A^+ = (I - (AP)^+ A)B^+`.
 
