@@ -97,7 +97,10 @@ the singular exact-iterate identity `singular_stationary_iterate_finite_sum`
 for (17.21), the consistent-system singular telescoping wrappers
 `singular_consistent_source_term_eq_I_sub_G`,
 `singular_consistent_second_term_telescope`, and
-`singular_stationary_iterate_consistent_split` toward (17.26), and the
+`singular_stationary_iterate_consistent_split` toward (17.26), plus
+`singularErrorSourceTerm` for the (17.28) `S_m` source term and
+`singular_error_split_finite` for the finite algebraic core of the (17.27)
+range/null source split under the explicit fixed-null component hypothesis, and the
 subordinate-norm stopping-test wrappers
 `stopping_test_rhs_backward_subordinate`,
 `stopping_test_matrix_backward_subordinate`, and
@@ -120,8 +123,9 @@ finite norm-form surface `jacobiForwardBoundVector`,
 `finite_norm_form_sor_forward_bound`, with the Gauss-Seidel `omega = 1`
 corollary `sorForwardFactor_one` and
 `finite_norm_form_gaussSeidel_forward_bound`.  The exact infinite-sum,
-literal infinite-sigma, and singular-system Drazin/semiconvergence rows after
-the finite p.333 telescoping step remain open in the Chapter 17 ledger.
+literal infinite-sigma, and singular-system Drazin/semiconvergence rows needed
+to justify the projector/fixed-null hypotheses and limiting formulas remain
+open in the Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
