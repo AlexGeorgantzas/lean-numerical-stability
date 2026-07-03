@@ -4978,7 +4978,7 @@ open.
 This section is a human-readable companion to `examples/LibraryLookup.lean`
 for the Chapter 18 declarations.
 
-Primary module: `LeanFpAnalysis/FP/Algorithms/MatrixPowers.lean`
+Primary modules: `LeanFpAnalysis/FP/Algorithms/MatrixPowers.lean` and `LeanFpAnalysis/FP/Algorithms/MatrixPowersJordan.lean`.
 
 Coverage ledger: `docs/source_coverage/higham_ch18.md`.
 
@@ -4996,3 +4996,5 @@ Current reusable declarations:
 | Matrix ∞-norm helpers | `infNorm_add_le` (triangle inequality), `infNorm_le_mul_of_abs_le_mul_abs` (componentwise domination transfer `\|ΔA\| ≤ η\|A\| ⇒ ‖ΔA‖∞ ≤ η‖A‖∞`), `infNorm_diagonal_le`. |
 | Theorem 18.1 DISCHARGED real-diagonalizable case (t = 1) | `JordanFormSpec.ofRealDiagonal` proves `similarity_absorbs` for `X⁻¹AX = J` diagonal with `\|J i i\| ≤ ρ < 1` (S = X, no scaling); axiom-free end-to-end forms `higham_18_1_real_diagonalizable_tendsto` and `higham_18_1_real_diagonalizable_fl_tendsto` (actual `fl_matVec` iteration, printed `γ_{n+2}` constant, conclusion `‖fl(Aᵐv₀)‖∞ → 0`). |
 | Eq (18.4) exact-arithmetic bounds, real-diagonalizable ∞-norm case | `matPow_diagonal` (diagonal powers), `matPow_similarity` (`Aᵏ = X Jᵏ X⁻¹` transport), `higham_eq_18_4_upper_real_diagonalizable` (`‖Aᵏ‖∞ ≤ κ∞(X)ρᵏ`), `higham_eq_18_4_lower_real_diagonalizable` (`\|J j j\|ᵏ ≤ ‖Aᵏ‖∞`, the printed `ρ(A)ᵏ` lower bound at the dominant eigencolumn). |
+| Theorem 18.1 DISCHARGED real-Jordan case (t ≥ 1, module `MatrixPowersJordan.lean`) | `jordanBeta` (the `β = (1−ρ)(t−1)/t` margin with positivity/`< 1`/sum lemmas), `one_add_one_div_pow_lt_four` + `pow_self_le_four_mul` (the `(1+1/m)^m < e < 4` optimisation behind the `4t` factor), `higham_scaling_margin` (scalar core `4tK < (1−ρ)^t ⇒ K < ε·β^(t−1)`), `diagMatrix_isRightInverse`/`diagMatrix_conj_entry`/`infNorm_diagMatrix_le`, `jordan_conj_row_sum_le`/`infNorm_jordan_conj_le` (`‖D⁻¹JD‖∞ ≤ ρ+β`), `jordanRunLength` + `exists_jordan_scaling_vector` (scaling vector from the block-size bound), `JordanFormSpec.ofRealJordan` (PROVED `similarity_absorbs` via `S = X·diag(p)`), and the axiom-free end-to-end forms `higham_18_1_real_jordan_tendsto` / `higham_18_1_real_jordan_fl_tendsto` (upper-bidiagonal real Jordan data, printed condition `4t·γ_{n+2}·κ∞(X)·‖A‖∞ < (1−ρ)^t`, conclusion `‖fl(Aᵐv₀)‖∞ → 0`; `t = 1` dispatches to the diagonal construction). |
+| Eq (18.5) alternative form (p. 344), real-Jordan ∞-norm case | `higham_eq_18_5_alt_real_jordan`: for real bidiagonal Jordan data and a `β`-scaling vector with `βˢ ≤ p ≤ 1`, the exact powers satisfy `‖Aᵏ‖∞ ≤ κ∞(X)·(βˢ)⁻¹·(ρ+β)ᵏ` (the printed `κ_p(X)κ_p(D)(ρ(A)+δ)ᵏ` display at `p = ∞`, real spectrum, with `(βˢ)⁻¹` bounding `κ∞(D)`). |
