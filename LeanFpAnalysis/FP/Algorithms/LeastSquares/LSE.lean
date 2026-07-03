@@ -613,6 +613,76 @@ theorem theorem20_8FirstOrderRHS_of_zero_residual {m n p : ℕ}
           (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) := by
   simp [theorem20_8FirstOrderRHS, vecNorm2_zero]
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    the first-order coefficient is the zero-residual coefficient plus the
+    displayed residual-amplification term. -/
+theorem theorem20_8FirstOrderRHS_eq_zero_residual_add_residual_term
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ) :
+    theorem20_8FirstOrderRHS A b B d x r APplus BAplus =
+      theorem20_8FirstOrderRHS A b B d x (fun _i : Fin m => 0) APplus BAplus +
+        theorem20_8ResidualAmplifier A B APplus BAplus *
+          (vecNorm2 r / (frobNormRect A * vecNorm2 x)) := by
+  simp [theorem20_8FirstOrderRHS, vecNorm2_zero]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the first-order coefficient in (20.25) is monotone in the residual norm,
+    under the natural positive denominator conditions. -/
+theorem theorem20_8FirstOrderRHS_le_of_residual_norm_le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r₁ r₂ : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (hApos : 0 < frobNormRect A) (hxpos : 0 < vecNorm2 x)
+    (hr : vecNorm2 r₁ ≤ vecNorm2 r₂) :
+    theorem20_8FirstOrderRHS A b B d x r₁ APplus BAplus ≤
+      theorem20_8FirstOrderRHS A b B d x r₂ APplus BAplus := by
+  calc
+    theorem20_8FirstOrderRHS A b B d x r₁ APplus BAplus
+        = theorem20_8FirstOrderRHS A b B d x (fun _i : Fin m => 0)
+            APplus BAplus +
+          theorem20_8ResidualAmplifier A B APplus BAplus *
+            (vecNorm2 r₁ / (frobNormRect A * vecNorm2 x)) :=
+      theorem20_8FirstOrderRHS_eq_zero_residual_add_residual_term
+        A b B d x r₁ APplus BAplus
+    _ ≤ theorem20_8FirstOrderRHS A b B d x (fun _i : Fin m => 0)
+            APplus BAplus +
+          theorem20_8ResidualAmplifier A B APplus BAplus *
+            (vecNorm2 r₂ / (frobNormRect A * vecNorm2 x)) := by
+      have hterm :
+          theorem20_8ResidualAmplifier A B APplus BAplus *
+              (vecNorm2 r₁ / (frobNormRect A * vecNorm2 x)) ≤
+            theorem20_8ResidualAmplifier A B APplus BAplus *
+              (vecNorm2 r₂ / (frobNormRect A * vecNorm2 x)) := by
+        apply mul_le_mul_of_nonneg_left
+        · exact div_le_div_of_nonneg_right hr (le_of_lt (mul_pos hApos hxpos))
+        · exact theorem20_8ResidualAmplifier_nonneg A B APplus BAplus hApos
+      simpa [add_comm, add_left_comm, add_assoc] using
+        add_le_add_left hterm
+          (theorem20_8FirstOrderRHS A b B d x (fun _i : Fin m => 0)
+            APplus BAplus)
+    _ = theorem20_8FirstOrderRHS A b B d x r₂ APplus BAplus :=
+      (theorem20_8FirstOrderRHS_eq_zero_residual_add_residual_term
+        A b B d x r₂ APplus BAplus).symm
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the zero-residual first-order coefficient is the lower endpoint of the
+    residual-dependent coefficient family. -/
+theorem theorem20_8FirstOrderRHS_zero_residual_le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (hApos : 0 < frobNormRect A) (hxpos : 0 < vecNorm2 x) :
+    theorem20_8FirstOrderRHS A b B d x (fun _i : Fin m => 0) APplus BAplus ≤
+      theorem20_8FirstOrderRHS A b B d x r APplus BAplus := by
+  apply theorem20_8FirstOrderRHS_le_of_residual_norm_le
+      A b B d x (fun _i : Fin m => 0) r APplus BAplus hApos hxpos
+  simpa [vecNorm2_zero] using vecNorm2_nonneg r
+
 /-- The linear constraint map `x ↦ B x` used in the equality-constrained
     least-squares problem (20.23). -/
 noncomputable def lseConstraintLinearMap {p n : ℕ}
@@ -16337,6 +16407,30 @@ noncomputable def theorem20_10_householder_sourceRankBudget
   theorem20_10_householder_gammaA fp r p q * frobNormRect A +
     theorem20_10_householder_gammaB fp r p q * frobNormRect B
 
+/-- Nonnegativity of the combined Householder Frobenius rank budget used in
+    the Theorem 20.10(b) source-rank branch. -/
+theorem theorem20_10_householder_sourceRankBudget_nonneg
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    0 ≤ theorem20_10_householder_sourceRankBudget fp A B := by
+  dsimp [theorem20_10_householder_sourceRankBudget]
+  have hgammaA_nonneg :
+      0 ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidA
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  exact add_nonneg
+    (mul_nonneg hgammaA_nonneg (frobNormRect_nonneg A))
+    (mul_nonneg hgammaB_nonneg (frobNormRect_nonneg B))
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank radius induced by the `Bᵀ` and stacked `[A; B]`
     finite-dimensional lower-bound margins. -/
@@ -16361,6 +16455,28 @@ theorem theorem20_10_householder_sourceRankRadius_pos
   exact lt_min
     (LSEFullRowRank.transposeVecNorm2LowerMargin_pos hB)
     (LSEStackedFullColumnRank.vecNorm2LowerMargin_pos hStack)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    a practical sufficient split of the rank-preservation smallness condition.
+    If the `A` and `B` Householder rank budgets are each below half of the
+    source-rank radius, then their combined budget satisfies the single
+    rank-radius hypothesis used by the returned-vector theorem. -/
+theorem theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_half_bounds
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hAhalf :
+      theorem20_10_householder_gammaA fp r p q * frobNormRect A <
+        theorem20_10_householder_sourceRankRadius hB hStack / 2)
+    (hBhalf :
+      theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        theorem20_10_householder_sourceRankRadius hB hStack / 2) :
+    theorem20_10_householder_sourceRankBudget fp A B <
+      theorem20_10_householder_sourceRankRadius hB hStack := by
+  dsimp [theorem20_10_householder_sourceRankBudget]
+  nlinarith
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank margin-radius wrapper for the constructed rounded Householder
