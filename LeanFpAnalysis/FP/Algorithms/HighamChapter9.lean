@@ -17802,6 +17802,13 @@ theorem higham9_11_bohteBound_pentadiagonal_formula :
   norm_num [higham9_11_bohteBound]
   rfl
 
+/-- **Theorem 9.11**, Bohte formula special case `p = 2`, named by common
+bandwidth.  This is the same scalar specialization as the pentadiagonal
+formula. -/
+theorem higham9_11_bohteBound_bandwidth_two_formula :
+    higham9_11_bohteBound 2 = 7 :=
+  higham9_11_bohteBound_pentadiagonal_formula
+
 /-- **Theorem 9.11**, arithmetic check for the formal Bohte expression at
 `p = 3`: the printed scalar formula evaluates to `28`.  This records only the
 formula arithmetic, not a banded-growth theorem or attainability claim. -/
@@ -18243,6 +18250,34 @@ theorem higham9_11_pentadiagonal_bohte_solve_tight (fp : FPModel) (n : ℕ)
       hL_diag hU_diag hLU hn hn3
       (fun i j => by
         simpa [higham9_11_bohteBound_pentadiagonal_formula] using hGrowth i j)
+
+/-- **Theorem 9.11**, bandwidth-two Bohte solve bound.
+
+This is the common-bandwidth alias of the pentadiagonal `p = 2` specialization:
+the concrete scalar is `7`, and the external banded GEPP growth hypothesis
+remains explicit. -/
+theorem higham9_11_bandwidth_two_bohte_solve_tight (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        7 * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        7 * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  simpa [higham9_11_bohteBound_bandwidth_two_formula] using
+    higham9_11_bohte_banded_solve_tight fp n 2 A L_hat U_hat b
+      hL_diag hU_diag hLU hn hn3
+      (fun i j => by
+        simpa [higham9_11_bohteBound_bandwidth_two_formula] using hGrowth i j)
 
 /-- **Theorem 9.11**, bandwidth-three Bohte solve bound.
 
