@@ -451,6 +451,168 @@ theorem theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
     (div_le_iff₀ hBpos).mp hDeltaB_ratio,
     (div_le_iff₀ hdpos).mp hDeltad_ratio⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    source projector `P = I - B^+ B` used in the LSE perturbation bound.
+
+    The matrix `Bplus` is an explicit supplied table for the source
+    pseudo-inverse `B^+`; this definition does not assert the Moore--Penrose
+    equations. -/
+noncomputable def theorem20_8Projection {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j => idMatrix n i j - rectMatMul Bplus B i j
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    the source product `A P`, where `P = I - B^+ B`. -/
+noncomputable def theorem20_8AP {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) : Fin m → Fin n → ℝ :=
+  rectMatMul A (theorem20_8Projection B Bplus)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    source table `B_A^+ = (I - (AP)^+ A)B^+`.
+
+    The arguments `Bplus` and `APplus` are supplied pseudo-inverse tables for
+    `B^+` and `(AP)^+`, respectively.  The definition records the algebraic
+    expression used in the printed condition quantities. -/
+noncomputable def theorem20_8BAplus {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (_B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ) :
+    Fin n → Fin p → ℝ :=
+  rectMatMul (fun i j => idMatrix n i j - rectMatMul APplus A i j) Bplus
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    condition quantity `kappa_B(A) = ||A||_F ||(AP)^+||_2`. -/
+noncomputable def theorem20_8KappaB {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ) : ℝ :=
+  frobNormRect A * complexMatrixOp2 (realRectToCMatrix APplus)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    condition quantity `kappa_A(B) = ||B||_F ||B_A^+||_2`. -/
+noncomputable def theorem20_8KappaA {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ) : ℝ :=
+  frobNormRect B * complexMatrixOp2 (realRectToCMatrix BAplus)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    residual multiplier in the first-order coefficient of (20.25),
+    `kappa_B(A)^2 * ((||B||_F / ||A||_F) ||A B_A^+||_2 + 1)`. -/
+noncomputable def theorem20_8ResidualAmplifier {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ) : ℝ :=
+  theorem20_8KappaB A APplus ^ 2 *
+    ((frobNormRect B / frobNormRect A) *
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) + 1)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    the first-order scalar coefficient multiplying `eps`, excluding the
+    source's `O(eps^2)` remainder. -/
+noncomputable def theorem20_8FirstOrderRHS {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ) : ℝ :=
+  theorem20_8KappaA B BAplus *
+      (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) +
+    (1 + theorem20_8KappaB A APplus) *
+      (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) +
+    theorem20_8ResidualAmplifier A B APplus BAplus *
+      (vecNorm2 r / (frobNormRect A * vecNorm2 x))
+
+/-- The source quantity `kappa_B(A)` in Theorem 20.8 is nonnegative. -/
+theorem theorem20_8KappaB_nonneg {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ) :
+    0 ≤ theorem20_8KappaB A APplus := by
+  unfold theorem20_8KappaB
+  exact mul_nonneg (frobNormRect_nonneg A)
+    (complexMatrixOp2_nonneg (realRectToCMatrix APplus))
+
+/-- The source quantity `kappa_A(B)` in Theorem 20.8 is nonnegative. -/
+theorem theorem20_8KappaA_nonneg {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ) :
+    0 ≤ theorem20_8KappaA B BAplus := by
+  unfold theorem20_8KappaA
+  exact mul_nonneg (frobNormRect_nonneg B)
+    (complexMatrixOp2_nonneg (realRectToCMatrix BAplus))
+
+/-- Under the natural nonzero-`A` denominator side condition, the residual
+    amplifier in Theorem 20.8's first-order coefficient is nonnegative. -/
+theorem theorem20_8ResidualAmplifier_nonneg {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (hApos : 0 < frobNormRect A) :
+    0 ≤ theorem20_8ResidualAmplifier A B APplus BAplus := by
+  unfold theorem20_8ResidualAmplifier
+  have hratio : 0 ≤ frobNormRect B / frobNormRect A :=
+    div_nonneg (frobNormRect_nonneg B) (le_of_lt hApos)
+  have hop :
+      0 ≤ complexMatrixOp2
+        (realRectToCMatrix (rectMatMul A BAplus)) :=
+    complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul A BAplus))
+  have hinside :
+      0 ≤ (frobNormRect B / frobNormRect A) *
+          complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) + 1 := by
+    nlinarith [mul_nonneg hratio hop]
+  exact mul_nonneg (sq_nonneg _) hinside
+
+/-- Under the natural positive denominator assumptions, the first-order
+    coefficient in Theorem 20.8's perturbation bound is nonnegative. -/
+theorem theorem20_8FirstOrderRHS_nonneg {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (hApos : 0 < frobNormRect A) (hBpos : 0 < frobNormRect B)
+    (hxpos : 0 < vecNorm2 x) :
+    0 ≤ theorem20_8FirstOrderRHS A b B d x r APplus BAplus := by
+  unfold theorem20_8FirstOrderRHS
+  have hkA : 0 ≤ theorem20_8KappaA B BAplus :=
+    theorem20_8KappaA_nonneg B BAplus
+  have hkB : 0 ≤ theorem20_8KappaB A APplus :=
+    theorem20_8KappaB_nonneg A APplus
+  have hBx_pos : 0 < frobNormRect B * vecNorm2 x := mul_pos hBpos hxpos
+  have hAx_pos : 0 < frobNormRect A * vecNorm2 x := mul_pos hApos hxpos
+  have hd_term : 0 ≤ vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1 := by
+    have hdiv : 0 ≤ vecNorm2 d / (frobNormRect B * vecNorm2 x) :=
+      div_nonneg (vecNorm2_nonneg d) (le_of_lt hBx_pos)
+    linarith
+  have hb_term : 0 ≤ vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1 := by
+    have hdiv : 0 ≤ vecNorm2 b / (frobNormRect A * vecNorm2 x) :=
+      div_nonneg (vecNorm2_nonneg b) (le_of_lt hAx_pos)
+    linarith
+  have hres_ratio : 0 ≤ vecNorm2 r / (frobNormRect A * vecNorm2 x) :=
+    div_nonneg (vecNorm2_nonneg r) (le_of_lt hAx_pos)
+  have hres_amp : 0 ≤ theorem20_8ResidualAmplifier A B APplus BAplus :=
+    theorem20_8ResidualAmplifier_nonneg A B APplus BAplus hApos
+  have hfirst :
+      0 ≤ theorem20_8KappaA B BAplus *
+          (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) :=
+    mul_nonneg hkA hd_term
+  have hsecond :
+      0 ≤ (1 + theorem20_8KappaB A APplus) *
+          (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) := by
+    have hone_plus : 0 ≤ 1 + theorem20_8KappaB A APplus := by
+      linarith
+    exact mul_nonneg hone_plus hb_term
+  have hthird :
+      0 ≤ theorem20_8ResidualAmplifier A B APplus BAplus *
+          (vecNorm2 r / (frobNormRect A * vecNorm2 x)) :=
+    mul_nonneg hres_amp hres_ratio
+  exact add_nonneg (add_nonneg hfirst hsecond) hthird
+
+/-- In the zero-residual case, Theorem 20.8's first-order coefficient drops
+    its residual-amplification term. -/
+theorem theorem20_8FirstOrderRHS_of_zero_residual {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ) :
+    theorem20_8FirstOrderRHS A b B d x (fun _i : Fin m => 0) APplus BAplus =
+      theorem20_8KappaA B BAplus *
+          (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) +
+        (1 + theorem20_8KappaB A APplus) *
+          (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) := by
+  simp [theorem20_8FirstOrderRHS, vecNorm2_zero]
+
 /-- The linear constraint map `x ↦ B x` used in the equality-constrained
     least-squares problem (20.23). -/
 noncomputable def lseConstraintLinearMap {p n : ℕ}
