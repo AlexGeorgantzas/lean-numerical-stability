@@ -1,10 +1,10 @@
 -- Algorithms/MatrixPowers.lean
 --
--- Higham Chapter 17: Error analysis of matrix powers.
+-- Higham Chapter 18: Error analysis of matrix powers.
 --
--- Covers §17.2 (finite precision bounds for computed A^m via repeated
+-- Covers §18.2 (finite precision bounds for computed A^m via repeated
 -- matrix-vector products) and the similarity-based convergence engine
--- underlying Theorem 17.1 (Higham–Knight).
+-- underlying Theorem 18.1 (Higham–Knight).
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -22,14 +22,14 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators
 
 -- ============================================================
--- §17.2  Backward error model for computed matrix powers
+-- §18.2  Backward error model for computed matrix powers
 -- ============================================================
 
 /-- Model for computing A^m v by repeated matrix-vector multiplication.
 
     At each step the computed vector satisfies
       v_{k+1} = (A + ΔA_k) · v_k,   |ΔA_k| ≤ c · |A|  componentwise
-    corresponding to Higham eq (17.10)–(17.11).
+    corresponding to Higham eq (18.10)–(18.11).
 
     The constant c is `gamma fp n` when each step is a standard matVec
     of an n-column matrix (from `matVec_backward_error`). -/
@@ -67,10 +67,10 @@ theorem one_step_matpow_bound (n : ℕ) (A ΔA : Fin n → Fin n → ℝ)
         rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro j _; ring
 
 -- ============================================================
--- §17.2  Componentwise forward bound (consequence of 17.10–17.11)
+-- §18.2  Componentwise forward bound (consequence of 18.10–18.11)
 -- ============================================================
 
-/-- **Componentwise bound for computed matrix powers** (§17.2).
+/-- **Componentwise bound for computed matrix powers** (§18.2).
 
     If v_{k+1} = (A+ΔA_k)v_k with |ΔA_k| ≤ c|A|, then
       |v_m i| ≤ (1+c)^m · (|A|^m |v_0|)_i
@@ -117,10 +117,10 @@ theorem matPow_componentwise_bound (n : ℕ) (A : Fin n → Fin n → ℝ)
           apply Finset.sum_congr rfl; intro j _; ring
 
 -- ============================================================
--- §17.2  Normwise forward bound
+-- §18.2  Normwise forward bound
 -- ============================================================
 
-/-- **Normwise bound for computed matrix powers** (§17.2).
+/-- **Normwise bound for computed matrix powers** (§18.2).
 
     ‖v_m‖∞ ≤ ((1+c) · ‖A‖∞)^m · ‖v_0‖∞. -/
 theorem matPow_normwise_bound (n : ℕ) (hn : 0 < n)
@@ -158,15 +158,15 @@ theorem matPow_normwise_bound (n : ℕ) (hn : 0 < n)
       (infNormVec_nonneg _)
 
 -- ============================================================
--- §17.2  Sufficient convergence condition (normwise, eq 17.12)
+-- §18.2  Sufficient convergence condition (normwise, eq 18.12)
 -- ============================================================
 
 /-- **Sufficient condition for convergence of computed matrix powers**
-    (normwise version of eq 17.12).
+    (normwise version of eq 18.12).
 
     If q := (1+c)·‖A‖∞ ≤ some q₀ < 1, then ‖v_m‖∞ ≤ q₀^m · ‖v_0‖∞.
 
-    The book states (17.12) as ρ(|A|) < 1/(1+γ_n), which is sharper
+    The book states (18.12) as ρ(|A|) < 1/(1+γ_n), which is sharper
     since ρ(|A|) ≤ ‖A‖∞. -/
 theorem matPow_convergence_bound (n : ℕ) (hn : 0 < n)
     (A : Fin n → Fin n → ℝ) (v : ℕ → (Fin n → ℝ)) (c : ℝ) (hc : 0 ≤ c)
@@ -182,7 +182,7 @@ theorem matPow_convergence_bound (n : ℕ) (hn : 0 < n)
           (mul_nonneg (by linarith) (infNorm_nonneg A)) hq m
 
 -- ============================================================
--- §17.2  Matrix-level componentwise bound (column by column)
+-- §18.2  Matrix-level componentwise bound (column by column)
 -- ============================================================
 
 /-- **Matrix-level componentwise bound**: if each column of fl(A^m) is
@@ -211,7 +211,7 @@ theorem matPow_matrix_bound (n : ℕ) (A : Fin n → Fin n → ℝ)
           Finset.mem_univ, if_true]
 
 -- ============================================================
--- §17.2  Nonneg matrix specialization
+-- §18.2  Nonneg matrix specialization
 -- ============================================================
 
 /-- **Nonneg matrix simplification**: when A ≥ 0, |A| = A so the
@@ -229,16 +229,16 @@ theorem matPow_nonneg_componentwise_bound (n : ℕ) (A : Fin n → Fin n → ℝ
   rwa [habs] at hcw
 
 -- ============================================================
--- §17.2  Similarity-based convergence engine (eq 17.14)
+-- §18.2  Similarity-based convergence engine (eq 18.14)
 -- ============================================================
 
-/-- **Similarity-based convergence criterion** (eq 17.14 in Theorem 17.1 proof).
+/-- **Similarity-based convergence criterion** (eq 18.14 in Theorem 18.1 proof).
 
     If there exists a nonsingular S such that for all perturbations ΔA_k,
       ‖S⁻¹(A+ΔA_k)S‖∞ ≤ q < 1,
     then ‖S⁻¹ v_m‖∞ ≤ q^m · ‖S⁻¹ v_0‖∞.
 
-    This is the reusable engine underlying Theorem 17.1. The Jordan form
+    This is the reusable engine underlying Theorem 18.1. The Jordan form
     is only used to CONSTRUCT the right S; this engine works for any S. -/
 theorem similarity_product_bound (n : ℕ) (hn : 0 < n)
     (A : Fin n → Fin n → ℝ)
@@ -307,7 +307,7 @@ theorem similarity_product_bound (n : ℕ) (hn : 0 < n)
       _ = q ^ (m + 1) * infNormVec (matMulVec n S_inv (v 0)) := by ring
 
 -- ============================================================
--- §17.2  Corollary: normwise bound via similarity
+-- §18.2  Corollary: normwise bound via similarity
 -- ============================================================
 
 /-- **Normwise bound via similarity**: ‖v_m‖∞ ≤ κ∞(S) · q^m · ‖v_0‖∞.
@@ -368,29 +368,31 @@ theorem similarity_normwise_bound (n : ℕ) (hn : 0 < n)
     _ = infNorm S * infNorm S_inv * q ^ m * infNormVec (v 0) := by ring
 
 -- ============================================================
--- Theorem 17.1: JordanFormSpec and convergence condition
+-- Theorem 18.1: JordanFormSpec and convergence condition
 -- ============================================================
 
-/-- Axiomatized Jordan form data for a matrix A.
+/-- Jordan form data for a matrix `A`, **plus one assumed axiom** carrying the
+    crux of Theorem 18.1.
 
-    Captures the essential properties needed from A = XJX⁻¹:
-    - X is the similarity matrix with inverse X_inv
-    - spectral_radius ρ(A) < 1 (convergent matrix)
-    - max_block_size t = max_i n_i (largest Jordan block)
+    The plain data fields are innocuous: `X`, `X_inv` (similarity `A = X J X⁻¹`),
+    `spectral_radius` `ρ(A) < 1` (convergent matrix), and `max_block_size`
+    `t = maxᵢ nᵢ` (largest Jordan block).
 
-    The key derived property `similarity_absorbs` axiomatizes the full
-    Jordan block scaling construction (Higham pp. 354–355): given the
-    Higham–Knight condition 4t·η·κ∞(X)·‖A‖∞ < (1-ρ)^t, there exists
-    a similarity S = XP(ε) (constructed over ℂ via Jordan form scaling
-    with D(δ) = diag(1,δ,...,δ^{n_i-1})) that absorbs all perturbations
-    ΔA with |ΔA| ≤ η|A|.  The construction requires:
-    1. Jordan Normal Form (needs algebraically closed field ℂ),
-    2. δ-scaling of Jordan blocks to control ‖S⁻¹(A+ΔA)S‖∞,
-    3. The inequality (1+1/t)^t < e < 4 for the 4t factor.
+    ⚠ AXIOM / OPEN OBLIGATION.  The field `similarity_absorbs` is **not proved
+    here** — it is an assumed hypothesis that packages the entire non-trivial
+    content of Theorem 18.1's proof (Higham pp. 347–348): the `S = X P(ε)`
+    Jordan-block δ-scaling construction with `D(δ) = diag(1,δ,…,δ^{nᵢ-1})`, and
+    the `(1+1/t)^t < e < 4` optimisation, which turn the Higham–Knight condition
+    `4t·η·κ∞(X)·‖A‖∞ < (1-ρ)^t` into a per-step contraction
+    `‖S⁻¹(A+ΔA)S‖∞ ≤ q < 1` for all `|ΔA| ≤ η|A|`.  Discharging it needs
+    classical Jordan Normal Form over ℂ, which Mathlib does not currently
+    provide (only Jordan–Chevalley).  Until it is discharged, every result
+    consuming this field is *conditional on this axiom*, not a closure of
+    Theorem 18.1.
 
-    Note: κ∞(S) ≤ (1−ρ−ε)^{1−t} · κ∞(X) from eq (17.15), which is
+    Note: κ∞(S) ≤ (1−ρ−ε)^{1−t} · κ∞(X) from eq (18.15), which is
     generally ≥ κ∞(X) when t > 1.  We do not constrain κ∞(S) here;
-    the convergence constant C in Theorem 17.1 is κ∞(S), not κ∞(X). -/
+    the convergence constant C in Theorem 18.1 is κ∞(S), not κ∞(X). -/
 structure JordanFormSpec (n : ℕ) (hn : 0 < n)
     (A X X_inv : Fin n → Fin n → ℝ) where
   inv_right : IsRightInverse n X X_inv
@@ -399,8 +401,10 @@ structure JordanFormSpec (n : ℕ) (hn : 0 < n)
   hr_lt_one : spectral_radius < 1
   max_block_size : ℕ
   ht_pos : 0 < max_block_size
-  /-- The Higham–Knight condition guarantees existence of a similarity
-      absorbing all valid perturbations. -/
+  /-- ASSUMED AXIOM (see the structure docstring): under the Higham–Knight
+      condition there exists a perturbation-absorbing similarity `S`.  This is
+      the undischarged crux of Theorem 18.1 (the `S = X P(ε)` δ-scaling
+      construction), not a proved fact. -/
   similarity_absorbs :
     ∀ (η : ℝ), 0 ≤ η →
     4 * max_block_size * η * (infNorm X * infNorm X_inv) *
@@ -414,25 +418,27 @@ structure JordanFormSpec (n : ℕ) (hn : 0 < n)
         infNorm (matMul n S_inv
           (matMul n (fun i j => A i j + ΔA i j) S)) ≤ q)
 
-/-- **Theorem 17.1** (Higham–Knight): sufficient condition for convergence
-    of computed matrix powers.
+/-- **Conditional reduction of Theorem 18.1** (Higham–Knight).
 
-    Let A ∈ ℝ^{n×n} with ρ(A) < 1 and Jordan form data (X, X⁻¹, ρ, t).
-    A sufficient condition for fl(A^m) → 0 is
+    This is **not** a full proof of Theorem 18.1.  It *assumes* the
+    perturbation-absorbing similarity construction via
+    `JordanFormSpec.similarity_absorbs` (an undischarged axiom — see there) and
+    then performs only the book's elementary telescoping step.  The source row
+    for Theorem 18.1 remains OPEN until that axiom is discharged.
 
-      4t · c · κ∞(X) · ‖A‖∞ < (1 − ρ(A))^t       (eq 17.13)
+    Given Jordan form data (X, X⁻¹, ρ, t) with ρ(A) < 1 and the Higham–Knight
+    condition (18.13)
+
+      4t · c · κ∞(X) · ‖A‖∞ < (1 − ρ(A))^t
 
     where t = max_i n_i (largest Jordan block), c is the per-step backward
-    error bound, and κ∞(X) = ‖X‖∞ · ‖X⁻¹‖∞.
+    error bound, and κ∞(X) = ‖X‖∞ · ‖X⁻¹‖∞, it concludes geometric decay:
+    ∃ C q, q < 1 ∧ ‖v_m‖∞ ≤ C · q^m · ‖v_0‖∞, with C = κ∞(S) for the scaled
+    similarity S = X P(ε) (eq 18.15); in general κ∞(S) ≥ κ∞(X) when t > 1.
 
-    The conclusion gives geometric convergence: ∃ C q with q < 1 and
-    ‖v_m‖∞ ≤ C · q^m · ‖v_0‖∞.  The constant C = κ∞(S) where S = XP(ε)
-    is the scaled similarity from the proof (eq 17.15); in general
-    κ∞(S) ≥ κ∞(X) when t > 1.
-
-    Proof: obtain similarity S from JordanFormSpec.similarity_absorbs,
-    then apply the similarity-based convergence engine. -/
-theorem higham_knight_17_1 (n : ℕ) (hn : 0 < n)
+    Compose with `computedMatPow_tendsto_zero_of_geometric` to obtain the
+    book's stated limit conclusion fl(A^m) → 0. -/
+theorem higham_knight_18_1 (n : ℕ) (hn : 0 < n)
     (A X X_inv : Fin n → Fin n → ℝ)
     (hJ : JordanFormSpec n hn A X X_inv)
     (v : ℕ → (Fin n → ℝ)) (c : ℝ) (hc : 0 ≤ c)
