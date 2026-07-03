@@ -91,7 +91,8 @@ finite sigma-form residual estimate `normwise_residual_sigma_finite_bound` for
 (17.19), and the finite source-sigma diagonalization certificate
 `finiteResidualSigma_le_diagonalizable_bound`, now instantiated with the
 displayed finite maximum by `diagonalResidualRatioMax` and
-`finiteResidualSigma_le_diagonalizable_max_bound` for the (17.20) bound.  It also
+`finiteResidualSigma_le_diagonalizable_max_bound`, plus the supremum-envelope
+wrapper `residualSigmaSup_le_diagonalizable_max_bound`, for the (17.20) bound.  It also
 models the iterate-growth constants from (17.7) and (17.9)
 with `normwiseIterateGrowth`, `componentwiseIterateGrowth`, and their bound
 wrappers, and adds the finite/certificate correction and infinity-norm bridge
