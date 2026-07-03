@@ -20538,6 +20538,33 @@ theorem higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
   exact (hDeltaA_bound i j).trans
     (mul_le_mul_of_nonneg_right hc_bound (abs_nonneg (A i j)))
 
+/-- **Theorem 9.14**, optimal-growth model bridge to the equation-(9.22)
+`f(u)` source bound.
+
+If a special tridiagonal class supplies the exact-arithmetic comparison
+`|Lhat||Uhat| <= |A|`, then the source equation (9.20)/(9.21) models imply
+the `f(u)|A|` backward-error bound from equation (9.22). -/
+theorem higham9_14_source_f_bound_of_absLU_le_absA_and_9_20_9_21_models
+    (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A L_hat U_hat y_hat x_hat b 1 u hu
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j)
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
 /-- **Equations (9.20)--(9.22)**, source-coefficient weakening for explicit
 perturbation models.
 
@@ -20621,6 +20648,54 @@ theorem higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models_le
       n A L_hat U_hat DeltaA_LU hu0_le_u h20)
     (higham9_21_tridiag_solve_perturbation_model_mono
       n L_hat U_hat y_hat x_hat b DeltaL DeltaU hu0 hu0_le_u h21)
+
+/-- **Theorem 9.14**, optimal-growth model source bound under coefficient
+weakening. -/
+theorem higham9_14_source_f_bound_of_absLU_le_absA_and_9_20_9_21_models_le
+    (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (u0 u : ℝ) (hu0 : 0 ≤ u0) (hu0_le_u : u0 ≤ u)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u0)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u0) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models_le
+      n A L_hat U_hat y_hat x_hat b 1 u0 u hu0 hu0_le_u
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j)
+      DeltaA_LU DeltaL DeltaU h20 h21)
+
+/-- **Theorem 9.14**, optimal-growth final source bound under coefficient
+weakening. -/
+theorem higham9_14_source_h_bound_of_absLU_le_absA_and_9_20_9_21_models_le
+    (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (u0 u : ℝ) (hu0 : 0 ≤ u0) (hu0_le_u : u0 ≤ u)
+    (hu_lt_one : u < 1)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u0)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u0) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  simpa [one_mul] using
+    (higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models_le
+      n A L_hat U_hat y_hat x_hat b 1 u0 u (by norm_num) hu0 hu0_le_u
+      hu_lt_one
+      (fun i j => by simpa [one_mul] using hAbsLU_le i j)
+      DeltaA_LU DeltaL DeltaU h20 h21)
 
 /-- **Theorem 9.14**, source-model production from LU and triangular-solve
 certificates.

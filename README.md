@@ -62,9 +62,10 @@ The existing `StationaryIteration.lean` module now carries the correct
 recurrence `one_step_error_source`. The current proved surface covers
 nonsingular splitting algebra, the exact-solution affine fixed-point identity
 `stationary_solution_fixed_point` behind (17.4), the exact finite-sum solution
-identity `stationary_solution_finite_sum`, finite/q-bound forward and residual
-dependencies, and Jacobi/SOR splitting identities; the computed finite-sum,
-finite-sum error, exact infinite-sum, singular-system, and stopping-test rows
+identity `stationary_solution_finite_sum`, the source-sign computed finite-sum
+identity `sourceComputedIteration_finite_sum` for (17.3), finite/q-bound forward
+and residual dependencies, and Jacobi/SOR splitting identities; the finite-sum
+error recurrence, exact infinite-sum, singular-system, and stopping-test rows
 remain open in the Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
