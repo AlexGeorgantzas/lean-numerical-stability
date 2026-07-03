@@ -51,8 +51,15 @@ SVD optimizer through `svdOptimalDeltaA`, `svdOptimalDeltaB`,
 `exists_svdOptimalPerturbations`, plus the component bounds
 `svdOptimalPerturbations_frobNormSq_bounds`, and lifts that optimizer to an
 original-coordinate backward-error certificate via
-`isBackwardError_sqrt_xiSq_of_svdOptimalPerturbations`, while leaving the eta
-minimum/infimum order bridge open. It also connects square Frobenius
+`isBackwardError_sqrt_xiSq_of_svdOptimalPerturbations`. It now models eta as the
+infimum `sylvesterBackwardErrorInf` over nonnegative backward-error certificates
+and proves the two-sided xi bridge with
+`sylvesterBackwardErrorInf_le_sqrt_xiSq_of_svdOptimalPerturbations` and
+`sqrt_xiSq_div_three_le_sylvesterBackwardErrorInf_of_svd`, and closes the direct
+eta-residual amplification wrapper
+`sylvesterBackwardErrorInf_le_mu_relative_residual_of_svd`, while leaving an
+attained-minimum theorem open.
+It also connects square Frobenius
 backward-error certificates to the SVD-coordinate lower-direction bridge through
 `sylvesterBackwardResidual`, `svdResidual_backwardResidual`, and
 `xiSq_le_three_eta_sq_of_backward_error`. The Lyapunov subsection now also has
@@ -79,10 +86,28 @@ nonsingular splitting algebra, the exact-solution affine fixed-point identity
 identity `stationary_solution_finite_sum`, the source-sign computed finite-sum
 identity `sourceComputedIteration_finite_sum` for (17.3), and the finite-sum
 error recurrence `sourceComputedIteration_error_finite_sum` for (17.5), the
-finite-sum residual recurrence `residual_finite_sum` for (17.18), finite/q-bound
-forward and residual dependencies, and Jacobi/SOR splitting identities; the
-exact infinite-sum, singular-system, and stopping-test rows remain open in the
-Chapter 17 ledger.
+finite-sum residual recurrence `residual_finite_sum` for (17.18), the
+finite sigma-form residual estimate `normwise_residual_sigma_finite_bound` for
+(17.19), and the finite source-sigma diagonalization certificate
+`finiteResidualSigma_le_diagonalizable_bound`, now instantiated with the
+displayed finite maximum by `diagonalResidualRatioMax` and
+`finiteResidualSigma_le_diagonalizable_max_bound`, plus the supremum-envelope
+wrapper `residualSigmaSup_le_diagonalizable_max_bound`, for the (17.20) bound.  It also
+models the iterate-growth constants from (17.7) and (17.9)
+with `normwiseIterateGrowth`, `componentwiseIterateGrowth`, and their bound
+wrappers, and adds the finite/certificate correction and infinity-norm bridge
+for (17.13)-(17.15) through `finiteForwardCorrection`,
+`mainForwardBoundVector`, `finiteForwardCorrection_norm_bound`, and
+`finite_norm_form_forward_bound`.  The Jacobi specialization now also has the
+finite norm-form surface `jacobiForwardBoundVector`,
+`mainForwardBoundVector_eq_jacobiForwardBoundVector`, and
+`finite_norm_form_jacobi_forward_bound`; the SOR specialization now adds
+`sorForwardFactor`, `mainForwardBoundVector_norm_le_sorForwardBoundVector`, and
+`finite_norm_form_sor_forward_bound`, with the Gauss-Seidel `omega = 1`
+corollary `sorForwardFactor_one` and
+`finite_norm_form_gaussSeidel_forward_bound`.  The exact infinite-sum,
+literal infinite-sigma, singular-system, and stopping-test rows remain open in
+the Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).

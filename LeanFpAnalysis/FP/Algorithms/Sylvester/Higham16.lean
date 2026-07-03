@@ -143,6 +143,41 @@ theorem sylvester_vec_system_iff_solution (m n : Nat)
     ext p
     exact h p.2 p.1
 
+/-- Higham, 2nd ed., Chapter 16, equation (16.22):
+    vectorized/Kronecker form of the full perturbation identity, including the
+    second-order terms. -/
+theorem sylvester_perturbation_equation_vec (n : Nat)
+    (A B C X dA dB dC dX : Fin n -> Fin n -> Real)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hPerturbed : forall i j, sylvesterOp n
+      (fun i' j' => A i' j' + dA i' j')
+      (fun i' j' => B i' j' + dB i' j')
+      (fun i' j' => X i' j' + dX i' j') i j = C i j + dC i j) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B) (Matrix.vec dX) =
+      Matrix.vec (fun i j =>
+        dC i j - matMul n dA X i j + matMul n X dB i j -
+          matMul n dA dX i j + matMul n dX dB i j) := by
+  rw [sylvesterVecCoeff_mulVec_vec]
+  ext p
+  simpa [sylvesterOpRect] using
+    sylvester_perturbation_equation n A B C X dA dB dC dX
+      hExact hPerturbed p.2 p.1
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.22), first-order form:
+    after dropping second-order perturbation products, the vec/Kronecker
+    coefficient sends `vec(dX)` to the vectorized first-order right-hand side. -/
+theorem sylvester_perturbation_first_order_vec (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B) (Matrix.vec dX) =
+      Matrix.vec (fun i j =>
+        dC i j - matMul n dA X i j + matMul n X dB i j) := by
+  rw [sylvesterVecCoeff_mulVec_vec]
+  ext p
+  simpa [sylvesterOpRect] using
+    sylvester_perturbation_first_order n A B X dA dB dC dX hLin p.2 p.1
+
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
     if `A` and `B` are diagonal in the chosen bases, the vec/Kronecker
     Sylvester coefficient is diagonal with entries `a_i - b_j`.

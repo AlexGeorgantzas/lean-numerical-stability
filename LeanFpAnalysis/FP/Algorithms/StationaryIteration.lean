@@ -6,6 +6,7 @@
 -- analysis) for iterations of the form  Mx_{k+1} = Nx_k + b  where A = M − N.
 
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Finset.Max
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
@@ -14,6 +15,8 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
+import LeanFpAnalysis.FP.Analysis.HighamChapter7
+import LeanFpAnalysis.FP.Algorithms.MatrixPowers
 
 namespace LeanFpAnalysis.FP
 
@@ -586,6 +589,105 @@ theorem componentwise_forward_bound (n : ℕ)
         exact mul_le_mul_of_nonneg_left (hw _ _) (abs_nonneg _)
 
 -- ============================================================
+-- §17.2  Iterate-growth constants (eqs 17.7, 17.9)
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 17, equation (17.7):
+    candidate values for the normwise iterate-growth constant
+    `gamma_x = sup_k ||xhat_k||_inf / ||x||_inf`. -/
+def NormwiseIterateGrowthValues (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ) : Set ℝ :=
+  {rho | ∃ k : ℕ, rho = infNormVec (x_hat k) / infNormVec x}
+
+/-- Higham, 2nd ed., Chapter 17, equation (17.7):
+    normwise iterate-growth constant as the supremum of the source ratios. -/
+noncomputable def normwiseIterateGrowth (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ) : ℝ :=
+  sSup (NormwiseIterateGrowthValues n x x_hat)
+
+/-- Predicate form of the bound supplied by the source `gamma_x` definition. -/
+def NormwiseIterateGrowthBound (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ) (gamma_x : ℝ) : Prop :=
+  ∀ k : ℕ, infNormVec (x_hat k) ≤ gamma_x * infNormVec x
+
+/-- Each displayed ratio is bounded by the supremum model of `gamma_x`, provided
+    the ratio set is bounded above. -/
+theorem normwiseIterateGrowth_ratio_le (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ)
+    (hBdd : BddAbove (NormwiseIterateGrowthValues n x x_hat)) (k : ℕ) :
+    infNormVec (x_hat k) / infNormVec x ≤
+      normwiseIterateGrowth n x x_hat := by
+  unfold normwiseIterateGrowth
+  exact le_csSup hBdd ⟨k, rfl⟩
+
+/-- The supremum model of `gamma_x` supplies the normwise iterate-growth bound
+    used in the finite and q-bound forward-error wrappers when `x` is nonzero in
+    infinity norm. -/
+theorem normwiseIterateGrowthBound_of_sSup (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ)
+    (hx : 0 < infNormVec x)
+    (hBdd : BddAbove (NormwiseIterateGrowthValues n x x_hat)) :
+    NormwiseIterateGrowthBound n x x_hat
+      (normwiseIterateGrowth n x x_hat) := by
+  intro k
+  have hratio :=
+    normwiseIterateGrowth_ratio_le n x x_hat hBdd k
+  have hmul := mul_le_mul_of_nonneg_right hratio (le_of_lt hx)
+  have hx_ne : infNormVec x ≠ 0 := ne_of_gt hx
+  simpa [NormwiseIterateGrowthBound, div_mul_cancel₀, hx_ne] using hmul
+
+/-- Higham, 2nd ed., Chapter 17, equation (17.9):
+    candidate values for the componentwise iterate-growth constant
+    `theta_x = sup_k max_i |xhat_k i| / |x i|`, restricted to nonzero
+    components of `x`.  The source notes that zero components require a separate
+    compatibility condition. -/
+def ComponentwiseIterateGrowthValues (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ) : Set ℝ :=
+  {rho | ∃ (k : ℕ) (i : Fin n), x i ≠ 0 ∧ rho = |x_hat k i| / |x i|}
+
+/-- Higham, 2nd ed., Chapter 17, equation (17.9):
+    componentwise iterate-growth constant as the supremum of the nonzero-entry
+    source ratios. -/
+noncomputable def componentwiseIterateGrowth (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ) : ℝ :=
+  sSup (ComponentwiseIterateGrowthValues n x x_hat)
+
+/-- Predicate form of the componentwise bound supplied by the source
+    `theta_x` definition. -/
+def ComponentwiseIterateGrowthBound (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ) (theta_x : ℝ) : Prop :=
+  ∀ (k : ℕ) (i : Fin n), |x_hat k i| ≤ theta_x * |x i|
+
+/-- Each nonzero-entry displayed ratio is bounded by the supremum model of
+    `theta_x`, provided the ratio set is bounded above. -/
+theorem componentwiseIterateGrowth_ratio_le (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ)
+    (hBdd : BddAbove (ComponentwiseIterateGrowthValues n x x_hat))
+    (k : ℕ) (i : Fin n) (hx : x i ≠ 0) :
+    |x_hat k i| / |x i| ≤ componentwiseIterateGrowth n x x_hat := by
+  unfold componentwiseIterateGrowth
+  exact le_csSup hBdd ⟨k, i, hx, rfl⟩
+
+/-- The supremum model of `theta_x` supplies the componentwise iterate-growth
+    bound used by the local-error simplification, assuming computed iterates are
+    also zero wherever the exact solution has a zero component. -/
+theorem componentwiseIterateGrowthBound_of_sSup (n : ℕ)
+    (x : Fin n → ℝ) (x_hat : ℕ → Fin n → ℝ)
+    (hzero : ∀ (k : ℕ) (i : Fin n), x i = 0 → x_hat k i = 0)
+    (hBdd : BddAbove (ComponentwiseIterateGrowthValues n x x_hat)) :
+    ComponentwiseIterateGrowthBound n x x_hat
+      (componentwiseIterateGrowth n x x_hat) := by
+  intro k i
+  by_cases hx : x i = 0
+  · simp [hx, hzero k i hx]
+  · have hratio :=
+      componentwiseIterateGrowth_ratio_le n x x_hat hBdd k i hx
+    have hden_pos : 0 < |x i| := abs_pos.mpr hx
+    have hmul := mul_le_mul_of_nonneg_right hratio (le_of_lt hden_pos)
+    have hden_ne : |x i| ≠ 0 := ne_of_gt hden_pos
+    simpa [ComponentwiseIterateGrowthBound, div_mul_cancel₀, hden_ne] using hmul
+
+-- ============================================================
 -- §17.2  Local error bound and simplification (eqs 17.2, 17.10)
 -- ============================================================
 
@@ -791,6 +893,292 @@ theorem sigma_bound (n : ℕ) (hn : 0 < n)
     _ = infNorm (matSub_id n H) / (1 - q) := by
         rw [one_div, mul_comm, div_eq_mul_inv]
 
+/-- Finite source-sigma matrix from Higham, 2nd ed., Chapter 17, Section 17.3:
+    the partial matrix `sum_{k=0}^m |H^k(I-H)|` underlying the infinite
+    sigma in the paragraph before equation (17.20). -/
+noncomputable def finiteResidualSigmaMatrix (n : ℕ)
+    (H : Fin n → Fin n → ℝ) (m : ℕ) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    ∑ k ∈ Finset.range (m + 1),
+      |matMul n (matPow n H k) (matSub_id n H) i j|
+
+/-- Finite source-sigma scalar `||sum_{k=0}^m |H^k(I-H)||_infty`. -/
+noncomputable def finiteResidualSigma (n : ℕ)
+    (H : Fin n → Fin n → ℝ) (m : ℕ) : ℝ :=
+  infNorm (finiteResidualSigmaMatrix n H m)
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3:
+    candidate finite partial norms for the source residual sigma.  This is the
+    `sSup`-based wrapper around the finite matrices `sum_{k=0}^m |H^k(I-H)|`;
+    it does not assert a separate `tsum` representation. -/
+def ResidualSigmaValues (n : ℕ) (H : Fin n → Fin n → ℝ) : Set ℝ :=
+  {sigma | ∃ m : ℕ, sigma = finiteResidualSigma n H m}
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3:
+    supremum of the finite source-sigma partial norms. -/
+noncomputable def residualSigmaSup (n : ℕ)
+    (H : Fin n → Fin n → ℝ) : ℝ :=
+  sSup (ResidualSigmaValues n H)
+
+/-- A uniform finite-partial bound also bounds the supremum model of the source
+    residual sigma. -/
+theorem residualSigmaSup_le_of_finiteResidualSigma_le (n : ℕ)
+    (H : Fin n → Fin n → ℝ) (sigma : ℝ)
+    (hbound : ∀ m : ℕ, finiteResidualSigma n H m ≤ sigma) :
+    residualSigmaSup n H ≤ sigma := by
+  unfold residualSigmaSup
+  apply csSup_le
+  · exact ⟨finiteResidualSigma n H 0, ⟨0, rfl⟩⟩
+  · intro y hy
+    rcases hy with ⟨m, rfl⟩
+    exact hbound m
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20):
+    finite maximum `max_i |1 - lambda_i| / (1 - |lambda_i|)` appearing in the
+    diagonalizable bound for the source residual sigma. -/
+noncomputable def diagonalResidualRatioMax (n : ℕ)
+    (J : Fin n → Fin n → ℝ) (hn : 0 < n) : ℝ :=
+  Finset.sup' (Finset.univ : Finset (Fin n))
+    (by exact ⟨⟨0, hn⟩, Finset.mem_univ _⟩)
+    (fun i => |1 - J i i| / (1 - |J i i|))
+
+/-- Each eigenvalue ratio in Higham (17.20) is bounded by the displayed finite
+    maximum. -/
+theorem diagonalResidualRatio_le_max (n : ℕ)
+    (J : Fin n → Fin n → ℝ) (hn : 0 < n) (i : Fin n) :
+    |1 - J i i| / (1 - |J i i|) ≤ diagonalResidualRatioMax n J hn := by
+  unfold diagonalResidualRatioMax
+  exact Finset.le_sup' (fun i => |1 - J i i| / (1 - |J i i|)) (Finset.mem_univ i)
+
+/-- The finite maximum in Higham (17.20) is nonnegative when all diagonal
+    eigenvalue moduli are strictly below one. -/
+theorem diagonalResidualRatioMax_nonneg (n : ℕ)
+    (J : Fin n → Fin n → ℝ) (hn : 0 < n)
+    (hLam : ∀ i : Fin n, |J i i| < 1) :
+    0 ≤ diagonalResidualRatioMax n J hn := by
+  let i0 : Fin n := ⟨0, hn⟩
+  have hden : 0 ≤ 1 - |J i0 i0| := by
+    linarith [hLam i0]
+  have hratio : 0 ≤ |1 - J i0 i0| / (1 - |J i0 i0|) :=
+    div_nonneg (abs_nonneg _) hden
+  exact hratio.trans (diagonalResidualRatio_le_max n J hn i0)
+
+private theorem residual_geometric_partial_le_ratio (lam : ℝ)
+    (hLam : |lam| < 1) (m : ℕ) :
+    ∑ k ∈ Finset.range (m + 1), |lam| ^ k * |1 - lam| ≤
+      |1 - lam| / (1 - |lam|) := by
+  have hden : 0 < 1 - |lam| := by linarith
+  calc
+    ∑ k ∈ Finset.range (m + 1), |lam| ^ k * |1 - lam|
+        = (∑ k ∈ Finset.range (m + 1), |lam| ^ k) * |1 - lam| := by
+            rw [Finset.sum_mul]
+    _ ≤ (1 / (1 - |lam|)) * |1 - lam| := by
+            exact mul_le_mul_of_nonneg_right
+              (geom_partial_sum_le |lam| (abs_nonneg lam) hLam m) (abs_nonneg _)
+    _ = |1 - lam| / (1 - |lam|) := by
+            rw [one_div, div_eq_mul_inv]
+            ring
+
+private theorem residual_term_entry_abs_le_of_real_diagonalization (n : ℕ)
+    (H X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
+    (hsim : matMul n X_inv (matMul n H X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (k : ℕ) (i j : Fin n) :
+    |matMul n (matPow n H k) (matSub_id n H) i j| ≤
+      ∑ a : Fin n, |X i a| * (|J a a| ^ k * |1 - J a a|) * |X_inv a j| := by
+  have hterm :
+      matMul n (matPow n H k) (matSub_id n H) i j =
+        matPow n H k i j - matPow n H (k + 1) i j := by
+    unfold matMul matSub_id
+    simp_rw [mul_sub, Finset.sum_sub_distrib]
+    have hid :
+        (∑ l : Fin n, matPow n H k i l * idMatrix n l j) =
+          matPow n H k i j := by
+      unfold idMatrix
+      simp [Finset.sum_ite_eq', Finset.mem_univ]
+    have hmul :
+        (∑ l : Fin n, matPow n H k i l * H l j) =
+          matPow n H (k + 1) i j := by
+      rw [matPow_succ_right n H k]
+      rfl
+    rw [hid, hmul]
+  have hpow_entry :
+      ∀ p (r c : Fin n),
+        matPow n H p r c =
+          ∑ a : Fin n, X r a * (J a a ^ p * X_inv a c) := by
+    intro p r c
+    have hpow := congrFun
+      (congrFun (matPow_similarity n H X X_inv J hXr hXl hsim p) r) c
+    rw [hpow]
+    unfold matMul
+    apply Finset.sum_congr rfl
+    intro a _ha
+    congr 1
+    have hinner :
+        (∑ b : Fin n, matPow n J p a b * X_inv b c) =
+          J a a ^ p * X_inv a c := by
+      rw [Finset.sum_eq_single a]
+      · rw [matPow_diagonal n J hdiag p a a, if_pos rfl]
+      · intro b _hb hba
+        rw [matPow_diagonal n J hdiag p a b, if_neg (Ne.symm hba), zero_mul]
+      · intro hnot
+        exact absurd (Finset.mem_univ a) hnot
+    exact hinner
+  have hsource :
+      matMul n (matPow n H k) (matSub_id n H) i j =
+        ∑ a : Fin n, X i a * (J a a ^ k * (1 - J a a) * X_inv a j) := by
+    rw [hterm, hpow_entry k i j, hpow_entry (k + 1) i j]
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro a _ha
+    rw [pow_succ]
+    ring
+  rw [hsource]
+  calc
+    |∑ a : Fin n, X i a * (J a a ^ k * (1 - J a a) * X_inv a j)|
+        ≤ ∑ a : Fin n, |X i a * (J a a ^ k * (1 - J a a) * X_inv a j)| :=
+          Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ a : Fin n,
+          |X i a| * (|J a a| ^ k * |1 - J a a|) * |X_inv a j| := by
+          apply Finset.sum_congr rfl
+          intro a _ha
+          rw [abs_mul, abs_mul, abs_mul, abs_pow]
+          ring
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20), finite
+    diagonalization-certificate form: if `H = X J X^{-1}` with diagonal `J`
+    and `|lambda_i| < 1`, then every finite source-sigma partial matrix is
+    bounded by `kappa_infty(X) * max_i |1-lambda_i|/(1-|lambda_i|)`.
+
+    The theorem takes the displayed maximum as an explicit scalar upper bound
+    `sigmaDiag`; the literal infinite-series sigma is still a later wrapper. -/
+theorem finiteResidualSigma_le_diagonalizable_bound (n : ℕ) (_hn : 0 < n)
+    (H X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
+    (hsim : matMul n X_inv (matMul n H X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (sigmaDiag : ℝ) (hsigma : 0 ≤ sigmaDiag)
+    (hLam : ∀ i : Fin n, |J i i| < 1)
+    (hratio : ∀ i : Fin n, |1 - J i i| / (1 - |J i i|) ≤ sigmaDiag)
+    (m : ℕ) :
+    finiteResidualSigma n H m ≤ (infNorm X * infNorm X_inv) * sigmaDiag := by
+  unfold finiteResidualSigma
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    have hrowEntry_nonneg :
+        ∀ j : Fin n, 0 ≤ finiteResidualSigmaMatrix n H m i j := by
+      intro j
+      unfold finiteResidualSigmaMatrix
+      exact Finset.sum_nonneg (fun k _hk => abs_nonneg _)
+    calc
+      ∑ j : Fin n, |finiteResidualSigmaMatrix n H m i j|
+          = ∑ j : Fin n, finiteResidualSigmaMatrix n H m i j := by
+              apply Finset.sum_congr rfl
+              intro j _hj
+              exact abs_of_nonneg (hrowEntry_nonneg j)
+      _ = ∑ j : Fin n, ∑ k ∈ Finset.range (m + 1),
+            |matMul n (matPow n H k) (matSub_id n H) i j| := by
+              rfl
+      _ ≤ ∑ j : Fin n, ∑ a : Fin n,
+            |X i a| * sigmaDiag * |X_inv a j| := by
+              apply Finset.sum_le_sum
+              intro j _hj
+              calc
+                ∑ k ∈ Finset.range (m + 1),
+                    |matMul n (matPow n H k) (matSub_id n H) i j|
+                    ≤ ∑ k ∈ Finset.range (m + 1), ∑ a : Fin n,
+                        |X i a| * (|J a a| ^ k * |1 - J a a|) *
+                          |X_inv a j| := by
+                        apply Finset.sum_le_sum
+                        intro k _hk
+                        exact residual_term_entry_abs_le_of_real_diagonalization
+                          n H X X_inv J hXr hXl hsim hdiag k i j
+                _ = ∑ a : Fin n, ∑ k ∈ Finset.range (m + 1),
+                        |X i a| * (|J a a| ^ k * |1 - J a a|) *
+                          |X_inv a j| := by
+                        rw [Finset.sum_comm]
+                _ ≤ ∑ a : Fin n, |X i a| * sigmaDiag * |X_inv a j| := by
+                        apply Finset.sum_le_sum
+                        intro a _ha
+                        have hgeom :
+                            ∑ k ∈ Finset.range (m + 1),
+                              |J a a| ^ k * |1 - J a a| ≤ sigmaDiag :=
+                            (residual_geometric_partial_le_ratio (J a a)
+                            (hLam a) m).trans (hratio a)
+                        calc
+                          ∑ k ∈ Finset.range (m + 1),
+                              |X i a| * (|J a a| ^ k * |1 - J a a|) *
+                                |X_inv a j|
+                              = |X i a| *
+                                  (∑ k ∈ Finset.range (m + 1),
+                                    |J a a| ^ k * |1 - J a a|) *
+                                  |X_inv a j| := by
+                                  rw [Finset.mul_sum, Finset.sum_mul]
+                          _ ≤ |X i a| * sigmaDiag * |X_inv a j| := by
+                                  exact mul_le_mul_of_nonneg_right
+                                    (mul_le_mul_of_nonneg_left hgeom (abs_nonneg _))
+                                    (abs_nonneg _)
+      _ = ∑ a : Fin n, |X i a| * sigmaDiag * (∑ j : Fin n, |X_inv a j|) := by
+              rw [Finset.sum_comm]
+              apply Finset.sum_congr rfl
+              intro a _ha
+              rw [← Finset.mul_sum]
+      _ ≤ ∑ a : Fin n, |X i a| * sigmaDiag * infNorm X_inv := by
+              apply Finset.sum_le_sum
+              intro a _ha
+              exact mul_le_mul_of_nonneg_left
+                (row_sum_le_infNorm X_inv a)
+                (mul_nonneg (abs_nonneg _) hsigma)
+      _ = sigmaDiag * infNorm X_inv * (∑ a : Fin n, |X i a|) := by
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro a _ha
+              ring
+      _ ≤ sigmaDiag * infNorm X_inv * infNorm X := by
+              exact mul_le_mul_of_nonneg_left
+                (row_sum_le_infNorm X i)
+                (mul_nonneg hsigma (infNorm_nonneg _))
+      _ = (infNorm X * infNorm X_inv) * sigmaDiag := by
+              ring
+  · exact mul_nonneg (mul_nonneg (infNorm_nonneg X) (infNorm_nonneg X_inv)) hsigma
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20), finite
+    maximum form: if `H = X J X^{-1}` with diagonal `J` and `|lambda_i| < 1`,
+    then every finite source-sigma partial norm is bounded by
+    `kappa_infty(X)` times the displayed maximum eigenvalue ratio. -/
+theorem finiteResidualSigma_le_diagonalizable_max_bound (n : ℕ) (hn : 0 < n)
+    (H X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
+    (hsim : matMul n X_inv (matMul n H X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (hLam : ∀ i : Fin n, |J i i| < 1)
+    (m : ℕ) :
+    finiteResidualSigma n H m ≤
+      (infNorm X * infNorm X_inv) * diagonalResidualRatioMax n J hn := by
+  exact finiteResidualSigma_le_diagonalizable_bound n hn H X X_inv J
+    hXr hXl hsim hdiag (diagonalResidualRatioMax n J hn)
+    (diagonalResidualRatioMax_nonneg n J hn hLam) hLam
+    (diagonalResidualRatio_le_max n J hn) m
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20), supremum
+    wrapper: the supremum of all finite source-sigma partial norms is bounded by
+    `kappa_infty(X)` times the displayed maximum eigenvalue ratio.  This is a
+    source-facing infinite-sigma envelope, not a proof that an entrywise infinite
+    matrix series has been constructed as a `tsum`. -/
+theorem residualSigmaSup_le_diagonalizable_max_bound (n : ℕ) (hn : 0 < n)
+    (H X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
+    (hsim : matMul n X_inv (matMul n H X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (hLam : ∀ i : Fin n, |J i i| < 1) :
+    residualSigmaSup n H ≤
+      (infNorm X * infNorm X_inv) * diagonalResidualRatioMax n J hn := by
+  apply residualSigmaSup_le_of_finiteResidualSigma_le
+  intro m
+  exact finiteResidualSigma_le_diagonalizable_max_bound n hn H X X_inv J
+    hXr hXl hsim hdiag hLam m
+
 -- ============================================================
 -- §17.3  Residual recurrence: r_{k+1} = Hr_k − (I−H)ξ_k
 -- ============================================================
@@ -885,6 +1273,81 @@ theorem residual_finite_sum (n : ℕ)
     m i
   rw [hsource] at hunroll
   simpa [R, H, C, sub_eq_add_neg] using hunroll
+
+/-- Finite sigma-form residual bound following from the closed residual
+    recurrence: the propagated initial residual plus the finite sum of
+    `||H^k(I-H)||∞ * ||ξ_{m-k}||∞` controls `||r_{m+1}||∞`. -/
+theorem normwise_residual_sigma_finite_bound (n : ℕ) (hn : 0 < n)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
+    (hIter : ComputedIteration n M N b x_hat ξ)
+    (m : ℕ) :
+    infNormVec (fun i => b i - ∑ j : Fin n, A i j * x_hat (m + 1) j) ≤
+      infNorm (matPow n (dualIterMatrix n N M_inv) (m + 1)) *
+        infNormVec (fun i => b i - ∑ j : Fin n, A i j * x_hat 0 j) +
+      ∑ k ∈ Finset.range (m + 1),
+        infNorm (matMul n (matPow n (dualIterMatrix n N M_inv) k)
+          (matSub_id n (dualIterMatrix n N M_inv))) *
+        infNormVec (ξ (m - k)) := by
+  let H := dualIterMatrix n N M_inv
+  let C := matSub_id n H
+  let r0 : Fin n → ℝ :=
+    fun i => b i - ∑ j : Fin n, A i j * x_hat 0 j
+  apply infNormVec_le_of_abs_le
+  · intro i
+    have hres := residual_finite_sum n A M N M_inv hS b x hAx x_hat ξ hIter m i
+    have hlead :
+        |matMulVec n (matPow n H (m + 1)) r0 i| ≤
+          infNorm (matPow n H (m + 1)) * infNormVec r0 := by
+      exact (abs_le_infNormVec (matMulVec n (matPow n H (m + 1)) r0) i).trans
+        (infNormVec_matMulVec_le hn (matPow n H (m + 1)) r0)
+    have hsum :
+        |∑ k ∈ Finset.range (m + 1),
+          matMulVec n (matPow n H k) (matMulVec n C (ξ (m - k))) i| ≤
+        ∑ k ∈ Finset.range (m + 1),
+          infNorm (matMul n (matPow n H k) C) * infNormVec (ξ (m - k)) := by
+      calc
+        |∑ k ∈ Finset.range (m + 1),
+          matMulVec n (matPow n H k) (matMulVec n C (ξ (m - k))) i|
+            ≤ ∑ k ∈ Finset.range (m + 1),
+                |matMulVec n (matPow n H k) (matMulVec n C (ξ (m - k))) i| :=
+              Finset.abs_sum_le_sum_abs _ _
+        _ ≤ ∑ k ∈ Finset.range (m + 1),
+              infNorm (matMul n (matPow n H k) C) * infNormVec (ξ (m - k)) := by
+            apply Finset.sum_le_sum
+            intro k _hk
+            calc
+              |matMulVec n (matPow n H k) (matMulVec n C (ξ (m - k))) i|
+                  = |matMulVec n (matMul n (matPow n H k) C)
+                      (ξ (m - k)) i| := by
+                    rw [matMulVec_matMul n (matPow n H k) C (ξ (m - k)) i]
+              _ ≤ infNormVec
+                    (matMulVec n (matMul n (matPow n H k) C) (ξ (m - k))) :=
+                  abs_le_infNormVec _ i
+              _ ≤ infNorm (matMul n (matPow n H k) C) *
+                    infNormVec (ξ (m - k)) :=
+                  infNormVec_matMulVec_le hn _ _
+    calc
+      |b i - ∑ j : Fin n, A i j * x_hat (m + 1) j|
+          = |matMulVec n (matPow n H (m + 1)) r0 i -
+              ∑ k ∈ Finset.range (m + 1),
+                matMulVec n (matPow n H k) (matMulVec n C (ξ (m - k))) i| := by
+              rw [hres]
+      _ ≤ |matMulVec n (matPow n H (m + 1)) r0 i| +
+            |∑ k ∈ Finset.range (m + 1),
+              matMulVec n (matPow n H k) (matMulVec n C (ξ (m - k))) i| :=
+          (abs_add_le _ _).trans (by rw [abs_neg])
+      _ ≤ infNorm (matPow n H (m + 1)) * infNormVec r0 +
+            ∑ k ∈ Finset.range (m + 1),
+              infNorm (matMul n (matPow n H k) C) *
+                infNormVec (ξ (m - k)) :=
+          add_le_add hlead hsum
+  · exact add_nonneg
+      (mul_nonneg (infNorm_nonneg _) (infNormVec_nonneg _))
+      (Finset.sum_nonneg (fun k _hk =>
+        mul_nonneg (infNorm_nonneg _) (infNormVec_nonneg _)))
 
 -- ============================================================
 -- §17.2  Normwise one-step bound and forward bound (eqs 17.5, 17.8)
@@ -1050,6 +1513,381 @@ theorem main_forward_bound (n : ℕ) (G M_inv A_inv : Fin n → Fin n → ℝ)
     _ = cn_u * (1 + θ_x) * cA *
           ∑ j, |A_inv i j| * ∑ p, (|M j p| + |N j p|) * |x p| := by ring
 
+/-- Finite correction term obtained from the local-error bound in Higham,
+    2nd ed., Chapter 17, equations (17.11) and (17.13).  This is the
+    finite, certified counterpart of the infinite-series correction term. -/
+noncomputable def finiteForwardCorrection (n : ℕ)
+    (G M_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (cn_u θ_x : ℝ) (m : ℕ) : Fin n → ℝ :=
+  fun i => ∑ k ∈ Finset.range (m + 1),
+    ∑ j : Fin n, (∑ l : Fin n, |matPow n G k i l| * |M_inv l j|) *
+      (cn_u * (1 + θ_x) * ∑ p : Fin n, (|M j p| + |N j p|) * |x p|)
+
+/-- Vector form of the source factor
+    `|A^{-1}| (|M| + |N|) |x|` in Higham, 2nd ed., Chapter 17,
+    equations (17.13) and (17.15). -/
+noncomputable def mainForwardBoundVector (n : ℕ)
+    (A_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ) : Fin n → ℝ :=
+  fun i => ∑ j : Fin n, |A_inv i j| *
+    ∑ p : Fin n, (|M j p| + |N j p|) * |x p|
+
+/-- The vector `|A^{-1}| (|M| + |N|) |x|` is componentwise nonnegative. -/
+theorem mainForwardBoundVector_nonneg (n : ℕ)
+    (A_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    ∀ i, 0 ≤ mainForwardBoundVector n A_inv M N x i := by
+  intro i
+  unfold mainForwardBoundVector
+  apply Finset.sum_nonneg
+  intro j _
+  apply mul_nonneg (abs_nonneg _)
+  apply Finset.sum_nonneg
+  intro p _
+  exact mul_nonneg (add_nonneg (abs_nonneg _) (abs_nonneg _)) (abs_nonneg _)
+
+/-- The finite Chapter 17 correction term is componentwise nonnegative under
+    the standard nonnegativity hypotheses on `c_n u` and `θ_x`. -/
+theorem finiteForwardCorrection_nonneg (n : ℕ)
+    (G M_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (cn_u θ_x : ℝ) (hcn : 0 ≤ cn_u) (hθ : 0 ≤ θ_x) (m : ℕ) :
+    ∀ i, 0 ≤ finiteForwardCorrection n G M_inv M N x cn_u θ_x m i := by
+  have hcoeff : 0 ≤ cn_u * (1 + θ_x) := mul_nonneg hcn (by linarith)
+  intro i
+  unfold finiteForwardCorrection
+  apply Finset.sum_nonneg
+  intro k _
+  apply Finset.sum_nonneg
+  intro j _
+  apply mul_nonneg
+  · apply Finset.sum_nonneg
+    intro l _
+    exact mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  · apply mul_nonneg hcoeff
+    apply Finset.sum_nonneg
+    intro p _
+    exact mul_nonneg (add_nonneg (abs_nonneg _) (abs_nonneg _)) (abs_nonneg _)
+
+/-- Finite, componentwise version of the `(17.13)` correction estimate:
+    the finite correction term is bounded by the `c(A)`-weighted source vector. -/
+theorem finiteForwardCorrection_le_mainForwardBoundVector (n : ℕ)
+    (G M_inv A_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (cn_u θ_x cA : ℝ) (hcn : 0 ≤ cn_u) (hcA : 0 ≤ cA) (hθ : 0 ≤ θ_x)
+    (m : ℕ) (hPartial : PartialSumBound n G M_inv A_inv cA m) :
+    ∀ i, finiteForwardCorrection n G M_inv M N x cn_u θ_x m i ≤
+      cn_u * (1 + θ_x) * cA * mainForwardBoundVector n A_inv M N x i := by
+  intro i
+  simpa [finiteForwardCorrection, mainForwardBoundVector] using
+    main_forward_bound n G M_inv A_inv x M N cn_u θ_x cA hcn hcA hθ m hPartial i
+
+/-- Infinity-norm form of the finite `(17.13)` correction estimate. -/
+theorem finiteForwardCorrection_norm_bound (n : ℕ)
+    (G M_inv A_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (cn_u θ_x cA : ℝ) (hcn : 0 ≤ cn_u) (hcA : 0 ≤ cA) (hθ : 0 ≤ θ_x)
+    (m : ℕ) (hPartial : PartialSumBound n G M_inv A_inv cA m) :
+    infNormVec (finiteForwardCorrection n G M_inv M N x cn_u θ_x m) ≤
+      cn_u * (1 + θ_x) * cA * infNormVec (mainForwardBoundVector n A_inv M N x) := by
+  have hcoeff : 0 ≤ cn_u * (1 + θ_x) * cA := by
+    exact mul_nonneg (mul_nonneg hcn (by linarith)) hcA
+  have hcorr_nonneg :=
+    finiteForwardCorrection_nonneg n G M_inv M N x cn_u θ_x hcn hθ m
+  have hbound_nonneg := mainForwardBoundVector_nonneg n A_inv M N x
+  have hcomp :=
+    finiteForwardCorrection_le_mainForwardBoundVector n G M_inv A_inv M N x
+      cn_u θ_x cA hcn hcA hθ m hPartial
+  apply infNormVec_le_of_abs_le
+  · intro i
+    have hbound_abs :
+        |mainForwardBoundVector n A_inv M N x i| =
+          mainForwardBoundVector n A_inv M N x i :=
+      abs_of_nonneg (hbound_nonneg i)
+    have hbound_le_norm :
+        mainForwardBoundVector n A_inv M N x i ≤
+          infNormVec (mainForwardBoundVector n A_inv M N x) := by
+      simpa [hbound_abs] using
+        abs_le_infNormVec (mainForwardBoundVector n A_inv M N x) i
+    calc
+      |finiteForwardCorrection n G M_inv M N x cn_u θ_x m i|
+          = finiteForwardCorrection n G M_inv M N x cn_u θ_x m i :=
+            abs_of_nonneg (hcorr_nonneg i)
+      _ ≤ cn_u * (1 + θ_x) * cA * mainForwardBoundVector n A_inv M N x i :=
+            hcomp i
+      _ ≤ cn_u * (1 + θ_x) * cA *
+          infNormVec (mainForwardBoundVector n A_inv M N x) :=
+            mul_le_mul_of_nonneg_left hbound_le_norm hcoeff
+  · exact mul_nonneg hcoeff (infNormVec_nonneg _)
+
+/-- Finite normwise form corresponding to Higham, 2nd ed., Chapter 17,
+    equation (17.15): taking the infinity norm of the propagated initial
+    error plus the finite, `c(A)`-certified correction term. -/
+theorem finite_norm_form_forward_bound (n : ℕ)
+    (G M_inv A_inv M N : Fin n → Fin n → ℝ) (e₀ x : Fin n → ℝ)
+    (cn_u θ_x cA : ℝ) (hcn : 0 ≤ cn_u) (hcA : 0 ≤ cA) (hθ : 0 ≤ θ_x)
+    (m : ℕ) (hPartial : PartialSumBound n G M_inv A_inv cA m) :
+    infNormVec (fun i =>
+      matMulVec n (matPow n G (m + 1)) e₀ i +
+        finiteForwardCorrection n G M_inv M N x cn_u θ_x m i) ≤
+      infNormVec (matMulVec n (matPow n G (m + 1)) e₀) +
+        cn_u * (1 + θ_x) * cA * infNormVec (mainForwardBoundVector n A_inv M N x) := by
+  have hcorrNorm :=
+    finiteForwardCorrection_norm_bound n G M_inv A_inv M N x cn_u θ_x cA
+      hcn hcA hθ m hPartial
+  have hcorr_abs :
+      ∀ i, |finiteForwardCorrection n G M_inv M N x cn_u θ_x m i| ≤
+        cn_u * (1 + θ_x) * cA * infNormVec (mainForwardBoundVector n A_inv M N x) := by
+    intro i
+    exact le_trans
+      (abs_le_infNormVec (finiteForwardCorrection n G M_inv M N x cn_u θ_x m) i)
+      hcorrNorm
+  apply infNormVec_le_of_abs_le
+  · intro i
+    calc
+      |matMulVec n (matPow n G (m + 1)) e₀ i +
+          finiteForwardCorrection n G M_inv M N x cn_u θ_x m i|
+          ≤ |matMulVec n (matPow n G (m + 1)) e₀ i| +
+              |finiteForwardCorrection n G M_inv M N x cn_u θ_x m i| :=
+            abs_add_le _ _
+      _ ≤ infNormVec (matMulVec n (matPow n G (m + 1)) e₀) +
+          cn_u * (1 + θ_x) * cA * infNormVec (mainForwardBoundVector n A_inv M N x) :=
+            add_le_add (abs_le_infNormVec (matMulVec n (matPow n G (m + 1)) e₀) i)
+              (hcorr_abs i)
+  · exact add_nonneg (infNormVec_nonneg _)
+      (mul_nonneg
+        (mul_nonneg (mul_nonneg hcn (by linarith)) hcA)
+        (infNormVec_nonneg _))
+
+/-- Jacobi-specialized source vector `|A^{-1}| |A| |x|` appearing in
+    Higham, 2nd ed., Chapter 17, equation (17.16). -/
+noncomputable def jacobiForwardBoundVector (n : ℕ)
+    (A_inv A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) : Fin n → ℝ :=
+  fun i => ∑ j : Fin n, |A_inv i j| * ∑ p : Fin n, |A j p| * |x p|
+
+/-- Under the Jacobi splitting, the general `(17.13)` source vector
+    `|A^{-1}|(|M|+|N|)|x|` becomes `|A^{-1}||A||x|`. -/
+theorem mainForwardBoundVector_eq_jacobiForwardBoundVector (n : ℕ)
+    (A_inv A M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (hM : ∀ i j, M i j = if i = j then A i i else 0)
+    (hN : ∀ i j, N i j = M i j - A i j) :
+    mainForwardBoundVector n A_inv M N x =
+      jacobiForwardBoundVector n A_inv A x := by
+  have hJac := jacobi_splitting_abs n A M N hM hN
+  funext i
+  unfold mainForwardBoundVector jacobiForwardBoundVector
+  apply Finset.sum_congr rfl
+  intro j _
+  congr 1
+  apply Finset.sum_congr rfl
+  intro p _
+  rw [hJac j p]
+
+/-- Finite/certificate Jacobi specialization of the norm-form forward bound,
+    corresponding to the finite-horizon counterpart of equation (17.16). -/
+theorem finite_norm_form_jacobi_forward_bound (n : ℕ)
+    (A G M_inv A_inv M N : Fin n → Fin n → ℝ) (e₀ x : Fin n → ℝ)
+    (cn_u θ_x cA : ℝ) (hcn : 0 ≤ cn_u) (hcA : 0 ≤ cA) (hθ : 0 ≤ θ_x)
+    (hM : ∀ i j, M i j = if i = j then A i i else 0)
+    (hN : ∀ i j, N i j = M i j - A i j)
+    (m : ℕ) (hPartial : PartialSumBound n G M_inv A_inv cA m) :
+    infNormVec (fun i =>
+      matMulVec n (matPow n G (m + 1)) e₀ i +
+        finiteForwardCorrection n G M_inv M N x cn_u θ_x m i) ≤
+      infNormVec (matMulVec n (matPow n G (m + 1)) e₀) +
+        cn_u * (1 + θ_x) * cA * infNormVec (jacobiForwardBoundVector n A_inv A x) := by
+  have hmain :=
+    finite_norm_form_forward_bound n G M_inv A_inv M N e₀ x cn_u θ_x cA
+      hcn hcA hθ m hPartial
+  have hvec := mainForwardBoundVector_eq_jacobiForwardBoundVector n A_inv A M N x hM hN
+  simpa [hvec] using hmain
+
+/-- Higham, 2nd ed., Chapter 17, equation (17.17):
+    SOR multiplier `f(omega) = (1 + |1 - omega|) / omega`. -/
+noncomputable def sorForwardFactor (ω : ℝ) : ℝ :=
+  (1 + |1 - ω|) / ω
+
+/-- The SOR forward-error multiplier is nonnegative for positive relaxation
+    parameter. -/
+theorem sorForwardFactor_nonneg (ω : ℝ) (hω_pos : 0 < ω) :
+    0 ≤ sorForwardFactor ω := by
+  unfold sorForwardFactor
+  have hnum : 0 ≤ 1 + |1 - ω| := by
+    linarith [abs_nonneg (1 - ω)]
+  exact div_nonneg hnum (le_of_lt hω_pos)
+
+/-- The Jacobi right-hand vector `|A^{-1}||A||x|` is componentwise
+    nonnegative. -/
+theorem jacobiForwardBoundVector_nonneg (n : ℕ)
+    (A_inv A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    ∀ i, 0 ≤ jacobiForwardBoundVector n A_inv A x i := by
+  intro i
+  unfold jacobiForwardBoundVector
+  apply Finset.sum_nonneg
+  intro j _
+  apply mul_nonneg (abs_nonneg _)
+  apply Finset.sum_nonneg
+  intro p _
+  exact mul_nonneg (abs_nonneg _) (abs_nonneg _)
+
+/-- Higham, 2nd ed., Chapter 17, equation (17.17), lifted to the
+    source-vector level: the general vector `|A^{-1}|(|M|+|N|)|x|` is bounded by
+    `f(omega)|A^{-1}||A||x|` for the SOR splitting. -/
+theorem mainForwardBoundVector_le_sorForwardBoundVector (n : ℕ)
+    (A_inv A D L U M_sor N_sor : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (ω : ℝ) (hω_pos : 0 < ω)
+    (hDecomp : ∀ i j, A i j = D i j + L i j + U i j)
+    (hD : ∀ i j, i ≠ j → D i j = 0)
+    (hL : ∀ i j, j.val ≥ i.val → L i j = 0)
+    (hU : ∀ i j, j.val ≤ i.val → U i j = 0)
+    (hM : ∀ i j, M_sor i j = (1 / ω) * (D i j + ω * L i j))
+    (hN : ∀ i j, N_sor i j = (1 / ω) * ((1 - ω) * D i j - ω * U i j)) :
+    ∀ i, mainForwardBoundVector n A_inv M_sor N_sor x i ≤
+      sorForwardFactor ω * jacobiForwardBoundVector n A_inv A x i := by
+  let f := sorForwardFactor ω
+  have hsor :
+      ∀ i j, |M_sor i j| + |N_sor i j| ≤ f * |A i j| := by
+    intro i j
+    simpa [f, sorForwardFactor] using
+      sor_splitting_bound n A ω hω_pos D L U hDecomp hD hL hU M_sor N_sor hM hN i j
+  intro i
+  unfold mainForwardBoundVector jacobiForwardBoundVector
+  change (∑ j : Fin n, |A_inv i j| *
+      ∑ p : Fin n, (|M_sor j p| + |N_sor j p|) * |x p|) ≤
+    f * (∑ j : Fin n, |A_inv i j| * ∑ p : Fin n, |A j p| * |x p|)
+  calc
+    ∑ j : Fin n, |A_inv i j| *
+        ∑ p : Fin n, (|M_sor j p| + |N_sor j p|) * |x p|
+        ≤ ∑ j : Fin n, |A_inv i j| *
+            ∑ p : Fin n, (f * |A j p|) * |x p| := by
+          apply Finset.sum_le_sum
+          intro j _
+          apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+          apply Finset.sum_le_sum
+          intro p _
+          exact mul_le_mul_of_nonneg_right (hsor j p) (abs_nonneg _)
+    _ = f * (∑ j : Fin n, |A_inv i j| * ∑ p : Fin n, |A j p| * |x p|) := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro j _
+          calc
+            |A_inv i j| * (∑ p : Fin n, (f * |A j p|) * |x p|)
+                = |A_inv i j| * (f * ∑ p : Fin n, |A j p| * |x p|) := by
+                  congr 1
+                  rw [Finset.mul_sum]
+                  apply Finset.sum_congr rfl
+                  intro p _
+                  ring
+            _ = f * (|A_inv i j| * ∑ p : Fin n, |A j p| * |x p|) := by ring
+
+/-- Infinity-norm version of the SOR source-vector comparison from (17.17). -/
+theorem mainForwardBoundVector_norm_le_sorForwardBoundVector (n : ℕ)
+    (A_inv A D L U M_sor N_sor : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (ω : ℝ) (hω_pos : 0 < ω)
+    (hDecomp : ∀ i j, A i j = D i j + L i j + U i j)
+    (hD : ∀ i j, i ≠ j → D i j = 0)
+    (hL : ∀ i j, j.val ≥ i.val → L i j = 0)
+    (hU : ∀ i j, j.val ≤ i.val → U i j = 0)
+    (hM : ∀ i j, M_sor i j = (1 / ω) * (D i j + ω * L i j))
+    (hN : ∀ i j, N_sor i j = (1 / ω) * ((1 - ω) * D i j - ω * U i j)) :
+    infNormVec (mainForwardBoundVector n A_inv M_sor N_sor x) ≤
+      sorForwardFactor ω * infNormVec (jacobiForwardBoundVector n A_inv A x) := by
+  have hf : 0 ≤ sorForwardFactor ω := sorForwardFactor_nonneg ω hω_pos
+  have hmain_nonneg := mainForwardBoundVector_nonneg n A_inv M_sor N_sor x
+  have hjac_nonneg := jacobiForwardBoundVector_nonneg n A_inv A x
+  have hcomp :=
+    mainForwardBoundVector_le_sorForwardBoundVector n A_inv A D L U M_sor N_sor x
+      ω hω_pos hDecomp hD hL hU hM hN
+  apply infNormVec_le_of_abs_le
+  · intro i
+    have hjac_abs :
+        |jacobiForwardBoundVector n A_inv A x i| =
+          jacobiForwardBoundVector n A_inv A x i :=
+      abs_of_nonneg (hjac_nonneg i)
+    have hjac_le_norm :
+        jacobiForwardBoundVector n A_inv A x i ≤
+          infNormVec (jacobiForwardBoundVector n A_inv A x) := by
+      simpa [hjac_abs] using
+        abs_le_infNormVec (jacobiForwardBoundVector n A_inv A x) i
+    calc
+      |mainForwardBoundVector n A_inv M_sor N_sor x i|
+          = mainForwardBoundVector n A_inv M_sor N_sor x i :=
+            abs_of_nonneg (hmain_nonneg i)
+      _ ≤ sorForwardFactor ω * jacobiForwardBoundVector n A_inv A x i :=
+            hcomp i
+      _ ≤ sorForwardFactor ω * infNormVec (jacobiForwardBoundVector n A_inv A x) :=
+            mul_le_mul_of_nonneg_left hjac_le_norm hf
+  · exact mul_nonneg hf (infNormVec_nonneg _)
+
+/-- Finite/certificate SOR specialization of Higham, 2nd ed., Chapter 17,
+    equations (17.15)-(17.17): the finite norm-form forward bound with the
+    SOR multiplier `f(omega)` and right-hand vector `|A^{-1}||A||x|`. -/
+theorem finite_norm_form_sor_forward_bound (n : ℕ)
+    (A G M_inv A_inv D L U M_sor N_sor : Fin n → Fin n → ℝ) (e₀ x : Fin n → ℝ)
+    (ω cn_u θ_x cA : ℝ) (hω_pos : 0 < ω)
+    (hcn : 0 ≤ cn_u) (hcA : 0 ≤ cA) (hθ : 0 ≤ θ_x)
+    (hDecomp : ∀ i j, A i j = D i j + L i j + U i j)
+    (hD : ∀ i j, i ≠ j → D i j = 0)
+    (hL : ∀ i j, j.val ≥ i.val → L i j = 0)
+    (hU : ∀ i j, j.val ≤ i.val → U i j = 0)
+    (hM : ∀ i j, M_sor i j = (1 / ω) * (D i j + ω * L i j))
+    (hN : ∀ i j, N_sor i j = (1 / ω) * ((1 - ω) * D i j - ω * U i j))
+    (m : ℕ) (hPartial : PartialSumBound n G M_inv A_inv cA m) :
+    infNormVec (fun i =>
+      matMulVec n (matPow n G (m + 1)) e₀ i +
+        finiteForwardCorrection n G M_inv M_sor N_sor x cn_u θ_x m i) ≤
+      infNormVec (matMulVec n (matPow n G (m + 1)) e₀) +
+        cn_u * (1 + θ_x) * cA *
+          (sorForwardFactor ω * infNormVec (jacobiForwardBoundVector n A_inv A x)) := by
+  have hmain :=
+    finite_norm_form_forward_bound n G M_inv A_inv M_sor N_sor e₀ x cn_u θ_x cA
+      hcn hcA hθ m hPartial
+  have hvec :=
+    mainForwardBoundVector_norm_le_sorForwardBoundVector n A_inv A D L U M_sor N_sor x
+      ω hω_pos hDecomp hD hL hU hM hN
+  have hcoeff : 0 ≤ cn_u * (1 + θ_x) * cA := by
+    exact mul_nonneg (mul_nonneg hcn (by linarith)) hcA
+  exact hmain.trans
+    (add_le_add_right (mul_le_mul_of_nonneg_left hvec hcoeff)
+      (infNormVec (matMulVec n (matPow n G (m + 1)) e₀)))
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.2.2:
+    for Gauss-Seidel, viewed as SOR with `omega = 1`, the SOR multiplier is 1. -/
+theorem sorForwardFactor_one : sorForwardFactor 1 = 1 := by
+  unfold sorForwardFactor
+  simp
+
+/-- Finite/certificate Gauss-Seidel specialization of Higham, 2nd ed.,
+    Chapter 17, Section 17.2.2: Gauss-Seidel is SOR with `omega = 1`, so the
+    finite norm-form forward bound has the same visible right-hand factor as
+    the Jacobi finite norm-form bound. -/
+theorem finite_norm_form_gaussSeidel_forward_bound (n : ℕ)
+    (A G M_inv A_inv D L U M_gs N_gs : Fin n → Fin n → ℝ) (e₀ x : Fin n → ℝ)
+    (cn_u θ_x cA : ℝ) (hcn : 0 ≤ cn_u) (hcA : 0 ≤ cA) (hθ : 0 ≤ θ_x)
+    (hDecomp : ∀ i j, A i j = D i j + L i j + U i j)
+    (hD : ∀ i j, i ≠ j → D i j = 0)
+    (hL : ∀ i j, j.val ≥ i.val → L i j = 0)
+    (hU : ∀ i j, j.val ≤ i.val → U i j = 0)
+    (hM : ∀ i j, M_gs i j = D i j + L i j)
+    (hN : ∀ i j, N_gs i j = -U i j)
+    (m : ℕ) (hPartial : PartialSumBound n G M_inv A_inv cA m) :
+    infNormVec (fun i =>
+      matMulVec n (matPow n G (m + 1)) e₀ i +
+        finiteForwardCorrection n G M_inv M_gs N_gs x cn_u θ_x m i) ≤
+      infNormVec (matMulVec n (matPow n G (m + 1)) e₀) +
+        cn_u * (1 + θ_x) * cA *
+          infNormVec (jacobiForwardBoundVector n A_inv A x) := by
+  have hM_sor :
+      ∀ i j, M_gs i j = (1 / (1 : ℝ)) * (D i j + (1 : ℝ) * L i j) := by
+    intro i j
+    rw [hM i j]
+    ring
+  have hN_sor :
+      ∀ i j, N_gs i j = (1 / (1 : ℝ)) * (((1 : ℝ) - 1) * D i j - (1 : ℝ) * U i j) := by
+    intro i j
+    rw [hN i j]
+    ring
+  have hsor :=
+    finite_norm_form_sor_forward_bound n A G M_inv A_inv D L U M_gs N_gs e₀ x
+      1 cn_u θ_x cA (by norm_num) hcn hcA hθ hDecomp hD hL hU hM_sor hN_sor
+      m hPartial
+  simpa [sorForwardFactor_one] using hsor
+
 -- ============================================================
 -- §17.3  Normwise residual bound (eq 17.19)
 -- ============================================================
@@ -1202,5 +2040,122 @@ theorem normwise_residual_bound (n : ℕ) (hn : 0 < n)
           μ * infNorm (matSub_id n (dualIterMatrix n N M_inv)) /
             (1 - q) := by
           congr 1; field_simp; ring
+
+-- ============================================================
+-- §17.5  Stopping tests (eqs. 17.33a-c)
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.5, equation (17.33a):
+    a small residual relative to the right-hand side is equivalent to an
+    exact solve for a right-hand-side perturbation with the same norm budget. -/
+theorem stopping_test_rhs_backward_subordinate
+    {n : ℕ} (_hn : 0 < n) {ν : CVec n → ℝ} (hν : IsComplexVectorNorm ν)
+    {A : CMatrix n n} {y b : CVec n} {ε : ℝ} (_hε : 0 ≤ ε) :
+    (ν (fun i => b i - complexMatrixVecMul A y i) ≤ ε * ν b) ↔
+    (∃ Δb : CVec n,
+      ν Δb ≤ ε * ν b ∧
+      complexMatrixVecMul A y = fun i => b i + Δb i) := by
+  constructor
+  · intro h
+    let r : CVec n := fun i => b i - complexMatrixVecMul A y i
+    let Δb : CVec n := complexVecSMul (-1 : ℂ) r
+    refine ⟨Δb, ?_, ?_⟩
+    · calc
+        ν Δb = ν r := by
+          dsimp [Δb]
+          rw [hν.smul (-1 : ℂ) r]
+          norm_num
+        _ ≤ ε * ν b := by simpa [r] using h
+    · ext i
+      dsimp [Δb, r, complexVecSMul]
+      ring
+  · intro h
+    obtain ⟨Δb, hΔb, hExact⟩ := h
+    have hr :
+        (fun i => b i - complexMatrixVecMul A y i) =
+          complexVecSMul (-1 : ℂ) Δb := by
+      ext i
+      have hi := congrFun hExact i
+      rw [hi]
+      simp [complexVecSMul]
+    calc
+      ν (fun i => b i - complexMatrixVecMul A y i)
+          = ν (complexVecSMul (-1 : ℂ) Δb) := by rw [hr]
+      _ = ν Δb := by
+        rw [hν.smul (-1 : ℂ) Δb]
+        norm_num
+      _ ≤ ε * ν b := hΔb
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.5, equation (17.33b):
+    a small residual relative to `‖A‖‖y‖` is equivalent to an exact solve for
+    a matrix perturbation with the same subordinate-norm budget. -/
+theorem stopping_test_matrix_backward_subordinate
+    {n : ℕ} (hn : 0 < n) {ν : CVec n → ℝ} (hν : IsComplexVectorNorm ν)
+    {A E : CMatrix n n} {y b : CVec n} {e ε : ℝ}
+    (hε : 0 ≤ ε)
+    (hE : IsMixedSubordinateMatrixNormValue ν ν E e) :
+    (ν (fun i => b i - complexMatrixVecMul A y i) ≤ ε * (e * ν y)) ↔
+    (∃ ΔA : CMatrix n n,
+      MixedSubordinateMatrixBound ν ν ΔA (ε * e) ∧
+      complexMatrixVecMul (fun i j => A i j + ΔA i j) y = b) := by
+  have hzeroν : ν (0 : CVec n) = 0 := (hν.eq_zero_iff (0 : CVec n)).2 rfl
+  constructor
+  · intro h
+    have hBound :
+        ν (fun i => b i - complexMatrixVecMul A y i) ≤
+          ε * (e * ν y + ν (0 : CVec n)) := by
+      simpa [hzeroν] using h
+    obtain ⟨ΔA, Δb, hΔA, hΔb, hExact⟩ :=
+      theorem7_1_subordinate_sufficient
+        (n := n) (ν := ν) (A := A) (E := E) (y := y) (b := b)
+        (f := 0) (e := e) (ε := ε) hn hν hε hE hBound
+    have hΔb_norm_zero : ν Δb = 0 := by
+      apply le_antisymm
+      · calc
+          ν Δb ≤ ε * ν (0 : CVec n) := hΔb
+          _ = 0 := by rw [hzeroν, mul_zero]
+      · exact hν.nonneg Δb
+    have hΔb_zero : Δb = 0 := (hν.eq_zero_iff Δb).1 hΔb_norm_zero
+    refine ⟨ΔA, hΔA, ?_⟩
+    ext i
+    have hi := congrFun hExact i
+    rw [hΔb_zero] at hi
+    simpa using hi
+  · intro h
+    obtain ⟨ΔA, hΔA, hExact⟩ := h
+    have hΔb : ν (0 : CVec n) ≤ ε * ν (0 : CVec n) := by
+      rw [hzeroν, mul_zero]
+    have hPerturbed :
+        complexMatrixVecMul (fun i j => A i j + ΔA i j) y =
+          fun i => b i + (0 : CVec n) i := by
+      ext i
+      simpa using congrFun hExact i
+    have hBound :
+        ν (fun i => b i - complexMatrixVecMul A y i) ≤
+          ε * (e * ν y + ν (0 : CVec n)) :=
+      theorem7_1_subordinate_necessary
+        (n := n) (ν := ν) (A := A) (E := E) (ΔA := ΔA)
+        (y := y) (b := b) (f := 0) (Δb := 0) (e := e) (ε := ε)
+        hn hν hε hE hΔA hΔb hPerturbed
+    simpa [hzeroν] using hBound
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.5, equation (17.33c):
+    the mixed stopping test is exactly the Chapter 7 normwise backward-error
+    equivalence specialized with the right-hand-side budget `f = b`. -/
+theorem stopping_test_mixed_backward_subordinate
+    {n : ℕ} (hn : 0 < n) {ν : CVec n → ℝ} (hν : IsComplexVectorNorm ν)
+    {A E : CMatrix n n} {y b : CVec n} {e ε : ℝ}
+    (hε : 0 ≤ ε)
+    (hE : IsMixedSubordinateMatrixNormValue ν ν E e) :
+    (ν (fun i => b i - complexMatrixVecMul A y i) ≤
+      ε * (e * ν y + ν b)) ↔
+    (∃ ΔA : CMatrix n n, ∃ Δb : CVec n,
+      MixedSubordinateMatrixBound ν ν ΔA (ε * e) ∧
+      ν Δb ≤ ε * ν b ∧
+      complexMatrixVecMul (fun i j => A i j + ΔA i j) y =
+        fun i => b i + Δb i) := by
+  exact theorem7_1_subordinate
+    (n := n) (ν := ν) (A := A) (E := E) (y := y) (b := b)
+    (f := b) (e := e) (ε := ε) hn hν hε hE
 
 end LeanFpAnalysis.FP
