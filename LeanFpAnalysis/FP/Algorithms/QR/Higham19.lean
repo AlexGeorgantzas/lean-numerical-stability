@@ -7387,6 +7387,148 @@ theorem
     fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
     hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail hcopy
 
+/-- Exact subtraction discharges the zero-copy convention in the computed-alpha
+successor-pivot signed betaSpec handoff, while keeping the explicit
+normalized-beta compatibility premise. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp hcompat hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail
+    (subtractZeroExact_of_exact_sub fp hsub)
+
+/-- Exact primitive operations, including subtraction, remove both the
+normalized-beta compatibility and zero-copy premises from the computed-alpha
+successor-pivot signed betaSpec handoff. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+    fp hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail
+    (subtractZeroExact_of_exact_sub fp hsub)
+
+/-- Exact subtraction discharges the zero-copy convention in the exact-alpha
+successor-pivot signed betaSpec handoff, while keeping the explicit
+normalized-beta compatibility premise. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_updateCompatible_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp hcompat hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail
+    (subtractZeroExact_of_exact_sub fp hsub)
+
+/-- Exact primitive operations, including subtraction, remove both the
+normalized-beta compatibility and zero-copy premises from the exact-alpha
+successor-pivot signed betaSpec handoff. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+    fp hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail
+    (subtractZeroExact_of_exact_sub fp hsub)
+
 /-- Successor-pivot stored-step reconstruction with beta-one data from the
 once-shrunk panel self-dot normalization.
 
@@ -21068,6 +21210,25 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_of_sourceClosureData
       fp r p A_hat alpha hdata)
     hcopy
 
+/-- Exact subtraction discharges the zero-copy convention for the raw
+source-closure final predicate.
+
+This is an exact-operation adapter only: the recursive source-closure data
+remains the explicit stored-loop obligation. -/
+theorem storedSignedSequenceTwiceTrailingFinalClosed_of_sourceClosureData_of_exact_sub
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceTwiceTrailingSourceClosureData fp r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_sourceClosureData
+    fp r p A_hat alpha hdata
+    (subtractZeroExact_of_exact_sub fp hsub)
+
 /-- Named tail-local normalized records imply the twice-trailing final-closure
 predicate.
 
@@ -21087,6 +21248,23 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRecord
     (storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRecords
       fp r p A_hat alpha hrecords)
     hcopy
+
+/-- Exact subtraction discharges the zero-copy convention for the
+tail-normalized-record final predicate. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRecords_of_exact_sub
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrecords :
+      storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRecords
+    fp r p A_hat alpha hrecords
+    (subtractZeroExact_of_exact_sub fp hsub)
 
 /-- Raw tail-local normalized loop facts imply the twice-trailing final-closure
 predicate.
@@ -21109,6 +21287,23 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRawFac
       fp r p A_hat alpha hraw)
     hcopy
 
+/-- Exact subtraction discharges the zero-copy convention for the raw
+tail-normalized final predicate. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRawFacts_of_exact_sub
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hraw :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRawFacts
+    fp r p A_hat alpha hraw
+    (subtractZeroExact_of_exact_sub fp hsub)
+
 /-- Source-faithful tail-normalization certificates imply the twice-trailing
 final-closure predicate. -/
 theorem
@@ -21127,6 +21322,24 @@ theorem
     (storedSignedSequenceTailNormalizedLoopRawFacts_of_sourceFaithfulNormalizations
       fp r p A_hat alpha hsrcs)
     hcopy
+
+/-- Exact subtraction discharges the zero-copy convention for the
+source-faithful certificate final predicate. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_sourceFaithfulNormalizations_of_exact_sub
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hsrcs :
+      storedSignedSequenceTailSourceFaithfulNormalizations fp r p
+        A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_sourceFaithfulNormalizations
+    fp r p A_hat alpha hsrcs
+    (subtractZeroExact_of_exact_sub fp hsub)
 
 /-- Tail-local vector equalities imply the twice-trailing final-closure
 predicate under any model satisfying the source-faithful normalization
@@ -21148,6 +21361,24 @@ theorem
     (storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_of_normalizationModel
       fp hmodel r p A_hat alpha hvecs)
     hcopy
+
+/-- Exact subtraction discharges the zero-copy convention for the
+stronger-normalization-model final predicate from tail-vector loop facts. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_of_normalizationModel_of_exact_sub
+    (fp : FPModel) (hmodel : sourceFaithfulHouseholderNormalizationModel fp)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_of_normalizationModel
+    fp hmodel r p A_hat alpha hvecs
+    (subtractZeroExact_of_exact_sub fp hsub)
 
 /-- Stronger-model final-panel bridge from tail-vector loop facts.
 
@@ -21686,6 +21917,28 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_of_fullStageSourceClosureDa
     (storedSignedSequenceTwiceTrailingClosureData_of_fullStageSourceClosureData
       fp r p A_hat alpha hdata)
     hcopy
+
+/-- Exact subtraction discharges the zero-copy convention for the full-stage
+source-closure final predicate.
+
+This keeps the full-stage source-closure package visible as the real induction
+obligation while removing the separate copy-convention premise for exact
+subtraction models. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_fullStageSourceClosureData_of_exact_sub
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceTwiceTrailingFullStageSourceClosureData fp r p
+        A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_fullStageSourceClosureData
+    fp r p A_hat alpha hdata
+    (subtractZeroExact_of_exact_sub fp hsub)
 
 /-- Full-stage source-facing final-panel bridge.
 

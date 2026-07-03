@@ -48,8 +48,10 @@ final-closed, and final-panel endpoint wrappers from all-stage tail-vector
 equalities. The exact primitive-operation route is now also threaded directly
 through the raw, record, source-closure, final-closed, and final-panel endpoint
 wrappers, and exact subtraction now discharges the remaining subtract-zero copy
-premise on the final-closed and final-panel variants. A one-entry route audit
-now also proves that the stronger normalization-model predicate is not a
+premise on the exact primitive-operation final-closed/final-panel variants and
+on the source-closure, tail-normalized, source-faithful,
+normalization-model, and full-stage final-closure endpoints. A one-entry route
+audit now also proves that the stronger normalization-model predicate is not a
 consequence of arbitrary `FPModel`. The unnormalized route now also has
 pivot-zero signed-active-vector bridges identifying the stored signed vector
 with the exact or computed unnormalized Householder vector, plus a betaSpec
@@ -62,13 +64,14 @@ computed normalized vector while the stored route keeps the signed active vector
 and `householderBetaSpec`. The same route now reaches the pivot-1 successor
 step: the full stored loop keeps the zero-prefixed signed active vector and
 `householderBetaSpec`, while the once-shrunk trailing panel uses the computed
-normalized reflector with beta `1`. That successor handoff is now threaded
-through the arbitrary-width two-step QR recursion, so the second stored active
+normalized reflector with beta `1`, and exact subtraction now discharges its
+subtract-zero copy premise. That successor handoff is now threaded through the
+arbitrary-width two-step QR recursion, so the second stored active
 `householderBetaSpec` step can feed the twice-shrunk trailing QR panel under the
 same exact-operation and update-compatibility/exact-add-mul surfaces. Exact-alpha
 variants expose the same bridge when the successor alpha is stated as Higham's
 exact `householderAlpha` rather than the computed `fl_householderAlpha`. Exact
-subtraction now also discharges the subtract-zero copy premise for those
+subtraction also discharges the subtract-zero copy premise for those
 computed-alpha and exact-alpha successor QR recursion wrappers. The
 full rounded stored-loop proof remains open until the per-stage certificate
 fields are proved from a source-faithful model or replaced by a separate
