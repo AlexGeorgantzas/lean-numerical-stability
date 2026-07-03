@@ -19450,6 +19450,40 @@ theorem
       storedSignedSequenceTailNormalizedLoopRawFacts_of_tailNormalizedLoopRecords
         fp r p A_hat alpha hrecords
 
+/-- Named tail-normalized records assemble the recursive source-faithful
+normalization certificate package.
+
+This is the direct record-surface counterpart of
+`storedSignedSequenceTailSourceFaithfulNormalizations_of_tailNormalizedLoopRawFacts`;
+it only repackages the same vector-equality/self-dot obligations. -/
+theorem
+    storedSignedSequenceTailSourceFaithfulNormalizations_of_tailNormalizedLoopRecords
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrecords :
+      storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha) :
+    storedSignedSequenceTailSourceFaithfulNormalizations fp r p A_hat alpha :=
+  storedSignedSequenceTailSourceFaithfulNormalizations_of_tailNormalizedLoopRawFacts
+    fp r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_tailNormalizedLoopRecords
+      fp r p A_hat alpha hrecords)
+
+/-- The recursive source-faithful certificate package and the named
+tail-normalized record package are equivalent premise surfaces. -/
+theorem
+    storedSignedSequenceTailSourceFaithfulNormalizations_iff_tailNormalizedLoopRecords
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real) :
+    storedSignedSequenceTailSourceFaithfulNormalizations fp r p A_hat alpha <->
+      storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha :=
+  Iff.intro
+    (storedSignedSequenceTailNormalizedLoopRecords_of_sourceFaithfulNormalizations
+      fp r p A_hat alpha)
+    (storedSignedSequenceTailSourceFaithfulNormalizations_of_tailNormalizedLoopRecords
+      fp r p A_hat alpha)
+
 /-- Exact-arithmetic tail-local vector equalities assemble the named recursive
 tail-normalized record package. -/
 theorem
