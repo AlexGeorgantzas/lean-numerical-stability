@@ -4206,6 +4206,11 @@ Source-facing Chapter 10 wrappers:
 - `cholesky_perturbation_gram_identity` (Th10.8 step 3: exact R^T dR + dR^T R + dR^T dR = dA)
 - `cholesky_perturbation_scalar_endgame(_display)` (Th10.8 step 4: quadratic absorption t <= a*delta/(1-a*t) under a*t < 1; printed display form)
 - `frobNormSq_matMul_left_le` / `frobNormSq_matMul_right_le` (Th10.8 step 5: ||MN||_F^2 <= c^2 ||N||_F^2 from opNorm2Le M c, and <= c^2 ||M||_F^2 from opNorm2Le N^T c)
+- `matMul_upper_upper` / `frobNormSq_transpose_mul_self_le` (Th10.8: upper*upper is upper; ||M^T M||_F^2 <= (||M||_F^2)^2)
+- `cholesky_perturbation_symmetrized` (Th10.8 step 6: X + X^T = R^{-T}(dA - dR^T dR)R^{-1} entrywise, X := dR*Rinv)
+- `frobNorm_matMul_left_le` / `frobNorm_matMul_right_le` / `frobNorm_upHalf_le` / `frobNorm_transpose_mul_self_le` / `frobNorm_congr` (unsquared-norm wrappers for the assembly)
+- `upperTriangular_inverse_exists` (Th10.8: two-sided upper-triangular inverse via Mathlib blockTriangular_inv)
+- `cholesky_perturbation_normwise_proved` (Th10.8 SUN NORMWISE BOUND, ASSEMBLED: ||dR||_F <= a||dA||_F/(1 - a||dR||_F), a := cR*cinv^2/sqrt2, from operator certs cR>=||R^T||_2, cinv>=||R^{-T}||_2 and small-root a*||dR||_F < 1; no assumed perturbation bound)
 - `kahanR` / `kahan_telescope` / `kahanR_tail_eq` ((10.20): Kahan family satisfies (10.13) with equality on the square part)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
