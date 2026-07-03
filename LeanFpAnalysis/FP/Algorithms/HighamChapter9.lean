@@ -41082,6 +41082,204 @@ theorem higham9_15_normwise_source_bound_of_Gtilde_normalized_linear_step_opNorm
     (opNorm2Le_opNorm2 LhatInv) (opNorm2Le_opNorm2 ΔA)
     (opNorm2Le_opNorm2 UhatInv) heta
 
+/-- **Theorem 9.15**, source-facing `Gtilde` normwise endpoint from the
+signed original factorization equations plus a full-matrix linearized
+Barrlund--Sun step hypothesis. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_of_matrix_inverse_identities
+    {n : ℕ} [Nonempty (Fin n)]
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (_hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (_hPert : Lhat * Uhat = A + ΔA)
+    (_hLleft : LhatInv * Lhat = 1)
+    (hLright : Lhat * LhatInv = 1)
+    (_hUright : Uhat * UhatInv = 1)
+    (hUleft : UhatInv * Uhat = 1)
+    (hGlt : opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) < 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) := by
+  have hLrightRect : rectMatMul Lhat LhatInv = idMatrix n := by
+    ext i j
+    have h := congrFun (congrFun hLright i) j
+    simpa [rectMatMul, idMatrix, Matrix.mul_apply] using h
+  have hUleftRect : rectMatMul UhatInv Uhat = idMatrix n := by
+    ext i j
+    have h := congrFun (congrFun hUleft i) j
+    simpa [rectMatMul, idMatrix, Matrix.mul_apply] using h
+  exact
+    higham9_15_normwise_source_bound_of_Gtilde_normalized_linear_step_opNorm_of_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLrightRect hUleftRect
+      hGlt hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, product-smallness source-facing `Gtilde`
+factorization endpoint from a full-matrix linearized Barrlund--Sun step. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+    {n : ℕ} [Nonempty (Fin n)]
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hLright : Lhat * LhatInv = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hUleft : UhatInv * Uhat = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) :=
+  higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_of_matrix_inverse_identities
+    A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hLright
+    hUright hUleft
+    (higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+      LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
+    hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, exact-operator-norm source-facing `Gtilde`
+factorization endpoint from a full-matrix linearized Barrlund--Sun step. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hLright : Lhat * LhatInv = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hUleft : UhatInv * Uhat = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (heta : opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (opNorm2 LhatInv * frobNormRect ΔA * opNorm2 UhatInv) /
+        (1 - opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv) :=
+  higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+    A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hLright
+    hUright hUleft hlinear
+    (opNorm2_nonneg LhatInv) (opNorm2_nonneg ΔA) (opNorm2_nonneg UhatInv)
+    (opNorm2Le_opNorm2 LhatInv) (opNorm2Le_opNorm2 ΔA)
+    (opNorm2Le_opNorm2 UhatInv) heta
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the
+factorization-level `Gtilde` full-matrix linear-step endpoint. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm
+    {n : ℕ} [Nonempty (Fin n)]
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (_hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (_hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hGlt : opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) < 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) :=
+  higham9_15_normwise_source_bound_of_Gtilde_normalized_linear_step_opNorm_of_source_inverse_identities
+    Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLleft hUright hGlt hlinear
+    hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, product-smallness source-oriented inverse-identity form
+of the factorization-level `Gtilde` full-matrix linear-step endpoint. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_product_lt
+    {n : ℕ} [Nonempty (Fin n)]
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) :=
+  higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm
+    A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+    (higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+      LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
+    hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, exact-operator-norm source-oriented inverse-identity
+form of the factorization-level `Gtilde` full-matrix linear-step endpoint. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (heta : opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (opNorm2 LhatInv * frobNormRect ΔA * opNorm2 UhatInv) /
+        (1 - opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv) :=
+  higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_product_lt
+    A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright hlinear
+    (opNorm2_nonneg LhatInv) (opNorm2_nonneg ΔA) (opNorm2_nonneg UhatInv)
+    (opNorm2Le_opNorm2 LhatInv) (opNorm2Le_opNorm2 ΔA)
+    (opNorm2Le_opNorm2 UhatInv) heta
+
 /-- **Theorem 9.15**, printed-denominator normwise source bound from the
 componentwise `Gtilde` split plus a conditional min-factor control.
 
