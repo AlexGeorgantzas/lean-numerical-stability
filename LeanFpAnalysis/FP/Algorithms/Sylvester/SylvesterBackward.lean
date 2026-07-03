@@ -758,6 +758,333 @@ theorem xiSq_le_three_eta_sq_of_backward_error (n : ℕ)
     (sylvesterResidual n A B C Y) U V σ α β γ η DA DB DC
     hSVD hα hβ hγ hpos hResidual hDA hDB hDC
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15):
+    lift an SVD-coordinate `DeltaA` perturbation back to original coordinates. -/
+noncomputable def svdLiftDeltaA (n : ℕ)
+    (U DA_tilde : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  matMul n U (matMul n DA_tilde (matTranspose U))
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15):
+    lift an SVD-coordinate `DeltaB` perturbation back to original coordinates. -/
+noncomputable def svdLiftDeltaB (n : ℕ)
+    (V DB_tilde : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  matMul n V (matMul n DB_tilde (matTranspose V))
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15):
+    lift an SVD-coordinate `DeltaC` perturbation back to original coordinates. -/
+noncomputable def svdLiftDeltaC (n : ℕ)
+    (U V DC_tilde : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  matMul n U (matMul n DC_tilde (matTranspose V))
+
+/-- The lifted `DeltaA` returns to the original SVD-coordinate perturbation
+    after conjugation by the left singular-vector basis. -/
+theorem svdLiftDeltaA_svd_coordinates (n : ℕ)
+    (U DA_tilde : Fin n → Fin n → ℝ) (hU : IsOrthogonal n U) :
+    matMul n (matMul n (matTranspose U) (svdLiftDeltaA n U DA_tilde)) U =
+      DA_tilde := by
+  unfold svdLiftDeltaA
+  have hUtU : matMul n (matTranspose U) U = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hU.left_inv i j
+  calc
+    matMul n (matMul n (matTranspose U)
+        (matMul n U (matMul n DA_tilde (matTranspose U)))) U
+        = matMul n (matMul n (matMul n (matTranspose U) U)
+            (matMul n DA_tilde (matTranspose U))) U := by
+            rw [(matMul_assoc n (matTranspose U) U
+              (matMul n DA_tilde (matTranspose U))).symm]
+    _ = matMul n (matMul n (idMatrix n)
+            (matMul n DA_tilde (matTranspose U))) U := by
+            rw [hUtU]
+    _ = matMul n (matMul n DA_tilde (matTranspose U)) U := by
+            rw [matMul_id_left]
+    _ = matMul n DA_tilde (matMul n (matTranspose U) U) := by
+            rw [matMul_assoc]
+    _ = matMul n DA_tilde (idMatrix n) := by
+            rw [hUtU]
+    _ = DA_tilde := by
+            rw [matMul_id_right]
+
+/-- The lifted `DeltaB` returns to the original SVD-coordinate perturbation
+    after conjugation by the right singular-vector basis. -/
+theorem svdLiftDeltaB_svd_coordinates (n : ℕ)
+    (V DB_tilde : Fin n → Fin n → ℝ) (hV : IsOrthogonal n V) :
+    matMul n (matMul n (matTranspose V) (svdLiftDeltaB n V DB_tilde)) V =
+      DB_tilde := by
+  unfold svdLiftDeltaB
+  have hVtV : matMul n (matTranspose V) V = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hV.left_inv i j
+  calc
+    matMul n (matMul n (matTranspose V)
+        (matMul n V (matMul n DB_tilde (matTranspose V)))) V
+        = matMul n (matMul n (matMul n (matTranspose V) V)
+            (matMul n DB_tilde (matTranspose V))) V := by
+            rw [(matMul_assoc n (matTranspose V) V
+              (matMul n DB_tilde (matTranspose V))).symm]
+    _ = matMul n (matMul n (idMatrix n)
+            (matMul n DB_tilde (matTranspose V))) V := by
+            rw [hVtV]
+    _ = matMul n (matMul n DB_tilde (matTranspose V)) V := by
+            rw [matMul_id_left]
+    _ = matMul n DB_tilde (matMul n (matTranspose V) V) := by
+            rw [matMul_assoc]
+    _ = matMul n DB_tilde (idMatrix n) := by
+            rw [hVtV]
+    _ = DB_tilde := by
+            rw [matMul_id_right]
+
+/-- The lifted `DeltaC` returns to the original SVD-coordinate perturbation
+    under the residual transform `U^T * DeltaC * V`. -/
+theorem svdResidual_svdLiftDeltaC (n : ℕ)
+    (U V DC_tilde : Fin n → Fin n → ℝ)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V) :
+    svdResidual n U V (svdLiftDeltaC n U V DC_tilde) = DC_tilde := by
+  unfold svdResidual svdLiftDeltaC
+  have hUtU : matMul n (matTranspose U) U = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hU.left_inv i j
+  have hVtV : matMul n (matTranspose V) V = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hV.left_inv i j
+  calc
+    matMul n (matMul n (matTranspose U)
+        (matMul n U (matMul n DC_tilde (matTranspose V)))) V
+        = matMul n (matMul n (matMul n (matTranspose U) U)
+            (matMul n DC_tilde (matTranspose V))) V := by
+            rw [(matMul_assoc n (matTranspose U) U
+              (matMul n DC_tilde (matTranspose V))).symm]
+    _ = matMul n (matMul n (idMatrix n)
+            (matMul n DC_tilde (matTranspose V))) V := by
+            rw [hUtU]
+    _ = matMul n (matMul n DC_tilde (matTranspose V)) V := by
+            rw [matMul_id_left]
+    _ = matMul n DC_tilde (matMul n (matTranspose V) V) := by
+            rw [matMul_assoc]
+    _ = matMul n DC_tilde (idMatrix n) := by
+            rw [hVtV]
+    _ = DC_tilde := by
+            rw [matMul_id_right]
+
+/-- The SVD residual transform is inverted by multiplying by `U` on the left
+    and `V^T` on the right. -/
+theorem svdResidual_inverse (n : ℕ)
+    (U V R : Fin n → Fin n → ℝ)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V) :
+    matMul n U (matMul n (svdResidual n U V R) (matTranspose V)) = R := by
+  unfold svdResidual
+  have hUUt : matMul n U (matTranspose U) = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hU.right_inv i j
+  have hVVt : matMul n V (matTranspose V) = idMatrix n := by
+    ext i j
+    simpa [matMul, idMatrix] using hV.right_inv i j
+  calc
+    matMul n U
+        (matMul n (matMul n (matMul n (matTranspose U) R) V)
+          (matTranspose V))
+        = matMul n (matMul n U
+            (matMul n (matMul n (matTranspose U) R) V))
+          (matTranspose V) := by
+            rw [(matMul_assoc n U
+              (matMul n (matMul n (matTranspose U) R) V)
+              (matTranspose V)).symm]
+    _ = matMul n (matMul n (matMul n U (matMul n (matTranspose U) R)) V)
+          (matTranspose V) := by
+            rw [(matMul_assoc n U (matMul n (matTranspose U) R) V).symm]
+    _ = matMul n (matMul n U (matMul n (matTranspose U) R))
+          (matMul n V (matTranspose V)) := by
+            rw [matMul_assoc]
+    _ = matMul n (matMul n U (matMul n (matTranspose U) R))
+          (idMatrix n) := by
+            rw [hVVt]
+    _ = matMul n U (matMul n (matTranspose U) R) := by
+            rw [matMul_id_right]
+    _ = matMul n (matMul n U (matTranspose U)) R := by
+            rw [matMul_assoc]
+    _ = matMul n (idMatrix n) R := by
+            rw [hUUt]
+    _ = R := by
+            rw [matMul_id_left]
+
+/-- If the lifted SVD-coordinate perturbations satisfy the transformed
+    residual equation, then their original-coordinate backward residual is the
+    supplied original residual. -/
+theorem svdLift_backwardResidual_eq (n : ℕ)
+    (Y R U V : Fin n → Fin n → ℝ) (sigma : Fin n → ℝ)
+    (DA_tilde DB_tilde DC_tilde : Fin n → Fin n → ℝ)
+    (hSVD : IsSVD n Y U V sigma)
+    (hEq : ∀ i j : Fin n,
+      DA_tilde i j * sigma j - sigma i * DB_tilde i j - DC_tilde i j =
+        svdResidual n U V R i j) :
+    sylvesterBackwardResidual n
+        (svdLiftDeltaA n U DA_tilde)
+        (svdLiftDeltaB n V DB_tilde)
+        (svdLiftDeltaC n U V DC_tilde) Y = R := by
+  have hcoords :
+      svdResidual n U V
+          (sylvesterBackwardResidual n
+            (svdLiftDeltaA n U DA_tilde)
+            (svdLiftDeltaB n V DB_tilde)
+            (svdLiftDeltaC n U V DC_tilde) Y) =
+        svdResidual n U V R := by
+    rw [svdResidual_backwardResidual n Y U V
+      (svdLiftDeltaA n U DA_tilde)
+      (svdLiftDeltaB n V DB_tilde)
+      (svdLiftDeltaC n U V DC_tilde) sigma hSVD]
+    rw [svdLiftDeltaA_svd_coordinates n U DA_tilde hSVD.1]
+    rw [svdLiftDeltaB_svd_coordinates n V DB_tilde hSVD.2.1]
+    rw [svdResidual_svdLiftDeltaC n U V DC_tilde hSVD.1 hSVD.2.1]
+    ext i j
+    exact hEq i j
+  calc
+    sylvesterBackwardResidual n
+        (svdLiftDeltaA n U DA_tilde)
+        (svdLiftDeltaB n V DB_tilde)
+        (svdLiftDeltaC n U V DC_tilde) Y
+        = matMul n U (matMul n
+            (svdResidual n U V
+              (sylvesterBackwardResidual n
+                (svdLiftDeltaA n U DA_tilde)
+                (svdLiftDeltaB n V DB_tilde)
+                (svdLiftDeltaC n U V DC_tilde) Y))
+            (matTranspose V)) := by
+            rw [svdResidual_inverse n U V
+              (sylvesterBackwardResidual n
+                (svdLiftDeltaA n U DA_tilde)
+                (svdLiftDeltaB n V DB_tilde)
+                (svdLiftDeltaC n U V DC_tilde) Y)
+              hSVD.1 hSVD.2.1]
+    _ = matMul n U (matMul n (svdResidual n U V R) (matTranspose V)) := by
+            rw [hcoords]
+    _ = R := by
+            rw [svdResidual_inverse n U V R hSVD.1 hSVD.2.1]
+
+/-- A residual equality `DeltaA * Y - Y * DeltaB - DeltaC = R` is the
+    original-coordinate backward-error equation in the repository predicate. -/
+theorem backwardError_equation_of_backwardResidual_eq (n : ℕ)
+    (A B C Y DA DB DC : Fin n → Fin n → ℝ)
+    (hResidual :
+      sylvesterBackwardResidual n DA DB DC Y = sylvesterResidual n A B C Y) :
+    ∀ i j : Fin n,
+      sylvesterOp n (fun i' j' => A i' j' + DA i' j')
+        (fun i' j' => B i' j' + DB i' j') Y i j = C i j + DC i j := by
+  intro i j
+  have h := congrFun (congrFun hResidual i) j
+  unfold sylvesterBackwardResidual sylvesterResidual sylvesterOp matMul at h
+  unfold sylvesterOp matMul
+  simp only [add_mul, mul_add, Finset.sum_add_distrib] at h ⊢
+  linarith
+
+/-- The original-coordinate lift preserves the squared Frobenius norm of the
+    SVD-coordinate `DeltaA` perturbation. -/
+theorem svdLiftDeltaA_frobNormSq (n : ℕ)
+    (U DA_tilde : Fin n → Fin n → ℝ) (hU : IsOrthogonal n U) :
+    frobNormSq (svdLiftDeltaA n U DA_tilde) = frobNormSq DA_tilde := by
+  unfold svdLiftDeltaA
+  rw [frobNormSq_orthogonal_left _ _ hU,
+    frobNormSq_orthogonal_right _ _ hU.transpose]
+
+/-- The original-coordinate lift preserves the squared Frobenius norm of the
+    SVD-coordinate `DeltaB` perturbation. -/
+theorem svdLiftDeltaB_frobNormSq (n : ℕ)
+    (V DB_tilde : Fin n → Fin n → ℝ) (hV : IsOrthogonal n V) :
+    frobNormSq (svdLiftDeltaB n V DB_tilde) = frobNormSq DB_tilde := by
+  unfold svdLiftDeltaB
+  rw [frobNormSq_orthogonal_left _ _ hV,
+    frobNormSq_orthogonal_right _ _ hV.transpose]
+
+/-- The original-coordinate lift preserves the squared Frobenius norm of the
+    SVD-coordinate `DeltaC` perturbation. -/
+theorem svdLiftDeltaC_frobNormSq (n : ℕ)
+    (U V DC_tilde : Fin n → Fin n → ℝ)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V) :
+    frobNormSq (svdLiftDeltaC n U V DC_tilde) = frobNormSq DC_tilde := by
+  unfold svdLiftDeltaC
+  rw [frobNormSq_orthogonal_left _ _ hU,
+    frobNormSq_orthogonal_right _ _ hV.transpose]
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15), upper direction:
+    the coordinatewise optimizer lifts to an original-coordinate backward-error
+    certificate with cost `sqrt xiSq`.  This is the constructive eta-side
+    feasibility theorem; turning it into a literal minimum/infimum statement
+    for the source `eta(Y)` remains a separate order-theoretic wrapper. -/
+theorem isBackwardError_sqrt_xiSq_of_svdOptimalPerturbations (n : ℕ)
+    (A B C Y U V : Fin n → Fin n → ℝ) (sigma : Fin n → ℝ) (alpha beta gamma : ℝ)
+    (hSVD : IsSVD n Y U V sigma)
+    (hpos : ∀ i j : Fin n,
+      0 < alpha ^ 2 * sigma j ^ 2 + beta ^ 2 * sigma i ^ 2 + gamma ^ 2) :
+    IsBackwardError n A B C Y alpha beta gamma
+      (Real.sqrt
+        (xiSq n (svdResidual n U V (sylvesterResidual n A B C Y))
+          sigma alpha beta gamma)) := by
+  let R_tilde : Fin n → Fin n → ℝ :=
+    svdResidual n U V (sylvesterResidual n A B C Y)
+  let eta : ℝ := Real.sqrt (xiSq n R_tilde sigma alpha beta gamma)
+  change IsBackwardError n A B C Y alpha beta gamma eta
+  let DA_tilde : Fin n → Fin n → ℝ :=
+    svdOptimalDeltaA n R_tilde sigma alpha beta gamma
+  let DB_tilde : Fin n → Fin n → ℝ :=
+    svdOptimalDeltaB n R_tilde sigma alpha beta gamma
+  let DC_tilde : Fin n → Fin n → ℝ :=
+    svdOptimalDeltaC n R_tilde sigma alpha beta gamma
+  refine ⟨svdLiftDeltaA n U DA_tilde,
+    svdLiftDeltaB n V DB_tilde,
+    svdLiftDeltaC n U V DC_tilde, ?_, ?_, ?_, ?_⟩
+  · have hscalar :
+        ∀ i j : Fin n,
+          DA_tilde i j * sigma j - sigma i * DB_tilde i j - DC_tilde i j =
+            R_tilde i j := by
+      exact svdOptimalPerturbations_scalar_eq n R_tilde sigma alpha beta gamma hpos
+    have hResidual :
+        sylvesterBackwardResidual n
+          (svdLiftDeltaA n U DA_tilde)
+          (svdLiftDeltaB n V DB_tilde)
+          (svdLiftDeltaC n U V DC_tilde) Y =
+            sylvesterResidual n A B C Y := by
+      exact svdLift_backwardResidual_eq n Y (sylvesterResidual n A B C Y)
+        U V sigma DA_tilde DB_tilde DC_tilde hSVD hscalar
+    exact backwardError_equation_of_backwardResidual_eq n A B C Y
+      (svdLiftDeltaA n U DA_tilde)
+      (svdLiftDeltaB n V DB_tilde)
+      (svdLiftDeltaC n U V DC_tilde) hResidual
+  · have hxi : 0 ≤ xiSq n R_tilde sigma alpha beta gamma :=
+      xiSq_nonneg R_tilde sigma alpha beta gamma hpos
+    have hbounds :=
+      svdOptimalPerturbations_frobNormSq_bounds n R_tilde sigma alpha beta gamma hpos
+    rw [svdLiftDeltaA_frobNormSq n U DA_tilde hSVD.1]
+    calc
+      frobNormSq DA_tilde ≤ alpha ^ 2 * xiSq n R_tilde sigma alpha beta gamma := by
+          simpa [DA_tilde] using hbounds.1
+      _ = (eta * alpha) ^ 2 := by
+          unfold eta
+          rw [mul_pow, Real.sq_sqrt hxi]
+          ring
+  · have hxi : 0 ≤ xiSq n R_tilde sigma alpha beta gamma :=
+      xiSq_nonneg R_tilde sigma alpha beta gamma hpos
+    have hbounds :=
+      svdOptimalPerturbations_frobNormSq_bounds n R_tilde sigma alpha beta gamma hpos
+    rw [svdLiftDeltaB_frobNormSq n V DB_tilde hSVD.2.1]
+    calc
+      frobNormSq DB_tilde ≤ beta ^ 2 * xiSq n R_tilde sigma alpha beta gamma := by
+          simpa [DB_tilde] using hbounds.2.1
+      _ = (eta * beta) ^ 2 := by
+          unfold eta
+          rw [mul_pow, Real.sq_sqrt hxi]
+          ring
+  · have hxi : 0 ≤ xiSq n R_tilde sigma alpha beta gamma :=
+      xiSq_nonneg R_tilde sigma alpha beta gamma hpos
+    have hbounds :=
+      svdOptimalPerturbations_frobNormSq_bounds n R_tilde sigma alpha beta gamma hpos
+    rw [svdLiftDeltaC_frobNormSq n U V DC_tilde hSVD.1 hSVD.2.1]
+    calc
+      frobNormSq DC_tilde ≤ gamma ^ 2 * xiSq n R_tilde sigma alpha beta gamma := by
+          simpa [DC_tilde] using hbounds.2.2
+      _ = (eta * gamma) ^ 2 := by
+          unfold eta
+          rw [mul_pow, Real.sq_sqrt hxi]
+          ring
+
 -- ============================================================
 -- Residual-based backward error bound (combining eqs 16.12 + 16.16)
 -- ============================================================
