@@ -795,6 +795,133 @@ theorem quadForm_bilinear_cauchy_schwarz {n : ℕ} (H : Fin n → Fin n → ℝ)
   simp only [discrim] at hdisc
   nlinarith [hdisc]
 
+/-- **SPD pivot quadratic-form bound** (Higham §10.4, the basic SPD
+    lemma of the (10.29) per-stage bound; oracle route): for `H`
+    symmetric with two-sided inverse `Hinv` (also symmetric, PSD),
+    `(x_k)² ≤ H_kk · (xᵀ Hinv x)`.  Applying `x = Sᵀe_i` gives
+    `s_{ik}²/H_kk ≤ (S Hinv Sᵀ)_ii`. -/
+theorem spd_pivot_quadForm_bound {n : ℕ} (H Hinv : Fin n → Fin n → ℝ)
+    (hHsym : ∀ i j : Fin n, H i j = H j i)
+    (hHinvSym : ∀ i j : Fin n, Hinv i j = Hinv j i)
+    (hHinvPSD : ∀ z : Fin n → ℝ,
+      0 ≤ ∑ i : Fin n, ∑ j : Fin n, z i * Hinv i j * z j)
+    (hHHinv : ∀ i k : Fin n,
+      (∑ j : Fin n, H i j * Hinv j k) = if i = k then 1 else 0)
+    (hHinvH : ∀ i k : Fin n,
+      (∑ j : Fin n, Hinv i j * H j k) = if i = k then 1 else 0)
+    (k : Fin n) (x : Fin n → ℝ) :
+    (x k) ^ 2 ≤ H k k * (∑ i : Fin n, ∑ j : Fin n, x i * Hinv i j * x j) := by
+  set u : Fin n → ℝ := fun i => H i k with hu
+  have hcs := quadForm_bilinear_cauchy_schwarz Hinv hHinvSym hHinvPSD u x
+  -- uᵀ Hinv x = x k, using H·Hinv = I and symmetry
+  have hUV : (∑ i : Fin n, ∑ j : Fin n, u i * Hinv i j * x j) = x k := by
+    have e1 : (∑ i : Fin n, ∑ j : Fin n, u i * Hinv i j * x j) =
+        ∑ j : Fin n, (∑ i : Fin n, H k i * Hinv i j) * x j := by
+      rw [Finset.sum_comm]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [Finset.sum_mul]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      simp only [hu, hHsym i k]
+    rw [e1, Finset.sum_congr rfl fun j _ => by rw [hHHinv k j]]
+    rw [Finset.sum_eq_single k]
+    · rw [if_pos rfl, one_mul]
+    · intro b _ hb; rw [if_neg (fun h => hb h.symm), zero_mul]
+    · intro h; exact absurd (Finset.mem_univ k) h
+  -- uᵀ Hinv u = H k k, using Hinv·H = I and symmetry
+  have hUU : (∑ i : Fin n, ∑ j : Fin n, u i * Hinv i j * u j) = H k k := by
+    have e1 : (∑ i : Fin n, ∑ j : Fin n, u i * Hinv i j * u j) =
+        ∑ i : Fin n, H k i * (∑ j : Fin n, Hinv i j * H j k) := by
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      simp only [hu]; rw [hHsym i k]; ring
+    rw [e1, Finset.sum_congr rfl fun i _ => by rw [hHinvH i k]]
+    rw [Finset.sum_eq_single k]
+    · rw [if_pos rfl, mul_one]
+    · intro b _ hb; rw [if_neg hb, mul_zero]
+    · intro h; exact absurd (Finset.mem_univ k) h
+  rw [hUV, hUU] at hcs
+  exact hcs
+
+/-- **Scalar product step** (Higham §10.4, (10.29) per-stage): from two
+    pivot bounds `p² ≤ h·a`, `q² ≤ h·b` with `h > 0` and `a, b ≥ 0`,
+    `|p·q|/h ≤ √(a·b)`.  Combines the row and column instances of
+    `spd_pivot_quadForm_bound` into the multiplier-product bound. -/
+theorem pivot_product_le_sqrt (p q h a b : ℝ)
+    (hh : 0 < h) (ha : 0 ≤ a) (_hb : 0 ≤ b)
+    (hp : p ^ 2 ≤ h * a) (hq : q ^ 2 ≤ h * b) :
+    |p * q| / h ≤ Real.sqrt (a * b) := by
+  have hpabs : |p| ≤ Real.sqrt (h * a) := by
+    rw [← Real.sqrt_sq_eq_abs]; exact Real.sqrt_le_sqrt hp
+  have hqabs : |q| ≤ Real.sqrt (h * b) := by
+    rw [← Real.sqrt_sq_eq_abs]; exact Real.sqrt_le_sqrt hq
+  have hprod : |p * q| ≤ Real.sqrt (h * a) * Real.sqrt (h * b) := by
+    rw [abs_mul]
+    exact mul_le_mul hpabs hqabs (abs_nonneg _) (Real.sqrt_nonneg _)
+  have hsplit : Real.sqrt (h * a) * Real.sqrt (h * b) =
+      h * Real.sqrt (a * b) := by
+    rw [← Real.sqrt_mul (by positivity : (0:ℝ) ≤ h * a) (h * b)]
+    rw [show (h * a) * (h * b) = h ^ 2 * (a * b) by ring]
+    rw [Real.sqrt_mul (by positivity : (0:ℝ) ≤ h ^ 2) (a * b)]
+    rw [Real.sqrt_sq hh.le]
+  rw [div_le_iff₀ hh]
+  calc |p * q| ≤ Real.sqrt (h * a) * Real.sqrt (h * b) := hprod
+    _ = h * Real.sqrt (a * b) := hsplit
+    _ = Real.sqrt (a * b) * h := by ring
+
+/-- **Diagonal entry ≤ operator-2-norm certificate** (Higham §10.4,
+    (10.29) per-stage RHS): if `opNorm2Le Q c` then every diagonal entry
+    `Q_ii ≤ c` — the i-th column of `Q` has 2-norm at most `c`, and
+    `Q_ii` is one of its components. -/
+theorem diag_le_opNorm2Le {n : ℕ} (Q : Fin n → Fin n → ℝ) (c : ℝ)
+    (hQ : opNorm2Le Q c) (i : Fin n) : Q i i ≤ c := by
+  set e : Fin n → ℝ := fun j => if j = i then (1:ℝ) else 0 with he
+  have hmv : matMulVec n Q e = fun p => Q p i := by
+    funext p
+    unfold matMulVec
+    rw [Finset.sum_eq_single i]
+    · rw [he]; simp
+    · intro b _ hb; rw [he]; simp [hb]
+    · intro h; exact absurd (Finset.mem_univ i) h
+  have hne : vecNorm2 e = 1 := by
+    unfold vecNorm2
+    have hsq : vecNorm2Sq e = 1 := by
+      unfold vecNorm2Sq
+      rw [Finset.sum_eq_single i]
+      · rw [he]; simp
+      · intro b _ hb; rw [he]; simp [hb]
+      · intro h; exact absurd (Finset.mem_univ i) h
+    rw [hsq, Real.sqrt_one]
+  have hb := hQ e
+  rw [hmv, hne, mul_one] at hb
+  have hcomp : (Q i i) ^ 2 ≤ vecNorm2Sq (fun p => Q p i) := by
+    unfold vecNorm2Sq
+    exact Finset.single_le_sum (f := fun p => (Q p i) ^ 2)
+      (fun p _ => sq_nonneg _) (Finset.mem_univ i)
+  have hqii_abs : |Q i i| ≤ vecNorm2 (fun p => Q p i) := by
+    rw [← Real.sqrt_sq_eq_abs]
+    calc Real.sqrt ((Q i i) ^ 2)
+        ≤ Real.sqrt (vecNorm2Sq (fun p => Q p i)) := Real.sqrt_le_sqrt hcomp
+      _ = vecNorm2 (fun p => Q p i) := rfl
+  calc Q i i ≤ |Q i i| := le_abs_self _
+    _ ≤ vecNorm2 (fun p => Q p i) := hqii_abs
+    _ ≤ c := hb
+
+/-- **√(diagonal product) ≤ operator-2-norm** (Higham §10.4, the (10.29)
+    per-stage bound RHS): for `opNorm2Le Q c` with nonnegative diagonal,
+    `√(Q_ii Q_jj) ≤ c`.  Combined with `pivot_product_le_sqrt` this gives
+    `|s_i1 s_1j|/h_11 ≤ ‖Q(S)‖₂`. -/
+theorem sqrt_diag_prod_le_opNorm2Le {n : ℕ} (Q : Fin n → Fin n → ℝ) (c : ℝ)
+    (hc : 0 ≤ c) (hQ : opNorm2Le Q c)
+    (hdiag_nonneg : ∀ i : Fin n, 0 ≤ Q i i) (i j : Fin n) :
+    Real.sqrt (Q i i * Q j j) ≤ c := by
+  have hi := diag_le_opNorm2Le Q c hQ i
+  have hj := diag_le_opNorm2Le Q c hQ j
+  calc Real.sqrt (Q i i * Q j j)
+      ≤ Real.sqrt (c * c) :=
+        Real.sqrt_le_sqrt (mul_le_mul hi hj (hdiag_nonneg j) hc)
+    _ = c := by rw [← sq, Real.sqrt_sq hc]
+
 open Matrix in
 /-- **The (10.29) core identity** (Higham §10.4, p. 208; proof route from
     the logged oracle consultation, Golub–Van Loan 1979):
