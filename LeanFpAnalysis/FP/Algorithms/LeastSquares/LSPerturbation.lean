@@ -1138,6 +1138,122 @@ theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_s
   rw [htranspose] at htrans
   simpa [PB, IPA] using htrans
 
+/-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
+    the source-oriented Lemma 20.12 projector estimate controls `Bplus*r`
+    whenever `r` is orthogonal to the range of `A`.
+
+This is the local algebra behind `B⁺r = B⁺P_B(I-P_A)r`.  It deliberately
+keeps the one-sided projector radius already proved above and does not claim
+the missing CS-decomposition equality from the printed Lemma 20.12. -/
+theorem wedinTheorem20_1_vecNorm2_Bplus_residual_le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {delta Bplus_norm : ℝ} (r : Fin m → ℝ)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBplus_norm_nonneg : 0 ≤ Bplus_norm)
+    (hBplus : rectOpNorm2Le Bplus Bplus_norm)
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0) :
+    vecNorm2 (rectMatMulVec Bplus r) ≤
+      (delta * Bplus_norm * Bplus_norm) * vecNorm2 r := by
+  let PA : Fin m → Fin m → ℝ := rectMatMul A Aplus
+  let PB : Fin m → Fin m → ℝ := rectMatMul B Bplus
+  let IPA : Fin m → Fin m → ℝ :=
+    fun i j => idMatrix m i j - PA i j
+  have hBplusPB : rectMatMul Bplus PB = Bplus := by
+    calc
+      rectMatMul Bplus PB = rectMatMul Bplus (rectMatMul B Bplus) := by
+        rfl
+      _ = rectMatMul (rectMatMul Bplus B) Bplus := by
+        rw [rectMatMul_assoc]
+      _ = rectMatMul (idMatrix (k + 1)) Bplus := by
+        rw [hleftB]
+      _ = Bplus := rectMatMul_id_left Bplus
+  have hIPA_r : rectMatMulVec IPA r = r := by
+    rw [show IPA = (fun i j => idMatrix m i j - rectMatMul A Aplus i j) by
+      ext i j
+      rfl]
+    rw [wedinLemma20_12_rectMatMulVec_projectionComplement]
+    rw [hrangeA_residual]
+    ext i
+    simp
+  have hfactor :
+      rectMatMulVec Bplus r =
+        rectMatMulVec Bplus (rectMatMulVec (rectMatMul PB IPA) r) := by
+    symm
+    calc
+      rectMatMulVec Bplus (rectMatMulVec (rectMatMul PB IPA) r)
+          = rectMatMulVec Bplus
+              (rectMatMulVec PB (rectMatMulVec IPA r)) := by
+              rw [rectMatMulVec_rectMatMul]
+      _ = rectMatMulVec Bplus (rectMatMulVec PB r) := by
+              rw [hIPA_r]
+      _ = rectMatMulVec (rectMatMul Bplus PB) r := by
+              rw [← rectMatMulVec_rectMatMul]
+      _ = rectMatMulVec Bplus r := by
+              rw [hBplusPB]
+  have hPBIPA :
+      rectOpNorm2Le (rectMatMul PB IPA) (delta * Bplus_norm) := by
+    simpa [PA, PB, IPA] using
+      wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped
+        A B Aplus Bplus hleftA hSymA hSymB hDelta
+        hBplus_norm_nonneg hBplus
+  have hBplus_y := hBplus (rectMatMulVec (rectMatMul PB IPA) r)
+  have hPBIPA_r := hPBIPA r
+  calc
+    vecNorm2 (rectMatMulVec Bplus r)
+        = vecNorm2
+            (rectMatMulVec Bplus (rectMatMulVec (rectMatMul PB IPA) r)) := by
+            rw [hfactor]
+    _ ≤ Bplus_norm * vecNorm2 (rectMatMulVec (rectMatMul PB IPA) r) :=
+            hBplus_y
+    _ ≤ Bplus_norm * ((delta * Bplus_norm) * vecNorm2 r) :=
+            mul_le_mul_of_nonneg_left hPBIPA_r hBplus_norm_nonneg
+    _ = (delta * Bplus_norm * Bplus_norm) * vecNorm2 r := by ring
+
+/-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
+    `η`-scaled form of the `Bplus*r` residual bound.
+
+When Lemma 20.11 has supplied
+`||Bplus||₂ <= ||Aplus||₂ / (1 - η)` and `η = ||Aplus||₂ * delta`, the
+one-sided Lemma 20.12 route gives the displayed residual-transfer scale
+`η ||Aplus||₂ / (1 - η)^2`. -/
+theorem wedinTheorem20_1_vecNorm2_Bplus_residual_le_eta
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {Aplus_norm delta eta : ℝ} (r : Fin m → ℝ)
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0) :
+    vecNorm2 (rectMatMulVec Bplus r) ≤
+      (eta * Aplus_norm / (1 - eta) ^ 2) * vecNorm2 r := by
+  have hden_pos : 0 < 1 - eta :=
+    wedinLemma20_11_denominator_pos hsmall
+  have hBplus_radius_nonneg : 0 ≤ Aplus_norm / (1 - eta) :=
+    div_nonneg (le_of_lt hAplus_pos) (le_of_lt hden_pos)
+  have hbound :=
+    wedinTheorem20_1_vecNorm2_Bplus_residual_le
+      A B Aplus Bplus r hleftA hleftB hSymA hSymB hDelta
+      hBplus_radius_nonneg hBplus hrangeA_residual
+  have hcoeff :
+      delta * (Aplus_norm / (1 - eta)) *
+          (Aplus_norm / (1 - eta)) =
+        eta * Aplus_norm / (1 - eta) ^ 2 := by
+    rw [heta]
+    field_simp [ne_of_gt hden_pos]
+  simpa [hcoeff] using hbound
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
