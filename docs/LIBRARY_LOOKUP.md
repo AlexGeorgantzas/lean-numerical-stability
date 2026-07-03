@@ -4008,6 +4008,7 @@ Source-facing Chapter 10 wrappers:
 - `higham10_18_matrix` / `higham10_18_isPosSemiDef` / `higham10_18_w_arbitrarily_large` ((10.18) example: PSD [[aI,I],[I,a^-1 I]], W = a^-1 I unbounded)
 - `opNorm2Le_add` / `higham10_25_componentwise_to_normwise` / `higham10_25_absorption` ((10.25): componentwise (10.24) -> normwise cert via Lemma 6.6, then gamma/(1-r gamma) absorption)
 - `quadForm_cert_of_entrywise` ((10.21) engine: entrywise c -> quadForm cert c*m, ones-vector Cauchy-Schwarz)
+- `kahanR` / `kahan_telescope` / `kahanR_tail_eq` ((10.20): Kahan family satisfies (10.13) with equality on the square part)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)
