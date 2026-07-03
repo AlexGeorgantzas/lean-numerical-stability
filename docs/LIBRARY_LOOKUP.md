@@ -1534,6 +1534,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_9_colDiagDominant_luFirstStepL_unit_bound_of_tail_unit_bound`
 - `higham9_9_luFirstStepU_entry_bound_of_tail_entry_bound`
 - `higham9_9_luFirstStepU_growthFactorEntry_le_two_of_tail_entry_bound_exists_hAmax`
+- `higham9_9_colDiagDominant_luFirstStep_bounds_of_tail_bounds`
 - `higham9_7_firstPivotRowSwap_involutive`
 - `higham9_7_firstPivotRowSwap_isPermutation`
 - `higham9_7_firstPivotRowSwap_det_ne_zero`
