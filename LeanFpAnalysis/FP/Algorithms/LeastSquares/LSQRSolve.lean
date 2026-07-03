@@ -19532,6 +19532,43 @@ theorem RectLSNormalEquations.iff_isLeastSquaresMinimizer {m n : ℕ}
   · intro h
     exact h.rectLSNormalEquations
 
+/-- Exact least-squares minimizers make Higham's signed residual `b - A*x`
+    orthogonal to every column of `A`. -/
+theorem IsLeastSquaresMinimizer.higham_residual_orthogonal {m n : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ} {x : Fin n → ℝ}
+    {s : Fin m → ℝ}
+    (hmin : IsLeastSquaresMinimizer A b x)
+    (hs : s = lsResidualHigham A b x) :
+    ∀ j : Fin n, ∑ i : Fin m, A i j * s i = 0 := by
+  intro j
+  have hNE : RectLSNormalEquations A b x :=
+    IsLeastSquaresMinimizer.rectLSNormalEquations hmin
+  have horth := hNE.residual_orthogonal j
+  have hneg :
+      ∑ i : Fin m, A i j * s i =
+        -∑ i : Fin m, A i j * lsResidual A b x i := by
+    rw [hs]
+    exact lsResidualHigham_column_sum_eq_neg A b x j
+  rw [hneg, horth, neg_zero]
+
+/-- Higham, 2nd ed., Chapter 20, Wedin perturbation setup:
+    an exact minimizer of the perturbed least-squares problem makes the
+    perturbed Higham residual `s = (b + Delta b) - B*y` orthogonal to every
+    column of `B`. -/
+theorem IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
+    {m n : ℕ} {B : Fin m → Fin n → ℝ}
+    {b Deltab s : Fin m → ℝ} {y : Fin n → ℝ}
+    (hmin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
+    ∀ j : Fin n, ∑ i : Fin m, B i j * s i = 0 := by
+  exact
+    IsLeastSquaresMinimizer.higham_residual_orthogonal
+      (A := B) (b := fun i => b i + Deltab i) (x := y)
+      hmin (by
+        ext i
+        rw [hs]
+        rfl)
+
 /-- Perturbed-data expansion of Higham's signed residual:
     `(b + Delta b) - (A + Delta A)y = (b - A y) + Delta b - Delta A y`. -/
 theorem lsResidualHigham_perturbed_eq {m n : ℕ}
