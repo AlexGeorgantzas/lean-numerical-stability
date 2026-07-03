@@ -50,9 +50,10 @@ agreement, plus an exact add/mul/div/sqrt operation route, the exact-arithmetic
 normalized-vector equality, and raw, record, full-stage, source-closure,
 final-closed, and final-panel endpoint wrappers from all-stage tail-vector
 equalities. The recursive source-faithful certificate package is now also
-proved equivalent to the expanded raw tail-normalized package, so later
-stored-loop work can target either surface while still proving the same
-vector-equality and self-dot fields. The exact primitive-operation route is now also threaded directly
+proved equivalent to both the expanded raw tail-normalized package and the
+named tail-normalized record package, so later stored-loop work can target any
+of those surfaces while still proving the same vector-equality and self-dot
+fields. The exact primitive-operation route is now also threaded directly
 through the raw, record, source-closure, final-closed, and final-panel endpoint
 wrappers, and exact subtraction now discharges the remaining subtract-zero copy
 premise on the exact primitive-operation final-closed/final-panel variants and
