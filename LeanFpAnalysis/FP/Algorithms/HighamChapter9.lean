@@ -80369,6 +80369,58 @@ theorem higham9_13_rowDiagDom_exists_LUFactSpec_growthFactorEntry_le_three_exist
       hn A hdetA hA_tridiag hRowDom hAmax
   exact ⟨hAmax, L, U, hLU, hGrowth, hρ⟩
 
+/-- **Theorem 9.13**, source-data column-dominant exact-LU max-entry growth
+package for matrices assembled from `TridiagData`.
+
+The assembled source matrix is tridiagonal by construction, so this wrapper
+discharges the structural hypothesis in
+`higham9_13_colDiagDom_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax`
+and keeps only nonsingularity plus column diagonal dominance visible. -/
+theorem higham9_13_colDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax
+    {n : ℕ} (hn : 0 < n)
+    (T : higham9_18_TridiagData n)
+    (hdetA :
+      Matrix.det
+        (Matrix.of (higham9_18_tridiag_to_matrix T) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hColDom : IsDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    ∃ hAmax : 0 < maxEntryNorm hn (higham9_18_tridiag_to_matrix T),
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n (higham9_18_tridiag_to_matrix T) L U ∧
+      (∀ i j : Fin n, |L i j| ≤ 1) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L i k| * |U k j| ≤
+          3 * |higham9_18_tridiag_to_matrix T i j|) ∧
+      growthFactorEntry hn (higham9_18_tridiag_to_matrix T) U hAmax ≤ 3 :=
+  higham9_13_colDiagDom_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax
+    hn (higham9_18_tridiag_to_matrix T) hdetA
+    (higham9_18_tridiag_to_matrix_isTridiagonal T) hColDom
+
+/-- **Theorem 9.13**, source-data row-dominant exact-LU max-entry growth
+package for matrices assembled from `TridiagData`.
+
+This is the row-dominant analogue of
+`higham9_13_colDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax`,
+again using the built-in tridiagonal structure of the assembled matrix. -/
+theorem higham9_13_rowDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax
+    {n : ℕ} (hn : 0 < n)
+    (T : higham9_18_TridiagData n)
+    (hdetA :
+      Matrix.det
+        (Matrix.of (higham9_18_tridiag_to_matrix T) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hRowDom : IsRowDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    ∃ hAmax : 0 < maxEntryNorm hn (higham9_18_tridiag_to_matrix T),
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n (higham9_18_tridiag_to_matrix T) L U ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L i k| * |U k j| ≤
+          3 * |higham9_18_tridiag_to_matrix T i j|) ∧
+      growthFactorEntry hn (higham9_18_tridiag_to_matrix T) U hAmax ≤ 3 :=
+  higham9_13_rowDiagDom_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax
+    hn (higham9_18_tridiag_to_matrix T) hdetA
+    (higham9_18_tridiag_to_matrix_isTridiagonal T) hRowDom
+
 /-- **Theorem 9.14**, column-dominant source-data exact-LU absorbed-bound
 package.
 
