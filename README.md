@@ -77,7 +77,11 @@ certifies the normalized vector produced from the signed active vector and
 certificate route now has leading-block variants that discharge the nonzero
 active-column premise from first leading-block determinant nonbreakdown, so
 callers can use the standard stored-loop nonbreakdown surface instead of
-supplying a separate nonzero-column fact. That bridge is now threaded through the
+supplying a separate nonzero-column fact. The same certificate surface now has
+tail-leading-block variants for successor panels, deriving the once-shrunk
+panel's nonzero source-column premise from determinant nonbreakdown of
+`qrLeadingBlock (trailingPanel A)` under the same exact primitive-operation and
+computed-alpha/exact-alpha hypotheses. That bridge is now threaded through the
 first-pivot signed stored-panel handoff under the same exact-operation and
 update-compatibility surfaces, so the first QR storage step can consume the
 computed normalized vector while the stored route keeps the signed active vector

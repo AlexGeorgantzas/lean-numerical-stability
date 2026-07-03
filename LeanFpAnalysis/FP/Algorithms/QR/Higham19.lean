@@ -5648,6 +5648,81 @@ theorem
       fp hadd hmul hdiv hsqrt (Nat.succ_pos m)
       (panelFirstColumn (Nat.succ_pos p) A) alpha hx halpha
 
+/-- Computed-alpha normalized signed-active certificate for the successor
+trailing panel from tail-leading-block nonbreakdown.
+
+This is the successor-stage counterpart of the first-leading-block certificate:
+the determinant of the leading block of `trailingPanel A` supplies the nonzero
+source column for the once-shrunk panel. -/
+theorem
+    sourceFaithfulHouseholderNormalization_of_normalized_trailingActiveVector_alpha_eq_fl_householderAlpha_of_tail_leadingBlock_det_ne_zero_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock (trailingPanel A)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (halpha :
+      alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A))) :
+    sourceFaithfulHouseholderNormalization fp (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos p) (trailingPanel A))
+      (householderNormalizedVector (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) alpha)
+        (householderBetaSpec (m + 1)
+          (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) alpha))) := by
+  exact
+    sourceFaithfulHouseholderNormalization_of_normalized_trailingActiveVector_alpha_eq_fl_householderAlpha_of_first_leadingBlock_det_ne_zero_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt (trailingPanel A) alpha hdetTail halpha
+
+/-- Exact-alpha normalized signed-active certificate for the successor trailing
+panel from tail-leading-block nonbreakdown.
+
+This is the exact-alpha sibling of
+`sourceFaithfulHouseholderNormalization_of_normalized_trailingActiveVector_alpha_eq_fl_householderAlpha_of_tail_leadingBlock_det_ne_zero_exact_add_mul_div_sqrt`. -/
+theorem
+    sourceFaithfulHouseholderNormalization_of_normalized_trailingActiveVector_alpha_eq_householderAlpha_of_tail_leadingBlock_det_ne_zero_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock (trailingPanel A)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (halpha :
+      alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A))) :
+    sourceFaithfulHouseholderNormalization fp (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos p) (trailingPanel A))
+      (householderNormalizedVector (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) alpha)
+        (householderBetaSpec (m + 1)
+          (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) alpha))) := by
+  exact
+    sourceFaithfulHouseholderNormalization_of_normalized_trailingActiveVector_alpha_eq_householderAlpha_of_first_leadingBlock_det_ne_zero_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt (trailingPanel A) alpha hdetTail halpha
+
 /-- Under `exactWithUnitRoundoff`, the computed Householder scale is the
 mathematical Householder scale. -/
 theorem fl_householderScale_exactWithUnitRoundoff_eq
