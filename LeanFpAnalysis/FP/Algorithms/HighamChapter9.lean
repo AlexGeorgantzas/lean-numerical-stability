@@ -46395,6 +46395,65 @@ theorem higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_ze
       Uhat UhatInv hUright)
     hXtri hYtri hres
 
+/-- **Theorem 9.15 support**, source-oriented factorization-level `I + G`
+exact full-residual source-perturbation vanishing theorem with normalized
+triangular support discharged from ordinary factor-triangularity hypotheses. -/
+theorem higham9_15_source_perturbations_zero_of_factorization_G_residual_zero_of_factor_triangularity
+    {n : ℕ}
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin n) (Fin n) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL) *
+              (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)) = 0) :
+    (∀ i j : Fin n, ΔL i j = 0) ∧ (∀ i j : Fin n, ΔU i j = 0) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_source_perturbations_zero_of_factorization_G_residual_zero
+      A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
+      hXtri hYtri hres
+
+/-- **Theorem 9.15 support**, source-oriented factorization-level `I - Gtilde`
+exact full-residual source-perturbation vanishing theorem with normalized
+triangular support discharged from ordinary factor-triangularity hypotheses. -/
+theorem higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_zero_of_factor_triangularity
+    {n : ℕ}
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin n) (Fin n) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)) = 0) :
+    (∀ i j : Fin n, ΔL i j = 0) ∧ (∀ i j : Fin n, ΔU i j = 0) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_zero
+      A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+      hXtri hYtri hres
+
 /-- **Theorem 9.15 support**, if the source perturbations vanish, the printed
 relative Frobenius left-hand side is bounded by zero. -/
 theorem higham9_15_normwise_source_zero_bound_of_source_perturbations_zero
@@ -46656,6 +46715,65 @@ theorem higham9_15_normwise_source_zero_bound_of_factorization_Gtilde_residual_z
     higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_zero
       A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
       hXtri hYtri hres
+  exact
+    higham9_15_normwise_source_zero_bound_of_source_perturbations_zero
+      Lhat Uhat ΔL ΔU hzero.1 hzero.2
+
+/-- **Theorem 9.15 support**, source-oriented factorization-level `I + G`
+exact full-residual normwise zero-bound theorem with normalized triangular
+support discharged from ordinary factor-triangularity hypotheses. -/
+theorem higham9_15_normwise_source_zero_bound_of_factorization_G_residual_zero_of_factor_triangularity
+    {n : ℕ}
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin n) (Fin n) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL) *
+              (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)) = 0) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤ 0 := by
+  have hzero :=
+    higham9_15_source_perturbations_zero_of_factorization_G_residual_zero_of_factor_triangularity
+      A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
+      hLinv_lower hΔL_strict hΔU_upper hUinv_upper hres
+  exact
+    higham9_15_normwise_source_zero_bound_of_source_perturbations_zero
+      L U ΔL ΔU hzero.1 hzero.2
+
+/-- **Theorem 9.15 support**, source-oriented factorization-level `I - Gtilde`
+exact full-residual normwise zero-bound theorem with normalized triangular
+support discharged from ordinary factor-triangularity hypotheses. -/
+theorem higham9_15_normwise_source_zero_bound_of_factorization_Gtilde_residual_zero_of_factor_triangularity
+    {n : ℕ}
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin n) (Fin n) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)) = 0) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      0 := by
+  have hzero :=
+    higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_zero_of_factor_triangularity
+      A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper hres
   exact
     higham9_15_normwise_source_zero_bound_of_source_perturbations_zero
       Lhat Uhat ΔL ΔU hzero.1 hzero.2
@@ -46973,6 +47091,69 @@ theorem higham9_15_componentwise_source_firstOrder_zero_bound_of_factorization_G
     higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_zero
       A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
       hXtri hYtri hres
+  exact
+    higham9_15_componentwise_source_firstOrder_zero_bound_of_source_perturbations_zero
+      u ΔL ΔU hzero.1 hzero.2
+
+/-- **Theorem 9.15 support**, source-oriented factorization-level `I + G`
+exact full-residual componentwise zero first-order theorem with normalized
+triangular support discharged from ordinary factor-triangularity hypotheses. -/
+theorem higham9_15_componentwise_source_firstOrder_zero_bound_of_factorization_G_residual_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin n) (Fin n) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL) *
+              (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)) = 0) :
+    (∀ i j : Fin n, FirstOrderLe u 0 |ΔL i j|) ∧
+      (∀ i j : Fin n, FirstOrderLe u 0 |ΔU i j|) := by
+  have hzero :=
+    higham9_15_source_perturbations_zero_of_factorization_G_residual_zero_of_factor_triangularity
+      A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
+      hLinv_lower hΔL_strict hΔU_upper hUinv_upper hres
+  exact
+    higham9_15_componentwise_source_firstOrder_zero_bound_of_source_perturbations_zero
+      u ΔL ΔU hzero.1 hzero.2
+
+/-- **Theorem 9.15 support**, source-oriented factorization-level
+`I - Gtilde` exact full-residual componentwise zero first-order theorem with
+normalized triangular support discharged from ordinary factor-triangularity
+hypotheses. -/
+theorem higham9_15_componentwise_source_firstOrder_zero_bound_of_factorization_Gtilde_residual_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin n) (Fin n) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)) = 0) :
+    (∀ i j : Fin n, FirstOrderLe u 0 |ΔL i j|) ∧
+      (∀ i j : Fin n, FirstOrderLe u 0 |ΔU i j|) := by
+  have hzero :=
+    higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_zero_of_factor_triangularity
+      A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper hres
   exact
     higham9_15_componentwise_source_firstOrder_zero_bound_of_source_perturbations_zero
       u ΔL ΔU hzero.1 hzero.2
