@@ -448,6 +448,202 @@ theorem cholesky_perturbation_symmetrized {n : ℕ}
       _ = matMul n ΔR Rinv j i := rfl
   rw [hsplit, hterm1, hterm2]
 
+/-- Unsquared-norm form of the left Frobenius–operator bound. -/
+theorem frobNorm_matMul_left_le {n : ℕ}
+    (M N : Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c)
+    (hM : opNorm2Le M c) :
+    frobNorm (matMul n M N) ≤ c * frobNorm N := by
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq]
+  calc Real.sqrt (frobNormSq (matMul n M N))
+      ≤ Real.sqrt (c ^ 2 * frobNormSq N) :=
+        Real.sqrt_le_sqrt (frobNormSq_matMul_left_le M N c hM)
+    _ = c * Real.sqrt (frobNormSq N) := by
+        rw [Real.sqrt_mul (sq_nonneg c), Real.sqrt_sq hc]
+
+/-- Unsquared-norm form of the right Frobenius–operator bound. -/
+theorem frobNorm_matMul_right_le {n : ℕ}
+    (M N : Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c)
+    (hNT : opNorm2Le (fun i j => N j i) c) :
+    frobNorm (matMul n M N) ≤ c * frobNorm M := by
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq]
+  calc Real.sqrt (frobNormSq (matMul n M N))
+      ≤ Real.sqrt (c ^ 2 * frobNormSq M) :=
+        Real.sqrt_le_sqrt (frobNormSq_matMul_right_le M N c hNT)
+    _ = c * Real.sqrt (frobNormSq M) := by
+        rw [Real.sqrt_mul (sq_nonneg c), Real.sqrt_sq hc]
+
+/-- Unsquared-norm form of the `up`-operator halving:
+    `‖up(Y)‖_F ≤ ‖Y‖_F / √2` for symmetric `Y`. -/
+theorem frobNorm_upHalf_le {n : ℕ} (Y : Fin n → Fin n → ℝ)
+    (hY : ∀ i j : Fin n, Y i j = Y j i) :
+    frobNorm (upHalf Y) ≤ frobNorm Y / Real.sqrt 2 := by
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq]
+  calc Real.sqrt (frobNormSq (upHalf Y))
+      ≤ Real.sqrt (frobNormSq Y / 2) :=
+        Real.sqrt_le_sqrt (frobNormSq_upHalf_le_half Y hY)
+    _ = Real.sqrt (frobNormSq Y) / Real.sqrt 2 :=
+        Real.sqrt_div (frobNormSq_nonneg Y) 2
+
+/-- Unsquared-norm form of the Gram-square bound:
+    `‖MᵀM‖_F ≤ ‖M‖_F²`. -/
+theorem frobNorm_transpose_mul_self_le {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    frobNorm (matMul n (fun i j => M j i) M) ≤ frobNorm M ^ 2 := by
+  rw [frobNorm_eq_sqrt_frobNormSq]
+  calc Real.sqrt (frobNormSq (matMul n (fun i j => M j i) M))
+      ≤ Real.sqrt (frobNormSq M ^ 2) :=
+        Real.sqrt_le_sqrt (frobNormSq_transpose_mul_self_le M)
+    _ = frobNormSq M := Real.sqrt_sq (frobNormSq_nonneg M)
+    _ = frobNorm M ^ 2 := by
+        rw [frobNorm_eq_sqrt_frobNormSq, Real.sq_sqrt (frobNormSq_nonneg M)]
+
+/-- `frobNorm` equals the sum-of-squares norm entrywise, so entrywise
+    equal matrices have equal Frobenius norm. -/
+theorem frobNorm_congr {n : ℕ} (M N : Fin n → Fin n → ℝ)
+    (h : ∀ i j : Fin n, M i j = N i j) : frobNorm M = frobNorm N := by
+  have : M = N := by funext i j; exact h i j
+  rw [this]
+
+/-- **Theorem 10.8 (Sun), normwise bound — assembled proof** (Higham
+    §10.2). Let `A = RᵀR` be a Cholesky factorization (`R` upper
+    triangular), `Rinv` a two-sided upper-triangular inverse of `R`, and
+    `R + ΔR` a perturbed factor with `(R+ΔR)ᵀ(R+ΔR) = A + ΔA`.  With
+    operator-2-norm certificates `cR ≥ ‖Rᵀ‖₂` and `cinv ≥ ‖R⁻ᵀ‖₂`, and
+    the small-root certificate `a·‖ΔR‖_F < 1` where
+    `a := cR·cinv²/√2`, the Frobenius norm of the factor perturbation
+    obeys the implicit Sun bound
+
+      `‖ΔR‖_F ≤ a·‖ΔA‖_F / (1 − a·‖ΔR‖_F)`.
+
+    Route (logged oracle consultation, Sun BIT 31 (1991)):
+    `X := ΔR·R⁻¹` is upper triangular, `X = up(X + Xᵀ)`, and
+    `X + Xᵀ = R⁻ᵀ(ΔA − ΔRᵀΔR)R⁻¹`; the Frobenius halving `‖up(Y)‖_F ≤
+    ‖Y‖_F/√2`, the congruence estimates, and the Gram-square bound give
+    the quadratic self-bound `t ≤ a(‖ΔA‖_F + t²)` in `t := ‖ΔR‖_F`,
+    which the scalar endgame absorbs.
+
+    Honest deltas (recorded): the smallness enters as `a·t < 1` rather
+    than Sun's continuity/branch argument; `cR`, `cinv` are supplied
+    operator certificates (`cR² = ‖A‖₂`, `cinv² = ‖A⁻¹‖₂`, so
+    `a = ‖A‖₂^{1/2}‖A⁻¹‖₂/√2`, first-order comparable to the printed
+    `2^{-1/2}κ₂(A)ε/‖A‖`). -/
+theorem cholesky_perturbation_normwise_proved {n : ℕ}
+    (R ΔR Rinv ΔA : Fin n → Fin n → ℝ)
+    (_hR_upper : ∀ i j : Fin n, j.val < i.val → R i j = 0)
+    (hΔR_upper : ∀ i j : Fin n, j.val < i.val → ΔR i j = 0)
+    (hRinv_upper : ∀ i j : Fin n, j.val < i.val → Rinv i j = 0)
+    (hRinvR : IsLeftInverse n R Rinv)
+    (hRRinv : IsRightInverse n R Rinv)
+    (hGram : ∀ i j : Fin n, ∑ k : Fin n,
+      (R k i + ΔR k i) * (R k j + ΔR k j) =
+      (∑ k : Fin n, R k i * R k j) + ΔA i j)
+    (cR cinv : ℝ) (hcR : 0 ≤ cR) (hcinv : 0 ≤ cinv)
+    (hopR : opNorm2Le (fun i j => R j i) cR)
+    (hopRinv : opNorm2Le (fun i j => Rinv j i) cinv)
+    (hsmall : (cR * cinv ^ 2 / Real.sqrt 2) * frobNorm ΔR < 1) :
+    frobNorm ΔR ≤
+      (cR * cinv ^ 2 / Real.sqrt 2) * frobNorm ΔA /
+      (1 - (cR * cinv ^ 2 / Real.sqrt 2) * frobNorm ΔR) := by
+  set a : ℝ := cR * cinv ^ 2 / Real.sqrt 2 with ha
+  set t : ℝ := frobNorm ΔR with ht
+  set δ : ℝ := frobNorm ΔA with hδ
+  have hs2 : (0:ℝ) < Real.sqrt 2 := Real.sqrt_pos.mpr (by norm_num)
+  have hδ0 : 0 ≤ δ := frobNorm_nonneg _
+  have ha0 : 0 ≤ a := by
+    rw [ha]; positivity
+  -- X := ΔR · Rinv, upper triangular
+  set X : Fin n → Fin n → ℝ := matMul n ΔR Rinv with hX
+  have hX_upper : ∀ i j : Fin n, j.val < i.val → X i j = 0 :=
+    matMul_upper_upper ΔR Rinv hΔR_upper hRinv_upper
+  -- ΔR = X · R  (inverse cancellation)
+  have hRinvR_id : matMul n Rinv R = idMatrix n := by
+    funext i j
+    show (∑ k : Fin n, Rinv i k * R k j) = idMatrix n i j
+    rw [hRinvR i j]; rfl
+  have hXR : matMul n X R = ΔR := by
+    rw [hX, matMul_assoc, hRinvR_id, matMul_id_right]
+  -- step 3: t = ‖ΔR‖_F = ‖X·R‖_F ≤ cR ‖X‖_F
+  have hstep3 : t ≤ cR * frobNorm X := by
+    rw [ht, ← hXR]
+    exact frobNorm_matMul_right_le X R cR hcR hopR
+  -- step 4: ‖X‖_F ≤ ‖Y‖_F/√2, Y = X + Xᵀ symmetric, X = up(Y)
+  set Y : Fin n → Fin n → ℝ := fun i j => X i j + X j i with hY
+  have hY_sym : ∀ i j : Fin n, Y i j = Y j i := fun i j => by
+    simp only [hY]; ring
+  have hX_recover : ∀ i j : Fin n, X i j = upHalf Y i j := fun i j =>
+    (upHalf_add_transpose X hX_upper i j).symm
+  have hstep4 : frobNorm X ≤ frobNorm Y / Real.sqrt 2 := by
+    rw [frobNorm_congr X (upHalf Y) hX_recover]
+    exact frobNorm_upHalf_le Y hY_sym
+  -- step 5-7: ‖Y‖_F ≤ cinv² ‖M‖_F, M = ΔA - ΔRᵀΔR
+  set M : Fin n → Fin n → ℝ :=
+    fun p q => ΔA p q - ∑ k : Fin n, ΔR k p * ΔR k q with hM
+  have hRinvT_op : opNorm2Le (fun i j => Rinv j i) cinv := hopRinv
+  have hY_eq : ∀ i j : Fin n,
+      Y i j = matMul n (fun p q => Rinv q p) (matMul n M Rinv) i j := by
+    intro i j
+    have hsym := cholesky_perturbation_symmetrized
+      (fun i j => ∑ k : Fin n, R k i * R k j) ΔA R ΔR Rinv
+      (fun i j => rfl) hGram hRRinv i j
+    show X i j + X j i = _
+    rw [hsym]
+    show (∑ p : Fin n, ∑ q : Fin n, Rinv p i *
+      (ΔA p q - ∑ k : Fin n, ΔR k p * ΔR k q) * Rinv q j) = _
+    unfold matMul
+    refine Finset.sum_congr rfl fun p _ => ?_
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun q _ => ?_
+    show Rinv p i * M p q * Rinv q j = Rinv p i * (M p q * Rinv q j)
+    ring
+  have hstep567 : frobNorm Y ≤ cinv ^ 2 * frobNorm M := by
+    have h1 : frobNorm Y =
+        frobNorm (matMul n (fun p q => Rinv q p) (matMul n M Rinv)) :=
+      frobNorm_congr Y _ hY_eq
+    have h2 : frobNorm (matMul n (fun p q => Rinv q p) (matMul n M Rinv))
+        ≤ cinv * frobNorm (matMul n M Rinv) :=
+      frobNorm_matMul_left_le (fun p q => Rinv q p) (matMul n M Rinv)
+        cinv hcinv hRinvT_op
+    have h3 : frobNorm (matMul n M Rinv) ≤ cinv * frobNorm M :=
+      frobNorm_matMul_right_le M Rinv cinv hcinv hRinvT_op
+    calc frobNorm Y = frobNorm (matMul n (fun p q => Rinv q p)
+          (matMul n M Rinv)) := h1
+      _ ≤ cinv * frobNorm (matMul n M Rinv) := h2
+      _ ≤ cinv * (cinv * frobNorm M) :=
+          mul_le_mul_of_nonneg_left h3 hcinv
+      _ = cinv ^ 2 * frobNorm M := by ring
+  -- step 8: ‖M‖_F ≤ δ + t²
+  have hstep8 : frobNorm M ≤ δ + t ^ 2 := by
+    set N : Fin n → Fin n → ℝ :=
+      matMul n (fun i j => ΔR j i) ΔR with hN
+    have htri : frobNorm M ≤ frobNorm ΔA + frobNorm N := by
+      have := frobNorm_sub_le ΔA N
+      have heq : frobNorm M = frobNorm (fun i j => ΔA i j - N i j) :=
+        frobNorm_congr M _ (fun i j => rfl)
+      rw [heq]; exact this
+    have hN2 : frobNorm N ≤ t ^ 2 := by
+      rw [hN, ht]
+      exact frobNorm_transpose_mul_self_le ΔR
+    calc frobNorm M ≤ frobNorm ΔA + frobNorm N := htri
+      _ ≤ δ + t ^ 2 := by rw [hδ]; linarith
+  -- assemble the quadratic self-bound t ≤ a(δ + t²)
+  have hquad : t ≤ a * (δ + t ^ 2) := by
+    have hchain : t ≤ cR * (cinv ^ 2 * frobNorm M / Real.sqrt 2) := by
+      calc t ≤ cR * frobNorm X := hstep3
+        _ ≤ cR * (frobNorm Y / Real.sqrt 2) :=
+            mul_le_mul_of_nonneg_left hstep4 hcR
+        _ ≤ cR * (cinv ^ 2 * frobNorm M / Real.sqrt 2) := by
+            refine mul_le_mul_of_nonneg_left ?_ hcR
+            exact div_le_div_of_nonneg_right hstep567 hs2.le
+    have hfM : cinv ^ 2 * frobNorm M ≤ cinv ^ 2 * (δ + t ^ 2) :=
+      mul_le_mul_of_nonneg_left hstep8 (by positivity)
+    calc t ≤ cR * (cinv ^ 2 * frobNorm M / Real.sqrt 2) := hchain
+      _ ≤ cR * (cinv ^ 2 * (δ + t ^ 2) / Real.sqrt 2) := by
+          refine mul_le_mul_of_nonneg_left ?_ hcR
+          exact div_le_div_of_nonneg_right hfM hs2.le
+      _ = a * (δ + t ^ 2) := by rw [ha]; ring
+  have hat : a * t < 1 := hsmall
+  exact cholesky_perturbation_scalar_endgame a δ t hquad hat
+
 -- ============================================================
 -- §10.2  Theorem 10.8: Sun perturbation bound (normwise)
 -- ============================================================
