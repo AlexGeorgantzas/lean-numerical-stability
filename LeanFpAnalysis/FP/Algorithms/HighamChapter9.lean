@@ -7271,6 +7271,36 @@ theorem higham9_3_exactDoolittle_recurrences_to_LUBackwardError_zero {n : ℕ}
     (higham9_2_exactDoolittle_recurrences_to_LUFactSpec
       hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag)
 
+/-- Monotonicity of an LU backward-error certificate in its scalar error
+coefficient.  The triangular structure is unchanged; only the componentwise
+residual bound is weakened. -/
+theorem higham9_LUBackwardError_mono {n : ℕ}
+    {A L_hat U_hat : Fin n → Fin n → ℝ} {ε η : ℝ}
+    (hLU : LUBackwardError n A L_hat U_hat ε)
+    (hεη : ε ≤ η) :
+    LUBackwardError n A L_hat U_hat η where
+  L_diag := hLU.L_diag
+  L_upper_zero := hLU.L_upper_zero
+  U_lower_zero := hLU.U_lower_zero
+  backward_bound := by
+    intro i j
+    have hW_nonneg :
+        0 ≤ ∑ k : Fin n, |L_hat i k| * |U_hat k j| := by
+      exact Finset.sum_nonneg
+        (fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _))
+    exact (hLU.backward_bound i j).trans
+      (mul_le_mul_of_nonneg_right hεη hW_nonneg)
+
+/-- Exact LU certificates also satisfy Higham's public `γ_n`
+backward-error interface. -/
+theorem higham9_LUFactSpec_to_LUBackwardError_gamma (fp : FPModel) (n : ℕ)
+    {A L_hat U_hat : Fin n → Fin n → ℝ}
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A L_hat U_hat) :
+    LUBackwardError n A L_hat U_hat (gamma fp n) :=
+  higham9_LUBackwardError_mono
+    (LUFactSpec.to_LUBackwardError_zero hLU) (gamma_nonneg fp hn)
+
 /-- **Algorithm 9.2 / Theorem 9.3**, exact Doolittle recurrences weakened to
 Higham's `γ_n` backward-error certificate.  The residual is still exactly zero;
 `γ_n` only matches the public Theorem 9.3 API. -/
@@ -79535,6 +79565,63 @@ theorem higham9_9_rowDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_
           growthFactorEntry hn A U hAmax ≤ 2 :=
   higham9_9_rowDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_le_two
     hn (by omega) A hDD hdet
+
+/-- **Theorem 9.9 / Theorem 9.5**, source-shaped Wilkinson solve bound for
+column diagonally dominant nonsingular matrices in dimensions one and two.
+
+The small-dimensional Theorem 9.9 package supplies exact no-pivot LU factors,
+unit-bounded multipliers, and `ρ <= 2`; Theorem 9.5 then gives the standard
+normwise backward-error perturbation for the computed triangular solves. -/
+theorem higham9_9_colDiagDominant_wilkinson_source_bound_exists_of_le_two
+    (fp : FPModel) {n : ℕ} (hn_pos : 0 < n) (hle : n ≤ 2)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hDD : IsDiagDominant n A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      let y_hat := fl_forwardSub fp n L_hat b
+      let x_hat := fl_backSub fp n U_hat y_hat
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (infNorm ΔA ≤ (↑n) ^ 2 * gamma fp (3 * n) * 2 * infNorm A) ∧
+        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  obtain ⟨L_hat, U_hat, hLU, hL_bound, hAmax, hgrowth⟩ :=
+    higham9_9_colDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_le_two
+      hn_pos hle A hDD hdet
+  have hL_diag : ∀ i : Fin n, L_hat i i ≠ 0 := by
+    intro i
+    rw [hLU.L_diag i]
+    norm_num
+  have hU_diag : ∀ i : Fin n, U_hat i i ≠ 0 :=
+    hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdet
+  refine ⟨L_hat, U_hat, hLU, hL_bound, ?_⟩
+  exact
+    higham9_5_wilkinson_source_bound_of_entry_growth fp n hn_pos
+      A L_hat U_hat b 2 hAmax (by norm_num) hgrowth hL_diag hU_diag
+      (higham9_LUFactSpec_to_LUBackwardError_gamma fp n hn hLU)
+      hn hn3 hL_bound
+
+/-- **Theorem 9.9 / Theorem 9.5**, dimension-one column diagonally dominant
+solve-bound endpoint. -/
+theorem higham9_9_colDiagDominant_wilkinson_source_bound_exists_of_eq_one
+    (fp : FPModel) {n : ℕ} (hn_pos : 0 < n) (hone : n = 1)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hDD : IsDiagDominant n A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      let y_hat := fl_forwardSub fp n L_hat b
+      let x_hat := fl_backSub fp n U_hat y_hat
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (infNorm ΔA ≤ (↑n) ^ 2 * gamma fp (3 * n) * 2 * infNorm A) ∧
+        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_9_colDiagDominant_wilkinson_source_bound_exists_of_le_two
+    fp hn_pos (by omega) A b hDD hdet hn hn3
 
 /-- **Theorem 9.13**, source-facing exact-LU existence and componentwise
 growth package for nonsingular column-diagonally-dominant tridiagonal
