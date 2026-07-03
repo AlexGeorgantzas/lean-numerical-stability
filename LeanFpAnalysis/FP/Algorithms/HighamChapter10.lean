@@ -2753,6 +2753,40 @@ theorem finiteMaxEigenvalue_leading_principal_le (n : ℕ) (hn : 0 < n)
   rw [hpadquad] at hray
   exact hray
 
+/-- **Max-eigenvalue monotonicity from quadratic-form ordering** (Higham
+    §10.4, the Loewner→operator-norm step of the (10.29) stage
+    monotonicity): if `yᵀAy ≤ yᵀBy` for all `y` (symmetric `A, B`), then
+    `λ_max(A) ≤ λ_max(B)`.  Evaluate at `A`'s top unit eigenvector: it
+    realizes `λ_max(A)`, and the `B`-Rayleigh bound caps it by
+    `λ_max(B)`. -/
+theorem finiteMaxEigenvalue_mono_of_quadForm_le {n : ℕ} (hn : 0 < n)
+    (A B : Fin n → Fin n → ℝ)
+    (hA : IsSymmetricFiniteMatrix A) (hB : IsSymmetricFiniteMatrix B)
+    (hle : ∀ y : Fin n → ℝ,
+      (∑ i : Fin n, ∑ j : Fin n, y i * A i j * y j) ≤
+       ∑ i : Fin n, ∑ j : Fin n, y i * B i j * y j) :
+    finiteMaxEigenvalue hn A hA ≤ finiteMaxEigenvalue hn B hB := by
+  obtain ⟨a, ha⟩ := exists_finiteMaxEigenvalue_eq hn A hA
+  have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one A hA a
+  have hq :=
+    finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+      A hA a
+  rw [hnorm, mul_one] at hq
+  set v : Fin n → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian A hA).eigenvectorBasis a)
+    with hv
+  have hvsq : ∑ i : Fin n, v i ^ 2 = 1 := by
+    have := hnorm; unfold finiteVecNorm2Sq at this; exact this
+  have hvA : (∑ i : Fin n, ∑ j : Fin n, v i * A i j * v j) =
+      finiteMaxEigenvalue hn A hA := by
+    rw [← finiteQuadraticForm_eq_sum_sum, hq, ha]
+  have hvB := finiteMaxEigenvalue_rayleigh hn B hB v
+  rw [hvsq, mul_one] at hvB
+  calc finiteMaxEigenvalue hn A hA
+      = ∑ i : Fin n, ∑ j : Fin n, v i * A i j * v j := hvA.symm
+    _ ≤ ∑ i : Fin n, ∑ j : Fin n, v i * B i j * v j := hle v
+    _ ≤ finiteMaxEigenvalue hn B hB := hvB
+
 /-- **Trailing-block eigenvalue interlacing** (Higham §10.4, the
     `‖Q₂₂‖₂ ≤ ‖Q‖₂` half of the (10.29) Schur monotonicity): the maximum
     eigenvalue of the trailing `m × m` principal submatrix (drop row/column
