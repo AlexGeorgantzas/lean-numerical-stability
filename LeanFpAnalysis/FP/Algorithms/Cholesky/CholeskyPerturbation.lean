@@ -974,6 +974,84 @@ theorem rankOne_update_quadForm_eq {m : ℕ}
     rw [eq_div_iff h1r]; exact hs_eq
   rw [hs_val, hr]; ring
 
+/-- **Rank-one-update auxiliary inequality** (Higham §10.4, the complete
+    abstract heart of the (10.29) stage Loewner monotonicity `Q̂ ⪯ Q₂₂`;
+    oracle consult 4, hand-verified): for symmetric `Z` with symmetric
+    left inverse `Zinv` that is PSD on `u`, the rank-one update
+    `Ĥ = Z + u uᵀ` with right inverse `Ĥinv` satisfies
+
+      `(w + γu)ᵀ Ĥ⁻¹ (w + γu) ≤ wᵀ Z⁻¹ w + γ²`.
+
+    Combines the vector Sherman–Morrison identity with the scalar
+    monotonicity core after expanding both `Z⁻¹` bilinear forms at
+    `x = w + γu`. -/
+theorem rankOne_update_auxiliary_le {m : ℕ}
+    (Z Zinv Hhat Hhatinv : Fin m → Fin m → ℝ) (u w : Fin m → ℝ) (γ : ℝ)
+    (hZinvSym : ∀ i j : Fin m, Zinv i j = Zinv j i)
+    (hr_nonneg : 0 ≤ ∑ i : Fin m, u i * matMulVec m Zinv u i)
+    (hZinv_act : ∀ v : Fin m → ℝ,
+      matMulVec m Zinv (matMulVec m Z v) = v)
+    (hHhat : ∀ i j : Fin m, Hhat i j = Z i j + u i * u j)
+    (hHhatinv_act : matMulVec m Hhat
+      (matMulVec m Hhatinv (fun i => w i + γ * u i)) =
+      (fun i => w i + γ * u i)) :
+    (∑ i : Fin m, (w i + γ * u i) *
+        matMulVec m Hhatinv (fun i => w i + γ * u i) i) ≤
+      (∑ i : Fin m, w i * matMulVec m Zinv w i) + γ ^ 2 := by
+  set x : Fin m → ℝ := fun i => w i + γ * u i with hx
+  set r : ℝ := ∑ i : Fin m, u i * matMulVec m Zinv u i with hr
+  set qww : ℝ := ∑ i : Fin m, w i * matMulVec m Zinv w i with hqww
+  set p0 : ℝ := ∑ i : Fin m, u i * matMulVec m Zinv w i with hp0
+  have h1r : (1 : ℝ) + r ≠ 0 := by positivity
+  -- Zinv action on x splits linearly
+  have hZinvx : ∀ i : Fin m,
+      matMulVec m Zinv x i =
+      matMulVec m Zinv w i + γ * matMulVec m Zinv u i := by
+    intro i; unfold matMulVec
+    rw [Finset.mul_sum, ← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun j _ => by rw [hx]; ring
+  -- symmetry: ∑ w (Zinv u) = ∑ u (Zinv w) = p0
+  have hsym_cross : (∑ i : Fin m, w i * matMulVec m Zinv u i) = p0 := by
+    rw [hp0]
+    have lhs : (∑ i : Fin m, w i * matMulVec m Zinv u i) =
+        ∑ i : Fin m, ∑ j : Fin m, w i * Zinv i j * u j := by
+      refine Finset.sum_congr rfl fun i _ => ?_
+      unfold matMulVec; rw [Finset.mul_sum]
+      exact Finset.sum_congr rfl fun j _ => by ring
+    have rhs : (∑ i : Fin m, u i * matMulVec m Zinv w i) =
+        ∑ i : Fin m, ∑ j : Fin m, u i * Zinv i j * w j := by
+      refine Finset.sum_congr rfl fun i _ => ?_
+      unfold matMulVec; rw [Finset.mul_sum]
+      exact Finset.sum_congr rfl fun j _ => by ring
+    rw [lhs, rhs, Finset.sum_comm]
+    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+    rw [hZinvSym j i]; ring
+  -- x·Zinv·x = qww + 2γ p0 + γ² r
+  have hxZx : (∑ i : Fin m, x i * matMulVec m Zinv x i) =
+      qww + 2 * γ * p0 + γ ^ 2 * r := by
+    have hpt : (∑ i : Fin m, x i * matMulVec m Zinv x i) =
+        ∑ i : Fin m, (w i * matMulVec m Zinv w i +
+          γ * (w i * matMulVec m Zinv u i) +
+          γ * (u i * matMulVec m Zinv w i) +
+          γ ^ 2 * (u i * matMulVec m Zinv u i)) :=
+      Finset.sum_congr rfl fun i _ => by rw [hZinvx i, hx]; ring
+    rw [hpt, Finset.sum_add_distrib, Finset.sum_add_distrib,
+      Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum,
+      ← Finset.mul_sum, hsym_cross, ← hqww, ← hr, ← hp0]
+    ring
+  -- u·Zinv·x = p0 + γ r
+  have huZx : (∑ i : Fin m, u i * matMulVec m Zinv x i) = p0 + γ * r := by
+    have hpt : (∑ i : Fin m, u i * matMulVec m Zinv x i) =
+        ∑ i : Fin m, (u i * matMulVec m Zinv w i +
+          γ * (u i * matMulVec m Zinv u i)) :=
+      Finset.sum_congr rfl fun i _ => by rw [hZinvx i]; ring
+    rw [hpt, Finset.sum_add_distrib, ← Finset.mul_sum, ← hp0, ← hr]
+  -- apply the vector Sherman–Morrison identity, then the scalar core
+  have hid := rankOne_update_quadForm_eq Z Zinv Hhat Hhatinv u x
+    hZinvSym hZinv_act hHhat hHhatinv_act (by rw [← hr]; exact h1r)
+  rw [hid, hxZx, huZx, ← hr]
+  exact sherman_morrison_quadForm_scalar_mono qww r p0 γ hr_nonneg
+
 /-- **Scalar product step** (Higham §10.4, (10.29) per-stage): from two
     pivot bounds `p² ≤ h·a`, `q² ≤ h·b` with `h > 0` and `a, b ≥ 0`,
     `|p·q|/h ≤ √(a·b)`.  Combines the row and column instances of

@@ -4262,6 +4262,7 @@ Source-facing Chapter 10 wrappers:
 - `finiteMaxEigenvalue_trailing_principal_le` ((10.29) Schur monotonicity, ||Q22||_2 <= ||Q||_2 half: trailing m-block max-eigenvalue <= full, via Fin.cons 0 v padding)
 - `sherman_morrison_quadForm_scalar_mono` ((10.29) crux scalar core: Sherman-Morrison rank-one-update monotonicity, gap (gamma-p)^2/(1+r) >= 0 - the algebraic heart of Q_hat <= Q_22)
 - `rankOne_update_quadForm_eq` ((10.29) crux matrix step: x^T (Z+uu^T)^{-1} x = x^T Z^{-1} x - (u^T Z^{-1} x)^2/(1+u^T Z^{-1} u), via the inverse-action vector; no explicit Sherman-Morrison matrix identity)
+- `rankOne_update_auxiliary_le` ((10.29) crux ABSTRACT HEART: (w+gu)^T (Z+uu^T)^{-1} (w+gu) <= w^T Z^{-1} w + g^2; combines the vector SM identity + scalar mono core)
 - `kahanR` / `kahan_telescope` / `kahanR_tail_eq` ((10.20): Kahan family satisfies (10.13) with equality on the square part)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
