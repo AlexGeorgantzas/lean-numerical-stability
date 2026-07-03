@@ -1557,6 +1557,48 @@ theorem finite_norm_form_sor_forward_bound (n : ℕ)
     (add_le_add_right (mul_le_mul_of_nonneg_left hvec hcoeff)
       (infNormVec (matMulVec n (matPow n G (m + 1)) e₀)))
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.2.2:
+    for Gauss-Seidel, viewed as SOR with `omega = 1`, the SOR multiplier is 1. -/
+theorem sorForwardFactor_one : sorForwardFactor 1 = 1 := by
+  unfold sorForwardFactor
+  simp
+
+/-- Finite/certificate Gauss-Seidel specialization of Higham, 2nd ed.,
+    Chapter 17, Section 17.2.2: Gauss-Seidel is SOR with `omega = 1`, so the
+    finite norm-form forward bound has the same visible right-hand factor as
+    the Jacobi finite norm-form bound. -/
+theorem finite_norm_form_gaussSeidel_forward_bound (n : ℕ)
+    (A G M_inv A_inv D L U M_gs N_gs : Fin n → Fin n → ℝ) (e₀ x : Fin n → ℝ)
+    (cn_u θ_x cA : ℝ) (hcn : 0 ≤ cn_u) (hcA : 0 ≤ cA) (hθ : 0 ≤ θ_x)
+    (hDecomp : ∀ i j, A i j = D i j + L i j + U i j)
+    (hD : ∀ i j, i ≠ j → D i j = 0)
+    (hL : ∀ i j, j.val ≥ i.val → L i j = 0)
+    (hU : ∀ i j, j.val ≤ i.val → U i j = 0)
+    (hM : ∀ i j, M_gs i j = D i j + L i j)
+    (hN : ∀ i j, N_gs i j = -U i j)
+    (m : ℕ) (hPartial : PartialSumBound n G M_inv A_inv cA m) :
+    infNormVec (fun i =>
+      matMulVec n (matPow n G (m + 1)) e₀ i +
+        finiteForwardCorrection n G M_inv M_gs N_gs x cn_u θ_x m i) ≤
+      infNormVec (matMulVec n (matPow n G (m + 1)) e₀) +
+        cn_u * (1 + θ_x) * cA *
+          infNormVec (jacobiForwardBoundVector n A_inv A x) := by
+  have hM_sor :
+      ∀ i j, M_gs i j = (1 / (1 : ℝ)) * (D i j + (1 : ℝ) * L i j) := by
+    intro i j
+    rw [hM i j]
+    ring
+  have hN_sor :
+      ∀ i j, N_gs i j = (1 / (1 : ℝ)) * (((1 : ℝ) - 1) * D i j - (1 : ℝ) * U i j) := by
+    intro i j
+    rw [hN i j]
+    ring
+  have hsor :=
+    finite_norm_form_sor_forward_bound n A G M_inv A_inv D L U M_gs N_gs e₀ x
+      1 cn_u θ_x cA (by norm_num) hcn hcA hθ hDecomp hD hL hU hM_sor hN_sor
+      m hPartial
+  simpa [sorForwardFactor_one] using hsor
+
 -- ============================================================
 -- §17.3  Normwise residual bound (eq 17.19)
 -- ============================================================
