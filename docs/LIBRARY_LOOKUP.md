@@ -2841,6 +2841,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_lu_perturbation_relative_bound`
 - `higham9_15_lu_perturbation_forward_bound`
 - `higham9_15_ratio_le_of_norm_bounds`
+- `higham9_27_GMatrix_frobenius_le`
+- `higham9_27_GMatrix_opNorm2Le`
 - `higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one`
 - `higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound`
 - `higham9_15_GMatrix_nonnegative_resolvent_nonsingInv_of_row_sum_bound`
