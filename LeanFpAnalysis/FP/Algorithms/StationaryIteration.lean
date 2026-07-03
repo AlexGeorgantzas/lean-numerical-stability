@@ -1236,6 +1236,165 @@ theorem local_error_simplified (n : ℕ) (M N : Fin n → Fin n → ℝ)
         apply mul_le_mul_of_nonneg_left hSum hcn
     _ = cn_u * (1 + θ_x) * ∑ j, (|M i j| + |N i j|) * |x j| := by ring
 
+/-- Higham, 2nd ed., Chapter 17, equations (17.2), (17.7), and (17.29):
+    normwise simplification of the local-error model using the iterate-growth
+    bound `||xhat_k||_∞ <= gamma_x ||x||_∞`. -/
+theorem local_error_normwise_simplified (n : ℕ)
+    (M N : Fin n → Fin n → ℝ)
+    (b x : Fin n → ℝ)
+    (hAx : ∀ i, ∑ j : Fin n, (M i j - N i j) * x j = b i)
+    (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
+    (cn_u gamma_x : ℝ) (hcn : 0 ≤ cn_u) (hgamma : 0 ≤ gamma_x)
+    (hx_bound : NormwiseIterateGrowthBound n x x_hat gamma_x)
+    (hLocal : LocalErrorBound n M N b x_hat ξ cn_u) :
+    ∀ k, infNormVec (ξ k) ≤
+      cn_u * (1 + gamma_x) * (infNorm M + infNorm N) * infNormVec x := by
+  intro k
+  apply infNormVec_le_of_abs_le
+  · intro i
+    have hL := hLocal k i
+    have hMrow :
+        ∑ j : Fin n, |M i j| * |x_hat (k + 1) j| ≤
+          infNorm M * (gamma_x * infNormVec x) := by
+      calc
+        ∑ j : Fin n, |M i j| * |x_hat (k + 1) j|
+            ≤ ∑ j : Fin n, |M i j| * infNormVec (x_hat (k + 1)) := by
+              apply Finset.sum_le_sum
+              intro j _hj
+              exact mul_le_mul_of_nonneg_left
+                (abs_le_infNormVec (x_hat (k + 1)) j) (abs_nonneg _)
+        _ = (∑ j : Fin n, |M i j|) * infNormVec (x_hat (k + 1)) := by
+              rw [Finset.sum_mul]
+        _ ≤ infNorm M * infNormVec (x_hat (k + 1)) := by
+              exact mul_le_mul_of_nonneg_right
+                (row_sum_le_infNorm M i) (infNormVec_nonneg _)
+        _ ≤ infNorm M * (gamma_x * infNormVec x) := by
+              exact mul_le_mul_of_nonneg_left
+                (hx_bound (k + 1)) (infNorm_nonneg M)
+    have hNrow :
+        ∑ j : Fin n, |N i j| * |x_hat k j| ≤
+          infNorm N * (gamma_x * infNormVec x) := by
+      calc
+        ∑ j : Fin n, |N i j| * |x_hat k j|
+            ≤ ∑ j : Fin n, |N i j| * infNormVec (x_hat k) := by
+              apply Finset.sum_le_sum
+              intro j _hj
+              exact mul_le_mul_of_nonneg_left
+                (abs_le_infNormVec (x_hat k) j) (abs_nonneg _)
+        _ = (∑ j : Fin n, |N i j|) * infNormVec (x_hat k) := by
+              rw [Finset.sum_mul]
+        _ ≤ infNorm N * infNormVec (x_hat k) := by
+              exact mul_le_mul_of_nonneg_right
+                (row_sum_le_infNorm N i) (infNormVec_nonneg _)
+        _ ≤ infNorm N * (gamma_x * infNormVec x) := by
+              exact mul_le_mul_of_nonneg_left
+                (hx_bound k) (infNorm_nonneg N)
+    have hMexact :
+        ∑ j : Fin n, |M i j| * |x j| ≤ infNorm M * infNormVec x := by
+      calc
+        ∑ j : Fin n, |M i j| * |x j|
+            ≤ ∑ j : Fin n, |M i j| * infNormVec x := by
+              apply Finset.sum_le_sum
+              intro j _hj
+              exact mul_le_mul_of_nonneg_left (abs_le_infNormVec x j) (abs_nonneg _)
+        _ = (∑ j : Fin n, |M i j|) * infNormVec x := by
+              rw [Finset.sum_mul]
+        _ ≤ infNorm M * infNormVec x := by
+              exact mul_le_mul_of_nonneg_right
+                (row_sum_le_infNorm M i) (infNormVec_nonneg x)
+    have hNexact :
+        ∑ j : Fin n, |N i j| * |x j| ≤ infNorm N * infNormVec x := by
+      calc
+        ∑ j : Fin n, |N i j| * |x j|
+            ≤ ∑ j : Fin n, |N i j| * infNormVec x := by
+              apply Finset.sum_le_sum
+              intro j _hj
+              exact mul_le_mul_of_nonneg_left (abs_le_infNormVec x j) (abs_nonneg _)
+        _ = (∑ j : Fin n, |N i j|) * infNormVec x := by
+              rw [Finset.sum_mul]
+        _ ≤ infNorm N * infNormVec x := by
+              exact mul_le_mul_of_nonneg_right
+                (row_sum_le_infNorm N i) (infNormVec_nonneg x)
+    have hb :
+        |b i| ≤ (infNorm M + infNorm N) * infNormVec x := by
+      calc
+        |b i| = |∑ j : Fin n, (M i j - N i j) * x j| := by
+            rw [hAx]
+        _ ≤ ∑ j : Fin n, |(M i j - N i j) * x j| :=
+            Finset.abs_sum_le_sum_abs _ _
+        _ = ∑ j : Fin n, |M i j - N i j| * |x j| := by
+            apply Finset.sum_congr rfl
+            intro j _hj
+            exact abs_mul _ _
+        _ ≤ ∑ j : Fin n, (|M i j| + |N i j|) * |x j| := by
+            apply Finset.sum_le_sum
+            intro j _hj
+            exact mul_le_mul_of_nonneg_right
+              (by
+                calc
+                  |M i j - N i j| = |M i j + (-N i j)| := by ring_nf
+                  _ ≤ |M i j| + |(-N i j)| := abs_add_le _ _
+                  _ = |M i j| + |N i j| := by rw [abs_neg])
+              (abs_nonneg _)
+        _ = ∑ j : Fin n, |M i j| * |x j| +
+              ∑ j : Fin n, |N i j| * |x j| := by
+            rw [← Finset.sum_add_distrib]
+            apply Finset.sum_congr rfl
+            intro j _hj
+            ring
+        _ ≤ infNorm M * infNormVec x + infNorm N * infNormVec x := by
+            exact add_le_add hMexact hNexact
+        _ = (infNorm M + infNorm N) * infNormVec x := by ring
+    have hinside :
+        ∑ j : Fin n, |M i j| * |x_hat (k + 1) j| +
+          ∑ j : Fin n, |N i j| * |x_hat k j| + |b i| ≤
+        (1 + gamma_x) * (infNorm M + infNorm N) * infNormVec x := by
+      nlinarith [hMrow, hNrow, hb, hgamma,
+        infNorm_nonneg M, infNorm_nonneg N, infNormVec_nonneg x]
+    calc
+      |ξ k i| ≤ cn_u *
+          (∑ j : Fin n, |M i j| * |x_hat (k + 1) j| +
+            ∑ j : Fin n, |N i j| * |x_hat k j| + |b i|) := hL
+      _ ≤ cn_u * ((1 + gamma_x) * (infNorm M + infNorm N) * infNormVec x) := by
+          exact mul_le_mul_of_nonneg_left hinside hcn
+      _ = cn_u * (1 + gamma_x) * (infNorm M + infNorm N) * infNormVec x := by
+          ring
+  · exact mul_nonneg
+      (mul_nonneg
+        (mul_nonneg hcn (by linarith))
+        (add_nonneg (infNorm_nonneg M) (infNorm_nonneg N)))
+      (infNormVec_nonneg x)
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.29), normwise
+    surface instantiated from the source local-error model (17.2) and
+    `gamma_x` iterate-growth hypothesis (17.7). -/
+theorem singularErrorSourceTerm_norm_bound_of_local_error (n : ℕ) (hn : 0 < n)
+    (G E M_inv M N : Fin n → Fin n → ℝ)
+    (b x : Fin n → ℝ)
+    (hAx : ∀ i, ∑ j : Fin n, (M i j - N i j) * x j = b i)
+    (x_hat ξ : ℕ → Fin n → ℝ) (cn_u gamma_x : ℝ)
+    (hcn : 0 ≤ cn_u) (hgamma : 0 ≤ gamma_x)
+    (hx_bound : NormwiseIterateGrowthBound n x x_hat gamma_x)
+    (hLocal : LocalErrorBound n M N b x_hat ξ cn_u)
+    (m : ℕ) :
+    infNormVec (singularErrorSourceTerm n G E M_inv ξ m) ≤
+      cn_u * (1 + gamma_x) * (infNorm M + infNorm N) * infNormVec x *
+        singularErrorSourceNormSum n G E M_inv m := by
+  let μ := cn_u * (1 + gamma_x) * (infNorm M + infNorm N) * infNormVec x
+  have hμ : 0 ≤ μ := by
+    exact mul_nonneg
+      (mul_nonneg
+        (mul_nonneg hcn (by linarith))
+        (add_nonneg (infNorm_nonneg M) (infNorm_nonneg N)))
+      (infNormVec_nonneg x)
+  have hξ :
+      ∀ t : ℕ, infNormVec (ξ t) ≤ μ := by
+    simpa [μ] using
+      local_error_normwise_simplified n M N b x hAx x_hat ξ
+        cn_u gamma_x hcn hgamma hx_bound hLocal
+  simpa [μ] using
+    singularErrorSourceTerm_norm_bound n hn G E M_inv ξ μ hμ hξ m
+
 /-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.29), instantiated
     componentwise surface: the displayed bound for `S_m` follows from the
     source local-error model (17.2), the exact equation `Mx-Nx=b`, and the
