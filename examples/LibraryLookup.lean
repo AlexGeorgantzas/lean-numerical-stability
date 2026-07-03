@@ -10,6 +10,7 @@ import LeanFpAnalysis.FP.Algorithms.HighamChapter12
 import LeanFpAnalysis.FP.Algorithms.MatrixPowers
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersComplex
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersJordan
+import LeanFpAnalysis.FP.Algorithms.MatrixPowersLp
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersPseudospectral
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersSpectral
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
@@ -13128,8 +13129,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_11_tridiagonal_bohte_solve_tight
 #check higham9_11_pentadiagonal_bohte_solve_tight
 #check higham9_11_bandwidth_two_bohte_solve_tight
+#check higham9_11_bandwidth_two_bohte_solve_tight_of_isBanded
 #check higham9_11_bandwidth_three_bohte_solve_tight
+#check higham9_11_bandwidth_three_bohte_solve_tight_of_isBanded
 #check higham9_11_bandwidth_four_bohte_solve_tight
+#check higham9_11_bandwidth_four_bohte_solve_tight_of_isBanded
 #check higham9_14_completePivotWilkinsonProduct_ge_one
 #check higham9_14_completePivotWilkinsonProduct_two
 #check higham9_14_completePivotWilkinsonProduct_succ
