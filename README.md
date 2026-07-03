@@ -56,10 +56,11 @@ premise on the exact primitive-operation final-closed/final-panel variants and
 on the source-closure, tail-normalized, source-faithful,
 normalization-model, and full-stage final-closure endpoints, with matching
 source-closure, tail-normalized, source-faithful, normalization-model, and
-full-stage final-panel wrappers now available. A one-entry route audit now also
-proves that the
-stronger normalization-model predicate is not a consequence of arbitrary
-`FPModel`. The unnormalized route now also has
+full-stage final-panel wrappers now available. One-entry route audits now also
+prove that the stronger normalization-model predicate is not a consequence of
+arbitrary `FPModel`, and that literal equality to `fl_householderNormalizedVector`
+still does not imply the full source-faithful normalization certificate without
+the self-dot field. The unnormalized route now also has
 pivot-zero signed-active-vector bridges identifying the stored signed vector
 with the exact or computed unnormalized Householder vector, plus a betaSpec
 normalization bridge showing that, under nonzero-column and exact primitive
