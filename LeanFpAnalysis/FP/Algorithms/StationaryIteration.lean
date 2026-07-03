@@ -880,6 +880,160 @@ theorem singular_error_split_finite (n : ℕ)
         rw [hsumC]
         ring
 
+/-- The componentwise source vector `( |M| + |N| ) |x|` appearing in Higham,
+    2nd ed., Chapter 17, equations (17.10), (17.29), and (17.32). -/
+noncomputable def stationaryLocalErrorSourceVector (n : ℕ)
+    (M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ) : Fin n → ℝ :=
+  fun i => ∑ j : Fin n, (|M i j| + |N i j|) * |x j|
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.29):
+    finite normwise coefficient `sum ||G^k E M⁻¹||_∞` for the singular
+    source term `S_m`. -/
+noncomputable def singularErrorSourceNormSum (n : ℕ)
+    (G E M_inv : Fin n → Fin n → ℝ) (m : ℕ) : ℝ :=
+  ∑ k ∈ Finset.range (m + 1),
+    infNorm (matMul n (matMul n (matPow n G k) E) M_inv)
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.29):
+    finite componentwise right-hand side
+    `c_n u (1+theta_x) sum |G^k E M⁻¹| (|M|+|N|)|x|`
+    for the singular source term `S_m`. -/
+noncomputable def singularErrorSourceComponentBound (n : ℕ)
+    (G E M_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (cn_u theta_x : ℝ) (m : ℕ) : Fin n → ℝ :=
+  fun i => cn_u * (1 + theta_x) *
+    ∑ k ∈ Finset.range (m + 1),
+      matMulVec n
+        (absMatrix n (matMul n (matMul n (matPow n G k) E) M_inv))
+        (stationaryLocalErrorSourceVector n M N x) i
+
+/-- The action defining `S_m` is the matrix product
+    `(G^k E M⁻¹) ξ_{m-k}` term by term. -/
+private theorem singularErrorSourceTerm_term_eq (n : ℕ)
+    (G E M_inv : Fin n → Fin n → ℝ) (ξ : ℕ → Fin n → ℝ)
+    (m k : ℕ) :
+    matMulVec n (matPow n G k)
+        (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) =
+      matMulVec n (matMul n (matMul n (matPow n G k) E) M_inv)
+        (ξ (m - k)) := by
+  ext i
+  calc
+    matMulVec n (matPow n G k)
+        (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i =
+      matMulVec n (matMul n (matPow n G k) E)
+        (matMulVec n M_inv (ξ (m - k))) i := by
+        rw [← matMulVec_matMul]
+    _ = matMulVec n (matMul n (matMul n (matPow n G k) E) M_inv)
+        (ξ (m - k)) i := by
+        rw [← matMulVec_matMul]
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.29), finite
+    normwise surface: a uniform local-error norm bound `||ξ_t||∞ ≤ μ` bounds
+    `||S_m||∞` by `μ sum ||G^k E M⁻¹||∞`.  The source's displayed
+    `c_n u(1+gamma_x)(||M||∞+||N||∞)||x||∞` is obtained by instantiating `μ`
+    with the normwise local-error estimate. -/
+theorem singularErrorSourceTerm_norm_bound (n : ℕ) (hn : 0 < n)
+    (G E M_inv : Fin n → Fin n → ℝ) (ξ : ℕ → Fin n → ℝ)
+    (μ : ℝ) (hμ : 0 ≤ μ)
+    (hξ : ∀ t : ℕ, infNormVec (ξ t) ≤ μ) (m : ℕ) :
+    infNormVec (singularErrorSourceTerm n G E M_inv ξ m) ≤
+      μ * singularErrorSourceNormSum n G E M_inv m := by
+  apply infNormVec_le_of_abs_le
+  · intro i
+    calc
+      |singularErrorSourceTerm n G E M_inv ξ m i|
+          = |∑ k ∈ Finset.range (m + 1),
+              matMulVec n (matPow n G k)
+                (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i| := by
+              rfl
+      _ ≤ ∑ k ∈ Finset.range (m + 1),
+            |matMulVec n (matPow n G k)
+              (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i| :=
+            Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ k ∈ Finset.range (m + 1),
+            infNorm (matMul n (matMul n (matPow n G k) E) M_inv) * μ := by
+            apply Finset.sum_le_sum
+            intro k _hk
+            let P := matMul n (matMul n (matPow n G k) E) M_inv
+            have hterm :=
+              congrFun (singularErrorSourceTerm_term_eq n G E M_inv ξ m k) i
+            calc
+              |matMulVec n (matPow n G k)
+                  (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i|
+                  = |matMulVec n P (ξ (m - k)) i| := by
+                    rw [hterm]
+              _ ≤ infNormVec (matMulVec n P (ξ (m - k))) :=
+                    abs_le_infNormVec _ i
+              _ ≤ infNorm P * infNormVec (ξ (m - k)) :=
+                    infNormVec_matMulVec_le hn P (ξ (m - k))
+              _ ≤ infNorm P * μ := by
+                    exact mul_le_mul_of_nonneg_left (hξ (m - k)) (infNorm_nonneg P)
+      _ = μ * singularErrorSourceNormSum n G E M_inv m := by
+            unfold singularErrorSourceNormSum
+            rw [← Finset.sum_mul]
+            ring
+  · unfold singularErrorSourceNormSum
+    exact mul_nonneg hμ
+      (Finset.sum_nonneg (fun k _hk => infNorm_nonneg _))
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.29), finite
+    componentwise surface: if the local errors satisfy the already-simplified
+    componentwise source bound, then the singular source term `S_m` is bounded
+    by `c_n u(1+theta_x) sum |G^k E M⁻¹|(|M|+|N|)|x|`. -/
+theorem singularErrorSourceTerm_componentwise_bound (n : ℕ)
+    (G E M_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (ξ : ℕ → Fin n → ℝ) (cn_u theta_x : ℝ)
+    (hξ : ∀ (t : ℕ) (j : Fin n),
+      |ξ t j| ≤ cn_u * (1 + theta_x) *
+        stationaryLocalErrorSourceVector n M N x j)
+    (m : ℕ) :
+    ∀ i, |singularErrorSourceTerm n G E M_inv ξ m i| ≤
+      singularErrorSourceComponentBound n G E M_inv M N x cn_u theta_x m i := by
+  intro i
+  let coeff := cn_u * (1 + theta_x)
+  calc
+    |singularErrorSourceTerm n G E M_inv ξ m i|
+        = |∑ k ∈ Finset.range (m + 1),
+            matMulVec n (matPow n G k)
+              (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i| := by
+            rfl
+    _ ≤ ∑ k ∈ Finset.range (m + 1),
+          |matMulVec n (matPow n G k)
+            (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i| :=
+          Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ k ∈ Finset.range (m + 1),
+          coeff *
+            matMulVec n
+              (absMatrix n (matMul n (matMul n (matPow n G k) E) M_inv))
+              (stationaryLocalErrorSourceVector n M N x) i := by
+          apply Finset.sum_le_sum
+          intro k _hk
+          let P := matMul n (matMul n (matPow n G k) E) M_inv
+          have hterm :=
+            congrFun (singularErrorSourceTerm_term_eq n G E M_inv ξ m k) i
+          calc
+            |matMulVec n (matPow n G k)
+                (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i|
+                = |matMulVec n P (ξ (m - k)) i| := by
+                  rw [hterm]
+            _ ≤ ∑ j : Fin n, |P i j| * |ξ (m - k) j| :=
+                  abs_matMulVec_le n P (ξ (m - k)) i
+            _ ≤ ∑ j : Fin n, |P i j| *
+                  (coeff * stationaryLocalErrorSourceVector n M N x j) := by
+                  apply Finset.sum_le_sum
+                  intro j _hj
+                  exact mul_le_mul_of_nonneg_left
+                    (by simpa [coeff] using hξ (m - k) j) (abs_nonneg _)
+            _ = coeff *
+                  matMulVec n (absMatrix n P)
+                    (stationaryLocalErrorSourceVector n M N x) i := by
+                  unfold matMulVec absMatrix
+                  rw [Finset.mul_sum]
+                  exact Finset.sum_congr rfl (fun j _hj => by ring)
+    _ = singularErrorSourceComponentBound n G E M_inv M N x cn_u theta_x m i := by
+          unfold singularErrorSourceComponentBound
+          rw [← Finset.mul_sum]
+
 -- ============================================================
 -- §17.2  Componentwise forward bound (eq 17.6)
 -- ============================================================
@@ -1081,6 +1235,32 @@ theorem local_error_simplified (n : ℕ) (M N : Fin n → Fin n → ℝ)
     _ ≤ cn_u * ((1 + θ_x) * ∑ j, (|M i j| + |N i j|) * |x j|) := by
         apply mul_le_mul_of_nonneg_left hSum hcn
     _ = cn_u * (1 + θ_x) * ∑ j, (|M i j| + |N i j|) * |x j| := by ring
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.29), instantiated
+    componentwise surface: the displayed bound for `S_m` follows from the
+    source local-error model (17.2), the exact equation `Mx-Nx=b`, and the
+    componentwise iterate-growth hypothesis from (17.9). -/
+theorem singularErrorSourceTerm_componentwise_bound_of_local_error (n : ℕ)
+    (G E M_inv M N : Fin n → Fin n → ℝ)
+    (b x : Fin n → ℝ)
+    (hAx : ∀ i, ∑ j : Fin n, (M i j - N i j) * x j = b i)
+    (x_hat ξ : ℕ → Fin n → ℝ) (cn_u theta_x : ℝ)
+    (hcn : 0 ≤ cn_u) (hθ : 0 ≤ theta_x)
+    (hx_bound : ComponentwiseIterateGrowthBound n x x_hat theta_x)
+    (hLocal : LocalErrorBound n M N b x_hat ξ cn_u)
+    (m : ℕ) :
+    ∀ i, |singularErrorSourceTerm n G E M_inv ξ m i| ≤
+      singularErrorSourceComponentBound n G E M_inv M N x cn_u theta_x m i := by
+  have hξ :
+      ∀ (t : ℕ) (j : Fin n),
+        |ξ t j| ≤ cn_u * (1 + theta_x) *
+          stationaryLocalErrorSourceVector n M N x j := by
+    intro t j
+    simpa [stationaryLocalErrorSourceVector] using
+      local_error_simplified n M N b x hAx x_hat ξ cn_u theta_x
+        hcn hθ hx_bound hLocal t j
+  exact singularErrorSourceTerm_componentwise_bound
+    n G E M_inv M N x ξ cn_u theta_x hξ m
 
 -- ============================================================
 -- §17.2  c(A) constant and main bound (eqs 17.12–17.13)
