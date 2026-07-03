@@ -1290,12 +1290,107 @@ noncomputable def theorem20_8Projection {p n : ℕ}
     Fin n → Fin n → ℝ :=
   fun i j => idMatrix n i j - rectMatMul Bplus B i j
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if the supplied `Bplus` is a right inverse of `B`, then the source
+    projector `P = I - B^+ B` maps every vector into the constraint nullspace. -/
+theorem theorem20_8Projection_constraint_zero {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p) :
+    rectMatMul B (theorem20_8Projection B Bplus) =
+      (fun _i _j => 0) := by
+  calc
+    rectMatMul B (theorem20_8Projection B Bplus)
+        = fun i j =>
+            rectMatMul B (idMatrix n) i j -
+              rectMatMul B (rectMatMul Bplus B) i j := by
+            ext i j
+            unfold theorem20_8Projection rectMatMul
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+    _ = fun i j =>
+          B i j - rectMatMul (rectMatMul B Bplus) B i j := by
+            ext i j
+            rw [rectMatMul_id_right]
+            rw [rectMatMul_assoc]
+    _ = fun i j => B i j - rectMatMul (idMatrix p) B i j := by
+            rw [hright]
+    _ = fun i j => B i j - B i j := by
+            rw [rectMatMul_id_left]
+    _ = fun _i _j => 0 := by
+            ext i j
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    vector form of `B(I - B^+B) = 0`. -/
+theorem theorem20_8Projection_constraint_vec_zero {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (x : Fin n → ℝ) :
+    rectMatMulVec B (rectMatMulVec (theorem20_8Projection B Bplus) x) =
+      (fun _i => 0) := by
+  rw [← rectMatMulVec_rectMatMul B (theorem20_8Projection B Bplus) x]
+  rw [theorem20_8Projection_constraint_zero B Bplus hright]
+  ext i
+  simp [rectMatMulVec]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the projector `P = I - B^+B` fixes every vector in the nullspace of `B`. -/
+theorem theorem20_8Projection_apply_nullspace {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (x : Fin n → ℝ)
+    (hBx : rectMatMulVec B x = (fun _i => 0)) :
+    rectMatMulVec (theorem20_8Projection B Bplus) x = x := by
+  ext i
+  calc
+    rectMatMulVec (theorem20_8Projection B Bplus) x i
+        = rectMatMulVec (idMatrix n) x i -
+            rectMatMulVec (rectMatMul Bplus B) x i := by
+            unfold theorem20_8Projection rectMatMulVec
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+    _ = x i - rectMatMulVec Bplus (rectMatMulVec B x) i := by
+            rw [rectMatMulVec_idMatrix]
+            rw [rectMatMulVec_rectMatMul]
+    _ = x i := by
+            rw [hBx]
+            simp [rectMatMulVec]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    vector idempotence of the nullspace projector `P = I - B^+B`. -/
+theorem theorem20_8Projection_vec_idempotent {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (x : Fin n → ℝ) :
+    rectMatMulVec (theorem20_8Projection B Bplus)
+        (rectMatMulVec (theorem20_8Projection B Bplus) x) =
+      rectMatMulVec (theorem20_8Projection B Bplus) x := by
+  exact
+    theorem20_8Projection_apply_nullspace B Bplus
+      (rectMatMulVec (theorem20_8Projection B Bplus) x)
+      (theorem20_8Projection_constraint_vec_zero B Bplus hright x)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     the source product `A P`, where `P = I - B^+ B`. -/
 noncomputable def theorem20_8AP {m n p : ℕ}
     (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
     (Bplus : Fin n → Fin p → ℝ) : Fin m → Fin n → ℝ :=
   rectMatMul A (theorem20_8Projection B Bplus)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    on vectors satisfying the equality constraint's homogeneous equation
+    `B x = 0`, the source product `A P` acts as `A`. -/
+theorem theorem20_8AP_apply_nullspace {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (x : Fin n → ℝ)
+    (hBx : rectMatMulVec B x = (fun _i => 0)) :
+    rectMatMulVec (theorem20_8AP A B Bplus) x =
+      rectMatMulVec A x := by
+  rw [theorem20_8AP, rectMatMulVec_rectMatMul]
+  rw [theorem20_8Projection_apply_nullspace B Bplus x hBx]
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     source table `B_A^+ = (I - (AP)^+ A)B^+`.
