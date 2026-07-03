@@ -11,7 +11,7 @@ import LeanFpAnalysis.FP.Algorithms.MatrixPowers
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
 
-set_option pp.maxSteps 1000
+set_option pp.maxSteps 100
 
 open LeanFpAnalysis.FP
 
