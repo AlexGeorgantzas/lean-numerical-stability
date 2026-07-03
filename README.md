@@ -55,8 +55,10 @@ original-coordinate backward-error certificate via
 infimum `sylvesterBackwardErrorInf` over nonnegative backward-error certificates
 and proves the two-sided xi bridge with
 `sylvesterBackwardErrorInf_le_sqrt_xiSq_of_svdOptimalPerturbations` and
-`sqrt_xiSq_div_three_le_sylvesterBackwardErrorInf_of_svd`, while leaving an
-attained-minimum theorem and the direct eta-residual amplification wrapper open.
+`sqrt_xiSq_div_three_le_sylvesterBackwardErrorInf_of_svd`, and closes the direct
+eta-residual amplification wrapper
+`sylvesterBackwardErrorInf_le_mu_relative_residual_of_svd`, while leaving an
+attained-minimum theorem open.
 It also connects square Frobenius
 backward-error certificates to the SVD-coordinate lower-direction bridge through
 `sylvesterBackwardResidual`, `svdResidual_backwardResidual`, and
