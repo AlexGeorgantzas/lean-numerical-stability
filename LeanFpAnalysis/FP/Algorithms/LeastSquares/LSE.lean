@@ -719,6 +719,171 @@ theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
       (H19.Theorem19_6.one_le_active_row_growth_factor m)
       hphi hdenA hdenW hA hb
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    one-based source column factor `j^2` in the perturbation bound for
+    `Delta a_ij`.  Lean's `Fin` index `j` represents source column `j+1`. -/
+noncomputable def theorem20_7_sourceColumnFactor {n : ℕ} (j : Fin n) : ℝ :=
+  ((j.val + 1 : ℕ) : ℝ) ^ 2
+
+/-- The Theorem 20.7 one-based source column factor is nonnegative. -/
+theorem theorem20_7_sourceColumnFactor_nonneg {n : ℕ} (j : Fin n) :
+    0 ≤ theorem20_7_sourceColumnFactor j := by
+  dsimp [theorem20_7_sourceColumnFactor]
+  exact sq_nonneg _
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    source dimension factor `n^2` in the perturbation bound for `Delta b_i`. -/
+noncomputable def theorem20_7_sourceDimensionFactor (n : ℕ) : ℝ :=
+  (n : ℝ) ^ 2
+
+/-- The Theorem 20.7 source dimension factor is nonnegative. -/
+theorem theorem20_7_sourceDimensionFactor_nonneg (n : ℕ) :
+    0 ≤ theorem20_7_sourceDimensionFactor n := by
+  dsimp [theorem20_7_sourceDimensionFactor]
+  exact sq_nonneg _
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    printed componentwise matrix-perturbation budget
+    `j^2 * gamma_tilde_m * alpha_i * max_s |a_is|`. -/
+noncomputable def theorem20_7_deltaAEntryBudget {n : ℕ}
+    (gammaTilde alpha rowScale : ℝ) (j : Fin n) : ℝ :=
+  theorem20_7_sourceColumnFactor j * gammaTilde * alpha * rowScale
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    printed componentwise right-hand-side perturbation budget
+    `n^2 * gamma_tilde_m * beta_i * max(phi max_s |a_is|, |b_i|)`. -/
+noncomputable def theorem20_7_deltaBEntryBudget
+    (n : ℕ) (gammaTilde beta weightedScale : ℝ) : ℝ :=
+  theorem20_7_sourceDimensionFactor n * gammaTilde * beta * weightedScale
+
+/-- Monotonicity of the Theorem 20.7 `Delta A` entry budget in the row ratio
+    `alpha`. -/
+theorem theorem20_7_deltaAEntryBudget_le_of_alpha_le {n : ℕ}
+    (j : Fin n) {gammaTilde alpha C rowScale : ℝ}
+    (hgamma : 0 ≤ gammaTilde) (hrow : 0 ≤ rowScale)
+    (halpha : alpha ≤ C) :
+    theorem20_7_deltaAEntryBudget gammaTilde alpha rowScale j ≤
+      theorem20_7_deltaAEntryBudget gammaTilde C rowScale j := by
+  have hscale :
+      0 ≤ theorem20_7_sourceColumnFactor j * gammaTilde * rowScale :=
+    mul_nonneg
+      (mul_nonneg (theorem20_7_sourceColumnFactor_nonneg j) hgamma) hrow
+  dsimp [theorem20_7_deltaAEntryBudget]
+  calc
+    theorem20_7_sourceColumnFactor j * gammaTilde * alpha * rowScale
+        = (theorem20_7_sourceColumnFactor j * gammaTilde * rowScale) *
+            alpha := by ring
+    _ ≤ (theorem20_7_sourceColumnFactor j * gammaTilde * rowScale) * C :=
+        mul_le_mul_of_nonneg_left halpha hscale
+    _ = theorem20_7_sourceColumnFactor j * gammaTilde * C * rowScale := by
+        ring
+
+/-- Monotonicity of the Theorem 20.7 `Delta b` entry budget in the row ratio
+    `beta`. -/
+theorem theorem20_7_deltaBEntryBudget_le_of_beta_le
+    (n : ℕ) {gammaTilde beta C weightedScale : ℝ}
+    (hgamma : 0 ≤ gammaTilde) (hweighted : 0 ≤ weightedScale)
+    (hbeta : beta ≤ C) :
+    theorem20_7_deltaBEntryBudget n gammaTilde beta weightedScale ≤
+      theorem20_7_deltaBEntryBudget n gammaTilde C weightedScale := by
+  have hscale :
+      0 ≤ theorem20_7_sourceDimensionFactor n * gammaTilde * weightedScale :=
+    mul_nonneg
+      (mul_nonneg (theorem20_7_sourceDimensionFactor_nonneg n) hgamma)
+      hweighted
+  dsimp [theorem20_7_deltaBEntryBudget]
+  calc
+    theorem20_7_sourceDimensionFactor n * gammaTilde * beta * weightedScale
+        = (theorem20_7_sourceDimensionFactor n * gammaTilde * weightedScale) *
+            beta := by ring
+    _ ≤ (theorem20_7_sourceDimensionFactor n * gammaTilde * weightedScale) *
+          C :=
+        mul_le_mul_of_nonneg_left hbeta hscale
+    _ = theorem20_7_sourceDimensionFactor n * gammaTilde * C *
+          weightedScale := by ring
+
+/-- A finite `max_i {alpha_i, beta_i}` bound controls the printed Theorem 20.7
+    componentwise `Delta A` budget for each row and column. -/
+theorem theorem20_7_deltaAEntryBudget_le_of_alphaBetaMax_le {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi gammaTilde : ℝ)
+    (i : Fin m) (j : Fin n) {C : ℝ}
+    (hgamma : 0 ≤ gammaTilde)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C) :
+    theorem20_7_deltaAEntryBudget gammaTilde
+        (theorem20_7_alpha hn Astage A i)
+        (theorem20_7_initialRowMax hn A i) j ≤
+      theorem20_7_deltaAEntryBudget gammaTilde C
+        (theorem20_7_initialRowMax hn A i) j :=
+  theorem20_7_deltaAEntryBudget_le_of_alpha_le j hgamma
+    (theorem20_7_initialRowMax_nonneg hn A i)
+    (theorem20_7_alpha_le_of_alphaBetaMax_le
+      hm hn Astage A bstage b phi i hmax)
+
+/-- A finite `max_i {alpha_i, beta_i}` bound controls the printed Theorem 20.7
+    componentwise `Delta b` budget for each row. -/
+theorem theorem20_7_deltaBEntryBudget_le_of_alphaBetaMax_le {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi gammaTilde : ℝ)
+    (i : Fin m) {C : ℝ}
+    (hphi : 0 ≤ phi) (hgamma : 0 ≤ gammaTilde)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C) :
+    theorem20_7_deltaBEntryBudget n gammaTilde
+        (theorem20_7_beta hn Astage A bstage b phi i)
+        (theorem20_7_initialWeightedRowMax hn A b phi i) ≤
+      theorem20_7_deltaBEntryBudget n gammaTilde C
+        (theorem20_7_initialWeightedRowMax hn A b phi i) :=
+  theorem20_7_deltaBEntryBudget_le_of_beta_le n hgamma
+    (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i)
+    (theorem20_7_beta_le_of_alphaBetaMax_le
+      hm hn Astage A bstage b phi i hmax)
+
+/-- A perturbation entry satisfying the printed `alpha_i` budget also satisfies
+    the corresponding uniform `C` budget whenever `max_i {alpha_i,beta_i} ≤ C`.
+    This is a scalar handoff, not an existence theorem for the QR perturbation. -/
+theorem theorem20_7_deltaAEntry_bound_of_alphaBetaMax_le {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi gammaTilde : ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (i : Fin m) (j : Fin n) {C : ℝ}
+    (hgamma : 0 ≤ gammaTilde)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C)
+    (hDelta :
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (theorem20_7_alpha hn Astage A i)
+          (theorem20_7_initialRowMax hn A i) j) :
+    |DeltaA i j| ≤
+      theorem20_7_deltaAEntryBudget gammaTilde C
+        (theorem20_7_initialRowMax hn A i) j :=
+  hDelta.trans
+    (theorem20_7_deltaAEntryBudget_le_of_alphaBetaMax_le
+      hm hn Astage A bstage b phi gammaTilde i j hgamma hmax)
+
+/-- A right-hand-side perturbation entry satisfying the printed `beta_i` budget
+    also satisfies the corresponding uniform `C` budget whenever
+    `max_i {alpha_i,beta_i} ≤ C`. -/
+theorem theorem20_7_deltaBEntry_bound_of_alphaBetaMax_le {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi gammaTilde : ℝ)
+    (Deltab : Fin m → ℝ) (i : Fin m) {C : ℝ}
+    (hphi : 0 ≤ phi) (hgamma : 0 ≤ gammaTilde)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C)
+    (hDelta :
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (theorem20_7_beta hn Astage A bstage b phi i)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    |Deltab i| ≤
+      theorem20_7_deltaBEntryBudget n gammaTilde C
+        (theorem20_7_initialWeightedRowMax hn A b phi i) :=
+  hDelta.trans
+    (theorem20_7_deltaBEntryBudget_le_of_alphaBetaMax_le
+      hm hn Astage A bstage b phi gammaTilde i hphi hgamma hmax)
+
 -- ============================================================
 -- §20.9  Equality-constrained least squares
 -- ============================================================
