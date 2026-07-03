@@ -18452,6 +18452,68 @@ theorem
         (ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
           (storedSignedSequenceTailAlpha2 alpha) htailSrcs)
 
+/-- Raw tail-normalized loop facts assemble the recursive source-faithful
+normalization package.
+
+This is the converse bookkeeping direction to
+`storedSignedSequenceTailNormalizedLoopRawFacts_of_sourceFaithfulNormalizations`:
+the raw vector-equality/self-dot fields are exactly the per-stage
+source-faithful certificates, while recurrence and leading-block nonbreakdown
+are carried unchanged. -/
+theorem
+    storedSignedSequenceTailSourceFaithfulNormalizations_of_tailNormalizedLoopRawFacts
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hraw :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p
+        A_hat alpha) :
+    storedSignedSequenceTailSourceFaithfulNormalizations fp r p
+      A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTailNormalizedLoopRawFacts fp r p
+              A_hat alpha ->
+            storedSignedSequenceTailSourceFaithfulNormalizations fp r p
+              A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hraw
+    trivial
+  · intro r A_hat alpha hraw
+    rcases hraw with ⟨hStep, hdetLead, hvecTail, hselfTail⟩
+    exact
+      ⟨hStep, hdetLead,
+        ⟨hvecTail, hselfTail⟩⟩
+  · intro p ih _ihSucc r A_hat alpha hraw
+    rcases hraw with
+      ⟨hStep, hdetLead, hvecTail2, hselfTail2,
+        hvecTail3, hselfTail3, htailRaw⟩
+    exact
+      ⟨hStep, hdetLead,
+        ⟨hvecTail2, hselfTail2⟩,
+        ⟨hvecTail3, hselfTail3⟩,
+        ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) htailRaw⟩
+
+/-- The recursive source-faithful certificate package and the expanded raw
+tail-normalized loop package are equivalent premise surfaces. -/
+theorem
+    storedSignedSequenceTailSourceFaithfulNormalizations_iff_tailNormalizedLoopRawFacts
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real) :
+    storedSignedSequenceTailSourceFaithfulNormalizations fp r p A_hat alpha <->
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha :=
+  ⟨storedSignedSequenceTailNormalizedLoopRawFacts_of_sourceFaithfulNormalizations
+      fp r p A_hat alpha,
+    storedSignedSequenceTailSourceFaithfulNormalizations_of_tailNormalizedLoopRawFacts
+      fp r p A_hat alpha⟩
+
 /-- One-column raw normalized-loop facts from full stage-two zero-prefixed
 stored-loop facts and the standard leading-block nonbreakdown hypothesis.
 
