@@ -4190,6 +4190,10 @@ Source-facing Chapter 10 wrappers:
 - `min_eig_scaled_bordered_floor` (factored per-stage floor derivation: lambda_min(scaled H) -> bordered Rayleigh floor via interlacing + snoc substitution)
 - `higham10_21_fl_cholesky_success` ((10.21) source-facing lambda_min(H_11) form on the leading r-block)
 - `higham10_7_fl_cholesky_success_sharp` (Th10.7 success at the source-shaped n-constant, hypothesis-light: r = n instance)
+- `upHalf` / `upHalf_add_transpose` / `frobNormSq_upHalf_le_half` (Th10.8 route steps 1-2, CholeskyPerturbation.lean: up operator, triangular recovery up(X+X^T)=X, Frobenius halving for symmetric Y)
+- `cholesky_perturbation_gram_identity` (Th10.8 step 3: exact R^T dR + dR^T R + dR^T dR = dA)
+- `cholesky_perturbation_scalar_endgame(_display)` (Th10.8 step 4: quadratic absorption t <= a*delta/(1-a*t) under a*t < 1; printed display form)
+- `frobNormSq_matMul_left_le` / `frobNormSq_matMul_right_le` (Th10.8 step 5: ||MN||_F^2 <= c^2 ||N||_F^2 from opNorm2Le M c, and <= c^2 ||M||_F^2 from opNorm2Le N^T c)
 - `kahanR` / `kahan_telescope` / `kahanR_tail_eq` ((10.20): Kahan family satisfies (10.13) with equality on the square part)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)

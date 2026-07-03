@@ -200,6 +200,67 @@ theorem cholesky_perturbation_scalar_endgame_display (a δ t c : ℝ)
     div_le_div₀ (mul_nonneg ha hδ) le_rfl (by linarith) (by linarith)
   exact h1.trans h2
 
+/-- **Frobenius–operator product bound, left factor** (Theorem 10.8
+    proof, step 5): an operator-2-norm certificate on `M` gives
+    `‖M·N‖_F² ≤ c²·‖N‖_F²`, column by column. -/
+theorem frobNormSq_matMul_left_le {n : ℕ}
+    (M N : Fin n → Fin n → ℝ) (c : ℝ)
+    (hM : opNorm2Le M c) :
+    frobNormSq (matMul n M N) ≤ c ^ 2 * frobNormSq N := by
+  have hcol : ∀ j : Fin n,
+      (∑ i : Fin n, matMul n M N i j ^ 2) ≤
+      c ^ 2 * ∑ k : Fin n, N k j ^ 2 := by
+    intro j
+    have h := hM (fun k => N k j)
+    have hveq : matMulVec n M (fun k => N k j) =
+        fun i => matMul n M N i j := rfl
+    rw [hveq] at h
+    have h0 := vecNorm2_nonneg (fun i => matMul n M N i j)
+    have h2 : vecNorm2 (fun i => matMul n M N i j) ^ 2 ≤
+        (c * vecNorm2 (fun k => N k j)) ^ 2 := by nlinarith [h]
+    rw [vecNorm2_sq, mul_pow, vecNorm2_sq] at h2
+    exact h2
+  calc frobNormSq (matMul n M N)
+      = ∑ j : Fin n, ∑ i : Fin n, matMul n M N i j ^ 2 :=
+        Finset.sum_comm
+    _ ≤ ∑ j : Fin n, c ^ 2 * ∑ k : Fin n, N k j ^ 2 :=
+        Finset.sum_le_sum fun j _ => hcol j
+    _ = c ^ 2 * ∑ j : Fin n, ∑ k : Fin n, N k j ^ 2 := by
+        rw [Finset.mul_sum]
+    _ = c ^ 2 * frobNormSq N := by
+        rw [show (∑ j : Fin n, ∑ k : Fin n, N k j ^ 2) = frobNormSq N from
+          Finset.sum_comm]
+
+/-- **Frobenius–operator product bound, right factor** (Theorem 10.8
+    proof, step 5): an operator-2-norm certificate on `Nᵀ` gives
+    `‖M·N‖_F² ≤ c²·‖M‖_F²`, row by row. -/
+theorem frobNormSq_matMul_right_le {n : ℕ}
+    (M N : Fin n → Fin n → ℝ) (c : ℝ)
+    (hNT : opNorm2Le (fun i j => N j i) c) :
+    frobNormSq (matMul n M N) ≤ c ^ 2 * frobNormSq M := by
+  have hrow : ∀ i : Fin n,
+      (∑ j : Fin n, matMul n M N i j ^ 2) ≤
+      c ^ 2 * ∑ k : Fin n, M i k ^ 2 := by
+    intro i
+    have h := hNT (fun k => M i k)
+    have hveq : matMulVec n (fun p q => N q p) (fun k => M i k) =
+        fun j => matMul n M N i j := by
+      funext j
+      unfold matMulVec matMul
+      exact Finset.sum_congr rfl fun k _ => mul_comm _ _
+    rw [hveq] at h
+    have h0 := vecNorm2_nonneg (fun j => matMul n M N i j)
+    have h2 : vecNorm2 (fun j => matMul n M N i j) ^ 2 ≤
+        (c * vecNorm2 (fun k => M i k)) ^ 2 := by nlinarith [h]
+    rw [vecNorm2_sq, mul_pow, vecNorm2_sq] at h2
+    exact h2
+  calc frobNormSq (matMul n M N)
+      ≤ ∑ i : Fin n, c ^ 2 * ∑ k : Fin n, M i k ^ 2 :=
+        Finset.sum_le_sum fun i _ => hrow i
+    _ = c ^ 2 * frobNormSq M := by
+        rw [← Finset.mul_sum]
+        rfl
+
 -- ============================================================
 -- §10.2  Theorem 10.8: Sun perturbation bound (normwise)
 -- ============================================================
