@@ -2,7 +2,8 @@
 --
 -- SVD-based backward error analysis for the Sylvester equation (Higham §16.2).
 -- Eqs 16.13-16.19: backward error characterization via SVD coordinates,
--- lower/upper bounds on η(Y), and amplification factor μ.
+-- lower/upper bounds on η(Y), amplification factor μ, and the Lyapunov
+-- scalar-coordinate analogue in eq. 16.21.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
@@ -397,5 +398,83 @@ theorem backward_error_residual_lower (n : ℕ)
     frobNorm (sylvesterResidual n A B C Y) ≤
     ((α + β) * frobNorm Y + γ) * η := by
   exact residual_bound n A B C Y ΔA ΔB ΔC α β γ η hα hβ hγ hη hEq hΔA hΔB hΔC
+
+-- ============================================================
+-- Lyapunov spectral-coordinate backward error (§16.2.1, eq 16.21)
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    spectral-coordinate transform `U^T M U` used for the Lyapunov residual and
+    perturbations. -/
+noncomputable def lyapunovSpectralTransform (n : ℕ)
+    (U M : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  matMul n (matMul n (matTranspose U) M) U
+
+/-- Orthogonal spectral coordinates preserve the squared Frobenius norm. -/
+theorem lyapunovSpectralTransform_frobNormSq (n : ℕ)
+    (U M : Fin n → Fin n → ℝ) (hU : IsOrthogonal n U) :
+    frobNormSq (lyapunovSpectralTransform n U M) = frobNormSq M := by
+  unfold lyapunovSpectralTransform
+  rw [frobNormSq_orthogonal_right _ _ hU, frobNormSq_orthogonal_left _ _ hU.transpose]
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    the transformed Lyapunov backward-error residual
+    `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde`, written
+    entrywise in the diagonal spectral coordinates of the symmetric approximate
+    solution. -/
+noncomputable def lyapunovSpectralBackwardResidual (n : ℕ)
+    (DA DC : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j => DA i j * lam j + lam i * DA j i - DC i j
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    the printed scaled scalar equation in Lyapunov spectral coordinates. -/
+def lyapunovBackwardScalarEq (n : ℕ) (lam : Fin n → ℝ) (α γ : ℝ)
+    (DA DC R_tilde : Fin n → Fin n → ℝ) : Prop :=
+  ∀ i j : Fin n,
+    (DA i j / α) * (α * lam j) +
+      (α * lam i) * (DA j i / α) -
+        γ * (DC i j / γ) = R_tilde i j
+
+/-- Equation (16.21) is equivalent to the unscaled transformed residual equation
+    when the source scaling parameters are nonzero. -/
+theorem lyapunovBackwardScalarEq_iff_unscaled (n : ℕ) (lam : Fin n → ℝ)
+    (α γ : ℝ) (DA DC R_tilde : Fin n → Fin n → ℝ)
+    (hα : α ≠ 0) (hγ : γ ≠ 0) :
+    lyapunovBackwardScalarEq n lam α γ DA DC R_tilde ↔
+      ∀ i j : Fin n, DA i j * lam j + lam i * DA j i - DC i j = R_tilde i j := by
+  constructor
+  · intro h i j
+    have hscale :
+        (DA i j / α) * (α * lam j) +
+          (α * lam i) * (DA j i / α) -
+            γ * (DC i j / γ) =
+          DA i j * lam j + lam i * DA j i - DC i j := by
+      field_simp [hα, hγ]
+    simpa [hscale] using h i j
+  · intro h i j
+    have hscale :
+        (DA i j / α) * (α * lam j) +
+          (α * lam i) * (DA j i / α) -
+            γ * (DC i j / γ) =
+          DA i j * lam j + lam i * DA j i - DC i j := by
+      field_simp [hα, hγ]
+    rw [hscale]
+    exact h i j
+
+/-- Equation (16.21) as an equality between the transformed Lyapunov residual
+    matrix and the transformed residual right-hand side. -/
+theorem lyapunovBackwardScalarEq_iff_residual_eq (n : ℕ) (lam : Fin n → ℝ)
+    (α γ : ℝ) (DA DC R_tilde : Fin n → Fin n → ℝ)
+    (hα : α ≠ 0) (hγ : γ ≠ 0) :
+    lyapunovBackwardScalarEq n lam α γ DA DC R_tilde ↔
+      lyapunovSpectralBackwardResidual n DA DC lam = R_tilde := by
+  rw [lyapunovBackwardScalarEq_iff_unscaled n lam α γ DA DC R_tilde hα hγ]
+  constructor
+  · intro h
+    ext i j
+    exact h i j
+  · intro h i j
+    exact congrFun (congrFun h i) j
 
 end LeanFpAnalysis.FP
