@@ -261,6 +261,38 @@ theorem frobNormSq_matMul_right_le {n : ℕ}
         rw [← Finset.mul_sum]
         rfl
 
+/-- **Packaged upper-triangular inverse** (Theorem 10.8 proof, step 6):
+    an upper-triangular matrix with nonzero diagonal has a two-sided
+    inverse that is itself upper triangular — Mathlib's
+    block-triangular inverse, exported in the repository's
+    function-matrix predicates. -/
+theorem upperTriangular_inverse_exists (k : ℕ) (U : Fin k → Fin k → ℝ)
+    (hupper : ∀ i j : Fin k, j.val < i.val → U i j = 0)
+    (hdiag : ∀ i, U i i ≠ 0) :
+    ∃ V : Fin k → Fin k → ℝ,
+      (∀ i j : Fin k, j.val < i.val → V i j = 0) ∧
+      IsRightInverse k U V ∧ IsLeftInverse k U V := by
+  let M : Matrix (Fin k) (Fin k) ℝ := Matrix.of U
+  have hBT : M.BlockTriangular id := fun i j hij => hupper i j hij
+  have hdet : IsUnit M.det := by
+    rw [Matrix.det_of_upperTriangular hBT]
+    exact isUnit_iff_ne_zero.mpr
+      (Finset.prod_ne_zero_iff.mpr fun i _ => hdiag i)
+  haveI : Invertible M := M.invertibleOfIsUnitDet hdet
+  refine ⟨fun i j => M⁻¹ i j, ?_, ?_, ?_⟩
+  · intro i j hij
+    exact Matrix.blockTriangular_inv_of_blockTriangular hBT hij
+  · intro i j
+    have hmul := Matrix.mul_nonsing_inv M hdet
+    have h := congrArg (fun A : Matrix (Fin k) (Fin k) ℝ => A i j) hmul
+    simp only [Matrix.mul_apply, Matrix.one_apply] at h
+    exact h
+  · intro i j
+    have hmul := Matrix.nonsing_inv_mul M hdet
+    have h := congrArg (fun A : Matrix (Fin k) (Fin k) ℝ => A i j) hmul
+    simp only [Matrix.mul_apply, Matrix.one_apply] at h
+    exact h
+
 -- ============================================================
 -- §10.2  Theorem 10.8: Sun perturbation bound (normwise)
 -- ============================================================
