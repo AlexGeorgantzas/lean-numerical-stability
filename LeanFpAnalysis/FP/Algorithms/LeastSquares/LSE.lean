@@ -1703,6 +1703,94 @@ theorem theorem20_8_perturbed_feasible_point_decomp {n p : ℕ}
   have hj := congrFun hdecomp j
   linarith
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    action of `A` on a perturbed feasible point after the source nullspace
+    decomposition.  The last term is the explicit correction caused by the
+    perturbed constraint defect `Deltad - DeltaB*y`. -/
+theorem theorem20_8_perturbed_feasible_point_action_decomp {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec A y =
+      fun i =>
+        rectMatMulVec A x i +
+          rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) i +
+          rectMatMulVec A
+            (rectMatMulVec Bplus
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i := by
+  have hpoint :=
+    theorem20_8_perturbed_feasible_point_decomp
+      B DeltaB Bplus d Deltad x y hx hy
+  calc
+    rectMatMulVec A y =
+        rectMatMulVec A
+          (fun j =>
+            x j + rectMatMulVec (theorem20_8Projection B Bplus)
+              (fun k => y k - x k) j +
+              rectMatMulVec Bplus
+                (fun l => Deltad l - rectMatMulVec DeltaB y l) j) := by
+          conv_lhs => rw [hpoint]
+    _ = fun i =>
+          rectMatMulVec A
+              (fun j =>
+                x j + rectMatMulVec (theorem20_8Projection B Bplus)
+                  (fun k => y k - x k) j) i +
+            rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l => Deltad l - rectMatMulVec DeltaB y l)) i := by
+          rw [rectMatMulVec_add]
+    _ = fun i =>
+          (rectMatMulVec A x i +
+            rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) i) +
+            rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l => Deltad l - rectMatMulVec DeltaB y l)) i := by
+          rw [theorem20_8AP_feasible_step_action A B Bplus x
+            (fun k => y k - x k)]
+    _ = fun i =>
+          rectMatMulVec A x i +
+            rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) i +
+            rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l => Deltad l - rectMatMulVec DeltaB y l)) i := by
+          ext i
+          ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual decomposition for a point feasible for the perturbed constraint.
+
+    The reduced `AP` residual is separated from the three explicit perturbation
+    terms that must be bounded in the first-order LSE perturbation proof:
+    `A*Bplus*(Deltad-DeltaB*y)`, `DeltaA*y`, and `Deltab`. -/
+theorem theorem20_8_perturbed_feasible_residual_decomp {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    lsResidual (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i) y =
+      fun i =>
+        lsResidual (theorem20_8AP A B Bplus)
+          (fun i => b i - rectMatMulVec A x i) (fun j => y j - x j) i +
+          rectMatMulVec A
+            (rectMatMulVec Bplus
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i +
+          rectMatMulVec DeltaA y i -
+          Deltab i := by
+  ext i
+  unfold lsResidual
+  have hmat := congrFun (rectMatMulVec_mat_add A DeltaA y) i
+  have hA :=
+    congrFun
+      (theorem20_8_perturbed_feasible_point_action_decomp
+        A B DeltaB Bplus d Deltad x y hx hy) i
+  rw [hmat, hA]
+  ring
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     source table `B_A^+ = (I - (AP)^+ A)B^+`.
 
