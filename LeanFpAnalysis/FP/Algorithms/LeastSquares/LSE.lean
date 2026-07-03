@@ -347,6 +347,110 @@ def IsLSEMinimizer {m n p : ℕ} (A : Fin m → Fin n → ℝ)
   LSEFeasible B d x ∧
   ∀ y : Fin n → ℝ, LSEFeasible B d y → lsObjective A b x ≤ lsObjective A b y
 
+-- ------------------------------------------------------------
+-- §20.9.1  Perturbation-theory scalar budget support
+-- ------------------------------------------------------------
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    the displayed maximum of relative perturbation sizes for the perturbed LSE
+    data `(A,b,B,d)`.  The four denominators are kept explicit; the bridge
+    theorem below supplies the positive-denominator side conditions. -/
+noncomputable def theorem20_8MaxRelativePerturbation {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ) : ℝ :=
+  max (frobNormRect DeltaA / frobNormRect A)
+    (max (vecNorm2 Deltab / vecNorm2 b)
+      (max (frobNormRect DeltaB / frobNormRect B)
+        (vecNorm2 Deltad / vecNorm2 d)))
+
+/-- Multiplicative form of the Theorem 20.8 relative perturbation budget,
+    avoiding repeated division once the source maximum assumption has been
+    unpacked. -/
+def theorem20_8RelativePerturbationBudget {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (eps : ℝ) : Prop :=
+  frobNormRect DeltaA ≤ eps * frobNormRect A ∧
+  vecNorm2 Deltab ≤ eps * vecNorm2 b ∧
+  frobNormRect DeltaB ≤ eps * frobNormRect B ∧
+  vecNorm2 Deltad ≤ eps * vecNorm2 d
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the displayed maximum condition implies the four individual relative
+    perturbation bounds in multiplicative form. -/
+theorem theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps) :
+    theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+      eps := by
+  dsimp [theorem20_8RelativePerturbationBudget,
+    theorem20_8MaxRelativePerturbation] at *
+  have hDeltaA_ratio :
+      frobNormRect DeltaA / frobNormRect A ≤ eps := by
+    exact (le_max_left _ _).trans hmax
+  have hDeltab_ratio :
+      vecNorm2 Deltab / vecNorm2 b ≤ eps := by
+    exact (le_trans (le_max_left _ _) (le_max_right _ _)).trans hmax
+  have hDeltaB_ratio :
+      frobNormRect DeltaB / frobNormRect B ≤ eps := by
+    have h1 :
+        frobNormRect DeltaB / frobNormRect B ≤
+          max (frobNormRect DeltaB / frobNormRect B)
+            (vecNorm2 Deltad / vecNorm2 d) :=
+      le_max_left _ _
+    have h2 :
+        max (frobNormRect DeltaB / frobNormRect B)
+            (vecNorm2 Deltad / vecNorm2 d) ≤
+          max (vecNorm2 Deltab / vecNorm2 b)
+            (max (frobNormRect DeltaB / frobNormRect B)
+              (vecNorm2 Deltad / vecNorm2 d)) :=
+      le_max_right _ _
+    have h3 :
+        max (vecNorm2 Deltab / vecNorm2 b)
+            (max (frobNormRect DeltaB / frobNormRect B)
+              (vecNorm2 Deltad / vecNorm2 d)) ≤
+          max (frobNormRect DeltaA / frobNormRect A)
+            (max (vecNorm2 Deltab / vecNorm2 b)
+              (max (frobNormRect DeltaB / frobNormRect B)
+                (vecNorm2 Deltad / vecNorm2 d))) :=
+      le_max_right _ _
+    exact (h1.trans h2 |>.trans h3).trans hmax
+  have hDeltad_ratio :
+      vecNorm2 Deltad / vecNorm2 d ≤ eps := by
+    have h1 :
+        vecNorm2 Deltad / vecNorm2 d ≤
+          max (frobNormRect DeltaB / frobNormRect B)
+            (vecNorm2 Deltad / vecNorm2 d) :=
+      le_max_right _ _
+    have h2 :
+        max (frobNormRect DeltaB / frobNormRect B)
+            (vecNorm2 Deltad / vecNorm2 d) ≤
+          max (vecNorm2 Deltab / vecNorm2 b)
+            (max (frobNormRect DeltaB / frobNormRect B)
+              (vecNorm2 Deltad / vecNorm2 d)) :=
+      le_max_right _ _
+    have h3 :
+        max (vecNorm2 Deltab / vecNorm2 b)
+            (max (frobNormRect DeltaB / frobNormRect B)
+              (vecNorm2 Deltad / vecNorm2 d)) ≤
+          max (frobNormRect DeltaA / frobNormRect A)
+            (max (vecNorm2 Deltab / vecNorm2 b)
+              (max (frobNormRect DeltaB / frobNormRect B)
+                (vecNorm2 Deltad / vecNorm2 d))) :=
+      le_max_right _ _
+    exact (h1.trans h2 |>.trans h3).trans hmax
+  exact ⟨(div_le_iff₀ hApos).mp hDeltaA_ratio,
+    (div_le_iff₀ hbpos).mp hDeltab_ratio,
+    (div_le_iff₀ hBpos).mp hDeltaB_ratio,
+    (div_le_iff₀ hdpos).mp hDeltad_ratio⟩
+
 /-- The linear constraint map `x ↦ B x` used in the equality-constrained
     least-squares problem (20.23). -/
 noncomputable def lseConstraintLinearMap {p n : ℕ}

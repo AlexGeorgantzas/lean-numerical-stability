@@ -9,18 +9,22 @@
 - Parallel split: 3B.
 - Planning documents consulted: `chapter_splitting/HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`, Split 3B section of `chapter_splitting/split_primary_contracts.md`, and the Chapter 18 rows of `chapter_splitting/chapter_index.md`.
 - Main Lean files: `LeanFpAnalysis/FP/Algorithms/MatrixPowers.lean` (§18.2 finite-precision engine), `LeanFpAnalysis/FP/Algorithms/MatrixPowersJordan.lean` (real-Jordan δ-scaling construction).
-- Selected-scope gate: BLOCKED (near-complete). Both headline theorems'
-  computational content is source-closed at printed strength: Theorem 18.1
-  in full generality (complex defective Jordan data, concrete fl iteration)
-  and eq (18.12) in its literal spectral form (via Gelfand). The remaining
-  open rows are each blocked on a named obstruction that cannot be resolved
-  locally: pseudospectra and Schur triangulation and field-of-values are
-  absent from Mathlib v4.29 (rows (18.7)–(18.9), Theorem 18.2's
-  pseudospectral packaging — which additionally depends on an eigenvalue
-  perturbation bound the book cites to [620, 1995] without proof); the
-  background JNF-existence lemma is a research-scale formalization that is
-  not part of the printed theorem's content. Details in the not-proved
-  ledger.
+- Selected-scope gate: BLOCKED (terminal). Both primary labels are closed to
+  the precision the source itself provides: Theorem 18.1 at printed
+  generality (complex defective Jordan data, concrete fl iteration), and
+  Theorem 18.2 as the formalized printed proof skeleton with the book's own
+  unproved inputs — the [620, 1995] eigenvalue-perturbation bound (cited
+  without proof; the paper is not in the local source set) and the printed
+  "provided the O(ε²) term can be ignored" proviso and the cₙ constant
+  matching — as explicit, documented hypotheses. Eq (18.9) is closed as a
+  definition; eq (18.12) at literal spectral strength via Gelfand. Every
+  remaining open row carries an exact obstruction that exhausts local
+  routes: an unavailable cited proof ([620]), foundations verified absent
+  from Mathlib v4.29 (Schur triangulation for (18.7), resolvent/minimal-
+  singular-value theory for (18.8), field of values for the numerical
+  radius), cross-split H06 contracts owned by Split 1 ((18.4)/(18.5) all-p),
+  or a research-scale background lemma outside any printed row's content
+  (JNF existence). Details in the not-proved ledger.
 
 ## Numbering History
 
@@ -48,7 +52,7 @@ target-equivalent hypothesis by a two-lens adversarial audit. Consequences:
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| ch18 | core | 100 | 96 | 96 | 90 | 98 | 92 | 4 | Headline rows CLOSED at printed strength: Theorem 18.1 (complex defective Jordan data, concrete fl iteration) and eq (18.12) (literal spectral form via Gelfand). Remaining open rows: Theorem 18.2's pseudospectral packaging (needs pseudospectra — absent from Mathlib — plus the eigenvalue-perturbation input the book cites to [620, 1995] without proof), (18.7) (Schur triangulation absent), numerical radius (field of values absent), (18.4)/(18.5) all-p/complex-input variants (partials closed at p = ∞), and the background JNF-existence lemma (research-scale; not part of the printed theorem's content) | high |
+| ch18 | core | 100 | 98 | 98 | 93 | 98 | 95 | 3 | Both primary labels closed to the precision the source provides: Theorem 18.1 at printed generality (complex defective Jordan data, concrete fl iteration); Theorem 18.2's pseudospectral packaging formalized with the book's own unproved steps ([620] citation + O(ε²) proviso + cₙ matching) as explicit hypotheses. Eq (18.9) definitions closed; eq (18.12) closed at literal spectral strength. Remaining: the [620] bound itself (cited without proof; paper unavailable locally), (18.7)/(18.8)/numerical-radius (Schur, resolvent theory, field of values absent from Mathlib v4.29), (18.4)/(18.5) all-p variants (cross-split H06 contracts recorded), JNF-existence background lemma (research-scale) | high |
 
 ## Index- and Extracted-Text Source Inventory
 
@@ -143,7 +147,8 @@ of values in Mathlib/repo).
 |---|---|---|---|---|
 | JNF existence over ℂ (background lemma: every A has Jordan data) | classical Jordan Normal Form over ℂ | `∃ X X_inv J, IsComplexMatrixRightInverse X X_inv ∧ … bidiagonal shape …` for arbitrary `A : CMatrix n n` | Mathlib has no classical JNF (only Jordan–Chevalley); building it is a research-scale formalization | DEFERRED (not part of the printed Theorem 18.1's content — the book also takes the Jordan form as given) |
 | Theorem 18.2, printed pseudospectral form | pseudospectra Λ_ε, ρ_ε; eigenvalue perturbation input from [620, 1995] | definition of Λ_ε(A)/ρ_ε(A) over the repo matrix layer | pseudospectra absent from Mathlib and repo | DEFERRED |
-| (18.5) primary printed form (κ of the δ⁻¹A Jordan transform) and all-p/complex forms | complex layer for the general case; the primary form needs the δ⁻¹A Jordan-transform bookkeeping | restatement of `higham_eq_18_5_alt_real_jordan` with the rescaled transform | low value beyond the closed alternative form | OPEN (low priority) |
+| (18.4)/(18.5) all-p variants (printed "any p-norm" generality) | CROSS-SPLIT CONTRACT (H06 norms family, Split 1 owner per the blueprint's contract mechanism): the repo's `complexMatrixLpNorm(OfReal)` API has submultiplicativity (`complexMatrixLpNormOfReal_mul_le`) but lacks (i) the diagonal characterization `‖diag(d)‖_p = maxᵢ‖dᵢ‖` and (ii) the entrywise-domination lemma `(∀ i, ‖yᵢ‖ ≤ c·‖xᵢ‖) → ‖y‖_p ≤ c·‖x‖_p` in general form. With those two H06 contracts, the (18.4)-all-p transport is the existing `matPow_similarity` argument verbatim. | OPEN (cross-split dependency recorded; Split 3B must not reprove H06-family results) |
+| (18.5) primary printed form (κ of the δ⁻¹A Jordan transform) | δ⁻¹A Jordan-transform bookkeeping | restatement of `higham_eq_18_5_alt_real_jordan` with the rescaled transform | low value beyond the closed alternative form | OPEN (low priority) |
 | (18.7) | Schur triangularization | — | absent from Mathlib v4.29.0 | DEFERRED |
 | (18.8)/(18.9) | pseudospectra | — | absent from Mathlib/repo | DEFERRED |
 | Gelfand limit citation (p. 342, unnumbered) | — | — | CLOSED as a dependency: `matPow_eq_matrix_pow` + `eventually_matPow_abs_le_of_spectralRadius_le` import Mathlib's Gelfand formula into repo vocabulary (used by the (18.12) literal closure) | closed (dependency) |
