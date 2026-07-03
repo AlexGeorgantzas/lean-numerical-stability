@@ -1254,6 +1254,159 @@ theorem wedinTheorem20_1_vecNorm2_Bplus_residual_le_eta
     field_simp [ne_of_gt hden_pos]
   simpa [hcoeff] using hbound
 
+/-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
+    direct forcing-term estimate for `Bplus*(-DeltaA*x + Deltab)`.
+
+This is the elementary norm part of the Wedin transfer: a pseudoinverse
+operator-radius for `Bplus`, an operator-radius for `DeltaA`, and a vector
+radius for `Deltab` bound the forcing contribution before it is combined with
+the residual-transfer term. -/
+theorem wedinTheorem20_1_vecNorm2_Bplus_forcing_le
+    {m k : ℕ} (Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (Deltab : Fin m → ℝ)
+    (x : Fin (k + 1) → ℝ)
+    {Bplus_norm DeltaA_norm Deltab_norm : ℝ}
+    (hBplus_norm_nonneg : 0 ≤ Bplus_norm)
+    (hBplus : rectOpNorm2Le Bplus Bplus_norm)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm) :
+    vecNorm2
+        (rectMatMulVec Bplus
+          (fun i => -rectMatMulVec DeltaA x i + Deltab i)) ≤
+      Bplus_norm * (DeltaA_norm * vecNorm2 x + Deltab_norm) := by
+  let forcing : Fin m → ℝ :=
+    fun i => -rectMatMulVec DeltaA x i + Deltab i
+  have hforcing :
+      vecNorm2 forcing ≤ DeltaA_norm * vecNorm2 x + Deltab_norm := by
+    calc
+      vecNorm2 forcing
+          ≤ vecNorm2 (fun i : Fin m => -rectMatMulVec DeltaA x i) +
+              vecNorm2 Deltab := by
+              simpa [forcing] using
+                vecNorm2_add_le (fun i : Fin m => -rectMatMulVec DeltaA x i)
+                  Deltab
+      _ = vecNorm2 (rectMatMulVec DeltaA x) + vecNorm2 Deltab := by
+              rw [vecNorm2_neg]
+      _ ≤ DeltaA_norm * vecNorm2 x + Deltab_norm :=
+              add_le_add (hDeltaA x) hDeltab
+  calc
+    vecNorm2 (rectMatMulVec Bplus forcing)
+        ≤ Bplus_norm * vecNorm2 forcing := hBplus forcing
+    _ ≤ Bplus_norm * (DeltaA_norm * vecNorm2 x + Deltab_norm) :=
+        mul_le_mul_of_nonneg_left hforcing hBplus_norm_nonneg
+
+/-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
+    assembled bound for the forcing contribution plus the residual-transfer
+    contribution, before the final source scalar normalization. -/
+theorem wedinTheorem20_1_vecNorm2_Bplus_forcing_add_residual_le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (Deltab r : Fin m → ℝ)
+    (x : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0) :
+    vecNorm2
+        (fun j =>
+          rectMatMulVec Bplus
+              (fun i => -rectMatMulVec DeltaA x i + Deltab i) j +
+            rectMatMulVec Bplus r j) ≤
+      (Aplus_norm / (1 - eta)) *
+          (DeltaA_norm * vecNorm2 x + Deltab_norm) +
+        (eta * Aplus_norm / (1 - eta) ^ 2) * vecNorm2 r := by
+  have hden_pos : 0 < 1 - eta :=
+    wedinLemma20_11_denominator_pos hsmall
+  have hBplus_radius_nonneg : 0 ≤ Aplus_norm / (1 - eta) :=
+    div_nonneg (le_of_lt hAplus_pos) (le_of_lt hden_pos)
+  have hforcing :
+      vecNorm2
+          (rectMatMulVec Bplus
+            (fun i => -rectMatMulVec DeltaA x i + Deltab i)) ≤
+        (Aplus_norm / (1 - eta)) *
+          (DeltaA_norm * vecNorm2 x + Deltab_norm) :=
+    wedinTheorem20_1_vecNorm2_Bplus_forcing_le
+      Bplus DeltaA Deltab x hBplus_radius_nonneg hBplus hDeltaA hDeltab
+  have hresidual :
+      vecNorm2 (rectMatMulVec Bplus r) ≤
+        (eta * Aplus_norm / (1 - eta) ^ 2) * vecNorm2 r :=
+    wedinTheorem20_1_vecNorm2_Bplus_residual_le_eta
+      A B Aplus Bplus r hAplus_pos heta hsmall hleftA hleftB
+      hSymA hSymB hDelta hBplus hrangeA_residual
+  calc
+    vecNorm2
+        (fun j =>
+          rectMatMulVec Bplus
+              (fun i => -rectMatMulVec DeltaA x i + Deltab i) j +
+            rectMatMulVec Bplus r j)
+        ≤ vecNorm2
+            (rectMatMulVec Bplus
+              (fun i => -rectMatMulVec DeltaA x i + Deltab i)) +
+          vecNorm2 (rectMatMulVec Bplus r) := by
+            exact vecNorm2_add_le
+              (rectMatMulVec Bplus
+                (fun i => -rectMatMulVec DeltaA x i + Deltab i))
+              (rectMatMulVec Bplus r)
+    _ ≤ (Aplus_norm / (1 - eta)) *
+            (DeltaA_norm * vecNorm2 x + Deltab_norm) +
+          (eta * Aplus_norm / (1 - eta) ^ 2) * vecNorm2 r :=
+            add_le_add hforcing hresidual
+
+/-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
+    assembled bound with the combined source vector
+    `-DeltaA*x + Deltab + r` inside the single `Bplus` action. -/
+theorem wedinTheorem20_1_vecNorm2_Bplus_combined_forcing_residual_le
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (Deltab r : Fin m → ℝ)
+    (x : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0) :
+    vecNorm2
+        (rectMatMulVec Bplus
+          (fun i => (-rectMatMulVec DeltaA x i + Deltab i) + r i)) ≤
+      (Aplus_norm / (1 - eta)) *
+          (DeltaA_norm * vecNorm2 x + Deltab_norm) +
+        (eta * Aplus_norm / (1 - eta) ^ 2) * vecNorm2 r := by
+  have hsum :=
+    wedinTheorem20_1_vecNorm2_Bplus_forcing_add_residual_le
+      A B Aplus Bplus DeltaA Deltab r x hAplus_pos heta hsmall
+      hleftA hleftB hSymA hSymB hDelta hBplus hDeltaA hDeltab
+      hrangeA_residual
+  have hsplit :
+      rectMatMulVec Bplus
+          (fun i => (-rectMatMulVec DeltaA x i + Deltab i) + r i) =
+        fun j =>
+          rectMatMulVec Bplus
+              (fun i => -rectMatMulVec DeltaA x i + Deltab i) j +
+            rectMatMulVec Bplus r j := by
+    simpa using
+      rectMatMulVec_add Bplus
+        (fun i : Fin m => -rectMatMulVec DeltaA x i + Deltab i) r
+  simpa [hsplit] using hsum
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
