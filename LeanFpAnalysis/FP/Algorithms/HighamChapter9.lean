@@ -37782,6 +37782,236 @@ theorem higham9_15_normwise_source_bound_of_normalized_linear_step_opNorm_of_sou
     heta
 
 /-- **Theorem 9.15**, source-facing normwise endpoint from the original
+factorization equations plus a full-matrix linearized Barrlund--Sun step
+hypothesis.
+
+The equations `LU = A` and `(L + ΔL)(U + ΔU) = A + ΔA` identify this as the
+factorization-level API; the remaining analytic content is the explicit
+normalized linear-step hypothesis. -/
+theorem higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities
+    {n : ℕ} [Nonempty (Fin n)]
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (_hLU : L * U = A)
+    (_hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (_hLleft : Linv * L = 1)
+    (hLright : L * Linv = 1)
+    (_hUright : U * Uinv = 1)
+    (hUleft : Uinv * U = 1)
+    (hGlt : opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) < 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) := by
+  have hLrightRect : rectMatMul L Linv = idMatrix n := by
+    ext i j
+    have h := congrFun (congrFun hLright i) j
+    simpa [rectMatMul, idMatrix, Matrix.mul_apply] using h
+  have hUleftRect : rectMatMul Uinv U = idMatrix n := by
+    ext i j
+    have h := congrFun (congrFun hUleft i) j
+    simpa [rectMatMul, idMatrix, Matrix.mul_apply] using h
+  exact
+    higham9_15_normwise_source_bound_of_normalized_linear_step_opNorm_of_inverse_identities
+      L U Linv Uinv ΔA ΔL ΔU hLrightRect hUleftRect hGlt hlinear
+      hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, product-smallness source-facing factorization endpoint
+from a full-matrix linearized Barrlund--Sun step hypothesis. -/
+theorem higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+    {n : ℕ} [Nonempty (Fin n)]
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hLright : L * Linv = 1)
+    (hUright : U * Uinv = 1)
+    (hUleft : Uinv * U = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities
+    A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hLright hUright hUleft
+    (higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+      Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
+    hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, exact-operator-norm source-facing factorization endpoint
+from a full-matrix linearized Barrlund--Sun step hypothesis. -/
+theorem higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hLright : L * Linv = 1)
+    (hUright : U * Uinv = 1)
+    (hUleft : Uinv * U = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (heta : opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (opNorm2 Linv * frobNormRect ΔA * opNorm2 Uinv) /
+        (1 - opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv) :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+    A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hLright hUright hUleft hlinear
+    (opNorm2_nonneg Linv) (opNorm2_nonneg ΔA) (opNorm2_nonneg Uinv)
+    (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
+    heta
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the
+factorization-level full-matrix linear-step endpoint. -/
+theorem higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm
+    {n : ℕ} [Nonempty (Fin n)]
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (_hLU : L * U = A)
+    (_hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hGlt : opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) < 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) :=
+  higham9_15_normwise_source_bound_of_normalized_linear_step_opNorm_of_source_inverse_identities
+    L U Linv Uinv ΔA ΔL ΔU hLleft hUright hGlt hlinear
+    hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, product-smallness source-oriented inverse-identity form
+of the factorization-level full-matrix linear-step endpoint. -/
+theorem higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_product_lt
+    {n : ℕ} [Nonempty (Fin n)]
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm
+    A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
+    (higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+      Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
+    hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, exact-operator-norm source-oriented inverse-identity
+form of the factorization-level full-matrix linear-step endpoint. -/
+theorem higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (heta : opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (opNorm2 Linv * frobNormRect ΔA * opNorm2 Uinv) /
+        (1 - opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv) :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_product_lt
+    A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright hlinear
+    (opNorm2_nonneg Linv) (opNorm2_nonneg ΔA) (opNorm2_nonneg Uinv)
+    (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
+    heta
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the factorization-level
+linear-step endpoint with two-sided inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm_of_matrix_inverse_identities :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the product-smallness
+factorization-level linear-step endpoint with two-sided inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm_of_matrix_inverse_identities_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the exact-operator-norm
+factorization-level linear-step endpoint with two-sided inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the source-oriented
+factorization-level linear-step endpoint. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the product-smallness
+source-oriented factorization-level linear-step endpoint. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_product_lt
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the exact-operator-norm
+source-oriented factorization-level linear-step endpoint. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_linear_step_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_linear_step_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15**, source-facing normwise endpoint from the original
 perturbed factorization equations plus the conditional min-factor control.
 
 The exact equations `LU = A`, `(L + ΔL)(U + ΔU) = A + ΔA`, and two-sided
@@ -38118,6 +38348,51 @@ theorem higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNor
     (opNorm2_nonneg Linv) (opNorm2_nonneg ΔA) (opNorm2_nonneg Uinv)
     (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
     heta
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the source-facing
+factorization endpoint with two-sided inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_min_factor_bound_opNorm_of_matrix_inverse_identities :=
+  higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_of_matrix_inverse_identities
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the product-smallness
+factorization endpoint with two-sided inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_min_factor_bound_opNorm_of_matrix_inverse_identities_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_of_matrix_inverse_identities_product_lt
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the exact-operator-norm
+factorization endpoint with two-sided inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_min_factor_bound_opNorm_of_matrix_inverse_identities_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_of_matrix_inverse_identities_exact_opNorm2
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the source-facing
+factorization endpoint. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_min_factor_bound_opNorm :=
+  higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the product-smallness
+source-facing factorization endpoint. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_min_factor_bound_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_product_lt
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the exact-operator-norm
+source-facing factorization endpoint. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_min_factor_bound_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the factorization endpoint
+with triangular-support hypotheses discharged from ordinary triangularity. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_min_factor_bound_opNorm_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_of_factor_triangularity
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the product-smallness
+factorization endpoint with ordinary triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_min_factor_bound_opNorm_product_lt_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_product_lt_of_factor_triangularity
+
+/-- **Theorem 9.15**, explicit `G`-named alias for the exact-operator-norm
+factorization endpoint with ordinary triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_min_factor_bound_opNorm_exact_opNorm2_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_exact_opNorm2_of_factor_triangularity
 
 /-- **Theorem 9.15 support**, source-facing residual handoff from the original
 factorization equations plus a principal-block min-factor hypothesis.
@@ -38901,6 +39176,96 @@ theorem higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_
     (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
     heta
 
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the factorization
+handoff from a principal-block min-factor hypothesis. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_of_matrix_inverse_identities :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_of_matrix_inverse_identities
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the factorization
+handoff from a linear-step hypothesis. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_of_matrix_inverse_identities :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+linear-step factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_of_matrix_inverse_identities_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+principal-block min-factor factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_of_matrix_inverse_identities_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_of_matrix_inverse_identities_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+linear-step factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+principal-block min-factor factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_of_matrix_inverse_identities_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_of_matrix_inverse_identities_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+principal-block min-factor factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+linear-step factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+product-smallness linear-step factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+exact-operator linear-step factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+product-smallness principal-block min-factor factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+exact-operator principal-block min-factor factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the min-factor
+factorization handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the linear-step
+factorization handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+linear-step handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_product_lt_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_product_lt_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+min-factor handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_product_lt_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_product_lt_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+linear-step handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_exact_opNorm2_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_exact_opNorm2_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+min-factor handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_exact_opNorm2_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_exact_opNorm2_of_factor_triangularity
+
 /-- **Theorem 9.15 support**, factorization-level `I + G` residual handoff
 from a principal-block min-factor hypothesis, using the sharpened one-residual
 source endpoint. -/
@@ -39651,6 +40016,96 @@ theorem higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_
     (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
     heta
 
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the one-residual
+min-factor factorization handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_of_matrix_inverse_identities_one_residual :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_of_matrix_inverse_identities_one_residual
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the one-residual
+linear-step factorization handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_of_matrix_inverse_identities_one_residual :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities_one_residual
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+one-residual linear-step handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_of_matrix_inverse_identities_product_lt_one_residual :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities_product_lt_one_residual
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+one-residual min-factor handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_of_matrix_inverse_identities_product_lt_one_residual :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_of_matrix_inverse_identities_product_lt_one_residual
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+one-residual linear-step handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2_one_residual :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2_one_residual
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+one-residual min-factor handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_of_matrix_inverse_identities_exact_opNorm2_one_residual :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_of_matrix_inverse_identities_exact_opNorm2_one_residual
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+one-residual min-factor factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_one_residual :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_one_residual
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+one-residual linear-step factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_one_residual :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_one_residual
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+product-smallness one-residual linear-step handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_product_lt_one_residual :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_product_lt_one_residual
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+product-smallness one-residual min-factor handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_product_lt_one_residual :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_product_lt_one_residual
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+exact-operator one-residual linear-step handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_exact_opNorm2_one_residual :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_exact_opNorm2_one_residual
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+exact-operator one-residual min-factor handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_exact_opNorm2_one_residual :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_exact_opNorm2_one_residual
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the one-residual
+min-factor handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_one_residual_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_one_residual_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the one-residual
+linear-step handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_one_residual_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_one_residual_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+one-residual linear-step handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_product_lt_one_residual_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_product_lt_one_residual_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+one-residual min-factor handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_product_lt_one_residual_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_product_lt_one_residual_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+one-residual linear-step handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_exact_opNorm2_one_residual_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_exact_opNorm2_one_residual_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+one-residual min-factor handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_exact_opNorm2_one_residual_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_exact_opNorm2_one_residual_of_factor_triangularity
+
 /-- **Theorem 9.15 support**, exact-residual factorization-level `I + G`
 handoff without a separate principal-block min-factor hypothesis. -/
 theorem higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_matrix_inverse_identities
@@ -40121,6 +40576,66 @@ theorem higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opN
     (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
     heta
 
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-residual
+factorization handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_of_matrix_inverse_identities :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_matrix_inverse_identities
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the no-smallness
+exact-residual factorization handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_of_matrix_inverse_identities_no_smallness :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_matrix_inverse_identities_no_smallness
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+exact-residual factorization handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_of_matrix_inverse_identities_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_matrix_inverse_identities_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+exact-residual factorization handoff with two-sided matrix inverse identities. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_of_matrix_inverse_identities_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_matrix_inverse_identities_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+exact-residual factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+no-smallness exact-residual factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_no_smallness :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_no_smallness
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+product-smallness exact-residual factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+exact-operator exact-residual factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-residual
+factorization handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the no-smallness
+exact-residual handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_no_smallness_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_no_smallness_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+exact-residual handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_product_lt_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_product_lt_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+exact-residual handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_residual_zero_opNorm_exact_opNorm2_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_exact_opNorm2_of_factor_triangularity
+
 /-- **Theorem 9.15**, source-facing product-smallness endpoint from the
 original `G` factorization equations when the inverse-normalized lower
 perturbation is identically zero. -/
@@ -40361,6 +40876,50 @@ theorem higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_exac
     (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
     heta
 
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the lower-zero
+factorization endpoint with source-oriented product smallness. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_left_zero_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the lower-zero
+factorization endpoint with exact operator norms. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_left_zero_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the upper-zero
+factorization endpoint with source-oriented product smallness. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_right_zero_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the upper-zero
+factorization endpoint with exact operator norms. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_right_zero_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the lower-zero
+factorization endpoint with ordinary factor-triangularity hypotheses and
+source-oriented product smallness. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_left_zero_opNorm_product_lt_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_product_lt_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the lower-zero
+factorization endpoint with ordinary factor-triangularity hypotheses and exact
+operator norms. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_left_zero_opNorm_exact_opNorm2_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_left_zero_opNorm_exact_opNorm2_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the upper-zero
+factorization endpoint with ordinary factor-triangularity hypotheses and
+source-oriented product smallness. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_right_zero_opNorm_product_lt_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_product_lt_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the upper-zero
+factorization endpoint with ordinary factor-triangularity hypotheses and exact
+operator norms. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_right_zero_opNorm_exact_opNorm2_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_right_zero_opNorm_exact_opNorm2_of_factor_triangularity
+
 /-- **Theorem 9.15**, printed-denominator normwise source bound from a
 componentwise `Gtilde` normalized linearized Barrlund--Sun step.
 
@@ -40563,6 +41122,204 @@ theorem higham9_15_normwise_source_bound_of_Gtilde_normalized_linear_step_opNorm
         (1 - opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv) :=
   higham9_15_normwise_source_bound_of_Gtilde_normalized_linear_step_opNorm_of_source_inverse_identities_product_lt
     Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLleft hUright hlinear
+    (opNorm2_nonneg LhatInv) (opNorm2_nonneg ΔA) (opNorm2_nonneg UhatInv)
+    (opNorm2Le_opNorm2 LhatInv) (opNorm2Le_opNorm2 ΔA)
+    (opNorm2Le_opNorm2 UhatInv) heta
+
+/-- **Theorem 9.15**, source-facing `Gtilde` normwise endpoint from the
+signed original factorization equations plus a full-matrix linearized
+Barrlund--Sun step hypothesis. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_of_matrix_inverse_identities
+    {n : ℕ} [Nonempty (Fin n)]
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (_hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (_hPert : Lhat * Uhat = A + ΔA)
+    (_hLleft : LhatInv * Lhat = 1)
+    (hLright : Lhat * LhatInv = 1)
+    (_hUright : Uhat * UhatInv = 1)
+    (hUleft : UhatInv * Uhat = 1)
+    (hGlt : opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) < 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) := by
+  have hLrightRect : rectMatMul Lhat LhatInv = idMatrix n := by
+    ext i j
+    have h := congrFun (congrFun hLright i) j
+    simpa [rectMatMul, idMatrix, Matrix.mul_apply] using h
+  have hUleftRect : rectMatMul UhatInv Uhat = idMatrix n := by
+    ext i j
+    have h := congrFun (congrFun hUleft i) j
+    simpa [rectMatMul, idMatrix, Matrix.mul_apply] using h
+  exact
+    higham9_15_normwise_source_bound_of_Gtilde_normalized_linear_step_opNorm_of_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLrightRect hUleftRect
+      hGlt hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, product-smallness source-facing `Gtilde`
+factorization endpoint from a full-matrix linearized Barrlund--Sun step. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+    {n : ℕ} [Nonempty (Fin n)]
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hLright : Lhat * LhatInv = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hUleft : UhatInv * Uhat = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) :=
+  higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_of_matrix_inverse_identities
+    A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hLright
+    hUright hUleft
+    (higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+      LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
+    hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, exact-operator-norm source-facing `Gtilde`
+factorization endpoint from a full-matrix linearized Barrlund--Sun step. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hLright : Lhat * LhatInv = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hUleft : UhatInv * Uhat = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (heta : opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (opNorm2 LhatInv * frobNormRect ΔA * opNorm2 UhatInv) /
+        (1 - opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv) :=
+  higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+    A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hLright
+    hUright hUleft hlinear
+    (opNorm2_nonneg LhatInv) (opNorm2_nonneg ΔA) (opNorm2_nonneg UhatInv)
+    (opNorm2Le_opNorm2 LhatInv) (opNorm2Le_opNorm2 ΔA)
+    (opNorm2Le_opNorm2 UhatInv) heta
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the
+factorization-level `Gtilde` full-matrix linear-step endpoint. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm
+    {n : ℕ} [Nonempty (Fin n)]
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (_hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (_hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hGlt : opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) < 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) :=
+  higham9_15_normwise_source_bound_of_Gtilde_normalized_linear_step_opNorm_of_source_inverse_identities
+    Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLleft hUright hGlt hlinear
+    hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, product-smallness source-oriented inverse-identity form
+of the factorization-level `Gtilde` full-matrix linear-step endpoint. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_product_lt
+    {n : ℕ} [Nonempty (Fin n)]
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) /
+        (1 - linv2 * dA2 * uinv2) :=
+  higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm
+    A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+    (higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+      LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
+    hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, exact-operator-norm source-oriented inverse-identity
+form of the factorization-level `Gtilde` full-matrix linear-step endpoint. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (heta : opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (opNorm2 LhatInv * frobNormRect ΔA * opNorm2 UhatInv) /
+        (1 - opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv) :=
+  higham9_15_normwise_source_bound_of_factorization_Gtilde_linear_step_opNorm_product_lt
+    A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright hlinear
     (opNorm2_nonneg LhatInv) (opNorm2_nonneg ΔA) (opNorm2_nonneg UhatInv)
     (opNorm2Le_opNorm2 LhatInv) (opNorm2Le_opNorm2 ΔA)
     (opNorm2Le_opNorm2 UhatInv) heta
@@ -46395,6 +47152,65 @@ theorem higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_ze
       Uhat UhatInv hUright)
     hXtri hYtri hres
 
+/-- **Theorem 9.15 support**, source-oriented factorization-level `I + G`
+exact full-residual source-perturbation vanishing theorem with normalized
+triangular support discharged from ordinary factor-triangularity hypotheses. -/
+theorem higham9_15_source_perturbations_zero_of_factorization_G_residual_zero_of_factor_triangularity
+    {n : ℕ}
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin n) (Fin n) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL) *
+              (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)) = 0) :
+    (∀ i j : Fin n, ΔL i j = 0) ∧ (∀ i j : Fin n, ΔU i j = 0) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_source_perturbations_zero_of_factorization_G_residual_zero
+      A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
+      hXtri hYtri hres
+
+/-- **Theorem 9.15 support**, source-oriented factorization-level `I - Gtilde`
+exact full-residual source-perturbation vanishing theorem with normalized
+triangular support discharged from ordinary factor-triangularity hypotheses. -/
+theorem higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_zero_of_factor_triangularity
+    {n : ℕ}
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin n) (Fin n) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)) = 0) :
+    (∀ i j : Fin n, ΔL i j = 0) ∧ (∀ i j : Fin n, ΔU i j = 0) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_zero
+      A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+      hXtri hYtri hres
+
 /-- **Theorem 9.15 support**, if the source perturbations vanish, the printed
 relative Frobenius left-hand side is bounded by zero. -/
 theorem higham9_15_normwise_source_zero_bound_of_source_perturbations_zero
@@ -46656,6 +47472,65 @@ theorem higham9_15_normwise_source_zero_bound_of_factorization_Gtilde_residual_z
     higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_zero
       A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
       hXtri hYtri hres
+  exact
+    higham9_15_normwise_source_zero_bound_of_source_perturbations_zero
+      Lhat Uhat ΔL ΔU hzero.1 hzero.2
+
+/-- **Theorem 9.15 support**, source-oriented factorization-level `I + G`
+exact full-residual normwise zero-bound theorem with normalized triangular
+support discharged from ordinary factor-triangularity hypotheses. -/
+theorem higham9_15_normwise_source_zero_bound_of_factorization_G_residual_zero_of_factor_triangularity
+    {n : ℕ}
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin n) (Fin n) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL) *
+              (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)) = 0) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤ 0 := by
+  have hzero :=
+    higham9_15_source_perturbations_zero_of_factorization_G_residual_zero_of_factor_triangularity
+      A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
+      hLinv_lower hΔL_strict hΔU_upper hUinv_upper hres
+  exact
+    higham9_15_normwise_source_zero_bound_of_source_perturbations_zero
+      L U ΔL ΔU hzero.1 hzero.2
+
+/-- **Theorem 9.15 support**, source-oriented factorization-level `I - Gtilde`
+exact full-residual normwise zero-bound theorem with normalized triangular
+support discharged from ordinary factor-triangularity hypotheses. -/
+theorem higham9_15_normwise_source_zero_bound_of_factorization_Gtilde_residual_zero_of_factor_triangularity
+    {n : ℕ}
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin n) (Fin n) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)) = 0) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      0 := by
+  have hzero :=
+    higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_zero_of_factor_triangularity
+      A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper hres
   exact
     higham9_15_normwise_source_zero_bound_of_source_perturbations_zero
       Lhat Uhat ΔL ΔU hzero.1 hzero.2
@@ -46973,6 +47848,69 @@ theorem higham9_15_componentwise_source_firstOrder_zero_bound_of_factorization_G
     higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_zero
       A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
       hXtri hYtri hres
+  exact
+    higham9_15_componentwise_source_firstOrder_zero_bound_of_source_perturbations_zero
+      u ΔL ΔU hzero.1 hzero.2
+
+/-- **Theorem 9.15 support**, source-oriented factorization-level `I + G`
+exact full-residual componentwise zero first-order theorem with normalized
+triangular support discharged from ordinary factor-triangularity hypotheses. -/
+theorem higham9_15_componentwise_source_firstOrder_zero_bound_of_factorization_G_residual_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin n) (Fin n) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL) *
+              (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)) = 0) :
+    (∀ i j : Fin n, FirstOrderLe u 0 |ΔL i j|) ∧
+      (∀ i j : Fin n, FirstOrderLe u 0 |ΔU i j|) := by
+  have hzero :=
+    higham9_15_source_perturbations_zero_of_factorization_G_residual_zero_of_factor_triangularity
+      A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
+      hLinv_lower hΔL_strict hΔU_upper hUinv_upper hres
+  exact
+    higham9_15_componentwise_source_firstOrder_zero_bound_of_source_perturbations_zero
+      u ΔL ΔU hzero.1 hzero.2
+
+/-- **Theorem 9.15 support**, source-oriented factorization-level
+`I - Gtilde` exact full-residual componentwise zero first-order theorem with
+normalized triangular support discharged from ordinary factor-triangularity
+hypotheses. -/
+theorem higham9_15_componentwise_source_firstOrder_zero_bound_of_factorization_Gtilde_residual_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin n) (Fin n) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)) = 0) :
+    (∀ i j : Fin n, FirstOrderLe u 0 |ΔL i j|) ∧
+      (∀ i j : Fin n, FirstOrderLe u 0 |ΔU i j|) := by
+  have hzero :=
+    higham9_15_source_perturbations_zero_of_factorization_Gtilde_residual_zero_of_factor_triangularity
+      A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper hres
   exact
     higham9_15_componentwise_source_firstOrder_zero_bound_of_source_perturbations_zero
       u ΔL ΔU hzero.1 hzero.2
@@ -48595,6 +49533,178 @@ theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_s
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
       U Uinv hUright)
     hfact hXtri hYtri hR hYzero
+
+/-- **Theorem 9.15**, split-level `G` supplied-resolvent left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_left_zero
+      L U Linv Uinv ΔA ΔL ΔU R hLright hUleft hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, split-level `G` supplied-resolvent right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_right_zero
+      L U Linv Uinv ΔA ΔL ΔU R hLright hUleft hfact hXtri hYtri hR hYzero
+
+/-- **Theorem 9.15**, source-oriented `G` supplied-resolvent left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_left_zero
+      L U Linv Uinv ΔA ΔL ΔU R hLleft hUright hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, source-oriented `G` supplied-resolvent right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_right_zero
+      L U Linv Uinv ΔA ΔL ΔU R hLleft hUright hfact hXtri hYtri hR hYzero
 
 /-- **Theorem 9.15**, split-level spectral-radius `G` canonical-resolvent
 endpoint.  The normalized route no longer requires a caller-supplied
@@ -53699,6 +54809,186 @@ theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant
       Uhat UhatInv hUright)
     hfact hXtri hYtri hR hYzero
 
+/-- **Theorem 9.15**, split-level `Gtilde` supplied-resolvent left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_left_zero
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+      hLright hUleft hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, split-level `Gtilde` supplied-resolvent right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_right_zero
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+      hLright hUleft hfact hXtri hYtri hR hYzero
+
+/-- **Theorem 9.15**, source-oriented `Gtilde` supplied-resolvent left-zero
+endpoint with normalized triangular support discharged from ordinary
+triangularity of `Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_left_zero
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+      hLleft hUright hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, source-oriented `Gtilde` supplied-resolvent right-zero
+endpoint with normalized triangular support discharged from ordinary
+triangularity of `Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_right_zero
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+      hLleft hUright hfact hXtri hYtri hR hYzero
+
 /-- **Theorem 9.15**, split-level spectral-radius `Gtilde`
 canonical-resolvent endpoint.  The normalized route no longer requires a
 caller-supplied nonnegative resolvent: `rho(|Gtilde|) < 1` supplies the
@@ -58485,6 +59775,174 @@ theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse U Uinv hUright)
     hfact hXtri hYtri hYzero
 
+/-- **Theorem 9.15**, split-level first-order `G` left-zero endpoint with
+normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_left_zero
+      u L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, split-level first-order `G` right-zero endpoint with
+normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities_right_zero
+      u L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri hYzero
+
+/-- **Theorem 9.15**, source-oriented first-order `G` left-zero endpoint with
+normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_left_zero
+      u L U Linv Uinv ΔA ΔL ΔU hLleft hUright hfact hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, source-oriented first-order `G` right-zero endpoint with
+normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities_right_zero
+      u L U Linv Uinv ΔA ΔL ΔU hLleft hUright hfact hXtri hYtri hYzero
+
 /-- **Theorem 9.15**, source-facing first-order componentwise endpoint from the
 original `G` factorization equations. -/
 theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant
@@ -58670,6 +60128,80 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majo
     higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant
       u A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
       hXtri hYtri hquad.1 hquad.2
+
+/-- **Theorem 9.15**, factorization-level first-order `G` left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant_left_zero
+      u A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
+      hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, factorization-level first-order `G` right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant_right_zero
+      u A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright
+      hXtri hYtri hYzero
 
 /-- **Theorem 9.15**, source-oriented inverse-identity form of the first-order
 componentwise `Gtilde` split wrapper. -/
@@ -59017,6 +60549,182 @@ theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majoran
       Uhat UhatInv hUright)
     hfact hXtri hYtri hYzero
 
+/-- **Theorem 9.15**, split-level first-order `Gtilde` left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_left_zero
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLright hUleft hfact hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, split-level first-order `Gtilde` right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_right_zero
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLright hUleft hfact hXtri hYtri hYzero
+
+/-- **Theorem 9.15**, source-oriented first-order `Gtilde` left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_left_zero
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLleft hUright hfact hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, source-oriented first-order `Gtilde` right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_right_zero
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLleft hUright hfact hXtri hYtri hYzero
+
 /-- **Theorem 9.15**, source-facing first-order componentwise endpoint from the
 original `Gtilde` factorization equations. -/
 theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant
@@ -59202,6 +60910,82 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local
     higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant
       u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
       hXtri hYtri hquad.1 hquad.2
+
+/-- **Theorem 9.15**, factorization-level first-order `Gtilde` left-zero
+endpoint with normalized triangular support discharged from ordinary
+triangularity of `Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant_left_zero
+      u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+      hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, factorization-level first-order `Gtilde` right-zero
+endpoint with normalized triangular support discharged from ordinary
+triangularity of `Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant_right_zero
+      u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+      hXtri hYtri hYzero
 
 /-- **Theorem 9.15 support**, exact componentwise perturbation envelopes can
 be read as first-order envelopes with the same leading term. -/
@@ -59538,6 +61322,92 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_
     (higham9_15_componentwise_product_majorant_of_right_zero
       (higham9_27_GMatrix Linv ΔA Uinv)
       (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
+
+/-- **Theorem 9.15**, factorization-level first-order componentwise `G`
+supplied-resolvent left-zero endpoint with triangular support discharged from
+ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_majorant_of_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul R
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_majorant_of_left_zero
+      u A L U Linv Uinv ΔA ΔL ΔU R hLU hPert hLleft hUright hXtri hYtri
+      hR hXzero
+
+/-- **Theorem 9.15**, factorization-level first-order componentwise `G`
+supplied-resolvent right-zero endpoint with triangular support discharged from
+ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_majorant_of_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul R
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_majorant_of_right_zero
+      u A L U Linv Uinv ΔA ΔL ΔU R hLU hPert hLleft hUright hXtri hYtri
+      hR hYzero
 
 /-- **Theorem 9.15**, factorization-level first-order componentwise `G`
 endpoint with the canonical nonsingular Neumann inverse from an infinity-norm
@@ -61265,6 +63135,94 @@ theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_resol
     (higham9_15_componentwise_product_majorant_of_right_zero
       (higham9_27_GMatrix LhatInv ΔA UhatInv)
       (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
+
+/-- **Theorem 9.15**, factorization-level first-order componentwise `Gtilde`
+supplied-resolvent left-zero endpoint with triangular support discharged from
+ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_resolvent_majorant_of_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul R
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_resolvent_majorant_of_left_zero
+      u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R hA hPert hLleft hUright
+      hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, factorization-level first-order componentwise `Gtilde`
+supplied-resolvent right-zero endpoint with triangular support discharged from
+ordinary factor triangularity. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_resolvent_majorant_of_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (rectMatMul R
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_resolvent_majorant_of_right_zero
+      u A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R hA hPert hLleft hUright
+      hXtri hYtri hR hYzero
 
 /-- **Theorem 9.15**, factorization-level first-order componentwise `Gtilde`
 endpoint with the canonical nonsingular Neumann inverse from an infinity-norm

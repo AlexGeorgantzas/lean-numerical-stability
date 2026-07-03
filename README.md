@@ -33,6 +33,31 @@ during gradual migration.
 
 The library formalizes reusable results and stability contracts from **Chapter 1**, selected **Chapter 2** model algebra, core **Chapters 3-6** results, **Chapters 8 and 9** of Higham, plus selected higher-chapter interfaces used for compositional stability proofs. It also includes a RandNLA case study for the explicit meta-algorithms in Drineas and Mahoney's CACM survey, ["RandNLA: Randomized Numerical Linear Algebra"](https://dl.acm.org/doi/10.1145/2842602).
 
+Chapter 16 Sylvester-equation work is tracked in
+[`docs/source_coverage/higham_ch16.md`](docs/source_coverage/higham_ch16.md).
+The current Split 3B surface includes the rectangular Sylvester equation,
+vec/Kronecker wrappers, diagonal-coefficient and supplied-Schur foundations,
+Lyapunov specialization, nonnegative sep-infimum/lower-bound bridge
+infrastructure, a posteriori residual bounds, generalized/Riccati residual
+predicates, and the SVD-coordinate
+backward-error amplification vocabulary. The latter now names Higham's
+Chapter 16.2 amplification factor `sylvesterAmplificationMu`, its square-case
+specialization `sylvesterAmplificationMuSquare`, and the source formula bridge
+`sylvesterAmplificationMu_square_eq`, plus the xi-level μ-relative-residual
+bound `xiSq_le_mu_relative_residual_sq`; the full eta amplification theorem
+and several condition/practical-bound rows remain open in the Chapter 16 ledger.
+
+Chapter 17 stationary-iteration work is tracked in
+[`docs/source_coverage/higham_ch17.md`](docs/source_coverage/higham_ch17.md).
+The existing `StationaryIteration.lean` module now carries the correct
+2nd-edition Chapter 17 source labels and exposes a source-sign wrapper
+`SourceComputedIteration` for equation (17.1), plus a bridge
+`computedIteration_of_sourceComputedIteration` and source-sign one-step error
+recurrence `one_step_error_source`. The current proved surface covers
+nonsingular splitting algebra, finite/q-bound forward and residual dependencies,
+and Jacobi/SOR splitting identities; the exact infinite-sum, singular-system,
+and stopping-test rows remain open in the Chapter 17 ledger.
+
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
 The current Split 3B route has checked source-faithful Householder
@@ -73,7 +98,15 @@ computed normalized Householder vector. The normalized signed-active vector is
 now also packaged as a source-faithful normalization certificate under the same
 computed-alpha or exact-alpha exact primitive-operation hypotheses; this
 certifies the normalized vector produced from the signed active vector and
-`householderBetaSpec`, not the raw unnormalized stored vector. That bridge is now threaded through the
+`householderBetaSpec`, not the raw unnormalized stored vector. The same
+certificate route now has leading-block variants that discharge the nonzero
+active-column premise from first leading-block determinant nonbreakdown, so
+callers can use the standard stored-loop nonbreakdown surface instead of
+supplying a separate nonzero-column fact. The same certificate surface now has
+tail-leading-block variants for successor panels, deriving the once-shrunk
+panel's nonzero source-column premise from determinant nonbreakdown of
+`qrLeadingBlock (trailingPanel A)` under the same exact primitive-operation and
+computed-alpha/exact-alpha hypotheses. That bridge is now threaded through the
 first-pivot signed stored-panel handoff under the same exact-operation and
 update-compatibility surfaces, so the first QR storage step can consume the
 computed normalized vector while the stored route keeps the signed active vector
@@ -88,7 +121,13 @@ same exact-operation and update-compatibility/exact-add-mul surfaces. Exact-alph
 variants expose the same bridge when the successor alpha is stated as Higham's
 exact `householderAlpha` rather than the computed `fl_householderAlpha`. Exact
 subtraction also discharges the subtract-zero copy premise for those
-computed-alpha and exact-alpha successor QR recursion wrappers. The
+computed-alpha and exact-alpha successor QR recursion wrappers. The lower
+successor stored-panel handoff now has matching tail-leading-block variants
+that derive the nonzero trailing source-column premise from determinant
+nonbreakdown of the once-shrunk trailing leading block. The tail-leading-block
+successor QR variants also derive the same premise from the successor
+leading-block determinant, so callers can use the determinant nonbreakdown
+surface instead of supplying that column fact separately. The
 full rounded stored-loop proof remains open until the per-stage certificate
 fields are proved from a source-faithful model or replaced by a separate
 compatibility/perturbation theorem.
@@ -96,10 +135,10 @@ compatibility/perturbation theorem.
 For a searchable map from stability-analysis goals to files, definitions, and
 theorem names, see [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).  For a
 Lean `#check` companion index, see [`examples/LibraryLookup.lean`](examples/LibraryLookup.lean).
-Current build status: `lake build LeanFpAnalysis.FP` and full `lake build` pass;
-representative Slot 1 checks for Chapters 1-6 pass. The full
-`examples/LibraryLookup.lean` check currently needs a stale Stewart QR lookup
-refresh around lines 5442-5464, outside the selected Slot 1 rows.
+Recent verification for the current synchronized head includes the focused
+Chapter 19 check, rebuilt Chapter 9/10 and matrix-powers merge dependencies, and
+the full `examples/LibraryLookup.lean` smoke check. Representative Slot 1 checks
+for Chapters 1-6 pass.
 Chapter 1-6 audit summary: Chapter 1 empirical-output rows remain
 experiment/model artifacts; Chapter 2 finite-format, IEEE, and guard-digit
 selector work is current; Chapter 3 covers Problems 3.1--3.12 with historical
