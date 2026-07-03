@@ -176,6 +176,89 @@ theorem backward_error_upper_component (n : ℕ)
         (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)) := by
         rw [mul_div_assoc]
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15):
+    optimal SVD-coordinate perturbation in the `DeltaA` slot. -/
+noncomputable def svdOptimalDeltaA (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    α ^ 2 * σ j * R_tilde i j /
+      (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15):
+    optimal SVD-coordinate perturbation in the `DeltaB` slot. -/
+noncomputable def svdOptimalDeltaB (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    -(β ^ 2 * σ i * R_tilde i j) /
+      (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15):
+    optimal SVD-coordinate perturbation in the `DeltaC` slot. -/
+noncomputable def svdOptimalDeltaC (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    -(γ ^ 2 * R_tilde i j) /
+      (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)
+
+/-- The coordinatewise optimal perturbations solve the uncoupled residual
+    equation used in (16.14)-(16.15). -/
+theorem svdOptimalPerturbations_scalar_eq (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) :
+    ∀ i j : Fin n,
+      svdOptimalDeltaA n R_tilde σ α β γ i j * σ j -
+          σ i * svdOptimalDeltaB n R_tilde σ α β γ i j -
+            svdOptimalDeltaC n R_tilde σ α β γ i j =
+        R_tilde i j := by
+  intro i j
+  unfold svdOptimalDeltaA svdOptimalDeltaB svdOptimalDeltaC
+  have hd_ne :
+      α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2 ≠ 0 :=
+    ne_of_gt (hpos i j)
+  field_simp [hd_ne]
+  ring
+
+/-- The coordinatewise optimal perturbations attain total normalized squared
+    cost exactly `xiSq`.  This is the constructive upper-side dependency for
+    Higham's equation (16.15). -/
+theorem svdOptimalPerturbations_cost_eq_xiSq (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) :
+    ∑ i : Fin n, ∑ j : Fin n,
+      (svdOptimalDeltaA n R_tilde σ α β γ i j ^ 2 / α ^ 2 +
+        svdOptimalDeltaB n R_tilde σ α β γ i j ^ 2 / β ^ 2 +
+          svdOptimalDeltaC n R_tilde σ α β γ i j ^ 2 / γ ^ 2) =
+      xiSq n R_tilde σ α β γ := by
+  unfold xiSq
+  apply Finset.sum_congr rfl
+  intro i _
+  apply Finset.sum_congr rfl
+  intro j _
+  unfold svdOptimalDeltaA svdOptimalDeltaB svdOptimalDeltaC
+  have hd_ne :
+      α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2 ≠ 0 :=
+    ne_of_gt (hpos i j)
+  field_simp [hd_ne]
+
+/-- Existence form of the optimal SVD-coordinate perturbations: they solve the
+    uncoupled equation and have total normalized squared cost `xiSq`. -/
+theorem exists_svdOptimalPerturbations (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) :
+    ∃ DA DB DC : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, DA i j * σ j - σ i * DB i j - DC i j = R_tilde i j) ∧
+        (∑ i : Fin n, ∑ j : Fin n,
+          (DA i j ^ 2 / α ^ 2 + DB i j ^ 2 / β ^ 2 + DC i j ^ 2 / γ ^ 2)) =
+          xiSq n R_tilde σ α β γ := by
+  refine ⟨svdOptimalDeltaA n R_tilde σ α β γ,
+    svdOptimalDeltaB n R_tilde σ α β γ,
+    svdOptimalDeltaC n R_tilde σ α β γ, ?_, ?_⟩
+  · exact svdOptimalPerturbations_scalar_eq n R_tilde σ α β γ hpos
+  · exact svdOptimalPerturbations_cost_eq_xiSq n R_tilde σ α β γ hpos
+
 -- ============================================================
 -- Amplification factor (§16.2, eqs 16.17-16.19)
 -- ============================================================
