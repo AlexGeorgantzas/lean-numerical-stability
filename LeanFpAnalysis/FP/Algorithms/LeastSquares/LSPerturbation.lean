@@ -1254,6 +1254,47 @@ theorem wedinTheorem20_1_vecNorm2_Bplus_residual_le_eta
     field_simp [ne_of_gt hden_pos]
   simpa [hcoeff] using hbound
 
+/-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
+    direct forcing-term estimate for `Bplus*(-DeltaA*x + Deltab)`.
+
+This is the elementary norm part of the Wedin transfer: a pseudoinverse
+operator-radius for `Bplus`, an operator-radius for `DeltaA`, and a vector
+radius for `Deltab` bound the forcing contribution before it is combined with
+the residual-transfer term. -/
+theorem wedinTheorem20_1_vecNorm2_Bplus_forcing_le
+    {m k : ℕ} (Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (Deltab : Fin m → ℝ)
+    (x : Fin (k + 1) → ℝ)
+    {Bplus_norm DeltaA_norm Deltab_norm : ℝ}
+    (hBplus_norm_nonneg : 0 ≤ Bplus_norm)
+    (hBplus : rectOpNorm2Le Bplus Bplus_norm)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm) :
+    vecNorm2
+        (rectMatMulVec Bplus
+          (fun i => -rectMatMulVec DeltaA x i + Deltab i)) ≤
+      Bplus_norm * (DeltaA_norm * vecNorm2 x + Deltab_norm) := by
+  let forcing : Fin m → ℝ :=
+    fun i => -rectMatMulVec DeltaA x i + Deltab i
+  have hforcing :
+      vecNorm2 forcing ≤ DeltaA_norm * vecNorm2 x + Deltab_norm := by
+    calc
+      vecNorm2 forcing
+          ≤ vecNorm2 (fun i : Fin m => -rectMatMulVec DeltaA x i) +
+              vecNorm2 Deltab := by
+              simpa [forcing] using
+                vecNorm2_add_le (fun i : Fin m => -rectMatMulVec DeltaA x i)
+                  Deltab
+      _ = vecNorm2 (rectMatMulVec DeltaA x) + vecNorm2 Deltab := by
+              rw [vecNorm2_neg]
+      _ ≤ DeltaA_norm * vecNorm2 x + Deltab_norm :=
+              add_le_add (hDeltaA x) hDeltab
+  calc
+    vecNorm2 (rectMatMulVec Bplus forcing)
+        ≤ Bplus_norm * vecNorm2 forcing := hBplus forcing
+    _ ≤ Bplus_norm * (DeltaA_norm * vecNorm2 x + Deltab_norm) :=
+        mul_le_mul_of_nonneg_left hforcing hBplus_norm_nonneg
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
