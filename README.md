@@ -39,18 +39,58 @@ The current Split 3B route has checked source-faithful Householder
 normalization certificate surfaces, including a named stronger normalization
 model boundary, exact one-tail and first-two certificate constructors, and an
 exact-arithmetic all-stage tail-vector bridge that feeds the Theorem 19.13
-final-panel pipeline through those certificates. The stronger-model boundary
-now also exposes sufficient-condition constructors from agreement with the
+final-panel pipeline through those certificates. The all-stage tail-vector
+premise now also has explicit zero, one-column, and two-step constructors for
+both the exact-unit-roundoff and arbitrary-model package surfaces, so future
+stored-loop induction work can assemble the package without unfolding the
+recursive definition. The stronger-model boundary now also exposes
+sufficient-condition constructors from agreement with the
 exact Higham normalized vector and from exact computed Householder vector/beta
 agreement, plus an exact add/mul/div/sqrt operation route, the exact-arithmetic
 normalized-vector equality, and raw, record, full-stage, source-closure,
 final-closed, and final-panel endpoint wrappers from all-stage tail-vector
-equalities. The exact primitive-operation route is now also threaded directly
+equalities. The recursive source-faithful certificate package is now also
+proved equivalent to both the expanded raw tail-normalized package and the
+named tail-normalized record package, so later stored-loop work can target any
+of those surfaces while still proving the same vector-equality and self-dot
+fields. The exact primitive-operation route is now also threaded directly
 through the raw, record, source-closure, final-closed, and final-panel endpoint
 wrappers, and exact subtraction now discharges the remaining subtract-zero copy
-premise on the final-closed and final-panel variants. The full rounded
-stored-loop proof remains open until the per-stage certificate fields are
-proved from a source-faithful model or replaced by a separate
+premise on the exact primitive-operation final-closed/final-panel variants and
+on the source-closure, tail-normalized, source-faithful,
+normalization-model, and full-stage final-closure endpoints, with matching
+source-closure, tail-normalized, source-faithful, normalization-model, and
+full-stage final-panel wrappers now available. One-entry route audits now also
+prove that the stronger normalization-model predicate is not a consequence of
+arbitrary `FPModel`, and that literal equality to `fl_householderNormalizedVector`
+still does not imply the full source-faithful normalization certificate without
+the self-dot field. The unnormalized route now also has
+pivot-zero signed-active-vector bridges identifying the stored signed vector
+with the exact or computed unnormalized Householder vector, plus a betaSpec
+normalization bridge showing that, under nonzero-column and exact primitive
+operation hypotheses, betaSpec-normalizing that unnormalized vector gives the
+computed normalized Householder vector. The normalized signed-active vector is
+now also packaged as a source-faithful normalization certificate under the same
+computed-alpha or exact-alpha exact primitive-operation hypotheses; this
+certifies the normalized vector produced from the signed active vector and
+`householderBetaSpec`, not the raw unnormalized stored vector. That bridge is now threaded through the
+first-pivot signed stored-panel handoff under the same exact-operation and
+update-compatibility surfaces, so the first QR storage step can consume the
+computed normalized vector while the stored route keeps the signed active vector
+and `householderBetaSpec`. The same route now reaches the pivot-1 successor
+step: the full stored loop keeps the zero-prefixed signed active vector and
+`householderBetaSpec`, while the once-shrunk trailing panel uses the computed
+normalized reflector with beta `1`, and exact subtraction now discharges its
+subtract-zero copy premise. That successor handoff is now threaded through the
+arbitrary-width two-step QR recursion, so the second stored active
+`householderBetaSpec` step can feed the twice-shrunk trailing QR panel under the
+same exact-operation and update-compatibility/exact-add-mul surfaces. Exact-alpha
+variants expose the same bridge when the successor alpha is stated as Higham's
+exact `householderAlpha` rather than the computed `fl_householderAlpha`. Exact
+subtraction also discharges the subtract-zero copy premise for those
+computed-alpha and exact-alpha successor QR recursion wrappers. The
+full rounded stored-loop proof remains open until the per-stage certificate
+fields are proved from a source-faithful model or replaced by a separate
 compatibility/perturbation theorem.
 
 For a searchable map from stability-analysis goals to files, definitions, and
