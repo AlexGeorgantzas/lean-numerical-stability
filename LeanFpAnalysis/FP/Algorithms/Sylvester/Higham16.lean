@@ -149,6 +149,27 @@ theorem lyapunov_solution_symmetric_of_symmetric_rhs (n : Nat)
   exact huniq i j
 
 -- ============================================================
+-- A posteriori source wrapper from Chapter 16.4
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.28), relative source form:
+    divide the existing Frobenius residual-error bound by the norm of the
+    exact solution. -/
+theorem sylvester_relative_aposteriori_bound (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hSep : SepLowerBound n A B sigma)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+        frobNorm X :=
+  div_le_div_of_nonneg_right
+    (sylvester_aposteriori_bound n A B C X Xhat sigma hSigma hSep hExact hE_ne)
+    (le_of_lt hX_pos)
+
+-- ============================================================
 -- Generalized equations from Chapter 16.5
 -- ============================================================
 

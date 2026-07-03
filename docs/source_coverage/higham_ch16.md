@@ -30,7 +30,7 @@
 | (16.22), algebraic perturbation identity | `sylvester_perturbation_equation`, `sylvester_perturbation_first_order` | `SylvesterPerturbation.lean` | Theorems | Matrix-form Kronecker statement is still open. |
 | (16.25), sep-weakened perturbation route | `sylvester_perturbation_bound`, `sylvester_relative_perturbation`, `condSylvester` | `SylvesterPerturbation.lean` | Theorem/definition | Uses `SepLowerBound`; exact `P^{-1}` condition-number surface remains open. |
 | (16.26), lower-bound form | `SepLowerBound` | `SylvesterSpec.lean` | Predicate | Honest lower-bound predicate, not an attained minimum. |
-| (16.28), square a posteriori route | `sylvester_aposteriori_bound` | `SylvesterPerturbation.lean` | Theorem | Square Frobenius error-residual bound via `SepLowerBound`. |
+| (16.28), a posteriori route | `sylvester_aposteriori_bound`, `sylvester_relative_aposteriori_bound` | `SylvesterPerturbation.lean`, `Higham16.lean` | Theorems | Square Frobenius error-residual bound and relative source wrapper via `SepLowerBound`. |
 | (16.30) | `generalizedSylvesterAXB_CXD_residual` | `Higham16.lean` | Definition | Residual surface for the generalized equation. |
 | (16.31) | `IsGeneralizedSylvesterPairSolution` | `Higham16.lean` | Predicate | Coupled generalized Sylvester surface. |
 | (16.32) | `riccatiResidual` | `Higham16.lean` | Definition | Residual surface for the algebraic Riccati equation. |
@@ -70,7 +70,7 @@
 | H16.Eq16_25.phi_bound | p.313, (16.25) | inequality | Weaker perturbation bound via sep. | precise | square current API | derivation | `SepLowerBound` | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `sylvester_perturbation_bound`, `sylvester_relative_perturbation`; exact `P^{-1}` version open. |
 | H16.Eq16_26.sep_definition | p.313, (16.26) | definition | Separation of A and B. | precise | square current API | not applicable | Frobenius norm | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `SepLowerBound`; exact minimum/infimum still open. |
 | H16.Eq16_27.lyapunov_condition | p.314, (16.27) | definition | Lyapunov condition number using vec-permutation. | precise | square | derivation | vec-permutation matrix | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open. |
-| H16.Eq16_28.aposteriori | p.315, (16.28) | inequality | A posteriori error-residual bound. | precise | square current API | derivation | `SepLowerBound` | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `sylvester_aposteriori_bound`; source relative form open. |
+| H16.Eq16_28.aposteriori | p.315, (16.28) | inequality | A posteriori error-residual bound. | precise | square current API | derivation | `SepLowerBound` | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `sylvester_aposteriori_bound`, `sylvester_relative_aposteriori_bound`; relative wrapper assumes `frobNorm X > 0`. |
 | H16.Eq16_29.practical_error_bound | p.315, (16.29) | inequality | Componentwise practical error bound with computed residual budget. | precise | implementation-facing | sketch | componentwise abs, inverse estimator, rounded residual | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open. |
 | H16.Eq16_30.generalized_axb_cxd | p.316, (16.30) | equation | Generalized Sylvester equation `AXB + CXD = E`. | precise | general rectangular | not applicable | rectangular products | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `generalizedSylvesterAXB_CXD_residual`. |
 | H16.Eq16_31.coupled_generalized | p.316, (16.31) | equation | Coupled generalized Sylvester equations. | precise | general rectangular | not applicable | rectangular products | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `IsGeneralizedSylvesterPairSolution`. |
@@ -96,6 +96,7 @@
 | `sylvesterOpRect` | Avoids presenting square-only infrastructure as the full source shape. | `IsSylvesterSolutionRect`, `sylvesterResidualRect` | implemented |
 | `sylvesterResidualRect` | Records residual semantics for rectangular source rows. | inventory rows for (16.9), (16.11), (16.29) | implemented |
 | `lyapunov_solution_iff_sylvester_special` | Provides a source-facing bridge from Lyapunov equations to the proved Sylvester uniqueness theorem. | `lyapunov_unique_solution_of_sep`, `lyapunov_solution_symmetric_of_symmetric_rhs` | implemented |
+| `sylvester_relative_aposteriori_bound` | Presents (16.28) in the source's relative error shape. | H16.Eq16_28.aposteriori | implemented |
 
 ## Empirical Source Outputs
 
@@ -115,7 +116,6 @@
 | (16.21), (16.27) | Lyapunov-specific backward-error and condition formulas. | uniqueness/symmetry complete; formulas open | spectral decomposition and vec-permutation API | Add the Lyapunov scalar-equation and condition-number surfaces after vec/permutation foundations exist. |
 | (16.23)-(16.24) | Structured condition number Psi and sharp perturbation bound. | unstarted | operator norm and inverse-panel API | Define `Psi` after vec/Kronecker surface exists. |
 | (16.26) | Exact sep as a minimum/infimum. | partial foundation | existence of minimizer or infimum modeling choice | Add `sepInf` or prove existence before using a true minimum. |
-| (16.28) | Relative a posteriori bound in source form. | partial foundation | rectangular/source relative norm statement | Add nonzero-solution relative wrapper around `sylvester_aposteriori_bound`. |
 | (16.29) | Practical componentwise error bound. | unstarted | componentwise residual rounding model and `|P^{-1}|` estimator bridge | Define the computed-residual budget first. |
 
 ## Hidden-Hypothesis Summary
@@ -132,6 +132,7 @@
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/SylvesterPerturbation.lean`: passed.
 - Current milestone:
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16.lean`: passed after adding the Lyapunov uniqueness/symmetry wrappers.
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16.lean`: passed after adding the relative a posteriori wrapper.
 
 ## Git and Local-Only Notes
 
