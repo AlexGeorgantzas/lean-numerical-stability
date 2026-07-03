@@ -143,6 +143,17 @@ noncomputable def theorem20_7_initialWeightedRowMax {m n : ℕ} (hn : 0 < n)
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m) : ℝ :=
   max (phi * theorem20_7_initialRowMax hn A i) |b i|
 
+/-- The initial weighted row scale in Theorem 20.7 is nonnegative when the
+    source weight parameter is nonnegative. -/
+theorem theorem20_7_initialWeightedRowMax_nonneg {m n : ℕ} (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) {phi : ℝ} (hphi : 0 ≤ phi)
+    (i : Fin m) :
+    0 ≤ theorem20_7_initialWeightedRowMax hn A b phi i := by
+  dsimp [theorem20_7_initialWeightedRowMax]
+  exact
+    (mul_nonneg hphi (theorem20_7_initialRowMax_nonneg hn A i)).trans
+      (le_max_left _ _)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     finite maximum over staged right-hand-side entries. -/
 noncomputable def theorem20_7_stageBMax {m n : ℕ} (hn : 0 < n)
@@ -369,6 +380,70 @@ theorem theorem20_7_alphaBetaMax_le_of_uniform_entry_growth_nat {m n : ℕ}
       hm hn Astage A bstage b phi hC hphi hdenA hdenW
       (fun i k j => hA i k.val k.isLt j)
       (fun i k => hb i k.val k.isLt)
+
+/-- Geometric Nat-indexed row-growth bounds imply the fixed-horizon
+    `max_i {α_i, β_i}` coefficient used in Theorem 20.7.
+
+This is a source-facing bridge for Chapter 19 row-wise QR dependencies whose
+stage bounds have the form `G^k`; it converts those stagewise bounds to the
+single horizon coefficient `G^(n-1)`. -/
+theorem theorem20_7_alphaBetaMax_le_of_uniform_geometric_entry_growth_nat {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) {G : ℝ}
+    (hG : 1 ≤ G) (hphi : 0 ≤ phi)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤ G ^ k * theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤ G ^ k * theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ G ^ (n - 1) := by
+  have hG0 : 0 ≤ G := le_trans zero_le_one hG
+  have hC : 0 ≤ G ^ (n - 1) := pow_nonneg hG0 _
+  apply theorem20_7_alphaBetaMax_le_of_uniform_entry_growth_nat
+    hm hn Astage A bstage b phi hC hphi hdenA hdenW
+  · intro i k hk j
+    have hk_le : k ≤ n - 1 := Nat.le_sub_one_of_lt hk
+    have hpow : G ^ k ≤ G ^ (n - 1) := pow_le_pow_right₀ hG hk_le
+    exact
+      (hA i k hk j).trans
+        (mul_le_mul_of_nonneg_right hpow
+          (theorem20_7_initialRowMax_nonneg hn A i))
+  · intro i k hk
+    have hk_le : k ≤ n - 1 := Nat.le_sub_one_of_lt hk
+    have hpow : G ^ k ≤ G ^ (n - 1) := pow_le_pow_right₀ hG hk_le
+    exact
+      (hb i k hk).trans
+        (mul_le_mul_of_nonneg_right hpow
+          (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
+
+/-- Theorem 20.7 bridge specialized to the Chapter 19.6 active-row Cox--Higham
+    growth factor. -/
+theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ)
+    (hphi : 0 ≤ phi)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤
+      H19.Theorem19_6.active_row_growth_factor m ^ (n - 1) := by
+  exact
+    theorem20_7_alphaBetaMax_le_of_uniform_geometric_entry_growth_nat
+      hm hn Astage A bstage b phi
+      (H19.Theorem19_6.one_le_active_row_growth_factor m)
+      hphi hdenA hdenW hA hb
 
 -- ============================================================
 -- §20.9  Equality-constrained least squares
