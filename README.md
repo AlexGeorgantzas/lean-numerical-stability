@@ -67,7 +67,9 @@ through the arbitrary-width two-step QR recursion, so the second stored active
 `householderBetaSpec` step can feed the twice-shrunk trailing QR panel under the
 same exact-operation and update-compatibility/exact-add-mul surfaces. Exact-alpha
 variants expose the same bridge when the successor alpha is stated as Higham's
-exact `householderAlpha` rather than the computed `fl_householderAlpha`. The
+exact `householderAlpha` rather than the computed `fl_householderAlpha`. Exact
+subtraction now also discharges the subtract-zero copy premise for those
+computed-alpha and exact-alpha successor QR recursion wrappers. The
 full rounded stored-loop proof remains open until the per-stage certificate
 fields are proved from a source-faithful model or replaced by a separate
 compatibility/perturbation theorem.
