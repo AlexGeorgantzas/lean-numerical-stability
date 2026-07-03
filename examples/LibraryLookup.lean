@@ -14744,3 +14744,10 @@ small enough to serve as a smoke check for representative public declarations.
 #check eigenvalueModulusSet_subset_pseudospectrum
 #check pseudospectral_gap
 #check higham_knight_18_2_pseudospectral
+#check cIdMatrix
+#check cMatPow
+#check complexVecLpNorm_le_mul_of_forall_norm_le
+#check complexMatrixLpNormOfReal_diagonal_le
+#check cMatPow_similarity
+#check higham_eq_18_4_upper_lp_diagonalizable
+#check higham_eq_18_4_lower_lp_diagonalizable
