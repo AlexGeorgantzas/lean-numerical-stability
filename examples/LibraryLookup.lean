@@ -14711,3 +14711,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check eventually_matPow_abs_le_of_spectralRadius_le
 #check matPow_convergence_spectral
 #check matPow_convergence_spectral_fl
+#check complex_similarity_product_bound
+#check complexMatrixInfNorm_cJordan_conj_le
+#check exists_cJordan_scaling_vector
+#check complex_jordan_similarity_absorbs
+#check higham_18_1_complex_jordan_tendsto
+#check higham_18_1_complex_jordan_fl_tendsto
