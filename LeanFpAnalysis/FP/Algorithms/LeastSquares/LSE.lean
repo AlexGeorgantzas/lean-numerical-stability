@@ -1392,6 +1392,77 @@ theorem theorem20_8AP_apply_nullspace {m n p : ℕ}
   rw [theorem20_8AP, rectMatMulVec_rectMatMul]
   rw [theorem20_8Projection_apply_nullspace B Bplus x hBx]
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the difference of two feasible LSE points lies in the nullspace of `B`. -/
+theorem theorem20_8_feasible_difference_constraint_zero {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x) (hy : LSEFeasible B d y) :
+    rectMatMulVec B (fun j => x j - y j) = (fun _i => 0) := by
+  rw [rectMatMulVec_sub]
+  ext i
+  rw [hx i, hy i]
+  simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    `P = I - B^+B` fixes feasible differences. -/
+theorem theorem20_8Projection_apply_feasible_difference {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x) (hy : LSEFeasible B d y) :
+    rectMatMulVec (theorem20_8Projection B Bplus) (fun j => x j - y j) =
+      (fun j => x j - y j) :=
+  theorem20_8Projection_apply_nullspace B Bplus (fun j => x j - y j)
+    (theorem20_8_feasible_difference_constraint_zero B d x y hx hy)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    on feasible differences, `A P` acts exactly as `A`. -/
+theorem theorem20_8AP_apply_feasible_difference {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ)
+    (d : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x) (hy : LSEFeasible B d y) :
+    rectMatMulVec (theorem20_8AP A B Bplus) (fun j => x j - y j) =
+      rectMatMulVec A (fun j => x j - y j) :=
+  theorem20_8AP_apply_nullspace A B Bplus (fun j => x j - y j)
+    (theorem20_8_feasible_difference_constraint_zero B d x y hx hy)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    adding a projected direction `P z` to a feasible point preserves the
+    equality constraint. -/
+theorem theorem20_8Projection_feasible_step {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d : Fin p → ℝ) (x0 z : Fin n → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hx0 : LSEFeasible B d x0) :
+    LSEFeasible B d
+      (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) := by
+  intro i
+  have hstep :=
+    theorem20_8Projection_constraint_vec_zero B Bplus hright z
+  rw [rectMatMulVec_add]
+  change
+    rectMatMulVec B x0 i +
+        rectMatMulVec B (rectMatMulVec (theorem20_8Projection B Bplus) z) i =
+      d i
+  have hstep_i := congrFun hstep i
+  rw [hx0 i, hstep_i]
+  simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    exact action of `A` on a feasible nullspace step `x0 + P z`. -/
+theorem theorem20_8AP_feasible_step_action {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ)
+    (x0 z : Fin n → ℝ) :
+    rectMatMulVec A
+        (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) =
+      fun i =>
+        rectMatMulVec A x0 i +
+          rectMatMulVec (theorem20_8AP A B Bplus) z i := by
+  rw [rectMatMulVec_add]
+  rw [theorem20_8AP, rectMatMulVec_rectMatMul]
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     source table `B_A^+ = (I - (AP)^+ A)B^+`.
 
