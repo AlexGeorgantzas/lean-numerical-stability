@@ -1599,6 +1599,76 @@ theorem wedinTheorem20_1_vecNorm2_solution_difference_le_of_B_mul_sub_residual
       hleftA hleftB hSymA hSymB hDelta hBplus hDeltaA hDeltab
       hrangeA_residual
 
+/-- Higham, 2nd ed., Chapter 20, Wedin proof algebra:
+    the residual definitions `r = b - A*x`, `s = b + Δb - B*y`, and
+    `B = A + ΔA` imply the source equation
+    `B*(y-x) = -ΔA*x + Δb + r - s`. -/
+theorem wedinTheorem20_1_B_mul_solution_difference_eq_forcing_residual_sub_of_residuals
+    {m k : ℕ} (A B DeltaA : Fin m → Fin (k + 1) → ℝ)
+    (b Deltab r s : Fin m → ℝ) (x y : Fin (k + 1) → ℝ)
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
+    rectMatMulVec B (fun j => y j - x j) =
+      fun i => ((-rectMatMulVec DeltaA x i + Deltab i) + r i) - s i := by
+  ext i
+  have hdiff := congrFun (rectMatMulVec_sub B y x) i
+  have hBx :
+      rectMatMulVec B x i =
+        rectMatMulVec A x i + rectMatMulVec DeltaA x i := by
+    rw [hB]
+    exact congrFun (rectMatMulVec_mat_add A DeltaA x) i
+  have hri : r i = b i - rectMatMulVec A x i := by
+    simpa using congrFun hr i
+  have hsi : s i = (b i + Deltab i) - rectMatMulVec B y i := by
+    simpa using congrFun hs i
+  rw [hdiff, hBx, hri, hsi]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
+    solution-difference norm bound after deriving the source
+    `B*(y-x) = -ΔA*x + Δb + r - s` equation from the residual definitions.
+
+The remaining visible `P_B s = 0` hypothesis is the perturbed least-squares
+orthogonality condition and is not hidden inside the residual algebra. -/
+theorem wedinTheorem20_1_vecNorm2_solution_difference_le_of_residual_definitions
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i)
+    (hproj_s : rectMatMulVec (rectMatMul B Bplus) s = 0) :
+    vecNorm2 (fun j => y j - x j) ≤
+      (Aplus_norm / (1 - eta)) *
+          (DeltaA_norm * vecNorm2 x + Deltab_norm) +
+        (eta * Aplus_norm / (1 - eta) ^ 2) * vecNorm2 r := by
+  have hBdiff :
+      rectMatMulVec B (fun j => y j - x j) =
+        fun i => ((-rectMatMulVec DeltaA x i + Deltab i) + r i) - s i :=
+    wedinTheorem20_1_B_mul_solution_difference_eq_forcing_residual_sub_of_residuals
+      A B DeltaA b Deltab r s x y hB hr hs
+  exact
+    wedinTheorem20_1_vecNorm2_solution_difference_le_of_B_mul_sub_residual
+      A B Aplus Bplus DeltaA Deltab r s x y hAplus_pos heta hsmall
+      hleftA hleftB hSymA hSymB hDelta hBplus hDeltaA hDeltab
+      hrangeA_residual hBdiff hproj_s
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
