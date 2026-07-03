@@ -1052,6 +1052,106 @@ theorem rankOne_update_auxiliary_le {m : ℕ}
   rw [hid, hxZx, huZx, ← hr]
   exact sherman_morrison_quadForm_scalar_mono qww r p0 γ hr_nonneg
 
+/-- **2×2 block-inverse quadratic form** (Higham §10.4, the `Q₂₂` side of
+    the (10.29) crux; oracle consult 4, hand-verified): for a symmetric
+    positive-definite `(1+m)`-block matrix
+    `H = [[α, fᵀ],[f, G]]` with Schur complement `Z = G − ffᵀ/α`
+    (`Zinv` its inverse), completing the square gives
+
+      `[β; v]ᵀ H⁻¹ [β; v] = β²/α + (v − (β/α)f)ᵀ Z⁻¹ (v − (β/α)f)`.
+
+    Proved through the inverse-action vector `ξ = H⁻¹[β;v]`: its tail
+    solves `Z ξ_tail = v − (β/α)f`. -/
+theorem block_quadForm_schur_eq {m : ℕ} (α : ℝ) (hα : α ≠ 0)
+    (f : Fin m → ℝ) (G : Fin m → Fin m → ℝ)
+    (H Hinv : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (Z Zinv : Fin m → Fin m → ℝ)
+    (hH00 : H 0 0 = α)
+    (hH0s : ∀ j : Fin m, H 0 j.succ = f j)
+    (hHs0 : ∀ i : Fin m, H i.succ 0 = f i)
+    (hHss : ∀ i j : Fin m, H i.succ j.succ = G i j)
+    (hZ : ∀ i j : Fin m, Z i j = G i j - f i * f j / α)
+    (hZinv_act : ∀ vv : Fin m → ℝ, matMulVec m Zinv (matMulVec m Z vv) = vv)
+    (β : ℝ) (v : Fin m → ℝ)
+    (hHinv_act : matMulVec (m + 1) H
+      (matMulVec (m + 1) Hinv (Fin.cons β v : Fin (m + 1) → ℝ)) =
+      (Fin.cons β v : Fin (m + 1) → ℝ)) :
+    (∑ i : Fin (m + 1),
+        (Fin.cons β v : Fin (m + 1) → ℝ) i *
+        matMulVec (m + 1) Hinv (Fin.cons β v : Fin (m + 1) → ℝ) i) =
+      β ^ 2 / α +
+        ∑ i : Fin m, (v i - β / α * f i) *
+          matMulVec m Zinv (fun j => v j - β / α * f j) i := by
+  set y : Fin (m + 1) → ℝ := (Fin.cons β v : Fin (m + 1) → ℝ) with hy
+  set ξ : Fin (m + 1) → ℝ := matMulVec (m + 1) Hinv y with hξ
+  set ξt : Fin m → ℝ := fun i => ξ i.succ with hξt
+  set F : ℝ := ∑ j : Fin m, f j * ξt j with hF
+  -- row 0: α·ξ₀ + ∑ f·ξt = β
+  have hrow0 : α * ξ 0 + F = β := by
+    have h0 : matMulVec (m + 1) H ξ 0 = β := by
+      rw [hξ]; rw [hHinv_act]; rw [hy, Fin.cons_zero]
+    rw [show matMulVec (m + 1) H ξ 0 = α * ξ 0 + F from by
+      unfold matMulVec
+      rw [Fin.sum_univ_succ, hH00, hF]
+      congr 1
+      exact Finset.sum_congr rfl fun j _ => by rw [hH0s j, hξt]] at h0
+    exact h0
+  -- rows i.succ: f i·ξ₀ + (G·ξt) i = v i
+  have hrowi : ∀ i : Fin m,
+      f i * ξ 0 + matMulVec m G ξt i = v i := by
+    intro i
+    have hi : matMulVec (m + 1) H ξ i.succ = v i := by
+      rw [hξ]; rw [hHinv_act]; rw [hy, Fin.cons_succ]
+    rw [show matMulVec (m + 1) H ξ i.succ =
+        f i * ξ 0 + matMulVec m G ξt i from by
+      unfold matMulVec
+      rw [Fin.sum_univ_succ, hHs0 i]
+      congr 1
+      exact Finset.sum_congr rfl fun j _ => by rw [hHss i j, hξt]] at hi
+    exact hi
+  -- ξ₀ = (β − F)/α
+  have hξ0 : ξ 0 = (β - F) / α := by
+    rw [eq_div_iff hα]; linarith [hrow0]
+  -- Z·ξt = v − (β/α)·f  (pointwise)
+  have hZξt : ∀ i : Fin m,
+      matMulVec m Z ξt i = v i - β / α * f i := by
+    intro i
+    have hGi := hrowi i
+    have hexp : matMulVec m Z ξt i =
+        matMulVec m G ξt i - f i / α * F := by
+      unfold matMulVec
+      rw [show (∑ j : Fin m, Z i j * ξt j) =
+          ∑ j : Fin m, (G i j * ξt j - f i / α * (f j * ξt j)) from
+        Finset.sum_congr rfl fun j _ => by rw [hZ i j]; ring]
+      rw [Finset.sum_sub_distrib, ← Finset.mul_sum, hF]
+    rw [hexp]
+    -- matMulVec G ξt i = v i − f i ξ0 = v i − f i (β−F)/α
+    have hG_i : matMulVec m G ξt i = v i - f i * ξ 0 := by linarith [hGi]
+    rw [hG_i, hξ0]
+    field_simp
+    ring
+  -- ξt = Zinv (v − (β/α)f)
+  have hξt_eq : ξt = matMulVec m Zinv (fun j => v j - β / α * f j) := by
+    have := hZinv_act ξt
+    rw [show matMulVec m Z ξt = (fun j => v j - β / α * f j) from
+      funext hZξt] at this
+    exact this.symm
+  -- assemble the quadratic form
+  have hQF : (∑ i : Fin (m + 1), y i * ξ i) =
+      β * ξ 0 + ∑ i : Fin m, v i * ξt i := by
+    rw [Fin.sum_univ_succ, hy]
+    simp only [Fin.cons_zero, Fin.cons_succ, hξt]
+  -- the algebraic identity β·ξ₀ + ∑ v·ξt = β²/α + ∑ (v − (β/α)f)·ξt
+  have hfinal : β * ξ 0 + ∑ i : Fin m, v i * ξt i =
+      β ^ 2 / α + ∑ i : Fin m, (v i - β / α * f i) * ξt i := by
+    rw [hξ0]
+    have hexpand : (∑ i : Fin m, (v i - β / α * f i) * ξt i) =
+        (∑ i : Fin m, v i * ξt i) - β / α * F := by
+      rw [hF, Finset.mul_sum, ← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun i _ => by ring
+    rw [hexpand]; field_simp; ring
+  rw [hQF, hfinal, hξt_eq]
+
 /-- **Scalar product step** (Higham §10.4, (10.29) per-stage): from two
     pivot bounds `p² ≤ h·a`, `q² ≤ h·b` with `h > 0` and `a, b ≥ 0`,
     `|p·q|/h ≤ √(a·b)`.  Combines the row and column instances of
