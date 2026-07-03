@@ -678,6 +678,208 @@ theorem sourceComputedIteration_error_finite_sum (n : ℕ)
         one_step_error_source n A M N M_inv hS b x hAx x_hat ξ hIter k j)
     m i
 
+/-- A vector splits into its `E` component plus its `(I - E)` component. -/
+theorem matMulVec_add_complement_apply (n : ℕ)
+    (E : Fin n → Fin n → ℝ) (v : Fin n → ℝ) :
+    ∀ i, matMulVec n E v i + matMulVec n (matSub_id n E) v i = v i := by
+  intro i
+  unfold matMulVec matSub_id
+  calc
+    (∑ j : Fin n, E i j * v j) +
+        ∑ j : Fin n, (idMatrix n i j - E i j) * v j =
+      ∑ j : Fin n, idMatrix n i j * v j := by
+        rw [← Finset.sum_add_distrib]
+        apply Finset.sum_congr rfl
+        intro j _hj
+        ring
+    _ = v i := by
+        have h := congrFun (matMulVec_id n v) i
+        simpa [matMulVec] using h
+
+/-- If a vector is fixed by `G`, it is fixed by every finite power of `G`. -/
+theorem matPow_fixed_of_matMulVec_fixed (n : ℕ)
+    (G : Fin n → Fin n → ℝ) (v : Fin n → ℝ)
+    (hfixed : ∀ i, matMulVec n G v i = v i) :
+    ∀ k i, matMulVec n (matPow n G k) v i = v i := by
+  intro k
+  induction k with
+  | zero =>
+      intro i
+      simpa [matPow_zero] using congrFun (matMulVec_id n v) i
+  | succ k ih =>
+      intro i
+      calc
+        matMulVec n (matPow n G (k + 1)) v i =
+            matMulVec n G (matMulVec n (matPow n G k) v) i := by
+              rw [matPow_succ, matMulVec_matMul]
+        _ = matMulVec n G v i := by
+              congr 1
+              ext j
+              exact ih j
+        _ = v i := hfixed i
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.28):
+    the finite source term `S_m = sum_{k=0}^m G^k E M⁻¹ ξ_{m-k}` used in
+    the singular-system forward-error analysis. -/
+noncomputable def singularErrorSourceTerm (n : ℕ)
+    (G E M_inv : Fin n → Fin n → ℝ) (ξ : ℕ → Fin n → ℝ) (m : ℕ) :
+    Fin n → ℝ :=
+  fun i => ∑ k ∈ Finset.range (m + 1),
+    matMulVec n (matPow n G k)
+      (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.27), finite
+    algebraic core: once the `(I - E)M⁻¹ξ_t` component is in the fixed
+    subspace of `G`, the finite error recurrence splits into the propagated
+    initial error, the `S_m` range term, and the accumulated fixed/null
+    component.  The Drazin/projector construction that proves the fixed-space
+    hypothesis is intentionally left as an explicit later dependency. -/
+theorem singular_error_split_finite (n : ℕ)
+    (A M N M_inv E : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
+    (hIter : SourceComputedIteration n M N b x_hat ξ)
+    (hNull : ∀ t i,
+      matMulVec n (iterMatrix n M_inv N)
+        (matMulVec n (matSub_id n E) (matMulVec n M_inv (ξ t))) i =
+      matMulVec n (matSub_id n E) (matMulVec n M_inv (ξ t)) i)
+    (m : ℕ) :
+    ∀ i, x i - x_hat (m + 1) i =
+      matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1))
+        (fun j => x j - x_hat 0 j) i +
+      singularErrorSourceTerm n (iterMatrix n M_inv N) E M_inv ξ m i +
+      matMulVec n (matSub_id n E)
+        (matMulVec n M_inv
+          (fun j => ∑ k ∈ Finset.range (m + 1), ξ (m - k) j)) i := by
+  intro i
+  let G := iterMatrix n M_inv N
+  let C := matSub_id n E
+  change x i - x_hat (m + 1) i =
+      matMulVec n (matPow n G (m + 1)) (fun j => x j - x_hat 0 j) i +
+      singularErrorSourceTerm n G E M_inv ξ m i +
+      matMulVec n C
+        (matMulVec n M_inv
+          (fun j => ∑ k ∈ Finset.range (m + 1), ξ (m - k) j)) i
+  have hbase := sourceComputedIteration_error_finite_sum
+    n A M N M_inv hS b x hAx x_hat ξ hIter m i
+  have hsumSplit :
+      (∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n G k)
+          (matMulVec n M_inv (ξ (m - k))) i) =
+      singularErrorSourceTerm n G E M_inv ξ m i +
+      ∑ k ∈ Finset.range (m + 1),
+        matMulVec n C (matMulVec n M_inv (ξ (m - k))) i := by
+    calc
+      (∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n G k)
+          (matMulVec n M_inv (ξ (m - k))) i)
+          =
+        ∑ k ∈ Finset.range (m + 1),
+          (matMulVec n (matPow n G k)
+              (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i +
+            matMulVec n C (matMulVec n M_inv (ξ (m - k))) i) := by
+            apply Finset.sum_congr rfl
+            intro k _hk
+            let v := matMulVec n M_inv (ξ (m - k))
+            have hsplit :
+                v = fun j => matMulVec n E v j + matMulVec n C v j := by
+              ext j
+              exact (matMulVec_add_complement_apply n E v j).symm
+            have hfixedOne :
+                ∀ r, matMulVec n G (matMulVec n C v) r =
+                  matMulVec n C v r := by
+              intro r
+              simpa [G, C, v] using hNull (m - k) r
+            have hfixedPow :
+                matMulVec n (matPow n G k) (matMulVec n C v) i =
+                  matMulVec n C v i :=
+              matPow_fixed_of_matMulVec_fixed n G (matMulVec n C v)
+                hfixedOne k i
+            calc
+              matMulVec n (matPow n G k)
+                  (matMulVec n M_inv (ξ (m - k))) i =
+                matMulVec n (matPow n G k) v i := by rfl
+              _ = matMulVec n (matPow n G k)
+                    (fun j => matMulVec n E v j + matMulVec n C v j) i := by
+                    exact congrArg
+                      (fun w => matMulVec n (matPow n G k) w i) hsplit
+              _ = matMulVec n (matPow n G k) (matMulVec n E v) i +
+                    matMulVec n (matPow n G k) (matMulVec n C v) i := by
+                    simpa using congrFun
+                      (matMulVec_add_right n (matPow n G k)
+                        (matMulVec n E v) (matMulVec n C v)) i
+              _ = matMulVec n (matPow n G k) (matMulVec n E v) i +
+                    matMulVec n C v i := by
+                    rw [hfixedPow]
+              _ = matMulVec n (matPow n G k)
+                    (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i +
+                    matMulVec n C (matMulVec n M_inv (ξ (m - k))) i := by rfl
+      _ =
+        (∑ k ∈ Finset.range (m + 1),
+          matMulVec n (matPow n G k)
+            (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i) +
+        ∑ k ∈ Finset.range (m + 1),
+          matMulVec n C (matMulVec n M_inv (ξ (m - k))) i := by
+          rw [Finset.sum_add_distrib]
+      _ = singularErrorSourceTerm n G E M_inv ξ m i +
+          ∑ k ∈ Finset.range (m + 1),
+            matMulVec n C (matMulVec n M_inv (ξ (m - k))) i := by
+          rfl
+  have hsumC :
+      (∑ k ∈ Finset.range (m + 1),
+        matMulVec n C (matMulVec n M_inv (ξ (m - k))) i) =
+      matMulVec n C
+        (matMulVec n M_inv
+          (fun j => ∑ k ∈ Finset.range (m + 1), ξ (m - k) j)) i := by
+    have hM :
+        matMulVec n M_inv
+            (fun j => ∑ k ∈ Finset.range (m + 1), ξ (m - k) j) =
+          fun r => ∑ k ∈ Finset.range (m + 1),
+            matMulVec n M_inv (ξ (m - k)) r := by
+      simpa using
+        matMulVec_finset_sum_right n M_inv (Finset.range (m + 1))
+          (fun k => ξ (m - k))
+    have hC :
+        matMulVec n C
+            (fun r => ∑ k ∈ Finset.range (m + 1),
+              matMulVec n M_inv (ξ (m - k)) r) =
+          fun r => ∑ k ∈ Finset.range (m + 1),
+            matMulVec n C (matMulVec n M_inv (ξ (m - k))) r := by
+      simpa using
+        matMulVec_finset_sum_right n C (Finset.range (m + 1))
+          (fun k => matMulVec n M_inv (ξ (m - k)))
+    calc
+      (∑ k ∈ Finset.range (m + 1),
+        matMulVec n C (matMulVec n M_inv (ξ (m - k))) i) =
+        matMulVec n C
+          (fun r => ∑ k ∈ Finset.range (m + 1),
+            matMulVec n M_inv (ξ (m - k)) r) i := by
+            simpa using (congrFun hC i).symm
+      _ = matMulVec n C
+          (matMulVec n M_inv
+            (fun j => ∑ k ∈ Finset.range (m + 1), ξ (m - k) j)) i := by
+            rw [← hM]
+  calc
+    x i - x_hat (m + 1) i =
+      matMulVec n (matPow n G (m + 1)) (fun j => x j - x_hat 0 j) i +
+        ∑ k ∈ Finset.range (m + 1),
+          matMulVec n (matPow n G k)
+            (matMulVec n M_inv (ξ (m - k))) i := by
+        simpa [G] using hbase
+    _ = matMulVec n (matPow n G (m + 1)) (fun j => x j - x_hat 0 j) i +
+        (singularErrorSourceTerm n G E M_inv ξ m i +
+          ∑ k ∈ Finset.range (m + 1),
+            matMulVec n C (matMulVec n M_inv (ξ (m - k))) i) := by
+        rw [hsumSplit]
+    _ = matMulVec n (matPow n G (m + 1)) (fun j => x j - x_hat 0 j) i +
+        singularErrorSourceTerm n G E M_inv ξ m i +
+        matMulVec n C
+          (matMulVec n M_inv
+            (fun j => ∑ k ∈ Finset.range (m + 1), ξ (m - k) j)) i := by
+        rw [hsumC]
+        ring
+
 -- ============================================================
 -- §17.2  Componentwise forward bound (eq 17.6)
 -- ============================================================
