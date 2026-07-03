@@ -38901,6 +38901,96 @@ theorem higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_
     (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
     heta
 
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the factorization
+handoff from a principal-block min-factor hypothesis. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_of_matrix_inverse_identities :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_of_matrix_inverse_identities
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the factorization
+handoff from a linear-step hypothesis. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_of_matrix_inverse_identities :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+linear-step factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_of_matrix_inverse_identities_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+principal-block min-factor factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_of_matrix_inverse_identities_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_of_matrix_inverse_identities_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+linear-step factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+principal-block min-factor factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_of_matrix_inverse_identities_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_of_matrix_inverse_identities_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+principal-block min-factor factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+linear-step factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+product-smallness linear-step factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+exact-operator linear-step factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+product-smallness principal-block min-factor factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_product_lt :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_product_lt
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the source-oriented
+exact-operator principal-block min-factor factorization handoff. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_exact_opNorm2 :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_exact_opNorm2
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the min-factor
+factorization handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the linear-step
+factorization handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+linear-step handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_product_lt_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_product_lt_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the product-smallness
+min-factor handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_product_lt_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_product_lt_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+linear-step handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_linear_step_opNorm_exact_opNorm2_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_exact_opNorm2_of_factor_triangularity
+
+/-- **Theorem 9.15 support**, explicit `G`-named alias for the exact-operator
+min-factor handoff with ordinary factor-triangularity hypotheses. -/
+alias higham9_15_normwise_source_bound_of_factorization_G_init_min_factor_bound_opNorm_exact_opNorm2_of_factor_triangularity :=
+  higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_exact_opNorm2_of_factor_triangularity
+
 /-- **Theorem 9.15 support**, factorization-level `I + G` residual handoff
 from a principal-block min-factor hypothesis, using the sharpened one-residual
 source endpoint. -/
