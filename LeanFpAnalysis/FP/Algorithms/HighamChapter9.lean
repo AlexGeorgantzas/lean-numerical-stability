@@ -21140,6 +21140,96 @@ theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma
     fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
     hγ_lt_one hn hLU le_rfl hU_diag hAbsLU_le
 
+/-- **Theorem 9.14**, LU-backward-error plus actual triangular solves with
+optimal growth and final `h(u)` coefficient.
+
+This is the explicit `|Lhat||Uhat| <= |A|` alias of
+`higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le`,
+matching the corresponding source-`f` surface. -/
+theorem higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hLU : LUBackwardError n A L_hat U_hat ε)
+    (hε_le_u : ε ≤ u)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b ε u hu hu_lt_one hn hLU
+    hε_le_u hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, LU-backward-error plus actual triangular solves with
+optimal growth and final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b hn hγ_lt_one hLU hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with
+optimal growth and final `h(u)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b u hu hu_lt_one hn hLU hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with
+optimal growth and final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b hn hγ_lt_one hLU hU_diag hAbsLU_le
+
 /-- **Theorem 9.14**, dense Doolittle certificate plus actual triangular solves.
 
 This is the source-facing `f(u)` specialization of
@@ -21491,6 +21581,94 @@ theorem higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_t
   higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le
     fp n A L_hat U_hat b BU BL (gamma fp n)
     (gamma_nonneg fp hn) hγ_lt_one hn hC le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, dense Doolittle certificate plus actual triangular
+solves with optimal growth and final `h(u)` coefficient. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b u hu hu_lt_one hn hC hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate plus actual
+triangular solves with optimal growth and final `h(u)` coefficient. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b BU BL u hu hu_lt_one hn hC hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, dense Doolittle certificate plus actual triangular
+solves with optimal growth and final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b hn hγ_lt_one hC hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate plus actual
+triangular solves with optimal growth and final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b BU BL hn hγ_lt_one hC hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, dense Doolittle certificate with a constant-growth
 final `h(γ_n)` coefficient. -/
@@ -21887,6 +22065,100 @@ theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_
     (gamma_nonneg fp hn) hγ_lt_one hn hC le_rfl hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
+certificate plus actual triangular solves with optimal growth and final
+`h(u)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b u hu hu_lt_one hn hC hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular absolute-budget
+Doolittle certificate plus actual triangular solves with optimal growth and
+final `h(u)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b BU BL u hu hu_lt_one hn hC hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
+certificate plus actual triangular solves with optimal growth and final
+`h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b hn hγ_lt_one hC hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular absolute-budget
+Doolittle certificate plus actual triangular solves with optimal growth and
+final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L_hat U_hat fp BU BL)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b BU BL hn hγ_lt_one hC hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
 certificate with a constant-growth final `h(γ_n)` coefficient. -/
 theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_const_gamma
     (fp : FPModel) (n : ℕ)
@@ -22149,6 +22421,64 @@ theorem higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_tr
   higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
     fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
     hγ_lt_one hn hT hU_diag hU_budget_le hL_budget_le le_rfl hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular rounded-stage trace with
+optimal growth and final `h(u)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b u hu hu_lt_one hn hT hU_diag hU_budget_le
+    hL_budget_le hγ_le_u hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular rounded-stage trace with
+optimal growth and final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma
+    fp n A L_hat U_hat b hn hγ_lt_one hT hU_diag hU_budget_le
+    hL_budget_le hAbsLU_le
 
 /-- **Theorem 9.14**, square-specialized rectangular rounded-stage trace with
 a constant-growth final `h(γ_n)` coefficient. -/
