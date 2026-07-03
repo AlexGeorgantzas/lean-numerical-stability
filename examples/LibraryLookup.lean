@@ -14814,3 +14814,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check cMatPow_similarity
 #check higham_eq_18_4_upper_lp_diagonalizable
 #check higham_eq_18_4_lower_lp_diagonalizable
+#check cShiftVec
+#check complexVecLpNorm_shift_le
+#check complexMatrixLpNormOfReal_bidiagonal_le
+#check higham_eq_18_5_alt_lp_jordan
