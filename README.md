@@ -45,7 +45,11 @@ Chapter 16.2 amplification factor `sylvesterAmplificationMu`, its square-case
 specialization `sylvesterAmplificationMuSquare`, and the source formula bridge
 `sylvesterAmplificationMu_square_eq`, the conditional square-case
 `one_le_sylvesterAmplificationMuSquare`, plus the xi-level μ-relative-residual
-bound `xiSq_le_mu_relative_residual_sq`. It also connects square Frobenius
+bound `xiSq_le_mu_relative_residual_sq`. It also constructs the coordinatewise
+SVD optimizer through `svdOptimalDeltaA`, `svdOptimalDeltaB`,
+`svdOptimalDeltaC`, `svdOptimalPerturbations_cost_eq_xiSq`, and
+`exists_svdOptimalPerturbations`, while leaving the global eta minimum/infimum
+bridge open. It also connects square Frobenius
 backward-error certificates to the SVD-coordinate lower-direction bridge through
 `sylvesterBackwardResidual`, `svdResidual_backwardResidual`, and
 `xiSq_le_three_eta_sq_of_backward_error`. The Lyapunov subsection now also has
