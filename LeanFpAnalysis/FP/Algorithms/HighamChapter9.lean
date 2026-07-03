@@ -79878,6 +79878,66 @@ theorem higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growthFactorEntry_le_t
       hn A hdetA hA_tridiag hRowDom hAmax
   exact ⟨hAmax, L_T, U_T, hLUt, hL_bound, hGrowth, hρ⟩
 
+/-- **Theorem 9.13 / Theorem 9.5**, source-shaped Wilkinson solve bound for
+the transposed system from a nonsingular row diagonally dominant tridiagonal
+matrix.
+
+The row-dominant Theorem 9.13 package supplies exact no-pivot LU factors for
+`Aᵀ`, where the lower factor is unit-bounded and the max-entry growth is at
+most `3`; Theorem 9.5 then gives the normwise backward-error perturbation for
+solving the transposed system. -/
+theorem higham9_13_rowDiagDom_transpose_wilkinson_source_bound_exists
+    (fp : FPModel) {n : ℕ} (hn_pos : 0 < n)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_T U_T : Fin n → Fin n → ℝ,
+      LUFactSpec n (matTranspose A) L_T U_T ∧
+      (∀ i j : Fin n, |L_T i j| ≤ 1) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_T i k| * |U_T k j| ≤
+          3 * |matTranspose A i j|) ∧
+      let y_hat := fl_forwardSub fp n L_T b
+      let x_hat := fl_backSub fp n U_T y_hat
+      ∃ ΔA_T : Fin n → Fin n → ℝ,
+        (infNorm ΔA_T ≤
+          (↑n) ^ 2 * gamma fp (3 * n) * 3 * infNorm (matTranspose A)) ∧
+        (∀ i, ∑ j : Fin n,
+          (matTranspose A i j + ΔA_T i j) * x_hat j = b i) := by
+  have hdetT :
+      Matrix.det
+        (Matrix.of (matTranspose A) : Matrix (Fin n) (Fin n) ℝ) ≠ 0 := by
+    have hmat :
+        (Matrix.of (matTranspose A) : Matrix (Fin n) (Fin n) ℝ) =
+          (Matrix.of A : Matrix (Fin n) (Fin n) ℝ).transpose := by
+      ext i j
+      rfl
+    intro hzero
+    apply hdetA
+    rw [← Matrix.det_transpose (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)]
+    rw [← hmat]
+    exact hzero
+  obtain ⟨hAmax, L_T, U_T, hLUt, hL_bound, hGrowth, hρ⟩ :=
+    higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax
+      hn_pos A hdetA hA_tridiag hRowDom
+  have hL_diag : ∀ i : Fin n, L_T i i ≠ 0 := by
+    intro i
+    rw [hLUt.L_diag i]
+    norm_num
+  have hU_diag : ∀ i : Fin n, U_T i i ≠ 0 :=
+    hLUt.det_ne_zero_iff_U_diag_ne_zero.mp hdetT
+  refine ⟨L_T, U_T, hLUt, hL_bound, hGrowth, ?_⟩
+  exact
+    higham9_5_wilkinson_source_bound_of_entry_growth fp n hn_pos
+      (matTranspose A) L_T U_T b 3
+      (by simpa [maxEntryNorm_matTranspose hn_pos A] using hAmax)
+      (by norm_num) hρ hL_diag hU_diag
+      (higham9_LUFactSpec_to_LUBackwardError_gamma fp n hn hLUt)
+      hn hn3 hL_bound
+
 /-- **Theorem 9.13 support**, transpose-LU rescaling bridge.
 
 If `Aᵀ = L_T U_T` is an exact unit-lower/upper LU factorization and every

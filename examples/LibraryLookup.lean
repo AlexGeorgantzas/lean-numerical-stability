@@ -10,6 +10,7 @@ import LeanFpAnalysis.FP.Algorithms.HighamChapter12
 import LeanFpAnalysis.FP.Algorithms.MatrixPowers
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersComplex
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersJordan
+import LeanFpAnalysis.FP.Algorithms.MatrixPowersPseudospectral
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersSpectral
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
@@ -13013,6 +13014,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_13_thresholdFactor_pow_le_two_pow_of_one_le
 #check higham9_13_growthFactorEntry_bound_from_column_modifications_two_pow
 #check higham9_13_colDiagDom_wilkinson_source_bound_exists
+#check higham9_13_rowDiagDom_transpose_wilkinson_source_bound_exists
 #check higham9_1_LUFactSpec_one_explicit
 #check higham9_LUBackwardError_mono
 #check higham9_LUFactSpec_to_LUBackwardError_gamma
@@ -14729,3 +14731,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check complex_jordan_similarity_absorbs
 #check higham_18_1_complex_jordan_tendsto
 #check higham_18_1_complex_jordan_fl_tendsto
+#check PseudospectrumModulusSet
+#check PseudospectralRadiusLt
+#check eigenvalueModulusSet_subset_pseudospectrum
+#check pseudospectral_gap
+#check higham_knight_18_2_pseudospectral
