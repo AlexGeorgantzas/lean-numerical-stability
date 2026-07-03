@@ -1,7 +1,7 @@
 -- Algorithms/Sylvester/SylvesterBackward.lean
 --
--- SVD-based backward error analysis for the Sylvester equation (Higham §15.2).
--- Eqs 15.15-15.19: backward error characterization via SVD coordinates,
+-- SVD-based backward error analysis for the Sylvester equation (Higham §16.2).
+-- Eqs 16.13-16.19: backward error characterization via SVD coordinates,
 -- lower/upper bounds on η(Y), and amplification factor μ.
 
 import Mathlib.Data.Real.Basic
@@ -20,7 +20,7 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
--- SVD representation (§15.2, eq 15.13)
+-- SVD representation (§16.2, eq 16.13)
 -- ============================================================
 
 /-- **SVD representation**: Y = U · diag(σ) · Vᵀ.
@@ -33,7 +33,7 @@ def IsSVD (n : ℕ) (Y : Fin n → Fin n → ℝ)
   (∀ i, 0 ≤ σ i)
 
 -- ============================================================
--- Transformed residual in SVD coordinates (§15.2, eq 15.14)
+-- Transformed residual in SVD coordinates (§16.2, eq 16.13)
 -- ============================================================
 
 /-- **Transformed residual** in SVD coordinates: R̃ = UᵀRV where
@@ -53,10 +53,10 @@ theorem svdResidual_frobNormSq (n : ℕ) (U V R : Fin n → Fin n → ℝ)
   rw [frobNormSq_orthogonal_right _ _ hV, frobNormSq_orthogonal_left _ _ hU.transpose]
 
 -- ============================================================
--- Backward error ξ² definition (§15.2, eq 15.15)
+-- Backward error ξ² definition (§16.2, eq 16.16)
 -- ============================================================
 
-/-- **ξ² functional** (eq 15.15): given transformed residual R̃ and
+/-- **ξ² functional** (eq 16.16): given transformed residual R̃ and
     singular values σ, with tolerances α, β, γ:
       ξ² = ∑_{i,j} r̃²_{ij} / (α²σ²_j + β²σ²_i + γ²). -/
 noncomputable def xiSq (n : ℕ) (R_tilde : Fin n → Fin n → ℝ)
@@ -75,10 +75,10 @@ lemma xiSq_nonneg {n : ℕ} (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → 
   exact div_nonneg (sq_nonneg _) (le_of_lt (hpos i j))
 
 -- ============================================================
--- Backward error lower bound (§15.2, eq 15.16 lower)
+-- Backward error lower bound (§16.2, eq 16.15 lower)
 -- ============================================================
 
-/-- **Backward error lower bound** (eq 15.16, lower direction):
+/-- **Backward error lower bound** (eq 16.15, lower direction):
     For ANY perturbations ΔÃ, ΔB̃, ΔC̃ satisfying the entry-wise
     backward error equation ΔÃ_{ij}σ_j - σ_iΔB̃_{ij} - ΔC̃_{ij} = R̃_{ij},
     we have ξ² ≤ ‖ΔÃ‖²_F/α² + ‖ΔB̃‖²_F/β² + ‖ΔC̃‖²_F/γ².
@@ -128,10 +128,10 @@ theorem backward_error_lower_sq (n : ℕ)
              sq_nonneg ((-β * σ i) * DC i j * α * β - (-γ) * DB i j * α * γ)]
 
 -- ============================================================
--- Backward error upper bound (§15.2, eq 15.16 upper)
+-- Backward error upper bound (§16.2, eq 16.15 upper)
 -- ============================================================
 
-/-- **Backward error upper bound** (eq 15.16, upper direction):
+/-- **Backward error upper bound** (eq 16.15, upper direction):
     The optimal perturbations in SVD coordinates achieve cost exactly ξ².
     We prove one component: ∑ (Δã_opt)² ≤ α² · ξ² where
       Δã_opt_{ij} = α²σ_j · r̃_{ij} / (α²σ²_j + β²σ²_i + γ²). -/
@@ -176,10 +176,37 @@ theorem backward_error_upper_component (n : ℕ)
         rw [mul_div_assoc]
 
 -- ============================================================
--- Amplification factor (§15.2, eqs 15.17-15.19)
+-- Amplification factor (§16.2, eqs 16.17-16.19)
 -- ============================================================
 
-/-- **Amplification factor bound** (eq 15.17-15.18):
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.18):
+    scalar amplification factor `mu` comparing the backward error scale with
+    the normwise relative residual.  The singular-value arguments are the
+    source's zero-extended `sigma_m` and `sigma_n` slots for an `m x n`
+    approximate solution. -/
+noncomputable def sylvesterAmplificationMu
+    (α β γ yNorm σm σn : ℝ) : ℝ :=
+  ((α + β) * yNorm + γ) /
+    Real.sqrt (α ^ 2 * σn ^ 2 + β ^ 2 * σm ^ 2 + γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.19):
+    square-case specialization of the amplification factor. -/
+noncomputable def sylvesterAmplificationMuSquare
+    (α β γ yNorm σmin : ℝ) : ℝ :=
+  ((α + β) * yNorm + γ) /
+    Real.sqrt ((α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2)
+
+/-- In the square case, the two singular-value slots in (16.18) coincide,
+    giving the source formula (16.19). -/
+theorem sylvesterAmplificationMu_square_eq
+    (α β γ yNorm σmin : ℝ) :
+    sylvesterAmplificationMu α β γ yNorm σmin σmin =
+      sylvesterAmplificationMuSquare α β γ yNorm σmin := by
+  unfold sylvesterAmplificationMu sylvesterAmplificationMuSquare
+  rw [show α ^ 2 * σmin ^ 2 + β ^ 2 * σmin ^ 2 + γ ^ 2 =
+      (α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2 by ring]
+
+/-- **Amplification factor bound** (eqs 16.17-16.18):
     ξ² ≤ ‖R̃‖²_F / ((α²+β²)σ²_min + γ²)
     when all singular values satisfy σ_i ≥ σ_min.
 
@@ -219,7 +246,7 @@ theorem xiSq_amplification_bound (n : ℕ)
       α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2 := by nlinarith [sq_nonneg α, sq_nonneg β]
   exact div_le_div_of_nonneg_left (sq_nonneg _) hDenom hdenom_le
 
-/-- **Amplification factor with orthogonal invariance** (eq 15.19, m=n case):
+/-- **Amplification factor with orthogonal invariance** (eq 16.19, m=n case):
     ξ² ≤ ‖R‖²_F / ((α²+β²)σ²_min + γ²). -/
 theorem amplification_factor_bound (n : ℕ)
     (Y R : Fin n → Fin n → ℝ)
@@ -236,7 +263,7 @@ theorem amplification_factor_bound (n : ℕ)
   exact hle
 
 -- ============================================================
--- Backward error η bound via cost (§15.2)
+-- Backward error η bound via cost (§16.2)
 -- ============================================================
 
 /-- **Backward error η bound via perturbation cost**:
@@ -274,10 +301,10 @@ theorem backward_error_eta_bound (n : ℕ)
   linarith
 
 -- ============================================================
--- Residual-based backward error bound (combining eqs 15.12 + 15.16)
+-- Residual-based backward error bound (combining eqs 16.12 + 16.16)
 -- ============================================================
 
-/-- **Combined backward error bound** (eqs 15.12 + 15.16):
+/-- **Combined backward error bound** (eqs 16.12 + 16.16):
     If the backward error equation holds with cost η, then
     η ≥ ‖R‖_F / ((α+β)‖Y‖_F + γ)
     (from residual_bound, rearranged). This is the easy lower bound. -/
