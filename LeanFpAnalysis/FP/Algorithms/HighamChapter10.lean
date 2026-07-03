@@ -2753,6 +2753,58 @@ theorem finiteMaxEigenvalue_leading_principal_le (n : ℕ) (hn : 0 < n)
   rw [hpadquad] at hray
   exact hray
 
+/-- **Trailing-block eigenvalue interlacing** (Higham §10.4, the
+    `‖Q₂₂‖₂ ≤ ‖Q‖₂` half of the (10.29) Schur monotonicity): the maximum
+    eigenvalue of the trailing `m × m` principal submatrix (drop row/column
+    0) is at most that of the full `(m+1) × (m+1)` matrix — evaluate the
+    full max-Rayleigh bound at the eigenvector padded with a leading zero
+    (`Fin.cons 0 v`). -/
+theorem finiteMaxEigenvalue_trailing_principal_le (m : ℕ) (hm : 0 < m)
+    (M : Fin (m + 1) → Fin (m + 1) → ℝ) (hM : IsSymmetricFiniteMatrix M)
+    (hMsub_sym : IsSymmetricFiniteMatrix
+      (fun i j : Fin m => M i.succ j.succ)) :
+    finiteMaxEigenvalue hm
+        (fun i j : Fin m => M i.succ j.succ) hMsub_sym ≤
+      finiteMaxEigenvalue (Nat.succ_pos m) M hM := by
+  obtain ⟨a, ha⟩ := exists_finiteMaxEigenvalue_eq hm
+    (fun i j : Fin m => M i.succ j.succ) hMsub_sym
+  have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one
+    (fun i j : Fin m => M i.succ j.succ) hMsub_sym a
+  have hq :=
+    finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+      (fun i j : Fin m => M i.succ j.succ) hMsub_sym a
+  rw [hnorm, mul_one] at hq
+  set v : Fin m → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian
+      (fun i j : Fin m => M i.succ j.succ) hMsub_sym).eigenvectorBasis a)
+    with hv
+  have hvsq : ∑ i : Fin m, v i ^ 2 = 1 := by
+    have := hnorm; unfold finiteVecNorm2Sq at this; exact this
+  set w : Fin (m + 1) → ℝ := Fin.cons 0 v with hw
+  have hwsq : ∑ i : Fin (m + 1), w i ^ 2 = 1 := by
+    rw [Fin.sum_univ_succ]
+    simp only [hw, Fin.cons_zero, Fin.cons_succ]
+    rw [hvsq]; ring
+  have hray := finiteMaxEigenvalue_rayleigh (Nat.succ_pos m) M hM w
+  rw [hwsq, mul_one] at hray
+  have hquad : ∑ i : Fin (m + 1), ∑ j : Fin (m + 1), w i * M i j * w j =
+      finiteMaxEigenvalue hm
+        (fun i j : Fin m => M i.succ j.succ) hMsub_sym := by
+    rw [Fin.sum_univ_succ]
+    have hzero_row : (∑ j : Fin (m + 1), w 0 * M 0 j * w j) = 0 := by
+      simp only [hw, Fin.cons_zero, zero_mul, Finset.sum_const_zero]
+    rw [hzero_row, zero_add]
+    have hinner : ∀ i : Fin m,
+        (∑ j : Fin (m + 1), w i.succ * M i.succ j * w j) =
+        ∑ j : Fin m, v i * M i.succ j.succ * v j := by
+      intro i
+      rw [Fin.sum_univ_succ]
+      simp only [hw, Fin.cons_zero, Fin.cons_succ, mul_zero, zero_add]
+    rw [Finset.sum_congr rfl fun i _ => hinner i]
+    rw [← ha, ← hq, finiteQuadraticForm_eq_sum_sum]
+  rw [hquad] at hray
+  exact hray
+
 /-- Quadratic-form-certificate variant of the scaled interior mass
     (composes with zero-pad restriction, unlike the `opNorm2Le`
     form). -/

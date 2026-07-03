@@ -843,6 +843,397 @@ theorem spd_pivot_quadForm_bound {n : ℕ} (H Hinv : Fin n → Fin n → ℝ)
   rw [hUV, hUU] at hcs
   exact hcs
 
+/-- **Sherman–Morrison quadratic-form monotonicity, scalar core**
+    (Higham §10.4, the algebraic heart of the (10.29) stage Loewner
+    monotonicity `Q̂ ⪯ Q₂₂`; oracle consult 4 route, hand-verified).
+
+    After the block-inverse reduction, `yᵀ Q̂ y` equals the
+    Sherman–Morrison expansion
+    `qww + 2γp + γ²r − (p+γr)²/(1+r)` (rank-one update `Z + uuᵀ` of the
+    SPD Schur complement `Z`, with `qww = wᵀZ⁻¹w`, `r = uᵀZ⁻¹u ≥ 0`,
+    `p = uᵀZ⁻¹w`), while `yᵀ Q₂₂ y = qww + γ²`.  The exact gap is
+    `(γ − p)²/(1+r) ≥ 0`, so the stage form never exceeds the trailing
+    block. -/
+theorem sherman_morrison_quadForm_scalar_mono
+    (qww r p γ : ℝ) (hr : 0 ≤ r) :
+    qww + 2 * γ * p + γ ^ 2 * r - (p + γ * r) ^ 2 / (1 + r) ≤
+      qww + γ ^ 2 := by
+  have h1r : (0:ℝ) < 1 + r := by linarith
+  have hgap : (qww + γ ^ 2) -
+      (qww + 2 * γ * p + γ ^ 2 * r - (p + γ * r) ^ 2 / (1 + r)) =
+      (γ - p) ^ 2 / (1 + r) := by
+    field_simp
+    ring
+  have hnn : 0 ≤ (γ - p) ^ 2 / (1 + r) :=
+    div_nonneg (sq_nonneg _) h1r.le
+  linarith [hgap, hnn]
+
+/-- **Sherman–Morrison quadratic form, vector level** (Higham §10.4, the
+    matrix step of the (10.29) crux `Q̂ ⪯ Q₂₂`; oracle consult 4 route,
+    hand-verified).  For symmetric `Z` with a left inverse `Zinv`
+    (symmetric), the rank-one update `Ĥ = Z + u uᵀ` with right inverse
+    `Ĥinv` satisfies
+
+      `xᵀ Ĥ⁻¹ x = xᵀ Z⁻¹ x − (uᵀ Z⁻¹ x)² / (1 + uᵀ Z⁻¹ u)`.
+
+    Proved through the inverse-action vector `ξ = Ĥ⁻¹ x`:
+    `Z ξ = x − (uᵀξ) u`, so `ξ = Z⁻¹ x − s Z⁻¹ u` with `s = (uᵀZ⁻¹x)/(1+r)`;
+    no explicit Sherman–Morrison matrix identity is needed. -/
+theorem rankOne_update_quadForm_eq {m : ℕ}
+    (Z Zinv Hhat Hhatinv : Fin m → Fin m → ℝ) (u x : Fin m → ℝ)
+    (hZinvSym : ∀ i j : Fin m, Zinv i j = Zinv j i)
+    (hZinv_act : ∀ v : Fin m → ℝ,
+      matMulVec m Zinv (matMulVec m Z v) = v)
+    (hHhat : ∀ i j : Fin m, Hhat i j = Z i j + u i * u j)
+    (hHhatinv_act : matMulVec m Hhat (matMulVec m Hhatinv x) = x)
+    (hr1 : (1 : ℝ) + (∑ i : Fin m, u i * matMulVec m Zinv u i) ≠ 0) :
+    (∑ i : Fin m, x i * matMulVec m Hhatinv x i) =
+      (∑ i : Fin m, x i * matMulVec m Zinv x i) -
+        (∑ i : Fin m, u i * matMulVec m Zinv x i) ^ 2 /
+        (1 + ∑ i : Fin m, u i * matMulVec m Zinv u i) := by
+  set ξ : Fin m → ℝ := matMulVec m Hhatinv x with hξ
+  set s : ℝ := ∑ j : Fin m, u j * ξ j with hs
+  set a : Fin m → ℝ := matMulVec m Zinv x with ha
+  set e : Fin m → ℝ := matMulVec m Zinv u with he
+  set p : ℝ := ∑ i : Fin m, u i * a i with hp
+  set r : ℝ := ∑ i : Fin m, u i * e i with hr
+  -- Z ξ = x − s • u  (pointwise)
+  have hZξ : ∀ i : Fin m, matMulVec m Z ξ i = x i - s * u i := by
+    intro i
+    have hact : matMulVec m Hhat ξ i = x i := by rw [hξ]; exact congrFun hHhatinv_act i
+    have hsplit : matMulVec m Hhat ξ i = matMulVec m Z ξ i + u i * s := by
+      unfold matMulVec
+      rw [hs]
+      rw [show (∑ j : Fin m, Hhat i j * ξ j) =
+          ∑ j : Fin m, (Z i j + u i * u j) * ξ j from
+        Finset.sum_congr rfl fun j _ => by rw [hHhat i j]]
+      rw [show (∑ j : Fin m, (Z i j + u i * u j) * ξ j) =
+          (∑ j : Fin m, Z i j * ξ j) + u i * (∑ j : Fin m, u j * ξ j) from by
+        rw [Finset.mul_sum, ← Finset.sum_add_distrib]
+        exact Finset.sum_congr rfl fun j _ => by ring]
+    rw [hsplit] at hact
+    linarith
+  -- ξ = a − s • e  (apply Zinv, using Zinv ∘ Z = id)
+  have hξ_eq : ∀ i : Fin m, ξ i = a i - s * e i := by
+    have hZinvξ := hZinv_act ξ
+    have hlin : matMulVec m Zinv (matMulVec m Z ξ) =
+        fun i => a i - s * e i := by
+      funext i
+      have : matMulVec m Z ξ = fun i => x i - s * u i := funext hZξ
+      rw [this]
+      unfold matMulVec
+      rw [ha, he]
+      unfold matMulVec
+      rw [show (∑ j : Fin m, Zinv i j * (x j - s * u j)) =
+          (∑ j : Fin m, Zinv i j * x j) - s * (∑ j : Fin m, Zinv i j * u j) from by
+        rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
+        exact Finset.sum_congr rfl fun j _ => by ring]
+    rw [hZinvξ] at hlin
+    exact congrFun hlin
+  have h1r : (1 : ℝ) + r ≠ 0 := by rw [hr] at hr1 ⊢; exact hr1
+  -- s (1 + r) = p
+  have hs_eq : s * (1 + r) = p := by
+    have hstep : s = p - s * r := by
+      conv_lhs => rw [hs]
+      calc (∑ j : Fin m, u j * ξ j)
+          = ∑ j : Fin m, (u j * a j - s * (u j * e j)) :=
+            Finset.sum_congr rfl fun j _ => by rw [hξ_eq j]; ring
+        _ = (∑ j : Fin m, u j * a j) - s * ∑ j : Fin m, u j * e j := by
+            rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
+        _ = p - s * r := by rw [← hp, ← hr]
+    nlinarith [hstep]
+  -- x·e = p  (symmetry of Zinv)
+  have hxe : (∑ i : Fin m, x i * e i) = p := by
+    have lhs : (∑ i : Fin m, x i * e i) =
+        ∑ i : Fin m, ∑ j : Fin m, x i * Zinv i j * u j := by
+      rw [he]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      unfold matMulVec
+      rw [Finset.mul_sum]
+      exact Finset.sum_congr rfl fun j _ => by ring
+    have rhs : p = ∑ i : Fin m, ∑ j : Fin m, u i * Zinv i j * x j := by
+      rw [hp, ha]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      unfold matMulVec
+      rw [Finset.mul_sum]
+      exact Finset.sum_congr rfl fun j _ => by ring
+    rw [lhs, rhs, Finset.sum_comm]
+    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+    rw [hZinvSym j i]; ring
+  -- assemble: xᵀĤ⁻¹x = xᵀa − s(xᵀe) = qxx − s·p = qxx − p²/(1+r)
+  have hLHS : (∑ i : Fin m, x i * ξ i) =
+      (∑ i : Fin m, x i * a i) - s * (∑ i : Fin m, x i * e i) := by
+    rw [show (∑ i : Fin m, x i * a i) - s * (∑ i : Fin m, x i * e i) =
+        ∑ i : Fin m, (x i * a i - s * (x i * e i)) from by
+      rw [Finset.mul_sum, ← Finset.sum_sub_distrib]]
+    exact Finset.sum_congr rfl fun i _ => by rw [hξ_eq i]; ring
+  rw [hξ] at hLHS
+  rw [hLHS, hxe, ha]
+  -- s·p = p²/(1+r)
+  have hs_val : s = p / (1 + r) := by
+    rw [eq_div_iff h1r]; exact hs_eq
+  rw [hs_val, hr]; ring
+
+/-- **Rank-one-update auxiliary inequality** (Higham §10.4, the complete
+    abstract heart of the (10.29) stage Loewner monotonicity `Q̂ ⪯ Q₂₂`;
+    oracle consult 4, hand-verified): for symmetric `Z` with symmetric
+    left inverse `Zinv` that is PSD on `u`, the rank-one update
+    `Ĥ = Z + u uᵀ` with right inverse `Ĥinv` satisfies
+
+      `(w + γu)ᵀ Ĥ⁻¹ (w + γu) ≤ wᵀ Z⁻¹ w + γ²`.
+
+    Combines the vector Sherman–Morrison identity with the scalar
+    monotonicity core after expanding both `Z⁻¹` bilinear forms at
+    `x = w + γu`. -/
+theorem rankOne_update_auxiliary_le {m : ℕ}
+    (Z Zinv Hhat Hhatinv : Fin m → Fin m → ℝ) (u w : Fin m → ℝ) (γ : ℝ)
+    (hZinvSym : ∀ i j : Fin m, Zinv i j = Zinv j i)
+    (hr_nonneg : 0 ≤ ∑ i : Fin m, u i * matMulVec m Zinv u i)
+    (hZinv_act : ∀ v : Fin m → ℝ,
+      matMulVec m Zinv (matMulVec m Z v) = v)
+    (hHhat : ∀ i j : Fin m, Hhat i j = Z i j + u i * u j)
+    (hHhatinv_act : matMulVec m Hhat
+      (matMulVec m Hhatinv (fun i => w i + γ * u i)) =
+      (fun i => w i + γ * u i)) :
+    (∑ i : Fin m, (w i + γ * u i) *
+        matMulVec m Hhatinv (fun i => w i + γ * u i) i) ≤
+      (∑ i : Fin m, w i * matMulVec m Zinv w i) + γ ^ 2 := by
+  set x : Fin m → ℝ := fun i => w i + γ * u i with hx
+  set r : ℝ := ∑ i : Fin m, u i * matMulVec m Zinv u i with hr
+  set qww : ℝ := ∑ i : Fin m, w i * matMulVec m Zinv w i with hqww
+  set p0 : ℝ := ∑ i : Fin m, u i * matMulVec m Zinv w i with hp0
+  have h1r : (1 : ℝ) + r ≠ 0 := by positivity
+  -- Zinv action on x splits linearly
+  have hZinvx : ∀ i : Fin m,
+      matMulVec m Zinv x i =
+      matMulVec m Zinv w i + γ * matMulVec m Zinv u i := by
+    intro i; unfold matMulVec
+    rw [Finset.mul_sum, ← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun j _ => by rw [hx]; ring
+  -- symmetry: ∑ w (Zinv u) = ∑ u (Zinv w) = p0
+  have hsym_cross : (∑ i : Fin m, w i * matMulVec m Zinv u i) = p0 := by
+    rw [hp0]
+    have lhs : (∑ i : Fin m, w i * matMulVec m Zinv u i) =
+        ∑ i : Fin m, ∑ j : Fin m, w i * Zinv i j * u j := by
+      refine Finset.sum_congr rfl fun i _ => ?_
+      unfold matMulVec; rw [Finset.mul_sum]
+      exact Finset.sum_congr rfl fun j _ => by ring
+    have rhs : (∑ i : Fin m, u i * matMulVec m Zinv w i) =
+        ∑ i : Fin m, ∑ j : Fin m, u i * Zinv i j * w j := by
+      refine Finset.sum_congr rfl fun i _ => ?_
+      unfold matMulVec; rw [Finset.mul_sum]
+      exact Finset.sum_congr rfl fun j _ => by ring
+    rw [lhs, rhs, Finset.sum_comm]
+    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+    rw [hZinvSym j i]; ring
+  -- x·Zinv·x = qww + 2γ p0 + γ² r
+  have hxZx : (∑ i : Fin m, x i * matMulVec m Zinv x i) =
+      qww + 2 * γ * p0 + γ ^ 2 * r := by
+    have hpt : (∑ i : Fin m, x i * matMulVec m Zinv x i) =
+        ∑ i : Fin m, (w i * matMulVec m Zinv w i +
+          γ * (w i * matMulVec m Zinv u i) +
+          γ * (u i * matMulVec m Zinv w i) +
+          γ ^ 2 * (u i * matMulVec m Zinv u i)) :=
+      Finset.sum_congr rfl fun i _ => by rw [hZinvx i, hx]; ring
+    rw [hpt, Finset.sum_add_distrib, Finset.sum_add_distrib,
+      Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum,
+      ← Finset.mul_sum, hsym_cross, ← hqww, ← hr, ← hp0]
+    ring
+  -- u·Zinv·x = p0 + γ r
+  have huZx : (∑ i : Fin m, u i * matMulVec m Zinv x i) = p0 + γ * r := by
+    have hpt : (∑ i : Fin m, u i * matMulVec m Zinv x i) =
+        ∑ i : Fin m, (u i * matMulVec m Zinv w i +
+          γ * (u i * matMulVec m Zinv u i)) :=
+      Finset.sum_congr rfl fun i _ => by rw [hZinvx i]; ring
+    rw [hpt, Finset.sum_add_distrib, ← Finset.mul_sum, ← hp0, ← hr]
+  -- apply the vector Sherman–Morrison identity, then the scalar core
+  have hid := rankOne_update_quadForm_eq Z Zinv Hhat Hhatinv u x
+    hZinvSym hZinv_act hHhat hHhatinv_act (by rw [← hr]; exact h1r)
+  rw [hid, hxZx, huZx, ← hr]
+  exact sherman_morrison_quadForm_scalar_mono qww r p0 γ hr_nonneg
+
+/-- **2×2 block-inverse quadratic form** (Higham §10.4, the `Q₂₂` side of
+    the (10.29) crux; oracle consult 4, hand-verified): for a symmetric
+    positive-definite `(1+m)`-block matrix
+    `H = [[α, fᵀ],[f, G]]` with Schur complement `Z = G − ffᵀ/α`
+    (`Zinv` its inverse), completing the square gives
+
+      `[β; v]ᵀ H⁻¹ [β; v] = β²/α + (v − (β/α)f)ᵀ Z⁻¹ (v − (β/α)f)`.
+
+    Proved through the inverse-action vector `ξ = H⁻¹[β;v]`: its tail
+    solves `Z ξ_tail = v − (β/α)f`. -/
+theorem block_quadForm_schur_eq {m : ℕ} (α : ℝ) (hα : α ≠ 0)
+    (f : Fin m → ℝ) (G : Fin m → Fin m → ℝ)
+    (H Hinv : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (Z Zinv : Fin m → Fin m → ℝ)
+    (hH00 : H 0 0 = α)
+    (hH0s : ∀ j : Fin m, H 0 j.succ = f j)
+    (hHs0 : ∀ i : Fin m, H i.succ 0 = f i)
+    (hHss : ∀ i j : Fin m, H i.succ j.succ = G i j)
+    (hZ : ∀ i j : Fin m, Z i j = G i j - f i * f j / α)
+    (hZinv_act : ∀ vv : Fin m → ℝ, matMulVec m Zinv (matMulVec m Z vv) = vv)
+    (β : ℝ) (v : Fin m → ℝ)
+    (hHinv_act : matMulVec (m + 1) H
+      (matMulVec (m + 1) Hinv (Fin.cons β v : Fin (m + 1) → ℝ)) =
+      (Fin.cons β v : Fin (m + 1) → ℝ)) :
+    (∑ i : Fin (m + 1),
+        (Fin.cons β v : Fin (m + 1) → ℝ) i *
+        matMulVec (m + 1) Hinv (Fin.cons β v : Fin (m + 1) → ℝ) i) =
+      β ^ 2 / α +
+        ∑ i : Fin m, (v i - β / α * f i) *
+          matMulVec m Zinv (fun j => v j - β / α * f j) i := by
+  set y : Fin (m + 1) → ℝ := (Fin.cons β v : Fin (m + 1) → ℝ) with hy
+  set ξ : Fin (m + 1) → ℝ := matMulVec (m + 1) Hinv y with hξ
+  set ξt : Fin m → ℝ := fun i => ξ i.succ with hξt
+  set F : ℝ := ∑ j : Fin m, f j * ξt j with hF
+  -- row 0: α·ξ₀ + ∑ f·ξt = β
+  have hrow0 : α * ξ 0 + F = β := by
+    have h0 : matMulVec (m + 1) H ξ 0 = β := by
+      rw [hξ]; rw [hHinv_act]; rw [hy, Fin.cons_zero]
+    rw [show matMulVec (m + 1) H ξ 0 = α * ξ 0 + F from by
+      unfold matMulVec
+      rw [Fin.sum_univ_succ, hH00, hF]
+      congr 1
+      exact Finset.sum_congr rfl fun j _ => by rw [hH0s j, hξt]] at h0
+    exact h0
+  -- rows i.succ: f i·ξ₀ + (G·ξt) i = v i
+  have hrowi : ∀ i : Fin m,
+      f i * ξ 0 + matMulVec m G ξt i = v i := by
+    intro i
+    have hi : matMulVec (m + 1) H ξ i.succ = v i := by
+      rw [hξ]; rw [hHinv_act]; rw [hy, Fin.cons_succ]
+    rw [show matMulVec (m + 1) H ξ i.succ =
+        f i * ξ 0 + matMulVec m G ξt i from by
+      unfold matMulVec
+      rw [Fin.sum_univ_succ, hHs0 i]
+      congr 1
+      exact Finset.sum_congr rfl fun j _ => by rw [hHss i j, hξt]] at hi
+    exact hi
+  -- ξ₀ = (β − F)/α
+  have hξ0 : ξ 0 = (β - F) / α := by
+    rw [eq_div_iff hα]; linarith [hrow0]
+  -- Z·ξt = v − (β/α)·f  (pointwise)
+  have hZξt : ∀ i : Fin m,
+      matMulVec m Z ξt i = v i - β / α * f i := by
+    intro i
+    have hGi := hrowi i
+    have hexp : matMulVec m Z ξt i =
+        matMulVec m G ξt i - f i / α * F := by
+      unfold matMulVec
+      rw [show (∑ j : Fin m, Z i j * ξt j) =
+          ∑ j : Fin m, (G i j * ξt j - f i / α * (f j * ξt j)) from
+        Finset.sum_congr rfl fun j _ => by rw [hZ i j]; ring]
+      rw [Finset.sum_sub_distrib, ← Finset.mul_sum, hF]
+    rw [hexp]
+    -- matMulVec G ξt i = v i − f i ξ0 = v i − f i (β−F)/α
+    have hG_i : matMulVec m G ξt i = v i - f i * ξ 0 := by linarith [hGi]
+    rw [hG_i, hξ0]
+    field_simp
+    ring
+  -- ξt = Zinv (v − (β/α)f)
+  have hξt_eq : ξt = matMulVec m Zinv (fun j => v j - β / α * f j) := by
+    have := hZinv_act ξt
+    rw [show matMulVec m Z ξt = (fun j => v j - β / α * f j) from
+      funext hZξt] at this
+    exact this.symm
+  -- assemble the quadratic form
+  have hQF : (∑ i : Fin (m + 1), y i * ξ i) =
+      β * ξ 0 + ∑ i : Fin m, v i * ξt i := by
+    rw [Fin.sum_univ_succ, hy]
+    simp only [Fin.cons_zero, Fin.cons_succ, hξt]
+  -- the algebraic identity β·ξ₀ + ∑ v·ξt = β²/α + ∑ (v − (β/α)f)·ξt
+  have hfinal : β * ξ 0 + ∑ i : Fin m, v i * ξt i =
+      β ^ 2 / α + ∑ i : Fin m, (v i - β / α * f i) * ξt i := by
+    rw [hξ0]
+    have hexpand : (∑ i : Fin m, (v i - β / α * f i) * ξt i) =
+        (∑ i : Fin m, v i * ξt i) - β / α * F := by
+      rw [hF, Finset.mul_sum, ← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun i _ => by ring
+    rw [hexpand]; field_simp; ring
+  rw [hQF, hfinal, hξt_eq]
+
+/-- **Stage Loewner monotonicity `Q̂ ⪯ Q₂₂`, quadratic-form level**
+    (Higham §10.4, the (10.29) crux, assembled; oracle consult 4).
+    For a symmetric PD `(1+m)`-block `H = [[α, fᵀ],[f, G]]` with Schur
+    complement `Z = G − ffᵀ/α`, skew data `k`, computed Schur complement
+    action `Ŝy = v − (β/α)(f − k)` and its symmetric-part rank-one update
+    `Ĥ = Z + kkᵀ/α`, the stage Gram form never exceeds the trailing-block
+    Gram form:
+
+      `(Ŝy)ᵀ Ĥ⁻¹ (Ŝy) ≤ [β; v]ᵀ H⁻¹ [β; v]`.
+
+    Combines `block_quadForm_schur_eq` (`= β²/α + wᵀZ⁻¹w`) with
+    `rankOne_update_auxiliary_le` (`≤ wᵀZ⁻¹w + γ²`, `γ² = β²/α`), setting
+    `u = k/√α`, `γ = β/√α` so `uuᵀ = kkᵀ/α` and `Ŝy = w + γu`. -/
+theorem schur_gram_stage_le {m : ℕ} (α : ℝ) (hα : 0 < α)
+    (f k : Fin m → ℝ) (G : Fin m → Fin m → ℝ)
+    (H Hinv : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (Z Zinv Hhat Hhatinv : Fin m → Fin m → ℝ)
+    (hH00 : H 0 0 = α)
+    (hH0s : ∀ j : Fin m, H 0 j.succ = f j)
+    (hHs0 : ∀ i : Fin m, H i.succ 0 = f i)
+    (hHss : ∀ i j : Fin m, H i.succ j.succ = G i j)
+    (hZ : ∀ i j : Fin m, Z i j = G i j - f i * f j / α)
+    (hZinvSym : ∀ i j : Fin m, Zinv i j = Zinv j i)
+    (hZinv_act : ∀ vv : Fin m → ℝ, matMulVec m Zinv (matMulVec m Z vv) = vv)
+    (hZinv_psd_k : 0 ≤ ∑ i : Fin m, (k i / Real.sqrt α) *
+      matMulVec m Zinv (fun j => k j / Real.sqrt α) i)
+    (hHhat : ∀ i j : Fin m,
+      Hhat i j = Z i j + (k i / Real.sqrt α) * (k j / Real.sqrt α))
+    (β : ℝ) (v : Fin m → ℝ)
+    (hHinv_act : matMulVec (m + 1) H
+      (matMulVec (m + 1) Hinv (Fin.cons β v : Fin (m + 1) → ℝ)) =
+      (Fin.cons β v : Fin (m + 1) → ℝ))
+    (hHhatinv_act : matMulVec m Hhat
+      (matMulVec m Hhatinv
+        (fun i => (v i - β / α * f i) + β / Real.sqrt α *
+          (k i / Real.sqrt α))) =
+      (fun i => (v i - β / α * f i) + β / Real.sqrt α *
+        (k i / Real.sqrt α))) :
+    (∑ i : Fin m, (v i - β / α * (f i - k i)) *
+        matMulVec m Hhatinv
+          (fun j => v j - β / α * (f j - k j)) i) ≤
+      (∑ i : Fin (m + 1),
+        (Fin.cons β v : Fin (m + 1) → ℝ) i *
+        matMulVec (m + 1) Hinv (Fin.cons β v : Fin (m + 1) → ℝ) i) := by
+  set u : Fin m → ℝ := fun i => k i / Real.sqrt α with hu
+  set γ : ℝ := β / Real.sqrt α with hγ
+  set w : Fin m → ℝ := fun i => v i - β / α * f i with hw
+  have hsqrtα : Real.sqrt α * Real.sqrt α = α := Real.mul_self_sqrt hα.le
+  have hsqrtα_ne : Real.sqrt α ≠ 0 := by positivity
+  -- Ŝy = w + γ u (pointwise and as functions)
+  have hŜy_pt : ∀ i : Fin m,
+      v i - β / α * (f i - k i) = w i + γ * u i := by
+    intro i
+    simp only [hw, hu, hγ]
+    rw [div_mul_div_comm, hsqrtα]
+    ring
+  have hŜy : (fun i => v i - β / α * (f i - k i)) =
+      (fun i => w i + γ * u i) := funext hŜy_pt
+  -- γ² = β²/α
+  have hγ2 : γ ^ 2 = β ^ 2 / α := by
+    rw [hγ, div_pow, Real.sq_sqrt hα.le]
+  -- block-inverse form of the trailing quadratic form
+  have hblock := block_quadForm_schur_eq α hα.ne' f G H Hinv Z Zinv
+    hH00 hH0s hHs0 hHss hZ hZinv_act β v hHinv_act
+  -- auxiliary inequality on the stage form
+  have haux := rankOne_update_auxiliary_le Z Zinv Hhat Hhatinv u w γ
+    hZinvSym hZinv_psd_k hZinv_act hHhat hHhatinv_act
+  -- rewrite the goal's stage form into the (w + γu) shape
+  have hLHSeq : (∑ i : Fin m, (v i - β / α * (f i - k i)) *
+        matMulVec m Hhatinv (fun j => v j - β / α * (f j - k j)) i) =
+      ∑ i : Fin m, (w i + γ * u i) *
+        matMulVec m Hhatinv (fun j => w j + γ * u j) i := by
+    rw [hŜy]
+    exact Finset.sum_congr rfl fun i _ => by rw [hŜy_pt i]
+  rw [hLHSeq]
+  refine le_trans haux ?_
+  rw [hblock, hγ2]
+  have hww : (∑ i : Fin m, w i * matMulVec m Zinv w i) =
+      ∑ i : Fin m, (v i - β / α * f i) *
+        matMulVec m Zinv (fun j => v j - β / α * f j) i := rfl
+  linarith [hww]
+
 /-- **Scalar product step** (Higham §10.4, (10.29) per-stage): from two
     pivot bounds `p² ≤ h·a`, `q² ≤ h·b` with `h > 0` and `a, b ≥ 0`,
     `|p·q|/h ≤ √(a·b)`.  Combines the row and column instances of
@@ -921,6 +1312,48 @@ theorem sqrt_diag_prod_le_opNorm2Le {n : ℕ} (Q : Fin n → Fin n → ℝ) (c :
       ≤ Real.sqrt (c * c) :=
         Real.sqrt_le_sqrt (mul_le_mul hi hj (hdiag_nonneg j) hc)
     _ = c := by rw [← sq, Real.sqrt_sq hc]
+
+/-- **Per-stage multiplier-product bound** (Higham §10.4, the assembled
+    (10.29) per-stage inequality): for a GE stage matrix `S` with SPD
+    symmetric part `H` (two-sided symmetric PSD inverse `Hinv`) and pivot
+    `H_kk > 0`, if the row/column quadratic forms of `S` under `Hinv`
+    coincide with the diagonal of a PSD matrix `Q` carrying `opNorm2Le Q c`,
+    the multiplier product obeys `|S_ik · S_kj| / H_kk ≤ c`.
+
+    (`Q = S Hinv Sᵀ = Sᵀ Hinv S = H + Kᵀ Hinv K`; the `hrow`/`hcol`
+    hypotheses record the two Gram-diagonal identifications, discharged
+    from `symPart_skew_inverse_identity` at instantiation.) -/
+theorem stage_multiplier_product_le {n : ℕ}
+    (H Hinv S Q : Fin n → Fin n → ℝ) (c : ℝ)
+    (hHsym : ∀ i j : Fin n, H i j = H j i)
+    (hHinvSym : ∀ i j : Fin n, Hinv i j = Hinv j i)
+    (hHinvPSD : ∀ z : Fin n → ℝ,
+      0 ≤ ∑ i : Fin n, ∑ j : Fin n, z i * Hinv i j * z j)
+    (hHHinv : ∀ i k : Fin n,
+      (∑ j : Fin n, H i j * Hinv j k) = if i = k then 1 else 0)
+    (hHinvH : ∀ i k : Fin n,
+      (∑ j : Fin n, Hinv i j * H j k) = if i = k then 1 else 0)
+    (k : Fin n) (hk : 0 < H k k)
+    (hrow : ∀ i : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, S i p * Hinv p q * S i q) = Q i i)
+    (hcol : ∀ j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, S p j * Hinv p q * S q j) = Q j j)
+    (hc : 0 ≤ c) (hQ : opNorm2Le Q c) (hQd : ∀ i : Fin n, 0 ≤ Q i i)
+    (i j : Fin n) :
+    |S i k * S k j| / H k k ≤ c := by
+  have hp : (S i k) ^ 2 ≤ H k k * Q i i := by
+    have h := spd_pivot_quadForm_bound H Hinv hHsym hHinvSym hHinvPSD
+      hHHinv hHinvH k (fun m => S i m)
+    rw [hrow i] at h
+    exact h
+  have hq : (S k j) ^ 2 ≤ H k k * Q j j := by
+    have h := spd_pivot_quadForm_bound H Hinv hHsym hHinvSym hHinvPSD
+      hHHinv hHinvH k (fun m => S m j)
+    rw [hcol j] at h
+    exact h
+  have hpp := pivot_product_le_sqrt (S i k) (S k j) (H k k)
+    (Q i i) (Q j j) hk (hQd i) (hQd j) hp hq
+  exact le_trans hpp (sqrt_diag_prod_le_opNorm2Le Q c hc hQ hQd i j)
 
 open Matrix in
 /-- **The (10.29) core identity** (Higham §10.4, p. 208; proof route from

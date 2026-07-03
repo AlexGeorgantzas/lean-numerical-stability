@@ -1534,6 +1534,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_9_colDiagDominant_luFirstStepL_unit_bound_of_tail_unit_bound`
 - `higham9_9_luFirstStepU_entry_bound_of_tail_entry_bound`
 - `higham9_9_luFirstStepU_growthFactorEntry_le_two_of_tail_entry_bound_exists_hAmax`
+- `higham9_9_colDiagDominant_luFirstStep_bounds_of_tail_bounds`
 - `higham9_7_firstPivotRowSwap_involutive`
 - `higham9_7_firstPivotRowSwap_isPermutation`
 - `higham9_7_firstPivotRowSwap_det_ne_zero`
@@ -4261,6 +4262,13 @@ Source-facing Chapter 10 wrappers:
 - `spd_pivot_quadForm_bound` ((10.29) basic SPD lemma: (x_k)^2 <= H_kk (x^T Hinv x) for symmetric H with two-sided symmetric PSD inverse; applied to x=S^T e_i gives s_ik^2/H_kk <= (S Hinv S^T)_ii)
 - `pivot_product_le_sqrt` ((10.29) scalar step: p^2<=h*a, q^2<=h*b, h>0 => |p*q|/h <= sqrt(a*b) - combines row+column pivot bounds into the multiplier-product bound)
 - `diag_le_opNorm2Le` / `sqrt_diag_prod_le_opNorm2Le` ((10.29) opNorm-diag bridge: opNorm2Le Q c => Q_ii <= c and sqrt(Q_ii Q_jj) <= c for PSD-diagonal Q)
+- `stage_multiplier_product_le` ((10.29) ASSEMBLED per-stage bound: |S_ik S_kj|/H_kk <= c given opNorm2Le Q c and the row/col Gram-diagonal identifications Q = S Hinv S^T = S^T Hinv S)
+- `finiteMaxEigenvalue_trailing_principal_le` ((10.29) Schur monotonicity, ||Q22||_2 <= ||Q||_2 half: trailing m-block max-eigenvalue <= full, via Fin.cons 0 v padding)
+- `sherman_morrison_quadForm_scalar_mono` ((10.29) crux scalar core: Sherman-Morrison rank-one-update monotonicity, gap (gamma-p)^2/(1+r) >= 0 - the algebraic heart of Q_hat <= Q_22)
+- `rankOne_update_quadForm_eq` ((10.29) crux matrix step: x^T (Z+uu^T)^{-1} x = x^T Z^{-1} x - (u^T Z^{-1} x)^2/(1+u^T Z^{-1} u), via the inverse-action vector; no explicit Sherman-Morrison matrix identity)
+- `rankOne_update_auxiliary_le` ((10.29) crux ABSTRACT HEART: (w+gu)^T (Z+uu^T)^{-1} (w+gu) <= w^T Z^{-1} w + g^2; combines the vector SM identity + scalar mono core)
+- `block_quadForm_schur_eq` ((10.29) crux Q22 side: [b;v]^T H^{-1} [b;v] = b^2/a + (v-(b/a)f)^T Z^{-1} (v-(b/a)f) for symmetric PD block H=[[a,f^T],[f,G]], Z=G-ff^T/a; via inverse-action vector)
+- `schur_gram_stage_le` ((10.29) crux CAPSTONE, Q_hat <= Q_22 quadratic-form level: (S_hat y)^T H_hat^{-1} (S_hat y) <= [b;v]^T H^{-1} [b;v], combining block_quadForm_schur_eq + rankOne_update_auxiliary_le with u=k/sqrt(a), g=b/sqrt(a))
 - `kahanR` / `kahan_telescope` / `kahanR_tail_eq` ((10.20): Kahan family satisfies (10.13) with equality on the square part)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)

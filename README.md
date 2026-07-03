@@ -100,7 +100,24 @@ finite sigma-form residual estimate `normwise_residual_sigma_finite_bound` for
 `finiteResidualSigma_le_diagonalizable_bound`, now instantiated with the
 displayed finite maximum by `diagonalResidualRatioMax` and
 `finiteResidualSigma_le_diagonalizable_max_bound`, plus the supremum-envelope
-wrapper `residualSigmaSup_le_diagonalizable_max_bound`, for the (17.20) bound.  It also
+wrapper `residualSigmaSup_le_diagonalizable_max_bound`, for the (17.20) bound,
+the singular exact-iterate identity `singular_stationary_iterate_finite_sum`
+for (17.21), the consistent-system singular telescoping wrappers
+`singular_consistent_source_term_eq_I_sub_G`,
+`singular_consistent_second_term_telescope`, and
+`singular_stationary_iterate_consistent_split` toward (17.26), plus
+`singularErrorSourceTerm` for the (17.28) `S_m` source term and
+`singular_error_split_finite` for the finite algebraic core of the (17.27)
+range/null source split under the explicit fixed-null component hypothesis, and the
+subordinate-norm stopping-test wrappers
+`stopping_test_rhs_backward_subordinate`,
+`stopping_test_matrix_backward_subordinate`, and
+`stopping_test_mixed_backward_subordinate` for (17.33a)-(17.33c), plus the
+componentwise absolute-value stopping-test wrappers
+`stopping_test_rhs_backward_componentwise`,
+`stopping_test_matrix_backward_componentwise`, and
+`stopping_test_mixed_backward_componentwise` from the Theorem 7.3/Oettli-Prager
+route described after (17.33).  It also
 models the iterate-growth constants from (17.7) and (17.9)
 with `normwiseIterateGrowth`, `componentwiseIterateGrowth`, and their bound
 wrappers, and adds the finite/certificate correction and infinity-norm bridge
@@ -114,8 +131,9 @@ finite norm-form surface `jacobiForwardBoundVector`,
 `finite_norm_form_sor_forward_bound`, with the Gauss-Seidel `omega = 1`
 corollary `sorForwardFactor_one` and
 `finite_norm_form_gaussSeidel_forward_bound`.  The exact infinite-sum,
-literal infinite-sigma, singular-system, and stopping-test rows remain open in
-the Chapter 17 ledger.
+literal infinite-sigma, and singular-system Drazin/semiconvergence rows needed
+to justify the projector/fixed-null hypotheses and limiting formulas remain
+open in the Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
