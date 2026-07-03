@@ -49534,6 +49534,178 @@ theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_s
       U Uinv hUright)
     hfact hXtri hYtri hR hYzero
 
+/-- **Theorem 9.15**, split-level `G` supplied-resolvent left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_left_zero
+      L U Linv Uinv ΔA ΔL ΔU R hLright hUleft hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, split-level `G` supplied-resolvent right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_right_zero
+      L U Linv Uinv ΔA ΔL ΔU R hLright hUleft hfact hXtri hYtri hR hYzero
+
+/-- **Theorem 9.15**, source-oriented `G` supplied-resolvent left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_left_zero
+      L U Linv Uinv ΔA ΔL ΔU R hLleft hUright hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, source-oriented `G` supplied-resolvent right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`L⁻¹`, `ΔL`, `ΔU`, and `U⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hLinv_lower : ∀ i j : Fin n, i.val < j.val → Linv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUinv_upper : ∀ i j : Fin n, j.val < i.val → Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      Linv Uinv ΔL ΔU hLinv_lower hΔL_strict hΔU_upper hUinv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_right_zero
+      L U Linv Uinv ΔA ΔL ΔU R hLleft hUright hfact hXtri hYtri hR hYzero
+
 /-- **Theorem 9.15**, split-level spectral-radius `G` canonical-resolvent
 endpoint.  The normalized route no longer requires a caller-supplied
 nonnegative resolvent: `rho(|G|) < 1` supplies the canonical repository inverse
@@ -54636,6 +54808,186 @@ theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
       Uhat UhatInv hUright)
     hfact hXtri hYtri hR hYzero
+
+/-- **Theorem 9.15**, split-level `Gtilde` supplied-resolvent left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_left_zero
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+      hLright hUleft hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, split-level `Gtilde` supplied-resolvent right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_right_zero
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+      hLright hUleft hfact hXtri hYtri hR hYzero
+
+/-- **Theorem 9.15**, source-oriented `Gtilde` supplied-resolvent left-zero
+endpoint with normalized triangular support discharged from ordinary
+triangularity of `Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_left_zero
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+      hLleft hUright hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, source-oriented `Gtilde` supplied-resolvent right-zero
+endpoint with normalized triangular support discharged from ordinary
+triangularity of `Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_right_zero
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+      hLleft hUright hfact hXtri hYtri hR hYzero
 
 /-- **Theorem 9.15**, split-level spectral-radius `Gtilde`
 canonical-resolvent endpoint.  The normalized route no longer requires a
