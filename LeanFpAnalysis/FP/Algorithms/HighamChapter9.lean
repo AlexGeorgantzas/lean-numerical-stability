@@ -60197,6 +60197,182 @@ theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majoran
       Uhat UhatInv hUright)
     hfact hXtri hYtri hYzero
 
+/-- **Theorem 9.15**, split-level first-order `Gtilde` left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_left_zero
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLright hUleft hfact hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, split-level first-order `Gtilde` right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities_right_zero
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLright hUleft hfact hXtri hYtri hYzero
+
+/-- **Theorem 9.15**, source-oriented first-order `Gtilde` left-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_left_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_left_zero
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLleft hUright hfact hXtri hYtri hXzero
+
+/-- **Theorem 9.15**, source-oriented first-order `Gtilde` right-zero endpoint
+with normalized triangular support discharged from ordinary triangularity of
+`Lhat⁻¹`, `ΔL`, `ΔU`, and `Uhat⁻¹`. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_right_zero_of_factor_triangularity
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hLhatInv_lower : ∀ i j : Fin n, i.val < j.val → LhatInv i j = 0)
+    (hΔL_strict : ∀ i j : Fin n, i.val ≤ j.val → ΔL i j = 0)
+    (hΔU_upper : ∀ i j : Fin n, j.val < i.val → ΔU i j = 0)
+    (hUhatInv_upper : ∀ i j : Fin n, j.val < i.val → UhatInv i j = 0)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  rcases higham9_15_normalized_triangular_support_of_factor_triangularity
+      LhatInv UhatInv ΔL ΔU
+      hLhatInv_lower hΔL_strict hΔU_upper hUhatInv_upper with
+    ⟨hXtri, hYtri⟩
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities_right_zero
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLleft hUright hfact hXtri hYtri hYzero
+
 /-- **Theorem 9.15**, source-facing first-order componentwise endpoint from the
 original `Gtilde` factorization equations. -/
 theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant
