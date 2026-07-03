@@ -48,9 +48,10 @@ specialization `sylvesterAmplificationMuSquare`, and the source formula bridge
 bound `xiSq_le_mu_relative_residual_sq`.  The Lyapunov subsection now also has
 the spectral-coordinate equation surface `lyapunovBackwardScalarEq` and its
 residual/diagonal bridges `lyapunovBackwardScalarEq_iff_residual_eq` and
-`lyapunovBackwardScalarEq_iff_diagMatrix_eq`, plus the `lyapunovXiSq` and
-`lyapunovAmplificationMu` scalar surfaces; the full eta amplification theorem
-and several condition/practical-bound rows remain open in the Chapter 16 ledger.
+`lyapunovBackwardScalarEq_iff_diagMatrix_eq`, plus the `lyapunovXiSq`,
+`lyapunovAmplificationMu`, and `lyapunovXiSq_le_mu_relative_residual_sq`
+surfaces; the full eta amplification theorem and several condition/practical-bound
+rows remain open in the Chapter 16 ledger.
 
 Chapter 17 stationary-iteration work is tracked in
 [`docs/source_coverage/higham_ch17.md`](docs/source_coverage/higham_ch17.md).
