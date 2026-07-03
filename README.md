@@ -50,9 +50,10 @@ agreement, plus an exact add/mul/div/sqrt operation route, the exact-arithmetic
 normalized-vector equality, and raw, record, full-stage, source-closure,
 final-closed, and final-panel endpoint wrappers from all-stage tail-vector
 equalities. The recursive source-faithful certificate package is now also
-proved equivalent to the expanded raw tail-normalized package, so later
-stored-loop work can target either surface while still proving the same
-vector-equality and self-dot fields. The exact primitive-operation route is now also threaded directly
+proved equivalent to both the expanded raw tail-normalized package and the
+named tail-normalized record package, so later stored-loop work can target any
+of those surfaces while still proving the same vector-equality and self-dot
+fields. The exact primitive-operation route is now also threaded directly
 through the raw, record, source-closure, final-closed, and final-panel endpoint
 wrappers, and exact subtraction now discharges the remaining subtract-zero copy
 premise on the exact primitive-operation final-closed/final-panel variants and
@@ -68,7 +69,11 @@ pivot-zero signed-active-vector bridges identifying the stored signed vector
 with the exact or computed unnormalized Householder vector, plus a betaSpec
 normalization bridge showing that, under nonzero-column and exact primitive
 operation hypotheses, betaSpec-normalizing that unnormalized vector gives the
-computed normalized Householder vector. That bridge is now threaded through the
+computed normalized Householder vector. The normalized signed-active vector is
+now also packaged as a source-faithful normalization certificate under the same
+computed-alpha or exact-alpha exact primitive-operation hypotheses; this
+certifies the normalized vector produced from the signed active vector and
+`householderBetaSpec`, not the raw unnormalized stored vector. That bridge is now threaded through the
 first-pivot signed stored-panel handoff under the same exact-operation and
 update-compatibility surfaces, so the first QR storage step can consume the
 computed normalized vector while the stored route keeps the signed active vector
