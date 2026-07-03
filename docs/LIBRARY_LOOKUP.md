@@ -4227,6 +4227,7 @@ Source-facing Chapter 10 wrappers:
 - `quadForm_bilinear_cauchy_schwarz` ((10.29) per-stage SPD step: (u^T H v)^2 <= (u^T H u)(v^T H v) for symmetric PSD H, via discriminant of the shifted quadratic)
 - `spd_pivot_quadForm_bound` ((10.29) basic SPD lemma: (x_k)^2 <= H_kk (x^T Hinv x) for symmetric H with two-sided symmetric PSD inverse; applied to x=S^T e_i gives s_ik^2/H_kk <= (S Hinv S^T)_ii)
 - `pivot_product_le_sqrt` ((10.29) scalar step: p^2<=h*a, q^2<=h*b, h>0 => |p*q|/h <= sqrt(a*b) - combines row+column pivot bounds into the multiplier-product bound)
+- `diag_le_opNorm2Le` / `sqrt_diag_prod_le_opNorm2Le` ((10.29) opNorm-diag bridge: opNorm2Le Q c => Q_ii <= c and sqrt(Q_ii Q_jj) <= c for PSD-diagonal Q)
 - `kahanR` / `kahan_telescope` / `kahanR_tail_eq` ((10.20): Kahan family satisfies (10.13) with equality on the square part)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)

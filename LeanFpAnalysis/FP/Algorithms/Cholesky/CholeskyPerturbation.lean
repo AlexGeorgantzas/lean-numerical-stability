@@ -869,6 +869,59 @@ theorem pivot_product_le_sqrt (p q h a b : ℝ)
     _ = h * Real.sqrt (a * b) := hsplit
     _ = Real.sqrt (a * b) * h := by ring
 
+/-- **Diagonal entry ≤ operator-2-norm certificate** (Higham §10.4,
+    (10.29) per-stage RHS): if `opNorm2Le Q c` then every diagonal entry
+    `Q_ii ≤ c` — the i-th column of `Q` has 2-norm at most `c`, and
+    `Q_ii` is one of its components. -/
+theorem diag_le_opNorm2Le {n : ℕ} (Q : Fin n → Fin n → ℝ) (c : ℝ)
+    (hQ : opNorm2Le Q c) (i : Fin n) : Q i i ≤ c := by
+  set e : Fin n → ℝ := fun j => if j = i then (1:ℝ) else 0 with he
+  have hmv : matMulVec n Q e = fun p => Q p i := by
+    funext p
+    unfold matMulVec
+    rw [Finset.sum_eq_single i]
+    · rw [he]; simp
+    · intro b _ hb; rw [he]; simp [hb]
+    · intro h; exact absurd (Finset.mem_univ i) h
+  have hne : vecNorm2 e = 1 := by
+    unfold vecNorm2
+    have hsq : vecNorm2Sq e = 1 := by
+      unfold vecNorm2Sq
+      rw [Finset.sum_eq_single i]
+      · rw [he]; simp
+      · intro b _ hb; rw [he]; simp [hb]
+      · intro h; exact absurd (Finset.mem_univ i) h
+    rw [hsq, Real.sqrt_one]
+  have hb := hQ e
+  rw [hmv, hne, mul_one] at hb
+  have hcomp : (Q i i) ^ 2 ≤ vecNorm2Sq (fun p => Q p i) := by
+    unfold vecNorm2Sq
+    exact Finset.single_le_sum (f := fun p => (Q p i) ^ 2)
+      (fun p _ => sq_nonneg _) (Finset.mem_univ i)
+  have hqii_abs : |Q i i| ≤ vecNorm2 (fun p => Q p i) := by
+    rw [← Real.sqrt_sq_eq_abs]
+    calc Real.sqrt ((Q i i) ^ 2)
+        ≤ Real.sqrt (vecNorm2Sq (fun p => Q p i)) := Real.sqrt_le_sqrt hcomp
+      _ = vecNorm2 (fun p => Q p i) := rfl
+  calc Q i i ≤ |Q i i| := le_abs_self _
+    _ ≤ vecNorm2 (fun p => Q p i) := hqii_abs
+    _ ≤ c := hb
+
+/-- **√(diagonal product) ≤ operator-2-norm** (Higham §10.4, the (10.29)
+    per-stage bound RHS): for `opNorm2Le Q c` with nonnegative diagonal,
+    `√(Q_ii Q_jj) ≤ c`.  Combined with `pivot_product_le_sqrt` this gives
+    `|s_i1 s_1j|/h_11 ≤ ‖Q(S)‖₂`. -/
+theorem sqrt_diag_prod_le_opNorm2Le {n : ℕ} (Q : Fin n → Fin n → ℝ) (c : ℝ)
+    (hc : 0 ≤ c) (hQ : opNorm2Le Q c)
+    (hdiag_nonneg : ∀ i : Fin n, 0 ≤ Q i i) (i j : Fin n) :
+    Real.sqrt (Q i i * Q j j) ≤ c := by
+  have hi := diag_le_opNorm2Le Q c hQ i
+  have hj := diag_le_opNorm2Le Q c hQ j
+  calc Real.sqrt (Q i i * Q j j)
+      ≤ Real.sqrt (c * c) :=
+        Real.sqrt_le_sqrt (mul_le_mul hi hj (hdiag_nonneg j) hc)
+    _ = c := by rw [← sq, Real.sqrt_sq hc]
+
 open Matrix in
 /-- **The (10.29) core identity** (Higham §10.4, p. 208; proof route from
     the logged oracle consultation, Golub–Van Loan 1979):
