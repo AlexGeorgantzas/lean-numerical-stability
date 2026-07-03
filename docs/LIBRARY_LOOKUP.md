@@ -4270,6 +4270,7 @@ Source-facing Chapter 10 wrappers:
 - `rankOne_update_auxiliary_le` ((10.29) crux ABSTRACT HEART: (w+gu)^T (Z+uu^T)^{-1} (w+gu) <= w^T Z^{-1} w + g^2; combines the vector SM identity + scalar mono core)
 - `block_quadForm_schur_eq` ((10.29) crux Q22 side: [b;v]^T H^{-1} [b;v] = b^2/a + (v-(b/a)f)^T Z^{-1} (v-(b/a)f) for symmetric PD block H=[[a,f^T],[f,G]], Z=G-ff^T/a; via inverse-action vector)
 - `schur_gram_stage_le` ((10.29) crux CAPSTONE, Q_hat <= Q_22 quadratic-form level: (S_hat y)^T H_hat^{-1} (S_hat y) <= [b;v]^T H^{-1} [b;v], combining block_quadForm_schur_eq + rankOne_update_auxiliary_le with u=k/sqrt(a), g=b/sqrt(a))
+- `higham10_29_luFirstSchurComplement_isNonsymPosDef` ((10.29) GE recursion well-founded: LU-scaffold Schur step preserves nonsym-PD; base for the stage induction on the LUFactSpec/of_firstSchurComplement recursion)
 - `kahanR` / `kahan_telescope` / `kahanR_tail_eq` ((10.20): Kahan family satisfies (10.13) with equality on the square part)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)

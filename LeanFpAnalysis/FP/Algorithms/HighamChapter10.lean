@@ -4476,6 +4476,20 @@ theorem higham10_29_nonsymPosDef_iff_symPartSPD (n : ℕ)
     higham10_4_IsNonsymPosDef n A ↔ IsSymPosDef n (symmetricPart n A) :=
   nonsymPosDef_iff_symPartSPD n A
 
+/-- **(10.29) GE recursion is well-founded for nonsymmetric-positive-definite
+    matrices** (Higham §10.4): the LU-recursion Schur complement
+    `luFirstSchurComplement A = D − c bᵀ/α` of a nonsym-PD matrix is again
+    nonsym-PD.  This is exactly the class-closure `nonsym_pd_first_ge_schur`,
+    now stated on the `GaussianElimination` scaffold's Schur step, so the
+    unpivoted GE/LU recursion (`LUFactSpec.of_firstSchurComplement`) stays in
+    the nonsym-PD class at every stage — the base for the (10.29) `‖|L||U|‖_F`
+    stage induction. -/
+theorem higham10_29_luFirstSchurComplement_isNonsymPosDef {m : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hA : higham10_4_IsNonsymPosDef (m + 1) A) :
+    higham10_4_IsNonsymPosDef m (luFirstSchurComplement A) :=
+  nonsym_pd_first_ge_schur hA
+
 /-- **Equation (10.29)** / Golub-Van Loan growth-bound interface for exact
 LU factors of a nonsymmetric positive-definite matrix. -/
 theorem higham10_29_nonsym_pd_lu_growth_bound (n : ℕ) (hn : 0 < n)
