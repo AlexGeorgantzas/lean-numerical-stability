@@ -748,4 +748,79 @@ theorem cholesky_cond_monotone
       _ ≤ κ (k₁ + d + 1) := _hκ_mono _
       _ = κ (k₁ + (d + 1)) := by ring_nf
 
+-- ============================================================
+-- §10.4  Display (10.29): matrices with positive definite symmetric part
+-- ============================================================
+
+/-- **PSD-bilinear Cauchy–Schwarz** (Higham §10.4, the SPD step of the
+    (10.29) per-stage bound; oracle-provided route): for a symmetric
+    positive-semidefinite matrix `H`, the bilinear form obeys
+    `(uᵀHv)² ≤ (uᵀHu)(vᵀHv)`.  Proved by the discriminant of the
+    nonnegative quadratic `t ↦ (u+tv)ᵀH(u+tv)`. -/
+theorem quadForm_bilinear_cauchy_schwarz {n : ℕ} (H : Fin n → Fin n → ℝ)
+    (hSym : ∀ i j : Fin n, H i j = H j i)
+    (hPSD : ∀ z : Fin n → ℝ, 0 ≤ ∑ i : Fin n, ∑ j : Fin n, z i * H i j * z j)
+    (u v : Fin n → ℝ) :
+    (∑ i : Fin n, ∑ j : Fin n, u i * H i j * v j) ^ 2 ≤
+      (∑ i : Fin n, ∑ j : Fin n, u i * H i j * u j) *
+      (∑ i : Fin n, ∑ j : Fin n, v i * H i j * v j) := by
+  set Buu := ∑ i : Fin n, ∑ j : Fin n, u i * H i j * u j with hBuu
+  set Buv := ∑ i : Fin n, ∑ j : Fin n, u i * H i j * v j with hBuv
+  set Bvv := ∑ i : Fin n, ∑ j : Fin n, v i * H i j * v j with hBvv
+  -- the cross form is symmetric: ∑∑ v i H i j u j = Buv
+  have hsymBil : (∑ i : Fin n, ∑ j : Fin n, v i * H i j * u j) = Buv := by
+    rw [hBuv, Finset.sum_comm]
+    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+    rw [hSym j i]; ring
+  -- quadratic expansion of the shifted PSD form
+  have hexp : ∀ t : ℝ,
+      (∑ i : Fin n, ∑ j : Fin n,
+        (u i + t * v i) * H i j * (u j + t * v j)) =
+      Bvv * (t * t) + 2 * Buv * t + Buu := by
+    intro t
+    have pt : ∀ i j : Fin n,
+        (u i + t * v i) * H i j * (u j + t * v j) =
+        u i * H i j * u j + t * (u i * H i j * v j) +
+        t * (v i * H i j * u j) + (t * t) * (v i * H i j * v j) := by
+      intro i j; ring
+    simp_rw [pt, Finset.sum_add_distrib, ← Finset.mul_sum]
+    rw [← hBuu, ← hBuv, ← hBvv, hsymBil]
+    ring
+  have hquad : ∀ t : ℝ, 0 ≤ Bvv * (t * t) + 2 * Buv * t + Buu := by
+    intro t
+    rw [← hexp t]
+    exact hPSD _
+  have hdisc := discrim_le_zero (a := Bvv) (b := 2 * Buv) (c := Buu)
+    (by intro t; have := hquad t; linarith [hquad t])
+  simp only [discrim] at hdisc
+  nlinarith [hdisc]
+
+open Matrix in
+/-- **The (10.29) core identity** (Higham §10.4, p. 208; proof route from
+    the logged oracle consultation, Golub–Van Loan 1979):
+    `Aᵀ A_S⁻¹ A = A_S + A_Kᵀ A_S⁻¹ A_K`, for any splitting `A = A_S + A_K`
+    with `A_S` symmetric (`A_Sᵀ = A_S`), `A_K` skew (`A_Kᵀ = −A_K`), and
+    `A_S⁻¹` a two-sided inverse of `A_S`.  This is the matrix whose
+    operator norm bounds the unpivoted-LU growth in display (10.29). -/
+theorem symPart_skew_inverse_identity {n : ℕ}
+    (Amat AS AK ASinv : Matrix (Fin n) (Fin n) ℝ)
+    (hA : Amat = AS + AK)
+    (hAS_sym : ASᵀ = AS)
+    (hAK_skew : AKᵀ = -AK)
+    (hinv1 : AS * ASinv = 1)
+    (hinv2 : ASinv * AS = 1) :
+    Amatᵀ * ASinv * Amat = AS + AKᵀ * ASinv * AK := by
+  have hAT : Amatᵀ = AS - AK := by
+    rw [hA, Matrix.transpose_add, hAS_sym, hAK_skew]; abel
+  rw [hAT, hA]
+  -- expand the noncommutative product, treating AS, AK, ASinv as atoms
+  have hexp : (AS - AK) * ASinv * (AS + AK) =
+      (AS * ASinv) * AS + (AS * ASinv) * AK
+        - AK * (ASinv * AS) - AK * ASinv * AK := by
+    noncomm_ring
+  rw [hexp, hinv1, hinv2, Matrix.one_mul, Matrix.mul_one]
+  -- now: AS + AK - AK - AK * ASinv * AK = AS + AKᵀ * ASinv * AK
+  rw [hAK_skew]
+  noncomm_ring
+
 end LeanFpAnalysis.FP
