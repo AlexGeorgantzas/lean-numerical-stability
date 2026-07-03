@@ -6664,6 +6664,28 @@ theorem fl_householderNormalizedVector_self_dot_not_forall_FPModel :
   have hbad : (4 : Real) = 2 := hleft.symm.trans h
   norm_num at hbad
 
+/-- One-stage route audit for the source-faithful certificate boundary.
+
+Even a literal equality `v = fl_householderNormalizedVector fp sourceColumn`
+does not produce `sourceFaithfulHouseholderNormalization` for every abstract
+`FPModel`.  The missing field is exactly the source-shaped self-dot equality,
+so callers must supply a stronger model, exact-arithmetic subcase, or
+perturbation/compatibility bridge. -/
+theorem
+    sourceFaithfulHouseholderNormalization_not_forall_from_vector_eq_FPModel :
+    Not (forall (fp : FPModel) {n : Nat} (hn : 0 < n)
+      (sourceColumn : Fin n -> Real) (v : Fin n -> Real),
+        v = fl_householderNormalizedVector fp hn sourceColumn ->
+          sourceFaithfulHouseholderNormalization fp hn sourceColumn v) := by
+  intro hcert
+  rcases fl_householderNormalizedVector_self_dot_not_forall_FPModel with
+    ⟨fp, x, hbad⟩
+  let v := fl_householderNormalizedVector fp (Nat.succ_pos 0) x
+  have hsrc :
+      sourceFaithfulHouseholderNormalization fp (Nat.succ_pos 0) x v :=
+    hcert fp (n := 1) (Nat.succ_pos 0) x v rfl
+  exact hbad hsrc.self_dot
+
 /-- The stronger source-faithful normalization model is a genuine extra model
 assumption, not a consequence of the base `FPModel` interface.
 
