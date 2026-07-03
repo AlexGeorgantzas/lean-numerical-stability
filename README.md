@@ -101,12 +101,14 @@ for (17.21), the consistent-system singular telescoping wrappers
 `singularErrorSourceTerm` for the (17.28) `S_m` source term and
 `singular_error_split_finite` for the finite algebraic core of the (17.27)
 range/null source split under the explicit fixed-null component hypothesis.
-The scale-independence passage on p.327 now has a checked algebraic core through
-`stationaryRowColumnScale`, `stationaryScaledInverse`,
-`stationaryRowColumnScale_splittingSpec`, and
-`stationaryScaledIterMatrix_similarity`, proving that corresponding diagonal
-row/column scaling preserves the splitting and makes the scaled iteration
-matrix diagonally similar to the original one.
+The scale-independence passage on p.327 now has checked algebraic and
+characteristic-polynomial wrappers through `stationaryRowColumnScale`,
+`stationaryScaledInverse`, `stationaryRowColumnScale_splittingSpec`,
+`stationaryScaledIterMatrix_similarity`, and
+`stationaryScaledIterMatrix_charpoly_eq`, proving that corresponding diagonal
+row/column scaling preserves the splitting, makes the scaled iteration matrix
+diagonally similar to the original one, and preserves its characteristic
+polynomial.
 It also adds the finite (17.29) `S_m` bound surfaces
 `singularErrorSourceNormSum`, `singularErrorSourceComponentBound`,
 `singularErrorSourceTerm_norm_bound`,
