@@ -259,6 +259,119 @@ theorem exists_svdOptimalPerturbations (n : ℕ)
   · exact svdOptimalPerturbations_scalar_eq n R_tilde σ α β γ hpos
   · exact svdOptimalPerturbations_cost_eq_xiSq n R_tilde σ α β γ hpos
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15), upper direction:
+    the `DeltaA` component of the coordinatewise optimizer has squared
+    Frobenius norm bounded by `alpha^2 * xiSq`. -/
+theorem svdOptimalDeltaA_frobNormSq_le_xiSq (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) :
+    frobNormSq (svdOptimalDeltaA n R_tilde σ α β γ) ≤
+      α ^ 2 * xiSq n R_tilde σ α β γ := by
+  simpa [frobNormSq, svdOptimalDeltaA] using
+    backward_error_upper_component n R_tilde σ α β γ hpos
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15), upper direction:
+    the `DeltaB` component of the coordinatewise optimizer has squared
+    Frobenius norm bounded by `beta^2 * xiSq`. -/
+theorem svdOptimalDeltaB_frobNormSq_le_xiSq (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) :
+    frobNormSq (svdOptimalDeltaB n R_tilde σ α β γ) ≤
+      β ^ 2 * xiSq n R_tilde σ α β γ := by
+  unfold frobNormSq xiSq svdOptimalDeltaB
+  rw [Finset.mul_sum]
+  apply Finset.sum_le_sum
+  intro i _
+  rw [Finset.mul_sum]
+  apply Finset.sum_le_sum
+  intro j _
+  have hd_ne :
+      α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2 ≠ 0 :=
+    ne_of_gt (hpos i j)
+  have key : (β ^ 2 * σ i * R_tilde i j) ^ 2 ≤
+      β ^ 2 * R_tilde i j ^ 2 *
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) := by
+    nlinarith [sq_nonneg (R_tilde i j * α * σ j), sq_nonneg (R_tilde i j * γ)]
+  calc
+    (-(β ^ 2 * σ i * R_tilde i j) /
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)) ^ 2
+        = (β ^ 2 * σ i * R_tilde i j /
+            (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)) ^ 2 := by
+            ring
+    _ = (β ^ 2 * σ i * R_tilde i j) ^ 2 /
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) ^ 2 := by
+        rw [div_pow]
+    _ ≤ (β ^ 2 * R_tilde i j ^ 2 *
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)) /
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) ^ 2 := by
+        exact div_le_div_of_nonneg_right key (sq_nonneg _)
+    _ = β ^ 2 * R_tilde i j ^ 2 /
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) := by
+        rw [sq]
+        field_simp [hd_ne]
+    _ = β ^ 2 * (R_tilde i j ^ 2 /
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)) := by
+        rw [mul_div_assoc]
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15), upper direction:
+    the `DeltaC` component of the coordinatewise optimizer has squared
+    Frobenius norm bounded by `gamma^2 * xiSq`. -/
+theorem svdOptimalDeltaC_frobNormSq_le_xiSq (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) :
+    frobNormSq (svdOptimalDeltaC n R_tilde σ α β γ) ≤
+      γ ^ 2 * xiSq n R_tilde σ α β γ := by
+  unfold frobNormSq xiSq svdOptimalDeltaC
+  rw [Finset.mul_sum]
+  apply Finset.sum_le_sum
+  intro i _
+  rw [Finset.mul_sum]
+  apply Finset.sum_le_sum
+  intro j _
+  have hd_ne :
+      α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2 ≠ 0 :=
+    ne_of_gt (hpos i j)
+  have key : (γ ^ 2 * R_tilde i j) ^ 2 ≤
+      γ ^ 2 * R_tilde i j ^ 2 *
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) := by
+    nlinarith [sq_nonneg (R_tilde i j * α * σ j), sq_nonneg (R_tilde i j * β * σ i)]
+  calc
+    (-(γ ^ 2 * R_tilde i j) /
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)) ^ 2
+        = (γ ^ 2 * R_tilde i j /
+            (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)) ^ 2 := by
+            ring
+    _ = (γ ^ 2 * R_tilde i j) ^ 2 /
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) ^ 2 := by
+        rw [div_pow]
+    _ ≤ (γ ^ 2 * R_tilde i j ^ 2 *
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)) /
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) ^ 2 := by
+        exact div_le_div_of_nonneg_right key (sq_nonneg _)
+    _ = γ ^ 2 * R_tilde i j ^ 2 /
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) := by
+        rw [sq]
+        field_simp [hd_ne]
+    _ = γ ^ 2 * (R_tilde i j ^ 2 /
+        (α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2)) := by
+        rw [mul_div_assoc]
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15), upper direction:
+    all three coordinatewise optimizer components satisfy the squared
+    Frobenius bounds needed for the later backward-error certificate. -/
+theorem svdOptimalPerturbations_frobNormSq_bounds (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → ℝ) (α β γ : ℝ)
+    (hpos : ∀ i j : Fin n, 0 < α ^ 2 * σ j ^ 2 + β ^ 2 * σ i ^ 2 + γ ^ 2) :
+    frobNormSq (svdOptimalDeltaA n R_tilde σ α β γ) ≤
+        α ^ 2 * xiSq n R_tilde σ α β γ ∧
+      frobNormSq (svdOptimalDeltaB n R_tilde σ α β γ) ≤
+        β ^ 2 * xiSq n R_tilde σ α β γ ∧
+      frobNormSq (svdOptimalDeltaC n R_tilde σ α β γ) ≤
+        γ ^ 2 * xiSq n R_tilde σ α β γ := by
+  exact ⟨svdOptimalDeltaA_frobNormSq_le_xiSq n R_tilde σ α β γ hpos,
+    svdOptimalDeltaB_frobNormSq_le_xiSq n R_tilde σ α β γ hpos,
+    svdOptimalDeltaC_frobNormSq_le_xiSq n R_tilde σ α β γ hpos⟩
+
 -- ============================================================
 -- Amplification factor (§16.2, eqs 16.17-16.19)
 -- ============================================================
