@@ -44,7 +44,7 @@
 | H16.Eq16_1.sylvester_equation | p.306, (16.1) | equation/definition | Sylvester equation operator and solution predicate. | precise | general rectangular | not applicable | matrix product | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `sylvesterOpRect`, `IsSylvesterSolutionRect`; square proofs use `sylvesterOp`. |
 | H16.Eq16_2.vec_kronecker_system | p.306, (16.2) | equation | Vec/Kronecker linear-system form. | precise | general rectangular | citation/background | Kronecker, vec | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `sylvesterVecCoeff`, `sylvesterVecCoeff_mulVec_vec`, `sylvester_vec_system_iff_solution`. |
 | H16.Vec_AXB | p.306, prose | identity | Vec relation for triple matrix product. | precise | general rectangular | citation/background | Kronecker, vec | FORMALIZE_CORE | CORE-PRECISE-PROSE | `vec_triple_product_rect`; special left/right wrappers `vec_left_mul_rect`, `vec_right_mul_rect`. |
-| H16.Eq16_3.kronecker_eigenvalues | p.306, (16.3) | equation | Eigenvalue difference formula for the structured coefficient matrix. | precise | general | citation-only | Kronecker spectrum | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Partial diagonal coefficient foundation: `sylvesterVecCoeff_diagonal`; full spectral theorem open. |
+| H16.Eq16_3.kronecker_eigenvalues | p.306, (16.3) | equation | Eigenvalue difference formula for the structured coefficient matrix. | precise | general | citation-only | Kronecker spectrum | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Partial diagonal foundation: `sylvesterVecCoeff_diagonal`, `sylvesterVecCoeff_diagonal_det`, `sylvesterVecCoeff_diagonal_det_ne_zero_iff`; full spectral theorem open. |
 | H16.NonsingularCommonEigenvalues | p.306, prose | precise prose | Nonsingularity criterion via no common eigenvalues. | precise | general | follows from (16.3) | H16.Eq16_3 | DEFER | DEFER-MISSING-PRECISE-STATEMENT | Open until (16.3) is formalized. |
 | H16.Eq16_4.real_schur | p.307, (16.4) | equation | Real Schur decompositions for A and B. | precise | general | citation | Schur decomposition | DEFER | DEFER-MISSING-PRECISE-STATEMENT | Open; likely route through Mathlib/QR infrastructure. |
 | H16.Eq16_5.schur_transform | p.307, (16.5) | equation | Transformed Sylvester equation under Schur factors. | precise | general | sketch | H16.Eq16_4 | DEFER | DEFER-MISSING-PRECISE-STATEMENT | Open. |
@@ -99,7 +99,7 @@
 | `sylvesterOpRect` | Avoids presenting square-only infrastructure as the full source shape. | `IsSylvesterSolutionRect`, `sylvesterResidualRect` | implemented |
 | `sylvesterResidualRect` | Records residual semantics for rectangular source rows. | inventory rows for (16.9), (16.11), (16.29) | implemented |
 | `sylvesterVecCoeff` | Records the exact rectangular coefficient matrix from (16.2) in Mathlib's `Matrix.vec` product-index order. | `sylvesterVecCoeff_mulVec_vec`, `sylvester_vec_system_iff_solution` | implemented |
-| `sylvesterVecCoeff_diagonal` | Captures the diagonal-basis algebra behind (16.3): the Kronecker coefficient has diagonal entries `a_i - b_j`. | H16.Eq16_3.kronecker_eigenvalues | implemented partial foundation |
+| `sylvesterVecCoeff_diagonal`, `sylvesterVecCoeff_diagonal_det`, `sylvesterVecCoeff_diagonal_det_ne_zero_iff` | Captures the diagonal-basis algebra behind (16.3): the Kronecker coefficient is diagonal with entries `a_i - b_j`, and its determinant is nonzero exactly when no diagonal entries coincide. | H16.Eq16_3.kronecker_eigenvalues | implemented partial foundation |
 | `lyapunov_solution_iff_sylvester_special` | Provides a source-facing bridge from Lyapunov equations to the proved Sylvester uniqueness theorem. | `lyapunov_unique_solution_of_sep`, `lyapunov_solution_symmetric_of_symmetric_rhs` | implemented |
 | `sylvester_relative_aposteriori_bound` | Presents (16.28) in the source's relative error shape. | H16.Eq16_28.aposteriori | implemented |
 | `IsGeneralizedSylvesterAXB_CXD_Solution`, `IsRiccatiSolution` | Turns generalized residual definitions into explicit source-equation predicates. | H16.Eq16_30.generalized_axb_cxd, H16.Eq16_32.riccati | implemented |
@@ -115,7 +115,7 @@
 
 | Source location | Exact claim | Current Lean status | Missing foundation | Next theorem |
 |---|---|---|---|---|
-| (16.3) and common-eigenvalue criterion | Eigenvalues of the Kronecker coefficient are pairwise differences, and nonsingularity is equivalent to no common eigenvalues. | vec/Kronecker formulation complete; diagonal coefficient case proved by `sylvesterVecCoeff_diagonal`; general spectral criterion open | Kronecker spectrum theorem and eigenvalue/nonsingularity bridge | Prove the spectrum of `(I_n kron A) - (B^T kron I_m)` or add a reusable Mathlib wrapper if available. |
+| (16.3) and common-eigenvalue criterion | Eigenvalues of the Kronecker coefficient are pairwise differences, and nonsingularity is equivalent to no common eigenvalues. | vec/Kronecker formulation complete; diagonal determinant/nonsingularity case proved by `sylvesterVecCoeff_diagonal_det_ne_zero_iff`; general spectral criterion open | Kronecker spectrum theorem and eigenvalue/nonsingularity bridge | Prove the spectrum of `(I_n kron A) - (B^T kron I_m)` or add a reusable Mathlib wrapper if available. |
 | (16.4)-(16.8) | Schur/Bartels-Stewart solve route and triangular/quasi-triangular error propagation. | unstarted | Schur decomposition surface, block quasi-triangular API, Ch8 triangular solve instantiation | Start with exact Schur-transform equation wrapper or defer until QR stability surface is reusable. |
 | (16.9) | Floating-point residual guarantee for computed solution. | unstarted | computed Schur method path and Ch19-style QR backward stability | State a conditional theorem only after computed quantities are inventoried. |
 | (16.15), (16.17)-(16.19) | Full eta/xi/mu backward-error amplification theorem. | partial foundation | optimizer/minimum surface relating `IsBackwardError` to `xiSq`; `mu` definition | Prove the missing eta upper/lower wrapper or reclassify as infimum-based. |
@@ -143,6 +143,9 @@
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16.lean`: passed after adding the (16.2) vec/Kronecker wrappers.
   - `lake build LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16`: passed after syncing the vec/Kronecker milestone with `origin/main`.
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16.lean`: passed after adding `sylvesterVecCoeff_diagonal`.
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16.lean`: passed after adding `sylvesterVecCoeff_diagonal_det` and `sylvesterVecCoeff_diagonal_det_ne_zero_iff`.
+  - `lake build LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16 LeanFpAnalysis.FP.Algorithms.HighamChapter9`: passed after merging the subsequent Chapter 9 update.
+  - `lake env lean examples/LibraryLookup.lean`: passed after importing `MatrixPowersJordan` and after the subsequent Chapter 9 merge.
 
 ## Git and Local-Only Notes
 

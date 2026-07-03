@@ -178,6 +178,33 @@ theorem sylvesterVecCoeff_diagonal (m n : Nat)
     case neg =>
       simp [sylvesterVecCoeff, Matrix.kronecker, Matrix.diagonal, h1, h1', h2, hpq]
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    determinant of the diagonal-basis vec/Kronecker coefficient. -/
+theorem sylvesterVecCoeff_diagonal_det (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b)).det =
+      Finset.prod Finset.univ (fun p : Prod (Fin n) (Fin m) => a p.2 - b p.1) := by
+  rw [sylvesterVecCoeff_diagonal, Matrix.det_diagonal]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    the diagonal-basis vec/Kronecker coefficient is nonsingular exactly when
+    no diagonal entry of `A` equals a diagonal entry of `B`. -/
+theorem sylvesterVecCoeff_diagonal_det_ne_zero_iff (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    Not ((sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b)).det = 0) <->
+      forall i j, Not (a i - b j = 0) := by
+  rw [sylvesterVecCoeff_diagonal_det]
+  constructor
+  case mp =>
+    intro h i j
+    have hall := Finset.prod_ne_zero_iff.mp h
+    exact hall (j, i) (by simp)
+  case mpr =>
+    intro h
+    exact Finset.prod_ne_zero_iff.mpr (by
+      intro p _hp
+      exact h p.2 p.1)
+
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
 -- ============================================================
