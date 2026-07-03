@@ -7387,6 +7387,148 @@ theorem
     fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
     hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail hcopy
 
+/-- Exact subtraction discharges the zero-copy convention in the computed-alpha
+successor-pivot signed betaSpec handoff, while keeping the explicit
+normalized-beta compatibility premise. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp hcompat hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail
+    (subtractZeroExact_of_exact_sub fp hsub)
+
+/-- Exact primitive operations, including subtraction, remove both the
+normalized-beta compatibility and zero-copy premises from the computed-alpha
+successor-pivot signed betaSpec handoff. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        fl_householderAlpha fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+    fp hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail
+    (subtractZeroExact_of_exact_sub fp hsub)
+
+/-- Exact subtraction discharges the zero-copy convention in the exact-alpha
+successor-pivot signed betaSpec handoff, while keeping the explicit
+normalized-beta compatibility premise. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_updateCompatible_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp hcompat hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail
+    (subtractZeroExact_of_exact_sub fp hsub)
+
+/-- Exact primitive operations, including subtraction, remove both the
+normalized-beta compatibility and zero-copy premises from the exact-alpha
+successor-pivot signed betaSpec handoff. -/
+theorem
+    storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_exact_sub_add_mul_div_sqrt
+    (fp : FPModel)
+    (hsub : forall x y : Real, fp.fl_sub x y = x - y)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hx :
+      Ne (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) 0)
+    (halpha :
+      alpha =
+        householderAlpha (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+    (hfirstTail : panelFirstColumnTailZero A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)))
+          1 (trailingPanel A)) :=
+  storedPanelStep_succ_signedActiveBetaSpec_eq_panelFromTopAndTrailing_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+    fp hadd hmul hdiv hsqrt A alpha hx halpha hfirstTail
+    (subtractZeroExact_of_exact_sub fp hsub)
+
 /-- Successor-pivot stored-step reconstruction with beta-one data from the
 once-shrunk panel self-dot normalization.
 
