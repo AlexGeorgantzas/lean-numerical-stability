@@ -206,6 +206,41 @@ theorem sylvesterAmplificationMu_square_eq
   rw [show α ^ 2 * σmin ^ 2 + β ^ 2 * σmin ^ 2 + γ ^ 2 =
       (α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2 by ring]
 
+/-- Higham, 2nd ed., Chapter 16.2, prose after equation (16.18):
+    in the square case the amplification factor is at least one, provided the
+    singular-value slot is bounded by the Frobenius norm of the approximate
+    solution.  The latter is the singular-value foundation still kept explicit
+    in this square API. -/
+theorem one_le_sylvesterAmplificationMuSquare
+    (α β γ yNorm σmin : ℝ)
+    (hα : 0 ≤ α) (hβ : 0 ≤ β) (hγ : 0 ≤ γ)
+    (hy : 0 ≤ yNorm) (hσ : 0 ≤ σmin) (hσ_le : σmin ≤ yNorm)
+    (hDenom : 0 < (α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2) :
+    1 ≤ sylvesterAmplificationMuSquare α β γ yNorm σmin := by
+  unfold sylvesterAmplificationMuSquare
+  have hsqrt_pos :
+      0 < Real.sqrt ((α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2) :=
+    Real.sqrt_pos.2 hDenom
+  have hσsq : σmin ^ 2 ≤ yNorm ^ 2 :=
+    (sq_le_sq₀ hσ hy).mpr hσ_le
+  have hN_nonneg : 0 ≤ (α + β) * yNorm + γ := by
+    nlinarith [mul_nonneg (add_nonneg hα hβ) hy]
+  have hD_le :
+      (α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2 ≤
+        ((α + β) * yNorm + γ) ^ 2 := by
+    nlinarith [mul_le_mul_of_nonneg_left hσsq (sq_nonneg α),
+      mul_le_mul_of_nonneg_left hσsq (sq_nonneg β),
+      mul_nonneg hα hβ,
+      mul_nonneg (add_nonneg hα hβ) hy,
+      mul_nonneg hγ (mul_nonneg (add_nonneg hα hβ) hy)]
+  have hsqrt_le :
+      Real.sqrt ((α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2) ≤
+        (α + β) * yNorm + γ := by
+    apply (sq_le_sq₀ (Real.sqrt_nonneg _) hN_nonneg).mp
+    rw [Real.sq_sqrt (le_of_lt hDenom)]
+    exact hD_le
+  exact (one_le_div hsqrt_pos).mpr hsqrt_le
+
 /-- **Amplification factor bound** (eqs 16.17-16.18):
     ξ² ≤ ‖R̃‖²_F / ((α²+β²)σ²_min + γ²)
     when all singular values satisfy σ_i ≥ σ_min.
