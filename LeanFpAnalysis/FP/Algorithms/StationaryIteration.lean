@@ -1365,6 +1365,49 @@ theorem finite_norm_form_forward_bound (n : ℕ)
         (mul_nonneg (mul_nonneg hcn (by linarith)) hcA)
         (infNormVec_nonneg _))
 
+/-- Jacobi-specialized source vector `|A^{-1}| |A| |x|` appearing in
+    Higham, 2nd ed., Chapter 17, equation (17.16). -/
+noncomputable def jacobiForwardBoundVector (n : ℕ)
+    (A_inv A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) : Fin n → ℝ :=
+  fun i => ∑ j : Fin n, |A_inv i j| * ∑ p : Fin n, |A j p| * |x p|
+
+/-- Under the Jacobi splitting, the general `(17.13)` source vector
+    `|A^{-1}|(|M|+|N|)|x|` becomes `|A^{-1}||A||x|`. -/
+theorem mainForwardBoundVector_eq_jacobiForwardBoundVector (n : ℕ)
+    (A_inv A M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (hM : ∀ i j, M i j = if i = j then A i i else 0)
+    (hN : ∀ i j, N i j = M i j - A i j) :
+    mainForwardBoundVector n A_inv M N x =
+      jacobiForwardBoundVector n A_inv A x := by
+  have hJac := jacobi_splitting_abs n A M N hM hN
+  funext i
+  unfold mainForwardBoundVector jacobiForwardBoundVector
+  apply Finset.sum_congr rfl
+  intro j _
+  congr 1
+  apply Finset.sum_congr rfl
+  intro p _
+  rw [hJac j p]
+
+/-- Finite/certificate Jacobi specialization of the norm-form forward bound,
+    corresponding to the finite-horizon counterpart of equation (17.16). -/
+theorem finite_norm_form_jacobi_forward_bound (n : ℕ)
+    (A G M_inv A_inv M N : Fin n → Fin n → ℝ) (e₀ x : Fin n → ℝ)
+    (cn_u θ_x cA : ℝ) (hcn : 0 ≤ cn_u) (hcA : 0 ≤ cA) (hθ : 0 ≤ θ_x)
+    (hM : ∀ i j, M i j = if i = j then A i i else 0)
+    (hN : ∀ i j, N i j = M i j - A i j)
+    (m : ℕ) (hPartial : PartialSumBound n G M_inv A_inv cA m) :
+    infNormVec (fun i =>
+      matMulVec n (matPow n G (m + 1)) e₀ i +
+        finiteForwardCorrection n G M_inv M N x cn_u θ_x m i) ≤
+      infNormVec (matMulVec n (matPow n G (m + 1)) e₀) +
+        cn_u * (1 + θ_x) * cA * infNormVec (jacobiForwardBoundVector n A_inv A x) := by
+  have hmain :=
+    finite_norm_form_forward_bound n G M_inv A_inv M N e₀ x cn_u θ_x cA
+      hcn hcA hθ m hPartial
+  have hvec := mainForwardBoundVector_eq_jacobiForwardBoundVector n A_inv A M N x hM hN
+  simpa [hvec] using hmain
+
 -- ============================================================
 -- §17.3  Normwise residual bound (eq 17.19)
 -- ============================================================
