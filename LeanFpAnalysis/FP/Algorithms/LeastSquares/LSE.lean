@@ -274,6 +274,58 @@ theorem theorem20_7_alphaBetaMax_le_of_alpha_beta_le {m n : ℕ}
   intro i
   exact max_le (halpha i) (hbeta i)
 
+/-- Uniform pointwise row-growth and right-hand-side growth bounds imply the
+    finite `max_i {α_i, β_i}` bound used in Theorem 20.7.
+
+This is the algebraic handoff point for a later Ch19 row-wise QR theorem: once
+the QR analysis supplies the two displayed pointwise growth estimates, this
+lemma turns them into the source ratio bound without restating finite maxima. -/
+theorem theorem20_7_alphaBetaMax_le_of_uniform_entry_growth {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ) {C : ℝ}
+    (hC : 0 ≤ C) (hphi : 0 ≤ phi)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k j : Fin n,
+      |Astage k.val i j| ≤ C * theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : Fin n,
+      |bstage k.val i| ≤
+        C * theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C := by
+  apply theorem20_7_alphaBetaMax_le_of_alpha_beta_le
+  · intro i
+    exact theorem20_7_alpha_le_of_entry_growth hn Astage A i (hdenA i)
+      (fun k j => hA i k j)
+  · intro i
+    apply theorem20_7_beta_le_of_component_bounds hn Astage A bstage b phi i
+      (hdenW i)
+    · have hstage :
+          theorem20_7_stageRowMax hn Astage i ≤
+            C * theorem20_7_initialRowMax hn A i :=
+        theorem20_7_stageRowMax_le_of_entry_le hn Astage i
+          (fun k j => hA i k j)
+      have hmul :
+          phi * theorem20_7_stageRowMax hn Astage i ≤
+            phi * (C * theorem20_7_initialRowMax hn A i) :=
+        mul_le_mul_of_nonneg_left hstage hphi
+      have hbase :
+          phi * theorem20_7_initialRowMax hn A i ≤
+            theorem20_7_initialWeightedRowMax hn A b phi i := by
+        dsimp [theorem20_7_initialWeightedRowMax]
+        exact le_max_left _ _
+      have hscaled :
+          C * (phi * theorem20_7_initialRowMax hn A i) ≤
+            C * theorem20_7_initialWeightedRowMax hn A b phi i :=
+        mul_le_mul_of_nonneg_left hbase hC
+      calc
+        phi * theorem20_7_stageRowMax hn Astage i
+            ≤ phi * (C * theorem20_7_initialRowMax hn A i) := hmul
+        _ = C * (phi * theorem20_7_initialRowMax hn A i) := by ring
+        _ ≤ C * theorem20_7_initialWeightedRowMax hn A b phi i := hscaled
+    · exact theorem20_7_stageBMax_le_of_entry_le hn bstage i (hb i)
+
 -- ============================================================
 -- §20.9  Equality-constrained least squares
 -- ============================================================
