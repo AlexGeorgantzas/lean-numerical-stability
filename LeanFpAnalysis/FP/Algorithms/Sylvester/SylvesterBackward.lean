@@ -427,6 +427,21 @@ noncomputable def lyapunovSpectralBackwardResidual (n : ℕ)
     Fin n → Fin n → ℝ :=
   fun i j => DA i j * lam j + lam i * DA j i - DC i j
 
+/-- The entrywise residual from equation (16.21) is the diagonal-matrix
+    expression `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde`. -/
+theorem lyapunovSpectralBackwardResidual_eq_diagMatrix (n : ℕ)
+    (DA DC : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) :
+    lyapunovSpectralBackwardResidual n DA DC lam =
+      fun i j =>
+        matMul n DA (diagMatrix lam) i j +
+          matMul n (diagMatrix lam) (matTranspose DA) i j -
+            DC i j := by
+  ext i j
+  unfold lyapunovSpectralBackwardResidual
+  rw [matMul_diagMatrix_right DA lam i j,
+    matMul_diagMatrix_left lam (matTranspose DA) i j]
+  simp [matTranspose]
+
 /-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
     the printed scaled scalar equation in Lyapunov spectral coordinates. -/
 def lyapunovBackwardScalarEq (n : ℕ) (lam : Fin n → ℝ) (α γ : ℝ)
@@ -476,5 +491,18 @@ theorem lyapunovBackwardScalarEq_iff_residual_eq (n : ℕ) (lam : Fin n → ℝ)
     exact h i j
   · intro h i j
     exact congrFun (congrFun h i) j
+
+/-- Equation (16.21) as the diagonal-matrix residual equation
+    `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde = R_tilde`. -/
+theorem lyapunovBackwardScalarEq_iff_diagMatrix_eq (n : ℕ) (lam : Fin n → ℝ)
+    (α γ : ℝ) (DA DC R_tilde : Fin n → Fin n → ℝ)
+    (hα : α ≠ 0) (hγ : γ ≠ 0) :
+    lyapunovBackwardScalarEq n lam α γ DA DC R_tilde ↔
+      (fun i j =>
+        matMul n DA (diagMatrix lam) i j +
+          matMul n (diagMatrix lam) (matTranspose DA) i j -
+            DC i j) = R_tilde := by
+  rw [lyapunovBackwardScalarEq_iff_residual_eq n lam α γ DA DC R_tilde hα hγ]
+  rw [lyapunovSpectralBackwardResidual_eq_diagMatrix n DA DC lam]
 
 end LeanFpAnalysis.FP

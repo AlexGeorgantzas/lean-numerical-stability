@@ -47,9 +47,10 @@ specialization `sylvesterAmplificationMuSquare`, and the source formula bridge
 `one_le_sylvesterAmplificationMuSquare`, plus the xi-level μ-relative-residual
 bound `xiSq_le_mu_relative_residual_sq`.  The Lyapunov subsection now also has
 the spectral-coordinate equation surface `lyapunovBackwardScalarEq` and its
-residual-equation bridge `lyapunovBackwardScalarEq_iff_residual_eq`; the full
-eta amplification theorem and several condition/practical-bound rows remain
-open in the Chapter 16 ledger.
+residual/diagonal bridges `lyapunovBackwardScalarEq_iff_residual_eq` and
+`lyapunovBackwardScalarEq_iff_diagMatrix_eq`, plus the `lyapunovXiSq` and
+`lyapunovAmplificationMu` scalar surfaces; the full eta amplification theorem
+and several condition/practical-bound rows remain open in the Chapter 16 ledger.
 
 Chapter 17 stationary-iteration work is tracked in
 [`docs/source_coverage/higham_ch17.md`](docs/source_coverage/higham_ch17.md).
@@ -59,10 +60,11 @@ The existing `StationaryIteration.lean` module now carries the correct
 `computedIteration_of_sourceComputedIteration` and source-sign one-step error
 recurrence `one_step_error_source`. The current proved surface covers
 nonsingular splitting algebra, the exact-solution affine fixed-point identity
-`stationary_solution_fixed_point` behind (17.4), finite/q-bound forward and
-residual dependencies, and Jacobi/SOR splitting identities; the full finite-sum,
-exact infinite-sum, singular-system, and stopping-test rows remain open in the
-Chapter 17 ledger.
+`stationary_solution_fixed_point` behind (17.4), the exact finite-sum solution
+identity `stationary_solution_finite_sum`, finite/q-bound forward and residual
+dependencies, and Jacobi/SOR splitting identities; the computed finite-sum,
+finite-sum error, exact infinite-sum, singular-system, and stopping-test rows
+remain open in the Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
