@@ -8245,6 +8245,101 @@ theorem IsLSEMinimizer.feasible_direction_stationarity {m n p : ℕ}
     nlinarith
   exact lse_linear_term_eq_zero_of_quadratic_nonneg ha hquad
 
+/-- Higham, 2nd ed., Chapter 20, Problem 20.10, sufficiency direction:
+    feasibility together with a Lagrange multiplier satisfying
+    `A^T (b - A*x) = B^T lambda` implies that `x` solves the LSE problem
+    (20.23).  The converse multiplier-existence direction is a separate
+    dual-space factorization obligation. -/
+theorem IsLSEMinimizer.of_lagrange_normal_equations {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {d : Fin p → ℝ}
+    {x : Fin n → ℝ} {lambda : Fin p → ℝ}
+    (hfeas : LSEFeasible B d x)
+    (hlambda : ∀ j : Fin n,
+      ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+        ∑ r : Fin p, B r j * lambda r) :
+    IsLSEMinimizer A b B d x := by
+  refine ⟨hfeas, ?_⟩
+  intro y hy
+  let v : Fin n → ℝ := fun j => y j - x j
+  have hy_eq : y = fun j => x j + v j := by
+    ext j
+    dsimp [v]
+    ring
+  have hBv : rectMatMulVec B v = 0 := by
+    dsimp [v]
+    exact LSEFeasible.direction_zero hfeas hy
+  have hhigham :
+      (∑ j : Fin n,
+        v j * (∑ i : Fin m, A i j * lsResidualHigham A b x i)) = 0 := by
+    calc
+      (∑ j : Fin n,
+        v j * (∑ i : Fin m, A i j * lsResidualHigham A b x i))
+          = ∑ j : Fin n,
+              v j * (∑ r : Fin p, B r j * lambda r) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [hlambda j]
+      _ = ∑ r : Fin p, lambda r * rectMatMulVec B v r := by
+            calc
+              (∑ j : Fin n, v j * (∑ r : Fin p, B r j * lambda r))
+                  = ∑ j : Fin n, ∑ r : Fin p,
+                      v j * (B r j * lambda r) := by
+                    apply Finset.sum_congr rfl
+                    intro j _
+                    rw [Finset.mul_sum]
+              _ = ∑ r : Fin p, ∑ j : Fin n,
+                      v j * (B r j * lambda r) := by
+                    rw [Finset.sum_comm]
+              _ = ∑ r : Fin p, lambda r * rectMatMulVec B v r := by
+                    apply Finset.sum_congr rfl
+                    intro r _
+                    unfold rectMatMulVec
+                    rw [Finset.mul_sum]
+                    apply Finset.sum_congr rfl
+                    intro j _
+                    ring
+      _ = 0 := by
+            apply Finset.sum_eq_zero
+            intro r _
+            have hr : rectMatMulVec B v r = 0 := by
+              simpa using congrFun hBv r
+            rw [hr]
+            ring
+  have hcross :
+      (∑ j : Fin n,
+        v j * (∑ i : Fin m, A i j * lsResidual A b x i)) = 0 := by
+    have hsign :
+        (∑ j : Fin n,
+          v j * (∑ i : Fin m, A i j * lsResidual A b x i)) =
+          - (∑ j : Fin n,
+            v j * (∑ i : Fin m, A i j * lsResidualHigham A b x i)) := by
+      calc
+        (∑ j : Fin n,
+          v j * (∑ i : Fin m, A i j * lsResidual A b x i))
+            = ∑ j : Fin n,
+                v j * (-(∑ i : Fin m,
+                  A i j * lsResidualHigham A b x i)) := by
+              apply Finset.sum_congr rfl
+              intro j _
+              congr 1
+              rw [lsResidualHigham_eq_neg_lsResidual A b x]
+              simp
+        _ = - (∑ j : Fin n,
+            v j * (∑ i : Fin m, A i j * lsResidualHigham A b x i)) := by
+              rw [← Finset.sum_neg_distrib]
+              apply Finset.sum_congr rfl
+              intro j _
+              ring
+    rw [hsign, hhigham]
+    ring
+  have hexp := lsObjective_add_direction_eq A b x v
+  rw [← hy_eq] at hexp
+  rw [hexp, hcross]
+  have hnonneg : 0 ≤ vecNorm2Sq (rectMatMulVec A v) :=
+    vecNorm2Sq_nonneg (rectMatMulVec A v)
+  nlinarith
+
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
     uniqueness of an equality-constrained least-squares minimizer once
