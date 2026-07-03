@@ -69,7 +69,11 @@ pivot-zero signed-active-vector bridges identifying the stored signed vector
 with the exact or computed unnormalized Householder vector, plus a betaSpec
 normalization bridge showing that, under nonzero-column and exact primitive
 operation hypotheses, betaSpec-normalizing that unnormalized vector gives the
-computed normalized Householder vector. That bridge is now threaded through the
+computed normalized Householder vector. The normalized signed-active vector is
+now also packaged as a source-faithful normalization certificate under the same
+computed-alpha or exact-alpha exact primitive-operation hypotheses; this
+certifies the normalized vector produced from the signed active vector and
+`householderBetaSpec`, not the raw unnormalized stored vector. That bridge is now threaded through the
 first-pivot signed stored-panel handoff under the same exact-operation and
 update-compatibility surfaces, so the first QR storage step can consume the
 computed normalized vector while the stored route keeps the signed active vector

@@ -2986,6 +2986,502 @@ theorem fl_cholesky_pivots_pos_sharp_certified (fp : FPModel) {n : ℕ}
             A ⟨i.val, by omega⟩ ⟨i.val, by omega⟩ * y i ^ 2) := by
           rw [hrwT]
 
+/-- **The display-(10.18) matrix** (Higham p. 204, square-block
+    instance `k = n − k`): `A = [[αI, I], [I, α⁻¹I]]`, the positive
+    semidefinite matrix on which Lemma 10.12's inequality is an
+    equality and `‖W‖₂ = α⁻¹` is arbitrarily large. -/
+noncomputable def higham10_18_matrix (k : ℕ) (α : ℝ) :
+    Fin (k + k) → Fin (k + k) → ℝ :=
+  fun i j =>
+    if i.val = j.val then (if i.val < k then α else α⁻¹)
+    else if i.val + k = j.val ∨ j.val + k = i.val then 1 else 0
+
+/-- Row action of the (10.18) matrix on the leading block. -/
+private lemma higham10_18_row_cast (k : ℕ) (α : ℝ) (hk : 0 < k)
+    (x : Fin (k + k) → ℝ) (i : Fin k) :
+    ∑ j : Fin (k + k), higham10_18_matrix k α (Fin.castAdd k i) j *
+      x j =
+    α * x (Fin.castAdd k i) + x (Fin.natAdd k i) := by
+  rw [Fin.sum_univ_add]
+  have h1 : ∑ j : Fin k,
+      higham10_18_matrix k α (Fin.castAdd k i) (Fin.castAdd k j) *
+        x (Fin.castAdd k j) = α * x (Fin.castAdd k i) := by
+    rw [Finset.sum_eq_single i]
+    · unfold higham10_18_matrix
+      simp [Fin.castAdd, i.isLt]
+    · intro b _ hb
+      unfold higham10_18_matrix
+      have hne : (Fin.castAdd k i).val ≠ (Fin.castAdd k b).val := by
+        simp only [Fin.coe_castAdd]
+        exact fun h => hb (Fin.ext h.symm)
+      have h2 : ¬((Fin.castAdd k i).val + k = (Fin.castAdd k b).val ∨
+          (Fin.castAdd k b).val + k = (Fin.castAdd k i).val) := by
+        simp only [Fin.coe_castAdd]
+        push_neg
+        omega
+      rw [if_neg hne, if_neg h2, zero_mul]
+    · intro h
+      exact absurd (Finset.mem_univ i) h
+  have h2 : ∑ j : Fin k,
+      higham10_18_matrix k α (Fin.castAdd k i) (Fin.natAdd k j) *
+        x (Fin.natAdd k j) = x (Fin.natAdd k i) := by
+    rw [Finset.sum_eq_single i]
+    · unfold higham10_18_matrix
+      have hne : (Fin.castAdd k i).val ≠ (Fin.natAdd k i).val := by
+        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        omega
+      have hor : (Fin.castAdd k i).val + k = (Fin.natAdd k i).val ∨
+          (Fin.natAdd k i).val + k = (Fin.castAdd k i).val := by
+        left
+        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        omega
+      rw [if_neg hne, if_pos hor, one_mul]
+    · intro b _ hb
+      unfold higham10_18_matrix
+      have hne : (Fin.castAdd k i).val ≠ (Fin.natAdd k b).val := by
+        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        omega
+      have h3 : ¬((Fin.castAdd k i).val + k = (Fin.natAdd k b).val ∨
+          (Fin.natAdd k b).val + k = (Fin.castAdd k i).val) := by
+        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        push_neg
+        constructor
+        · intro h
+          exact absurd (Fin.ext (show b.val = i.val by omega)) hb
+        · omega
+      rw [if_neg hne, if_neg h3, zero_mul]
+    · intro h
+      exact absurd (Finset.mem_univ i) h
+  rw [h1, h2]
+
+/-- Row action of the (10.18) matrix on the trailing block. -/
+private lemma higham10_18_row_nat (k : ℕ) (α : ℝ) (hk : 0 < k)
+    (x : Fin (k + k) → ℝ) (i : Fin k) :
+    ∑ j : Fin (k + k), higham10_18_matrix k α (Fin.natAdd k i) j *
+      x j =
+    x (Fin.castAdd k i) + α⁻¹ * x (Fin.natAdd k i) := by
+  rw [Fin.sum_univ_add]
+  have h1 : ∑ j : Fin k,
+      higham10_18_matrix k α (Fin.natAdd k i) (Fin.castAdd k j) *
+        x (Fin.castAdd k j) = x (Fin.castAdd k i) := by
+    rw [Finset.sum_eq_single i]
+    · unfold higham10_18_matrix
+      have hne : (Fin.natAdd k i).val ≠ (Fin.castAdd k i).val := by
+        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        omega
+      have hor : (Fin.natAdd k i).val + k = (Fin.castAdd k i).val ∨
+          (Fin.castAdd k i).val + k = (Fin.natAdd k i).val := by
+        right
+        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        omega
+      rw [if_neg hne, if_pos hor, one_mul]
+    · intro b _ hb
+      unfold higham10_18_matrix
+      have hne : (Fin.natAdd k i).val ≠ (Fin.castAdd k b).val := by
+        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        omega
+      have h3 : ¬((Fin.natAdd k i).val + k = (Fin.castAdd k b).val ∨
+          (Fin.castAdd k b).val + k = (Fin.natAdd k i).val) := by
+        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        push_neg
+        constructor
+        · omega
+        · intro h
+          exact absurd (Fin.ext (show b.val = i.val by omega)) hb
+      rw [if_neg hne, if_neg h3, zero_mul]
+    · intro h
+      exact absurd (Finset.mem_univ i) h
+  have h2 : ∑ j : Fin k,
+      higham10_18_matrix k α (Fin.natAdd k i) (Fin.natAdd k j) *
+        x (Fin.natAdd k j) = α⁻¹ * x (Fin.natAdd k i) := by
+    rw [Finset.sum_eq_single i]
+    · unfold higham10_18_matrix
+      have heq : (Fin.natAdd k i).val = (Fin.natAdd k i).val := rfl
+      have hge : ¬(Fin.natAdd k i).val < k := by
+        simp only [Fin.coe_natAdd]
+        omega
+      rw [if_pos heq, if_neg hge]
+    · intro b _ hb
+      unfold higham10_18_matrix
+      have hne : (Fin.natAdd k i).val ≠ (Fin.natAdd k b).val := by
+        simp only [Fin.coe_natAdd]
+        intro h
+        exact hb (Fin.ext (by omega)).symm
+      have h3 : ¬((Fin.natAdd k i).val + k = (Fin.natAdd k b).val ∨
+          (Fin.natAdd k b).val + k = (Fin.natAdd k i).val) := by
+        simp only [Fin.coe_natAdd]
+        push_neg
+        omega
+      rw [if_neg hne, if_neg h3, zero_mul]
+    · intro h
+      exact absurd (Finset.mem_univ i) h
+  rw [h1, h2]
+
+/-- **The (10.18) matrix is positive semidefinite** — completion of
+    squares pairwise across the two blocks:
+    `xᵀAx = ∑ᵢ (√α·xᵢ + x_{k+i}/√α)²`. -/
+theorem higham10_18_isPosSemiDef (k : ℕ) (hk : 0 < k) (α : ℝ)
+    (hα : 0 < α) :
+    IsPosSemiDef (k + k) (higham10_18_matrix k α) := by
+  constructor
+  · intro i j
+    unfold higham10_18_matrix
+    by_cases hij : i.val = j.val
+    · rw [if_pos hij, if_pos hij.symm, hij]
+    · rw [if_neg hij, if_neg (Ne.symm hij)]
+      by_cases hd : i.val + k = j.val ∨ j.val + k = i.val
+      · rw [if_pos hd, if_pos (Or.symm hd)]
+      · rw [if_neg hd, if_neg (fun h => hd (Or.symm h))]
+  · intro x
+    have hquad : ∑ i : Fin (k + k), ∑ j : Fin (k + k),
+        x i * higham10_18_matrix k α i j * x j =
+        ∑ i : Fin k, (α * x (Fin.castAdd k i) ^ 2 +
+          2 * x (Fin.castAdd k i) * x (Fin.natAdd k i) +
+          α⁻¹ * x (Fin.natAdd k i) ^ 2) := by
+      rw [Fin.sum_univ_add]
+      have hc : ∀ i : Fin k, ∑ j : Fin (k + k),
+          x (Fin.castAdd k i) *
+            higham10_18_matrix k α (Fin.castAdd k i) j * x j =
+          x (Fin.castAdd k i) * (α * x (Fin.castAdd k i) +
+            x (Fin.natAdd k i)) := by
+        intro i
+        rw [← higham10_18_row_cast k α hk x i, Finset.mul_sum]
+        exact Finset.sum_congr rfl fun j _ => by ring
+      have hn : ∀ i : Fin k, ∑ j : Fin (k + k),
+          x (Fin.natAdd k i) *
+            higham10_18_matrix k α (Fin.natAdd k i) j * x j =
+          x (Fin.natAdd k i) * (x (Fin.castAdd k i) +
+            α⁻¹ * x (Fin.natAdd k i)) := by
+        intro i
+        rw [← higham10_18_row_nat k α hk x i, Finset.mul_sum]
+        exact Finset.sum_congr rfl fun j _ => by ring
+      rw [Finset.sum_congr rfl fun i _ => hc i,
+        Finset.sum_congr rfl fun i _ => hn i,
+        ← Finset.sum_add_distrib]
+      exact Finset.sum_congr rfl fun i _ => by ring
+    rw [hquad]
+    refine Finset.sum_nonneg fun i _ => ?_
+    have hsq := sq_nonneg (Real.sqrt α * x (Fin.castAdd k i) +
+      (Real.sqrt α)⁻¹ * x (Fin.natAdd k i))
+    have hs : Real.sqrt α ^ 2 = α := Real.sq_sqrt hα.le
+    have hs0 : (0:ℝ) < Real.sqrt α := Real.sqrt_pos.mpr hα
+    have hsinv : ((Real.sqrt α)⁻¹) ^ 2 = α⁻¹ := by
+      rw [inv_pow, hs]
+    have hmul : Real.sqrt α * (Real.sqrt α)⁻¹ = 1 :=
+      mul_inv_cancel₀ hs0.ne'
+    have hexp : (Real.sqrt α * x (Fin.castAdd k i) +
+        (Real.sqrt α)⁻¹ * x (Fin.natAdd k i)) ^ 2 =
+        α * x (Fin.castAdd k i) ^ 2 +
+        2 * x (Fin.castAdd k i) * x (Fin.natAdd k i) +
+        α⁻¹ * x (Fin.natAdd k i) ^ 2 := by
+      have h0 : (Real.sqrt α * x (Fin.castAdd k i) +
+          (Real.sqrt α)⁻¹ * x (Fin.natAdd k i)) ^ 2 =
+          Real.sqrt α ^ 2 * x (Fin.castAdd k i) ^ 2 +
+          2 * (Real.sqrt α * (Real.sqrt α)⁻¹) *
+            (x (Fin.castAdd k i) * x (Fin.natAdd k i)) +
+          ((Real.sqrt α)⁻¹) ^ 2 * x (Fin.natAdd k i) ^ 2 := by
+        ring
+      rw [h0, hs, hsinv, hmul]
+      ring
+    linarith [hexp ▸ hsq]
+
+/-- **Display (10.18): `‖W‖` is arbitrarily large** (Higham p. 204):
+    for the PSD matrix `[[αI, I], [I, α⁻¹I]]` the solve `A₁₁W = A₁₂`
+    is `W = α⁻¹I` — verified by the row action — and its action norm
+    `α⁻¹` exceeds any bound as `α → 0`: no bound on `‖A₁₁⁻¹A₁₂‖`
+    independent of the matrix is possible without pivoting
+    structure. -/
+theorem higham10_18_w_arbitrarily_large (k : ℕ) (hk : 0 < k)
+    (C : ℝ) :
+    ∃ α : ℝ, 0 < α ∧
+      IsPosSemiDef (k + k) (higham10_18_matrix k α) ∧
+      (∀ v : Fin k → ℝ, ∀ i : Fin k,
+        ∑ j : Fin k, higham10_18_matrix k α (Fin.castAdd k i)
+          (Fin.castAdd k j) * (α⁻¹ * v j) =
+        higham10_18_matrix k α (Fin.castAdd k i) (Fin.natAdd k i) *
+          v i) ∧
+      ∀ v : Fin k → ℝ,
+        vecNorm2Sq (fun i => α⁻¹ * v i) =
+          (α⁻¹) ^ 2 * vecNorm2Sq v ∧
+        C ≤ α⁻¹ := by
+  set α : ℝ := min 1 (1 / (|C| + 1)) with hα
+  have hα0 : 0 < α := by
+    rw [hα]
+    have : (0:ℝ) < 1 / (|C| + 1) := by positivity
+    exact lt_min one_pos this
+  refine ⟨α, hα0, higham10_18_isPosSemiDef k hk α hα0, ?_, ?_⟩
+  · intro v i
+    -- A₁₁ = αI acting on α⁻¹v recovers v = A₁₂-column action
+    have hL : ∑ j : Fin k, higham10_18_matrix k α (Fin.castAdd k i)
+        (Fin.castAdd k j) * (α⁻¹ * v j) = v i := by
+      rw [Finset.sum_eq_single i]
+      · unfold higham10_18_matrix
+        simp only [Fin.coe_castAdd, if_true]
+        rw [if_pos i.isLt]
+        field_simp
+      · intro b _ hb
+        unfold higham10_18_matrix
+        have hne : (Fin.castAdd k i).val ≠ (Fin.castAdd k b).val := by
+          simp only [Fin.coe_castAdd]
+          exact fun h => hb (Fin.ext h.symm)
+        have h3 : ¬((Fin.castAdd k i).val + k =
+            (Fin.castAdd k b).val ∨
+            (Fin.castAdd k b).val + k = (Fin.castAdd k i).val) := by
+          simp only [Fin.coe_castAdd]
+          push_neg
+          omega
+        rw [if_neg hne, if_neg h3, zero_mul]
+      · intro h
+        exact absurd (Finset.mem_univ i) h
+    have hR : higham10_18_matrix k α (Fin.castAdd k i)
+        (Fin.natAdd k i) = 1 := by
+      unfold higham10_18_matrix
+      have hne : (Fin.castAdd k i).val ≠ (Fin.natAdd k i).val := by
+        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        omega
+      have hor : (Fin.castAdd k i).val + k = (Fin.natAdd k i).val ∨
+          (Fin.natAdd k i).val + k = (Fin.castAdd k i).val := by
+        left
+        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        omega
+      rw [if_neg hne, if_pos hor]
+    rw [hL, hR, one_mul]
+  · intro v
+    constructor
+    · unfold vecNorm2Sq
+      rw [Finset.mul_sum]
+      exact Finset.sum_congr rfl fun i _ => by ring
+    · have h1 : α ≤ 1 / (|C| + 1) := by
+        rw [hα]
+        exact min_le_right _ _
+      have h2 : (0:ℝ) < |C| + 1 := by positivity
+      have h3 : |C| + 1 ≤ α⁻¹ := by
+        rw [← one_div]
+        rw [le_div_iff₀ hα0]
+        calc (|C| + 1) * α ≤ (|C| + 1) * (1 / (|C| + 1)) :=
+              mul_le_mul_of_nonneg_left h1 h2.le
+          _ = 1 := by field_simp
+      calc C ≤ |C| := le_abs_self C
+        _ ≤ α⁻¹ := by linarith
+
+/-- Operator-norm certificates add across matrix sums. -/
+lemma opNorm2Le_add {n : ℕ} (A B : Fin n → Fin n → ℝ) (a b : ℝ)
+    (hA : opNorm2Le A a) (hB : opNorm2Le B b) :
+    opNorm2Le (fun i j => A i j + B i j) (a + b) := by
+  intro x
+  have hsplit : matMulVec n (fun i j => A i j + B i j) x =
+      fun i => matMulVec n A x i + matMulVec n B x i := by
+    funext i
+    unfold matMulVec
+    rw [← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun j _ => by ring
+  rw [hsplit]
+  calc vecNorm2 (fun i => matMulVec n A x i + matMulVec n B x i)
+      ≤ vecNorm2 (matMulVec n A x) + vecNorm2 (matMulVec n B x) :=
+        vecNorm2_add_le _ _
+    _ ≤ a * vecNorm2 x + b * vecNorm2 x := add_le_add (hA x) (hB x)
+    _ = (a + b) * vecNorm2 x := by ring
+
+/-- **Display (10.25), componentwise to normwise** (Higham p. 206): the
+    componentwise (10.24) bound
+    `|E| ≤ γ(|R̂ᵀ||R̂| + |Â⁽ʳ⁺¹⁾|)` converts to the operator-norm
+    certificate `‖E‖₂ ≤ γ(n·cR² + √n·cÂ)` via Lemma 6.6. -/
+theorem higham10_25_componentwise_to_normwise (n : ℕ)
+    (E R Ahat : Fin n → Fin n → ℝ) (γ cR cAhat : ℝ)
+    (hγ0 : 0 ≤ γ) (hcR : 0 ≤ cR) (hcAhat : 0 ≤ cAhat)
+    (h24 : ∀ i j : Fin n, |E i j| ≤ γ *
+      (matMul n (fun i' j' => |R j' i'|) (fun i' j' => |R i' j'|) i j +
+        |Ahat i j|))
+    (hR : opNorm2Le R cR) (hAhat : opNorm2Le Ahat cAhat) :
+    opNorm2Le E (γ * ((n : ℝ) * cR ^ 2 + Real.sqrt n * cAhat)) := by
+  have hG := higham10_7_absRT_absR_opNorm2Le n R cR hcR hR
+  have hAb := opNorm2Le_abs_of_opNorm2Le n Ahat cAhat hcAhat hAhat
+  have hsum := opNorm2Le_add _ _ _ _ hG hAb
+  have hB := opNorm2Le_smul n
+    (fun i j =>
+      matMul n (fun i' j' => |R j' i'|) (fun i' j' => |R i' j'|) i j +
+        |Ahat i j|)
+    ((n : ℝ) * cR ^ 2 + Real.sqrt n * cAhat) γ hγ0 hsum
+  exact opNorm2Le_of_abs_le n E _ h24 _ hB
+
+/-- **Display (10.25), the absorption** (Higham p. 206): from the norm
+    chain `‖E‖ ≤ γ(r‖A‖ + r‖E‖ + n‖Â⁽ʳ⁺¹⁾‖)` with `rγ < 1`,
+    `‖E‖ ≤ γ/(1 − rγ)·(r‖A‖ + n‖Â⁽ʳ⁺¹⁾‖)`. -/
+theorem higham10_25_absorption (γ r n cA cAhat e : ℝ)
+    (hrγ : r * γ < 1)
+    (hchain : e ≤ γ * (r * cA + r * e + n * cAhat)) :
+    e ≤ γ / (1 - r * γ) * (r * cA + n * cAhat) := by
+  have h1 : (0:ℝ) < 1 - r * γ := by linarith
+  rw [div_mul_eq_mul_div, le_div_iff₀ h1]
+  nlinarith
+
+/-- **Quadratic-form certificate from an entrywise bound** (the
+    dimension-costing conversion behind display (10.21)'s
+    `r·γ_{r+1}/(1−γ_{r+1})` value): entries bounded by `c` give
+    `|zᵀEz| ≤ c·m·‖z‖²` by the ones-vector Cauchy–Schwarz. -/
+lemma quadForm_cert_of_entrywise {m : ℕ} (E : Fin m → Fin m → ℝ)
+    (c : ℝ) (hc : 0 ≤ c) (hE : ∀ i j : Fin m, |E i j| ≤ c) :
+    ∀ z : Fin m → ℝ,
+      |∑ i : Fin m, ∑ j : Fin m, z i * E i j * z j| ≤
+      c * (m : ℝ) * ∑ i : Fin m, z i ^ 2 := by
+  intro z
+  have h1 : |∑ i : Fin m, ∑ j : Fin m, z i * E i j * z j| ≤
+      ∑ i : Fin m, ∑ j : Fin m, |z i| * c * |z j| := by
+    calc |∑ i : Fin m, ∑ j : Fin m, z i * E i j * z j|
+        ≤ ∑ i : Fin m, |∑ j : Fin m, z i * E i j * z j| :=
+          Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ i : Fin m, ∑ j : Fin m, |z i * E i j * z j| :=
+          Finset.sum_le_sum fun i _ =>
+            Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ i : Fin m, ∑ j : Fin m, |z i| * c * |z j| := by
+          refine Finset.sum_le_sum fun i _ =>
+            Finset.sum_le_sum fun j _ => ?_
+          rw [abs_mul, abs_mul]
+          exact mul_le_mul_of_nonneg_right
+            (mul_le_mul_of_nonneg_left (hE i j) (abs_nonneg _))
+            (abs_nonneg _)
+  have h2 : ∑ i : Fin m, ∑ j : Fin m, |z i| * c * |z j| =
+      c * (∑ i : Fin m, |z i|) ^ 2 := by
+    rw [sq, Finset.sum_mul_sum, Finset.mul_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun j _ => by ring
+  have h3 : (∑ i : Fin m, |z i|) ^ 2 ≤
+      (m : ℝ) * ∑ i : Fin m, z i ^ 2 := by
+    have h := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
+      (fun _ : Fin m => (1:ℝ)) (fun i => |z i|)
+    have hL : ∑ i : Fin m, (1:ℝ) * |z i| = ∑ i : Fin m, |z i| := by
+      simp
+    have h1s : ∑ _i : Fin m, ((1:ℝ)) ^ 2 = (m : ℝ) := by simp
+    have h2s : ∑ i : Fin m, |z i| ^ 2 = ∑ i : Fin m, z i ^ 2 :=
+      Finset.sum_congr rfl fun i _ => sq_abs _
+    rw [hL, h1s, h2s] at h
+    exact h
+  calc |∑ i : Fin m, ∑ j : Fin m, z i * E i j * z j|
+      ≤ c * (∑ i : Fin m, |z i|) ^ 2 := h1.trans_eq h2
+    _ ≤ c * ((m : ℝ) * ∑ i : Fin m, z i ^ 2) :=
+        mul_le_mul_of_nonneg_left h3 hc
+    _ = c * (m : ℝ) * ∑ i : Fin m, z i ^ 2 := by ring
+
+/-- **The display-(10.20) Kahan family** (Higham p. 205):
+    `R(θ) = diag(1, s, …, s^{r−1})·U` with `U` unit upper triangular
+    and all entries above the diagonal equal to `−c` — stated over
+    abstract `c, s` with `c² + s² = 1`. -/
+noncomputable def kahanR (r n : ℕ) (c s : ℝ) :
+    Fin r → Fin n → ℝ :=
+  fun i j =>
+    if j.val = i.val then s ^ i.val
+    else if i.val < j.val then -c * s ^ i.val else 0
+
+/-- Geometric telescope: `∑_{i∈[k,k+m)} c²s^{2i} = s^{2k} − s^{2(k+m)}`
+    under `c² + s² = 1`. -/
+private lemma kahan_telescope (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1)
+    (k m : ℕ) :
+    ∑ i ∈ Finset.range m, c ^ 2 * s ^ (2 * (k + i)) =
+      s ^ (2 * k) - s ^ (2 * (k + m)) := by
+  induction m with
+  | zero => simp
+  | succ m ih =>
+    rw [Finset.sum_range_succ, ih]
+    have h1 : c ^ 2 = 1 - s ^ 2 := by linarith
+    have h2 : s ^ (2 * (k + (m + 1))) =
+        s ^ (2 * (k + m)) * s ^ 2 := by
+      rw [show 2 * (k + (m + 1)) = 2 * (k + m) + 2 by ring, pow_add]
+    rw [h1, h2]
+    ring
+
+/-- **The Kahan factor satisfies the (10.13) column-tail relation with
+    equality on the square part** (Higham p. 205, "R satisfies the
+    inequalities (10.13) (as equalities)"): for `k ≤ j < r`,
+    `∑_{i≥k} R(θ)_{ij}² = R(θ)_{kk}²`. -/
+theorem kahanR_tail_eq (r n : ℕ) (c s : ℝ)
+    (hcs : c ^ 2 + s ^ 2 = 1) (hrn : r ≤ n)
+    (k : Fin r) (j : Fin n) (hkj : k.val ≤ j.val) (hjr : j.val < r) :
+    ∑ i ∈ Finset.univ.filter (fun i : Fin r => k.val ≤ i.val),
+      kahanR r n c s i j ^ 2 =
+    kahanR r n c s k ⟨k.val, by omega⟩ ^ 2 := by
+  -- diagonal value
+  have hdiag : kahanR r n c s k ⟨k.val, by omega⟩ = s ^ k.val := by
+    unfold kahanR
+    rw [if_pos rfl]
+  rw [hdiag]
+  -- entries in the tail: [k, j) give c²s^{2i}, i = j gives s^{2j}, rest 0
+  have hval : ∀ i : Fin r, k.val ≤ i.val →
+      kahanR r n c s i j ^ 2 =
+      if i.val < j.val then c ^ 2 * s ^ (2 * i.val)
+      else if i.val = j.val then s ^ (2 * j.val) else 0 := by
+    intro i hki
+    unfold kahanR
+    by_cases hij : j.val = i.val
+    · rw [if_pos hij, if_neg (by omega), if_pos hij.symm, ← pow_mul]
+      congr 1
+      omega
+    · rw [if_neg hij]
+      by_cases hlt : i.val < j.val
+      · rw [if_pos hlt, if_pos hlt]
+        rw [mul_pow, neg_pow, ← pow_mul]
+        ring_nf
+      · rw [if_neg hlt, if_neg hlt, if_neg (fun h => hij h.symm)]
+        norm_num
+  rw [Finset.sum_congr rfl fun i hi => hval i
+    (by simpa using (Finset.mem_filter.mp hi).2)]
+  -- reindex the filtered sum over the explicit segments
+  have hsplit : ∑ i ∈ Finset.univ.filter
+      (fun i : Fin r => k.val ≤ i.val),
+      (if i.val < j.val then c ^ 2 * s ^ (2 * i.val)
+        else if i.val = j.val then s ^ (2 * j.val) else 0) =
+      (∑ t ∈ Finset.range (j.val - k.val),
+        c ^ 2 * s ^ (2 * (k.val + t))) + s ^ (2 * j.val) := by
+    -- direct evaluation: sum over Fin r of the guarded values
+    rw [Finset.sum_filter]
+    rw [Fin.sum_univ_eq_sum_range (fun v =>
+      if k.val ≤ v then
+        (if v < j.val then c ^ 2 * s ^ (2 * v)
+          else if v = j.val then s ^ (2 * j.val) else 0) else 0) r]
+    rw [Finset.range_eq_Ico,
+      ← Finset.sum_Ico_consecutive _ (Nat.zero_le k.val) (by omega :
+        k.val ≤ r),
+      ← Finset.sum_Ico_consecutive _ (hkj : k.val ≤ j.val) (by omega :
+        j.val ≤ r)]
+    have hzero1 : ∑ v ∈ Finset.Ico 0 k.val,
+        (if k.val ≤ v then
+          (if v < j.val then c ^ 2 * s ^ (2 * v)
+            else if v = j.val then s ^ (2 * j.val) else 0) else 0) =
+        0 :=
+      Finset.sum_eq_zero fun v hv => by
+        rw [if_neg (by
+          simp only [Finset.mem_Ico] at hv
+          omega)]
+    have hmid : ∑ v ∈ Finset.Ico k.val j.val,
+        (if k.val ≤ v then
+          (if v < j.val then c ^ 2 * s ^ (2 * v)
+            else if v = j.val then s ^ (2 * j.val) else 0) else 0) =
+        ∑ t ∈ Finset.range (j.val - k.val),
+          c ^ 2 * s ^ (2 * (k.val + t)) := by
+      rw [Finset.sum_Ico_eq_sum_range]
+      refine Finset.sum_congr rfl fun t ht => ?_
+      simp only [Finset.mem_range] at ht
+      rw [if_pos (by omega), if_pos (by omega)]
+    have htail : ∑ v ∈ Finset.Ico j.val r,
+        (if k.val ≤ v then
+          (if v < j.val then c ^ 2 * s ^ (2 * v)
+            else if v = j.val then s ^ (2 * j.val) else 0) else 0) =
+        s ^ (2 * j.val) := by
+      have hjmem : j.val ∈ Finset.Ico j.val r := by
+        simp only [Finset.mem_Ico]
+        omega
+      rw [Finset.sum_eq_single_of_mem j.val hjmem]
+      · rw [if_pos hkj, if_neg (lt_irrefl _), if_pos rfl]
+      · intro v hv hvj
+        simp only [Finset.mem_Ico] at hv
+        rw [if_pos (by omega), if_neg (by omega), if_neg hvj]
+    rw [hzero1, hmid, htail, Finset.range_eq_Ico]
+    ring
+  rw [hsplit, kahan_telescope c s hcs k.val (j.val - k.val)]
+  have hexp : 2 * (k.val + (j.val - k.val)) = 2 * j.val := by omega
+  rw [hexp, ← pow_mul]
+  ring_nf
+
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
 `‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
 an `r × r` upper-triangular block `U` with positive diagonal whose rows
