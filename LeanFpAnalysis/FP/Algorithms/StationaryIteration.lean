@@ -431,6 +431,138 @@ theorem sourceComputedIteration_finite_sum (n : ℕ)
     (sourceComputedIteration_step_affine n M N M_inv b x_hat ξ hLeft hIter)
     m i
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.21):
+    exact stationary iterates for a consistent singular system satisfy the
+    same finite affine unrolling
+    `x_{m+1} = G^{m+1} x_0 + sum_{k=0}^m G^k M⁻¹ b`.
+
+    The proof uses only the nonsingularity of `M`, not nonsingularity of `A`,
+    which is precisely why the identity remains valid at the start of the
+    singular-system analysis. -/
+theorem singular_stationary_iterate_finite_sum (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b : Fin n → ℝ) (x_seq : ℕ → Fin n → ℝ)
+    (hIter : SourceComputedIteration n M N b x_seq (fun _ _ => 0))
+    (m : ℕ) :
+    ∀ i, x_seq (m + 1) i =
+      matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1)) (x_seq 0) i +
+      ∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n (iterMatrix n M_inv N) k)
+          (matMulVec n M_inv b) i := by
+  intro i
+  have h := sourceComputedIteration_finite_sum n M N M_inv b x_seq
+    (fun _ _ => 0) hS.inv_left hIter m i
+  simpa using h
+
+/-- Applying a Neumann partial sum to a vector is the same as summing the
+    displayed matrix-power actions. -/
+theorem matMulVec_neumannSum_range (n : ℕ)
+    (G : Fin n → Fin n → ℝ) (m : ℕ) (v : Fin n → ℝ) :
+    ∀ i, matMulVec n (neumannSum n G m) v i =
+      ∑ k ∈ Finset.range (m + 1), matMulVec n (matPow n G k) v i := by
+  induction m with
+  | zero =>
+      intro i
+      rw [Finset.sum_range_one]
+      simp [neumannSum_zero, matPow_zero, matMulVec_id]
+  | succ m ih =>
+      intro i
+      rw [neumannSum_succ]
+      rw [congrFun (matMulVec_add_left n (neumannSum n G m)
+        (matPow n G (m + 1)) v) i]
+      rw [ih i]
+      exact (Finset.sum_range_succ
+        (fun k => matMulVec n (matPow n G k) v i) (m + 1)).symm
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, printed page 333:
+    for a consistent system `Ax = b`, the source term in the singular-system
+    exact iteration satisfies `M⁻¹ b = (I - G)x`. -/
+theorem singular_consistent_source_term_eq_I_sub_G (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i) :
+    matMulVec n M_inv b =
+      matMulVec n (matSub_id n (iterMatrix n M_inv N)) x := by
+  ext i
+  have hfix := stationary_solution_fixed_point n A M N M_inv hS b x hAx i
+  have hsub :
+      matMulVec n (matSub_id n (iterMatrix n M_inv N)) x i =
+        x i - matMulVec n (iterMatrix n M_inv N) x i := by
+    unfold matMulVec matSub_id
+    simp_rw [sub_mul, Finset.sum_sub_distrib]
+    have hid : ∑ j : Fin n, idMatrix n i j * x j = x i := by
+      have h := congrFun (matMulVec_id n x) i
+      simpa [matMulVec] using h
+    rw [hid]
+  rw [hsub]
+  linarith
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, printed page 333:
+    the consistent-system source term in (17.21) telescopes as
+    `sum_{k=0}^m G^k M⁻¹ b = (I - G^(m+1))x`. -/
+theorem singular_consistent_second_term_telescope (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (m : ℕ) :
+    ∀ i, (∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n (iterMatrix n M_inv N) k)
+          (matMulVec n M_inv b) i) =
+      x i - matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1)) x i := by
+  intro i
+  let G := iterMatrix n M_inv N
+  have hsource :
+      matMulVec n M_inv b = matMulVec n (matSub_id n G) x := by
+    simpa [G] using singular_consistent_source_term_eq_I_sub_G n A M N M_inv hS b x hAx
+  have hsum := matMulVec_neumannSum_range n G m (matMulVec n M_inv b) i
+  have htel :
+      matMulVec n (neumannSum n G m) (matMulVec n (matSub_id n G) x) i =
+        x i - matMulVec n (matPow n G (m + 1)) x i := by
+    calc
+      matMulVec n (neumannSum n G m) (matMulVec n (matSub_id n G) x) i
+          = matMulVec n (matMul n (neumannSum n G m) (matSub_id n G)) x i := by
+              rw [matMulVec_matMul]
+      _ = matMulVec n (fun a b => idMatrix n a b - matPow n G (m + 1) a b) x i := by
+              rw [neumann_telescope_right n G m]
+      _ = x i - matMulVec n (matPow n G (m + 1)) x i := by
+              unfold matMulVec
+              simp_rw [sub_mul, Finset.sum_sub_distrib]
+              have hid : ∑ j : Fin n, idMatrix n i j * x j = x i := by
+                have h := congrFun (matMulVec_id n x) i
+                simpa [matMulVec] using h
+              rw [hid]
+  calc
+    (∑ k ∈ Finset.range (m + 1),
+        matMulVec n (matPow n (iterMatrix n M_inv N) k)
+          (matMulVec n M_inv b) i)
+        = matMulVec n (neumannSum n G m) (matMulVec n M_inv b) i := by
+            simpa [G] using hsum.symm
+    _ = matMulVec n (neumannSum n G m) (matMulVec n (matSub_id n G) x) i := by
+            rw [hsource]
+    _ = x i - matMulVec n (matPow n G (m + 1)) x i := htel
+    _ = x i - matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1)) x i := by
+            rfl
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equations (17.21)-(17.26):
+    before taking the semiconvergent/Drazin limit, a consistent exact singular
+    iteration splits into a propagated initial term plus the telescoped
+    consistent solution contribution. -/
+theorem singular_stationary_iterate_consistent_split (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (x_seq : ℕ → Fin n → ℝ)
+    (hIter : SourceComputedIteration n M N b x_seq (fun _ _ => 0))
+    (m : ℕ) :
+    ∀ i, x_seq (m + 1) i =
+      matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1)) (x_seq 0) i +
+        (x i - matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1)) x i) := by
+  intro i
+  have hiter := singular_stationary_iterate_finite_sum n A M N M_inv hS b x_seq hIter m i
+  have htel := singular_consistent_second_term_telescope n A M N M_inv hS b x hAx m i
+  rw [hiter, htel]
+
 /-- One-step error: x_i − x̂_{k+1,i} = ∑_j G_{ij}(x_j − x̂_{k,j}) − ∑_j M⁻¹_{ij} ξ_{k,j}. -/
 theorem one_step_error (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ)
     (hS : SplittingSpec n A M N M_inv)
@@ -2157,5 +2289,118 @@ theorem stopping_test_mixed_backward_subordinate
   exact theorem7_1_subordinate
     (n := n) (ν := ν) (A := A) (E := E) (y := y) (b := b)
     (f := b) (e := e) (ε := ε) hn hν hε hE
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.5, after equation (17.33):
+    componentwise absolute-value version of (17.33a), perturbing the right-hand
+    side only. -/
+theorem stopping_test_rhs_backward_componentwise
+    {n : ℕ} (A : Fin n → Fin n → ℝ) (y b : Fin n → ℝ)
+    {ε : ℝ} (_hε : 0 ≤ ε) :
+    (∀ i : Fin n, |residualVec n A y b i| ≤ ε * |b i|) ↔
+    (∃ Δb : Fin n → ℝ,
+      (∀ i : Fin n, |Δb i| ≤ ε * |b i|) ∧
+      (∀ i : Fin n, ∑ j : Fin n, A i j * y j = b i + Δb i)) := by
+  constructor
+  · intro h
+    let Δb : Fin n → ℝ := fun i => ∑ j : Fin n, A i j * y j - b i
+    refine ⟨Δb, ?_, ?_⟩
+    · intro i
+      have hres : Δb i = -residualVec n A y b i := by
+        simp [Δb, residualVec]
+      calc
+        |Δb i| = |residualVec n A y b i| := by rw [hres, abs_neg]
+        _ ≤ ε * |b i| := h i
+    · intro i
+      simp [Δb]
+  · intro h
+    obtain ⟨Δb, hΔb, hExact⟩ := h
+    intro i
+    have hi := hExact i
+    have hres : residualVec n A y b i = -Δb i := by
+      simp [residualVec, hi]
+    calc
+      |residualVec n A y b i| = |Δb i| := by rw [hres, abs_neg]
+      _ ≤ ε * |b i| := hΔb i
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.5, after equation (17.33):
+    componentwise absolute-value version of (17.33b), perturbing the matrix
+    only.  This is the Oettli-Prager theorem with zero right-hand-side budget. -/
+theorem stopping_test_matrix_backward_componentwise
+    {n : ℕ} (A : Fin n → Fin n → ℝ) (y b : Fin n → ℝ)
+    {ε : ℝ} (hε : 0 ≤ ε) :
+    (∀ i : Fin n,
+      |residualVec n A y b i| ≤ ε * (∑ j : Fin n, |A i j| * |y j|)) ↔
+    (∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ ε * |A i j|) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * y j = b i)) := by
+  have hE : ∀ i j : Fin n, 0 ≤ absMatrix n A i j := by
+    intro i j
+    exact abs_nonneg (A i j)
+  have hf : ∀ i : Fin n, 0 ≤ (0 : Fin n → ℝ) i := by
+    intro i
+    exact le_rfl
+  constructor
+  · intro h
+    have hBound :
+        ∀ i : Fin n, |residualVec n A y b i| ≤
+          ε * (∑ j : Fin n, absMatrix n A i j * |y j| + (0 : Fin n → ℝ) i) := by
+      intro i
+      simpa [absMatrix] using h i
+    obtain ⟨ΔA, Δb, hΔA, hΔb, hExact⟩ :=
+      oettli_prager_sufficient n A y b (absMatrix n A) (fun _ => 0) ε hε hE hf hBound
+    have hΔb_zero : Δb = 0 := by
+      ext i
+      have hzero : |Δb i| = 0 := by
+        apply le_antisymm
+        · simpa using hΔb i
+        · exact abs_nonneg (Δb i)
+      exact abs_eq_zero.mp hzero
+    refine ⟨ΔA, ?_, ?_⟩
+    · intro i j
+      simpa [absMatrix] using hΔA i j
+    · intro i
+      have hi := hExact i
+      rw [hΔb_zero] at hi
+      simpa using hi
+  · intro h
+    obtain ⟨ΔA, hΔA, hExact⟩ := h
+    have hΔA' : ∀ i j : Fin n, |ΔA i j| ≤ ε * absMatrix n A i j := by
+      intro i j
+      simpa [absMatrix] using hΔA i j
+    have hΔb' : ∀ i : Fin n, |(0 : Fin n → ℝ) i| ≤ ε * (0 : Fin n → ℝ) i := by
+      intro i
+      simp
+    have hExact' :
+        ∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * y j =
+          b i + (0 : Fin n → ℝ) i := by
+      intro i
+      simpa using hExact i
+    have hBound :=
+      oettli_prager_necessary n A y b ΔA (fun _ => 0)
+        (absMatrix n A) (fun _ => 0) ε hε hΔA' hΔb' hE hf hExact'
+    intro i
+    simpa [absMatrix] using hBound i
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.5, after equation (17.33):
+    componentwise absolute-value version of (17.33c), perturbing both the matrix
+    and right-hand side. -/
+theorem stopping_test_mixed_backward_componentwise
+    {n : ℕ} (A : Fin n → Fin n → ℝ) (y b : Fin n → ℝ)
+    {ε : ℝ} (hε : 0 ≤ ε) :
+    (∀ i : Fin n,
+      |residualVec n A y b i| ≤
+        ε * (∑ j : Fin n, |A i j| * |y j| + |b i|)) ↔
+    (∃ ΔA : Fin n → Fin n → ℝ, ∃ Δb : Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ ε * |A i j|) ∧
+      (∀ i : Fin n, |Δb i| ≤ ε * |b i|) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * y j = b i + Δb i)) := by
+  have hE : ∀ i j : Fin n, 0 ≤ absMatrix n A i j := by
+    intro i j
+    exact abs_nonneg (A i j)
+  have hf : ∀ i : Fin n, 0 ≤ absVec n b i := by
+    intro i
+    exact abs_nonneg (b i)
+  simpa [absMatrix, absVec] using
+    (oettli_prager n A y b (absMatrix n A) (absVec n b) ε hε hE hf)
 
 end LeanFpAnalysis.FP
