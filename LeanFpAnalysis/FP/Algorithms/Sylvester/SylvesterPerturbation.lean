@@ -60,6 +60,112 @@ theorem sylvester_perturbation_first_order (n : ℕ)
   hLin
 
 -- ============================================================
+-- Structured first-order condition-number surface (§16.3, eqs 16.23-16.24)
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
+    Euclidean norm of the three normalized data perturbation blocks
+    `(ΔA / α, ΔB / β, ΔC / γ)`, represented with Frobenius norms for the
+    matrix blocks. -/
+noncomputable def sylvesterScaledPerturbationTripleNorm (n : ℕ)
+    (ΔA ΔB ΔC : Fin n → Fin n → ℝ) (α β γ : ℝ) : ℝ :=
+  Real.sqrt
+    (frobNormSq ΔA / α ^ 2 + frobNormSq ΔB / β ^ 2 +
+      frobNormSq ΔC / γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
+    if each normalized perturbation block has Frobenius norm at most `ε`,
+    then the stacked normalized perturbation vector has norm at most
+    `sqrt 3 * ε`. -/
+theorem sylvesterScaledPerturbationTripleNorm_le_sqrt_three_mul (n : ℕ)
+    (ΔA ΔB ΔC : Fin n → Fin n → ℝ) (α β γ ε : ℝ)
+    (hα : 0 < α) (hβ : 0 < β) (hγ : 0 < γ) (hε : 0 ≤ ε)
+    (hΔA : frobNorm ΔA ≤ ε * α)
+    (hΔB : frobNorm ΔB ≤ ε * β)
+    (hΔC : frobNorm ΔC ≤ ε * γ) :
+    sylvesterScaledPerturbationTripleNorm n ΔA ΔB ΔC α β γ ≤
+      Real.sqrt 3 * ε := by
+  have hα2 : 0 < α ^ 2 := sq_pos_of_pos hα
+  have hβ2 : 0 < β ^ 2 := sq_pos_of_pos hβ
+  have hγ2 : 0 < γ ^ 2 := sq_pos_of_pos hγ
+  have hΔA_sq : frobNormSq ΔA ≤ (ε * α) ^ 2 := by
+    rw [← frobNorm_sq ΔA]
+    nlinarith [frobNorm_nonneg ΔA, hΔA, hε, le_of_lt hα]
+  have hΔB_sq : frobNormSq ΔB ≤ (ε * β) ^ 2 := by
+    rw [← frobNorm_sq ΔB]
+    nlinarith [frobNorm_nonneg ΔB, hΔB, hε, le_of_lt hβ]
+  have hΔC_sq : frobNormSq ΔC ≤ (ε * γ) ^ 2 := by
+    rw [← frobNorm_sq ΔC]
+    nlinarith [frobNorm_nonneg ΔC, hΔC, hε, le_of_lt hγ]
+  have hΔA_div : frobNormSq ΔA / α ^ 2 ≤ ε ^ 2 := by
+    rw [div_le_iff₀ hα2]
+    nlinarith
+  have hΔB_div : frobNormSq ΔB / β ^ 2 ≤ ε ^ 2 := by
+    rw [div_le_iff₀ hβ2]
+    nlinarith
+  have hΔC_div : frobNormSq ΔC / γ ^ 2 ≤ ε ^ 2 := by
+    rw [div_le_iff₀ hγ2]
+    nlinarith
+  have hsum :
+      frobNormSq ΔA / α ^ 2 + frobNormSq ΔB / β ^ 2 +
+          frobNormSq ΔC / γ ^ 2 ≤
+        3 * ε ^ 2 := by
+    nlinarith
+  unfold sylvesterScaledPerturbationTripleNorm
+  calc
+    Real.sqrt
+        (frobNormSq ΔA / α ^ 2 + frobNormSq ΔB / β ^ 2 +
+          frobNormSq ΔC / γ ^ 2)
+        ≤ Real.sqrt (3 * ε ^ 2) := Real.sqrt_le_sqrt hsum
+    _ = Real.sqrt 3 * ε := by
+        rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 3)]
+        rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hε]
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.24), certificate form:
+    `Ψ` bounds the structured inverse first-order Sylvester perturbation map.
+    This is the theorem-facing predicate corresponding to the operator norm
+    `‖P^{-1}[α(Xᵀ⊗I) -β(I⊗X) -γI]‖₂ / ‖X‖_F`; a later exact operator-norm
+    realization can instantiate this predicate. -/
+def SylvesterPsiFirstOrderBound (n : ℕ)
+    (A B X : Fin n → Fin n → ℝ) (α β γ Ψ : ℝ) : Prop :=
+  ∀ ΔA ΔB ΔC ΔX : Fin n → Fin n → ℝ,
+    (∀ i j, sylvesterOp n A B ΔX i j =
+      ΔC i j - matMul n ΔA X i j + matMul n X ΔB i j) →
+    frobNorm ΔX ≤
+      Ψ * frobNorm X *
+        sylvesterScaledPerturbationTripleNorm n ΔA ΔB ΔC α β γ
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.23):
+    the sharp first-order perturbation estimate follows from the structured
+    condition-number certificate (16.24) and the three normwise data budgets. -/
+theorem sylvester_relative_first_order_bound_of_psi (n : ℕ)
+    (A B X ΔA ΔB ΔC ΔX : Fin n → Fin n → ℝ)
+    (α β γ Ψ ε : ℝ)
+    (hPsi : SylvesterPsiFirstOrderBound n A B X α β γ Ψ)
+    (hX : 0 < frobNorm X)
+    (hΨ : 0 ≤ Ψ)
+    (hα : 0 < α) (hβ : 0 < β) (hγ : 0 < γ) (hε : 0 ≤ ε)
+    (hΔA : frobNorm ΔA ≤ ε * α)
+    (hΔB : frobNorm ΔB ≤ ε * β)
+    (hΔC : frobNorm ΔC ≤ ε * γ)
+    (hLin : ∀ i j, sylvesterOp n A B ΔX i j =
+      ΔC i j - matMul n ΔA X i j + matMul n X ΔB i j) :
+    frobNorm ΔX / frobNorm X ≤ Real.sqrt 3 * Ψ * ε := by
+  have htriple :=
+    sylvesterScaledPerturbationTripleNorm_le_sqrt_three_mul n
+      ΔA ΔB ΔC α β γ ε hα hβ hγ hε hΔA hΔB hΔC
+  have hbase := hPsi ΔA ΔB ΔC ΔX hLin
+  have hscale_nonneg : 0 ≤ Ψ * frobNorm X :=
+    mul_nonneg hΨ (le_of_lt hX)
+  have hbound :
+      frobNorm ΔX ≤ Ψ * frobNorm X * (Real.sqrt 3 * ε) := by
+    exact hbase.trans (mul_le_mul_of_nonneg_left htriple hscale_nonneg)
+  rw [div_le_iff₀ hX]
+  calc
+    frobNorm ΔX ≤ Ψ * frobNorm X * (Real.sqrt 3 * ε) := hbound
+    _ = (Real.sqrt 3 * Ψ * ε) * frobNorm X := by ring
+
+-- ============================================================
 -- First-order perturbation bound (§15.3, eq 15.25)
 -- ============================================================
 
