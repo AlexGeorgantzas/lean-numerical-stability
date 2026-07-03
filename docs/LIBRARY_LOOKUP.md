@@ -2382,6 +2382,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_18_TridiagData`
 - `higham9_18_tridiag_to_matrix`
 - `higham9_18_tridiag_to_matrix_isTridiagonal`
+- `higham9_18_tridiag_to_matrix_isBanded_one_one`
+- `higham9_11_tridiag_data_bohte_solve_tight`
 - `higham9_19_tridiag_lu`
 - `tridiag_prevIndex`
 - `TridiagExactLURecurrence`
