@@ -1192,6 +1192,63 @@ theorem sqrt_xiSq_div_three_le_sylvesterBackwardErrorInf_of_svd (n : ℕ)
   rw [Real.sqrt_sq_eq_abs, abs_of_nonneg heta_nonneg] at hsqrt
   exact hsqrt
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.17):
+    infimum-model eta residual amplification bound in the square case.  The
+    theorem combines the eta/xi upper bridge from (16.15) with the square-case
+    `mu` residual bound from (16.17)-(16.19). -/
+theorem sylvesterBackwardErrorInf_le_mu_relative_residual_of_svd (n : ℕ)
+    (A B C Y U V : Fin n → Fin n → ℝ) (sigma : Fin n → ℝ)
+    (alpha beta gamma sigma_min : ℝ)
+    (hSVD : IsSVD n Y U V sigma)
+    (hsigma_min : ∀ i : Fin n, sigma_min ≤ sigma i)
+    (hsigma_min_nn : 0 ≤ sigma_min)
+    (hDenom : 0 < (alpha ^ 2 + beta ^ 2) * sigma_min ^ 2 + gamma ^ 2)
+    (hScale : 0 < (alpha + beta) * frobNorm Y + gamma) :
+    sylvesterBackwardErrorInf n A B C Y alpha beta gamma ≤
+      sylvesterAmplificationMuSquare alpha beta gamma (frobNorm Y) sigma_min *
+        (frobNorm (sylvesterResidual n A B C Y) /
+          ((alpha + beta) * frobNorm Y + gamma)) := by
+  let R := sylvesterResidual n A B C Y
+  let kappa :=
+    sylvesterAmplificationMuSquare alpha beta gamma (frobNorm Y) sigma_min *
+      (frobNorm R / ((alpha + beta) * frobNorm Y + gamma))
+  have hpos : ∀ i j : Fin n,
+      0 < alpha ^ 2 * sigma j ^ 2 + beta ^ 2 * sigma i ^ 2 + gamma ^ 2 := by
+    intro i j
+    have hsig_i_sq : sigma_min ^ 2 ≤ sigma i ^ 2 :=
+      sq_le_sq' (by linarith [hsigma_min_nn, hsigma_min i]) (hsigma_min i)
+    have hsig_j_sq : sigma_min ^ 2 ≤ sigma j ^ 2 :=
+      sq_le_sq' (by linarith [hsigma_min_nn, hsigma_min j]) (hsigma_min j)
+    have hdenom_le :
+        (alpha ^ 2 + beta ^ 2) * sigma_min ^ 2 + gamma ^ 2 ≤
+          alpha ^ 2 * sigma j ^ 2 + beta ^ 2 * sigma i ^ 2 + gamma ^ 2 := by
+      nlinarith [sq_nonneg alpha, sq_nonneg beta]
+    exact lt_of_lt_of_le hDenom hdenom_le
+  have heta :
+      sylvesterBackwardErrorInf n A B C Y alpha beta gamma ≤
+        Real.sqrt (xiSq n (svdResidual n U V R) sigma alpha beta gamma) := by
+    simpa [R] using
+      sylvesterBackwardErrorInf_le_sqrt_xiSq_of_svdOptimalPerturbations n
+        A B C Y U V sigma alpha beta gamma hSVD hpos
+  have hxi :
+      xiSq n (svdResidual n U V R) sigma alpha beta gamma ≤ kappa ^ 2 := by
+    simpa [R, kappa] using
+      xiSq_le_mu_relative_residual_sq n Y R U V sigma alpha beta gamma sigma_min
+        hSVD hsigma_min hsigma_min_nn hDenom hScale
+  have hmu_nonneg :
+      0 ≤ sylvesterAmplificationMuSquare alpha beta gamma (frobNorm Y) sigma_min := by
+    unfold sylvesterAmplificationMuSquare
+    exact div_nonneg (le_of_lt hScale) (Real.sqrt_nonneg _)
+  have hrel_nonneg :
+      0 ≤ frobNorm R / ((alpha + beta) * frobNorm Y + gamma) :=
+    div_nonneg (frobNorm_nonneg R) (le_of_lt hScale)
+  have hkappa_nonneg : 0 ≤ kappa := by
+    dsimp [kappa]
+    exact mul_nonneg hmu_nonneg hrel_nonneg
+  have hsqrt := Real.sqrt_le_sqrt hxi
+  rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hkappa_nonneg] at hsqrt
+  exact heta.trans hsqrt
+
 -- ============================================================
 -- Residual-based backward error bound (combining eqs 16.12 + 16.16)
 -- ============================================================
