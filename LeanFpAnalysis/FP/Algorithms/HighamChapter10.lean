@@ -3264,6 +3264,105 @@ theorem higham10_18_w_arbitrarily_large (k : ℕ) (hk : 0 < k)
       calc C ≤ |C| := le_abs_self C
         _ ≤ α⁻¹ := by linarith
 
+/-- Operator-norm certificates add across matrix sums. -/
+lemma opNorm2Le_add {n : ℕ} (A B : Fin n → Fin n → ℝ) (a b : ℝ)
+    (hA : opNorm2Le A a) (hB : opNorm2Le B b) :
+    opNorm2Le (fun i j => A i j + B i j) (a + b) := by
+  intro x
+  have hsplit : matMulVec n (fun i j => A i j + B i j) x =
+      fun i => matMulVec n A x i + matMulVec n B x i := by
+    funext i
+    unfold matMulVec
+    rw [← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun j _ => by ring
+  rw [hsplit]
+  calc vecNorm2 (fun i => matMulVec n A x i + matMulVec n B x i)
+      ≤ vecNorm2 (matMulVec n A x) + vecNorm2 (matMulVec n B x) :=
+        vecNorm2_add_le _ _
+    _ ≤ a * vecNorm2 x + b * vecNorm2 x := add_le_add (hA x) (hB x)
+    _ = (a + b) * vecNorm2 x := by ring
+
+/-- **Display (10.25), componentwise to normwise** (Higham p. 206): the
+    componentwise (10.24) bound
+    `|E| ≤ γ(|R̂ᵀ||R̂| + |Â⁽ʳ⁺¹⁾|)` converts to the operator-norm
+    certificate `‖E‖₂ ≤ γ(n·cR² + √n·cÂ)` via Lemma 6.6. -/
+theorem higham10_25_componentwise_to_normwise (n : ℕ)
+    (E R Ahat : Fin n → Fin n → ℝ) (γ cR cAhat : ℝ)
+    (hγ0 : 0 ≤ γ) (hcR : 0 ≤ cR) (hcAhat : 0 ≤ cAhat)
+    (h24 : ∀ i j : Fin n, |E i j| ≤ γ *
+      (matMul n (fun i' j' => |R j' i'|) (fun i' j' => |R i' j'|) i j +
+        |Ahat i j|))
+    (hR : opNorm2Le R cR) (hAhat : opNorm2Le Ahat cAhat) :
+    opNorm2Le E (γ * ((n : ℝ) * cR ^ 2 + Real.sqrt n * cAhat)) := by
+  have hG := higham10_7_absRT_absR_opNorm2Le n R cR hcR hR
+  have hAb := opNorm2Le_abs_of_opNorm2Le n Ahat cAhat hcAhat hAhat
+  have hsum := opNorm2Le_add _ _ _ _ hG hAb
+  have hB := opNorm2Le_smul n
+    (fun i j =>
+      matMul n (fun i' j' => |R j' i'|) (fun i' j' => |R i' j'|) i j +
+        |Ahat i j|)
+    ((n : ℝ) * cR ^ 2 + Real.sqrt n * cAhat) γ hγ0 hsum
+  exact opNorm2Le_of_abs_le n E _ h24 _ hB
+
+/-- **Display (10.25), the absorption** (Higham p. 206): from the norm
+    chain `‖E‖ ≤ γ(r‖A‖ + r‖E‖ + n‖Â⁽ʳ⁺¹⁾‖)` with `rγ < 1`,
+    `‖E‖ ≤ γ/(1 − rγ)·(r‖A‖ + n‖Â⁽ʳ⁺¹⁾‖)`. -/
+theorem higham10_25_absorption (γ r n cA cAhat e : ℝ)
+    (hrγ : r * γ < 1)
+    (hchain : e ≤ γ * (r * cA + r * e + n * cAhat)) :
+    e ≤ γ / (1 - r * γ) * (r * cA + n * cAhat) := by
+  have h1 : (0:ℝ) < 1 - r * γ := by linarith
+  rw [div_mul_eq_mul_div, le_div_iff₀ h1]
+  nlinarith
+
+/-- **Quadratic-form certificate from an entrywise bound** (the
+    dimension-costing conversion behind display (10.21)'s
+    `r·γ_{r+1}/(1−γ_{r+1})` value): entries bounded by `c` give
+    `|zᵀEz| ≤ c·m·‖z‖²` by the ones-vector Cauchy–Schwarz. -/
+lemma quadForm_cert_of_entrywise {m : ℕ} (E : Fin m → Fin m → ℝ)
+    (c : ℝ) (hc : 0 ≤ c) (hE : ∀ i j : Fin m, |E i j| ≤ c) :
+    ∀ z : Fin m → ℝ,
+      |∑ i : Fin m, ∑ j : Fin m, z i * E i j * z j| ≤
+      c * (m : ℝ) * ∑ i : Fin m, z i ^ 2 := by
+  intro z
+  have h1 : |∑ i : Fin m, ∑ j : Fin m, z i * E i j * z j| ≤
+      ∑ i : Fin m, ∑ j : Fin m, |z i| * c * |z j| := by
+    calc |∑ i : Fin m, ∑ j : Fin m, z i * E i j * z j|
+        ≤ ∑ i : Fin m, |∑ j : Fin m, z i * E i j * z j| :=
+          Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ i : Fin m, ∑ j : Fin m, |z i * E i j * z j| :=
+          Finset.sum_le_sum fun i _ =>
+            Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ i : Fin m, ∑ j : Fin m, |z i| * c * |z j| := by
+          refine Finset.sum_le_sum fun i _ =>
+            Finset.sum_le_sum fun j _ => ?_
+          rw [abs_mul, abs_mul]
+          exact mul_le_mul_of_nonneg_right
+            (mul_le_mul_of_nonneg_left (hE i j) (abs_nonneg _))
+            (abs_nonneg _)
+  have h2 : ∑ i : Fin m, ∑ j : Fin m, |z i| * c * |z j| =
+      c * (∑ i : Fin m, |z i|) ^ 2 := by
+    rw [sq, Finset.sum_mul_sum, Finset.mul_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun j _ => by ring
+  have h3 : (∑ i : Fin m, |z i|) ^ 2 ≤
+      (m : ℝ) * ∑ i : Fin m, z i ^ 2 := by
+    have h := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
+      (fun _ : Fin m => (1:ℝ)) (fun i => |z i|)
+    have hL : ∑ i : Fin m, (1:ℝ) * |z i| = ∑ i : Fin m, |z i| := by
+      simp
+    have h1s : ∑ _i : Fin m, ((1:ℝ)) ^ 2 = (m : ℝ) := by simp
+    have h2s : ∑ i : Fin m, |z i| ^ 2 = ∑ i : Fin m, z i ^ 2 :=
+      Finset.sum_congr rfl fun i _ => sq_abs _
+    rw [hL, h1s, h2s] at h
+    exact h
+  calc |∑ i : Fin m, ∑ j : Fin m, z i * E i j * z j|
+      ≤ c * (∑ i : Fin m, |z i|) ^ 2 := h1.trans_eq h2
+    _ ≤ c * ((m : ℝ) * ∑ i : Fin m, z i ^ 2) :=
+        mul_le_mul_of_nonneg_left h3 hc
+    _ = c * (m : ℝ) * ∑ i : Fin m, z i ^ 2 := by ring
+
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
 `‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
 an `r × r` upper-triangular block `U` with positive diagonal whose rows
