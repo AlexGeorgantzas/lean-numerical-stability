@@ -31,9 +31,9 @@
 | (16.25), sep-weakened perturbation route | `sylvester_perturbation_bound`, `sylvester_relative_perturbation`, `condSylvester` | `SylvesterPerturbation.lean` | Theorem/definition | Uses `SepLowerBound`; exact `P^{-1}` condition-number surface remains open. |
 | (16.26), lower-bound form | `SepLowerBound` | `SylvesterSpec.lean` | Predicate | Honest lower-bound predicate, not an attained minimum. |
 | (16.28), a posteriori route | `sylvester_aposteriori_bound`, `sylvester_relative_aposteriori_bound` | `SylvesterPerturbation.lean`, `Higham16.lean` | Theorems | Square Frobenius error-residual bound and relative source wrapper via `SepLowerBound`. |
-| (16.30) | `generalizedSylvesterAXB_CXD_residual` | `Higham16.lean` | Definition | Residual surface for the generalized equation. |
+| (16.30) | `generalizedSylvesterAXB_CXD_residual`, `IsGeneralizedSylvesterAXB_CXD_Solution`, `generalizedSylvesterAXB_CXD_residual_zero_iff_solution` | `Higham16.lean` | Definition/predicate/theorem | Residual surface plus zero-residual equivalence for the generalized equation. |
 | (16.31) | `IsGeneralizedSylvesterPairSolution` | `Higham16.lean` | Predicate | Coupled generalized Sylvester surface. |
-| (16.32) | `riccatiResidual` | `Higham16.lean` | Definition | Residual surface for the algebraic Riccati equation. |
+| (16.32) | `riccatiResidual`, `IsRiccatiSolution`, `riccatiResidual_zero_iff_solution` | `Higham16.lean` | Definition/predicate/theorem | Residual surface plus zero-residual equivalence for the algebraic Riccati equation. |
 
 ## Source Inventory
 
@@ -72,9 +72,9 @@
 | H16.Eq16_27.lyapunov_condition | p.314, (16.27) | definition | Lyapunov condition number using vec-permutation. | precise | square | derivation | vec-permutation matrix | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open. |
 | H16.Eq16_28.aposteriori | p.315, (16.28) | inequality | A posteriori error-residual bound. | precise | square current API | derivation | `SepLowerBound` | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `sylvester_aposteriori_bound`, `sylvester_relative_aposteriori_bound`; relative wrapper assumes `frobNorm X > 0`. |
 | H16.Eq16_29.practical_error_bound | p.315, (16.29) | inequality | Componentwise practical error bound with computed residual budget. | precise | implementation-facing | sketch | componentwise abs, inverse estimator, rounded residual | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | Open. |
-| H16.Eq16_30.generalized_axb_cxd | p.316, (16.30) | equation | Generalized Sylvester equation `AXB + CXD = E`. | precise | general rectangular | not applicable | rectangular products | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `generalizedSylvesterAXB_CXD_residual`. |
+| H16.Eq16_30.generalized_axb_cxd | p.316, (16.30) | equation | Generalized Sylvester equation `AXB + CXD = E`. | precise | general rectangular | not applicable | rectangular products | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `generalizedSylvesterAXB_CXD_residual`, `IsGeneralizedSylvesterAXB_CXD_Solution`, `generalizedSylvesterAXB_CXD_residual_zero_iff_solution`. |
 | H16.Eq16_31.coupled_generalized | p.316, (16.31) | equation | Coupled generalized Sylvester equations. | precise | general rectangular | not applicable | rectangular products | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `IsGeneralizedSylvesterPairSolution`. |
-| H16.Eq16_32.riccati | p.316, (16.32) | equation | Algebraic Riccati equation residual. | precise | general rectangular | not applicable | rectangular products | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `riccatiResidual`. |
+| H16.Eq16_32.riccati | p.316, (16.32) | equation | Algebraic Riccati equation residual. | precise | general rectangular | not applicable | rectangular products | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `riccatiResidual`, `IsRiccatiSolution`, `riccatiResidual_zero_iff_solution`. |
 | H16.LAPACKRoutines | p.318 | software | LAPACK routine discussion. | underspecified | software | not applicable | machine/library semantics | SKIP | SKIP-PROGRAMMING-LANGUAGE | Core skip. |
 | H16.Problems16_1_16_5 | p.318-319 | problems | benchmark-reserved; statement not transcribed | precise | benchmark | not applicable | none | BENCHMARK_CANDIDATE | BENCHMARK-RESERVED | not encoded. |
 | H16.AppA16_1_16_4 | Appendix A split ledger | appendix solutions | benchmark-reserved; statement not transcribed | precise | benchmark | not applicable | none | BENCHMARK_CANDIDATE | BENCHMARK-RESERVED | not encoded. |
@@ -97,6 +97,7 @@
 | `sylvesterResidualRect` | Records residual semantics for rectangular source rows. | inventory rows for (16.9), (16.11), (16.29) | implemented |
 | `lyapunov_solution_iff_sylvester_special` | Provides a source-facing bridge from Lyapunov equations to the proved Sylvester uniqueness theorem. | `lyapunov_unique_solution_of_sep`, `lyapunov_solution_symmetric_of_symmetric_rhs` | implemented |
 | `sylvester_relative_aposteriori_bound` | Presents (16.28) in the source's relative error shape. | H16.Eq16_28.aposteriori | implemented |
+| `IsGeneralizedSylvesterAXB_CXD_Solution`, `IsRiccatiSolution` | Turns generalized residual definitions into explicit source-equation predicates. | H16.Eq16_30.generalized_axb_cxd, H16.Eq16_32.riccati | implemented |
 
 ## Empirical Source Outputs
 
@@ -133,6 +134,7 @@
 - Current milestone:
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16.lean`: passed after adding the Lyapunov uniqueness/symmetry wrappers.
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16.lean`: passed after adding the relative a posteriori wrapper.
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16.lean`: passed after adding generalized/Riccati source-equation predicates.
 
 ## Git and Local-Only Notes
 
