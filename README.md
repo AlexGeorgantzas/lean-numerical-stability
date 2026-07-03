@@ -51,9 +51,10 @@ wrappers, and exact subtraction now discharges the remaining subtract-zero copy
 premise on the exact primitive-operation final-closed/final-panel variants and
 on the source-closure, tail-normalized, source-faithful,
 normalization-model, and full-stage final-closure endpoints, with matching
-source-closure and full-stage final-panel wrappers now available. A one-entry
-route audit now also proves that the stronger normalization-model predicate is
-not a consequence of arbitrary `FPModel`. The unnormalized route now also has
+source-closure, tail-normalized, source-faithful, and full-stage final-panel
+wrappers now available. A one-entry route audit now also proves that the
+stronger normalization-model predicate is not a consequence of arbitrary
+`FPModel`. The unnormalized route now also has
 pivot-zero signed-active-vector bridges identifying the stored signed vector
 with the exact or computed unnormalized Householder vector, plus a betaSpec
 normalization bridge showing that, under nonzero-column and exact primitive
