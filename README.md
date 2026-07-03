@@ -100,7 +100,15 @@ for (17.21), the consistent-system singular telescoping wrappers
 `singular_stationary_iterate_consistent_split` toward (17.26), plus
 `singularErrorSourceTerm` for the (17.28) `S_m` source term and
 `singular_error_split_finite` for the finite algebraic core of the (17.27)
-range/null source split under the explicit fixed-null component hypothesis, and the
+range/null source split under the explicit fixed-null component hypothesis.
+It also adds the finite (17.29) `S_m` bound surfaces
+`singularErrorSourceNormSum`, `singularErrorSourceComponentBound`,
+`singularErrorSourceTerm_norm_bound`,
+`singularErrorSourceTerm_componentwise_bound`, and
+`singularErrorSourceTerm_componentwise_bound_of_local_error`, with the
+componentwise form instantiated from the local-error model and the exact
+normwise `gamma_x` local-error instantiation still visible as an open wrapper.
+The module also contains the
 subordinate-norm stopping-test wrappers
 `stopping_test_rhs_backward_subordinate`,
 `stopping_test_matrix_backward_subordinate`, and
