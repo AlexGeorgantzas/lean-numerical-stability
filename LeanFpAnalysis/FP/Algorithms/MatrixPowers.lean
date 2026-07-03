@@ -941,4 +941,140 @@ theorem higham_eq_18_4_lower_real_diagonalizable (n : ℕ) (hn : 0 < n)
           infNormVec_matMulVec_le hn _ _
   exact le_of_mul_le_mul_right hchain hxpos
 
+-- ============================================================
+-- §18.2  Eq (18.12): weighted (Collatz–Wielandt) certificate form
+-- ============================================================
+
+/-- Weighted power bound: if `w > 0` satisfies `|A|·w ≤ θ·w` componentwise
+    (a Collatz–Wielandt certificate, so `ρ(|A|) ≤ θ`), then
+    `(|A|ᵐ·u)ᵢ ≤ M·θᵐ·wᵢ` for any `|u| ≤ M·w`. -/
+theorem matPow_abs_weighted_bound (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (w : Fin n → ℝ) (θ : ℝ) (hθ0 : 0 ≤ θ)
+    (hAw : ∀ i, ∑ j : Fin n, |A i j| * w j ≤ θ * w i)
+    (u : Fin n → ℝ) (M : ℝ) (hM0 : 0 ≤ M)
+    (hu : ∀ j, u j ≤ M * w j) (hu0 : ∀ j, 0 ≤ u j) (m : ℕ) :
+    ∀ i, matMulVec n (matPow n (absMatrix n A) m) u i ≤ M * θ ^ m * w i := by
+  induction m with
+  | zero =>
+    intro i
+    have hid : matMulVec n (matPow n (absMatrix n A) 0) u i = u i := by
+      show matMulVec n (idMatrix n) u i = u i
+      unfold matMulVec idMatrix
+      simp [Finset.sum_ite_eq]
+    rw [hid, pow_zero, mul_one]
+    exact hu i
+  | succ m ih =>
+    intro i
+    have hsplit : matMulVec n (matPow n (absMatrix n A) (m + 1)) u i =
+        ∑ j : Fin n, |A i j| *
+          matMulVec n (matPow n (absMatrix n A) m) u j := by
+      rw [matPow_succ n (absMatrix n A) m]
+      rw [matMulVec_matMul n (absMatrix n A) (matPow n (absMatrix n A) m) u i]
+      unfold matMulVec absMatrix
+      rfl
+    have hnn : ∀ j, 0 ≤ matMulVec n (matPow n (absMatrix n A) m) u j := by
+      intro j
+      unfold matMulVec
+      apply Finset.sum_nonneg
+      intro l _
+      exact mul_nonneg (matPow_nonneg n (absMatrix n A)
+        (fun a b => abs_nonneg (A a b)) m j l) (hu0 l)
+    rw [hsplit]
+    calc ∑ j : Fin n, |A i j| *
+          matMulVec n (matPow n (absMatrix n A) m) u j
+        ≤ ∑ j : Fin n, |A i j| * (M * θ ^ m * w j) := by
+          apply Finset.sum_le_sum
+          intro j _
+          exact mul_le_mul_of_nonneg_left (ih j) (abs_nonneg _)
+      _ = M * θ ^ m * ∑ j : Fin n, |A i j| * w j := by
+          rw [Finset.mul_sum]
+          exact Finset.sum_congr rfl (fun j _ => by ring)
+      _ ≤ M * θ ^ m * (θ * w i) :=
+          mul_le_mul_of_nonneg_left (hAw i)
+            (mul_nonneg hM0 (pow_nonneg hθ0 m))
+      _ = M * θ ^ (m + 1) * w i := by rw [pow_succ]; ring
+
+/-- **Eq (18.12), Collatz–Wielandt certificate form** (Higham 2nd ed., §18.2,
+    p. 347): if a positive weight vector `w` certifies `|A|·w ≤ θ·w`
+    (equivalently `ρ(|A|) ≤ θ` — the certificate exists for every
+    `θ > ρ(|A|)` by Perron–Frobenius, which is not needed here) and
+    `(1+c)·θ < 1`, then every computed-power sequence with per-step
+    componentwise budget `c` satisfies `‖v_m‖∞ → 0`.
+
+    This is strictly sharper than the `‖A‖∞`-surrogate
+    `matPow_convergence_bound` (take `w ≡ 1`, `θ = ‖A‖∞`) and renders the
+    printed sufficient condition `ρ(|A|) < 1/(1+γ_{n+2})` up to the
+    certificate/spectral-radius equivalence; the literal `ρ(|A|)` statement
+    remains open pending nonneg-matrix spectral-radius theory. -/
+theorem matPow_convergence_weighted (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (w : Fin n → ℝ) (θ : ℝ) (hθ0 : 0 ≤ θ)
+    (hAw : ∀ i, ∑ j : Fin n, |A i j| * w j ≤ θ * w i)
+    (v : ℕ → (Fin n → ℝ)) (c : ℝ) (hc : 0 ≤ c)
+    (hComp : ComputedMatPowVec n A v c)
+    (M : ℝ) (hM0 : 0 ≤ M) (hv0 : ∀ j, |v 0 j| ≤ M * w j)
+    (hq : (1 + c) * θ < 1) :
+    Filter.Tendsto (fun m => infNormVec (v m)) Filter.atTop (nhds 0) := by
+  have hq0 : 0 ≤ (1 + c) * θ := mul_nonneg (by linarith) hθ0
+  -- componentwise: |v m i| ≤ M·((1+c)θ)ᵐ·w i
+  have hbound : ∀ m i, |v m i| ≤ M * ((1 + c) * θ) ^ m * w i := by
+    intro m i
+    have h1 := matPow_componentwise_bound n A v c hc hComp m i
+    have h2 := matPow_abs_weighted_bound n A w θ hθ0 hAw
+      (absVec n (v 0)) M hM0
+      (fun j => by
+        have : absVec n (v 0) j = |v 0 j| := rfl
+        rw [this]; exact hv0 j)
+      (fun j => abs_nonneg _) m i
+    calc |v m i|
+        ≤ (1 + c) ^ m *
+          matMulVec n (matPow n (absMatrix n A) m) (absVec n (v 0)) i := h1
+      _ ≤ (1 + c) ^ m * (M * θ ^ m * w i) :=
+          mul_le_mul_of_nonneg_left h2 (pow_nonneg (by linarith) m)
+      _ = M * ((1 + c) * θ) ^ m * w i := by rw [mul_pow]; ring
+  -- normwise: ‖v m‖∞ ≤ (M·‖w‖∞)·((1+c)θ)ᵐ, then squeeze
+  have hnorm : ∀ m, infNormVec (v m) ≤
+      M * infNormVec w * ((1 + c) * θ) ^ m := by
+    intro m
+    apply infNormVec_le_of_abs_le
+    · intro i
+      calc |v m i| ≤ M * ((1 + c) * θ) ^ m * w i := hbound m i
+        _ ≤ M * ((1 + c) * θ) ^ m * infNormVec w := by
+            apply mul_le_mul_of_nonneg_left _
+              (mul_nonneg hM0 (pow_nonneg hq0 m))
+            calc w i ≤ |w i| := le_abs_self _
+              _ ≤ infNormVec w := abs_le_infNormVec w i
+        _ = M * infNormVec w * ((1 + c) * θ) ^ m := by ring
+    · exact mul_nonneg (mul_nonneg hM0 (infNormVec_nonneg w))
+        (pow_nonneg hq0 m)
+  have hpow : Filter.Tendsto (fun m : ℕ => ((1 + c) * θ) ^ m)
+      Filter.atTop (nhds 0) :=
+    tendsto_pow_atTop_nhds_zero_of_lt_one hq0 hq
+  have htop : Filter.Tendsto
+      (fun m => M * infNormVec w * ((1 + c) * θ) ^ m)
+      Filter.atTop (nhds 0) := by
+    simpa using hpow.const_mul (M * infNormVec w)
+  exact squeeze_zero (fun m => infNormVec_nonneg _) hnorm htop
+
+/-- **Eq (18.12), certificate form, for the actual floating-point iteration**
+    (Higham 2nd ed., §18.2, p. 347): with a Collatz–Wielandt certificate
+    `|A|·w ≤ θ·w`, `w > 0`, and `(1+γ_{n+2})·θ < 1` — the printed
+    `ρ(|A|) < 1/(1+γ_{n+2})` up to the certificate equivalence — the
+    computed vectors `fl(Aᵐ v₀)` satisfy `‖fl(Aᵐ v₀)‖∞ → 0`. -/
+theorem matPow_convergence_weighted_fl (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (w : Fin n → ℝ) (θ : ℝ) (hθ0 : 0 ≤ θ)
+    (hAw : ∀ i, ∑ j : Fin n, |A i j| * w j ≤ θ * w i)
+    (v0 : Fin n → ℝ) (hval : gammaValid fp (n + 2))
+    (M : ℝ) (hM0 : 0 ≤ M) (hv0 : ∀ j, |v0 j| ≤ M * w j)
+    (hq : (1 + gamma fp (n + 2)) * θ < 1) :
+    Filter.Tendsto
+      (fun m => infNormVec (fl_matPowVecSeq fp n A v0 m))
+      Filter.atTop (nhds 0) :=
+  matPow_convergence_weighted n A w θ hθ0 hAw
+    (fl_matPowVecSeq fp n A v0) (gamma fp (n + 2))
+    (gamma_nonneg fp hval)
+    (computedMatPowVec_fl_matVec_gamma_add_two fp n A v0 hval)
+    M hM0 hv0 hq
+
 end LeanFpAnalysis.FP
