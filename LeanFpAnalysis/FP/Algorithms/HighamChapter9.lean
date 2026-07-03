@@ -12179,6 +12179,14 @@ theorem higham9_16_rookPivotFosterBound_le_of_le {n m : ℕ} (hnm : n ≤ m) :
         higham9_16_rookPivotFosterFactor_le_of_le hn hnm
       exact mul_le_mul_of_nonneg_left hfactor (by norm_num)
 
+/-- **Equation (9.16)**, Foster's scalar rook-pivoting RHS is at least two in
+every dimension at least two. -/
+lemma higham9_16_rookPivotFosterBound_ge_two_of_ge_two {n : ℕ}
+    (hn : 2 ≤ n) :
+    (2 : ℝ) ≤ higham9_16_rookPivotFosterBound n :=
+  le_trans higham9_16_rookPivotFosterBound_two_ge_two
+    (higham9_16_rookPivotFosterBound_le_of_le hn)
+
 /-- **Equation (9.16)**, Foster's scalar rook-pivoting RHS is monotone in the
 matrix order parameter. -/
 theorem higham9_16_rookPivotFosterBound_monotone :
@@ -18163,6 +18171,42 @@ theorem higham9_11_bohte_banded_solve_tight_of_isBanded_common
     isBanded_common_of_le hp hq hBanded
   exact higham9_11_bohte_banded_solve_tight fp n r A L_hat U_hat b
     hL_diag hU_diag hLU hn hn3 hGrowth
+
+/-- **Theorem 9.11**, source-facing banded solve wrapper from any smaller
+componentwise growth constant.
+
+The structural banded hypothesis records the source side of Bohte's theorem;
+the supplied `hρ_le` and `hGrowth` let callers reuse sharper or narrower
+growth estimates before widening to Bohte's printed common-bandwidth constant.
+This is an interface theorem, not the missing external Bohte proof. -/
+theorem higham9_11_bohte_banded_solve_tight_of_isBanded_common_growth_le
+    (fp : FPModel) (n p q r : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hp : p ≤ r) (hq : q ≤ r)
+    (hBanded : IsBanded n p q A)
+    (ρ_bound : ℝ)
+    (hρ_le : ρ_bound ≤ higham9_11_bohteBound r)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        ρ_bound * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        higham9_11_bohteBound r * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  have _hBanded_common : IsBanded n r r A :=
+    isBanded_common_of_le hp hq hBanded
+  exact
+    higham9_11_bohte_banded_solve_tight_of_growth_le fp n r
+      A L_hat U_hat b ρ_bound hρ_le hL_diag hU_diag hLU hn hn3
+      hGrowth
 
 /-- **Theorem 9.11**, tridiagonal source-facing Bohte solve wrapper.
 
