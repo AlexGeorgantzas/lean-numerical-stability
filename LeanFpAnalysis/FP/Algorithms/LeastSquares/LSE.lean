@@ -1026,6 +1026,134 @@ theorem theorem20_7_deltaBEntry_bound_of_row_sorting_geometric_entry_growth_nat
       hm hn Astage A bstage b phi gammaTilde i hphi hgamma
       hdenA hdenW hA hb)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    Chapter 19.6 active-row geometric bounds control each `Delta A`
+    component budget. -/
+theorem theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi gammaTilde : ℝ)
+    (i : Fin m) (j : Fin n)
+    (hphi : 0 ≤ phi) (hgamma : 0 ≤ gammaTilde)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_deltaAEntryBudget gammaTilde
+        (theorem20_7_alpha hn Astage A i)
+        (theorem20_7_initialRowMax hn A i) j ≤
+      theorem20_7_deltaAEntryBudget gammaTilde
+        (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+        (theorem20_7_initialRowMax hn A i) j :=
+  theorem20_7_deltaAEntryBudget_le_of_alphaBetaMax_le
+    hm hn Astage A bstage b phi gammaTilde i j hgamma
+    (theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
+      hm hn Astage A bstage b phi hphi hdenA hdenW hA hb)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    Chapter 19.6 active-row geometric bounds control each `Delta b`
+    component budget. -/
+theorem theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi gammaTilde : ℝ)
+    (i : Fin m)
+    (hphi : 0 ≤ phi) (hgamma : 0 ≤ gammaTilde)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_deltaBEntryBudget n gammaTilde
+        (theorem20_7_beta hn Astage A bstage b phi i)
+        (theorem20_7_initialWeightedRowMax hn A b phi i) ≤
+      theorem20_7_deltaBEntryBudget n gammaTilde
+        (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+        (theorem20_7_initialWeightedRowMax hn A b phi i) :=
+  theorem20_7_deltaBEntryBudget_le_of_alphaBetaMax_le
+    hm hn Astage A bstage b phi gammaTilde i hphi hgamma
+    (theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
+      hm hn Astage A bstage b phi hphi hdenA hdenW hA hb)
+
+/-- A `Delta A` entry satisfying the printed row-ratio budget also satisfies
+    the active-row uniform budget supplied by the Chapter 19.6 bridge. -/
+theorem theorem20_7_deltaAEntry_bound_of_active_row_geometric_entry_growth_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi gammaTilde : ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (i : Fin m) (j : Fin n)
+    (hphi : 0 ≤ phi) (hgamma : 0 ≤ gammaTilde)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hDelta :
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (theorem20_7_alpha hn Astage A i)
+          (theorem20_7_initialRowMax hn A i) j) :
+    |DeltaA i j| ≤
+      theorem20_7_deltaAEntryBudget gammaTilde
+        (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+        (theorem20_7_initialRowMax hn A i) j :=
+  hDelta.trans
+    (theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_nat
+      hm hn Astage A bstage b phi gammaTilde i j hphi hgamma
+      hdenA hdenW hA hb)
+
+/-- A `Delta b` entry satisfying the printed row-ratio budget also satisfies
+    the active-row uniform budget supplied by the Chapter 19.6 bridge. -/
+theorem theorem20_7_deltaBEntry_bound_of_active_row_geometric_entry_growth_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi gammaTilde : ℝ)
+    (Deltab : Fin m → ℝ) (i : Fin m)
+    (hphi : 0 ≤ phi) (hgamma : 0 ≤ gammaTilde)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hDelta :
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (theorem20_7_beta hn Astage A bstage b phi i)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    |Deltab i| ≤
+      theorem20_7_deltaBEntryBudget n gammaTilde
+        (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+        (theorem20_7_initialWeightedRowMax hn A b phi i) :=
+  hDelta.trans
+    (theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_nat
+      hm hn Astage A bstage b phi gammaTilde i hphi hgamma
+      hdenA hdenW hA hb)
+
 -- ============================================================
 -- §20.9  Equality-constrained least squares
 -- ============================================================
@@ -17177,6 +17305,58 @@ theorem theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_half_bo
       theorem20_10_householder_sourceRankRadius hB hStack := by
   dsimp [theorem20_10_householder_sourceRankBudget]
   nlinarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    a compact sufficient condition for the rank-preservation smallness
+    hypothesis.  If the larger of the two Householder gamma coefficients times
+    `||A||_F + ||B||_F` is below the source-rank radius, then the combined
+    Householder rank budget is below that radius. -/
+theorem theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      max (theorem20_10_householder_gammaA fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) *
+          (frobNormRect A + frobNormRect B) <
+        theorem20_10_householder_sourceRankRadius hB hStack) :
+    theorem20_10_householder_sourceRankBudget fp A B <
+      theorem20_10_householder_sourceRankRadius hB hStack := by
+  dsimp [theorem20_10_householder_sourceRankBudget]
+  have hA :
+      theorem20_10_householder_gammaA fp r p q * frobNormRect A ≤
+        max (theorem20_10_householder_gammaA fp r p q)
+            (theorem20_10_householder_gammaB fp r p q) *
+          frobNormRect A :=
+    mul_le_mul_of_nonneg_right (le_max_left _ _) (frobNormRect_nonneg A)
+  have hBterm :
+      theorem20_10_householder_gammaB fp r p q * frobNormRect B ≤
+        max (theorem20_10_householder_gammaA fp r p q)
+            (theorem20_10_householder_gammaB fp r p q) *
+          frobNormRect B :=
+    mul_le_mul_of_nonneg_right (le_max_right _ _) (frobNormRect_nonneg B)
+  have hbudget_le :
+      theorem20_10_householder_gammaA fp r p q * frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B ≤
+        max (theorem20_10_householder_gammaA fp r p q)
+            (theorem20_10_householder_gammaB fp r p q) *
+          (frobNormRect A + frobNormRect B) := by
+    calc
+      theorem20_10_householder_gammaA fp r p q * frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B
+          ≤ max (theorem20_10_householder_gammaA fp r p q)
+                (theorem20_10_householder_gammaB fp r p q) *
+              frobNormRect A +
+            max (theorem20_10_householder_gammaA fp r p q)
+                (theorem20_10_householder_gammaB fp r p q) *
+              frobNormRect B :=
+            add_le_add hA hBterm
+      _ = max (theorem20_10_householder_gammaA fp r p q)
+              (theorem20_10_householder_gammaB fp r p q) *
+            (frobNormRect A + frobNormRect B) := by ring
+  exact lt_of_le_of_lt hbudget_le hsmall
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank margin-radius wrapper for the constructed rounded Householder
