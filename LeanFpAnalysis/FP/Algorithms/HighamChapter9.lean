@@ -18216,6 +18216,37 @@ theorem higham9_11_bohte_banded_solve_tight_of_isBanded_common_growth_le
       A L_hat U_hat b ρ_bound hρ_le hL_diag hU_diag hLU hn hn3
       hGrowth
 
+/-- **Theorem 9.11**, source-facing bandwidth-one Bohte solve wrapper with
+the common-bandwidth structural hypothesis exposed.
+
+This is the `IsBanded n 1 1 A` form of the tridiagonal source case; the GEPP
+growth estimate remains the explicit Bohte-side assumption. -/
+theorem higham9_11_bandwidth_one_bohte_solve_tight_of_isBanded
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hBanded : IsBanded n 1 1 A)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        2 * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        2 * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  simpa [higham9_11_bohteBound_tridiagonal] using
+    higham9_11_bohte_banded_solve_tight_of_isBanded_common fp n 1 1 1
+      A L_hat U_hat b (by omega) (by omega) hBanded
+      hL_diag hU_diag hLU hn hn3
+      (fun i j => by
+        simpa [higham9_11_bohteBound_tridiagonal] using hGrowth i j)
+
 /-- **Theorem 9.11**, tridiagonal source-facing Bohte solve wrapper.
 
 For tridiagonal matrices the structural hypothesis is converted to the common
@@ -18299,6 +18330,37 @@ theorem higham9_11_pentadiagonal_bohte_solve_tight (fp : FPModel) (n : ℕ)
       (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
   simpa [higham9_11_bohteBound_pentadiagonal_formula] using
     higham9_11_bohte_banded_solve_tight fp n 2 A L_hat U_hat b
+      hL_diag hU_diag hLU hn hn3
+      (fun i j => by
+        simpa [higham9_11_bohteBound_pentadiagonal_formula] using hGrowth i j)
+
+/-- **Theorem 9.11**, source-facing pentadiagonal Bohte solve wrapper with
+the common-bandwidth structural hypothesis exposed.
+
+This is the named pentadiagonal alias of the bandwidth-two structural wrapper;
+the GEPP growth estimate remains the explicit Bohte-side assumption. -/
+theorem higham9_11_pentadiagonal_bohte_solve_tight_of_isBanded
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hBanded : IsBanded n 2 2 A)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        7 * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        7 * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  simpa [higham9_11_bohteBound_pentadiagonal_formula] using
+    higham9_11_bohte_banded_solve_tight_of_isBanded_common fp n 2 2 2
+      A L_hat U_hat b (by omega) (by omega) hBanded
       hL_diag hU_diag hLU hn hn3
       (fun i j => by
         simpa [higham9_11_bohteBound_pentadiagonal_formula] using hGrowth i j)
