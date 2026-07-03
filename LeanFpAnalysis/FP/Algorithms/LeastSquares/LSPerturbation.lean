@@ -1480,6 +1480,125 @@ theorem wedinTheorem20_1_vecNorm2_solution_difference_le_of_B_mul
       hleftA hleftB hSymA hSymB hDelta hBplus hDeltaA hDeltab
       hrangeA_residual
 
+/-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
+    a perturbed residual annihilated by the `B` range projector is killed by
+    `Bplus`. -/
+theorem wedinTheorem20_1_Bplus_perturbed_residual_eq_zero
+    {m k : ℕ} (B : Fin m → Fin (k + 1) → ℝ)
+    (Bplus : Fin (k + 1) → Fin m → ℝ) (s : Fin m → ℝ)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hproj_s : rectMatMulVec (rectMatMul B Bplus) s = 0) :
+    rectMatMulVec Bplus s = 0 := by
+  have hBplusPB : rectMatMul Bplus (rectMatMul B Bplus) = Bplus := by
+    calc
+      rectMatMul Bplus (rectMatMul B Bplus)
+          = rectMatMul (rectMatMul Bplus B) Bplus := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul (idMatrix (k + 1)) Bplus := by
+              rw [hleftB]
+      _ = Bplus := rectMatMul_id_left Bplus
+  calc
+    rectMatMulVec Bplus s
+        = rectMatMulVec (rectMatMul Bplus (rectMatMul B Bplus)) s := by
+            rw [hBplusPB]
+    _ = rectMatMulVec Bplus (rectMatMulVec (rectMatMul B Bplus) s) := by
+            rw [rectMatMulVec_rectMatMul]
+    _ = 0 := by
+            rw [hproj_s]
+            ext j
+            unfold rectMatMulVec
+            simp
+
+/-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
+    source-faithful solution-difference identity with the perturbed residual
+    `s` present in the `B*(y-x)` equation and removed only through the
+    `B` range-projector condition. -/
+theorem wedinTheorem20_1_solution_difference_eq_Bplus_combined_of_B_mul_sub_residual
+    {m k : ℕ} (B : Fin m → Fin (k + 1) → ℝ)
+    (Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hBdiff :
+      rectMatMulVec B (fun j => y j - x j) =
+        fun i => ((-rectMatMulVec DeltaA x i + Deltab i) + r i) - s i)
+    (hproj_s : rectMatMulVec (rectMatMul B Bplus) s = 0) :
+    (fun j => y j - x j) =
+      rectMatMulVec Bplus
+        (fun i => (-rectMatMulVec DeltaA x i + Deltab i) + r i) := by
+  let combined : Fin m → ℝ :=
+    fun i => (-rectMatMulVec DeltaA x i + Deltab i) + r i
+  have hBplus_s : rectMatMulVec Bplus s = 0 :=
+    wedinTheorem20_1_Bplus_perturbed_residual_eq_zero
+      B Bplus s hleftB hproj_s
+  have hsub :
+      rectMatMulVec Bplus (fun i => combined i - s i) =
+        rectMatMulVec Bplus combined := by
+    calc
+      rectMatMulVec Bplus (fun i => combined i - s i)
+          = fun j => rectMatMulVec Bplus combined j - rectMatMulVec Bplus s j := by
+              rw [rectMatMulVec_sub]
+      _ = rectMatMulVec Bplus combined := by
+              rw [hBplus_s]
+              ext j
+              simp
+  calc
+    (fun j => y j - x j)
+        = rectMatMulVec (idMatrix (k + 1)) (fun j => y j - x j) := by
+            symm
+            exact rectMatMulVec_idMatrix (fun j => y j - x j)
+    _ = rectMatMulVec (rectMatMul Bplus B) (fun j => y j - x j) := by
+            rw [hleftB]
+    _ = rectMatMulVec Bplus
+          (rectMatMulVec B (fun j => y j - x j)) := by
+            rw [rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec Bplus (fun i => combined i - s i) := by
+            rw [hBdiff]
+    _ = rectMatMulVec Bplus combined := hsub
+
+/-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
+    source-faithful solution-difference norm bound with a perturbed residual
+    `s` that is annihilated by the `B` range projector. -/
+theorem wedinTheorem20_1_vecNorm2_solution_difference_le_of_B_mul_sub_residual
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hBdiff :
+      rectMatMulVec B (fun j => y j - x j) =
+        fun i => ((-rectMatMulVec DeltaA x i + Deltab i) + r i) - s i)
+    (hproj_s : rectMatMulVec (rectMatMul B Bplus) s = 0) :
+    vecNorm2 (fun j => y j - x j) ≤
+      (Aplus_norm / (1 - eta)) *
+          (DeltaA_norm * vecNorm2 x + Deltab_norm) +
+        (eta * Aplus_norm / (1 - eta) ^ 2) * vecNorm2 r := by
+  have hdiff_eq :
+      (fun j => y j - x j) =
+        rectMatMulVec Bplus
+          (fun i => (-rectMatMulVec DeltaA x i + Deltab i) + r i) :=
+    wedinTheorem20_1_solution_difference_eq_Bplus_combined_of_B_mul_sub_residual
+      B Bplus DeltaA Deltab r s x y hleftB hBdiff hproj_s
+  rw [hdiff_eq]
+  exact
+    wedinTheorem20_1_vecNorm2_Bplus_combined_forcing_residual_le
+      A B Aplus Bplus DeltaA Deltab r x hAplus_pos heta hsmall
+      hleftA hleftB hSymA hSymB hDelta hBplus hDeltaA hDeltab
+      hrangeA_residual
+
 /-- **Theorem 20.1 (Wedin)**: Normwise perturbation of the LS solution.
 
     Let A ∈ ℝ^{m×n} (m ≥ n) and A + ΔA both be of full rank, with
