@@ -20538,6 +20538,90 @@ theorem higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
   exact (hDeltaA_bound i j).trans
     (mul_le_mul_of_nonneg_right hc_bound (abs_nonneg (A i j)))
 
+/-- **Equations (9.20)--(9.22)**, source-coefficient weakening for explicit
+perturbation models.
+
+If the equation (9.20) and (9.21) models are established with coefficient
+`u0`, then the same witnesses produce the equation-(9.22) `f(u)` source bound
+for any larger coefficient `u`. -/
+theorem higham9_22_source_f_bound_of_9_20_9_21_models_le (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (u0 u : ℝ) (hu0 : 0 ≤ u0) (hu0_le_u : u0 ≤ u)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u0)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u0) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f u * ∑ k : Fin n, |L_hat i k| * |U_hat k j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  have hu : 0 ≤ u := hu0.trans hu0_le_u
+  exact higham9_22_source_f_bound_of_9_20_9_21_models n A L_hat U_hat
+    y_hat x_hat b u hu DeltaA_LU DeltaL DeltaU
+    (higham9_20_tridiag_lu_perturbation_model_mono
+      n A L_hat U_hat DeltaA_LU hu0_le_u h20)
+    (higham9_21_tridiag_solve_perturbation_model_mono
+      n L_hat U_hat y_hat x_hat b DeltaL DeltaU hu0 hu0_le_u h21)
+
+/-- **Theorem 9.14**, constant-growth model source bound under coefficient
+weakening.
+
+This is the coefficient-weakened counterpart of
+`higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models`:
+models proved at `u0` may be consumed at any larger printed coefficient `u`. -/
+theorem higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models_le
+    (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (c u0 u : ℝ) (hu0 : 0 ≤ u0) (hu0_le_u : u0 ≤ u)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u0)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u0) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  have hu : 0 ≤ u := hu0.trans hu0_le_u
+  exact higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+    n A L_hat U_hat y_hat x_hat b c u hu hAbsLU_le
+    DeltaA_LU DeltaL DeltaU
+    (higham9_20_tridiag_lu_perturbation_model_mono
+      n A L_hat U_hat DeltaA_LU hu0_le_u h20)
+    (higham9_21_tridiag_solve_perturbation_model_mono
+      n L_hat U_hat y_hat x_hat b DeltaL DeltaU hu0 hu0_le_u h21)
+
+/-- **Theorem 9.14**, constant-growth final source bound under coefficient
+weakening. -/
+theorem higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models_le
+    (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat b : Fin n → ℝ)
+    (c u0 u : ℝ) (hc : 0 ≤ c) (hu0 : 0 ≤ u0) (hu0_le_u : u0 ≤ u)
+    (hu_lt_one : u < 1)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|)
+    (DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+      DeltaA_LU u0)
+    (h21 : higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+      y_hat x_hat b DeltaL DeltaU u0) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  have hu : 0 ≤ u := hu0.trans hu0_le_u
+  exact higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+    n A L_hat U_hat y_hat x_hat b c u hc hu hu_lt_one hAbsLU_le
+    DeltaA_LU DeltaL DeltaU
+    (higham9_20_tridiag_lu_perturbation_model_mono
+      n A L_hat U_hat DeltaA_LU hu0_le_u h20)
+    (higham9_21_tridiag_solve_perturbation_model_mono
+      n L_hat U_hat y_hat x_hat b DeltaL DeltaU hu0 hu0_le_u h21)
+
 /-- **Theorem 9.14**, source-model production from LU and triangular-solve
 certificates.
 
