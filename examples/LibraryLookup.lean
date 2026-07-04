@@ -15100,3 +15100,4 @@ small enough to serve as a smoke check for representative public declarations.
 #check fl_householderVectorAlt_zero_relative_error
 #check fl_householderConstruction2Error
 #check H19_Lemma19_1_construction2_backward_error
+#check H19_Lemma19_3_sequence_normwise_backward_error
