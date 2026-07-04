@@ -192,6 +192,73 @@ theorem wedinTheorem20_1_solutionRelativeRHSConservative_of_vector_bound
             ne_of_gt hden_eta_pos]
           ring
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1), scalar
+    normalization for the printed Wedin relative solution perturbation RHS.
+
+This theorem isolates the final scalar arithmetic: a vector estimate whose
+residual-transfer term has only the source-strength `1 / (1 - κ ε)`
+denominator normalizes exactly to Higham's printed equation (20.1). -/
+theorem wedinTheorem20_1_solutionRelativeRHS_of_vector_bound
+    {sol_norm Aplus_norm DeltaA_norm Deltab_norm kappa eps A_norm x_norm
+      r_norm eta : ℝ}
+    (hAplus_nonneg : 0 ≤ Aplus_norm)
+    (hA_norm_pos : 0 < A_norm)
+    (hx_norm_pos : 0 < x_norm)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (heta : eta = kappa * eps)
+    (hsmall : kappa * eps < 1)
+    (hDeltaA_norm : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm : Deltab_norm ≤ eps * (A_norm * x_norm + r_norm))
+    (hvec :
+      sol_norm ≤
+        (Aplus_norm / (1 - eta)) *
+            (DeltaA_norm * x_norm + Deltab_norm) +
+          (eta * Aplus_norm / (1 - eta)) * r_norm) :
+    sol_norm / x_norm ≤
+      wedinTheorem20_1SolutionRelativeRHS kappa eps A_norm x_norm r_norm := by
+  have hden_eta_pos : 0 < 1 - eta := by
+    rw [heta]
+    exact wedinTheorem20_1_denominator_pos hsmall
+  have hcoef_nonneg : 0 ≤ Aplus_norm / (1 - eta) :=
+    div_nonneg hAplus_nonneg (le_of_lt hden_eta_pos)
+  have hDeltaA_x :
+      DeltaA_norm * x_norm ≤ (eps * A_norm) * x_norm :=
+    mul_le_mul_of_nonneg_right hDeltaA_norm (le_of_lt hx_norm_pos)
+  have hinside :
+      DeltaA_norm * x_norm + Deltab_norm ≤
+        (eps * A_norm) * x_norm + eps * (A_norm * x_norm + r_norm) :=
+    add_le_add hDeltaA_x hDeltab_norm
+  have hforcing :
+      (Aplus_norm / (1 - eta)) *
+          (DeltaA_norm * x_norm + Deltab_norm) ≤
+        (Aplus_norm / (1 - eta)) *
+          ((eps * A_norm) * x_norm + eps * (A_norm * x_norm + r_norm)) :=
+    mul_le_mul_of_nonneg_left hinside hcoef_nonneg
+  have hvec_scalar :
+      sol_norm ≤
+        (Aplus_norm / (1 - eta)) *
+            ((eps * A_norm) * x_norm + eps * (A_norm * x_norm + r_norm)) +
+          (eta * Aplus_norm / (1 - eta)) * r_norm :=
+    hvec.trans (add_le_add hforcing (le_refl _))
+  have hden_kappa_pos : 0 < 1 - kappa * eps :=
+    wedinTheorem20_1_denominator_pos hsmall
+  have hden_rewrite_ne : 1 - Aplus_norm * A_norm * eps ≠ 0 := by
+    rw [← hkappa]
+    exact (ne_of_gt hden_kappa_pos)
+  calc
+    sol_norm / x_norm
+        ≤ ((Aplus_norm / (1 - eta)) *
+            ((eps * A_norm) * x_norm + eps * (A_norm * x_norm + r_norm)) +
+          (eta * Aplus_norm / (1 - eta)) * r_norm) / x_norm :=
+            div_le_div_of_nonneg_right hvec_scalar (le_of_lt hx_norm_pos)
+    _ = wedinTheorem20_1SolutionRelativeRHS
+        kappa eps A_norm x_norm r_norm := by
+          unfold wedinTheorem20_1SolutionRelativeRHS
+          rw [heta, hkappa]
+          field_simp [ne_of_gt hA_norm_pos, ne_of_gt hx_norm_pos,
+            hden_rewrite_ne]
+          ring
+
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
     the smallness hypothesis `η < 1` makes the reciprocal denominator positive. -/
 theorem wedinLemma20_11_denominator_pos {eta : ℝ} (hsmall : eta < 1) :
