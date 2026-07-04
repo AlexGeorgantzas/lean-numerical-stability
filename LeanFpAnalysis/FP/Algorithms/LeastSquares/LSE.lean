@@ -4431,6 +4431,38 @@ theorem LSEFullRowRank.exists_feasible {p n : ℕ}
   intro i
   simpa [lseConstraintLinearMap] using congrFun hx i
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.24) support:
+    a source full-row-rank constraint matrix admits a noncomputable rectangular
+    right inverse.  The `i`th column is any solution of `B x = e_i`. -/
+noncomputable def LSEFullRowRank.rightInverse {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) :
+    Fin n → Fin p → ℝ :=
+  fun j i =>
+    Classical.choose
+      (hB (fun k : Fin p => idMatrix p k i)) j
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24) support:
+    the noncomputable right inverse supplied by full row rank satisfies
+    `B * Bplus = I`. -/
+theorem LSEFullRowRank.rightInverse_spec {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) :
+    rectMatMul B hB.rightInverse = idMatrix p := by
+  ext i k
+  have hcol :=
+    congrFun
+      (Classical.choose_spec
+        (hB (fun r : Fin p => idMatrix p r k))) i
+  simpa [LSEFullRowRank.rightInverse, lseConstraintLinearMap, rectMatMul]
+    using hcol
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24) support:
+    existential form of the rectangular right inverse obtained from source
+    full row rank. -/
+theorem LSEFullRowRank.exists_rightInverse {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) :
+    ∃ Bplus : Fin n → Fin p → ℝ, rectMatMul B Bplus = idMatrix p :=
+  ⟨hB.rightInverse, hB.rightInverse_spec⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 rank bridge:
     full row rank of `B` makes the transpose map `Bᵀ` injective.  This is the
     finite-dimensional algebra used by the exact-MGS GQR route to connect the
