@@ -4198,6 +4198,80 @@ theorem theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_pl
       add_le_add_left hrem
         (eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus))
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the packaged direct/data remainder has the explicit `eps^2` coefficient
+    expected from the source `O(eps^2)` term, once the separate
+    solution-difference radius has been supplied. -/
+theorem theorem20_8_quadratic_remainder_relative_eq_eps_sq_coefficient
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (x : Fin n → ℝ)
+    {eps solutionRadius : ℝ}
+    (hxpos : 0 < vecNorm2 x) :
+    (complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+        ((eps * frobNormRect B) *
+          (eps * solutionRadius * vecNorm2 x)) +
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+        ((eps * frobNormRect A) *
+          (eps * solutionRadius * vecNorm2 x))) /
+      vecNorm2 x =
+    eps ^ 2 * solutionRadius *
+      (complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+          frobNormRect B +
+        complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  field_simp [ne_of_gt hxpos]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    actual-`y` direct/data correction bound with the explicit remainder
+    rewritten as an `eps^2` coefficient.  The needed first-order estimate for
+    `||y-x||_2` is still a visible hypothesis, so this is not the final
+    Eldén--Cox--Higham perturbation theorem. -/
+theorem theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_solution_difference_bound
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ) {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x) :
+    (vecNorm2
+          (fun j : Fin n =>
+            rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+                (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+              rectMatMulVec APplus
+                (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j) +
+        eps * theorem20_8ResidualAmplifier A B APplus
+          (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) /
+        vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) +
+        eps ^ 2 * solutionRadius *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  let BAplus := theorem20_8BAplus A B Bplus APplus
+  have hbase :=
+    theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_quadratic_remainder_of_solution_difference_bound
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx
+  have hquad :=
+    theorem20_8_quadratic_remainder_relative_eq_eps_sq_coefficient
+      A B Bplus APplus x (eps := eps) (solutionRadius := solutionRadius) hxpos
+  simpa [BAplus, hquad] using hbase
+
 /-- Under the natural positive denominator assumptions, the first-order
     coefficient in Theorem 20.8's perturbation bound is nonnegative. -/
 theorem theorem20_8FirstOrderRHS_nonneg {m n p : ℕ}
