@@ -2351,7 +2351,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bandwidth_one_bohte_solve_tight_of_isBanded`
 - `higham9_11_bandwidth_one_bohte_solve_tight_of_isBanded_growth_le`
 - `higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal`
+- `higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal_growth_le`
 - `higham9_11_tridiagonal_bohte_solve_tight`
+- `higham9_11_tridiagonal_bohte_solve_tight_of_growth_le`
 - `higham9_11_pentadiagonal_bohte_solve_tight`
 - `higham9_11_pentadiagonal_bohte_solve_tight_of_isBanded`
 - `higham9_11_bandwidth_two_bohte_solve_tight`
