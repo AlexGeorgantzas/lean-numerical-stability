@@ -14843,7 +14843,6 @@ small enough to serve as a smoke check for representative public declarations.
 #check infNorm_residualSigmaMatrix_eq_residualSigmaSup
 #check residualSigmaTsum_eq_infNorm_residualSigmaMatrix
 #check residualSigmaTsum_eq_residualSigmaSup
-#check residualSigmaTsum_le_diagonalizable_max_bound
 #check residualSigmaTsum_le_diagonalizable_max_bound_of_infNorm_bound
 #check residualSigmaTsum_le_diagonalizable_max_bound_direct
 #check topProjector
