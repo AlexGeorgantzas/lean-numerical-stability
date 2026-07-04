@@ -805,6 +805,33 @@ theorem sylvesterVecCoeff_diagonal_mulVec_eq_zero_iff (m n : Nat)
         (0 : Prod (Fin n) (Fin m) -> Real) = 0
     exact Matrix.mulVec_zero _
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), diagonal case:
+    under separated diagonal entries, the vectorized diagonal Sylvester
+    coefficient acts injectively on vectorized unknowns. -/
+theorem sylvesterVecCoeff_diagonal_mulVec_injective (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Function.Injective
+      (Matrix.mulVec
+        (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))) := by
+  intro x y hxy
+  let Pinv := sylvesterDiagonalVecCoeffInv m n a b
+  let P := sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b)
+  have hx : Matrix.mulVec Pinv (Matrix.mulVec P x) = x := by
+    dsimp [Pinv, P]
+    rw [Matrix.mulVec_mulVec,
+      sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal m n a b hsep,
+      Matrix.one_mulVec]
+  have hy : Matrix.mulVec Pinv (Matrix.mulVec P y) = y := by
+    dsimp [Pinv, P]
+    rw [Matrix.mulVec_mulVec,
+      sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal m n a b hsep,
+      Matrix.one_mulVec]
+  calc
+    x = Matrix.mulVec Pinv (Matrix.mulVec P x) := hx.symm
+    _ = Matrix.mulVec Pinv (Matrix.mulVec P y) := by rw [hxy]
+    _ = y := hy
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal case:
     the absolute-value matrix exactly bounds the explicit diagonal inverse
     componentwise. -/
@@ -1251,6 +1278,37 @@ theorem sylvesterVecCoeff_schurDiagonal_mulVec_eq_zero_iff (m n : Nat)
     change Matrix.mulVec (sylvesterVecCoeff m n A B)
         (0 : Prod (Fin n) (Fin m) -> Real) = 0
     exact Matrix.mulVec_zero _
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
+    Schur-coordinate case: supplied orthogonal diagonal factors with separated
+    diagonal entries make the vectorized Sylvester coefficient injective. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_injective (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  intro x y hxy
+  let P := sylvesterVecCoeff m n A B
+  have hker : Matrix.mulVec P (x - y) = 0 := by
+    dsimp [P]
+    rw [Matrix.mulVec_sub, hxy, sub_self]
+  obtain ⟨X, hXvec⟩ :=
+    Matrix.vec_bijective.surjective (x - y : Prod (Fin n) (Fin m) -> Real)
+  have hkerX :
+      Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec X) = 0 := by
+    dsimp [P] at hker
+    rw [hXvec]
+    exact hker
+  have hXzero : X = 0 :=
+    (sylvesterVecCoeff_schurDiagonal_mulVec_eq_zero_iff
+      m n U A V B a b X hU hV hA hB hsep).mp hkerX
+  have hsub : x - y = 0 := by
+    rw [← hXvec, hXzero]
+    rfl
+  exact sub_eq_zero.mp hsub
 
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
