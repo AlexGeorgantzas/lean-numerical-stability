@@ -123,6 +123,27 @@ theorem higham11_4_twoByTwo_absdet_lower (e11 e22 e21 μ0 μ1 α : ℝ)
   twoByTwo_completePivot_absdet_lower e11 e22 e21 μ0 μ1 α
     hμ1 hα0 hα1 he11 he22 he21 hμ1α
 
+/-- **Eq (11.4) element growth for a 2×2 complete-pivoting step**:
+the Schur entry `higham11_4_twoByTwoSchurEntry` built from inverse-block entries
+`e₁₁,e₁₂,e₂₁,e₂₂` bounded by `|e₁₁|,|e₂₂| ≤ αK`, `|e₁₂|,|e₂₁| ≤ K` with
+`K = 1/((1−α²)μ₀)`, and active entries `≤ μ₀`, satisfies
+`|ã| ≤ (1 + 2/(1−α))·μ₀`.  This is the printed §11.1.1 bound and, with
+`higham11_1_oneByOne_schur_growth`, completes both single-step growth bounds. -/
+theorem higham11_4_twoByTwo_schur_growth
+    (bij ci1 ci2 cj1 cj2 e11 e12 e21 e22 μ0 α K : ℝ)
+    (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1)
+    (hb : |bij| ≤ μ0)
+    (hci1 : |ci1| ≤ μ0) (hci2 : |ci2| ≤ μ0)
+    (hcj1 : |cj1| ≤ μ0) (hcj2 : |cj2| ≤ μ0)
+    (he11 : |e11| ≤ α * K) (he12 : |e12| ≤ K)
+    (he21 : |e21| ≤ K) (he22 : |e22| ≤ α * K) :
+    |higham11_4_twoByTwoSchurEntry bij ci1 ci2 cj1 cj2 e11 e12 e21 e22|
+      ≤ (1 + 2 / (1 - α)) * μ0 := by
+  unfold higham11_4_twoByTwoSchurEntry
+  exact twoByTwo_schur_growth bij ci1 ci2 cj1 cj2 e11 e12 e21 e22 μ0 α K
+    hα0 hα1 hμ hK hb hci1 hci2 hcj1 hcj2 he11 he12 he21 he22
+
 /-! ## §11.1.2 Partial pivoting -/
 
 /-- **Algorithm 11.2** branch predicate for the Bunch-Kaufman partial
