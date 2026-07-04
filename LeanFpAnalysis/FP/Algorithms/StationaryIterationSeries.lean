@@ -671,14 +671,16 @@ theorem residualSigmaTsum_eq_residualSigmaSup (n : ℕ) (hn : 0 < n)
   rw [residualSigmaTsum_eq_infNorm_residualSigmaMatrix]
   exact infNorm_residualSigmaMatrix_eq_residualSigmaSup n hn H q hq0 hq1 hH
 
-/-- **Eq (17.20), literal diagonalizable sigma bound on the `tsum` object**
+/-- **Eq (17.20), q-certificate bridge for the literal diagonalizable sigma
+    bound on the `tsum` object**
     (Higham 2nd ed., §17.3): with real diagonalization data `X⁻¹HX = J`
     (`|J i i| < 1`) and a norm certificate `‖H‖∞ ≤ q < 1`, the literal
     series sigma satisfies
     `residualSigmaTsum ≤ κ∞(X) · diagonalResidualRatioMax`.  Composes the
     envelope equality with the finite-partial diagonalization bound from
     `StationaryIteration.lean`. -/
-theorem residualSigmaTsum_le_diagonalizable_max_bound (n : ℕ) (hn : 0 < n)
+theorem residualSigmaTsum_le_diagonalizable_max_bound_of_infNorm_bound
+    (n : ℕ) (hn : 0 < n)
     (H X X_inv J : Fin n → Fin n → ℝ)
     (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
     (hsim : matMul n X_inv (matMul n H X) = J)

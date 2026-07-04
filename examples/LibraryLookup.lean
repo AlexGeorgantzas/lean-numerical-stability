@@ -15,6 +15,7 @@ import LeanFpAnalysis.FP.Algorithms.MatrixPowersPseudospectral
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersSpectral
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
+import LeanFpAnalysis.FP.Algorithms.StationaryIterationSeries
 
 set_option pp.maxSteps 100
 
@@ -14842,4 +14843,24 @@ small enough to serve as a smoke check for representative public declarations.
 #check infNorm_residualSigmaMatrix_eq_residualSigmaSup
 #check residualSigmaTsum_eq_infNorm_residualSigmaMatrix
 #check residualSigmaTsum_eq_residualSigmaSup
-#check residualSigmaTsum_le_diagonalizable_max_bound
+#check residualSigmaTsum_le_diagonalizable_max_bound_of_infNorm_bound
+#check residualSigmaTsum_le_diagonalizable_max_bound_direct
+#check topProjector
+#check oneEigenProjector
+#check G_fixes_oneEigenProjector_apply
+#check semiconvergentE
+#check singular_error_split_semiconvergent
+#check matPow_G_tendsto_oneEigenProjector
+#check bottomProjector
+#check eq_17_23_block
+#check drazinIG
+#check drazinIG_spec
+#check stationaryDrazinRangeProjector_drazinIG_eq_semiconvergentE
+#check eq_17_25_limit
+#check matPow_G_tendsto_limit_drazin
+#check eq_17_26_stationary_limit
+#check eq_17_30_block
+#check summable_infNorm_GiE_Minv
+#check eq_17_31_normwise_bound
+#check eq_17_32_componentwise_bound
+#check tsum_GiE_entry_eq_drazinIG
