@@ -1684,6 +1684,39 @@ theorem lyapunovBackwardScalarEq_of_spectral_decomposition (n : ℕ)
     hα hγ]
   exact (lyapunovSpectralTransform_backwardResidual n U DA DC lam hU).symm
 
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    any structured Lyapunov backward-error certificate for a symmetric
+    approximation with spectral decomposition `Y = U * Lambda * U^T` gives the
+    printed scalar residual equation in spectral coordinates.  The orthogonal
+    change of basis preserves the Frobenius bounds on the two perturbations. -/
+theorem lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition
+    (n : ℕ)
+    (A C Y U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (alpha gamma eta : ℝ)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U) (halpha : alpha ≠ 0) (hgamma : gamma ≠ 0)
+    (hLyap : IsLyapunovBackwardError n A C Y alpha gamma eta) :
+    ∃ DeltaA DeltaC : Fin n → Fin n → ℝ,
+      IsSymmetricFiniteMatrix DeltaC ∧
+      frobNormSq (lyapunovSpectralTransform n U DeltaA) ≤ (eta * alpha) ^ 2 ∧
+      frobNormSq (lyapunovSpectralTransform n U DeltaC) ≤ (eta * gamma) ^ 2 ∧
+      lyapunovBackwardScalarEq n lam alpha gamma
+        (lyapunovSpectralTransform n U DeltaA)
+        (lyapunovSpectralTransform n U DeltaC)
+        (lyapunovSpectralTransform n U (lyapunovResidual n A C Y)) := by
+  subst Y
+  rcases hLyap with ⟨DeltaA, DeltaC, hDeltaC_sym, hEq, hDeltaA, hDeltaC⟩
+  refine ⟨DeltaA, DeltaC, hDeltaC_sym, ?_, ?_, ?_⟩
+  · simpa [lyapunovSpectralTransform_frobNormSq n U DeltaA hU] using hDeltaA
+  · simpa [lyapunovSpectralTransform_frobNormSq n U DeltaC hU] using hDeltaC
+  · have hresid := lyapunovResidual_decomposition n A C
+      (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+      DeltaA DeltaC hEq
+    have hscalar :=
+      lyapunovBackwardScalarEq_of_spectral_decomposition n U DeltaA DeltaC lam
+        alpha gamma hU halpha hgamma
+    simpa [hresid] using hscalar
+
 /-- Equation (16.21) as the diagonal-matrix residual equation
     `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde = R_tilde`. -/
 theorem lyapunovBackwardScalarEq_iff_diagMatrix_eq (n : ℕ) (lam : Fin n → ℝ)
