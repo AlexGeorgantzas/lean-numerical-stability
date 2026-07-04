@@ -1484,6 +1484,26 @@ theorem lyapunov_residual_bound_of_backward_error (n : Nat)
     _ <= ((alpha + alpha) * frobNorm Y + gamma) * eta := hres
     _ = (2 * alpha * frobNorm Y + gamma) * eta := by ring
 
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    the residual ratio with Lyapunov scale `2 * alpha * ||Y||_F + gamma`
+    is a lower bound for the structured Lyapunov backward-error infimum. -/
+theorem lyapunov_relative_residual_le_backwardErrorInf (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) (alpha gamma : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma)
+    (hscale : 0 < 2 * alpha * frobNorm Y + gamma)
+    (hne : (lyapunovBackwardErrorValues n A C Y alpha gamma).Nonempty) :
+    frobNorm (lyapunovResidual n A C Y) /
+        (2 * alpha * frobNorm Y + gamma) <=
+      lyapunovBackwardErrorInf n A C Y alpha gamma := by
+  unfold lyapunovBackwardErrorInf
+  apply le_csInf hne
+  intro eta heta
+  have hbound :=
+    lyapunov_residual_bound_of_backward_error n A C Y alpha gamma eta
+      halpha hgamma heta.1 heta.2
+  rw [div_le_iff₀ hscale]
+  simpa [mul_comm, mul_left_comm, mul_assoc] using hbound
+
 /-- If `Y = U * Lambda * U^T`, the left perturbation product transforms to
     `DeltaA_tilde * Lambda`. -/
 theorem lyapunovSpectralTransform_mul_spectral_right (n : ℕ)
@@ -1663,6 +1683,39 @@ theorem lyapunovBackwardScalarEq_of_spectral_decomposition (n : ℕ)
         (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))))
     hα hγ]
   exact (lyapunovSpectralTransform_backwardResidual n U DA DC lam hU).symm
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    any structured Lyapunov backward-error certificate for a symmetric
+    approximation with spectral decomposition `Y = U * Lambda * U^T` gives the
+    printed scalar residual equation in spectral coordinates.  The orthogonal
+    change of basis preserves the Frobenius bounds on the two perturbations. -/
+theorem lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition
+    (n : ℕ)
+    (A C Y U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (alpha gamma eta : ℝ)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U) (halpha : alpha ≠ 0) (hgamma : gamma ≠ 0)
+    (hLyap : IsLyapunovBackwardError n A C Y alpha gamma eta) :
+    ∃ DeltaA DeltaC : Fin n → Fin n → ℝ,
+      IsSymmetricFiniteMatrix DeltaC ∧
+      frobNormSq (lyapunovSpectralTransform n U DeltaA) ≤ (eta * alpha) ^ 2 ∧
+      frobNormSq (lyapunovSpectralTransform n U DeltaC) ≤ (eta * gamma) ^ 2 ∧
+      lyapunovBackwardScalarEq n lam alpha gamma
+        (lyapunovSpectralTransform n U DeltaA)
+        (lyapunovSpectralTransform n U DeltaC)
+        (lyapunovSpectralTransform n U (lyapunovResidual n A C Y)) := by
+  subst Y
+  rcases hLyap with ⟨DeltaA, DeltaC, hDeltaC_sym, hEq, hDeltaA, hDeltaC⟩
+  refine ⟨DeltaA, DeltaC, hDeltaC_sym, ?_, ?_, ?_⟩
+  · simpa [lyapunovSpectralTransform_frobNormSq n U DeltaA hU] using hDeltaA
+  · simpa [lyapunovSpectralTransform_frobNormSq n U DeltaC hU] using hDeltaC
+  · have hresid := lyapunovResidual_decomposition n A C
+      (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+      DeltaA DeltaC hEq
+    have hscalar :=
+      lyapunovBackwardScalarEq_of_spectral_decomposition n U DeltaA DeltaC lam
+        alpha gamma hU halpha hgamma
+    simpa [hresid] using hscalar
 
 /-- Equation (16.21) as the diagonal-matrix residual equation
     `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde = R_tilde`. -/
