@@ -787,6 +787,91 @@ theorem theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_with_r
         (mul_le_mul_of_nonneg_right hfactorErr
           (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
 
+/-- Theorem 20.7 support: consume the Chapter 19 row-sorting accumulated-error
+    entry theorem and repackage its output in the staged `A` entry-growth shape
+    used by the Chapter 20 weighted least-squares ratio bridges.
+
+The two final hypotheses are the exact remaining row-sorting handoffs: the
+source row used by the Chapter 19 bound must be dominated by the source row
+scale used in Theorem 20.7, and the accumulated computed/exact error budget
+must be dominated by a relative coefficient `err`. -/
+theorem theorem20_7_stageAEntry_bound_of_h19_row_sorting_accumulated_error
+    {m n : ℕ} (hn : 0 < n) (k r : Fin m) (j : Fin n)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ)
+    (row0Bound : Fin m → ℝ) (stepBudget : ℕ → ℝ) (err : ℝ)
+    (hr : k.val ≤ r.val)
+    (hsorted :
+      ∀ s : Fin m, k.val ≤ s.val → row0Bound s ≤ row0Bound k)
+    (hinitExact : |Aexact 0 r j| ≤ row0Bound r)
+    (hstepExact :
+      ∀ t : ℕ, t < k.val →
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hstepErr :
+      ∀ t : ℕ, t < k.val →
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            stepBudget t)
+    (hrow0 :
+      row0Bound k ≤
+        Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hacc :
+      H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+          |Ahat 0 r j - Aexact 0 r j| +
+        scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+          stepBudget k.val ≤
+        err * theorem20_7_initialRowMax hn A r) :
+    |Ahat k.val r j| ≤
+      (Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ k.val + err) *
+        theorem20_7_initialRowMax hn A r := by
+  have hH19 :=
+    H19.Theorem19_6.row_sorting_active_entry_bound_with_accumulated_error
+      k r j Ahat Aexact row0Bound stepBudget hr hsorted hinitExact
+      hstepExact hstepErr
+  have hG0 : 0 ≤ H19.Theorem19_6.rowwise_step_growth_factor :=
+    H19.Theorem19_6.rowwise_step_growth_factor_nonneg
+  have hpow0 :
+      0 ≤ H19.Theorem19_6.rowwise_step_growth_factor ^ k.val :=
+    pow_nonneg hG0 _
+  have hfirst :
+      H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+          row0Bound k ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k.val) *
+          theorem20_7_initialRowMax hn A r := by
+    calc
+      H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+            row0Bound k
+          ≤ H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+              (Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r) :=
+            mul_le_mul_of_nonneg_left hrow0 hpow0
+      _ = (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k.val) *
+            theorem20_7_initialRowMax hn A r := by ring
+  have hsum :=
+    add_le_add hfirst hacc
+  calc
+    |Ahat k.val r j| ≤
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+            row0Bound k +
+          (H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+              |Ahat 0 r j - Aexact 0 r j| +
+            scalarAffineGrowthBudget
+              H19.Theorem19_6.rowwise_step_growth_factor stepBudget k.val) :=
+        hH19
+    _ ≤ (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k.val) *
+            theorem20_7_initialRowMax hn A r +
+          err * theorem20_7_initialRowMax hn A r :=
+        hsum
+    _ = (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k.val + err) *
+          theorem20_7_initialRowMax hn A r := by ring
+
 /-- Theorem 20.7 bridge specialized to the Chapter 19.6 active-row Cox--Higham
     growth factor. -/
 theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
