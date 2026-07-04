@@ -694,6 +694,99 @@ theorem theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_nat
         (mul_le_mul_of_nonneg_right hfactor
           (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
 
+/-- Theorem 20.7 bridge for row-sorting bounds with an accumulated relative
+    error coefficient.
+
+This packages the shape exposed by the Chapter 19 row-sorting accumulated-error
+dependency: the printed `sqrt(m) * (1 + sqrt 2)^k` stage factor is allowed an
+additional nonnegative row-relative error `err`, and the finite source ratio is
+bounded by the corresponding horizon coefficient. -/
+theorem theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_with_relative_error_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi err : ℝ)
+    (hphi : 0 ≤ phi) (herr : 0 ≤ err)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤
+      Real.sqrt (m : ℝ) *
+        H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err := by
+  have hsqrt_nonneg : 0 ≤ Real.sqrt (m : ℝ) := Real.sqrt_nonneg _
+  have hG0 : 0 ≤ H19.Theorem19_6.rowwise_step_growth_factor :=
+    H19.Theorem19_6.rowwise_step_growth_factor_nonneg
+  have hG1 : 1 ≤ H19.Theorem19_6.rowwise_step_growth_factor := by
+    dsimp [H19.Theorem19_6.rowwise_step_growth_factor]
+    exact le_add_of_nonneg_right (Real.sqrt_nonneg (2 : ℝ))
+  have hbase :
+      0 ≤ Real.sqrt (m : ℝ) *
+        H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+    mul_nonneg hsqrt_nonneg (pow_nonneg hG0 _)
+  have hC :
+      0 ≤ Real.sqrt (m : ℝ) *
+        H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err :=
+    add_nonneg hbase herr
+  apply theorem20_7_alphaBetaMax_le_of_uniform_entry_growth_nat
+    hm hn Astage A bstage b phi hC hphi hdenA hdenW
+  · intro i k hk j
+    have hk_le : k ≤ n - 1 := Nat.le_sub_one_of_lt hk
+    have hpow :
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k ≤
+          H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+      pow_le_pow_right₀ hG1 hk_le
+    have hfactor :
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k ≤
+          Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+      mul_le_mul_of_nonneg_left hpow hsqrt_nonneg
+    have hfactorErr :
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err ≤
+          Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err :=
+      by
+        simpa [add_comm, add_left_comm, add_assoc] using
+          add_le_add_right hfactor err
+    exact
+      (hA i k hk j).trans
+        (mul_le_mul_of_nonneg_right hfactorErr
+          (theorem20_7_initialRowMax_nonneg hn A i))
+  · intro i k hk
+    have hk_le : k ≤ n - 1 := Nat.le_sub_one_of_lt hk
+    have hpow :
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k ≤
+          H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+      pow_le_pow_right₀ hG1 hk_le
+    have hfactor :
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k ≤
+          Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+      mul_le_mul_of_nonneg_left hpow hsqrt_nonneg
+    have hfactorErr :
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err ≤
+          Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err :=
+      by
+        simpa [add_comm, add_left_comm, add_assoc] using
+          add_le_add_right hfactor err
+    exact
+      (hb i k hk).trans
+        (mul_le_mul_of_nonneg_right hfactorErr
+          (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
+
 /-- Theorem 20.7 bridge specialized to the Chapter 19.6 active-row Cox--Higham
     growth factor. -/
 theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
