@@ -72,6 +72,9 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterBackward
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterPerturbation
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Minimizers
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Spectrum
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Psi
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Lyapunov
 import LeanFpAnalysis.FP.Algorithms.StationaryIteration
 import LeanFpAnalysis.FP.Algorithms.MatrixPowers
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersJordan
@@ -97,6 +100,8 @@ import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidt
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidtPolar
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19
+import LeanFpAnalysis.FP.Algorithms.QR.HouseholderConstruction2
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Labels
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSNormalEquations

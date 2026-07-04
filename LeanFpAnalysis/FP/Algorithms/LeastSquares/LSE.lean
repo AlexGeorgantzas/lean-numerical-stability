@@ -1761,6 +1761,29 @@ theorem theorem20_8_perturbed_feasible_point_action_decomp {m n p : ℕ}
           ring
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    projected `AP` step recovered from the action of `A` on a perturbed
+    feasible point and the explicit right-inverse constraint correction. -/
+theorem theorem20_8_AP_difference_eq_action_minus_constraint_correction {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) =
+      fun i =>
+        rectMatMulVec A y i - rectMatMulVec A x i -
+          rectMatMulVec A
+            (rectMatMulVec Bplus
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i := by
+  have haction :=
+    theorem20_8_perturbed_feasible_point_action_decomp
+      A B DeltaB Bplus d Deltad x y hx hy
+  ext i
+  have hi := congrFun haction i
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual decomposition for a point feasible for the perturbed constraint.
 
     The reduced `AP` residual is separated from the three explicit perturbation
@@ -1791,6 +1814,66 @@ theorem theorem20_8_perturbed_feasible_residual_decomp {m n p : ℕ}
         A B DeltaB Bplus d Deltad x y hx hy) i
   rw [hmat, hA]
   ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    solving the perturbed-residual decomposition for the reduced `AP`
+    difference.  The perturbed residual is kept explicit, so this does not
+    assume the reduced least-squares/Wedin forcing equation. -/
+theorem theorem20_8_AP_difference_eq_of_perturbed_residual_eq {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rpert : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidual (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rpert) :
+    rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) =
+      fun i =>
+        rpert i + (b i - rectMatMulVec A x i) -
+          rectMatMulVec A
+            (rectMatMulVec Bplus
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i -
+          rectMatMulVec DeltaA y i + Deltab i := by
+  have hdecomp :=
+    theorem20_8_perturbed_feasible_residual_decomp
+      A DeltaA b Deltab B DeltaB Bplus d Deltad x y hx hy
+  ext i
+  have hdecomp_i := congrFun hdecomp i
+  have hres_i := congrFun hres i
+  unfold lsResidual at hdecomp_i hres_i
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-sign version of `theorem20_8_AP_difference_eq_of_perturbed_residual_eq`,
+    using Higham's residual convention `b - A*x`. -/
+theorem theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) =
+      fun i =>
+        (b i - rectMatMulVec A x i) - rHigh i -
+          rectMatMulVec A
+            (rectMatMulVec Bplus
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i -
+          rectMatMulVec DeltaA y i + Deltab i := by
+  have hdecomp :=
+    theorem20_8_perturbed_feasible_residual_decomp
+      A DeltaA b Deltab B DeltaB Bplus d Deltad x y hx hy
+  ext i
+  have hdecomp_i := congrFun hdecomp i
+  have hres_i := congrFun hres i
+  unfold lsResidual at hdecomp_i
+  unfold lsResidualHigham at hres_i
+  linarith
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the constraint-defect vector `Deltad - DeltaB*y` is bounded by the
@@ -3333,6 +3416,80 @@ theorem theorem20_8_vecNorm2_APplus_data_forcing_le_of_relativeBudget_sourceRadi
               hApos hxpos
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    norm-dominated version of the reduced-problem data-forcing source-radius
+    bound.  If the perturbed vector satisfies `||y||_2 <= ||x||_2`, then the
+    same printed `kappa_B(A)` source radius controls
+    `(AP)^+ * (DeltaA*y - Deltab)`. -/
+theorem theorem20_8_vecNorm2_APplus_data_forcing_le_of_relativeBudget_sourceRadius_of_vecNorm2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hxpos : 0 < vecNorm2 x)
+    (hyx : vecNorm2 y ≤ vecNorm2 x) :
+    vecNorm2
+        (rectMatMulVec APplus
+          (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i)) ≤
+      eps * theorem20_8KappaB A APplus *
+        (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) *
+        vecNorm2 x := by
+  let forcing : Fin m → ℝ :=
+    fun i => rectMatMulVec DeltaA y i - Deltab i
+  have hDeltaA :
+      rectOpNorm2Le DeltaA (eps * frobNormRect A) :=
+    theorem20_8_rectOpNorm2Le_DeltaA_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget
+  have hforcing :
+      vecNorm2 forcing ≤
+        (eps * frobNormRect A) * vecNorm2 y + eps * vecNorm2 b := by
+    calc
+      vecNorm2 forcing
+          ≤ vecNorm2 (rectMatMulVec DeltaA y) +
+              vecNorm2 (fun i : Fin m => -Deltab i) := by
+              simpa [forcing, sub_eq_add_neg] using
+                vecNorm2_add_le (rectMatMulVec DeltaA y)
+                  (fun i : Fin m => -Deltab i)
+      _ = vecNorm2 (rectMatMulVec DeltaA y) + vecNorm2 Deltab := by
+              rw [vecNorm2_neg]
+      _ ≤ (eps * frobNormRect A) * vecNorm2 y + eps * vecNorm2 b :=
+              add_le_add (hDeltaA y) hbudget.2.1
+  have hinner :
+      (eps * frobNormRect A) * vecNorm2 y + eps * vecNorm2 b ≤
+        (eps * frobNormRect A) * vecNorm2 x + eps * vecNorm2 b := by
+    have htail :
+        (eps * frobNormRect A) * vecNorm2 y ≤
+          (eps * frobNormRect A) * vecNorm2 x :=
+      mul_le_mul_of_nonneg_left hyx
+        (mul_nonneg heps_nonneg (frobNormRect_nonneg A))
+    exact add_le_add htail (le_refl (eps * vecNorm2 b))
+  have hop_nonneg : 0 ≤ complexMatrixOp2 (realRectToCMatrix APplus) :=
+    complexMatrixOp2_nonneg (realRectToCMatrix APplus)
+  calc
+    vecNorm2
+        (rectMatMulVec APplus
+          (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i))
+        = vecNorm2 (rectMatMulVec APplus forcing) := by
+            rfl
+    _ ≤ complexMatrixOp2 (realRectToCMatrix APplus) * vecNorm2 forcing :=
+            rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+              APplus le_rfl forcing
+    _ ≤ complexMatrixOp2 (realRectToCMatrix APplus) *
+          ((eps * frobNormRect A) * vecNorm2 y + eps * vecNorm2 b) :=
+            mul_le_mul_of_nonneg_left hforcing hop_nonneg
+    _ ≤ complexMatrixOp2 (realRectToCMatrix APplus) *
+          ((eps * frobNormRect A) * vecNorm2 x + eps * vecNorm2 b) :=
+            mul_le_mul_of_nonneg_left hinner hop_nonneg
+    _ = eps * theorem20_8KappaB A APplus *
+          (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) * vecNorm2 x :=
+            theorem20_8KappaB_dataForcing_sourceTerm_eq A b x APplus
+              hApos hxpos
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-radius version of the direct solution-side `B_A^+` correction when
     the constraint defect is evaluated at the source vector `x`. -/
 theorem theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_sourceRadius_self
@@ -3488,6 +3645,208 @@ theorem theorem20_8_direct_data_residual_radii_le_firstOrderRHS_scaled
     exact theorem20_8SourceRadiiSum_le_firstOrderRHS_scaled
       A b B d x r APplus BAplus heps_nonneg hApos hxpos
   exact hcomponents.trans hsum
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    source-radius handoff where both direct and reduced data-forcing correction
+    vectors are evaluated at the perturbed vector `y`, under the visible
+    norm-domination condition `||y||_2 <= ||x||_2`. -/
+theorem theorem20_8_direct_data_y_residual_radii_le_firstOrderRHS_scaled
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hBpos : 0 < frobNormRect B)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x) :
+    vecNorm2
+        (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+          (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)) +
+        vecNorm2
+          (rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i)) +
+        eps * theorem20_8ResidualAmplifier A B APplus
+          (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A) ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) *
+        vecNorm2 x := by
+  let BAplus := theorem20_8BAplus A B Bplus APplus
+  let direct : ℝ :=
+    eps * theorem20_8KappaA B BAplus *
+      (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) * vecNorm2 x
+  let data : ℝ :=
+    eps * theorem20_8KappaB A APplus *
+      (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) * vecNorm2 x
+  let residual : ℝ :=
+    eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+      (vecNorm2 r / frobNormRect A)
+  have hdirect :
+      vecNorm2
+          (rectMatMulVec BAplus
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)) ≤
+        direct := by
+    dsimp [direct, BAplus]
+    exact
+      theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_sourceRadius_of_vecNorm2_le
+        A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x hbudget
+        heps_nonneg hBpos hxpos hyx
+  have hdata :
+      vecNorm2
+          (rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i)) ≤
+        data := by
+    dsimp [data]
+    exact
+      theorem20_8_vecNorm2_APplus_data_forcing_le_of_relativeBudget_sourceRadius_of_vecNorm2_le
+        A DeltaA b Deltab B DeltaB d Deltad y x APplus hbudget heps_nonneg
+        hApos hxpos hyx
+  have hcomponents :
+      vecNorm2
+          (rectMatMulVec BAplus
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)) +
+          vecNorm2
+            (rectMatMulVec APplus
+              (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i)) +
+          residual ≤
+        direct + data + residual := by
+    exact add_le_add (add_le_add hdirect hdata) (le_refl residual)
+  have hsum :
+      direct + data + residual ≤
+        eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
+          vecNorm2 x := by
+    dsimp [direct, data, residual, BAplus]
+    exact theorem20_8SourceRadiiSum_le_firstOrderRHS_scaled
+      A b B d x r APplus BAplus heps_nonneg hApos hxpos
+  exact hcomponents.trans hsum
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    relative form of the actual-`y` direct/data/residual source-radius handoff
+    under the visible norm-domination condition `||y||_2 <= ||x||_2`. -/
+theorem theorem20_8_direct_data_y_residual_relative_le_firstOrderRHS
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hBpos : 0 < frobNormRect B)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x) :
+    (vecNorm2
+          (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)) +
+        vecNorm2
+          (rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i)) +
+        eps * theorem20_8ResidualAmplifier A B APplus
+          (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) /
+        vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) := by
+  have hscaled :=
+    theorem20_8_direct_data_y_residual_radii_le_firstOrderRHS_scaled
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r hbudget
+      heps_nonneg hApos hBpos hxpos hyx
+  exact (div_le_iff₀ hxpos).2 (by simpa [mul_assoc] using hscaled)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    actual-`y` direct/data/residual source-radius handoff under the printed
+    maximum relative perturbation hypothesis. -/
+theorem theorem20_8_direct_data_y_residual_relative_le_firstOrderRHS_of_maxRelativePerturbation
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ) {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps) :
+    (vecNorm2
+          (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)) +
+        vecNorm2
+          (rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i)) +
+        eps * theorem20_8ResidualAmplifier A B APplus
+          (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) /
+        vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) := by
+  have hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps :=
+    theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax
+  exact
+    theorem20_8_direct_data_y_residual_relative_le_firstOrderRHS
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r hbudget
+      heps_nonneg hApos hBpos hxpos hyx
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    triangle-inequality integration of the actual-`y` direct and reduced-data
+    correction vectors under norm domination. -/
+theorem theorem20_8_direct_data_y_correction_residual_relative_le_firstOrderRHS_of_maxRelativePerturbation
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ) {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps) :
+    (vecNorm2
+          (fun j : Fin n =>
+            rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+                (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+              rectMatMulVec APplus
+                (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j) +
+        eps * theorem20_8ResidualAmplifier A B APplus
+          (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) /
+        vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) := by
+  let direct : Fin n → ℝ :=
+    rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+      (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)
+  let data : Fin n → ℝ :=
+    rectMatMulVec APplus
+      (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i)
+  let residual : ℝ :=
+    eps * theorem20_8ResidualAmplifier A B APplus
+      (theorem20_8BAplus A B Bplus APplus) *
+      (vecNorm2 r / frobNormRect A)
+  have htri :
+      vecNorm2 (fun j : Fin n => direct j + data j) + residual ≤
+        vecNorm2 direct + vecNorm2 data + residual := by
+    simpa [add_comm, add_left_comm, add_assoc] using
+      add_le_add_right (vecNorm2_add_le direct data) residual
+  have hdiv :
+      (vecNorm2 (fun j : Fin n => direct j + data j) + residual) /
+          vecNorm2 x ≤
+        (vecNorm2 direct + vecNorm2 data + residual) / vecNorm2 x :=
+    div_le_div_of_nonneg_right htri (le_of_lt hxpos)
+  have hbase :=
+    theorem20_8_direct_data_y_residual_relative_le_firstOrderRHS_of_maxRelativePerturbation
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r heps_nonneg
+      hApos hbpos hBpos hdpos hxpos hyx hmax
+  exact hdiv.trans (by simpa [direct, data, residual] using hbase)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     relative-error form of the combined direct, data-forcing, and residual
@@ -4323,6 +4682,478 @@ theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_differ
   ring
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual-explicit exact solution-difference identity.  This is the exact
+    algebraic counterpart of the printed correction-vector identity before the
+    reduced-LS/Wedin forcing equation removes the visible residual terms. -/
+theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m =>
+              (b i - rectMatMulVec A x i) - rHigh i -
+                rectMatMulVec DeltaA y i + Deltab i) j := by
+  let defect : Fin p → ℝ :=
+    fun i => Deltad i - rectMatMulVec DeltaB y i
+  let forcing : Fin m → ℝ :=
+    fun i => (b i - rectMatMulVec A x i) - rHigh i -
+      rectMatMulVec DeltaA y i + Deltab i
+  let correction : Fin m → ℝ :=
+    rectMatMulVec A (rectMatMulVec Bplus defect)
+  have hdecomp :=
+    theorem20_8_perturbed_feasible_difference_decomp
+      B DeltaB Bplus d Deltad x y hx hy
+  have hAPdiff :=
+    theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq
+      A DeltaA b Deltab B DeltaB Bplus d Deltad x y rHigh hx hy hres
+  have hAPdiff_split :
+      rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) =
+        fun i : Fin m => forcing i - correction i := by
+    ext i
+    have hi := congrFun hAPdiff i
+    dsimp [forcing, correction, defect] at hi ⊢
+    linarith
+  have hproj :
+      rectMatMulVec (theorem20_8Projection B Bplus) (fun k => y k - x k) =
+        fun j : Fin n =>
+          rectMatMulVec APplus forcing j -
+            rectMatMulVec APplus correction j := by
+    calc
+      rectMatMulVec (theorem20_8Projection B Bplus) (fun k => y k - x k) =
+          rectMatMulVec (rectMatMul APplus (theorem20_8AP A B Bplus))
+            (fun k => y k - x k) := by
+            rw [hAPleft]
+      _ = rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B Bplus)
+              (fun k => y k - x k)) := by
+            rw [rectMatMulVec_rectMatMul]
+      _ = rectMatMulVec APplus (fun i : Fin m => forcing i - correction i) := by
+            rw [hAPdiff_split]
+      _ = fun j : Fin n =>
+            rectMatMulVec APplus forcing j -
+              rectMatMulVec APplus correction j := by
+            rw [rectMatMulVec_sub]
+  have hBA :=
+    theorem20_8BAplus_apply A B Bplus APplus defect
+  ext j
+  have hdecomp_j := congrFun hdecomp j
+  have hproj_j := congrFun hproj j
+  have hBA_j := congrFun hBA j
+  change
+    y j - x j =
+      rectMatMulVec (theorem20_8BAplus A B Bplus APplus) defect j +
+        rectMatMulVec APplus forcing j
+  rw [hdecomp_j, hproj_j, hBA_j]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual-explicit norm bound for the exact solution-difference identity.
+    The bound keeps the visible Higham-sign residual forcing as a separate
+    supplied radius. -/
+theorem theorem20_8_vecNorm2_solution_difference_residual_forcing_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    {BAplus_norm DeltaB_norm Deltad_norm forcing_norm : ℝ}
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hBAplus_nonneg : 0 ≤ BAplus_norm)
+    (hBAplus :
+      rectOpNorm2Le (theorem20_8BAplus A B Bplus APplus) BAplus_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm)
+    (hforcing :
+      vecNorm2
+          (fun i : Fin m =>
+            (b i - rectMatMulVec A x i) - rHigh i -
+              rectMatMulVec DeltaA y i + Deltab i) ≤ forcing_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      BAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm := by
+  let defect : Fin p → ℝ :=
+    fun i => Deltad i - rectMatMulVec DeltaB y i
+  let forcing : Fin m → ℝ :=
+    fun i => (b i - rectMatMulVec A x i) - rHigh i -
+      rectMatMulVec DeltaA y i + Deltab i
+  let BAplus := theorem20_8BAplus A B Bplus APplus
+  have hsol :=
+    theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham_residual_eq
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y rHigh
+      hAPleft hx hy hres
+  have hdirect :
+      vecNorm2 (rectMatMulVec BAplus defect) ≤
+        BAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) := by
+    exact theorem20_8_vecNorm2_BAplus_constraint_defect_le
+      DeltaB BAplus Deltad y hBAplus_nonneg hBAplus hDeltaB hDeltad
+  have hop_nonneg : 0 ≤ complexMatrixOp2 (realRectToCMatrix APplus) :=
+    complexMatrixOp2_nonneg (realRectToCMatrix APplus)
+  have hforcing_bound :
+      vecNorm2 (rectMatMulVec APplus forcing) ≤
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm := by
+    calc
+      vecNorm2 (rectMatMulVec APplus forcing)
+          ≤ complexMatrixOp2 (realRectToCMatrix APplus) * vecNorm2 forcing :=
+              rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+                APplus le_rfl forcing
+      _ ≤ complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
+              mul_le_mul_of_nonneg_left hforcing hop_nonneg
+  calc
+    vecNorm2 (fun j : Fin n => y j - x j) =
+        vecNorm2 (fun j : Fin n =>
+          rectMatMulVec BAplus defect j + rectMatMulVec APplus forcing j) := by
+          rw [hsol]
+    _ ≤ vecNorm2 (rectMatMulVec BAplus defect) +
+          vecNorm2 (rectMatMulVec APplus forcing) :=
+          vecNorm2_add_le (rectMatMulVec BAplus defect)
+            (rectMatMulVec APplus forcing)
+    _ ≤ BAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+          complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
+          add_le_add hdirect hforcing_bound
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-operator-norm residual-explicit solution-difference bound under the
+    displayed relative perturbation budget.  The reduced residual forcing still
+    enters through a supplied radius. -/
+theorem theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_relativeBudget_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    {eps forcing_norm : ℝ}
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hforcing :
+      vecNorm2
+          (fun i : Fin m =>
+            (b i - rectMatMulVec A x i) - rHigh i -
+              rectMatMulVec DeltaA y i + Deltab i) ≤ forcing_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
+  theorem20_8_vecNorm2_solution_difference_residual_forcing_le
+    A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y rHigh
+    hAPleft hx hy hres
+    (complexMatrixOp2_nonneg
+      (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)))
+    (rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+      (theorem20_8BAplus A B Bplus APplus) le_rfl)
+    (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    hbudget.2.2.2
+    hforcing
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-operator-norm residual-explicit solution-difference bound under the
+    printed maximum relative perturbation hypothesis.  The reduced residual
+    forcing still enters through a supplied radius. -/
+theorem theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_maxRelativePerturbation_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    {eps forcing_norm : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hforcing :
+      vecNorm2
+          (fun i : Fin m =>
+            (b i - rectMatMulVec A x i) - rHigh i -
+              rectMatMulVec DeltaA y i + Deltab i) ≤ forcing_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
+  theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_relativeBudget_op2
+    A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y rHigh
+    hAPleft hx hy hres
+    (theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax)
+    hforcing
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-residual form of the max-relative residual-explicit solution
+    difference bound.  The remaining forcing radius is stated using
+    `r = b - A*x` rather than expanding the source residual inline. -/
+theorem theorem20_8_vecNorm2_solution_difference_source_residual_forcing_le_of_maxRelativePerturbation_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps forcing_norm : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hforcing :
+      vecNorm2
+          (fun i : Fin m =>
+            r i - rHigh i - rectMatMulVec DeltaA y i + Deltab i) ≤
+        forcing_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm := by
+  have hforcing_vec :
+      (fun i : Fin m =>
+          (b i - rectMatMulVec A x i) - rHigh i -
+            rectMatMulVec DeltaA y i + Deltab i) =
+        fun i : Fin m =>
+          r i - rHigh i - rectMatMulVec DeltaA y i + Deltab i := by
+    ext i
+    have hi := congrFun hr i
+    unfold lsResidualHigham at hi
+    linarith
+  exact
+    theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_maxRelativePerturbation_op2
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y rHigh
+      hApos hbpos hBpos hdpos hmax hAPleft hx hy hres
+      (by
+        rw [hforcing_vec]
+        exact hforcing)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the source-shaped residual forcing is bounded by a supplied residual-gap
+    radius plus the displayed relative perturbation budget for `DeltaA` and
+    `Deltab`. -/
+theorem theorem20_8_vecNorm2_source_residual_forcing_le_of_residual_gap_relativeBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps residual_gap_norm : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hgap :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) ≤ residual_gap_norm) :
+    vecNorm2
+        (fun i : Fin m =>
+          r i - rHigh i - rectMatMulVec DeltaA y i + Deltab i) ≤
+      residual_gap_norm + (eps * frobNormRect A) * vecNorm2 y +
+        eps * vecNorm2 b := by
+  let gap : Fin m → ℝ := fun i => r i - rHigh i
+  let deltaAction : Fin m → ℝ := rectMatMulVec DeltaA y
+  have hDelta :
+      vecNorm2 deltaAction ≤ (eps * frobNormRect A) * vecNorm2 y :=
+    theorem20_8_rectOpNorm2Le_DeltaA_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget y
+  have hgap_delta :
+      vecNorm2 (fun i : Fin m => gap i - deltaAction i) ≤
+        residual_gap_norm + (eps * frobNormRect A) * vecNorm2 y := by
+    calc
+      vecNorm2 (fun i : Fin m => gap i - deltaAction i)
+          ≤ vecNorm2 gap + vecNorm2 (fun i : Fin m => -deltaAction i) := by
+              simpa [sub_eq_add_neg] using
+                vecNorm2_add_le gap (fun i : Fin m => -deltaAction i)
+      _ = vecNorm2 gap + vecNorm2 deltaAction := by
+              rw [vecNorm2_neg]
+      _ ≤ residual_gap_norm + (eps * frobNormRect A) * vecNorm2 y :=
+              add_le_add hgap hDelta
+  calc
+    vecNorm2
+        (fun i : Fin m =>
+          r i - rHigh i - rectMatMulVec DeltaA y i + Deltab i)
+        = vecNorm2 (fun i : Fin m => (gap i - deltaAction i) + Deltab i) := by
+            rfl
+    _ ≤ vecNorm2 (fun i : Fin m => gap i - deltaAction i) +
+          vecNorm2 Deltab :=
+            vecNorm2_add_le
+              (fun i : Fin m => gap i - deltaAction i) Deltab
+    _ ≤ (residual_gap_norm + (eps * frobNormRect A) * vecNorm2 y) +
+          eps * vecNorm2 b :=
+            add_le_add hgap_delta hbudget.2.1
+    _ = residual_gap_norm + (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b := by
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    exact same-residual subcase of the source residual-forcing bound.  This
+    discharges the residual-gap radius only under the explicit assumption that
+    the source and perturbed Higham-sign residual vectors coincide. -/
+theorem theorem20_8_vecNorm2_source_residual_forcing_le_of_same_residual_relativeBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hsame : r = rHigh) :
+    vecNorm2
+        (fun i : Fin m =>
+          r i - rHigh i - rectMatMulVec DeltaA y i + Deltab i) ≤
+      (eps * frobNormRect A) * vecNorm2 y + eps * vecNorm2 b := by
+  have hgap : vecNorm2 (fun i : Fin m => r i - rHigh i) ≤ (0 : ℝ) := by
+    have hzero : (fun i : Fin m => r i - rHigh i) = (fun _i : Fin m => 0) := by
+      funext i
+      rw [hsame]
+      ring
+    rw [hzero, vecNorm2_zero]
+  have h :=
+    theorem20_8_vecNorm2_source_residual_forcing_le_of_residual_gap_relativeBudget
+      A DeltaA b Deltab B DeltaB d Deltad y r rHigh hbudget
+      (residual_gap_norm := 0) hgap
+  simpa using h
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    max-relative perturbation form of the residual-explicit solution bound with
+    the remaining reduced-residual obligation stated only as a residual-gap
+    radius `||r-rHigh||_2`. -/
+theorem theorem20_8_vecNorm2_solution_difference_source_residual_gap_le_of_maxRelativePerturbation_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps residual_gap_norm : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hgap :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) ≤ residual_gap_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) *
+          (residual_gap_norm + (eps * frobNormRect A) * vecNorm2 y +
+            eps * vecNorm2 b) := by
+  have hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps :=
+    theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax
+  exact
+    theorem20_8_vecNorm2_solution_difference_source_residual_forcing_le_of_maxRelativePerturbation_op2
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+      hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres
+      (theorem20_8_vecNorm2_source_residual_forcing_le_of_residual_gap_relativeBudget
+        A DeltaA b Deltab B DeltaB d Deltad y r rHigh hbudget hgap)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    exact same-residual subcase of the residual-explicit solution-difference
+    bound.  The residual gap is not hidden; it is specialized to zero from the
+    explicit equality `r = rHigh`. -/
+theorem theorem20_8_vecNorm2_solution_difference_same_source_residual_le_of_maxRelativePerturbation_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hsame : r = rHigh) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) *
+          ((eps * frobNormRect A) * vecNorm2 y + eps * vecNorm2 b) := by
+  have hgap : vecNorm2 (fun i : Fin m => r i - rHigh i) ≤ (0 : ℝ) := by
+    have hzero : (fun i : Fin m => r i - rHigh i) = (fun _i : Fin m => 0) := by
+      funext i
+      rw [hsame]
+      ring
+    rw [hzero, vecNorm2_zero]
+  have h :=
+    theorem20_8_vecNorm2_solution_difference_source_residual_gap_le_of_maxRelativePerturbation_op2
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+      hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres
+      (residual_gap_norm := 0) hgap
+  simpa using h
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the projected-difference equation follows from the reduced `AP` equation
     once `(AP)^+ AP` is identified with the source nullspace projector `P`. -/
 theorem theorem20_8_projected_difference_eq_APplus_of_reduced_difference_eq
@@ -4372,6 +5203,80 @@ theorem theorem20_8_projected_difference_eq_APplus_of_reduced_difference_eq
           rectMatMulVec APplus forcing j -
             rectMatMulVec APplus correction j := by
           rw [rectMatMulVec_sub]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual-explicit projected-difference bridge in Higham's residual sign
+    convention.  This is the exact version before the reduced-LS/Wedin route
+    supplies the stronger source forcing equation. -/
+theorem theorem20_8_projected_difference_eq_APplus_of_perturbed_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    rectMatMulVec (theorem20_8Projection B Bplus)
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec APplus
+            (fun i : Fin m =>
+              (b i - rectMatMulVec A x i) - rHigh i -
+                rectMatMulVec DeltaA y i + Deltab i) j -
+          rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j := by
+  let diff : Fin n → ℝ := fun k => y k - x k
+  let defect : Fin p → ℝ :=
+    fun l => Deltad l - rectMatMulVec DeltaB y l
+  let forcing : Fin m → ℝ :=
+    fun i => (b i - rectMatMulVec A x i) - rHigh i -
+      rectMatMulVec DeltaA y i + Deltab i
+  let correction : Fin m → ℝ :=
+    rectMatMulVec A (rectMatMulVec Bplus defect)
+  have hAPdiff :=
+    theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq
+      A DeltaA b Deltab B DeltaB Bplus d Deltad x y rHigh hx hy hres
+  have hAPdiff_split :
+      rectMatMulVec (theorem20_8AP A B Bplus) diff =
+        fun i : Fin m => forcing i - correction i := by
+    ext i
+    have hi := congrFun hAPdiff i
+    dsimp [diff, forcing, correction, defect] at hi ⊢
+    linarith
+  calc
+    rectMatMulVec (theorem20_8Projection B Bplus) diff =
+        rectMatMulVec (rectMatMul APplus (theorem20_8AP A B Bplus)) diff := by
+          rw [hAPleft]
+    _ = rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus) diff) := by
+          rw [rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec APplus (fun i : Fin m => forcing i - correction i) := by
+          rw [hAPdiff_split]
+    _ = fun j : Fin n =>
+          rectMatMulVec APplus forcing j -
+            rectMatMulVec APplus correction j := by
+          rw [rectMatMulVec_sub]
+    _ = fun j : Fin n =>
+          rectMatMulVec APplus
+              (fun i : Fin m =>
+                (b i - rectMatMulVec A x i) - rHigh i -
+                  rectMatMulVec DeltaA y i + Deltab i) j -
+            rectMatMulVec APplus
+              (rectMatMulVec A
+                (rectMatMulVec Bplus
+                  (fun l : Fin p =>
+                    Deltad l - rectMatMulVec DeltaB y l))) j := by
+          rfl
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a source-shaped sufficient condition for the projected action
@@ -5669,6 +6574,27 @@ theorem LSEFullRowRank.theorem20_8_perturbed_feasible_point_action_decomp
     A B DeltaB hB.rightInverse d Deltad x y hx hy
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the projected `AP` step identity, with the
+    constraint right inverse supplied by `rank(B)=p`. -/
+theorem LSEFullRowRank.theorem20_8_AP_difference_eq_action_minus_constraint_correction
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec (theorem20_8AP A B hB.rightInverse) (fun k => y k - x k) =
+      fun i =>
+        rectMatMulVec A y i - rectMatMulVec A x i -
+          rectMatMulVec A
+            (rectMatMulVec hB.rightInverse
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_difference_eq_action_minus_constraint_correction
+    A B DeltaB hB.rightInverse d Deltad x y hx hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual decomposition for a point feasible for the perturbed constraint,
     with the constraint right inverse supplied by source full row rank. -/
 theorem LSEFullRowRank.theorem20_8_perturbed_feasible_residual_decomp
@@ -5691,6 +6617,57 @@ theorem LSEFullRowRank.theorem20_8_perturbed_feasible_residual_decomp
           Deltab i :=
   _root_.LeanFpAnalysis.FP.theorem20_8_perturbed_feasible_residual_decomp
     A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y hx hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the reduced `AP` difference solved from an
+    explicit perturbed residual vector. -/
+theorem LSEFullRowRank.theorem20_8_AP_difference_eq_of_perturbed_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rpert : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidual (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rpert) :
+    rectMatMulVec (theorem20_8AP A B hB.rightInverse) (fun k => y k - x k) =
+      fun i =>
+        rpert i + (b i - rectMatMulVec A x i) -
+          rectMatMulVec A
+            (rectMatMulVec hB.rightInverse
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i -
+          rectMatMulVec DeltaA y i + Deltab i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_difference_eq_of_perturbed_residual_eq
+    A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y rpert hx hy hres
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the Higham-sign reduced `AP` difference
+    identity with an explicit perturbed residual vector. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    rectMatMulVec (theorem20_8AP A B hB.rightInverse) (fun k => y k - x k) =
+      fun i =>
+        (b i - rectMatMulVec A x i) - rHigh i -
+          rectMatMulVec A
+            (rectMatMulVec hB.rightInverse
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i -
+          rectMatMulVec DeltaA y i + Deltab i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq
+    A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y rHigh hx hy hres
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated residual decomposition with the constraint
@@ -5989,6 +6966,41 @@ theorem
       hAPleft hAPdiff
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank residual-explicit projected-difference bridge in
+    Higham's residual sign convention. -/
+theorem
+    LSEFullRowRank.theorem20_8_projected_difference_eq_APplus_of_perturbed_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y x : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec APplus
+            (fun i : Fin m =>
+              (b i - rectMatMulVec A x i) - rHigh i -
+                rectMatMulVec DeltaA y i + Deltab i) j -
+          rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_projected_difference_eq_APplus_of_perturbed_higham_residual_eq
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x rHigh
+    hAPleft hx hy hres
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank exact solution-difference identity from the reduced
     `AP` obligations.  The conclusion is the printed correction vector
     `B_A^+*(Deltad-DeltaB*y) + (AP)^+*(DeltaA*y-Deltab)`.
@@ -6041,6 +7053,276 @@ theorem
     _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_difference
       A DeltaA (fun _ : Fin m => 0) Deltab B DeltaB hB.rightInverse APplus
       d Deltad x y hx hy hproj
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank residual-explicit solution-difference identity in
+    Higham's residual sign convention. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec (theorem20_8BAplus A B hB.rightInverse APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m =>
+              (b i - rectMatMulVec A x i) - rHigh i -
+                rectMatMulVec DeltaA y i + Deltab i) j :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham_residual_eq
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y rHigh
+    hAPleft hx hy hres
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank residual-explicit solution-difference norm bound. -/
+theorem
+    LSEFullRowRank.theorem20_8_vecNorm2_solution_difference_residual_forcing_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    {BAplus_norm DeltaB_norm Deltad_norm forcing_norm : ℝ}
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hBAplus_nonneg : 0 ≤ BAplus_norm)
+    (hBAplus :
+      rectOpNorm2Le
+        (theorem20_8BAplus A B hB.rightInverse APplus) BAplus_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm)
+    (hforcing :
+      vecNorm2
+          (fun i : Fin m =>
+            (b i - rectMatMulVec A x i) - rHigh i -
+              rectMatMulVec DeltaA y i + Deltab i) ≤ forcing_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      BAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_solution_difference_residual_forcing_le
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y rHigh
+    hAPleft hx hy hres hBAplus_nonneg hBAplus hDeltaB hDeltad hforcing
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank residual-explicit norm bound under the displayed
+    relative perturbation budget.  The reduced residual forcing still enters
+    through a supplied radius. -/
+theorem
+    LSEFullRowRank.theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_relativeBudget_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    {eps forcing_norm : ℝ}
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hforcing :
+      vecNorm2
+          (fun i : Fin m =>
+            (b i - rectMatMulVec A x i) - rHigh i -
+              rectMatMulVec DeltaA y i + Deltab i) ≤ forcing_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix
+            (theorem20_8BAplus A B hB.rightInverse APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_relativeBudget_op2
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y rHigh
+    hAPleft hx hy hres hbudget hforcing
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank residual-explicit norm bound under the printed maximum
+    relative perturbation hypothesis.  The reduced residual forcing still enters
+    through a supplied radius. -/
+theorem
+    LSEFullRowRank.theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_maxRelativePerturbation_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    {eps forcing_norm : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hforcing :
+      vecNorm2
+          (fun i : Fin m =>
+            (b i - rectMatMulVec A x i) - rHigh i -
+              rectMatMulVec DeltaA y i + Deltab i) ≤ forcing_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix
+            (theorem20_8BAplus A B hB.rightInverse APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_maxRelativePerturbation_op2
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y rHigh
+    hApos hbpos hBpos hdpos hmax hAPleft hx hy hres hforcing
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank residual-explicit norm bound under the printed maximum
+    relative perturbation hypothesis, with the source residual `r = b - A*x`
+    named explicitly. -/
+theorem
+    LSEFullRowRank.theorem20_8_vecNorm2_solution_difference_source_residual_forcing_le_of_maxRelativePerturbation_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps forcing_norm : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hforcing :
+      vecNorm2
+          (fun i : Fin m =>
+            r i - rHigh i - rectMatMulVec DeltaA y i + Deltab i) ≤
+        forcing_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix
+            (theorem20_8BAplus A B hB.rightInverse APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_solution_difference_source_residual_forcing_le_of_maxRelativePerturbation_op2
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
+    hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres hforcing
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank max-relative solution-difference bound with the
+    remaining residual obligation stated as the residual-gap radius
+    `||r-rHigh||_2`. -/
+theorem
+    LSEFullRowRank.theorem20_8_vecNorm2_solution_difference_source_residual_gap_le_of_maxRelativePerturbation_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps residual_gap_norm : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hgap :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) ≤ residual_gap_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix
+            (theorem20_8BAplus A B hB.rightInverse APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) *
+          (residual_gap_norm + (eps * frobNormRect A) * vecNorm2 y +
+            eps * vecNorm2 b) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_solution_difference_source_residual_gap_le_of_maxRelativePerturbation_op2
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
+    hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres hgap
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank same-residual subcase of the residual-explicit
+    solution-difference bound.  This removes the residual-gap radius only under
+    the explicit equality of the source and perturbed Higham-sign residuals. -/
+theorem
+    LSEFullRowRank.theorem20_8_vecNorm2_solution_difference_same_source_residual_le_of_maxRelativePerturbation_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hsame : r = rHigh) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix
+            (theorem20_8BAplus A B hB.rightInverse APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) *
+          ((eps * frobNormRect A) * vecNorm2 y + eps * vecNorm2 b) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_solution_difference_same_source_residual_le_of_maxRelativePerturbation_op2
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
+    hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres hsame
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the reduced-`AP` relative solution-difference
@@ -6270,6 +7552,133 @@ theorem LSEFullRowRank.of_transpose_rectMatMulVec_injective {p n : ℕ}
   refine ⟨rectMatMulVec Bt y, ?_⟩
   simpa [C, lseConstraintLinearMap] using hy
 
+/-- Rectangular Gram nonsingularity from injectivity of the transpose action.
+    This is the algebraic bridge from a full-row-rank rectangular matrix to
+    invertibility of `A Aᵀ`, used by the Chapter 20 Gram-pseudoinverse route. -/
+theorem rectGram_det_ne_zero_of_transpose_rectMatMulVec_injective {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (hAt :
+      Function.Injective
+        (rectMatMulVec (fun j : Fin n => fun i : Fin m => A i j))) :
+    Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0 := by
+  let At : Fin n → Fin m → ℝ := fun j => fun i => A i j
+  have hAt' : Function.Injective (rectMatMulVec At) := by
+    simpa [At] using hAt
+  have hGram_inj : Function.Injective (rectMatMulVec (rectGram A)) := by
+    intro y z hyz
+    let w : Fin m → ℝ := fun i => y i - z i
+    have hGram_w_zero : rectMatMulVec (rectGram A) w = 0 := by
+      ext i
+      have hentry := congrFun hyz i
+      change (∑ j : Fin m, rectGram A i j * y j) =
+        (∑ j : Fin m, rectGram A i j * z j) at hentry
+      unfold w
+      change (∑ j : Fin m, rectGram A i j * (y j - z j)) = 0
+      calc
+        (∑ j : Fin m, rectGram A i j * (y j - z j))
+            = ∑ j : Fin m,
+                (rectGram A i j * y j - rectGram A i j * z j) := by
+                apply Finset.sum_congr rfl
+                intro j _
+                ring
+        _ = (∑ j : Fin m, rectGram A i j * y j) -
+              (∑ j : Fin m, rectGram A i j * z j) := by
+                rw [Finset.sum_sub_distrib]
+        _ = 0 := sub_eq_zero.mpr hentry
+    have hAt_eq_transpose :
+        rectMatMulVec At w = rectTransposeMulVec A w := by
+      ext j
+      simp [At, rectMatMulVec, rectTransposeMulVec]
+    have hAw_zero : rectMatMulVec A (rectMatMulVec At w) = 0 := by
+      rw [hAt_eq_transpose, rectMatMulVec_rectTransposeMulVec]
+      ext i
+      have hi := congrFun hGram_w_zero i
+      simpa [matMulVec, rectMatMulVec] using hi
+    have hinner :
+        (∑ i : Fin m, w i * rectMatMulVec A (rectMatMulVec At w) i) =
+          vecNorm2Sq (rectMatMulVec At w) := by
+      calc
+        (∑ i : Fin m, w i * rectMatMulVec A (rectMatMulVec At w) i)
+            = ∑ i : Fin m, ∑ j : Fin n,
+                w i * (A i j * rectMatMulVec At w j) := by
+                unfold rectMatMulVec
+                apply Finset.sum_congr rfl
+                intro i _
+                rw [Finset.mul_sum]
+        _ = ∑ j : Fin n, ∑ i : Fin m,
+                w i * (A i j * rectMatMulVec At w j) := by
+                rw [Finset.sum_comm]
+        _ = ∑ j : Fin n,
+                (∑ i : Fin m, A i j * w i) * rectMatMulVec At w j := by
+                apply Finset.sum_congr rfl
+                intro j _
+                calc
+                  (∑ i : Fin m, w i * (A i j * rectMatMulVec At w j))
+                      = ∑ i : Fin m, (A i j * w i) *
+                          rectMatMulVec At w j := by
+                          apply Finset.sum_congr rfl
+                          intro i _
+                          ring
+                  _ = (∑ i : Fin m, A i j * w i) *
+                          rectMatMulVec At w j := by
+                          rw [Finset.sum_mul]
+        _ = ∑ j : Fin n, rectMatMulVec At w j *
+                rectMatMulVec At w j := by
+                unfold rectMatMulVec At
+                rfl
+        _ = vecNorm2Sq (rectMatMulVec At w) := by
+                unfold vecNorm2Sq
+                apply Finset.sum_congr rfl
+                intro j _
+                ring
+    have hinner_zero :
+        (∑ i : Fin m, w i * rectMatMulVec A (rectMatMulVec At w) i) = 0 := by
+      apply Finset.sum_eq_zero
+      intro i _
+      have hi : rectMatMulVec A (rectMatMulVec At w) i = 0 := by
+        simpa using congrFun hAw_zero i
+      rw [hi]
+      ring
+    have hsq : vecNorm2Sq (rectMatMulVec At w) = 0 := by
+      rw [← hinner]
+      exact hinner_zero
+    have hnorm : vecNorm2 (rectMatMulVec At w) = 0 := by
+      unfold vecNorm2
+      rw [Real.sqrt_eq_zero (vecNorm2Sq_nonneg (rectMatMulVec At w))]
+      exact hsq
+    have hAt_w_zero : rectMatMulVec At w = 0 := by
+      ext j
+      exact (vecNorm2_eq_zero_iff (rectMatMulVec At w)).mp hnorm j
+    have hAt_w_eq :
+        rectMatMulVec At w = rectMatMulVec At (0 : Fin m → ℝ) := by
+      rw [hAt_w_zero]
+      ext j
+      simp [rectMatMulVec]
+    have hw_zero := hAt' hAt_w_eq
+    ext i
+    have hi := congrFun hw_zero i
+    dsimp [w] at hi
+    exact sub_eq_zero.mp hi
+  let M : Matrix (Fin m) (Fin m) ℝ := rectGram A
+  have hM_inj : Function.Injective M.mulVec := by
+    intro x y hxy
+    apply hGram_inj
+    ext i
+    have hi := congrFun hxy i
+    simpa [M, rectMatMulVec, Matrix.mulVec] using hi
+  have hunitM : IsUnit M := Matrix.mulVec_injective_iff_isUnit.mp hM_inj
+  have hdetUnit : IsUnit M.det := (Matrix.isUnit_iff_isUnit_det M).mp hunitM
+  have hdetNe : M.det ≠ 0 := isUnit_iff_ne_zero.mp hdetUnit
+  simpa [M] using hdetNe
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24) support:
+    source full row rank makes the Gram matrix `B Bᵀ` nonsingular. -/
+theorem LSEFullRowRank.rectGram_det_ne_zero {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) :
+    Matrix.det (rectGram B : Matrix (Fin p) (Fin p) ℝ) ≠ 0 :=
+  rectGram_det_ne_zero_of_transpose_rectMatMulVec_injective B
+    hB.transpose_rectMatMulVec_injective
+
 /-- Perturbation form of the full-row-rank side of Higham's Chapter 20 rank
     condition.  A strict operator-2 perturbation of `Bᵀ` below a source
     transpose lower-bound margin preserves full row rank of `B`. -/
@@ -6492,6 +7901,102 @@ theorem theorem20_8_penrose1_of_rectMoorePenrosePseudoinverse
   hMP.reproduces_matrix
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if the columns of `APᵀ` lie in the constraint nullspace and `APplus` is a
+    Moore--Penrose pseudoinverse of `AP`, then the columns of `APplus` also lie
+    in the constraint nullspace.  This uses the Penrose domain-projection
+    symmetry to express the range of `APplus` through the row space of `AP`. -/
+theorem theorem20_8_APplus_constraint_annihilates_of_MP_transpose_constraint
+    {m n p : ℕ}
+    (AP : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP : RectMoorePenrosePseudoinverse m n AP APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose AP) =
+        (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0) := by
+  have hBdomain :
+      rectMatMul B (rectMatMul APplus AP) =
+        (fun _i : Fin p => fun _j : Fin n => 0) := by
+    ext i j
+    calc
+      rectMatMul B (rectMatMul APplus AP) i j =
+          ∑ k : Fin n, B i k * rectMatMul APplus AP k j := rfl
+      _ = ∑ k : Fin n, B i k * rectMatMul APplus AP j k := by
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [hMP.domain_projection_symmetric k j]
+      _ = ∑ k : Fin n, B i k *
+            (∑ l : Fin m, APplus j l * AP l k) := rfl
+      _ = ∑ k : Fin n, ∑ l : Fin m,
+            B i k * (APplus j l * AP l k) := by
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [Finset.mul_sum]
+      _ = ∑ l : Fin m, ∑ k : Fin n,
+            B i k * (APplus j l * AP l k) := by
+          rw [Finset.sum_comm]
+      _ = ∑ l : Fin m, APplus j l *
+            (∑ k : Fin n, B i k * AP l k) := by
+          apply Finset.sum_congr rfl
+          intro l _
+          calc
+            (∑ k : Fin n, B i k * (APplus j l * AP l k)) =
+                ∑ k : Fin n, APplus j l * (B i k * AP l k) := by
+                apply Finset.sum_congr rfl
+                intro k _
+                ring
+            _ = APplus j l * (∑ k : Fin n, B i k * AP l k) := by
+                rw [Finset.mul_sum]
+      _ = ∑ l : Fin m, APplus j l *
+            rectMatMul B (finiteTranspose AP) i l := by
+          rfl
+      _ = ∑ l : Fin m, APplus j l * 0 := by
+          apply Finset.sum_congr rfl
+          intro l _
+          have hl := congrFun (congrFun hBAPt i) l
+          rw [hl]
+      _ = 0 := by simp
+  calc
+    rectMatMul B APplus =
+        rectMatMul B (rectMatMul (rectMatMul APplus AP) APplus) := by
+        rw [hMP.reproduces_pseudoinverse]
+    _ = rectMatMul (rectMatMul B (rectMatMul APplus AP)) APplus := by
+        rw [← rectMatMul_assoc]
+    _ = rectMatMul (fun _i : Fin p => fun _j : Fin n => 0) APplus := by
+        rw [hBdomain]
+    _ = (fun _i : Fin p => fun _j : Fin m => 0) := by
+        ext i j
+        unfold rectMatMul
+        simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    a Moore--Penrose certificate for `(AP)^+`, the transpose-range certificate
+    `B*(AP)^T = 0`, and (20.24)'s null-intersection condition together give the
+    reduced-operator left inverse on `null(B)`. -/
+theorem theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B Bplus) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B Bplus)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus) z) = z :=
+  theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_matrix_range_null_nullIntersection
+    A B Bplus APplus
+      (theorem20_8_penrose1_of_rectMoorePenrosePseudoinverse
+        A B Bplus APplus hMP)
+      (theorem20_8_APplus_constraint_annihilates_of_MP_transpose_constraint
+        (theorem20_8AP A B Bplus) B APplus hMP hBAPt)
+      hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a Moore--Penrose certificate for `(AP)^+`, matrix-level annihilation
     `B*(AP)^+ = 0`, and (20.24)'s null-intersection condition together give
     the reduced-operator left inverse on `null(B)`. -/
@@ -6599,6 +8104,377 @@ theorem
           (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
   _root_.LeanFpAnalysis.FP.theorem20_8_AP_left_inverse_on_nullspace_of_MP_projection_range_nullIntersection
     A B hB.rightInverse APplus hB.rightInverse_spec hMP hProjAPplus hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the Moore--Penrose/matrix-annihilation
+    reduced-left-inverse route.  This keeps the rank-tolerant Moore--Penrose
+    certificate abstract and uses the direct source-shaped range certificate
+    `B*(AP)^+ = 0`, rather than the stronger projector-range equality. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_matrix_range_null_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPplus :
+      rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_left_inverse_on_nullspace_of_MP_matrix_range_null_nullIntersection
+    A B hB.rightInverse APplus hMP hBAPplus hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank projected-difference handoff from a Moore--Penrose
+    certificate, the matrix-annihilation certificate `B*(AP)^+ = 0`,
+    (20.24)'s null-intersection condition, and the remaining reduced
+    `AP*(y-x)` equation. -/
+theorem
+    LSEFullRowRank.theorem20_8_projected_difference_eq_APplus_of_MP_matrix_range_null_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (Deltad : Fin p → ℝ) (y x : Fin n → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPplus :
+      rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+          rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j := by
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_matrix_range_null_nullIntersection
+      A hB APplus hMP hBAPplus hnull
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_projected_difference_eq_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
+      A DeltaA Deltab B DeltaB hB.rightInverse APplus Deltad y x
+      hB.rightInverse_spec hAPleft_null hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank exact correction-vector identity with the reduced
+    projector action discharged by a Moore--Penrose certificate and
+    `B*(AP)^+ = 0`. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_MP_matrix_range_null_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y x : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPplus :
+      rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (theorem20_8BAplus A B hB.rightInverse APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j := by
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_matrix_range_null_nullIntersection
+      A hB APplus hMP hBAPplus hnull
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
+      A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x hx hy
+      hB.rightInverse_spec hAPleft_null hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    strongest current source-full-row-rank relative solution-difference handoff
+    with a rank-tolerant Moore--Penrose certificate and direct
+    matrix-annihilation certificate replacing the raw nullspace-left-inverse
+    hypothesis. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_matrix_range_null_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y x : Fin n → ℝ) (r : Fin m → ℝ)
+    {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPplus :
+      rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 * solutionRadius *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_matrix_range_null_nullIntersection
+      A hB APplus hMP hBAPplus hnull
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_AP_left_inverse_on_nullspace_reduced_difference_eq
+      A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x r
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy
+      hB.rightInverse_spec hAPleft_null hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the Moore--Penrose/transpose-range
+    reduced-left-inverse route.  This replaces the direct matrix-annihilation
+    certificate `B*(AP)^+ = 0` by `B*(AP)^T = 0` plus the Penrose fields for
+    the chosen rank-tolerant pseudoinverse. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
+    A B hB.rightInverse APplus hMP hBAPt hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank projected-difference handoff from a Moore--Penrose
+    certificate, the transpose-range certificate `B*(AP)^T = 0`, (20.24)'s
+    null-intersection condition, and the remaining reduced `AP*(y-x)`
+    equation. -/
+theorem
+    LSEFullRowRank.theorem20_8_projected_difference_eq_APplus_of_MP_transpose_range_null_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (Deltad : Fin p → ℝ) (y x : Fin n → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+          rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j := by
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
+      A hB APplus hMP hBAPt hnull
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_projected_difference_eq_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
+      A DeltaA Deltab B DeltaB hB.rightInverse APplus Deltad y x
+      hB.rightInverse_spec hAPleft_null hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank exact correction-vector identity with the reduced
+    projector action discharged by a Moore--Penrose certificate and
+    transpose-range certificate `B*(AP)^T = 0`. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_MP_transpose_range_null_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y x : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (theorem20_8BAplus A B hB.rightInverse APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j := by
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
+      A hB APplus hMP hBAPt hnull
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
+      A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x hx hy
+      hB.rightInverse_spec hAPleft_null hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    strongest current source-full-row-rank relative solution-difference handoff
+    with a rank-tolerant Moore--Penrose certificate and transpose-range
+    certificate replacing the raw nullspace-left-inverse hypothesis. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_transpose_range_null_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y x : Fin n → ℝ) (r : Fin m → ℝ)
+    {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 * solutionRadius *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
+      A hB APplus hMP hBAPt hnull
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_AP_left_inverse_on_nullspace_reduced_difference_eq
+      A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x r
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy
+      hB.rightInverse_spec hAPleft_null hAPdiff
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank projected-difference handoff from a Moore--Penrose
@@ -6798,6 +8674,485 @@ theorem
     hProjAPplus
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    for the concrete Gram pseudoinverse of `AP`, the matrix annihilation
+    certificate `B*(AP)^+ = 0` follows from the simpler transpose-range
+    certificate `B*(AP)^T = 0`. -/
+theorem theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B Bplus)) =
+        (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul B
+        (undetAplusOfGramNonsingInv (theorem20_8AP A B Bplus)) =
+      (fun _i : Fin p => fun _j : Fin m => 0) := by
+  calc
+    rectMatMul B
+        (undetAplusOfGramNonsingInv (theorem20_8AP A B Bplus)) =
+        rectMatMul B
+          (rectMatMul (finiteTranspose (theorem20_8AP A B Bplus))
+            (undetGramNonsingInv (theorem20_8AP A B Bplus))) := by
+          rw [undetAplusOfGramNonsingInv]
+          rw [undetAplusOfGramInv_eq_rectMatMul_finiteTranspose]
+    _ =
+        rectMatMul
+          (rectMatMul B (finiteTranspose (theorem20_8AP A B Bplus)))
+          (undetGramNonsingInv (theorem20_8AP A B Bplus)) := by
+          rw [rectMatMul_assoc]
+    _ =
+        rectMatMul (fun _i : Fin p => fun _j : Fin m => 0)
+          (undetGramNonsingInv (theorem20_8AP A B Bplus)) := by
+          rw [hBAPt]
+    _ = (fun _i : Fin p => fun _j : Fin m => 0) := by
+          ext i j
+          unfold rectMatMul
+          simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if `P = I - B^+B` is symmetric, then the reduced-operator transpose
+    columns lie in the constraint nullspace: `B*(AP)^T = 0`. -/
+theorem theorem20_8_AP_transpose_constraint_annihilates_of_projection_symmetric
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hPsym : IsSymmetricFiniteMatrix (theorem20_8Projection B Bplus)) :
+    rectMatMul B (finiteTranspose (theorem20_8AP A B Bplus)) =
+      (fun _i : Fin p => fun _j : Fin m => 0) := by
+  let P : Fin n → Fin n → ℝ := theorem20_8Projection B Bplus
+  have hBP : rectMatMul B P = (fun _i : Fin p => fun _j : Fin n => 0) :=
+    theorem20_8Projection_constraint_zero B Bplus hright
+  have hPsymP : IsSymmetricFiniteMatrix P := hPsym
+  ext i l
+  change (∑ j : Fin n, B i j * (∑ k : Fin n, A l k * P k j)) = 0
+  calc
+    (∑ j : Fin n, B i j * (∑ k : Fin n, A l k * P k j)) =
+        ∑ j : Fin n, ∑ k : Fin n, B i j * (A l k * P k j) := by
+          apply Finset.sum_congr rfl
+          intro j _
+          rw [Finset.mul_sum]
+    _ = ∑ k : Fin n, ∑ j : Fin n, B i j * (A l k * P k j) := by
+          rw [Finset.sum_comm]
+    _ = ∑ k : Fin n, A l k * (∑ j : Fin n, B i j * P j k) := by
+          apply Finset.sum_congr rfl
+          intro k _
+          calc
+            (∑ j : Fin n, B i j * (A l k * P k j)) =
+                ∑ j : Fin n, A l k * (B i j * P j k) := by
+                  apply Finset.sum_congr rfl
+                  intro j _
+                  rw [hPsymP k j]
+                  ring
+            _ = A l k * (∑ j : Fin n, B i j * P j k) := by
+                  rw [Finset.mul_sum]
+    _ = ∑ k : Fin n, A l k * 0 := by
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [show (∑ j : Fin n, B i j * P j k) = 0 by
+            have hBPik := congrFun (congrFun hBP i) k
+            simpa [rectMatMul] using hBPik]
+    _ = 0 := by simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank specialization of the transpose-range-to-annihilation
+    bridge for the concrete Gram table chosen for `(AP)^+`. -/
+theorem
+    LSEFullRowRank.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (hBAPt :
+      rectMatMul B
+          (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul B
+        (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) =
+      (fun _i : Fin p => fun _j : Fin m => 0) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
+    A B hB.rightInverse hBAPt
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank specialization of the symmetric-projector proof of
+    `B*(AP)^T = 0`. -/
+theorem LSEFullRowRank.theorem20_8_AP_transpose_constraint_annihilates_of_projection_symmetric
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (hPsym : IsSymmetricFiniteMatrix (theorem20_8Projection B hB.rightInverse)) :
+    rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+      (fun _i : Fin p => fun _j : Fin m => 0) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_transpose_constraint_annihilates_of_projection_symmetric
+    A B hB.rightInverse hB.rightInverse_spec hPsym
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    `P = I - B^+B` is symmetric whenever the domain projection `B^+B` is
+    symmetric. -/
+theorem theorem20_8Projection_symmetric_of_domain_projection_symmetric
+    {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (hDom : IsSymmetricFiniteMatrix (rectMatMul Bplus B)) :
+    IsSymmetricFiniteMatrix (theorem20_8Projection B Bplus) := by
+  intro i j
+  have hid : idMatrix n i j = idMatrix n j i := by
+    unfold idMatrix
+    by_cases hij : i = j
+    · subst j
+      simp
+    · simp [hij, Ne.symm hij]
+  calc
+    theorem20_8Projection B Bplus i j =
+        idMatrix n i j - rectMatMul Bplus B i j := rfl
+    _ = idMatrix n j i - rectMatMul Bplus B j i := by
+          rw [hid, hDom i j]
+    _ = theorem20_8Projection B Bplus j i := rfl
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the Gram pseudoinverse `B^T(BB^T)^{-1}` gives a symmetric source projector
+    `P = I - B^+B`. -/
+theorem theorem20_8Projection_symmetric_of_gram_pseudoinverse
+    {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) :
+    IsSymmetricFiniteMatrix
+      (theorem20_8Projection B (undetAplusOfGramNonsingInv B)) :=
+  theorem20_8Projection_symmetric_of_domain_projection_symmetric
+    B (undetAplusOfGramNonsingInv B)
+    (undetAplusOfGramNonsingInv_domain_projection_symmetric B)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    determinant-facing Gram-pseudoinverse version of the source-projector proof
+    of `B*(AP)^T = 0`. -/
+theorem theorem20_8_AP_transpose_constraint_annihilates_of_gram_projection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (hdetB : Matrix.det (rectGram B : Matrix (Fin p) (Fin p) ℝ) ≠ 0) :
+    rectMatMul B
+        (finiteTranspose
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) =
+      (fun _i : Fin p => fun _j : Fin m => 0) :=
+  theorem20_8_AP_transpose_constraint_annihilates_of_projection_symmetric
+    A B (undetAplusOfGramNonsingInv B)
+    (higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero B hdetB)
+    (theorem20_8Projection_symmetric_of_gram_pseudoinverse B)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    determinant-facing Gram-pseudoinverse route to the matrix annihilation
+    certificate `B*(AP)^+ = 0`, using the Gram pseudoinverse for `B`. -/
+theorem theorem20_8_gram_APplus_constraint_annihilates_of_gram_projection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (hdetB : Matrix.det (rectGram B : Matrix (Fin p) (Fin p) ℝ) ≠ 0) :
+    rectMatMul B
+        (undetAplusOfGramNonsingInv
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) =
+      (fun _i : Fin p => fun _j : Fin m => 0) :=
+  theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
+    A B (undetAplusOfGramNonsingInv B)
+    (theorem20_8_AP_transpose_constraint_annihilates_of_gram_projection A B hdetB)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    determinant-facing reduced left-inverse route using the Gram pseudoinverse
+    for `B` and the concrete Gram pseudoinverse for `AP`. -/
+theorem theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_gram_projection_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (hdetB : Matrix.det (rectGram B : Matrix (Fin p) (Fin p) ℝ) ≠ 0)
+    (hdetAP :
+      Matrix.det
+        (rectGram (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec
+            (undetAplusOfGramNonsingInv
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)))
+            (rectMatMulVec
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) z) = z :=
+  theorem20_8_AP_left_inverse_on_nullspace_of_MP_matrix_range_null_nullIntersection
+    A B (undetAplusOfGramNonsingInv B)
+    (undetAplusOfGramNonsingInv
+      (theorem20_8AP A B (undetAplusOfGramNonsingInv B)))
+    (higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero
+      (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) hdetAP)
+    (theorem20_8_gram_APplus_constraint_annihilates_of_gram_projection A B hdetB)
+    hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-facing version of the Gram-pseudoinverse reduced left-inverse
+    route.  The source rank hypothesis discharges nonsingularity of `B Bᵀ`;
+    nonsingularity of the reduced Gram matrix `(AP)(AP)ᵀ` remains explicit. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_gram_projection_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (hdetAP :
+      Matrix.det
+        (rectGram (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec
+            (undetAplusOfGramNonsingInv
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)))
+            (rectMatMulVec
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) z) = z :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_gram_projection_nullIntersection
+    A B hB.rectGram_det_ne_zero hdetAP hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank reduced left-inverse route using the Gram
+    pseudoinverse for `B` and an abstract rank-tolerant Moore--Penrose
+    pseudoinverse for `AP`.  The transpose-range certificate is discharged
+    from the symmetric Gram projector for `B`. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_gram_projection_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec
+            (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) z) = z :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
+    A B (undetAplusOfGramNonsingInv B) APplus hMP
+    (theorem20_8_AP_transpose_constraint_annihilates_of_gram_projection
+      A B hB.rectGram_det_ne_zero)
+    hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank projected-difference handoff using the Gram
+    pseudoinverse for `B` and an abstract rank-tolerant `(AP)^+`. -/
+theorem
+    LSEFullRowRank.theorem20_8_projected_difference_eq_APplus_of_MP_gram_projection_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (Deltad : Fin p → ℝ) (y x : Fin n → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec (undetAplusOfGramNonsingInv B)
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    rectMatMulVec (theorem20_8Projection B (undetAplusOfGramNonsingInv B))
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+          rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec (undetAplusOfGramNonsingInv B)
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j := by
+  have hright :
+      rectMatMul B (undetAplusOfGramNonsingInv B) = idMatrix p :=
+    higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero
+      B hB.rectGram_det_ne_zero
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_gram_projection_nullIntersection
+      A hB APplus hMP hnull
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_projected_difference_eq_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
+      A DeltaA Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
+      Deltad y x hright hAPleft_null hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank exact correction-vector identity using the Gram
+    pseudoinverse for `B` and an abstract rank-tolerant `(AP)^+`. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_MP_gram_projection_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y x : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec (undetAplusOfGramNonsingInv B)
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j := by
+  have hright :
+      rectMatMul B (undetAplusOfGramNonsingInv B) = idMatrix p :=
+    higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero
+      B hB.rectGram_det_ne_zero
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_gram_projection_nullIntersection
+      A hB APplus hMP hnull
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
+      A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
+      d Deltad y x hx hy hright hAPleft_null hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    strongest current relative solution-difference handoff using the Gram
+    pseudoinverse for `B` and an abstract rank-tolerant `(AP)^+`. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_gram_projection_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y x : Fin n → ℝ) (r : Fin m → ℝ)
+    {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec (undetAplusOfGramNonsingInv B)
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus) +
+        eps ^ 2 * solutionRadius *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hright :
+      rectMatMul B (undetAplusOfGramNonsingInv B) = idMatrix p :=
+    higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero
+      B hB.rectGram_det_ne_zero
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_gram_projection_nullIntersection
+      A hB APplus hMP hnull
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_AP_left_inverse_on_nullspace_reduced_difference_eq
+      A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
+      d Deltad y x r heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx
+      hx hy hright hAPleft_null hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    determinant-facing reduced left-inverse route for the concrete Gram
+    pseudoinverse of `AP`, using the weaker matrix annihilation certificate
+    `B*(AP)^+ = 0` directly. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_matrix_range_null_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (hdet :
+      Matrix.det
+        (rectGram (theorem20_8AP A B hB.rightInverse) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hBAPplus :
+      rectMatMul B
+          (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec
+            (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+            (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_left_inverse_on_nullspace_of_MP_matrix_range_null_nullIntersection
+    A B hB.rightInverse
+    (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+    (LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
+      A hB hdet)
+    hBAPplus hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    determinant-facing reduced left-inverse route for the concrete Gram
+    pseudoinverse of `AP`, reducing matrix annihilation to the transpose-range
+    certificate `B*(AP)^T = 0`. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_transpose_range_null_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (hdet :
+      Matrix.det
+        (rectGram (theorem20_8AP A B hB.rightInverse) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hBAPt :
+      rectMatMul B
+          (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec
+            (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+            (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+  LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_matrix_range_null_nullIntersection
+    A hB hdet
+    (LSEFullRowRank.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
+      A hB hBAPt)
+    hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     determinant-facing reduced left-inverse route for the concrete Gram
     pseudoinverse of `AP`.  The Moore--Penrose certificate is now discharged
     by nonsingularity of `rectGram(AP)`; the projector-range certificate and
@@ -6823,9 +9178,110 @@ theorem
             (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
   LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_projection_range_nullIntersection
     A hB (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
-    (LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
-      A hB hdet)
-    hProjAPplus hnull
+      (LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
+        A hB hdet)
+      hProjAPplus hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    concrete Gram-pseudoinverse form of the projected-difference handoff using
+    the matrix annihilation certificate `B*(AP)^+ = 0` directly. -/
+theorem
+    LSEFullRowRank.theorem20_8_projected_difference_eq_gram_APplus_of_matrix_range_null_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ)
+    (hdet :
+      Matrix.det
+        (rectGram (theorem20_8AP A B hB.rightInverse) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hBAPplus :
+      rectMatMul B
+          (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+          rectMatMulVec
+            (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+            (rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j := by
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec
+              (undetAplusOfGramNonsingInv
+                (theorem20_8AP A B hB.rightInverse))
+              (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_matrix_range_null_nullIntersection
+      A hB hdet hBAPplus hnull
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_projected_difference_eq_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
+      A DeltaA Deltab B DeltaB hB.rightInverse
+      (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+      Deltad y x hB.rightInverse_spec hAPleft_null hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    concrete Gram-pseudoinverse projected-difference handoff from the
+    transpose-range certificate `B*(AP)^T = 0`. -/
+theorem
+    LSEFullRowRank.theorem20_8_projected_difference_eq_gram_APplus_of_transpose_range_null_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ)
+    (hdet :
+      Matrix.det
+        (rectGram (theorem20_8AP A B hB.rightInverse) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hBAPt :
+      rectMatMul B
+          (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+          rectMatMulVec
+            (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+            (rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j :=
+  LSEFullRowRank.theorem20_8_projected_difference_eq_gram_APplus_of_matrix_range_null_nullIntersection_reduced_difference_eq
+    A DeltaA Deltab hB DeltaB Deltad y x hdet
+    (LSEFullRowRank.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
+      A hB hBAPt)
+    hnull hAPdiff
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     concrete Gram-pseudoinverse form of the projected-difference handoff.
@@ -6879,6 +9335,111 @@ theorem
       hProjAPplus hnull hAPdiff
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    concrete Gram-pseudoinverse exact correction-vector identity using the
+    matrix annihilation certificate `B*(AP)^+ = 0` directly. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_gram_APplus_of_matrix_range_null_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hdet :
+      Matrix.det
+        (rectGram (theorem20_8AP A B hB.rightInverse) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hBAPplus :
+      rectMatMul B
+          (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (theorem20_8BAplus A B hB.rightInverse
+              (undetAplusOfGramNonsingInv
+                (theorem20_8AP A B hB.rightInverse)))
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec
+            (undetAplusOfGramNonsingInv
+              (theorem20_8AP A B hB.rightInverse))
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j := by
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec
+              (undetAplusOfGramNonsingInv
+                (theorem20_8AP A B hB.rightInverse))
+              (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_matrix_range_null_nullIntersection
+      A hB hdet hBAPplus hnull
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
+      A DeltaA b Deltab B DeltaB hB.rightInverse
+      (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+      d Deltad y x hx hy hB.rightInverse_spec hAPleft_null hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    concrete Gram-pseudoinverse exact correction-vector identity from the
+    transpose-range certificate `B*(AP)^T = 0`. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_gram_APplus_of_transpose_range_null_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hdet :
+      Matrix.det
+        (rectGram (theorem20_8AP A B hB.rightInverse) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hBAPt :
+      rectMatMul B
+          (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (theorem20_8BAplus A B hB.rightInverse
+              (undetAplusOfGramNonsingInv
+                (theorem20_8AP A B hB.rightInverse)))
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec
+            (undetAplusOfGramNonsingInv
+              (theorem20_8AP A B hB.rightInverse))
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j :=
+  LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_gram_APplus_of_matrix_range_null_nullIntersection_reduced_difference_eq
+    A DeltaA b Deltab hB DeltaB d Deltad y x hx hy hdet
+    (LSEFullRowRank.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
+      A hB hBAPt)
+    hnull hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     concrete Gram-pseudoinverse form of the exact printed correction-vector
     identity. -/
 theorem
@@ -6928,6 +9489,152 @@ theorem
       (LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
         A hB hdet)
       hProjAPplus hnull hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    strongest current relative solution-difference handoff specialized to the
+    concrete Gram pseudoinverse of `AP`, using `B*(AP)^+ = 0` directly instead
+    of the stronger projector-range certificate. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gram_MP_matrix_range_null_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ)
+    {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hdet :
+      Matrix.det
+        (rectGram (theorem20_8AP A B hB.rightInverse) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hBAPplus :
+      rectMatMul B
+          (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r
+          (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+          (theorem20_8BAplus A B hB.rightInverse
+            (undetAplusOfGramNonsingInv
+              (theorem20_8AP A B hB.rightInverse))) +
+        eps ^ 2 * solutionRadius *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B hB.rightInverse
+                  (undetAplusOfGramNonsingInv
+                    (theorem20_8AP A B hB.rightInverse)))) *
+              frobNormRect B +
+            complexMatrixOp2
+              (realRectToCMatrix
+                (undetAplusOfGramNonsingInv
+                  (theorem20_8AP A B hB.rightInverse))) *
+              frobNormRect A) := by
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec
+              (undetAplusOfGramNonsingInv
+                (theorem20_8AP A B hB.rightInverse))
+              (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_matrix_range_null_nullIntersection
+      A hB hdet hBAPplus hnull
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_AP_left_inverse_on_nullspace_reduced_difference_eq
+      A DeltaA b Deltab B DeltaB hB.rightInverse
+      (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+      d Deltad y x r
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy
+      hB.rightInverse_spec hAPleft_null hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    strongest current relative solution-difference handoff specialized to the
+    concrete Gram pseudoinverse of `AP`, with the range condition reduced to
+    the transpose certificate `B*(AP)^T = 0`. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gram_MP_transpose_range_null_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ)
+    {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hdet :
+      Matrix.det
+        (rectGram (theorem20_8AP A B hB.rightInverse) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hBAPt :
+      rectMatMul B
+          (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r
+          (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+          (theorem20_8BAplus A B hB.rightInverse
+            (undetAplusOfGramNonsingInv
+              (theorem20_8AP A B hB.rightInverse))) +
+        eps ^ 2 * solutionRadius *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B hB.rightInverse
+                  (undetAplusOfGramNonsingInv
+                    (theorem20_8AP A B hB.rightInverse)))) *
+              frobNormRect B +
+            complexMatrixOp2
+              (realRectToCMatrix
+                (undetAplusOfGramNonsingInv
+                  (theorem20_8AP A B hB.rightInverse))) *
+              frobNormRect A) :=
+  LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gram_MP_matrix_range_null_nullIntersection_reduced_difference_eq
+    A DeltaA b Deltab hB DeltaB d Deltad y x r
+    heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy hdet
+    (LSEFullRowRank.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
+      A hB hBAPt)
+    hnull hAPdiff
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     strongest current relative solution-difference handoff specialized to the

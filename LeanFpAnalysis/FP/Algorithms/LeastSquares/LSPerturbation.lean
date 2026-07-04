@@ -192,6 +192,73 @@ theorem wedinTheorem20_1_solutionRelativeRHSConservative_of_vector_bound
             ne_of_gt hden_eta_pos]
           ring
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1), scalar
+    normalization for the printed Wedin relative solution perturbation RHS.
+
+This theorem isolates the final scalar arithmetic: a vector estimate whose
+residual-transfer term has only the source-strength `1 / (1 - κ ε)`
+denominator normalizes exactly to Higham's printed equation (20.1). -/
+theorem wedinTheorem20_1_solutionRelativeRHS_of_vector_bound
+    {sol_norm Aplus_norm DeltaA_norm Deltab_norm kappa eps A_norm x_norm
+      r_norm eta : ℝ}
+    (hAplus_nonneg : 0 ≤ Aplus_norm)
+    (hA_norm_pos : 0 < A_norm)
+    (hx_norm_pos : 0 < x_norm)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (heta : eta = kappa * eps)
+    (hsmall : kappa * eps < 1)
+    (hDeltaA_norm : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm : Deltab_norm ≤ eps * (A_norm * x_norm + r_norm))
+    (hvec :
+      sol_norm ≤
+        (Aplus_norm / (1 - eta)) *
+            (DeltaA_norm * x_norm + Deltab_norm) +
+          (eta * Aplus_norm / (1 - eta)) * r_norm) :
+    sol_norm / x_norm ≤
+      wedinTheorem20_1SolutionRelativeRHS kappa eps A_norm x_norm r_norm := by
+  have hden_eta_pos : 0 < 1 - eta := by
+    rw [heta]
+    exact wedinTheorem20_1_denominator_pos hsmall
+  have hcoef_nonneg : 0 ≤ Aplus_norm / (1 - eta) :=
+    div_nonneg hAplus_nonneg (le_of_lt hden_eta_pos)
+  have hDeltaA_x :
+      DeltaA_norm * x_norm ≤ (eps * A_norm) * x_norm :=
+    mul_le_mul_of_nonneg_right hDeltaA_norm (le_of_lt hx_norm_pos)
+  have hinside :
+      DeltaA_norm * x_norm + Deltab_norm ≤
+        (eps * A_norm) * x_norm + eps * (A_norm * x_norm + r_norm) :=
+    add_le_add hDeltaA_x hDeltab_norm
+  have hforcing :
+      (Aplus_norm / (1 - eta)) *
+          (DeltaA_norm * x_norm + Deltab_norm) ≤
+        (Aplus_norm / (1 - eta)) *
+          ((eps * A_norm) * x_norm + eps * (A_norm * x_norm + r_norm)) :=
+    mul_le_mul_of_nonneg_left hinside hcoef_nonneg
+  have hvec_scalar :
+      sol_norm ≤
+        (Aplus_norm / (1 - eta)) *
+            ((eps * A_norm) * x_norm + eps * (A_norm * x_norm + r_norm)) +
+          (eta * Aplus_norm / (1 - eta)) * r_norm :=
+    hvec.trans (add_le_add hforcing (le_refl _))
+  have hden_kappa_pos : 0 < 1 - kappa * eps :=
+    wedinTheorem20_1_denominator_pos hsmall
+  have hden_rewrite_ne : 1 - Aplus_norm * A_norm * eps ≠ 0 := by
+    rw [← hkappa]
+    exact (ne_of_gt hden_kappa_pos)
+  calc
+    sol_norm / x_norm
+        ≤ ((Aplus_norm / (1 - eta)) *
+            ((eps * A_norm) * x_norm + eps * (A_norm * x_norm + r_norm)) +
+          (eta * Aplus_norm / (1 - eta)) * r_norm) / x_norm :=
+            div_le_div_of_nonneg_right hvec_scalar (le_of_lt hx_norm_pos)
+    _ = wedinTheorem20_1SolutionRelativeRHS
+        kappa eps A_norm x_norm r_norm := by
+          unfold wedinTheorem20_1SolutionRelativeRHS
+          rw [heta, hkappa]
+          field_simp [ne_of_gt hA_norm_pos, ne_of_gt hx_norm_pos,
+            hden_rewrite_ne]
+          ring
+
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.11:
     the smallness hypothesis `η < 1` makes the reciprocal denominator positive. -/
 theorem wedinLemma20_11_denominator_pos {eta : ℝ} (hsmall : eta < 1) :
@@ -1118,6 +1185,140 @@ theorem wedinLemma20_12_projectionComplement_symmetric
     simp [idMatrix, hij, hji, hP i j]
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the complement of an algebraic projection is again an algebraic
+    projection. -/
+theorem wedinLemma20_12_projectionComplement_idempotent
+    {m : ℕ} (P : Fin m → Fin m → ℝ)
+    (hIdem : rectMatMul P P = P) :
+    rectMatMul (fun i j => idMatrix m i j - P i j)
+      (fun i j => idMatrix m i j - P i j) =
+        fun i j => idMatrix m i j - P i j := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp_rw [sub_mul, mul_sub]
+  simp [Finset.sum_sub_distrib, Finset.sum_ite_eq, Finset.mem_univ]
+  have hij := congrFun (congrFun hIdem i) j
+  unfold rectMatMul at hij
+  rw [hij]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    a projection annihilates its complement on the right. -/
+theorem wedinLemma20_12_rangeProjection_mul_projectionComplement_eq_zero
+    {m : ℕ} (P : Fin m → Fin m → ℝ)
+    (hIdem : rectMatMul P P = P) :
+    rectMatMul P (fun i j => idMatrix m i j - P i j) =
+      fun _ _ => 0 := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp_rw [mul_sub]
+  simp [Finset.sum_sub_distrib, Finset.mem_univ]
+  have hij := congrFun (congrFun hIdem i) j
+  unfold rectMatMul at hij
+  rw [hij]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    a projection complement annihilates the projection on the right. -/
+theorem wedinLemma20_12_projectionComplement_mul_rangeProjection_eq_zero
+    {m : ℕ} (P : Fin m → Fin m → ℝ)
+    (hIdem : rectMatMul P P = P) :
+    rectMatMul (fun i j => idMatrix m i j - P i j) P =
+      fun _ _ => 0 := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp_rw [sub_mul]
+  simp [Finset.sum_sub_distrib, Finset.mem_univ]
+  have hij := congrFun (congrFun hIdem i) j
+  unfold rectMatMul at hij
+  rw [hij]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    a symmetric algebraic projection decomposes squared Euclidean norm into
+    range and orthogonal-complement pieces. -/
+theorem wedinLemma20_12_vecNorm2Sq_rangeProjection_add_complement
+    {m : ℕ} (P : Fin m → Fin m → ℝ)
+    (hSym : IsSymmetricFiniteMatrix P)
+    (hIdem : rectMatMul P P = P)
+    (x : Fin m → ℝ) :
+    vecNorm2Sq (rectMatMulVec P x) +
+        vecNorm2Sq (rectMatMulVec (fun i j => idMatrix m i j - P i j) x) =
+      vecNorm2Sq x := by
+  let IP : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - P i j
+  have hIdemFin : ∀ i j : Fin m, finiteMatMul P P i j = P i j := by
+    intro i j
+    simpa [finiteMatMul, rectMatMul] using congrFun (congrFun hIdem i) j
+  have hIPx : rectMatMulVec IP x = fun i => x i - rectMatMulVec P x i := by
+    simpa [IP] using wedinLemma20_12_rectMatMulVec_projectionComplement P x
+  have horth_res :
+      (∑ i : Fin m, (x i - rectMatMulVec P x i) * rectMatMulVec P x i) = 0 := by
+    simpa [finiteMatVec, rectMatMulVec] using
+      finiteVecInnerProduct_projection_residual_range_eq_zero
+        P hSym hIdemFin x x
+  have horth :
+      (∑ i : Fin m, rectMatMulVec P x i * rectMatMulVec IP x i) = 0 := by
+    calc
+      (∑ i : Fin m, rectMatMulVec P x i * rectMatMulVec IP x i)
+          = ∑ i : Fin m, (x i - rectMatMulVec P x i) * rectMatMulVec P x i := by
+              rw [hIPx]
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+      _ = 0 := horth_res
+  have hpyth :=
+    finiteVecNorm2Sq_add_of_inner_eq_zero
+      (rectMatMulVec P x) (rectMatMulVec IP x) horth
+  have hdecomp :
+      (fun i : Fin m => rectMatMulVec P x i + rectMatMulVec IP x i) = x := by
+    rw [hIPx]
+    ext i
+    ring
+  have hpyth' :
+      vecNorm2Sq (fun i : Fin m => rectMatMulVec P x i + rectMatMulVec IP x i) =
+        vecNorm2Sq (rectMatMulVec P x) + vecNorm2Sq (rectMatMulVec IP x) := by
+    simpa [finiteVecNorm2Sq_fin] using hpyth
+  rw [hdecomp] at hpyth'
+  simpa [IP, add_comm] using hpyth'.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    range/complement squared-norm decomposition after applying the complement
+    of another projection.  This is a local CS-route building block for the
+    cross terms `P_B(I-P_A)` and `(I-P_B)(I-P_A)`. -/
+theorem wedinLemma20_12_vecNorm2Sq_rangeProjection_projectionComplement_add_complement
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hSymQ : IsSymmetricFiniteMatrix Q)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (x : Fin m → ℝ) :
+    vecNorm2Sq
+        (rectMatMulVec
+          (rectMatMul Q (fun i j => idMatrix m i j - P i j)) x) +
+      vecNorm2Sq
+        (rectMatMulVec
+          (rectMatMul (fun i j => idMatrix m i j - Q i j)
+            (fun i j => idMatrix m i j - P i j)) x) =
+      vecNorm2Sq
+        (rectMatMulVec (fun i j => idMatrix m i j - P i j) x) := by
+  let IP : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - P i j
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hbase :
+      vecNorm2Sq (rectMatMulVec Q (rectMatMulVec IP x)) +
+          vecNorm2Sq (rectMatMulVec IQ (rectMatMulVec IP x)) =
+        vecNorm2Sq (rectMatMulVec IP x) := by
+    simpa [IQ] using
+      wedinLemma20_12_vecNorm2Sq_rangeProjection_add_complement
+        Q hSymQ hIdemQ (rectMatMulVec IP x)
+  have hQIP :
+      rectMatMulVec (rectMatMul Q IP) x =
+        rectMatMulVec Q (rectMatMulVec IP x) := by
+    rw [rectMatMulVec_rectMatMul]
+  have hIQIP :
+      rectMatMulVec (rectMatMul IQ IP) x =
+        rectMatMulVec IQ (rectMatMulVec IP x) := by
+    rw [rectMatMulVec_rectMatMul]
+  simpa [IP, IQ, hQIP, hIQIP] using hbase
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     transposing a product of symmetric square matrices reverses the product
     order. -/
 theorem wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric
@@ -1131,6 +1332,683 @@ theorem wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric
   intro l _
   rw [hP j l, hQ l i]
   ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    exact complexified operator-2 norms agree for a cross-projection product
+    and its transpose.
+
+This turns the repository's algebraic transpose identity for symmetric
+projections into an exact `complexMatrixOp2` equality, which is needed by the
+CS route toward the missing cross-projection norm equality. -/
+theorem wedinLemma20_12_complexMatrixOp2_crossProjection_transpose_eq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j))) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)) := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hIQ : IsSymmetricFiniteMatrix IQ :=
+    wedinLemma20_12_projectionComplement_symmetric Q hQ
+  have htranspose :
+      finiteTranspose (rectMatMul IQ P) = rectMatMul P IQ :=
+    wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric
+      IQ P hIQ hP
+  calc
+    complexMatrixOp2 (realRectToCMatrix (rectMatMul P IQ))
+        = complexMatrixOp2
+            (realRectToCMatrix (finiteTranspose (rectMatMul IQ P))) := by
+            rw [htranspose]
+    _ = complexMatrixOp2 (realRectToCMatrix (rectMatMul IQ P)) := by
+            rw [complexMatrixOp2_realRectToCMatrix_finiteTranspose_eq]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the squared exact operator-2 norm of the cross projection `P(I-Q)` is
+    the exact operator-2 norm of the compressed Gram product
+    `(I-Q)P(I-Q)`.
+
+This is a CS-route reduction step.  It uses only symmetric-idempotent
+projection algebra and the rectangular Gram bridge; it does not prove the
+Stewart--Sun equality between the two different cross projections. -/
+theorem wedinLemma20_12_complexMatrixOp2_compressedGram_eq_crossProjection_sq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul
+            (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+            (fun i j => idMatrix m i j - Q i j))) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j))) ^ 2 := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hIQ : IsSymmetricFiniteMatrix IQ :=
+    wedinLemma20_12_projectionComplement_symmetric Q hQ
+  have hgram :=
+    complexMatrixOp2_realRectToCMatrix_finiteTranspose_mul_self_eq_sq
+      (rectMatMul P IQ)
+  have htranspose :
+      finiteTranspose (rectMatMul P IQ) = rectMatMul IQ P :=
+    wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric P IQ hP hIQ
+  have hcompressed :
+      rectMatMul (finiteTranspose (rectMatMul P IQ)) (rectMatMul P IQ) =
+        rectMatMul (rectMatMul IQ P) IQ := by
+    rw [htranspose]
+    calc
+      rectMatMul (rectMatMul IQ P) (rectMatMul P IQ)
+          = rectMatMul IQ (rectMatMul P (rectMatMul P IQ)) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul IQ (rectMatMul (rectMatMul P P) IQ) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul IQ (rectMatMul P IQ) := by
+              rw [hIdemP]
+      _ = rectMatMul (rectMatMul IQ P) IQ := by
+              rw [← rectMatMul_assoc]
+  calc
+    complexMatrixOp2 (realRectToCMatrix (rectMatMul (rectMatMul IQ P) IQ))
+        = complexMatrixOp2
+            (realRectToCMatrix
+              (rectMatMul (finiteTranspose (rectMatMul P IQ))
+                (rectMatMul P IQ))) := by
+            rw [hcompressed]
+    _ = complexMatrixOp2 (realRectToCMatrix (rectMatMul P IQ)) ^ 2 := hgram
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the transposed self-product of `P(I-Q)` is the compressed Gram product
+    `(I-Q)P(I-Q)`. -/
+theorem wedinLemma20_12_crossProjection_transpose_mul_self_eq_compressedGram
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    rectMatMul
+        (finiteTranspose
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j)))
+        (rectMatMul P (fun i j => idMatrix m i j - Q i j)) =
+      rectMatMul
+        (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+        (fun i j => idMatrix m i j - Q i j) := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hIQ : IsSymmetricFiniteMatrix IQ :=
+    wedinLemma20_12_projectionComplement_symmetric Q hQ
+  have htranspose :
+      finiteTranspose (rectMatMul P IQ) = rectMatMul IQ P :=
+    wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric P IQ hP hIQ
+  rw [htranspose]
+  calc
+    rectMatMul (rectMatMul IQ P) (rectMatMul P IQ)
+        = rectMatMul IQ (rectMatMul P (rectMatMul P IQ)) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul IQ (rectMatMul (rectMatMul P P) IQ) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul IQ (rectMatMul P IQ) := by
+            rw [hIdemP]
+    _ = rectMatMul (rectMatMul IQ P) IQ := by
+            rw [← rectMatMul_assoc]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the compressed Gram product `(I-Q)P(I-Q)` is symmetric. -/
+theorem wedinLemma20_12_compressedGram_symmetric
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    IsSymmetricFiniteMatrix
+      (rectMatMul
+        (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+        (fun i j => idMatrix m i j - Q i j)) := by
+  have hEq :=
+    wedinLemma20_12_crossProjection_transpose_mul_self_eq_compressedGram
+      P Q hP hQ hIdemP
+  exact
+    IsSymmetricFiniteMatrix_of_eq_rectMatMul_transpose_self
+      (rectMatMul P (fun i j => idMatrix m i j - Q i j))
+      hEq.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the compressed Gram product `(I-Q)P(I-Q)` is positive semidefinite. -/
+theorem wedinLemma20_12_compressedGram_finitePSD
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    finitePSD
+      (rectMatMul
+        (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+        (fun i j => idMatrix m i j - Q i j)) := by
+  have hEq :=
+    wedinLemma20_12_crossProjection_transpose_mul_self_eq_compressedGram
+      P Q hP hQ hIdemP
+  exact
+    finitePSD_of_eq_rectMatMul_transpose_self
+      (rectMatMul P (fun i j => idMatrix m i j - Q i j))
+      hEq.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    an equality between the compressed Gram projector products implies the
+    desired equality between the original cross-projection exact operator-2
+    norms.
+
+The remaining mathematical work for the Stewart--Sun/CS route is therefore
+isolated to proving the compressed-Gram equality under equal projection ranks. -/
+theorem wedinLemma20_12_complexMatrixOp2_crossProjection_eq_of_compressedGram_eq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+              (fun i j => idMatrix m i j - Q i j))) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+              (fun i j => idMatrix m i j - P i j)))) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j))) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul Q (fun i j => idMatrix m i j - P i j))) := by
+  let IP : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - P i j
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hP_sq :=
+    wedinLemma20_12_complexMatrixOp2_compressedGram_eq_crossProjection_sq
+      P Q hP hQ hIdemP
+  have hQ_sq :=
+    wedinLemma20_12_complexMatrixOp2_compressedGram_eq_crossProjection_sq
+      Q P hQ hP hIdemQ
+  have hsquares :
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul P IQ)) ^ 2 =
+        complexMatrixOp2 (realRectToCMatrix (rectMatMul Q IP)) ^ 2 := by
+    calc
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul P IQ)) ^ 2
+          = complexMatrixOp2
+              (realRectToCMatrix (rectMatMul (rectMatMul IQ P) IQ)) := by
+              rw [hP_sq]
+      _ = complexMatrixOp2
+              (realRectToCMatrix (rectMatMul (rectMatMul IP Q) IP)) := by
+              simpa [IP, IQ] using hEq
+      _ = complexMatrixOp2 (realRectToCMatrix (rectMatMul Q IP)) ^ 2 := by
+              rw [hQ_sq]
+  exact (sq_eq_sq₀
+    (complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul P IQ)))
+    (complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul Q IP)))).mp
+    hsquares
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    left multiplication by the complement `(I-Q)` agrees with multiplication
+    by the projection difference `(P-Q)` after a right factor `P`. -/
+theorem wedinLemma20_12_projectionComplement_mul_projection_eq_diff_mul_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P) :
+    rectMatMul (fun i j => idMatrix m i j - Q i j) P =
+      rectMatMul (fun i j => P i j - Q i j) P := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp_rw [sub_mul]
+  rw [Finset.sum_sub_distrib, Finset.sum_sub_distrib]
+  simp [Finset.sum_ite_eq, Finset.mem_univ]
+  have hij := congrFun (congrFun hIdemP i) j
+  unfold rectMatMul at hij
+  rw [hij]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    right multiplication by the complement `(I-Q)` agrees with multiplication
+    by the projection difference `(P-Q)` after a left factor `P`. -/
+theorem wedinLemma20_12_projection_mul_projectionComplement_eq_projection_mul_diff
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P) :
+    rectMatMul P (fun i j => idMatrix m i j - Q i j) =
+      rectMatMul P (fun i j => P i j - Q i j) := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp_rw [mul_sub]
+  rw [Finset.sum_sub_distrib, Finset.sum_sub_distrib]
+  simp [Finset.mem_univ]
+  have hij := congrFun (congrFun hIdemP i) j
+  unfold rectMatMul at hij
+  rw [hij]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the compressed Gram product `(I-Q)P(I-Q)` can be written as
+    `(P-Q)P(P-Q)`.
+
+This is the projector-difference normal form used by spectral proofs of the
+equal-rank cross-projection norm identity. -/
+theorem wedinLemma20_12_compressedGram_eq_diff_projection_diff
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P) :
+    rectMatMul
+        (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+        (fun i j => idMatrix m i j - Q i j) =
+      rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j) P)
+        (fun i j => P i j - Q i j) := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  have hleft : rectMatMul IQ P = rectMatMul D P := by
+    simpa [IQ, D] using
+      wedinLemma20_12_projectionComplement_mul_projection_eq_diff_mul_projection
+        P Q hIdemP
+  have hright : rectMatMul P IQ = rectMatMul P D := by
+    simpa [IQ, D] using
+      wedinLemma20_12_projection_mul_projectionComplement_eq_projection_mul_diff
+        P Q hIdemP
+  calc
+    rectMatMul (rectMatMul IQ P) IQ
+        = rectMatMul (rectMatMul D P) IQ := by
+            rw [hleft]
+    _ = rectMatMul D (rectMatMul P IQ) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul D (rectMatMul P D) := by
+            rw [hright]
+    _ = rectMatMul (rectMatMul D P) D := by
+            rw [← rectMatMul_assoc]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the difference of two symmetric projections is symmetric. -/
+theorem wedinLemma20_12_projectionDiff_symmetric
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q) :
+    IsSymmetricFiniteMatrix (fun i j => P i j - Q i j) := by
+  intro i j
+  dsimp
+  rw [hP i j, hQ i j]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the normal-form product `(P-Q)P(P-Q)` is symmetric. -/
+theorem wedinLemma20_12_diff_projection_diff_symmetric
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    IsSymmetricFiniteMatrix
+      (rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j) P)
+        (fun i j => P i j - Q i j)) := by
+  have hEq :=
+    wedinLemma20_12_compressedGram_eq_diff_projection_diff P Q hIdemP
+  rw [← hEq]
+  exact wedinLemma20_12_compressedGram_symmetric P Q hP hQ hIdemP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the normal-form product `(P-Q)P(P-Q)` is positive semidefinite. -/
+theorem wedinLemma20_12_diff_projection_diff_finitePSD
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    finitePSD
+      (rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j) P)
+        (fun i j => P i j - Q i j)) := by
+  have hEq :=
+    wedinLemma20_12_compressedGram_eq_diff_projection_diff P Q hIdemP
+  rw [← hEq]
+  exact wedinLemma20_12_compressedGram_finitePSD P Q hP hQ hIdemP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the swapped compressed Gram product `(I-P)Q(I-P)` can be written in the
+    same projector-difference orientation as `(P-Q)Q(P-Q)`. -/
+theorem wedinLemma20_12_swapped_compressedGram_eq_diff_projection_diff
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul
+        (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+        (fun i j => idMatrix m i j - P i j) =
+      rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j) Q)
+        (fun i j => P i j - Q i j) := by
+  have hbase :=
+    wedinLemma20_12_compressedGram_eq_diff_projection_diff Q P hIdemQ
+  rw [hbase]
+  ext i j
+  unfold rectMatMul
+  calc
+    (∑ a : Fin m, (∑ b : Fin m, (Q i b - P i b) * Q b a) *
+        (Q a j - P a j))
+        = ∑ a : Fin m, (-(∑ b : Fin m, (P i b - Q i b) * Q b a)) *
+            (-(P a j - Q a j)) := by
+            apply Finset.sum_congr rfl
+            intro a _
+            have hinner :
+                (∑ b : Fin m, (Q i b - P i b) * Q b a) =
+                  -(∑ b : Fin m, (P i b - Q i b) * Q b a) := by
+              rw [← Finset.sum_neg_distrib]
+              apply Finset.sum_congr rfl
+              intro b _
+              ring
+            rw [hinner]
+            ring
+    _ = ∑ a : Fin m, (∑ b : Fin m, (P i b - Q i b) * Q b a) *
+          (P a j - Q a j) := by
+            apply Finset.sum_congr rfl
+            intro a _
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the difference between the two projector-difference normal forms is the
+    cube of the projection difference `D = P-Q`. -/
+theorem wedinLemma20_12_diff_projection_diff_sub_swapped_eq_projectionDiff_cube
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ) :
+    (fun i j =>
+      rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j) P)
+          (fun i j => P i j - Q i j) i j -
+        rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j) Q)
+          (fun i j => P i j - Q i j) i j) =
+      rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j))
+        (fun i j => P i j - Q i j) := by
+  ext i j
+  unfold rectMatMul
+  calc
+    (∑ a : Fin m, (∑ b : Fin m, (P i b - Q i b) * P b a) *
+        (P a j - Q a j)) -
+      (∑ a : Fin m, (∑ b : Fin m, (P i b - Q i b) * Q b a) *
+        (P a j - Q a j))
+        = ∑ a : Fin m,
+            ((∑ b : Fin m, (P i b - Q i b) * P b a) -
+              (∑ b : Fin m, (P i b - Q i b) * Q b a)) *
+              (P a j - Q a j) := by
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro a _
+            ring
+    _ = ∑ a : Fin m,
+          (∑ b : Fin m, (P i b - Q i b) * (P b a - Q b a)) *
+            (P a j - Q a j) := by
+            apply Finset.sum_congr rfl
+            intro a _
+            have hinner :
+                (∑ b : Fin m, (P i b - Q i b) * P b a) -
+                  (∑ b : Fin m, (P i b - Q i b) * Q b a) =
+                ∑ b : Fin m, (P i b - Q i b) * (P b a - Q b a) := by
+              rw [← Finset.sum_sub_distrib]
+              apply Finset.sum_congr rfl
+              intro b _
+              ring
+            rw [hinner]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    in original compressed-Gram orientation, the difference of the two
+    compressed Gram products is the cube of the projection difference. -/
+theorem wedinLemma20_12_compressedGram_sub_swapped_compressedGram_eq_projectionDiff_cube
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    (fun i j =>
+      rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+          (fun i j => idMatrix m i j - Q i j) i j -
+        rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+          (fun i j => idMatrix m i j - P i j) i j) =
+      rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j))
+        (fun i j => P i j - Q i j) := by
+  have hP :=
+    wedinLemma20_12_compressedGram_eq_diff_projection_diff P Q hIdemP
+  have hQ :=
+    wedinLemma20_12_swapped_compressedGram_eq_diff_projection_diff P Q hIdemQ
+  rw [hP, hQ]
+  exact
+    wedinLemma20_12_diff_projection_diff_sub_swapped_eq_projectionDiff_cube P Q
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    trace form of the projector-difference cube identity. -/
+theorem wedinLemma20_12_finiteTrace_diff_projection_diff_sub_swapped_eq_projectionDiff_cube
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j) P)
+          (fun i j => P i j - Q i j)) -
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j) Q)
+          (fun i j => P i j - Q i j)) =
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j))
+          (fun i j => P i j - Q i j)) := by
+  rw [← finiteTrace_sub]
+  exact congrArg finiteTrace
+    (wedinLemma20_12_diff_projection_diff_sub_swapped_eq_projectionDiff_cube P Q)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    trace form of the compressed-Gram cube identity in the original
+    `(I-Q)P(I-Q)` and `(I-P)Q(I-P)` orientations. -/
+theorem wedinLemma20_12_finiteTrace_compressedGram_sub_swapped_eq_projectionDiff_cube
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+          (fun i j => idMatrix m i j - Q i j)) -
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+          (fun i j => idMatrix m i j - P i j)) =
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j))
+          (fun i j => P i j - Q i j)) := by
+  rw [← finiteTrace_sub]
+  exact congrArg finiteTrace
+    (wedinLemma20_12_compressedGram_sub_swapped_compressedGram_eq_projectionDiff_cube
+      P Q hIdemP hIdemQ)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the trace of `(I-Q)P(I-Q)` is `tr(P) - tr(PQ)` for an algebraic
+    projection `Q`. -/
+theorem wedinLemma20_12_finiteTrace_compressedGram_eq_projection_trace_sub
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+          (fun i j => idMatrix m i j - Q i j)) =
+      finiteTrace P - finiteTrace (rectMatMul P Q) := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hIQIdem : rectMatMul IQ IQ = IQ := by
+    simpa [IQ] using
+      wedinLemma20_12_projectionComplement_idempotent Q hIdemQ
+  have hcycle₁ :
+      finiteTrace (rectMatMul (rectMatMul IQ P) IQ) =
+        finiteTrace (rectMatMul IQ (rectMatMul IQ P)) := by
+    simpa [finiteMatMul, rectMatMul] using
+      finiteTrace_finiteMatMul_comm (rectMatMul IQ P) IQ
+  have hcycle₂ :
+      finiteTrace (rectMatMul IQ P) =
+        finiteTrace (rectMatMul P IQ) := by
+    simpa [finiteMatMul, rectMatMul] using
+      finiteTrace_finiteMatMul_comm IQ P
+  have hright :
+      finiteTrace (rectMatMul P IQ) =
+        finiteTrace P - finiteTrace (rectMatMul P Q) := by
+    have hmul := rectMatMul_sub_right P (idMatrix m) Q
+    calc
+      finiteTrace (rectMatMul P IQ)
+          = finiteTrace
+              (fun i j =>
+                rectMatMul P (idMatrix m) i j - rectMatMul P Q i j) := by
+              simpa [IQ] using congrArg finiteTrace hmul
+      _ = finiteTrace (rectMatMul P (idMatrix m)) -
+            finiteTrace (rectMatMul P Q) := by
+              rw [finiteTrace_sub]
+      _ = finiteTrace P - finiteTrace (rectMatMul P Q) := by
+              rw [rectMatMul_id_right]
+  calc
+    finiteTrace (rectMatMul (rectMatMul IQ P) IQ)
+        = finiteTrace (rectMatMul IQ (rectMatMul IQ P)) := hcycle₁
+    _ = finiteTrace (rectMatMul (rectMatMul IQ IQ) P) := by
+            rw [← rectMatMul_assoc]
+    _ = finiteTrace (rectMatMul IQ P) := by
+            rw [hIQIdem]
+    _ = finiteTrace (rectMatMul P IQ) := hcycle₂
+    _ = finiteTrace P - finiteTrace (rectMatMul P Q) := hright
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    subtracting the two compressed-Gram traces leaves only the difference of
+    the projection traces. -/
+theorem wedinLemma20_12_finiteTrace_compressedGram_sub_swapped_eq_projection_trace_sub
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+          (fun i j => idMatrix m i j - Q i j)) -
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+          (fun i j => idMatrix m i j - P i j)) =
+      finiteTrace P - finiteTrace Q := by
+  have hP :=
+    wedinLemma20_12_finiteTrace_compressedGram_eq_projection_trace_sub
+      P Q hIdemQ
+  have hQ :=
+    wedinLemma20_12_finiteTrace_compressedGram_eq_projection_trace_sub
+      Q P hIdemP
+  have hQP :
+      finiteTrace (rectMatMul Q P) = finiteTrace (rectMatMul P Q) := by
+    simpa [finiteMatMul, rectMatMul] using
+      finiteTrace_finiteMatMul_comm Q P
+  rw [hP, hQ, hQP]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    for algebraic projections, the trace of `(P-Q)^3` is the trace of
+    `P-Q`. -/
+theorem wedinLemma20_12_finiteTrace_projectionDiff_cube_eq_projectionDiff
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j))
+          (fun i j => P i j - Q i j)) =
+      finiteTrace (fun i j => P i j - Q i j) := by
+  have hcube :=
+    wedinLemma20_12_finiteTrace_compressedGram_sub_swapped_eq_projectionDiff_cube
+      P Q hIdemP hIdemQ
+  have hdiff :=
+    wedinLemma20_12_finiteTrace_compressedGram_sub_swapped_eq_projection_trace_sub
+      P Q hIdemP hIdemQ
+  calc
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j))
+          (fun i j => P i j - Q i j))
+        = finiteTrace
+            (rectMatMul
+              (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+              (fun i j => idMatrix m i j - Q i j)) -
+          finiteTrace
+            (rectMatMul
+              (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+              (fun i j => idMatrix m i j - P i j)) := by
+            exact hcube.symm
+    _ = finiteTrace P - finiteTrace Q := hdiff
+    _ = finiteTrace (fun i j => P i j - Q i j) := by
+            rw [finiteTrace_sub]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    equal projection traces imply equality of the two compressed-Gram traces. -/
+theorem wedinLemma20_12_finiteTrace_compressedGram_eq_swapped_of_projection_trace_eq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (hTrace : finiteTrace P = finiteTrace Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+          (fun i j => idMatrix m i j - Q i j)) =
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+          (fun i j => idMatrix m i j - P i j)) := by
+  have hdiff :=
+    wedinLemma20_12_finiteTrace_compressedGram_sub_swapped_eq_projection_trace_sub
+      P Q hIdemP hIdemQ
+  rw [hTrace] at hdiff
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    a compressed-Gram Loewner comparison plus equal projection traces supplies
+    the exact cross-projection operator-2 equality needed by the conditional
+    `min` packaging route.
+
+This theorem does not prove the missing principal-angle/Stewart--Sun comparison;
+it isolates that remaining foundation as the explicit Loewner hypothesis. -/
+theorem wedinLemma20_12_complexMatrixOp2_crossProjection_eq_of_compressedGram_loewnerLe_trace_eq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (hTrace : finiteTrace P = finiteTrace Q)
+    (hLoewner :
+      finiteLoewnerLe
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+          (fun i j => idMatrix m i j - Q i j))
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+          (fun i j => idMatrix m i j - P i j))) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j))) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul Q (fun i j => idMatrix m i j - P i j))) := by
+  let GP : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+      (fun i j => idMatrix m i j - Q i j)
+  let GQ : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+      (fun i j => idMatrix m i j - P i j)
+  have hGPsym : IsSymmetricFiniteMatrix GP := by
+    simpa [GP] using
+      wedinLemma20_12_compressedGram_symmetric P Q hP hQ hIdemP
+  have hGQsym : IsSymmetricFiniteMatrix GQ := by
+    simpa [GQ] using
+      wedinLemma20_12_compressedGram_symmetric Q P hQ hP hIdemQ
+  have hTraceGram : finiteTrace GP = finiteTrace GQ := by
+    simpa [GP, GQ] using
+      wedinLemma20_12_finiteTrace_compressedGram_eq_swapped_of_projection_trace_eq
+        P Q hIdemP hIdemQ hTrace
+  have hGramEq : GP = GQ :=
+    finiteLoewnerLe_eq_of_finiteTrace_eq hGPsym hGQsym
+      (by simpa [GP, GQ] using hLoewner) hTraceGram
+  have hOpEq :
+      complexMatrixOp2 (realRectToCMatrix GP) =
+        complexMatrixOp2 (realRectToCMatrix GQ) := by
+    rw [hGramEq]
+  exact
+    wedinLemma20_12_complexMatrixOp2_crossProjection_eq_of_compressedGram_eq
+      P Q hP hQ hIdemP hIdemQ (by simpa [GP, GQ] using hOpEq)
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
     source-oriented projection perturbation bound.
@@ -1226,6 +2104,122 @@ theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_s
       IPA PB hIPA_sym (by simpa [PB] using hSymB)
   rw [htranspose] at htrans
   simpa [PB, IPA] using htrans
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    conditional transfer of the source-oriented `Aplus` projector bound to
+    the opposite cross projection from an exact complexified operator-norm
+    equality.
+
+The hypothesis is the still-open Stewart--Sun/CS equality route, expressed in
+the exact `complexMatrixOp2` API.  This theorem only packages the consequence;
+it does not prove the equality. -/
+theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_of_complexMatrixOp2_eq
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {delta Aplus_norm : ℝ}
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus_norm_nonneg : 0 ≤ Aplus_norm)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul B Bplus)
+              (fun i j => idMatrix m i j - rectMatMul A Aplus i j))) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul A Aplus)
+              (fun i j => idMatrix m i j - rectMatMul B Bplus i j)))) :
+    rectOpNorm2Le
+      (rectMatMul
+        (rectMatMul B Bplus)
+        (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+      (delta * Aplus_norm) := by
+  let PA : Fin m → Fin m → ℝ := rectMatMul A Aplus
+  let PB : Fin m → Fin m → ℝ := rectMatMul B Bplus
+  let IPA : Fin m → Fin m → ℝ :=
+    fun i j => idMatrix m i j - PA i j
+  let IPB : Fin m → Fin m → ℝ :=
+    fun i j => idMatrix m i j - PB i j
+  have hdelta_nonneg : 0 ≤ delta :=
+    rectOpNorm2Le_radius_nonneg (M := fun i j => B i j - A i j) hDelta
+  have hPAIPB :
+      rectOpNorm2Le (rectMatMul PA IPB) (delta * Aplus_norm) := by
+    simpa [PA, IPB] using
+      wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement
+        A B Aplus Bplus hleftB hSymA hSymB hDelta
+        hAplus_norm_nonneg hAplus
+  exact
+    rectOpNorm2Le_of_complexMatrixOp2_eq_of_rectOpNorm2Le
+      (rectMatMul PB IPA) (rectMatMul PA IPB)
+      (mul_nonneg hdelta_nonneg hAplus_norm_nonneg)
+      (by simpa [PA, PB, IPA, IPB] using hEq)
+      hPAIPB
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    conditional `min` packaging for the source-oriented `P_B(I-P_A)` projector
+    estimate.
+
+Once the still-open Stewart--Sun/CS equality is supplied in exact
+`complexMatrixOp2` form, the two one-sided estimates combine to the source
+radius `delta * min Aplus_norm Bplus_norm`. -/
+theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_min_of_complexMatrixOp2_eq
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {delta Aplus_norm Bplus_norm : ℝ}
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus_norm_nonneg : 0 ≤ Aplus_norm)
+    (hBplus_norm_nonneg : 0 ≤ Bplus_norm)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hBplus : rectOpNorm2Le Bplus Bplus_norm)
+    (hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul B Bplus)
+              (fun i j => idMatrix m i j - rectMatMul A Aplus i j))) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul A Aplus)
+              (fun i j => idMatrix m i j - rectMatMul B Bplus i j)))) :
+    rectOpNorm2Le
+      (rectMatMul
+        (rectMatMul B Bplus)
+        (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+      (delta * min Aplus_norm Bplus_norm) := by
+  have hA_bound :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm) :=
+    wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_of_complexMatrixOp2_eq
+      A B Aplus Bplus hleftB hSymA hSymB hDelta
+      hAplus_norm_nonneg hAplus hEq
+  have hB_bound :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Bplus_norm) :=
+    wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped
+      A B Aplus Bplus hleftA hSymA hSymB hDelta
+      hBplus_norm_nonneg hBplus
+  intro x
+  by_cases hAB : Aplus_norm ≤ Bplus_norm
+  · simpa [min_eq_left hAB] using hA_bound x
+  · have hBA : Bplus_norm ≤ Aplus_norm :=
+      le_of_lt (lt_of_not_ge hAB)
+    simpa [min_eq_right hBA] using hB_bound x
 
 /-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
     the source-oriented Lemma 20.12 projector estimate controls `Bplus*r`
@@ -1845,6 +2839,430 @@ theorem wedinTheorem20_1_vecNorm2_solution_difference_le_of_residual_definitions
       A B Aplus Bplus DeltaA b Deltab r s x y hAplus_pos heta hsmall
       hleftA hleftB hSymA hSymB hDelta hBplus hDeltaA hDeltab
       hrangeA_residual hB hr hs hproj_s
+
+/-- Higham, 2nd ed., Chapter 20, proof of Theorem 20.1:
+    source-strength residual-transfer estimate for the solution side.
+
+If the full Lemma 20.12 projector route has supplied
+`||P_B(I-P_A)||₂ <= delta * ||Aplus||₂`, then the source algebra
+`Bplus*r = Bplus*P_B*(I-P_A)*r` controls `Bplus*r` with only one later
+`Bplus` radius.  This is the vector step needed to remove the conservative
+extra denominator from the solution bound. -/
+theorem wedinTheorem20_1_vecNorm2_Bplus_residual_le_projector_bound
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {delta Aplus_norm Bplus_norm : ℝ} (r : Fin m → ℝ)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hPBIPA :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm))
+    (hBplus_norm_nonneg : 0 ≤ Bplus_norm)
+    (hBplus : rectOpNorm2Le Bplus Bplus_norm)
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0) :
+    vecNorm2 (rectMatMulVec Bplus r) ≤
+      Bplus_norm * ((delta * Aplus_norm) * vecNorm2 r) := by
+  let PA : Fin m → Fin m → ℝ := rectMatMul A Aplus
+  let PB : Fin m → Fin m → ℝ := rectMatMul B Bplus
+  let IPA : Fin m → Fin m → ℝ :=
+    fun i j => idMatrix m i j - PA i j
+  have hBplusPB : rectMatMul Bplus PB = Bplus := by
+    calc
+      rectMatMul Bplus PB = rectMatMul Bplus (rectMatMul B Bplus) := by
+        rfl
+      _ = rectMatMul (rectMatMul Bplus B) Bplus := by
+        rw [rectMatMul_assoc]
+      _ = rectMatMul (idMatrix (k + 1)) Bplus := by
+        rw [hleftB]
+      _ = Bplus := rectMatMul_id_left Bplus
+  have hIPA_r : rectMatMulVec IPA r = r := by
+    rw [show IPA = (fun i j => idMatrix m i j - rectMatMul A Aplus i j) by
+      ext i j
+      rfl]
+    rw [wedinLemma20_12_rectMatMulVec_projectionComplement]
+    rw [hrangeA_residual]
+    ext i
+    simp
+  have hfactor :
+      rectMatMulVec Bplus r =
+        rectMatMulVec Bplus (rectMatMulVec (rectMatMul PB IPA) r) := by
+    symm
+    calc
+      rectMatMulVec Bplus (rectMatMulVec (rectMatMul PB IPA) r)
+          = rectMatMulVec Bplus
+              (rectMatMulVec PB (rectMatMulVec IPA r)) := by
+              rw [rectMatMulVec_rectMatMul]
+      _ = rectMatMulVec Bplus (rectMatMulVec PB r) := by
+              rw [hIPA_r]
+      _ = rectMatMulVec (rectMatMul Bplus PB) r := by
+              rw [← rectMatMulVec_rectMatMul]
+      _ = rectMatMulVec Bplus r := by
+              rw [hBplusPB]
+  have hPBIPA_r :
+      vecNorm2 (rectMatMulVec (rectMatMul PB IPA) r) ≤
+        (delta * Aplus_norm) * vecNorm2 r := by
+    simpa [PA, PB, IPA] using hPBIPA r
+  have hBplus_y := hBplus (rectMatMulVec (rectMatMul PB IPA) r)
+  calc
+    vecNorm2 (rectMatMulVec Bplus r)
+        = vecNorm2
+            (rectMatMulVec Bplus (rectMatMulVec (rectMatMul PB IPA) r)) := by
+            rw [hfactor]
+    _ ≤ Bplus_norm * vecNorm2 (rectMatMulVec (rectMatMul PB IPA) r) :=
+            hBplus_y
+    _ ≤ Bplus_norm * ((delta * Aplus_norm) * vecNorm2 r) :=
+            mul_le_mul_of_nonneg_left hPBIPA_r hBplus_norm_nonneg
+
+/-- Higham, 2nd ed., Chapter 20, proof of Theorem 20.1:
+    `η`-scaled source-strength residual-transfer estimate for the solution
+    side.  Compared with the conservative one-sided route, the residual term
+    has a single `1 - η` denominator. -/
+theorem wedinTheorem20_1_vecNorm2_Bplus_residual_le_projector_bound_eta
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {Aplus_norm delta eta : ℝ} (r : Fin m → ℝ)
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hPBIPA :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm))
+    (hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0) :
+    vecNorm2 (rectMatMulVec Bplus r) ≤
+      (eta * Aplus_norm / (1 - eta)) * vecNorm2 r := by
+  have hden_pos : 0 < 1 - eta :=
+    wedinLemma20_11_denominator_pos hsmall
+  have hBplus_radius_nonneg : 0 ≤ Aplus_norm / (1 - eta) :=
+    div_nonneg (le_of_lt hAplus_pos) (le_of_lt hden_pos)
+  have hbound :=
+    wedinTheorem20_1_vecNorm2_Bplus_residual_le_projector_bound
+      A B Aplus Bplus r hleftB hPBIPA hBplus_radius_nonneg hBplus
+      hrangeA_residual
+  have hden_rewrite_ne : 1 - Aplus_norm * delta ≠ 0 := by
+    rw [← heta]
+    exact (ne_of_gt hden_pos)
+  have hcoeff :
+      (Aplus_norm / (1 - eta)) *
+          ((delta * Aplus_norm) * vecNorm2 r) =
+        (eta * Aplus_norm / (1 - eta)) * vecNorm2 r := by
+    rw [heta]
+    field_simp [hden_rewrite_ne]
+  simpa [hcoeff] using hbound
+
+/-- Higham, 2nd ed., Chapter 20, proof of Theorem 20.1:
+    source-strength vector assembly for the Wedin solution perturbation
+    estimate.  The supplied projector estimate is the remaining full
+    Lemma 20.12 dependency. -/
+theorem wedinTheorem20_1_vecNorm2_Bplus_forcing_add_residual_le_projector_bound
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (Deltab r : Fin m → ℝ)
+    (x : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hPBIPA :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm))
+    (hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0) :
+    vecNorm2
+        (fun j =>
+          rectMatMulVec Bplus
+              (fun i => -rectMatMulVec DeltaA x i + Deltab i) j +
+            rectMatMulVec Bplus r j) ≤
+      (Aplus_norm / (1 - eta)) *
+          (DeltaA_norm * vecNorm2 x + Deltab_norm) +
+        (eta * Aplus_norm / (1 - eta)) * vecNorm2 r := by
+  have hden_pos : 0 < 1 - eta :=
+    wedinLemma20_11_denominator_pos hsmall
+  have hBplus_radius_nonneg : 0 ≤ Aplus_norm / (1 - eta) :=
+    div_nonneg (le_of_lt hAplus_pos) (le_of_lt hden_pos)
+  have hforcing :
+      vecNorm2
+          (rectMatMulVec Bplus
+            (fun i => -rectMatMulVec DeltaA x i + Deltab i)) ≤
+        (Aplus_norm / (1 - eta)) *
+          (DeltaA_norm * vecNorm2 x + Deltab_norm) :=
+    wedinTheorem20_1_vecNorm2_Bplus_forcing_le
+      Bplus DeltaA Deltab x hBplus_radius_nonneg hBplus hDeltaA hDeltab
+  have hresidual :
+      vecNorm2 (rectMatMulVec Bplus r) ≤
+        (eta * Aplus_norm / (1 - eta)) * vecNorm2 r :=
+    wedinTheorem20_1_vecNorm2_Bplus_residual_le_projector_bound_eta
+      A B Aplus Bplus r hAplus_pos heta hsmall hleftB hPBIPA hBplus
+      hrangeA_residual
+  calc
+    vecNorm2
+        (fun j =>
+          rectMatMulVec Bplus
+              (fun i => -rectMatMulVec DeltaA x i + Deltab i) j +
+            rectMatMulVec Bplus r j)
+        ≤ vecNorm2
+            (rectMatMulVec Bplus
+              (fun i => -rectMatMulVec DeltaA x i + Deltab i)) +
+          vecNorm2 (rectMatMulVec Bplus r) := by
+            exact vecNorm2_add_le
+              (rectMatMulVec Bplus
+                (fun i => -rectMatMulVec DeltaA x i + Deltab i))
+              (rectMatMulVec Bplus r)
+    _ ≤ (Aplus_norm / (1 - eta)) *
+            (DeltaA_norm * vecNorm2 x + Deltab_norm) +
+          (eta * Aplus_norm / (1 - eta)) * vecNorm2 r :=
+            add_le_add hforcing hresidual
+
+/-- Higham, 2nd ed., Chapter 20, proof of Theorem 20.1:
+    source-strength assembled bound with the combined vector
+    `-DeltaA*x + Deltab + r` inside the single `Bplus` action. -/
+theorem wedinTheorem20_1_vecNorm2_Bplus_combined_forcing_residual_le_projector_bound
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (Deltab r : Fin m → ℝ)
+    (x : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hPBIPA :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm))
+    (hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0) :
+    vecNorm2
+        (rectMatMulVec Bplus
+          (fun i => (-rectMatMulVec DeltaA x i + Deltab i) + r i)) ≤
+      (Aplus_norm / (1 - eta)) *
+          (DeltaA_norm * vecNorm2 x + Deltab_norm) +
+        (eta * Aplus_norm / (1 - eta)) * vecNorm2 r := by
+  have hsum :=
+    wedinTheorem20_1_vecNorm2_Bplus_forcing_add_residual_le_projector_bound
+      A B Aplus Bplus DeltaA Deltab r x hAplus_pos heta hsmall
+      hleftB hPBIPA hBplus hDeltaA hDeltab hrangeA_residual
+  have hsplit :
+      rectMatMulVec Bplus
+          (fun i => (-rectMatMulVec DeltaA x i + Deltab i) + r i) =
+        fun j =>
+          rectMatMulVec Bplus
+              (fun i => -rectMatMulVec DeltaA x i + Deltab i) j +
+            rectMatMulVec Bplus r j := by
+    simpa using
+      rectMatMulVec_add Bplus
+        (fun i : Fin m => -rectMatMulVec DeltaA x i + Deltab i) r
+  simpa [hsplit] using hsum
+
+/-- Higham, 2nd ed., Chapter 20, proof of Theorem 20.1:
+    source-strength solution-difference vector bound using residual
+    definitions and perturbed normal-equation orthogonality. -/
+theorem wedinTheorem20_1_vecNorm2_solution_difference_le_of_residual_definitions_projector_bound_column_orthogonal
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hPBIPA :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm))
+    (hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i)
+    (horth_s : ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0) :
+    vecNorm2 (fun j => y j - x j) ≤
+      (Aplus_norm / (1 - eta)) *
+          (DeltaA_norm * vecNorm2 x + Deltab_norm) +
+        (eta * Aplus_norm / (1 - eta)) * vecNorm2 r := by
+  have hproj_s : rectMatMulVec (rectMatMul B Bplus) s = 0 :=
+    wedinTheorem20_1_rangeProjection_perturbed_residual_eq_zero_of_column_orthogonal
+      B Bplus s hSymB horth_s
+  have hBdiff :
+      rectMatMulVec B (fun j => y j - x j) =
+        fun i => ((-rectMatMulVec DeltaA x i + Deltab i) + r i) - s i :=
+    wedinTheorem20_1_B_mul_solution_difference_eq_forcing_residual_sub_of_residuals
+      A B DeltaA b Deltab r s x y hB hr hs
+  have hdiff_eq :
+      (fun j => y j - x j) =
+        rectMatMulVec Bplus
+          (fun i => (-rectMatMulVec DeltaA x i + Deltab i) + r i) :=
+    wedinTheorem20_1_solution_difference_eq_Bplus_combined_of_B_mul_sub_residual
+      B Bplus DeltaA Deltab r s x y hleftB hBdiff hproj_s
+  rw [hdiff_eq]
+  exact
+    wedinTheorem20_1_vecNorm2_Bplus_combined_forcing_residual_le_projector_bound
+      A B Aplus Bplus DeltaA Deltab r x hAplus_pos heta hsmall
+      hleftB hPBIPA hBplus hDeltaA hDeltab hrangeA_residual
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1):
+    printed relative solution perturbation bound, conditional on the
+    source-strength Lemma 20.12 projector estimate.
+
+This theorem removes the conservative extra denominator from the solution
+RHS once `||P_B(I-P_A)||₂ <= delta * ||Aplus||₂` is supplied.  The remaining
+chapter-level work is to prove that projector estimate from the full
+Lemma 20.12 equality/min surface. -/
+theorem wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_projector_bound_column_orthogonal
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (hA_norm_pos : 0 < A_norm)
+    (hx_norm_pos : 0 < vecNorm2 x)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hPBIPA :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm))
+    (hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget :
+      Deltab_norm ≤ eps * (A_norm * vecNorm2 x + vecNorm2 r))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i)
+    (horth_s : ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      wedinTheorem20_1SolutionRelativeRHS
+        kappa eps A_norm (vecNorm2 x) (vecNorm2 r) := by
+  have hvec :
+      vecNorm2 (fun j => y j - x j) ≤
+        (Aplus_norm / (1 - eta)) *
+            (DeltaA_norm * vecNorm2 x + Deltab_norm) +
+          (eta * Aplus_norm / (1 - eta)) * vecNorm2 r :=
+    wedinTheorem20_1_vecNorm2_solution_difference_le_of_residual_definitions_projector_bound_column_orthogonal
+      A B Aplus Bplus DeltaA b Deltab r s x y hAplus_pos heta hsmall
+      hleftB hSymB hPBIPA hBplus hDeltaA hDeltab hrangeA_residual
+      hB hr hs horth_s
+  have heta_scalar : eta = kappa * eps := by
+    rw [heta, hdelta, hkappa]
+    ring
+  have hsmall_scalar : kappa * eps < 1 := by
+    rw [← heta_scalar]
+    exact hsmall
+  exact
+    wedinTheorem20_1_solutionRelativeRHS_of_vector_bound
+      (hAplus_nonneg := le_of_lt hAplus_pos)
+      (hA_norm_pos := hA_norm_pos)
+      (hx_norm_pos := hx_norm_pos)
+      (hkappa := hkappa)
+      (heta := heta_scalar)
+      (hsmall := hsmall_scalar)
+      (hDeltaA_norm := hDeltaA_norm_budget)
+      (hDeltab_norm := hDeltab_norm_budget)
+      (hvec := hvec)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1):
+    printed relative solution perturbation bound, conditional only on the
+    exact cross-projection norm equality from the open Stewart--Sun/CS route.
+
+This wrapper derives the source-strength `P_B(I-P_A)` projector estimate from
+the exact `complexMatrixOp2` equality and then calls the already formalized
+Wedin solution algebra.  It does not prove the equality itself. -/
+theorem wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_crossProjection_eq_column_orthogonal
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (hA_norm_pos : 0 < A_norm)
+    (hx_norm_pos : 0 < vecNorm2 x)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul B Bplus)
+              (fun i j => idMatrix m i j - rectMatMul A Aplus i j))) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul A Aplus)
+              (fun i j => idMatrix m i j - rectMatMul B Bplus i j))))
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget :
+      Deltab_norm ≤ eps * (A_norm * vecNorm2 x + vecNorm2 r))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i)
+    (horth_s : ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      wedinTheorem20_1SolutionRelativeRHS
+        kappa eps A_norm (vecNorm2 x) (vecNorm2 r) := by
+  have hPBIPA :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm) :=
+    wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_of_complexMatrixOp2_eq
+      A B Aplus Bplus hleftB hSymA hSymB hDelta (le_of_lt hAplus_pos)
+      hAplus hEq
+  exact
+    wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_projector_bound_column_orthogonal
+      A B Aplus Bplus DeltaA b Deltab r s x y hAplus_pos hA_norm_pos
+      hx_norm_pos hkappa hdelta heta hsmall hleftB hSymB hPBIPA hBplus
+      hDeltaA hDeltab hDeltaA_norm_budget hDeltab_norm_budget
+      hrangeA_residual hB hr hs horth_s
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1), conservative
     relative solution perturbation bound assembled from the currently proved
@@ -2589,6 +4007,73 @@ theorem wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_projecto
       heps_nonneg hkappa hdelta hAplus hDeltaA hDeltab hDeltaA_norm_budget
       hDeltab_norm_budget hleftA hleftB hSymA hSymB hrangeA_residual
       hPBIPA hB hr hs hproj_s
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2):
+    printed relative residual perturbation bound, conditional only on the
+    exact cross-projection norm equality from the open Stewart--Sun/CS route.
+
+The exact equality supplies the source-strength `P_B(I-P_A)` projector
+estimate.  The remaining residual-definition and least-squares geometry are
+then handled by the existing printed-RHS wrapper. -/
+theorem wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_crossProjection_eq_geometry_column_orthogonal
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {delta Aplus_norm DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hb_norm_pos : 0 < vecNorm2 b)
+    (hA_norm_nonneg : 0 ≤ A_norm)
+    (heps_nonneg : 0 ≤ eps)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget : Deltab_norm ≤ eps * vecNorm2 b)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul B Bplus)
+              (fun i j => idMatrix m i j - rectMatMul A Aplus i j))) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul A Aplus)
+              (fun i j => idMatrix m i j - rectMatMul B Bplus i j))))
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i)
+    (horth_s : ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0) :
+    vecNorm2 (fun i => r i - s i) / vecNorm2 b ≤
+      wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+  have hAplus_norm_nonneg : 0 ≤ Aplus_norm := by
+    have hright_nonneg :
+        0 ≤ Aplus_norm * vecNorm2 b :=
+      le_trans (vecNorm2_nonneg (rectMatMulVec Aplus b)) (hAplus b)
+    nlinarith [hb_norm_pos]
+  have hPBIPA :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm) :=
+    wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_of_complexMatrixOp2_eq
+      A B Aplus Bplus hleftB hSymA hSymB hDelta hAplus_norm_nonneg
+      hAplus hEq
+  exact
+    wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_projector_bound_geometry_column_orthogonal
+      A B Aplus Bplus DeltaA b Deltab r s x y hb_norm_pos hA_norm_nonneg
+      heps_nonneg hkappa hdelta hAplus hDeltaA hDeltab hDeltaA_norm_budget
+      hDeltab_norm_budget hleftA hleftB hSymA hSymB hrangeA_residual
+      hPBIPA hB hr hs horth_s
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2), conservative
     residual perturbation bound from the currently proved one-sided

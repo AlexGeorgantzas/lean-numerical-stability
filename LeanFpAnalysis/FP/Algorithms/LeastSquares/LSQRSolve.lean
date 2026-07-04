@@ -19570,6 +19570,126 @@ theorem IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
         rw [hs]
         rfl)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1):
+    source-strength solution-side Wedin bound with perturbed least-squares
+    optimality as the caller-facing hypothesis.
+
+This is the minimizer-facing version of
+`wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_projector_bound_column_orthogonal`.
+It discharges residual column orthogonality from exact optimality.  The
+source-strength projector estimate remains explicit until the full
+Lemma 20.12 equality/min surface is formalized. -/
+theorem IsLeastSquaresMinimizer.wedin_solutionRelativeRHS_le_of_projector_bound_geometry
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hPertMin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
+    (hAplus_pos : 0 < Aplus_norm)
+    (hA_norm_pos : 0 < A_norm)
+    (hx_norm_pos : 0 < vecNorm2 x)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hPBIPA :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm))
+    (hBplus : rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget :
+      Deltab_norm ≤ eps * (A_norm * vecNorm2 x + vecNorm2 r))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      wedinTheorem20_1SolutionRelativeRHS
+        kappa eps A_norm (vecNorm2 x) (vecNorm2 r) := by
+  have horth_s :
+      ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0 :=
+    IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
+      (B := B) (b := b) (Deltab := Deltab) (s := s) (y := y)
+      hPertMin hs
+  exact
+    wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_projector_bound_column_orthogonal
+      A B Aplus Bplus DeltaA b Deltab r s x y hAplus_pos hA_norm_pos
+      hx_norm_pos hkappa hdelta heta hsmall hleftB hSymB hPBIPA hBplus
+      hDeltaA hDeltab hDeltaA_norm_budget hDeltab_norm_budget
+      hrangeA_residual hB hr hs horth_s
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1):
+    minimizer-facing printed solution-side Wedin bound, conditional only on
+    the exact cross-projection norm equality from the open Stewart--Sun/CS
+    route.
+
+This is the caller-facing exact-LS version of
+`wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_crossProjection_eq_column_orthogonal`.
+The perturbed residual column orthogonality is discharged from exact optimality,
+while the exact cross-projection equality remains visible. -/
+theorem IsLeastSquaresMinimizer.wedin_solutionRelativeRHS_le_of_crossProjection_eq_geometry
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hPertMin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
+    (hAplus_pos : 0 < Aplus_norm)
+    (hA_norm_pos : 0 < A_norm)
+    (hx_norm_pos : 0 < vecNorm2 x)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hBplus : rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
+    (hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul B Bplus)
+              (fun i j => idMatrix m i j - rectMatMul A Aplus i j))) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul A Aplus)
+              (fun i j => idMatrix m i j - rectMatMul B Bplus i j))))
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget :
+      Deltab_norm ≤ eps * (A_norm * vecNorm2 x + vecNorm2 r))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      wedinTheorem20_1SolutionRelativeRHS
+        kappa eps A_norm (vecNorm2 x) (vecNorm2 r) := by
+  have horth_s :
+      ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0 :=
+    IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
+      (B := B) (b := b) (Deltab := Deltab) (s := s) (y := y)
+      hPertMin hs
+  exact
+    wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_crossProjection_eq_column_orthogonal
+      A B Aplus Bplus DeltaA b Deltab r s x y hAplus_pos hA_norm_pos
+      hx_norm_pos hkappa hdelta heta hsmall hleftB hSymA hSymB hDelta
+      hAplus hBplus hEq hDeltaA hDeltab hDeltaA_norm_budget
+      hDeltab_norm_budget hrangeA_residual hB hr hs horth_s
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1), conservative
     solution-side Wedin bound with perturbed least-squares optimality as the
     caller-facing hypothesis.
@@ -19676,6 +19796,65 @@ theorem IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_projector_bound_
       heps_nonneg hkappa hdelta hAplus hDeltaA hDeltab hDeltaA_norm_budget
       hDeltab_norm_budget hleftA hleftB hSymA hSymB hrangeA_residual
       hPBIPA hB hr hs horth_s
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2):
+    minimizer-facing printed residual-side Wedin bound, conditional only on
+    the exact cross-projection norm equality from the open Stewart--Sun/CS
+    route.
+
+This discharges perturbed residual column orthogonality from exact optimality
+and derives the source-strength projector estimate through the
+`complexMatrixOp2` equality wrapper in the perturbation module. -/
+theorem IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_crossProjection_eq_geometry
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {delta Aplus_norm DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hPertMin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
+    (hb_norm_pos : 0 < vecNorm2 b)
+    (hA_norm_nonneg : 0 ≤ A_norm)
+    (heps_nonneg : 0 ≤ eps)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget : Deltab_norm ≤ eps * vecNorm2 b)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul B Bplus)
+              (fun i j => idMatrix m i j - rectMatMul A Aplus i j))) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul A Aplus)
+              (fun i j => idMatrix m i j - rectMatMul B Bplus i j))))
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
+    vecNorm2 (fun i => r i - s i) / vecNorm2 b ≤
+      wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+  have horth_s :
+      ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0 :=
+    IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
+      (B := B) (b := b) (Deltab := Deltab) (s := s) (y := y)
+      hPertMin hs
+  exact
+    wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_crossProjection_eq_geometry_column_orthogonal
+      A B Aplus Bplus DeltaA b Deltab r s x y hb_norm_pos hA_norm_nonneg
+      heps_nonneg hkappa hdelta hAplus hDelta hDeltaA hDeltab
+      hDeltaA_norm_budget hDeltab_norm_budget hleftA hleftB hSymA hSymB
+      hrangeA_residual hEq hB hr hs horth_s
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2), conservative
     residual-side Wedin bound with perturbed least-squares optimality as the

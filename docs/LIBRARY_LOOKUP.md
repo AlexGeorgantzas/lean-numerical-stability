@@ -2574,6 +2574,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models_le`
 - `higham9_14_source_f_bound_of_absLU_le_absA_and_9_20_9_21_models_le`
 - `higham9_14_source_h_bound_of_absLU_le_absA_and_9_20_9_21_models_le`
+- `higham9_22_matrix_source_f_bound_of_matrix_models_le`
+- `higham9_14_matrix_source_f_bound_of_absLU_le_const_absA_and_matrix_models_le`
+- `higham9_14_matrix_source_h_bound_of_absLU_le_const_absA_and_matrix_models_le`
+- `higham9_14_matrix_source_f_bound_of_absLU_le_absA_and_matrix_models_le`
+- `higham9_14_matrix_source_h_bound_of_absLU_le_absA_and_matrix_models_le`
 - `higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma_le`
 - `higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le`
@@ -2593,6 +2598,46 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_gamma_le`
 - `higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_const_gamma`
 - `higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_gamma`
+- `higham9_14_matrix_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_LUFactSpec_fl_triangular_solves_const_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_gamma`
+- `higham9_14_matrix_source_h_bound_of_LUFactSpec_fl_triangular_solves_const_gamma`
+- `higham9_14_matrix_source_f_bound_of_LUBackwardError_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_f_bound_of_LUBackwardError_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_matrix_source_f_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_f_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_matrix_source_h_bound_of_LUBackwardError_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_LUBackwardError_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_matrix_source_h_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_LUFactSpec_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_matrix_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_const_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_const_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_const_gamma`
+- `higham9_14_matrix_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_const_gamma`
+- `higham9_14_matrix_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_matrix_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_matrix_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_matrix_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_absLU_le_absA_gamma`
 - `higham9_14_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le`
 - `higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le`
 - `higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le`
@@ -2617,6 +2662,26 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma_le`
 - `higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma_le`
 - `higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_f_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_const_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_const_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_const_gamma`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_const_gamma`
+- `higham9_14_matrix_source_f_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_f_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_f_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_matrix_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_absLU_le_absA_gamma`
 - `higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_const_gamma_le`
 - `higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_const_gamma_le`
 - `higham9_14_source_f_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma`
@@ -2643,6 +2708,16 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma_le`
 - `higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma`
 - `higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_const_gamma`
+- `higham9_14_matrix_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_const_gamma_le`
+- `higham9_14_matrix_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma_le`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_absLU_le_absA_gamma`
+- `higham9_14_matrix_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_const_gamma`
 - `higham9_14_tridiag_colDiagDom_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le`
 - `higham9_14_tridiag_rowDiagDom_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le`
 - `higham9_14_tridiag_colDiagDom_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma`
@@ -5395,3 +5470,6 @@ Module: `LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Minimizers.lean` (comple
 | Eq (16.26) attained minimum for sep | `exists_sylvesterSep_minimizer` (a unit-Frobenius-sphere minimizer attains `sylvesterSepInf` — compactness of the sphere + continuity), `sylvesterSepInf_mem_sylvesterSepRatios`, `isLeast_sylvesterSepRatios` — the printed minimum, not just the infimum model. |
 | Eq (16.15) attained minimum for η | `exists_sylvesterBackwardError_minimizer` (under positive weights and nonempty feasible values, an optimal perturbation triple attains `sylvesterBackwardErrorInf`), `isLeast_sylvesterBackwardErrorValues`. |
 | Eq (16.29) floating-point residual model | `flSylvesterResidualRect` (the computed residual via `fl_matMul` + fl subtraction/addition), `flSylvesterResidualBudget` (`γ_{m+2}·\|A\|\|X̂\| + γ_{n+1}·\|X̂\|\|B\| + γ₂·\|C\|`), `sylvester_computed_residual_dR_model` (`R̂ = R + dR`, `\|dR\| ≤ Ru`), and the end-to-end `sylvester_practical_error_bound_fl` composing with the diagonal practical-bound certificate. |
+| Eq (16.3) constructive spectral directions + Bartels–Stewart triangular solve (module `Sylvester/Higham16Spectrum.lean`) | `sylvesterVecCoeff_eigenpair` (an (A,Bᵀ) eigenpair yields a Kronecker eigenvector of the vec coefficient with eigenvalue λ−μ, in the module's stacking convention; `_vecMul` left-eigenpair variant), `sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair` ("every difference is an eigenvalue", det form), `sylvesterVecCoeff_singular_of_common_eigenvalue` (common eigenvalue ⇒ det = 0); the converse needs complex Schur (absent from Mathlib) and is recorded open. `sylvester_triangular_column_equation` + `sylvester_triangular_solve_exists_unique` — the (16.5)/(16.6) Bartels–Stewart column recurrence and unique solvability for supplied upper-triangular T with per-column shifted nonsingularity (strong induction); quasi-triangular 2×2 blocks scope-noted. |
+| Eq (16.23)-(16.24) structured condition number Ψ (module `Sylvester/Higham16Psi.lean`) | `SylvesterInverseOpBound` (‖P⁻¹‖-type data `∀Y, ‖Y‖_F ≤ M‖AY−YB‖_F`; from `SepLowerBound` via `sylvesterInverseOpBound_of_sepLowerBound`), `sylvesterPsi_of_inverseOpBound` (= `M·((α+β)‖X‖_F+γ)/‖X‖_F`, Higham's `‖P⁻¹[…]‖/‖vec X‖` structure) + `..._isPsiFirstOrderBound` (turns the certificate into a usable theorem from supplied ‖P⁻¹‖ data), the self-contained diagonal case `sylvesterPsiDiagonal` (`M = 1/s` = max-abs entry of `sylvesterDiagonalVecCoeffInv`) + `sylvesterPsiDiagonal_isPsiFirstOrderBound`, and the printed (16.23) wrapper `H16_eq16_24_structured_condition_diagonal` (`‖ΔX‖_F/‖X‖_F ≤ √3·Ψ_diag·ε`). Nondiagonal exact ‖P⁻¹‖ needs an SVD/operator-2-norm API (absent) — taken as supplied data, matching the book's Ψ = ‖P⁻¹‖ notation. |
+| Eq (16.27) Lyapunov condition number (module `Sylvester/Higham16Lyapunov.lean`) | Mirror of the Ψ module for AX+XAᵀ=C: `LyapunovInverseOpBound` (‖P⁻¹‖ data, also from `SepLowerBound n A (-Aᵀ)`), `lyapunovCond_of_inverseOpBound` (= `M·(2α‖X‖_F+γ)/‖X‖_F`; the `2α` and `√2` reflect the tied ΔB=−ΔAᵀ and two-block pair norm) + `..._isLyapunovConditionFirstOrderBound`, self-contained diagonal case `lyapunovCondDiagonal` (`M=1/s`, `s ≤ |aᵢ+aⱼ|`) + proof, and the printed wrapper `H16_eq16_27_lyapunov_condition_diagonal` (`‖ΔX‖_F/‖X‖_F ≤ √2·cond·ε`). Nondiagonal exact ‖P⁻¹‖ taken as data (SVD/operator-2-norm API absent). |

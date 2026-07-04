@@ -18,6 +18,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Analysis.Matrix.Normed
+import Mathlib.Analysis.Matrix.PosDef
 import Mathlib.Analysis.CStarAlgebra.Matrix
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Ring.Finset
@@ -3235,6 +3236,11 @@ noncomputable def finiteTranspose {ι κ : Type*} (M : ι → κ → ℝ) :
     κ → ι → ℝ :=
   fun j i => M i j
 
+/-- Finite transpose is involutive. -/
+theorem finiteTranspose_finiteTranspose {ι κ : Type*} (M : ι → κ → ℝ) :
+    finiteTranspose (finiteTranspose M) = M := by
+  rfl
+
 /-- Rectangular squared Frobenius norm is invariant under finite transpose. -/
 theorem frobNormSqRect_finiteTranspose {m n : ℕ}
     (A : Fin m → Fin n → ℝ) :
@@ -4439,6 +4445,62 @@ theorem finitePSD_iff_matrix_posSemidef_of_symmetric {ι : Type*} [Fintype ι]
     finitePSD M ↔ Matrix.PosSemidef (M : Matrix ι ι ℝ) :=
   ⟨finitePSD.to_matrix_posSemidef M hMsym,
     Matrix_posSemidef.to_finitePSD M⟩
+
+/-- A symmetric finite positive-semidefinite matrix with zero finite trace is
+    the zero matrix.  This is the repository-native wrapper around Mathlib's
+    PSD trace-zero criterion. -/
+theorem finitePSD_eq_zero_of_finiteTrace_eq_zero {ι : Type*} [Fintype ι]
+    [DecidableEq ι] (M : ι → ι → ℝ)
+    (hSym : IsSymmetricFiniteMatrix M) (hPSD : finitePSD M)
+    (hTrace : finiteTrace M = 0) :
+    M = fun _ _ => 0 := by
+  have hMat : Matrix.PosSemidef (M : Matrix ι ι ℝ) :=
+    finitePSD.to_matrix_posSemidef M hSym hPSD
+  have hMatrixTrace : Matrix.trace (M : Matrix ι ι ℝ) = 0 := by
+    simpa [Matrix.trace, finiteTrace] using hTrace
+  have hzero : (M : Matrix ι ι ℝ) = 0 :=
+    (Matrix.PosSemidef.trace_eq_zero_iff hMat).mp hMatrixTrace
+  ext i j
+  change (M : Matrix ι ι ℝ) i j = (0 : Matrix ι ι ℝ) i j
+  rw [hzero]
+  simp
+
+/-- For symmetric finite positive-semidefinite matrices, zero finite trace is
+    equivalent to being the zero matrix. -/
+theorem finiteTrace_eq_zero_iff_eq_zero_of_finitePSD {ι : Type*} [Fintype ι]
+    [DecidableEq ι] (M : ι → ι → ℝ)
+    (hSym : IsSymmetricFiniteMatrix M) (hPSD : finitePSD M) :
+    finiteTrace M = 0 ↔ M = fun _ _ => 0 := by
+  constructor
+  · exact finitePSD_eq_zero_of_finiteTrace_eq_zero M hSym hPSD
+  · intro hzero
+    rw [hzero]
+    simp [finiteTrace]
+
+/-- If two symmetric finite matrices are in Loewner order and have equal
+    finite trace, then they are equal. -/
+theorem finiteLoewnerLe_eq_of_finiteTrace_eq {ι : Type*} [Fintype ι]
+    [DecidableEq ι] {M N : ι → ι → ℝ}
+    (hM : IsSymmetricFiniteMatrix M) (hN : IsSymmetricFiniteMatrix N)
+    (hMN : finiteLoewnerLe M N)
+    (hTrace : finiteTrace M = finiteTrace N) :
+    M = N := by
+  have hDiffSym : IsSymmetricFiniteMatrix (fun i j => N i j - M i j) := by
+    intro i j
+    change N i j - M i j = N j i - M j i
+    rw [hN i j, hM i j]
+  have hDiffPSD : finitePSD (fun i j => N i j - M i j) :=
+    (finiteLoewnerLe_iff_sub_finitePSD M N).mp hMN
+  have hDiffTrace : finiteTrace (fun i j => N i j - M i j) = 0 := by
+    rw [finiteTrace_sub, hTrace]
+    ring
+  have hDiffZero :=
+    finitePSD_eq_zero_of_finiteTrace_eq_zero
+      (fun i j => N i j - M i j) hDiffSym hDiffPSD hDiffTrace
+  ext i j
+  have hz := congrFun (congrFun hDiffZero i) j
+  change N i j - M i j = 0 at hz
+  linarith
 
 /-- A local finite Loewner bound gives a mathlib positive-semidefinite
     difference matrix, provided both sides are locally symmetric. -/
@@ -8082,6 +8144,82 @@ theorem rectMatMul_assoc {m n p q : ℕ}
   intro l _
   ring
 
+/-- Left distributivity for implicit rectangular multiplication:
+    `(A+B)*C = A*C + B*C`. -/
+theorem rectMatMul_add_left {m n p : ℕ}
+    (A B : Fin m → Fin n → ℝ) (C : Fin n → Fin p → ℝ) :
+    rectMatMul (fun i j => A i j + B i j) C =
+      fun i j => rectMatMul A C i j + rectMatMul B C i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Right distributivity for implicit rectangular multiplication:
+    `A*(B+C) = A*B + A*C`. -/
+theorem rectMatMul_add_right {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B C : Fin n → Fin p → ℝ) :
+    rectMatMul A (fun i j => B i j + C i j) =
+      fun i j => rectMatMul A B i j + rectMatMul A C i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Negation in the left factor of an implicit rectangular product. -/
+theorem rectMatMul_neg_left {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ) :
+    rectMatMul (fun i j => -A i j) B =
+      fun i j => -rectMatMul A B i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_neg_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Negation in the right factor of an implicit rectangular product. -/
+theorem rectMatMul_neg_right {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ) :
+    rectMatMul A (fun i j => -B i j) =
+      fun i j => -rectMatMul A B i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_neg_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Left subtraction for implicit rectangular multiplication:
+    `(A-B)*C = A*C - B*C`. -/
+theorem rectMatMul_sub_left {m n p : ℕ}
+    (A B : Fin m → Fin n → ℝ) (C : Fin n → Fin p → ℝ) :
+    rectMatMul (fun i j => A i j - B i j) C =
+      fun i j => rectMatMul A C i j - rectMatMul B C i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_sub_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Right subtraction for implicit rectangular multiplication:
+    `A*(B-C) = A*B - A*C`. -/
+theorem rectMatMul_sub_right {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B C : Fin n → Fin p → ℝ) :
+    rectMatMul A (fun i j => B i j - C i j) =
+      fun i j => rectMatMul A B i j - rectMatMul A C i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_sub_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
 /-- A rectangular left inverse `A⁺A = I` makes `AA⁺` an algebraic projection. -/
 theorem rectMatMul_rangeProjection_idempotent_of_left_inverse {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
@@ -8221,6 +8359,13 @@ theorem rectMatMul_self_transpose_symmetric {m n : ℕ}
   intro k _
   ring
 
+/-- A rectangular Gram product `Mᵀ M` is symmetric. -/
+theorem rectMatMul_transpose_self_symmetric {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) :
+    IsSymmetricFiniteMatrix (rectMatMul (finiteTranspose M) M) := by
+  simpa [finiteTranspose_finiteTranspose] using
+    rectMatMul_self_transpose_symmetric (finiteTranspose M)
+
 /-- The quadratic form of `M Mᵀ` is the squared norm of `Mᵀ x`. -/
 theorem finiteQuadraticForm_rectMatMul_self_transpose_eq_sum_sq
     {m n : ℕ} (M : Fin m → Fin n → ℝ) (x : Fin m → ℝ) :
@@ -8290,6 +8435,13 @@ theorem finitePSD_rectMatMul_self_transpose {m n : ℕ}
   rw [finiteQuadraticForm_rectMatMul_self_transpose_eq_sum_sq M x]
   exact Finset.sum_nonneg fun k _ => sq_nonneg _
 
+/-- A rectangular Gram product `Mᵀ M` is positive semidefinite. -/
+theorem finitePSD_rectMatMul_transpose_self {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) :
+    finitePSD (rectMatMul (finiteTranspose M) M) := by
+  simpa [finiteTranspose_finiteTranspose] using
+    finitePSD_rectMatMul_self_transpose (finiteTranspose M)
+
 /-- Symmetry transported across equality with a rectangular Gram product. -/
 theorem IsSymmetricFiniteMatrix_of_eq_rectMatMul_self_transpose
     {m n : ℕ} {A : Fin m → Fin m → ℝ}
@@ -8298,6 +8450,16 @@ theorem IsSymmetricFiniteMatrix_of_eq_rectMatMul_self_transpose
     IsSymmetricFiniteMatrix A := by
   rw [hA]
   exact rectMatMul_self_transpose_symmetric M
+
+/-- Symmetry transported across equality with a transposed rectangular Gram
+    product. -/
+theorem IsSymmetricFiniteMatrix_of_eq_rectMatMul_transpose_self
+    {m n : ℕ} {A : Fin n → Fin n → ℝ}
+    (M : Fin m → Fin n → ℝ)
+    (hA : A = rectMatMul (finiteTranspose M) M) :
+    IsSymmetricFiniteMatrix A := by
+  rw [hA]
+  exact rectMatMul_transpose_self_symmetric M
 
 /-- Positive semidefiniteness transported across equality with a rectangular
     Gram product. -/
@@ -8308,6 +8470,16 @@ theorem finitePSD_of_eq_rectMatMul_self_transpose
     finitePSD A := by
   rw [hA]
   exact finitePSD_rectMatMul_self_transpose M
+
+/-- Positive semidefiniteness transported across equality with a transposed
+    rectangular Gram product. -/
+theorem finitePSD_of_eq_rectMatMul_transpose_self
+    {m n : ℕ} {A : Fin n → Fin n → ℝ}
+    (M : Fin m → Fin n → ℝ)
+    (hA : A = rectMatMul (finiteTranspose M) M) :
+    finitePSD A := by
+  rw [hA]
+  exact finitePSD_rectMatMul_transpose_self M
 
 /-- If `Rinv` is a two-sided inverse of `R`, then
     `Rinv Rinvᵀ` is a right inverse of the Gram matrix `RᵀR`. -/
