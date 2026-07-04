@@ -2875,6 +2875,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
+- `higham9_23_condSkeel_nonneg`
+- `higham9_23_forward_error_exact_condSkeel`
+- `higham9_23_forward_error_firstOrder_cond_product`
+- `higham9_23_forward_error_exact_condSkeel_of_backward_error`
+- `higham9_23_forward_error_firstOrder_cond_product_of_backward_error`
+- `higham9_23_firstOrderLe_of_backward_error_coeff`
 - `higham9_24_scaledMatrix`
 - `higham9_24_scaledRhs`
 - `higham9_24_scaledUnknown`
@@ -2882,6 +2888,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_25_trailingRowInf`
 - `higham9_25_implicitRowScalingPivotRule`
 - `higham9_25_exists_implicitRowScalingPivotRule`
+- `higham9_26_prefixLpNorm`
+- `higham9_26_holder_prefix_dot_abs_le`
+- `higham9_26_stage_entry_abs_le`
+- `higham9_26_stage_entry_abs_le_two_norm`
+- `higham9_26_stage_entry_abs_le_of_uniform_bounds`
+- `higham9_26_stage_entry_abs_le_of_two_norm_uniform_bounds`
 - `higham9_15_lu_perturbation_identity`
 - `higham9_15_lu_perturbation_relative_bound`
 - `higham9_15_lu_perturbation_forward_bound`
