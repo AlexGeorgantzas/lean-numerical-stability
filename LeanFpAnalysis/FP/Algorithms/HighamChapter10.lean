@@ -2100,6 +2100,45 @@ theorem higham10_11_firstOrder_eq_WtW {k m : ℕ}
   subst hA
   simp only [Matrix.transpose_mul, hM, Matrix.mul_assoc]
 
+/-- **Lemma 10.11, quantitative half in the operator 2-norm.**  Upgrades the
+entrywise `O(γ²)` remainder of `higham10_11_schur_perturbation_leadingBlock` to
+the *operator 2-norm* `opNorm2Le` — the norm in which Higham states the source
+`O(‖E‖²)`.  For `E = γ·[[I,0],[0,0]]` the perturbed Schur complement satisfies
+`S(A+E) = S(A) + γ·(A₂₁M²A₁₂) + R` with `‖R‖₂ ≤ (poly)·γ²·m = O(γ²) = O(‖E‖₂²)`.
+Combined with `higham10_11_firstOrder_eq_WtW` (first-order term `γ·WᵀW`,
+`W = M A₁₂`), this is Higham's `‖S(cp(A+E)) − S(A)‖₂ = ‖W‖₂²‖E‖₂ + O(‖E‖₂²)` with
+the `O(‖E‖²)` error controlled in the source's operator 2-norm. -/
+theorem higham10_11_schur_perturbation_opNorm2 {k m : ℕ}
+    (A11 M X : Matrix (Fin k) (Fin k) ℝ)
+    (A21 : Matrix (Fin m) (Fin k) ℝ)
+    (A12 : Matrix (Fin k) (Fin m) ℝ)
+    (A22 : Matrix (Fin m) (Fin m) ℝ)
+    (γ : ℝ) (hγ : 0 ≤ γ)
+    (hM : M * A11 = 1)
+    (hXi : (A11 + γ • (1 : Matrix (Fin k) (Fin k) ℝ)) * X = 1)
+    (α μ χ : ℝ) (hα : 0 ≤ α) (hμ : 0 ≤ μ) (hχ : 0 ≤ χ)
+    (hA21 : ∀ i j, |A21 i j| ≤ α) (hA12 : ∀ i j, |A12 i j| ≤ α)
+    (hMb : ∀ i j, |M i j| ≤ μ) (hXb : ∀ i j, |X i j| ≤ χ) :
+    ∃ R : Matrix (Fin m) (Fin m) ℝ,
+      A22 - A21 * X * A12
+        = (A22 - A21 * M * A12) + γ • (A21 * (M * M) * A12) + R ∧
+      opNorm2Le R
+        (((k : ℝ) ^ 2 * μ + (k : ℝ) ^ 6 * α ^ 2 * μ ^ 2 * χ
+          + 2 * ((k : ℝ) ^ 4 * α * μ * χ) + (k : ℝ) ^ 4 * μ * χ * γ)
+          * γ ^ 2 * (m : ℝ)) := by
+  obtain ⟨R, hEq, hR⟩ :=
+    higham10_11_schur_perturbation_leadingBlock A11 M X A21 A12 A22 γ hγ
+      hM hXi α μ χ hα hμ hχ hA21 hA12 hMb hXb
+  refine ⟨R, hEq, ?_⟩
+  set b : ℝ := ((k : ℝ) ^ 2 * μ + (k : ℝ) ^ 6 * α ^ 2 * μ ^ 2 * χ
+      + 2 * ((k : ℝ) ^ 4 * α * μ * χ) + (k : ℝ) ^ 4 * μ * χ * γ) * γ ^ 2
+    with hbdef
+  have hb0 : 0 ≤ b := by rw [hbdef]; positivity
+  have h2 := opNorm2Le_smul m (fun _ _ : Fin m => (1 : ℝ)) (m : ℝ) b hb0
+    (higham10_7_onesMatrix_opNorm2Le m)
+  exact opNorm2Le_of_abs_le m R (fun _ _ => b * 1)
+    (fun i j => by rw [mul_one]; exact hR i j) (b * (m : ℝ)) h2
+
 /-- **Lemma 10.11, pivot-order-preservation half (Higham §10.3.1, source form).**
 Chapter-label wrapper over the complete-pivoting machinery in
 `Cholesky/CholeskyPSD.lean` (`cpPivot_sequence_stable_small`, built on
