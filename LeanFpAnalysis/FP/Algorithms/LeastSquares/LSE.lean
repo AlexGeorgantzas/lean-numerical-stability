@@ -18732,6 +18732,55 @@ theorem lseWeightedMinimizer_exists_unique_lseMinimizer_tendsto_of_inv_mu_sq
   intro y hy
   exact IsLSEMinimizer.eq_of_nullIntersectionTrivial hnull hy.1 hx
 
+/-- Source-facing stacked-rank form of the limiting weighting theorem after
+    (20.26).  Under the uniqueness condition stated via the stacked matrix in
+    (20.24), any supplied convergent exact weighted-minimizer branch whose
+    weights satisfy `(mu^2)^{-1} -> 0` converges to the unique exact LSE
+    minimizer.  This identifies the limit of an already convergent branch; it
+    does not prove existence of that branch or any finite-precision stability
+    claim. -/
+theorem lseWeightedMinimizer_tendsto_unique_lseMinimizer_of_lseStackedFullColumnRank_of_inv_mu_sq
+    {ι : Type*} {l : Filter ι} [l.NeBot] {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (mu : ι → ℝ) (x_mu : ι → Fin n → ℝ) (x y : Fin n → ℝ)
+    (hlim : Filter.Tendsto x_mu l (nhds x))
+    (hmu : ∀ i, mu i ≠ 0)
+    (hmin : ∀ i, IsLeastSquaresMinimizer
+      (lseWeightedMatrix (mu i) A B) (lseWeightedRhs (mu i) b d) (x_mu i))
+    (hy : IsLSEMinimizer A b B d y)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hInvSq : Filter.Tendsto (fun i => (mu i ^ 2)⁻¹) l (nhds 0)) :
+    Filter.Tendsto x_mu l (nhds y) :=
+  lseWeightedMinimizer_tendsto_unique_lseMinimizer_of_inv_mu_sq
+    A b B d mu x_mu x y hlim hmu hmin hy
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+    hInvSq
+
+/-- Source-facing existence-and-uniqueness form of the limiting weighting
+    theorem after (20.26).  The assumptions are the local full-row-rank
+    constraint condition and the stacked full-column-rank uniqueness condition
+    from (20.24).  The theorem still assumes a supplied convergent branch of
+    exact weighted minimizers. -/
+theorem lseWeightedMinimizer_exists_unique_lseMinimizer_tendsto_of_lseStackedFullColumnRank_of_inv_mu_sq
+    {ι : Type*} {l : Filter ι} [l.NeBot] {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (mu : ι → ℝ) (x_mu : ι → Fin n → ℝ) (x : Fin n → ℝ)
+    (hlim : Filter.Tendsto x_mu l (nhds x))
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hmu : ∀ i, mu i ≠ 0)
+    (hmin : ∀ i, IsLeastSquaresMinimizer
+      (lseWeightedMatrix (mu i) A B) (lseWeightedRhs (mu i) b d) (x_mu i))
+    (hInvSq : Filter.Tendsto (fun i => (mu i ^ 2)⁻¹) l (nhds 0)) :
+    ∃! y : Fin n → ℝ,
+      IsLSEMinimizer A b B d y ∧ Filter.Tendsto x_mu l (nhds y) :=
+  lseWeightedMinimizer_exists_unique_lseMinimizer_tendsto_of_inv_mu_sq
+    A b B d mu x_mu x hlim hB
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+    hmu hmin hInvSq
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, exact supplied-GQR
     uniqueness consequence under the local assumptions (20.24).
 
