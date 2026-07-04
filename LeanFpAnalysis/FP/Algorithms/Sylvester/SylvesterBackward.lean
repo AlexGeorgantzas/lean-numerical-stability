@@ -1314,6 +1314,53 @@ theorem lyapunovSpectralTransform_symmetric (n : ℕ)
   rw [hMt] at hT
   simpa [matTranspose] using congrFun (congrFun hT j) i
 
+/-- The Lyapunov action `A * Y + Y * A^T` is symmetric whenever `Y` is
+    symmetric. -/
+theorem lyapunovOp_symmetric_of_symmetric (n : ℕ)
+    (A Y : Fin n → Fin n → ℝ)
+    (hY : IsSymmetricFiniteMatrix Y) :
+    IsSymmetricFiniteMatrix (lyapunovOp n A Y) := by
+  intro i j
+  unfold lyapunovOp matMul matTranspose
+  have hleft :
+      (∑ k : Fin n, A i k * Y k j) =
+        ∑ k : Fin n, Y j k * A i k := by
+    apply Finset.sum_congr rfl
+    intro k _
+    rw [hY k j]
+    ring
+  have hright :
+      (∑ k : Fin n, Y i k * A j k) =
+        ∑ k : Fin n, A j k * Y k i := by
+    apply Finset.sum_congr rfl
+    intro k _
+    rw [hY i k]
+    ring
+  rw [hleft, hright]
+  ring
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    if the Lyapunov data `C` and approximate solution `Y` are symmetric, then
+    the residual `R = C - A * Y - Y * A^T` is symmetric. -/
+theorem lyapunovResidual_symmetric_of_symmetric (n : ℕ)
+    (A C Y : Fin n → Fin n → ℝ)
+    (hC : IsSymmetricFiniteMatrix C) (hY : IsSymmetricFiniteMatrix Y) :
+    IsSymmetricFiniteMatrix (lyapunovResidual n A C Y) := by
+  intro i j
+  unfold lyapunovResidual
+  have hOp := lyapunovOp_symmetric_of_symmetric n A Y hY i j
+  rw [hC i j, hOp]
+
+/-- The spectral Lyapunov residual `U^T R U` is symmetric when the source
+    Lyapunov right-hand side and approximate solution are symmetric. -/
+theorem lyapunovSpectralTransform_residual_symmetric_of_symmetric (n : ℕ)
+    (A C Y U : Fin n → Fin n → ℝ)
+    (hC : IsSymmetricFiniteMatrix C) (hY : IsSymmetricFiniteMatrix Y) :
+    IsSymmetricFiniteMatrix
+      (lyapunovSpectralTransform n U (lyapunovResidual n A C Y)) :=
+  lyapunovSpectralTransform_symmetric n U (lyapunovResidual n A C Y)
+    (lyapunovResidual_symmetric_of_symmetric n A C Y hC hY)
+
 /-- Spectral-coordinate transforms distribute over the `M + N - P` matrix
     combination used in the Lyapunov perturbation residual. -/
 theorem lyapunovSpectralTransform_add_sub (n : ℕ)
