@@ -4463,6 +4463,90 @@ theorem LSEFullRowRank.exists_rightInverse {p n : ℕ}
     ∃ Bplus : Fin n → Fin p → ℝ, rectMatMul B Bplus = idMatrix p :=
   ⟨hB.rightInverse, hB.rightInverse_spec⟩
 
+/-- Higham, 2nd ed., Chapter 20, equations (20.24)-(20.25) support:
+    source full row rank instantiates the right-inverse projector
+    `P = I - Bplus*B`, so the projected directions lie in `null(B)`.
+
+    This uses the noncomputable right inverse supplied by full row rank; it is
+    not a Moore--Penrose pseudoinverse characterization. -/
+theorem LSEFullRowRank.theorem20_8Projection_constraint_zero {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) :
+    rectMatMul B (theorem20_8Projection B hB.rightInverse) =
+      (fun _i _j => 0) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8Projection_constraint_zero
+    B hB.rightInverse hB.rightInverse_spec
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.24)-(20.25) support:
+    vector form of the full-row-rank-instantiated identity
+    `B(I - Bplus*B) = 0`. -/
+theorem LSEFullRowRank.theorem20_8Projection_constraint_vec_zero {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (x : Fin n → ℝ) :
+    rectMatMulVec B
+        (rectMatMulVec (theorem20_8Projection B hB.rightInverse) x) =
+      (fun _i => 0) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8Projection_constraint_vec_zero B hB.rightInverse
+    hB.rightInverse_spec x
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.24)-(20.25) support:
+    vector idempotence of the nullspace projector instantiated from source
+    full row rank. -/
+theorem LSEFullRowRank.theorem20_8Projection_vec_idempotent {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (x : Fin n → ℝ) :
+    rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+        (rectMatMulVec (theorem20_8Projection B hB.rightInverse) x) =
+      rectMatMulVec (theorem20_8Projection B hB.rightInverse) x :=
+  _root_.LeanFpAnalysis.FP.theorem20_8Projection_vec_idempotent B hB.rightInverse
+    hB.rightInverse_spec x
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.23)-(20.25) support:
+    under source full row rank, adding a projected direction to a feasible
+    point preserves the equality constraint. -/
+theorem LSEFullRowRank.theorem20_8Projection_feasible_step {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (d : Fin p → ℝ) (x0 z : Fin n → ℝ)
+    (hx0 : LSEFeasible B d x0) :
+    LSEFeasible B d
+      (fun j =>
+        x0 j + rectMatMulVec (theorem20_8Projection B hB.rightInverse) z j) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8Projection_feasible_step B hB.rightInverse d x0 z
+    hB.rightInverse_spec hx0
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the reduced unconstrained minimizer lifts to an equality-constrained
+    minimizer using the right inverse supplied by source full row rank. -/
+theorem LSEFullRowRank.theorem20_8AP_unconstrained_minimizer_lifts
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (d : Fin p → ℝ) (x0 z : Fin n → ℝ)
+    (hx0 : LSEFeasible B d x0)
+    (hmin : IsLeastSquaresMinimizer
+      (theorem20_8AP A B hB.rightInverse)
+      (fun i => b i - rectMatMulVec A x0 i) z) :
+    IsLSEMinimizer A b B d
+      (fun j =>
+        x0 j + rectMatMulVec (theorem20_8Projection B hB.rightInverse) z j) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8AP_unconstrained_minimizer_lifts A b B hB.rightInverse
+    d x0 z hB.rightInverse_spec hx0 hmin
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    every exact LSE minimizer gives a minimizer of the full-row-rank-instantiated
+    reduced unconstrained problem. -/
+theorem LSEFullRowRank.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (d : Fin p → ℝ) (x0 x : Fin n → ℝ)
+    (hx0 : LSEFeasible B d x0)
+    (hx : IsLSEMinimizer A b B d x) :
+    IsLeastSquaresMinimizer (theorem20_8AP A B hB.rightInverse)
+      (fun i => b i - rectMatMulVec A x0 i)
+      (fun j => x j - x0 j) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
+    A b B hB.rightInverse d x0 x hB.rightInverse_spec hx0 hx
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 rank bridge:
     full row rank of `B` makes the transpose map `Bᵀ` injective.  This is the
     finite-dimensional algebra used by the exact-MGS GQR route to connect the
