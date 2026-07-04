@@ -14851,3 +14851,16 @@ small enough to serve as a smoke check for representative public declarations.
 #check semiconvergentE
 #check singular_error_split_semiconvergent
 #check matPow_G_tendsto_oneEigenProjector
+#check bottomProjector
+#check eq_17_23_block
+#check drazinIG
+#check drazinIG_spec
+#check stationaryDrazinRangeProjector_drazinIG_eq_semiconvergentE
+#check eq_17_25_limit
+#check matPow_G_tendsto_limit_drazin
+#check eq_17_26_stationary_limit
+#check eq_17_30_block
+#check summable_infNorm_GiE_Minv
+#check eq_17_31_normwise_bound
+#check eq_17_32_componentwise_bound
+#check tsum_GiE_entry_eq_drazinIG

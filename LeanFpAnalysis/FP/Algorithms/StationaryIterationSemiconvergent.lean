@@ -1,12 +1,12 @@
 -- Algorithms/StationaryIterationSemiconvergent.lean
 --
 -- Higham Chapter 17 "Stationary Iterative Methods", §17.4 "Singular Systems":
--- the semiconvergent block form of eq (17.23) taken as data, its eigenvalue-1
+-- the semiconvergent block form of eq (17.22) taken as data, its eigenvalue-1
 -- projector, the discharge of the fixed-null hypothesis of the finite (17.27)
 -- split in `StationaryIteration.lean`, and the semiconvergence limit
 -- `G^m → X diag(I, 0) X⁻¹` behind eqs (17.22)/(17.25).
 --
--- Eq (17.23) says a semiconvergent iteration matrix has the form
+-- Eq (17.22) says a semiconvergent iteration matrix has the form
 -- `G = X · diag(I, Γ) · X⁻¹` with `ρ(Γ) < 1`.  Throughout this file that
 -- block form is HYPOTHESIS data, exactly as in the printed development: a
 -- split index `r`, a matrix `J` whose top `r` rows are identity rows
@@ -33,7 +33,7 @@ open scoped BigOperators
 -- ============================================================
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §17.4,
-    eq (17.23): the coordinate projector `diag(I_r, 0)` onto the top block of
+    eq (17.22): the coordinate projector `diag(I_r, 0)` onto the top block of
     the semiconvergent form `G = X · diag(I, Γ) · X⁻¹`.  Indices `i` with
     `(i : ℕ) < r` form the eigenvalue-1 block; the rest form the `Γ` block. -/
 noncomputable def topProjector (n r : ℕ) : Fin n → Fin n → ℝ :=
@@ -56,7 +56,7 @@ theorem topProjector_apply_bottom {n r : ℕ} {k : Fin n} (hk : ¬(k : ℕ) < r)
 /-- A matrix whose `k`-th row is an identity row reproduces the `k`-th row of
     any right factor.  Row-level workhorse for the block-form algebra of
     Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §17.4,
-    eq (17.23). -/
+    eq (17.22). -/
 theorem matMul_row_id (n : ℕ) (B C : Fin n → Fin n → ℝ) (k j : Fin n)
     (hB : ∀ l : Fin n, B k l = if k = l then 1 else 0) :
     matMul n B C k j = C k j := by
@@ -67,7 +67,7 @@ theorem matMul_row_id (n : ℕ) (B C : Fin n → Fin n → ℝ) (k j : Fin n)
 
 /-- A matrix whose `k`-th row vanishes kills the `k`-th row of any product.
     Row-level workhorse for the block-form algebra of Higham, Accuracy and
-    Stability of Numerical Algorithms, 2nd ed., §17.4, eq (17.23). -/
+    Stability of Numerical Algorithms, 2nd ed., §17.4, eq (17.22). -/
 theorem matMul_row_zero (n : ℕ) (B C : Fin n → Fin n → ℝ) (k j : Fin n)
     (hB : ∀ l : Fin n, B k l = 0) :
     matMul n B C k j = 0 := by
@@ -77,7 +77,7 @@ theorem matMul_row_zero (n : ℕ) (B C : Fin n → Fin n → ℝ) (k j : Fin n)
     _ = 0 := by simp
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §17.4,
-    eq (17.23): `diag(I, Γ) · diag(I_r, 0) = diag(I_r, 0)`.  The top-block
+    eq (17.22): `diag(I, Γ) · diag(I_r, 0) = diag(I_r, 0)`.  The top-block
     identity of the semiconvergent form absorbs the projector and the `Γ`
     block is killed.  The block form is taken as data via `hJtop`/`hJcross`;
     no Jordan-form existence argument is used. -/
@@ -117,7 +117,7 @@ theorem J_mul_topProjector (n r : ℕ) (J : Fin n → Fin n → ℝ)
           rw [hTjj, mul_zero, hTij]
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §17.4,
-    eq (17.23): `diag(I_r, 0) · diag(I, Γ) = diag(I_r, 0)`.  Only the
+    eq (17.22): `diag(I_r, 0) · diag(I, Γ) = diag(I_r, 0)`.  Only the
     top-row-identity hypothesis is needed: the top-right block of the
     semiconvergent form is already zero because its top rows are identity
     rows. -/
@@ -132,7 +132,7 @@ theorem topProjector_mul_J (n r : ℕ) (J : Fin n → Fin n → ℝ)
       (topProjector_apply_bottom hi), topProjector_apply_bottom hi j]
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §17.4,
-    eq (17.23): the top-block projector `diag(I_r, 0)` is idempotent. -/
+    eq (17.22): the top-block projector `diag(I_r, 0)` is idempotent. -/
 theorem topProjector_idempotent (n r : ℕ) :
     matMul n (topProjector n r) (topProjector n r) = topProjector n r :=
   topProjector_mul_J n r (topProjector n r)
@@ -145,7 +145,7 @@ theorem topProjector_idempotent (n r : ℕ) :
 /-- Reconstruction of a matrix from its similarity data: if
     `X⁻¹ G X = J` and `X X⁻¹ = I`, then `G = X J X⁻¹`.  Mirrors the
     reconstruction step inside `matPow_similarity` (Higham, Accuracy and
-    Stability of Numerical Algorithms, 2nd ed., §17.4, eq (17.23)
+    Stability of Numerical Algorithms, 2nd ed., §17.4, eq (17.22)
     similarity data). -/
 theorem eq_conjugate_of_similarity (n : ℕ)
     (G X X_inv J : Fin n → Fin n → ℝ)
@@ -162,7 +162,7 @@ theorem eq_conjugate_of_similarity (n : ℕ)
 /-- Conjugated matrices multiply through the similarity:
     `(X A X⁻¹)(X B X⁻¹) = X (A B) X⁻¹` given `X⁻¹ X = I`.  Conjugation
     workhorse for the projector algebra of Higham, Accuracy and Stability of
-    Numerical Algorithms, 2nd ed., §17.4, eqs (17.23)–(17.25). -/
+    Numerical Algorithms, 2nd ed., §17.4, eqs (17.22)–(17.25). -/
 theorem conjugate_matMul (n : ℕ) (X X_inv A B : Fin n → Fin n → ℝ)
     (hXl : IsRightInverse n X_inv X) :
     matMul n (matMul n X (matMul n A X_inv))
@@ -190,10 +190,10 @@ theorem conjugate_matMul (n : ℕ) (X X_inv A B : Fin n → Fin n → ℝ)
 -- ============================================================
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §17.4,
-    eqs (17.23)–(17.25): the projector `X · diag(I_r, 0) · X⁻¹` onto the
+    eqs (17.22)–(17.25): the projector `X · diag(I_r, 0) · X⁻¹` onto the
     eigenvalue-1 subspace of the semiconvergent form, i.e. the book's
     `I − E`.  The semiconvergent block form is taken as data, as in the
-    printed (17.23); the existence of that form for an arbitrary
+    printed (17.22); the existence of that form for an arbitrary
     semiconvergent matrix — Jordan-form background — is not formalized. -/
 noncomputable def oneEigenProjector (n r : ℕ)
     (X X_inv : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
@@ -213,9 +213,9 @@ theorem oneEigenProjector_idempotent (n r : ℕ)
     topProjector_idempotent]
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §17.4,
-    eqs (17.23)–(17.25): `G (I − E) = I − E` — the eigenvalue-1 projector of
+    eqs (17.22)–(17.25): `G (I − E) = I − E` — the eigenvalue-1 projector of
     the semiconvergent form is fixed by the iteration matrix.  Stated for a
-    general matrix `G` carrying the (17.23) block-form data; callers
+    general matrix `G` carrying the (17.22) block-form data; callers
     instantiate `G := iterMatrix n M_inv N`. -/
 theorem G_mul_oneEigenProjector_eq (n r : ℕ)
     (G J X X_inv : Fin n → Fin n → ℝ)
@@ -231,7 +231,7 @@ theorem G_mul_oneEigenProjector_eq (n r : ℕ)
     J_mul_topProjector n r J hJtop hJcross]
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §17.4,
-    eqs (17.23)–(17.27): vector form of `G (I − E) = I − E` — every vector in
+    eqs (17.22)–(17.27): vector form of `G (I − E) = I − E` — every vector in
     the range of the eigenvalue-1 projector is fixed by `G`.  This is
     precisely the shape of the `hNull` hypothesis of
     `singular_error_split_finite`. -/
@@ -259,7 +259,7 @@ theorem G_fixes_oneEigenProjector_apply (n r : ℕ)
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §17.4,
     eqs (17.25)–(17.27): the accumulating projector
     `E = I − X · diag(I_r, 0) · X⁻¹` of the singular-system error split,
-    built from the semiconvergent block form of (17.23) taken as data. -/
+    built from the semiconvergent block form of (17.22) taken as data. -/
 noncomputable def semiconvergentE (n r : ℕ)
     (X X_inv : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   fun i j => idMatrix n i j - oneEigenProjector n r X X_inv i j
@@ -281,18 +281,18 @@ theorem matSub_id_semiconvergentE (n r : ℕ)
 -- ============================================================
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §17.4,
-    eqs (17.23)–(17.27): the finite three-term error split (17.27) for a
+    eqs (17.22)–(17.27): the finite three-term error split (17.27) for a
     consistent singular system, with the projector built from the
-    semiconvergent block form of (17.23).  This closes the ledger's "proof
+    semiconvergent block form of (17.22).  This closes the ledger's "proof
     that the source projector `E` supplies the fixed-null hypothesis" row at
-    the printed (17.23) data level: the abstract projector `E` and the
+    the printed (17.22) data level: the abstract projector `E` and the
     `hNull` hypothesis of `singular_error_split_finite` are replaced by
     block-form data `(r, J, X, X⁻¹)` for the iteration matrix
     `G = M⁻¹N`, and the fixed-subspace property is PROVED from that data
     (for all vectors, not just the specific `M⁻¹ξ_t`).
 
     Honest scope notes: the semiconvergent block form is taken as data, as
-    in the printed (17.23); the existence of that form for an arbitrary
+    in the printed (17.22); the existence of that form for an arbitrary
     semiconvergent matrix — Jordan-form background — is not formalized.
     The contraction certificate `q < 1` for the `Γ` rows (an ∞-norm
     row-sum strengthening of the printed spectral condition `ρ(Γ) < 1`) is
@@ -345,7 +345,7 @@ theorem singular_error_split_semiconvergent (n : ℕ)
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §17.4,
     eqs (17.22)–(17.25): the top rows of every power of the block form
     `diag(I, Γ)` are identity rows.  Only the top-row-identity data of the
-    printed (17.23) is used. -/
+    printed (17.22) is used. -/
 theorem matPow_J_top_entry (n r : ℕ) (J : Fin n → Fin n → ℝ)
     (hJtop : ∀ i j : Fin n, (i : ℕ) < r → J i j = if i = j then 1 else 0)
     (m : ℕ) :
@@ -370,7 +370,7 @@ theorem matPow_J_top_entry (n r : ℕ) (J : Fin n → Fin n → ℝ)
     eqs (17.22)–(17.25): the bottom (`Γ`-block) rows of `diag(I, Γ)^m` have
     absolute row sums at most `q^m` under the row-sum contraction
     certificate `‖Γ‖∞ ≤ q` (`hGamma`, an ∞-norm strengthening of the printed
-    spectral condition `ρ(Γ) < 1` of (17.23)).  The vanishing bottom-left
+    spectral condition `ρ(Γ) < 1` of (17.22)).  The vanishing bottom-left
     block (`hJcross`) ensures bottom rows of the power only recombine bottom
     rows. -/
 theorem matPow_J_bottom_row_sum (n r : ℕ) (J : Fin n → Fin n → ℝ)
@@ -418,13 +418,13 @@ theorem matPow_J_bottom_row_sum (n r : ℕ) (J : Fin n → Fin n → ℝ)
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §17.4,
     eqs (17.22)–(17.25): the literal semiconvergence statement — for an
-    iteration matrix carrying the block-form data of the printed (17.23)
+    iteration matrix carrying the block-form data of the printed (17.22)
     (`G = X · diag(I, Γ) · X⁻¹` with a row-sum contraction certificate
     `‖Γ‖∞ ≤ q < 1`), the powers `G^m` converge entrywise to the
     eigenvalue-1 projector `X · diag(I_r, 0) · X⁻¹ = I − E`.
 
     Honest scope notes: the semiconvergent block form is taken as data, as
-    in the printed (17.23); the existence of that form for an arbitrary
+    in the printed (17.22); the existence of that form for an arbitrary
     semiconvergent matrix — Jordan-form background — is not formalized, and
     the contraction certificate is the ∞-norm row-sum strengthening of the
     printed spectral condition `ρ(Γ) < 1`.  Convergence is entrywise
