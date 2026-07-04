@@ -576,4 +576,168 @@ theorem existsUnique_isSylvesterSolutionRect_schurTriangular (m n : Nat)
       X = rectMatMul U (rectMatMul YX (matTranspose V)) := hXexpand.symm
       _ = rectMatMul U (rectMatMul Y (matTranspose V)) := by rw [hYeq]
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6),
+    supplied triangular Schur-coordinate case: supplied orthogonal factors,
+    an upper-triangular transformed `S`, and nonsingular shifted column
+    coefficients make the vectorized Sylvester coefficient have trivial
+    kernel.  Scope: supplied exact factors only; this does not assert Schur
+    existence or floating-point stability. -/
+theorem sylvesterVecCoeff_schurTriangular_mulVec_eq_zero_iff (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n) (X : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec X) = 0 <->
+      X = 0 := by
+  constructor
+  case mp =>
+    intro h
+    have hsol : IsSylvesterSolutionRect m n A B (0 : RMatFn m n) X :=
+      (sylvester_vec_system_iff_solution m n A B (0 : RMatFn m n) X).mp
+        (by simpa using h)
+    have hzero : IsSylvesterSolutionRect m n A B
+        (0 : RMatFn m n) (0 : RMatFn m n) := by
+      apply (sylvester_vec_system_iff_solution m n A B
+        (0 : RMatFn m n) (0 : RMatFn m n)).mp
+      change Matrix.mulVec (sylvesterVecCoeff m n A B)
+          (0 : Prod (Fin n) (Fin m) -> Real) = 0
+      exact Matrix.mulVec_zero _
+    obtain ⟨Y, hY, hYuniq⟩ :=
+      existsUnique_isSylvesterSolutionRect_schurTriangular m n
+        U R A V S B (0 : RMatFn m n) hU hV hA hB hS hshift
+    have hXY : X = Y := hYuniq X hsol
+    have h0Y : (0 : RMatFn m n) = Y := hYuniq (0 : RMatFn m n) hzero
+    rw [hXY, ← h0Y]
+  case mpr =>
+    intro hX
+    rw [hX]
+    change Matrix.mulVec (sylvesterVecCoeff m n A B)
+        (0 : Prod (Fin n) (Fin m) -> Real) = 0
+    exact Matrix.mulVec_zero _
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6),
+    supplied triangular Schur-coordinate case: the vectorized Sylvester
+    coefficient is injective under the exact supplied-factor assumptions. -/
+theorem sylvesterVecCoeff_schurTriangular_mulVec_injective (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  intro x y hxy
+  let P := sylvesterVecCoeff m n A B
+  have hker : Matrix.mulVec P (x - y) = 0 := by
+    dsimp [P]
+    rw [Matrix.mulVec_sub, hxy, sub_self]
+  obtain ⟨X, hXvec⟩ :=
+    Matrix.vec_bijective.surjective (x - y : Prod (Fin n) (Fin m) -> Real)
+  have hkerX :
+      Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec X) = 0 := by
+    dsimp [P] at hker
+    rw [hXvec]
+    exact hker
+  have hXzero : X = 0 :=
+    (sylvesterVecCoeff_schurTriangular_mulVec_eq_zero_iff
+      m n U R A V S B X hU hV hA hB hS hshift).mp hkerX
+  have hsub : x - y = 0 := by
+    rw [← hXvec, hXzero]
+    rfl
+  exact sub_eq_zero.mp hsub
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6),
+    supplied triangular Schur-coordinate case: the vectorized Sylvester
+    coefficient is surjective under the exact supplied-factor assumptions. -/
+theorem sylvesterVecCoeff_schurTriangular_mulVec_surjective (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  intro y
+  obtain ⟨C, hC⟩ := Matrix.vec_bijective.surjective y
+  obtain ⟨X, hX, _⟩ :=
+    existsUnique_isSylvesterSolutionRect_schurTriangular m n
+      U R A V S B C hU hV hA hB hS hshift
+  refine ⟨Matrix.vec X, ?_⟩
+  rw [← hC]
+  exact (sylvester_vec_system_iff_solution m n A B C X).mpr hX
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6),
+    supplied triangular Schur-coordinate case: the vectorized Sylvester
+    coefficient is bijective under the exact supplied-factor assumptions. -/
+theorem sylvesterVecCoeff_schurTriangular_mulVec_bijective (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff m n A B)) :=
+  ⟨sylvesterVecCoeff_schurTriangular_mulVec_injective
+      m n U R A V S B hU hV hA hB hS hshift,
+    sylvesterVecCoeff_schurTriangular_mulVec_surjective
+      m n U R A V S B hU hV hA hB hS hshift⟩
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6),
+    supplied triangular Schur-coordinate case: the vectorized Sylvester
+    linear system has a unique solution for every vectorized right-hand side
+    under the exact supplied-factor assumptions. -/
+theorem existsUnique_sylvesterVecCoeff_schurTriangular_mulVec (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ∃! x : Prod (Fin n) (Fin m) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c := by
+  have hinj :=
+    sylvesterVecCoeff_schurTriangular_mulVec_injective
+      m n U R A V S B hU hV hA hB hS hshift
+  have hsurj :=
+    sylvesterVecCoeff_schurTriangular_mulVec_surjective
+      m n U R A V S B hU hV hA hB hS hshift
+  obtain ⟨x, hx⟩ := hsurj c
+  refine ⟨x, hx, ?_⟩
+  intro y hy
+  exact hinj (by rw [hy, hx])
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6),
+    supplied triangular Schur-coordinate case: the vec/Kronecker Sylvester
+    coefficient itself is nonsingular under the exact supplied-factor
+    assumptions.  This records the determinant form corresponding to the
+    bijective vectorized solve above; it is still a supplied-factor result,
+    not a proof of Schur existence or floating-point stability. -/
+theorem sylvesterVecCoeff_schurTriangular_det_ne_zero (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Not (Matrix.det (sylvesterVecCoeff m n A B) = 0) := by
+  intro hdet
+  obtain ⟨x, hxne, hxzero⟩ :=
+    Matrix.exists_mulVec_eq_zero_iff.mpr hdet
+  have hinj :=
+    sylvesterVecCoeff_schurTriangular_mulVec_injective
+      m n U R A V S B hU hV hA hB hS hshift
+  have hxzero' : x = 0 := by
+    apply hinj
+    rw [hxzero, Matrix.mulVec_zero]
+  exact hxne hxzero'
+
 end LeanFpAnalysis.FP
