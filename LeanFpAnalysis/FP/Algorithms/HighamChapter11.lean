@@ -64,6 +64,16 @@ theorem higham11_1_growth_balance :
       1 + 2 / (1 - higham11_1_bunchParlettAlpha) :=
   bunch_parlett_growth_balance
 
+/-- **§11.1.1 growth-factor recursion**: a stage-maximum sequence `r` obeying the
+single-step ratio bound `r(k+1) ≤ (1 + 1/α)·r k` (supplied for each stage by
+`higham11_1_oneByOne_schur_growth` / `higham11_4_twoByTwo_schur_growth`) satisfies
+`r n ≤ (1 + 1/α)^n · ρ₀`, the derivation of the printed `ρₙ ≤ (1 + α⁻¹)^{n−1}`. -/
+theorem higham11_1_growth_factor_recursion (α ρ0 : ℝ) (r : ℕ → ℝ)
+    (hα : 0 < α) (h0 : r 0 = ρ0)
+    (hstep : ∀ k, r (k + 1) ≤ (1 + 1 / α) * r k) :
+    ∀ n, r n ≤ (1 + 1 / α) ^ n * ρ0 :=
+  geom_growth_iterate α ρ0 r hα h0 hstep
+
 /-- **Equation (11.4)**, the scalar entry of the 2 by 2 Schur complement
 `b_ij - [c_i1 c_i2] E^{-1} [c_j1, c_j2]^T`. -/
 noncomputable def higham11_4_twoByTwoSchurEntry
