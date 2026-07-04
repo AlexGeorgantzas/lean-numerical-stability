@@ -2876,8 +2876,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_recurrence_gamma`
 - `higham9_14_nonnegative_lu_source_h_bound_of_models`
 - `higham9_14_nonnegative_lu_source_h_bound_of_models_gamma`
+- `higham9_14_matrix_nonnegative_lu_source_h_bound_of_models`
+- `higham9_14_matrix_nonnegative_lu_source_h_bound_of_models_gamma`
 - `higham9_14_mmatrix_lu_source_h_bound_of_models`
 - `higham9_14_mmatrix_lu_source_h_bound_of_models_gamma`
+- `higham9_14_matrix_mmatrix_lu_source_h_bound_of_models`
+- `higham9_14_matrix_mmatrix_lu_source_h_bound_of_models_gamma`
 - `higham9_14_sign_equiv_source_h_bound_of_models`
 - `higham9_14_sign_equiv_source_h_bound_of_models_gamma`
 - `higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_models`
@@ -2889,8 +2893,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_recurrence_gamma`
 - `higham9_14_nonnegative_lu_source_f_bound_of_models`
 - `higham9_14_nonnegative_lu_source_f_bound_of_models_gamma`
+- `higham9_14_matrix_nonnegative_lu_source_f_bound_of_models`
+- `higham9_14_matrix_nonnegative_lu_source_f_bound_of_models_gamma`
 - `higham9_14_mmatrix_lu_source_f_bound_of_models`
 - `higham9_14_mmatrix_lu_source_f_bound_of_models_gamma`
+- `higham9_14_matrix_mmatrix_lu_source_f_bound_of_models`
+- `higham9_14_matrix_mmatrix_lu_source_f_bound_of_models_gamma`
 - `higham9_14_sign_equiv_source_f_bound_of_models`
 - `higham9_14_sign_equiv_source_f_bound_of_models_gamma`
 - `higham9_14_sign_equiv_source_f_bound_of_IsSignEquiv_models`
