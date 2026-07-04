@@ -787,6 +787,59 @@ theorem theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_with_r
         (mul_le_mul_of_nonneg_right hfactorErr
           (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
 
+/-- Theorem 20.7 support: split the staged row-growth obligations into
+    completed rows `i < k` and active rows `k <= i`.
+
+This is the finite-ratio handoff needed after consuming Chapter 19 row-sorting
+entry bounds for the active suffix while carrying separate certificates for
+rows already completed by stage `k`. -/
+theorem theorem20_7_alphaBetaMax_le_of_row_sorting_active_completed_entry_growth_with_relative_error_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi err : ℝ)
+    (hphi : 0 ≤ phi) (herr : 0 ≤ err)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Astage k i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bstage k i| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val → ∀ j : Fin n,
+        |Astage k i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val →
+        |bstage k i| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤
+      Real.sqrt (m : ℝ) *
+        H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err := by
+  apply
+    theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_with_relative_error_nat
+      hm hn Astage A bstage b phi err hphi herr hdenA hdenW
+  · intro i k hk j
+    by_cases hcompleted : i.val < k
+    · exact hAcompleted i k hk hcompleted j
+    · exact hAactive i k hk (le_of_not_gt hcompleted) j
+  · intro i k hk
+    by_cases hcompleted : i.val < k
+    · exact hbcompleted i k hk hcompleted
+    · exact hbactive i k hk (le_of_not_gt hcompleted)
+
 /-- Theorem 20.7 support: consume the Chapter 19 row-sorting accumulated-error
     entry theorem and repackage its output in the staged `A` entry-growth shape
     used by the Chapter 20 weighted least-squares ratio bridges.
