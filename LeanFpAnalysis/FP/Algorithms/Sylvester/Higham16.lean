@@ -237,6 +237,157 @@ theorem sylvester_perturbation_first_order_vec (n : Nat)
   simpa [sylvesterOpRect] using
     sylvester_perturbation_first_order n A B X dA dB dC dX hLin p.2 p.1
 
+-- ============================================================
+-- Practical max-entry error bounds from Chapter 16.4
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    the vector max norm on a vectorized rectangular matrix, using Mathlib's
+    finite-function sup norm. -/
+noncomputable def sylvesterVecMaxNorm (m n : Nat)
+    (v : Prod (Fin n) (Fin m) -> Real) : Real :=
+  norm v
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    `||X|| := max_{i,j} |x_ij|`, represented as the vector max norm of
+    `vec(X)` in column-stacking order. -/
+noncomputable def sylvesterMaxEntryNormRect (m n : Nat)
+    (X : RMatFn m n) : Real :=
+  sylvesterVecMaxNorm m n (Matrix.vec X)
+
+lemma sylvesterVecMaxNorm_nonneg (m n : Nat)
+    (v : Prod (Fin n) (Fin m) -> Real) :
+    0 <= sylvesterVecMaxNorm m n v := by
+  unfold sylvesterVecMaxNorm
+  exact norm_nonneg v
+
+lemma abs_le_sylvesterVecMaxNorm (m n : Nat)
+    (v : Prod (Fin n) (Fin m) -> Real) (p : Prod (Fin n) (Fin m)) :
+    |v p| <= sylvesterVecMaxNorm m n v := by
+  unfold sylvesterVecMaxNorm
+  simpa [Real.norm_eq_abs] using norm_le_pi_norm v p
+
+lemma sylvesterVecMaxNorm_le_of_abs_le (m n : Nat)
+    (v : Prod (Fin n) (Fin m) -> Real) {c : Real}
+    (h : forall p : Prod (Fin n) (Fin m), |v p| <= c) (hc : 0 <= c) :
+    sylvesterVecMaxNorm m n v <= c := by
+  unfold sylvesterVecMaxNorm
+  rw [pi_norm_le_iff_of_nonneg hc]
+  intro p
+  simpa [Real.norm_eq_abs] using h p
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    the practical componentwise budget vector
+    `|P^{-1}| (|vec(Rhat)| + vec(Ru))`.  The matrix `PinvAbs` represents
+    an entrywise nonnegative upper bound for `|P^{-1}|`, and `Ru` is the
+    nonnegative residual-rounding budget. -/
+noncomputable def sylvesterPracticalBudgetVec (m n : Nat)
+    (PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (Rhat Ru : RMatFn m n) : Prod (Fin n) (Fin m) -> Real :=
+  fun p =>
+    Finset.sum Finset.univ fun q : Prod (Fin n) (Fin m) =>
+      PinvAbs p q * (|Matrix.vec Rhat q| + Matrix.vec Ru q)
+
+lemma sylvesterPracticalBudgetVec_nonneg (m n : Nat)
+    (PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (Rhat Ru : RMatFn m n)
+    (hPinvAbs : forall p q, 0 <= PinvAbs p q)
+    (hRu : forall i j, 0 <= Ru i j) :
+    forall p, 0 <= sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru p := by
+  intro p
+  unfold sylvesterPracticalBudgetVec
+  exact Finset.sum_nonneg fun q _ =>
+    mul_nonneg (hPinvAbs p q)
+      (add_nonneg (abs_nonneg _)
+        (by simpa [Matrix.vec] using hRu q.2 q.1))
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), max-entry norm bridge:
+    a nonnegative componentwise budget for `X - Xhat` bounds the relative
+    max-entry forward error in the source norm `||X|| := max_{i,j} |x_ij|`. -/
+theorem sylvester_practical_error_bound_of_componentwise_budget (m n : Nat)
+    (X Xhat : RMatFn m n) (budget : Prod (Fin n) (Fin m) -> Real)
+    (hbudget : forall p, 0 <= budget p)
+    (hcert : forall i j, |X i j - Xhat i j| <= budget (j, i))
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n budget / sylvesterMaxEntryNormRect m n Xhat := by
+  have hnorm :
+      sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) <=
+        sylvesterVecMaxNorm m n budget := by
+    unfold sylvesterMaxEntryNormRect
+    apply sylvesterVecMaxNorm_le_of_abs_le
+    · intro p
+      calc
+        |Matrix.vec (fun i j => X i j - Xhat i j) p|
+            = |X p.2 p.1 - Xhat p.2 p.1| := by
+              simp [Matrix.vec]
+        _ <= budget p := hcert p.2 p.1
+        _ = |budget p| := (abs_of_nonneg (hbudget p)).symm
+        _ <= sylvesterVecMaxNorm m n budget :=
+          abs_le_sylvesterVecMaxNorm m n budget p
+    · exact sylvesterVecMaxNorm_nonneg m n budget
+  exact div_le_div_of_nonneg_right hnorm (le_of_lt hXhat)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), certificate form:
+    if the vectorized error is `P^{-1} r`, the inverse entries are bounded
+    componentwise by `PinvAbs`, and the residual vector satisfies
+    `|r| <= |vec(Rhat)| + vec(Ru)`, then the practical `|P^{-1}|` budget
+    gives the relative max-entry forward-error bound. -/
+theorem sylvester_practical_error_bound_of_inverse_residual_budget (m n : Nat)
+    (X Xhat Rhat Ru : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (r : Prod (Fin n) (Fin m) -> Real)
+    (hErr : Matrix.vec (fun i j => X i j - Xhat i j) =
+      Matrix.mulVec Pinv r)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hr : forall q, |r q| <= |Matrix.vec Rhat q| + Matrix.vec Ru q)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  have hPinvAbs_nonneg : forall p q, 0 <= PinvAbs p q := by
+    intro p q
+    exact (abs_nonneg (Pinv p q)).trans (hPinvAbs p q)
+  apply sylvester_practical_error_bound_of_componentwise_budget
+  · exact sylvesterPracticalBudgetVec_nonneg m n PinvAbs Rhat Ru hPinvAbs_nonneg hRu
+  · intro i j
+    let p : Prod (Fin n) (Fin m) := (j, i)
+    have hp := congrFun hErr p
+    have herr :
+        X i j - Xhat i j = Matrix.mulVec Pinv r p := by
+      simpa [p, Matrix.vec] using hp
+    rw [herr]
+    calc
+      |Matrix.mulVec Pinv r p|
+          = |Finset.sum Finset.univ
+              (fun q : Prod (Fin n) (Fin m) => Pinv p q * r q)| := by
+            simp [Matrix.mulVec, dotProduct]
+      _ <= Finset.sum Finset.univ
+              (fun q : Prod (Fin n) (Fin m) => |Pinv p q * r q|) :=
+            Finset.abs_sum_le_sum_abs _ _
+      _ = Finset.sum Finset.univ
+              (fun q : Prod (Fin n) (Fin m) => |Pinv p q| * |r q|) := by
+            apply Finset.sum_congr rfl
+            intro q _
+            rw [abs_mul]
+      _ <= Finset.sum Finset.univ
+              (fun q : Prod (Fin n) (Fin m) =>
+                PinvAbs p q * (|Matrix.vec Rhat q| + Matrix.vec Ru q)) := by
+            apply Finset.sum_le_sum
+            intro q _
+            exact mul_le_mul (hPinvAbs p q) (hr q)
+              (abs_nonneg (r q)) (hPinvAbs_nonneg p q)
+      _ = sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru p := by
+            rfl
+  · exact hXhat
+
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
     if `A` and `B` are diagonal in the chosen bases, the vec/Kronecker
     Sylvester coefficient is diagonal with entries `a_i - b_j`.
