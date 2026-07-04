@@ -5167,6 +5167,97 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the reduced-`AP` projected-difference bridge.
+
+    Full row rank supplies `Bplus = hB.rightInverse`; the two remaining
+    hypotheses are exactly the still-open reduced-problem obligations
+    `(AP)^+ AP = P` and the reduced equation for `AP*(y-x)`. -/
+theorem
+    LSEFullRowRank.theorem20_8_projected_difference_eq_APplus_of_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (Deltad : Fin p → ℝ) (y x : Fin n → ℝ)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+          rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_projected_difference_eq_APplus_of_reduced_difference_eq
+      A DeltaA Deltab B DeltaB hB.rightInverse APplus Deltad y x
+      hAPleft hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the reduced-`AP` relative solution-difference
+    transfer.  This removes the raw `Bplus` argument from the strongest current
+    reduced-`AP` handoff while keeping the projected-left-inverse equation, the
+    reduced `AP` equation, and the first-order solution radius visible. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y x : Fin n → ℝ) (r : Fin m → ℝ)
+    {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 * solutionRadius *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_reduced_difference_eq
+      A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x r
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy
+      hAPleft hAPdiff
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 rank bridge:
     full row rank of `B` makes the transpose map `Bᵀ` injective.  This is the
     finite-dimensional algebra used by the exact-MGS GQR route to connect the
