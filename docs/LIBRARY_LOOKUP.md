@@ -2527,6 +2527,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_colDiagDom_exists_LUFactSpec_fu_bound`
 - `higham9_14_rowDiagDom_exists_LUFactSpec_fu_bound`
+- `higham9_14_colDiagDom_tridiag_data_exists_LUFactSpec_fu_bound`
+- `higham9_14_rowDiagDom_tridiag_data_exists_LUFactSpec_fu_bound`
 - `LUFactSpec.to_LUBackwardError_zero`
 - `higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma_le`
 - `higham9_14_f`
