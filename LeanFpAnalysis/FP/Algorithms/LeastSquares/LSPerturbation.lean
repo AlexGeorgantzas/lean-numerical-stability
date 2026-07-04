@@ -1769,6 +1769,52 @@ theorem wedinLemma20_12_compressedGram_sub_swapped_compressedGram_eq_projectionD
   exact
     wedinLemma20_12_diff_projection_diff_sub_swapped_eq_projectionDiff_cube P Q
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    trace form of the projector-difference cube identity. -/
+theorem wedinLemma20_12_finiteTrace_diff_projection_diff_sub_swapped_eq_projectionDiff_cube
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j) P)
+          (fun i j => P i j - Q i j)) -
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j) Q)
+          (fun i j => P i j - Q i j)) =
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j))
+          (fun i j => P i j - Q i j)) := by
+  rw [← finiteTrace_sub]
+  exact congrArg finiteTrace
+    (wedinLemma20_12_diff_projection_diff_sub_swapped_eq_projectionDiff_cube P Q)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    trace form of the compressed-Gram cube identity in the original
+    `(I-Q)P(I-Q)` and `(I-P)Q(I-P)` orientations. -/
+theorem wedinLemma20_12_finiteTrace_compressedGram_sub_swapped_eq_projectionDiff_cube
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+          (fun i j => idMatrix m i j - Q i j)) -
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+          (fun i j => idMatrix m i j - P i j)) =
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j))
+          (fun i j => P i j - Q i j)) := by
+  rw [← finiteTrace_sub]
+  exact congrArg finiteTrace
+    (wedinLemma20_12_compressedGram_sub_swapped_compressedGram_eq_projectionDiff_cube
+      P Q hIdemP hIdemQ)
+
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
     source-oriented projection perturbation bound.
 
