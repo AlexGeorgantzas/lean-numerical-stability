@@ -2122,6 +2122,25 @@ theorem higham10_11_pivot_argmax_stable {n : ℕ}
   have h3 := hdom j hj
   linarith
 
+/-- **Lemma 10.11, first-stage complete-pivot preservation.**  For a symmetric
+matrix whose largest element lies on the diagonal (true for positive
+semidefinite `A`, cf. Problem 10.1), the first complete-pivoting choice is the
+diagonal argmax.  If some diagonal index `i₀` strictly dominates the diagonal
+with margin `2ε` (Higham's no-ties condition (10.17) at stage 1), then every
+perturbation `E` with `|Eⱼⱼ| ≤ ε` on the diagonal leaves `i₀` the strict
+diagonal maximizer of `A+E`, so `A` and `A+E` select the same first pivot.  This
+instantiates `higham10_11_pivot_argmax_stable` on the matrix diagonal. -/
+theorem higham10_11_first_pivot_preserved {n : ℕ}
+    (A E : Fin n → Fin n → ℝ) (ε : ℝ) (i₀ : Fin n)
+    (hdom : ∀ j, j ≠ i₀ → A j j + 2 * ε < A i₀ i₀)
+    (hE : ∀ j, |E j j| ≤ ε) :
+    ∀ j, j ≠ i₀ → (A + E) j j < (A + E) i₀ i₀ := by
+  have := higham10_11_pivot_argmax_stable
+    (fun i => A i i) (fun i => A i i + E i i) ε i₀ hdom
+    (by intro j; simpa using hE j)
+  intro j hj
+  simpa using this j hj
+
 /-- **Lemma 10.12**: abstract `W = A11^{-1} A12` norm bound. -/
 theorem higham10_12_w_norm_bound_from_cond
     (W_norm κ_A11 : ℝ) (hκ : 0 ≤ κ_A11)
