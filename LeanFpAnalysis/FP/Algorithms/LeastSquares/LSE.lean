@@ -4646,6 +4646,60 @@ theorem theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_maxRelat
     hforcing
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-residual form of the max-relative residual-explicit solution
+    difference bound.  The remaining forcing radius is stated using
+    `r = b - A*x` rather than expanding the source residual inline. -/
+theorem theorem20_8_vecNorm2_solution_difference_source_residual_forcing_le_of_maxRelativePerturbation_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps forcing_norm : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hforcing :
+      vecNorm2
+          (fun i : Fin m =>
+            r i - rHigh i - rectMatMulVec DeltaA y i + Deltab i) ≤
+        forcing_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm := by
+  have hforcing_vec :
+      (fun i : Fin m =>
+          (b i - rectMatMulVec A x i) - rHigh i -
+            rectMatMulVec DeltaA y i + Deltab i) =
+        fun i : Fin m =>
+          r i - rHigh i - rectMatMulVec DeltaA y i + Deltab i := by
+    ext i
+    have hi := congrFun hr i
+    unfold lsResidualHigham at hi
+    linarith
+  exact
+    theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_maxRelativePerturbation_op2
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y rHigh
+      hApos hbpos hBpos hdpos hmax hAPleft hx hy hres
+      (by
+        rw [hforcing_vec]
+        exact hforcing)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the projected-difference equation follows from the reduced `AP` equation
     once `(AP)^+ AP` is identified with the source nullspace projector `P`. -/
 theorem theorem20_8_projected_difference_eq_APplus_of_reduced_difference_eq
@@ -6693,6 +6747,48 @@ theorem
   _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_maxRelativePerturbation_op2
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y rHigh
     hApos hbpos hBpos hdpos hmax hAPleft hx hy hres hforcing
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank residual-explicit norm bound under the printed maximum
+    relative perturbation hypothesis, with the source residual `r = b - A*x`
+    named explicitly. -/
+theorem
+    LSEFullRowRank.theorem20_8_vecNorm2_solution_difference_source_residual_forcing_le_of_maxRelativePerturbation_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps forcing_norm : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hforcing :
+      vecNorm2
+          (fun i : Fin m =>
+            r i - rHigh i - rectMatMulVec DeltaA y i + Deltab i) ≤
+        forcing_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix
+            (theorem20_8BAplus A B hB.rightInverse APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_solution_difference_source_residual_forcing_le_of_maxRelativePerturbation_op2
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
+    hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres hforcing
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the reduced-`AP` relative solution-difference
