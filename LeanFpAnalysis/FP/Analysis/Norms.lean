@@ -15394,6 +15394,24 @@ theorem realRectToCMatrix_matTranspose {n : Nat}
   simp [realRectToCMatrix, matTranspose, complexMatrixAdjoint,
     complexMatrixTranspose, complexConjMatrix]
 
+/-- Complexification commutes with the repository's rectangular real finite
+    transpose. -/
+theorem realRectToCMatrix_finiteTranspose {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    realRectToCMatrix (finiteTranspose A) =
+      complexMatrixAdjoint (realRectToCMatrix A) := by
+  ext j i
+  simp [realRectToCMatrix, finiteTranspose, complexMatrixAdjoint,
+    complexMatrixTranspose, complexConjMatrix]
+
+/-- The exact Euclidean operator `2`-norm of a complexified real rectangular
+    matrix is invariant under the repository's finite transpose. -/
+theorem complexMatrixOp2_realRectToCMatrix_finiteTranspose_eq {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    complexMatrixOp2 (realRectToCMatrix (finiteTranspose A)) =
+      complexMatrixOp2 (realRectToCMatrix A) := by
+  rw [realRectToCMatrix_finiteTranspose, complexMatrixOp2_adjoint_eq]
+
 /-- Complexification commutes with the repository's real square matrix
     multiplication. -/
 theorem realRectToCMatrix_matMul {n : Nat}
@@ -16362,6 +16380,24 @@ theorem rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le {m n : Nat}
           rw [realVecToEuclidean_norm]
     _ <= c * vecNorm2 x := by
           exact mul_le_mul_of_nonneg_right hOp (vecNorm2_nonneg x)
+
+/-- Transfer a rectangular real operator-2 bound across equality of exact
+    complexified Euclidean operator norms. -/
+theorem rectOpNorm2Le_of_complexMatrixOp2_eq_of_rectOpNorm2Le {m n : Nat}
+    (A B : Fin m -> Fin n -> Real) {c : Real}
+    (hc : 0 <= c)
+    (hEq :
+      complexMatrixOp2 (realRectToCMatrix A) =
+        complexMatrixOp2 (realRectToCMatrix B))
+    (hB : rectOpNorm2Le B c) :
+    rectOpNorm2Le A c := by
+  have hBop :
+      complexMatrixOp2 (realRectToCMatrix B) <= c :=
+    complexMatrixOp2_realRectToCMatrix_le_of_rectOpNorm2Le B hc hB
+  have hAop :
+      complexMatrixOp2 (realRectToCMatrix A) <= c := by
+    simpa [hEq] using hBop
+  exact rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le A hAop
 
 /-- A square real operator-bound certificate bounds the exact Euclidean
     operator norm of its complexification. -/
