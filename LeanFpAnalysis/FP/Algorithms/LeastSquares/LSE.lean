@@ -872,6 +872,116 @@ theorem theorem20_7_stageAEntry_bound_of_h19_row_sorting_accumulated_error
             H19.Theorem19_6.rowwise_step_growth_factor ^ k.val + err) *
           theorem20_7_initialRowMax hn A r := by ring
 
+/-- Theorem 20.7 support: consume the Chapter 19 row-sorting accumulated-error
+    entry theorem for the staged right-hand side by viewing `b` as a one-column
+    staged matrix.
+
+This is the `b`-side analogue of
+`theorem20_7_stageAEntry_bound_of_h19_row_sorting_accumulated_error`.  The final
+two hypotheses keep the remaining row-sorting handoffs explicit: domination by
+the Theorem 20.7 weighted row scale and domination of the accumulated
+computed/exact error by the relative coefficient `err`. -/
+theorem theorem20_7_stageBEntry_bound_of_h19_row_sorting_accumulated_error
+    {m n : ℕ} (hn : 0 < n) (k r : Fin m)
+    (bhat bexact : ℕ → Fin m → ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ)
+    (row0Bound : Fin m → ℝ) (stepBudget : ℕ → ℝ) (err : ℝ)
+    (hr : k.val ≤ r.val)
+    (hsorted :
+      ∀ s : Fin m, k.val ≤ s.val → row0Bound s ≤ row0Bound k)
+    (hinitExact : |bexact 0 r| ≤ row0Bound r)
+    (hstepExact :
+      ∀ t : ℕ, t < k.val →
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hstepErr :
+      ∀ t : ℕ, t < k.val →
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            stepBudget t)
+    (hrow0 :
+      row0Bound k ≤
+        Real.sqrt (m : ℝ) *
+          theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hacc :
+      H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+          |bhat 0 r - bexact 0 r| +
+        scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+          stepBudget k.val ≤
+        err * theorem20_7_initialWeightedRowMax hn A b phi r) :
+    |bhat k.val r| ≤
+      (Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ k.val + err) *
+        theorem20_7_initialWeightedRowMax hn A b phi r := by
+  let col : Fin 1 := ⟨0, by decide⟩
+  have hinitExact' :
+      |(fun t i (_ : Fin 1) => bexact t i) 0 r col| ≤ row0Bound r := by
+    simpa using hinitExact
+  have hstepExact' :
+      ∀ t : ℕ, t < k.val →
+        |(fun t i (_ : Fin 1) => bexact t i) (t + 1) r col| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |(fun t i (_ : Fin 1) => bexact t i) t r col| := by
+    intro t ht
+    simpa using hstepExact t ht
+  have hstepErr' :
+      ∀ t : ℕ, t < k.val →
+        |(fun t i (_ : Fin 1) => bhat t i) (t + 1) r col -
+            (fun t i (_ : Fin 1) => bexact t i) (t + 1) r col| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |(fun t i (_ : Fin 1) => bhat t i) t r col -
+                (fun t i (_ : Fin 1) => bexact t i) t r col| +
+            stepBudget t := by
+    intro t ht
+    simpa using hstepErr t ht
+  have hH19 :=
+    H19.Theorem19_6.row_sorting_active_entry_bound_with_accumulated_error
+      k r col (fun t i (_ : Fin 1) => bhat t i)
+      (fun t i (_ : Fin 1) => bexact t i) row0Bound stepBudget
+      hr hsorted hinitExact' hstepExact' hstepErr'
+  have hG0 : 0 ≤ H19.Theorem19_6.rowwise_step_growth_factor :=
+    H19.Theorem19_6.rowwise_step_growth_factor_nonneg
+  have hpow0 :
+      0 ≤ H19.Theorem19_6.rowwise_step_growth_factor ^ k.val :=
+    pow_nonneg hG0 _
+  have hfirst :
+      H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+          row0Bound k ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k.val) *
+          theorem20_7_initialWeightedRowMax hn A b phi r := by
+    calc
+      H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+            row0Bound k
+          ≤ H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+              (Real.sqrt (m : ℝ) *
+                theorem20_7_initialWeightedRowMax hn A b phi r) :=
+            mul_le_mul_of_nonneg_left hrow0 hpow0
+      _ = (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k.val) *
+            theorem20_7_initialWeightedRowMax hn A b phi r := by ring
+  have hsum :=
+    add_le_add hfirst hacc
+  calc
+    |bhat k.val r| ≤
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+            row0Bound k +
+          (H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+              |bhat 0 r - bexact 0 r| +
+            scalarAffineGrowthBudget
+              H19.Theorem19_6.rowwise_step_growth_factor stepBudget k.val) := by
+        simpa [col] using hH19
+    _ ≤ (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k.val) *
+            theorem20_7_initialWeightedRowMax hn A b phi r +
+          err * theorem20_7_initialWeightedRowMax hn A b phi r :=
+        hsum
+    _ = (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k.val + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi r := by ring
+
 /-- Theorem 20.7 bridge specialized to the Chapter 19.6 active-row Cox--Higham
     growth factor. -/
 theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
