@@ -4573,6 +4573,29 @@ theorem higham10_29_symPart_luSchur_eq {m : ℕ}
   simp only [symmetricPart, luFirstSchurComplement]
   ring
 
+/-- **(10.29) parent action on a zero-padded vector** (Higham §10.4):
+    `S·(0,y) = (bᵀy, Dy)` — applying the parent stage matrix `S` to the
+    padded vector `(0,y)` gives the pair of the border inner product and
+    the interior action, i.e. `Fin.cons (∑ b_j y_j) (Dy)`.  This is the
+    `(β, v)` at which `schur_gram_stage_le` is evaluated. -/
+theorem higham10_29_S_mulVec_cons0 {m : ℕ}
+    (S : Fin (m + 1) → Fin (m + 1) → ℝ) (y : Fin m → ℝ) :
+    matMulVec (m + 1) S (Fin.cons (0 : ℝ) y) =
+      Fin.cons (∑ j : Fin m, S 0 j.succ * y j)
+        (fun i => ∑ j : Fin m, S i.succ j.succ * y j) := by
+  funext i
+  refine Fin.cases ?_ (fun i' => ?_) i
+  · -- index 0
+    show matMulVec (m + 1) S (Fin.cons (0 : ℝ) y) 0 = _
+    unfold matMulVec
+    rw [Fin.sum_univ_succ]
+    simp only [Fin.cons_zero, Fin.cons_succ, mul_zero, zero_add]
+  · -- index i'.succ
+    show matMulVec (m + 1) S (Fin.cons (0 : ℝ) y) i'.succ = _
+    unfold matMulVec
+    rw [Fin.sum_univ_succ]
+    simp only [Fin.cons_zero, Fin.cons_succ, mul_zero, zero_add]
+
 /-- **Equation (10.29)** / Golub-Van Loan growth-bound interface for exact
 LU factors of a nonsymmetric positive-definite matrix. -/
 theorem higham10_29_nonsym_pd_lu_growth_bound (n : ℕ) (hn : 0 < n)
