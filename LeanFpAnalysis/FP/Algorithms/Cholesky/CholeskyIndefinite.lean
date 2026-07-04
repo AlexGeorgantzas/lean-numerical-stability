@@ -253,6 +253,93 @@ theorem bunch_parlett_L_bound (n : ℕ)
     ∀ i j : Fin n, |L i j| ≤ c_bound :=
   hL
 
+/-- **Multiplier bound for a 1×1 pivot** (Higham §11.1.1–§11.1.2).
+
+    A 1×1 pivot `e` accepted by the Bunch–Parlett / Bunch–Kaufman test
+    `α·ω ≤ |e|`, where `ω` bounds the magnitude of the off-pivot column entries
+    `c`, produces subdiagonal multipliers `c / e` with `|c / e| ≤ 1/α`.
+
+    This is the elementwise fact behind "no element of `CE⁻¹` exceeds
+    `max{1/α, 1/(1-α)}`", hence `‖L‖` is bounded independently of `A`.  It is a
+    genuine derivation from the pivot-acceptance test, not an assumed bound. -/
+theorem oneByOne_multiplier_bound (c e ω α : ℝ)
+    (hα : 0 < α) (hω : 0 < ω) (hc : |c| ≤ ω) (he : α * ω ≤ |e|) :
+    |c / e| ≤ 1 / α := by
+  have hαω : 0 < α * ω := mul_pos hα hω
+  have hepos : 0 < |e| := lt_of_lt_of_le hαω he
+  have hinv : (0 : ℝ) < 1 / α := by positivity
+  have hstep : ω ≤ 1 / α * |e| := by
+    have h1 := mul_le_mul_of_nonneg_left he (le_of_lt hinv)
+    rwa [← mul_assoc, one_div_mul_cancel (ne_of_gt hα), one_mul] at h1
+  rw [abs_div, div_le_iff₀ hepos]
+  linarith [hc, hstep]
+
+/-- **Element growth for a 1×1 Schur step** (Higham §11.1.1, and §11.1.2 cases
+    (1)–(3)).  With `μ₀` bounding the magnitude of every active entry
+    (`|b|, |c₁|, |c₂| ≤ μ₀`) and a 1×1 pivot `e` accepted under `α·μ₀ ≤ |e|`,
+    the Schur-complement entry `b − c₁·c₂/e` satisfies
+    `|b − c₁·c₂/e| ≤ (1 + 1/α)·μ₀`.  Iterating this per-step bound is the
+    mechanism behind the growth-factor bound `ρₙ ≤ (1 + α⁻¹)^{n−1}`. -/
+theorem oneByOne_schur_growth (b c1 c2 e μ0 α : ℝ)
+    (hα : 0 < α) (hμ : 0 < μ0)
+    (hb : |b| ≤ μ0) (hc1 : |c1| ≤ μ0) (hc2 : |c2| ≤ μ0)
+    (he : α * μ0 ≤ |e|) :
+    |b - c1 * c2 / e| ≤ (1 + 1 / α) * μ0 := by
+  have hmult : |c2 / e| ≤ 1 / α :=
+    oneByOne_multiplier_bound c2 e μ0 α hα hμ hc2 he
+  have hcorr : |c1 * c2 / e| ≤ 1 / α * μ0 := by
+    rw [mul_div_assoc, abs_mul]
+    calc |c1| * |c2 / e|
+        ≤ μ0 * (1 / α) := mul_le_mul hc1 hmult (abs_nonneg _) (le_of_lt hμ)
+      _ = 1 / α * μ0 := by ring
+  have htri : |b - c1 * c2 / e| ≤ |b| + |c1 * c2 / e| := by
+    have h := abs_add_le b (-(c1 * c2 / e))
+    simpa [sub_eq_add_neg, abs_neg] using h
+  calc |b - c1 * c2 / e|
+      ≤ |b| + |c1 * c2 / e| := htri
+    _ ≤ μ0 + 1 / α * μ0 := add_le_add hb hcorr
+    _ = (1 + 1 / α) * μ0 := by ring
+
+/-- **2×2 complete-pivot determinant bound** (Higham §11.1.1).
+
+    When complete pivoting selects a 2×2 pivot block
+    `E = [[e₁₁, e₂₁], [e₂₁, e₂₂]]`, the off-diagonal entry has the maximal
+    magnitude `μ₀` (`e₂₁² = μ₀²`), the diagonal entries are bounded by the best
+    1×1 pivot `μ₁ ≤ α·μ₀`, and the determinant satisfies
+    `det E = e₁₁e₂₂ − e₂₁² ≤ (α² − 1)·μ₀²`.  This is the printed estimate
+    `det(E) ≤ μ₁² − μ₀² ≤ (α² − 1)μ₀²`. -/
+theorem twoByTwo_completePivot_det_bound (e11 e22 e21 μ0 μ1 α : ℝ)
+    (hμ1 : 0 ≤ μ1)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0) :
+    e11 * e22 - e21 ^ 2 ≤ (α ^ 2 - 1) * μ0 ^ 2 := by
+  have h1 : e11 * e22 ≤ μ1 * μ1 := by
+    calc e11 * e22 ≤ |e11 * e22| := le_abs_self _
+      _ = |e11| * |e22| := abs_mul _ _
+      _ ≤ μ1 * μ1 := mul_le_mul he11 he22 (abs_nonneg _) hμ1
+  have hαμ0 : 0 ≤ α * μ0 := le_trans hμ1 hμ1α
+  have h2 : μ1 * μ1 ≤ (α * μ0) * (α * μ0) :=
+    mul_le_mul hμ1α hμ1α hμ1 hαμ0
+  nlinarith [h1, h2, he21]
+
+/-- **2×2 complete-pivot determinant magnitude lower bound** (Higham §11.1.1).
+
+    For `α ∈ [0, 1)`, the 2×2 pivot chosen by complete pivoting is nonsingular
+    with `|det E| ≥ (1 − α²)·μ₀²`, the printed bound used to control `E⁻¹`. -/
+theorem twoByTwo_completePivot_absdet_lower (e11 e22 e21 μ0 μ1 α : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0) :
+    (1 - α ^ 2) * μ0 ^ 2 ≤ |e11 * e22 - e21 ^ 2| := by
+  have hdet := twoByTwo_completePivot_det_bound e11 e22 e21 μ0 μ1 α
+    hμ1 he11 he22 he21 hμ1α
+  have hμ0sq : 0 ≤ μ0 ^ 2 := sq_nonneg μ0
+  have hα2 : (0 : ℝ) ≤ 1 - α ^ 2 := by nlinarith [hα0, hα1]
+  have hneg : e11 * e22 - e21 ^ 2 ≤ 0 := by
+    nlinarith [hdet, mul_nonneg hα2 hμ0sq]
+  rw [abs_of_nonpos hneg]
+  nlinarith [hdet]
+
 -- ============================================================
 -- Chapter 11.1.2  Partial pivoting (Bunch-Kaufman)
 -- ============================================================
