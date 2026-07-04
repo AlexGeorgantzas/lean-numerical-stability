@@ -1484,6 +1484,26 @@ theorem lyapunov_residual_bound_of_backward_error (n : Nat)
     _ <= ((alpha + alpha) * frobNorm Y + gamma) * eta := hres
     _ = (2 * alpha * frobNorm Y + gamma) * eta := by ring
 
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    the residual ratio with Lyapunov scale `2 * alpha * ||Y||_F + gamma`
+    is a lower bound for the structured Lyapunov backward-error infimum. -/
+theorem lyapunov_relative_residual_le_backwardErrorInf (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) (alpha gamma : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma)
+    (hscale : 0 < 2 * alpha * frobNorm Y + gamma)
+    (hne : (lyapunovBackwardErrorValues n A C Y alpha gamma).Nonempty) :
+    frobNorm (lyapunovResidual n A C Y) /
+        (2 * alpha * frobNorm Y + gamma) <=
+      lyapunovBackwardErrorInf n A C Y alpha gamma := by
+  unfold lyapunovBackwardErrorInf
+  apply le_csInf hne
+  intro eta heta
+  have hbound :=
+    lyapunov_residual_bound_of_backward_error n A C Y alpha gamma eta
+      halpha hgamma heta.1 heta.2
+  rw [div_le_iff₀ hscale]
+  simpa [mul_comm, mul_left_comm, mul_assoc] using hbound
+
 /-- If `Y = U * Lambda * U^T`, the left perturbation product transforms to
     `DeltaA_tilde * Lambda`. -/
 theorem lyapunovSpectralTransform_mul_spectral_right (n : ℕ)
