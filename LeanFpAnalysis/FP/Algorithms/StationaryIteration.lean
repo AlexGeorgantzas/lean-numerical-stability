@@ -1816,6 +1816,61 @@ noncomputable def finiteResidualSigma (n : ℕ)
     (H : Fin n → Fin n → ℝ) (m : ℕ) : ℝ :=
   infNorm (finiteResidualSigmaMatrix n H m)
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20):
+    entrywise `tsum` matrix for the source residual sigma
+    `sum_{k >= 0} |H^k(I-H)|`.  Convergence is intentionally not hidden in the
+    definition; use the `HasSum` wrapper below when a concrete convergence
+    certificate is available. -/
+noncomputable def residualSigmaTsumMatrix (n : ℕ)
+    (H : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    ∑' k : ℕ, |matMul n (matPow n H k) (matSub_id n H) i j|
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20):
+    scalar infinity-norm version of the entrywise `tsum` residual sigma. -/
+noncomputable def residualSigmaTsum (n : ℕ)
+    (H : Fin n → Fin n → ℝ) : ℝ :=
+  infNorm (residualSigmaTsumMatrix n H)
+
+/-- Entrywise unfolding of the literal `tsum` residual-sigma matrix. -/
+theorem residualSigmaTsumMatrix_apply (n : ℕ)
+    (H : Fin n → Fin n → ℝ) (i j : Fin n) :
+    residualSigmaTsumMatrix n H i j =
+      ∑' k : ℕ, |matMul n (matPow n H k) (matSub_id n H) i j| := by
+  rfl
+
+/-- If each entrywise source residual-sigma series has sum `S i j`, then the
+    `tsum` matrix is exactly `S`. -/
+theorem residualSigmaTsumMatrix_eq_of_hasSum (n : ℕ)
+    (H S : Fin n → Fin n → ℝ)
+    (hsum : ∀ i j,
+      HasSum (fun k : ℕ => |matMul n (matPow n H k) (matSub_id n H) i j|)
+        (S i j)) :
+    residualSigmaTsumMatrix n H = S := by
+  ext i j
+  unfold residualSigmaTsumMatrix
+  exact (hsum i j).tsum_eq
+
+/-- Norm-level form of `residualSigmaTsumMatrix_eq_of_hasSum`. -/
+theorem residualSigmaTsum_eq_infNorm_of_hasSum (n : ℕ)
+    (H S : Fin n → Fin n → ℝ)
+    (hsum : ∀ i j,
+      HasSum (fun k : ℕ => |matMul n (matPow n H k) (matSub_id n H) i j|)
+        (S i j)) :
+    residualSigmaTsum n H = infNorm S := by
+  unfold residualSigmaTsum
+  rw [residualSigmaTsumMatrix_eq_of_hasSum n H S hsum]
+
+/-- A row-sum certificate bounds the literal `tsum` residual sigma. -/
+theorem residualSigmaTsum_le_of_row_sum_le (n : ℕ)
+    (H : Fin n → Fin n → ℝ) {sigma : ℝ}
+    (hrows : ∀ i : Fin n,
+      ∑ j : Fin n, |residualSigmaTsumMatrix n H i j| ≤ sigma)
+    (hsigma : 0 ≤ sigma) :
+    residualSigmaTsum n H ≤ sigma := by
+  unfold residualSigmaTsum
+  exact infNorm_le_of_row_sum_le (residualSigmaTsumMatrix n H) hrows hsigma
+
 /-- Higham, 2nd ed., Chapter 17, Section 17.3:
     candidate finite partial norms for the source residual sigma.  This is the
     `sSup`-based wrapper around the finite matrices `sum_{k=0}^m |H^k(I-H)|`;
