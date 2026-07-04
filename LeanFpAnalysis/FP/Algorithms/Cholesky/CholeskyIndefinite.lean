@@ -256,6 +256,27 @@ theorem bunch_parlett_growth_balance :
     (ne_of_lt bunch_parlett_alpha_lt_one)
     bunch_parlett_alpha_root
 
+/-- **Growth-factor recursion** (Higham §11.1.1).  If the stage-maximum sequence
+    `r` grows by at most the single-step factor `1 + 1/α` at each elimination
+    stage (`r(k+1) ≤ (1 + 1/α)·r k`, the per-step bound proved for both 1×1 and
+    2×2 pivots by `oneByOne_schur_growth` / `twoByTwo_schur_growth`), starting
+    from `r 0 = ρ₀`, then after `n` stages `r n ≤ (1 + 1/α)^n · ρ₀`.  This is the
+    mechanism turning the single-step element-growth bounds into the growth-factor
+    bound `ρₙ ≤ (1 + α⁻¹)^{n−1}` quoted in the text (derived here, not assumed). -/
+theorem geom_growth_iterate (α ρ0 : ℝ) (r : ℕ → ℝ)
+    (hα : 0 < α) (h0 : r 0 = ρ0)
+    (hstep : ∀ k, r (k + 1) ≤ (1 + 1 / α) * r k) :
+    ∀ n, r n ≤ (1 + 1 / α) ^ n * ρ0 := by
+  have hc : (0 : ℝ) ≤ 1 + 1 / α := by positivity
+  intro n
+  induction n with
+  | zero => simp [h0]
+  | succ k ih =>
+      calc r (k + 1) ≤ (1 + 1 / α) * r k := hstep k
+        _ ≤ (1 + 1 / α) * ((1 + 1 / α) ^ k * ρ0) :=
+            mul_le_mul_of_nonneg_left ih hc
+        _ = (1 + 1 / α) ^ (k + 1) * ρ0 := by ring
+
 /-- **Abstract Bunch-Parlett growth-factor interface** (Higham §11.1.1).
 
     The diagonal pivoting method with complete pivoting has
