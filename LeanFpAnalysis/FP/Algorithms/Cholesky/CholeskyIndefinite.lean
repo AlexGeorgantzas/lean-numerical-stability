@@ -222,6 +222,40 @@ theorem bunch_parlett_alpha_root :
   field_simp
   nlinarith [h17]
 
+/-- The Bunch-Parlett parameter is strictly positive. -/
+theorem bunch_parlett_alpha_pos : 0 < bunchParlettAlpha := by
+  unfold bunchParlettAlpha
+  have : (0 : ℝ) ≤ Real.sqrt 17 := Real.sqrt_nonneg 17
+  linarith
+
+/-- The Bunch-Parlett parameter satisfies `α < 1` (since `√17 < 7`). -/
+theorem bunch_parlett_alpha_lt_one : bunchParlettAlpha < 1 := by
+  unfold bunchParlettAlpha
+  have h : Real.sqrt 17 < 7 := (Real.sqrt_lt' (by norm_num)).mpr (by norm_num)
+  linarith
+
+/-- **Growth-balance identity** (Higham §11.1.1).  For any `α ≠ 0, 1` that is a
+    root of `4α² − α − 1 = 0`, the worst-case growth of two `s = 1` steps equals
+    that of one `s = 2` step: `(1 + 1/α)² = 1 + 2/(1 − α)`.  This is the source's
+    derivation "we equate the maximum growth …, which reduces to `4α² − α − 1 = 0`". -/
+theorem growth_balance_of_root (α : ℝ) (hα0 : α ≠ 0) (hα1 : α ≠ 1)
+    (hroot : 4 * α ^ 2 - α - 1 = 0) :
+    (1 + 1 / α) ^ 2 = 1 + 2 / (1 - α) := by
+  have h1α : (1 - α) ≠ 0 := by
+    intro h; apply hα1; linarith [sub_eq_zero.mp h]
+  field_simp
+  nlinarith [hroot]
+
+/-- The Bunch-Parlett `α = (1+√17)/8` is exactly the value that balances the 1×1
+    and 2×2 single-step growth bounds proved above (`oneByOne_schur_growth`,
+    `twoByTwo_schur_growth`): `(1 + 1/α)² = 1 + 2/(1 − α)`. -/
+theorem bunch_parlett_growth_balance :
+    (1 + 1 / bunchParlettAlpha) ^ 2 = 1 + 2 / (1 - bunchParlettAlpha) :=
+  growth_balance_of_root bunchParlettAlpha
+    (ne_of_gt bunch_parlett_alpha_pos)
+    (ne_of_lt bunch_parlett_alpha_lt_one)
+    bunch_parlett_alpha_root
+
 /-- **Abstract Bunch-Parlett growth-factor interface** (Higham §11.1.1).
 
     The diagonal pivoting method with complete pivoting has
