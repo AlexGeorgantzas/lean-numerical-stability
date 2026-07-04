@@ -138,6 +138,22 @@ theorem lyapunovVecCoeff_mulVec_vec (n : Nat)
   simp [Matrix.vec]
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    vectorized first-order Lyapunov perturbation equation.  The coefficient
+    `I_n kron A + A kron I_n` sends `vec(dX)` to the vectorized linearized
+    right-hand side `dC - dA X - X dA^T`. -/
+theorem lyapunov_perturbation_first_order_vec (n : Nat)
+    (A X dA dC dX : Fin n -> Fin n -> Real)
+    (hLin : forall i j, lyapunovOp n A dX i j =
+      dC i j - matMul n dA X i j - matMul n X (matTranspose dA) i j) :
+    Matrix.mulVec (lyapunovVecCoeff n A) (Matrix.vec dX) =
+      Matrix.vec (fun i j =>
+        dC i j - matMul n dA X i j - matMul n X (matTranspose dA) i j) := by
+  rw [lyapunovVecCoeff_mulVec_vec]
+  ext p
+  simpa [lyapunovOp, matMul, matTranspose, Matrix.vec, Matrix.mul_apply]
+    using hLin p.2 p.1
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     the vec-permutation matrix `Pi` in product-index form.  It swaps the
     column-stacking product index `(j,i)` to `(i,j)`. -/
 noncomputable def vecTransposePermutation (n : Nat) :
