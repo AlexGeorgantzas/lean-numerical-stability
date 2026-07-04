@@ -86,7 +86,11 @@ import LeanFpAnalysis.FP.Algorithms.MatrixPowersLp
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersLpJordan
 import LeanFpAnalysis.FP.Algorithms.StationaryIterationSeries
 import LeanFpAnalysis.FP.Algorithms.StationaryIterationSemiconvergent
+import LeanFpAnalysis.FP.Algorithms.StationaryIterationSemiconvergentExistence
 import LeanFpAnalysis.FP.Algorithms.StationaryIterationDrazin
+import LeanFpAnalysis.FP.Analysis.InverseOpNorm2
+import LeanFpAnalysis.FP.Analysis.NumericalRadius
+import LeanFpAnalysis.FP.Analysis.SchurTriangulation
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderReflector
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderApply
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderOneStep

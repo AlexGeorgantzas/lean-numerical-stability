@@ -15170,3 +15170,16 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham_18_2_pseudospectral_criterion
 #check H19_eq19_13_formed_Q_backward_error
 #check H19_eq19_13_formed_Q_backward_error_gamma
+-- Split-3B blocked-foundation resolutions (Schur, numerical radius, ‖P⁻¹‖₂, semiconvergent existence)
+#check schur_triangulation
+#check schur_triangulation_diag_add_strictUpper
+#check numericalRadius
+#check numericalRadius_sandwich
+#check opNorm_le_two_mul_numericalRadius
+#check norm_pow_le_two_mul_numericalRadius_pow_of_le
+#check vecNorm2_le_inv_sigmaMin_mul_matMulVec
+#check sylvesterInverseOpBound_of_sigmaMin
+#check lyapunovInverseOpBound_of_sigmaMin
+#check semiconvergent_block_form_exists
+#check singular_error_split_semiconvergent_of_block_data
+#check matPow_G_tendsto_oneEigenProjector_of_block_data

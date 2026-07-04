@@ -22,7 +22,18 @@
   semiconvergent-form existence lemma for an arbitrary semiconvergent matrix
   (the book's [106, Lem. 6.9] citation — an external source not in the local
   set, Jordan-form background, outside the printed analysis, which takes the
-  form as given); the `hne`/certificate hypotheses documented per-row (each
+  form as given) — now REDUCED (not fully closed) by the Split-3B Claude lane
+  in `StationaryIterationSemiconvergentExistence.lean` (import-only):
+  `semiconvergent_block_form_exists` PROVES `X⁻¹GX = diag(I_r,Γ)` and discharges
+  all block-form data hypotheses of `StationaryIterationSemiconvergent.lean`
+  from the more primitive real column conditions (eigenvalue-1 eigenvectors +
+  G-invariant complement + Γ row-sum contraction) that the ℂ primary
+  decomposition delivers, plus the two end-to-end corollaries
+  `singular_error_split_semiconvergent_of_block_data` /
+  `matPow_G_tendsto_oneEigenProjector_of_block_data`; deriving those column
+  conditions from mere convergence of `Gᵐ` (semisimplicity-at-1) stays folded
+  into the hypothesis, exactly as the book takes the form as given; the
+  `hne`/certificate hypotheses documented per-row (each
   mirrors an implicit assumption of the printed text); and the
   benchmark-reserved Problem 17.1 / Appendix A 17.1 rows.
 
