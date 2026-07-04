@@ -4272,6 +4272,7 @@ Source-facing Chapter 10 wrappers:
 - `block_quadForm_schur_eq` ((10.29) crux Q22 side: [b;v]^T H^{-1} [b;v] = b^2/a + (v-(b/a)f)^T Z^{-1} (v-(b/a)f) for symmetric PD block H=[[a,f^T],[f,G]], Z=G-ff^T/a; via inverse-action vector)
 - `quadForm_gram_conj` ((10.29) stage-Gram-as-matrix tool: y^T (G^T M G) y = (Gy)^T M (Gy), via matMulVec_matMul)
 - `trailing_block_quadForm` ((10.29): (0,y)^T Q (0,y) = y^T Q22 y, Q22 i j = Q i.succ j.succ; padded-zero selects the trailing principal block)
+- `spd_inverse_exists` ((10.29): SPD H (repo IsSymPosDef) has a symmetric two-sided function-matrix inverse; trivial kernel -> IsUnit det -> nonsingInv; foundation for the stage Gram Q(S)=S^T H(S)^-1 S)
 - `gram_conj_isSymm` ((10.29): conjugated Gram G^T M G is symmetric when M is; so finiteMaxEigenvalue applies to stage matrices)
 - `schur_gram_stage_le` ((10.29) crux CAPSTONE, Q_hat <= Q_22 quadratic-form level: (S_hat y)^T H_hat^{-1} (S_hat y) <= [b;v]^T H^{-1} [b;v], combining block_quadForm_schur_eq + rankOne_update_auxiliary_le with u=k/sqrt(a), g=b/sqrt(a))
 - `higham10_29_luFirstSchurComplement_isNonsymPosDef` ((10.29) GE recursion well-founded: LU-scaffold Schur step preserves nonsym-PD; base for the stage induction on the LUFactSpec/of_firstSchurComplement recursion)
