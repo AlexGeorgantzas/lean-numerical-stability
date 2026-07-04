@@ -1972,6 +1972,36 @@ theorem theorem20_8_vecNorm2_perturbed_residual_correction_le_of_relativeBudget
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     hbudget.2.2.2 hbudget.2.1
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-norm variant of the residual-correction estimate, using the exact
+    operator 2-norm of the real product `A*Bplus` as the explicit product
+    radius. -/
+theorem
+    theorem20_8_vecNorm2_perturbed_residual_correction_le_of_relativeBudget_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (y : Fin n → ℝ)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2
+        (fun i : Fin m =>
+          rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p => Deltad l - rectMatMulVec DeltaB y l)) i +
+            rectMatMulVec DeltaA y i - Deltab i) ≤
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+          (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        (eps * frobNormRect A) * vecNorm2 y +
+        eps * vecNorm2 b := by
+  exact theorem20_8_vecNorm2_perturbed_residual_correction_le_of_relativeBudget
+    A DeltaA b Deltab B DeltaB Bplus d Deltad y hbudget
+    (complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul A Bplus)))
+    (rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+      (rectMatMul A Bplus) le_rfl)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     source table `B_A^+ = (I - (AP)^+ A)B^+`.
 
