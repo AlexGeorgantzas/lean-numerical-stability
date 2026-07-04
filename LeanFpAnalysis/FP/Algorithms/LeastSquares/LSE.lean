@@ -2014,6 +2014,178 @@ noncomputable def theorem20_8BAplus {m n p : ℕ}
     Fin n → Fin p → ℝ :=
   rectMatMul (fun i j => idMatrix n i j - rectMatMul APplus A i j) Bplus
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    applying `B_A^+ = (I - (AP)^+ A)B^+` to a vector expands into the
+    `B^+` term minus the reduced-problem pseudo-inverse correction. -/
+theorem theorem20_8BAplus_apply {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (e : Fin p → ℝ) :
+    rectMatMulVec (theorem20_8BAplus A B Bplus APplus) e =
+      fun j : Fin n =>
+        rectMatMulVec Bplus e j -
+          rectMatMulVec APplus
+            (rectMatMulVec A (rectMatMulVec Bplus e)) j := by
+  ext j
+  unfold theorem20_8BAplus
+  rw [rectMatMulVec_rectMatMul]
+  unfold rectMatMulVec
+  have hsplit :
+      (∑ k : Fin n,
+          (idMatrix n j k - rectMatMul APplus A j k) *
+            (∑ x : Fin p, Bplus k x * e x)) =
+        (∑ k : Fin n,
+          idMatrix n j k * (∑ x : Fin p, Bplus k x * e x)) -
+        (∑ k : Fin n,
+          rectMatMul APplus A j k *
+            (∑ x : Fin p, Bplus k x * e x)) := by
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro k _
+    ring
+  have hid :=
+    congrFun (rectMatMulVec_idMatrix (fun k : Fin n =>
+      ∑ x : Fin p, Bplus k x * e x)) j
+  have hcomp :=
+    congrFun (rectMatMulVec_rectMatMul APplus A
+      (rectMatMulVec Bplus e)) j
+  have hid' :
+      (∑ k : Fin n, idMatrix n j k *
+          (∑ x : Fin p, Bplus k x * e x)) =
+        ∑ x : Fin p, Bplus j x * e x := by
+    simpa [rectMatMulVec] using hid
+  have hcomp' :
+      (∑ k : Fin n, rectMatMul APplus A j k *
+          (∑ x : Fin p, Bplus k x * e x)) =
+        ∑ x : Fin m,
+          APplus j x *
+            (∑ x_1 : Fin n,
+              A x x_1 * (∑ x_2 : Fin p, Bplus x_1 x_2 * e x_2)) := by
+    simpa [rectMatMulVec] using hcomp
+  rw [hsplit, hid', hcomp']
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the source product `A B_A^+` splits into `A B^+` minus the
+    `(AP)^+`-correction term. -/
+theorem theorem20_8A_BAplus_apply {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (e : Fin p → ℝ) :
+    rectMatMulVec A
+        (rectMatMulVec (theorem20_8BAplus A B Bplus APplus) e) =
+      fun i : Fin m =>
+        rectMatMulVec A (rectMatMulVec Bplus e) i -
+          rectMatMulVec A
+            (rectMatMulVec APplus
+              (rectMatMulVec A (rectMatMulVec Bplus e))) i := by
+  rw [theorem20_8BAplus_apply, rectMatMulVec_sub]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the `A B^+` constraint-defect correction decomposes into the source
+    `A B_A^+` term plus the reduced-problem pseudo-inverse correction. -/
+theorem theorem20_8ABplus_eq_A_APplus_A_Bplus_add_A_BAplus {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (e : Fin p → ℝ) :
+    rectMatMulVec A (rectMatMulVec Bplus e) =
+      fun i : Fin m =>
+        rectMatMulVec A
+            (rectMatMulVec APplus
+              (rectMatMulVec A (rectMatMulVec Bplus e))) i +
+          rectMatMulVec A
+            (rectMatMulVec (theorem20_8BAplus A B Bplus APplus) e) i := by
+  ext i
+  have h :=
+    congrFun (theorem20_8A_BAplus_apply A B Bplus APplus e) i
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    applying the source product `A B_A^+` is controlled by an operator-2
+    bound for that product. -/
+theorem theorem20_8_vecNorm2_A_BAplus_apply_le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (e : Fin p → ℝ) {ABAplus_norm : ℝ}
+    (hABAplus :
+      rectOpNorm2Le (rectMatMul A (theorem20_8BAplus A B Bplus APplus))
+        ABAplus_norm) :
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec (theorem20_8BAplus A B Bplus APplus) e)) ≤
+      ABAplus_norm * vecNorm2 e := by
+  simpa [rectMatMulVec_rectMatMul] using hABAplus e
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the source `A B_A^+` constraint-defect correction is bounded by
+    perturbation radii and an operator-2 bound for `A B_A^+`. -/
+theorem theorem20_8_vecNorm2_A_BAplus_constraint_defect_le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B DeltaB : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (Deltad : Fin p → ℝ) (y : Fin n → ℝ)
+    {ABAplus_norm DeltaB_norm Deltad_norm : ℝ}
+    (hABAplus_nonneg : 0 ≤ ABAplus_norm)
+    (hABAplus :
+      rectOpNorm2Le (rectMatMul A (theorem20_8BAplus A B Bplus APplus))
+        ABAplus_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm) :
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i))) ≤
+      ABAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) := by
+  let defect : Fin p → ℝ :=
+    fun i => Deltad i - rectMatMulVec DeltaB y i
+  have hdefect :
+      vecNorm2 defect ≤ Deltad_norm + DeltaB_norm * vecNorm2 y := by
+    exact theorem20_8_vecNorm2_constraint_defect_le DeltaB Deltad y
+      hDeltaB hDeltad
+  calc
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)))
+        = vecNorm2
+            (rectMatMulVec A
+              (rectMatMulVec (theorem20_8BAplus A B Bplus APplus) defect)) := by
+            rfl
+    _ ≤ ABAplus_norm * vecNorm2 defect :=
+            theorem20_8_vecNorm2_A_BAplus_apply_le A B Bplus APplus
+              defect hABAplus
+    _ ≤ ABAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) :=
+            mul_le_mul_of_nonneg_left hdefect hABAplus_nonneg
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-norm version of the `A B_A^+` constraint-defect bound under the
+    displayed relative perturbation budget. -/
+theorem theorem20_8_vecNorm2_A_BAplus_constraint_defect_le_of_relativeBudget_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i))) ≤
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) := by
+  exact theorem20_8_vecNorm2_A_BAplus_constraint_defect_le
+    A B DeltaB Bplus APplus Deltad y
+    (complexMatrixOp2_nonneg
+      (realRectToCMatrix
+        (rectMatMul A (theorem20_8BAplus A B Bplus APplus))))
+    (rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+      (rectMatMul A (theorem20_8BAplus A B Bplus APplus)) le_rfl)
+    (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    hbudget.2.2.2
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     condition quantity `kappa_B(A) = ||A||_F ||(AP)^+||_2`. -/
 noncomputable def theorem20_8KappaB {m n : ℕ}
