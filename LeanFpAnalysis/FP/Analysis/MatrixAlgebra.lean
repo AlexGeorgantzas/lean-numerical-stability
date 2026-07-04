@@ -18,6 +18,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Analysis.Matrix.Normed
+import Mathlib.Analysis.Matrix.PosDef
 import Mathlib.Analysis.CStarAlgebra.Matrix
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Ring.Finset
@@ -4445,6 +4446,37 @@ theorem finitePSD_iff_matrix_posSemidef_of_symmetric {ι : Type*} [Fintype ι]
   ⟨finitePSD.to_matrix_posSemidef M hMsym,
     Matrix_posSemidef.to_finitePSD M⟩
 
+/-- A symmetric finite positive-semidefinite matrix with zero finite trace is
+    the zero matrix.  This is the repository-native wrapper around Mathlib's
+    PSD trace-zero criterion. -/
+theorem finitePSD_eq_zero_of_finiteTrace_eq_zero {ι : Type*} [Fintype ι]
+    [DecidableEq ι] (M : ι → ι → ℝ)
+    (hSym : IsSymmetricFiniteMatrix M) (hPSD : finitePSD M)
+    (hTrace : finiteTrace M = 0) :
+    M = fun _ _ => 0 := by
+  have hMat : Matrix.PosSemidef (M : Matrix ι ι ℝ) :=
+    finitePSD.to_matrix_posSemidef M hSym hPSD
+  have hMatrixTrace : Matrix.trace (M : Matrix ι ι ℝ) = 0 := by
+    simpa [Matrix.trace, finiteTrace] using hTrace
+  have hzero : (M : Matrix ι ι ℝ) = 0 :=
+    (Matrix.PosSemidef.trace_eq_zero_iff hMat).mp hMatrixTrace
+  ext i j
+  change (M : Matrix ι ι ℝ) i j = (0 : Matrix ι ι ℝ) i j
+  rw [hzero]
+  simp
+
+/-- For symmetric finite positive-semidefinite matrices, zero finite trace is
+    equivalent to being the zero matrix. -/
+theorem finiteTrace_eq_zero_iff_eq_zero_of_finitePSD {ι : Type*} [Fintype ι]
+    [DecidableEq ι] (M : ι → ι → ℝ)
+    (hSym : IsSymmetricFiniteMatrix M) (hPSD : finitePSD M) :
+    finiteTrace M = 0 ↔ M = fun _ _ => 0 := by
+  constructor
+  · exact finitePSD_eq_zero_of_finiteTrace_eq_zero M hSym hPSD
+  · intro hzero
+    rw [hzero]
+    simp [finiteTrace]
+
 /-- A local finite Loewner bound gives a mathlib positive-semidefinite
     difference matrix, provided both sides are locally symmetric. -/
 theorem finiteLoewnerLe.to_matrix_posSemidef_sub {ι : Type*} [Fintype ι]
@@ -8085,6 +8117,82 @@ theorem rectMatMul_assoc {m n p q : ℕ}
   intro k _
   apply Finset.sum_congr rfl
   intro l _
+  ring
+
+/-- Left distributivity for implicit rectangular multiplication:
+    `(A+B)*C = A*C + B*C`. -/
+theorem rectMatMul_add_left {m n p : ℕ}
+    (A B : Fin m → Fin n → ℝ) (C : Fin n → Fin p → ℝ) :
+    rectMatMul (fun i j => A i j + B i j) C =
+      fun i j => rectMatMul A C i j + rectMatMul B C i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Right distributivity for implicit rectangular multiplication:
+    `A*(B+C) = A*B + A*C`. -/
+theorem rectMatMul_add_right {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B C : Fin n → Fin p → ℝ) :
+    rectMatMul A (fun i j => B i j + C i j) =
+      fun i j => rectMatMul A B i j + rectMatMul A C i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Negation in the left factor of an implicit rectangular product. -/
+theorem rectMatMul_neg_left {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ) :
+    rectMatMul (fun i j => -A i j) B =
+      fun i j => -rectMatMul A B i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_neg_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Negation in the right factor of an implicit rectangular product. -/
+theorem rectMatMul_neg_right {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ) :
+    rectMatMul A (fun i j => -B i j) =
+      fun i j => -rectMatMul A B i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_neg_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Left subtraction for implicit rectangular multiplication:
+    `(A-B)*C = A*C - B*C`. -/
+theorem rectMatMul_sub_left {m n p : ℕ}
+    (A B : Fin m → Fin n → ℝ) (C : Fin n → Fin p → ℝ) :
+    rectMatMul (fun i j => A i j - B i j) C =
+      fun i j => rectMatMul A C i j - rectMatMul B C i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_sub_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Right subtraction for implicit rectangular multiplication:
+    `A*(B-C) = A*B - A*C`. -/
+theorem rectMatMul_sub_right {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B C : Fin n → Fin p → ℝ) :
+    rectMatMul A (fun i j => B i j - C i j) =
+      fun i j => rectMatMul A B i j - rectMatMul A C i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_sub_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
   ring
 
 /-- A rectangular left inverse `A⁺A = I` makes `AA⁺` an algebraic projection. -/

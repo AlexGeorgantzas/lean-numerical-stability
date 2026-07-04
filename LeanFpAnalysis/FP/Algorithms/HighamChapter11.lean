@@ -55,6 +55,15 @@ theorem higham11_1_bunch_parlett_alpha_root :
       higham11_1_bunchParlettAlpha - 1 = 0 :=
   bunch_parlett_alpha_root
 
+/-- **§11.1.1 α-derivation**: `α = (1+√17)/8` is exactly the value balancing the
+two single-step growth bounds `(1 + 1/α)²` (two 1×1 steps) and `1 + 2/(1−α)`
+(one 2×2 step).  Connects `higham11_1_oneByOne_schur_growth` and
+`higham11_4_twoByTwo_schur_growth`. -/
+theorem higham11_1_growth_balance :
+    (1 + 1 / higham11_1_bunchParlettAlpha) ^ 2 =
+      1 + 2 / (1 - higham11_1_bunchParlettAlpha) :=
+  bunch_parlett_growth_balance
+
 /-- **Equation (11.4)**, the scalar entry of the 2 by 2 Schur complement
 `b_ij - [c_i1 c_i2] E^{-1} [c_j1, c_j2]^T`. -/
 noncomputable def higham11_4_twoByTwoSchurEntry
@@ -81,6 +90,68 @@ theorem higham11_1_bunch_parlett_L_bound (n : ℕ)
     (hL : ∀ i j : Fin n, |L i j| ≤ c_bound) :
     ∀ i j : Fin n, |L i j| ≤ c_bound :=
   bunch_parlett_L_bound n L c_bound hc hL
+
+/-- **§11.1.1 multiplier bound**, proved from the pivot-acceptance test: a 1×1
+pivot `e` with `α·ω ≤ |e|` and off-pivot entries bounded by `ω` gives
+multipliers `|c/e| ≤ 1/α`.  This is the honest derivation behind the
+`bunch_parlett_L_bound` interface (`|L_ij| ≤ max{1/α, 1/(1-α)}`). -/
+theorem higham11_1_oneByOne_multiplier_bound (c e ω α : ℝ)
+    (hα : 0 < α) (hω : 0 < ω) (hc : |c| ≤ ω) (he : α * ω ≤ |e|) :
+    |c / e| ≤ 1 / α :=
+  oneByOne_multiplier_bound c e ω α hα hω hc he
+
+/-- **§11.1.1 single-step element growth for a 1×1 pivot**:
+`|b − c₁c₂/e| ≤ (1 + 1/α)·μ₀` when `α·μ₀ ≤ |e|` and all active entries are
+bounded by `μ₀`.  This is the printed bound `|ã_ij| ≤ μ₀ + μ₀²/μ₁ ≤ (1+1/α)μ₀`
+and the mechanism behind the growth-factor bound `ρₙ ≤ (1+α⁻¹)^{n−1}`. -/
+theorem higham11_1_oneByOne_schur_growth (b c1 c2 e μ0 α : ℝ)
+    (hα : 0 < α) (hμ : 0 < μ0)
+    (hb : |b| ≤ μ0) (hc1 : |c1| ≤ μ0) (hc2 : |c2| ≤ μ0)
+    (he : α * μ0 ≤ |e|) :
+    |b - c1 * c2 / e| ≤ (1 + 1 / α) * μ0 :=
+  oneByOne_schur_growth b c1 c2 e μ0 α hα hμ hb hc1 hc2 he
+
+/-- **§11.1.1 2×2 pivot determinant bound**:
+`det E = e₁₁e₂₂ − e₂₁² ≤ (α² − 1)μ₀²` for a complete-pivoting 2×2 block, and,
+for `α ∈ [0,1)`, `|det E| ≥ (1 − α²)μ₀²`. -/
+theorem higham11_4_twoByTwo_det_bound (e11 e22 e21 μ0 μ1 α : ℝ)
+    (hμ1 : 0 ≤ μ1)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0) :
+    e11 * e22 - e21 ^ 2 ≤ (α ^ 2 - 1) * μ0 ^ 2 :=
+  twoByTwo_completePivot_det_bound e11 e22 e21 μ0 μ1 α hμ1 he11 he22 he21 hμ1α
+
+/-- **§11.1.1 2×2 pivot nonsingularity magnitude bound**:
+`|det E| ≥ (1 − α²)μ₀²` for `α ∈ [0,1)`, the printed estimate used to bound
+`E⁻¹` and hence the 2×2-step element growth `(1 + 2/(1−α))μ₀`. -/
+theorem higham11_4_twoByTwo_absdet_lower (e11 e22 e21 μ0 μ1 α : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0) :
+    (1 - α ^ 2) * μ0 ^ 2 ≤ |e11 * e22 - e21 ^ 2| :=
+  twoByTwo_completePivot_absdet_lower e11 e22 e21 μ0 μ1 α
+    hμ1 hα0 hα1 he11 he22 he21 hμ1α
+
+/-- **Eq (11.4) element growth for a 2×2 complete-pivoting step**:
+the Schur entry `higham11_4_twoByTwoSchurEntry` built from inverse-block entries
+`e₁₁,e₁₂,e₂₁,e₂₂` bounded by `|e₁₁|,|e₂₂| ≤ αK`, `|e₁₂|,|e₂₁| ≤ K` with
+`K = 1/((1−α²)μ₀)`, and active entries `≤ μ₀`, satisfies
+`|ã| ≤ (1 + 2/(1−α))·μ₀`.  This is the printed §11.1.1 bound and, with
+`higham11_1_oneByOne_schur_growth`, completes both single-step growth bounds. -/
+theorem higham11_4_twoByTwo_schur_growth
+    (bij ci1 ci2 cj1 cj2 e11 e12 e21 e22 μ0 α K : ℝ)
+    (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1)
+    (hb : |bij| ≤ μ0)
+    (hci1 : |ci1| ≤ μ0) (hci2 : |ci2| ≤ μ0)
+    (hcj1 : |cj1| ≤ μ0) (hcj2 : |cj2| ≤ μ0)
+    (he11 : |e11| ≤ α * K) (he12 : |e12| ≤ K)
+    (he21 : |e21| ≤ K) (he22 : |e22| ≤ α * K) :
+    |higham11_4_twoByTwoSchurEntry bij ci1 ci2 cj1 cj2 e11 e12 e21 e22|
+      ≤ (1 + 2 / (1 - α)) * μ0 := by
+  unfold higham11_4_twoByTwoSchurEntry
+  exact twoByTwo_schur_growth bij ci1 ci2 cj1 cj2 e11 e12 e21 e22 μ0 α K
+    hα0 hα1 hμ hK hb hci1 hci2 hcj1 hcj2 he11 he12 he21 he22
 
 /-! ## §11.1.2 Partial pivoting -/
 
