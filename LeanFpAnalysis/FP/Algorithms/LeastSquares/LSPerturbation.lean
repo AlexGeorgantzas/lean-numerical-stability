@@ -1615,6 +1615,206 @@ theorem wedinLemma20_12_compressedGram_eq_diff_projection_diff
     _ = rectMatMul (rectMatMul D P) D := by
             rw [← rectMatMul_assoc]
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the difference of two symmetric projections is symmetric. -/
+theorem wedinLemma20_12_projectionDiff_symmetric
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q) :
+    IsSymmetricFiniteMatrix (fun i j => P i j - Q i j) := by
+  intro i j
+  dsimp
+  rw [hP i j, hQ i j]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the normal-form product `(P-Q)P(P-Q)` is symmetric. -/
+theorem wedinLemma20_12_diff_projection_diff_symmetric
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    IsSymmetricFiniteMatrix
+      (rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j) P)
+        (fun i j => P i j - Q i j)) := by
+  have hEq :=
+    wedinLemma20_12_compressedGram_eq_diff_projection_diff P Q hIdemP
+  rw [← hEq]
+  exact wedinLemma20_12_compressedGram_symmetric P Q hP hQ hIdemP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the normal-form product `(P-Q)P(P-Q)` is positive semidefinite. -/
+theorem wedinLemma20_12_diff_projection_diff_finitePSD
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    finitePSD
+      (rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j) P)
+        (fun i j => P i j - Q i j)) := by
+  have hEq :=
+    wedinLemma20_12_compressedGram_eq_diff_projection_diff P Q hIdemP
+  rw [← hEq]
+  exact wedinLemma20_12_compressedGram_finitePSD P Q hP hQ hIdemP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the swapped compressed Gram product `(I-P)Q(I-P)` can be written in the
+    same projector-difference orientation as `(P-Q)Q(P-Q)`. -/
+theorem wedinLemma20_12_swapped_compressedGram_eq_diff_projection_diff
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul
+        (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+        (fun i j => idMatrix m i j - P i j) =
+      rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j) Q)
+        (fun i j => P i j - Q i j) := by
+  have hbase :=
+    wedinLemma20_12_compressedGram_eq_diff_projection_diff Q P hIdemQ
+  rw [hbase]
+  ext i j
+  unfold rectMatMul
+  calc
+    (∑ a : Fin m, (∑ b : Fin m, (Q i b - P i b) * Q b a) *
+        (Q a j - P a j))
+        = ∑ a : Fin m, (-(∑ b : Fin m, (P i b - Q i b) * Q b a)) *
+            (-(P a j - Q a j)) := by
+            apply Finset.sum_congr rfl
+            intro a _
+            have hinner :
+                (∑ b : Fin m, (Q i b - P i b) * Q b a) =
+                  -(∑ b : Fin m, (P i b - Q i b) * Q b a) := by
+              rw [← Finset.sum_neg_distrib]
+              apply Finset.sum_congr rfl
+              intro b _
+              ring
+            rw [hinner]
+            ring
+    _ = ∑ a : Fin m, (∑ b : Fin m, (P i b - Q i b) * Q b a) *
+          (P a j - Q a j) := by
+            apply Finset.sum_congr rfl
+            intro a _
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the difference between the two projector-difference normal forms is the
+    cube of the projection difference `D = P-Q`. -/
+theorem wedinLemma20_12_diff_projection_diff_sub_swapped_eq_projectionDiff_cube
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ) :
+    (fun i j =>
+      rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j) P)
+          (fun i j => P i j - Q i j) i j -
+        rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j) Q)
+          (fun i j => P i j - Q i j) i j) =
+      rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j))
+        (fun i j => P i j - Q i j) := by
+  ext i j
+  unfold rectMatMul
+  calc
+    (∑ a : Fin m, (∑ b : Fin m, (P i b - Q i b) * P b a) *
+        (P a j - Q a j)) -
+      (∑ a : Fin m, (∑ b : Fin m, (P i b - Q i b) * Q b a) *
+        (P a j - Q a j))
+        = ∑ a : Fin m,
+            ((∑ b : Fin m, (P i b - Q i b) * P b a) -
+              (∑ b : Fin m, (P i b - Q i b) * Q b a)) *
+              (P a j - Q a j) := by
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro a _
+            ring
+    _ = ∑ a : Fin m,
+          (∑ b : Fin m, (P i b - Q i b) * (P b a - Q b a)) *
+            (P a j - Q a j) := by
+            apply Finset.sum_congr rfl
+            intro a _
+            have hinner :
+                (∑ b : Fin m, (P i b - Q i b) * P b a) -
+                  (∑ b : Fin m, (P i b - Q i b) * Q b a) =
+                ∑ b : Fin m, (P i b - Q i b) * (P b a - Q b a) := by
+              rw [← Finset.sum_sub_distrib]
+              apply Finset.sum_congr rfl
+              intro b _
+              ring
+            rw [hinner]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    in original compressed-Gram orientation, the difference of the two
+    compressed Gram products is the cube of the projection difference. -/
+theorem wedinLemma20_12_compressedGram_sub_swapped_compressedGram_eq_projectionDiff_cube
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    (fun i j =>
+      rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+          (fun i j => idMatrix m i j - Q i j) i j -
+        rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+          (fun i j => idMatrix m i j - P i j) i j) =
+      rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j))
+        (fun i j => P i j - Q i j) := by
+  have hP :=
+    wedinLemma20_12_compressedGram_eq_diff_projection_diff P Q hIdemP
+  have hQ :=
+    wedinLemma20_12_swapped_compressedGram_eq_diff_projection_diff P Q hIdemQ
+  rw [hP, hQ]
+  exact
+    wedinLemma20_12_diff_projection_diff_sub_swapped_eq_projectionDiff_cube P Q
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    trace form of the projector-difference cube identity. -/
+theorem wedinLemma20_12_finiteTrace_diff_projection_diff_sub_swapped_eq_projectionDiff_cube
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j) P)
+          (fun i j => P i j - Q i j)) -
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j) Q)
+          (fun i j => P i j - Q i j)) =
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j))
+          (fun i j => P i j - Q i j)) := by
+  rw [← finiteTrace_sub]
+  exact congrArg finiteTrace
+    (wedinLemma20_12_diff_projection_diff_sub_swapped_eq_projectionDiff_cube P Q)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    trace form of the compressed-Gram cube identity in the original
+    `(I-Q)P(I-Q)` and `(I-P)Q(I-P)` orientations. -/
+theorem wedinLemma20_12_finiteTrace_compressedGram_sub_swapped_eq_projectionDiff_cube
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+          (fun i j => idMatrix m i j - Q i j)) -
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+          (fun i j => idMatrix m i j - P i j)) =
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j))
+          (fun i j => P i j - Q i j)) := by
+  rw [← finiteTrace_sub]
+  exact congrArg finiteTrace
+    (wedinLemma20_12_compressedGram_sub_swapped_compressedGram_eq_projectionDiff_cube
+      P Q hIdemP hIdemQ)
+
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
     source-oriented projection perturbation bound.
 

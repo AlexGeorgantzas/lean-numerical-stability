@@ -82,6 +82,47 @@ theorem higham11_1_bunch_parlett_L_bound (n : ℕ)
     ∀ i j : Fin n, |L i j| ≤ c_bound :=
   bunch_parlett_L_bound n L c_bound hc hL
 
+/-- **§11.1.1 multiplier bound**, proved from the pivot-acceptance test: a 1×1
+pivot `e` with `α·ω ≤ |e|` and off-pivot entries bounded by `ω` gives
+multipliers `|c/e| ≤ 1/α`.  This is the honest derivation behind the
+`bunch_parlett_L_bound` interface (`|L_ij| ≤ max{1/α, 1/(1-α)}`). -/
+theorem higham11_1_oneByOne_multiplier_bound (c e ω α : ℝ)
+    (hα : 0 < α) (hω : 0 < ω) (hc : |c| ≤ ω) (he : α * ω ≤ |e|) :
+    |c / e| ≤ 1 / α :=
+  oneByOne_multiplier_bound c e ω α hα hω hc he
+
+/-- **§11.1.1 single-step element growth for a 1×1 pivot**:
+`|b − c₁c₂/e| ≤ (1 + 1/α)·μ₀` when `α·μ₀ ≤ |e|` and all active entries are
+bounded by `μ₀`.  This is the printed bound `|ã_ij| ≤ μ₀ + μ₀²/μ₁ ≤ (1+1/α)μ₀`
+and the mechanism behind the growth-factor bound `ρₙ ≤ (1+α⁻¹)^{n−1}`. -/
+theorem higham11_1_oneByOne_schur_growth (b c1 c2 e μ0 α : ℝ)
+    (hα : 0 < α) (hμ : 0 < μ0)
+    (hb : |b| ≤ μ0) (hc1 : |c1| ≤ μ0) (hc2 : |c2| ≤ μ0)
+    (he : α * μ0 ≤ |e|) :
+    |b - c1 * c2 / e| ≤ (1 + 1 / α) * μ0 :=
+  oneByOne_schur_growth b c1 c2 e μ0 α hα hμ hb hc1 hc2 he
+
+/-- **§11.1.1 2×2 pivot determinant bound**:
+`det E = e₁₁e₂₂ − e₂₁² ≤ (α² − 1)μ₀²` for a complete-pivoting 2×2 block, and,
+for `α ∈ [0,1)`, `|det E| ≥ (1 − α²)μ₀²`. -/
+theorem higham11_4_twoByTwo_det_bound (e11 e22 e21 μ0 μ1 α : ℝ)
+    (hμ1 : 0 ≤ μ1)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0) :
+    e11 * e22 - e21 ^ 2 ≤ (α ^ 2 - 1) * μ0 ^ 2 :=
+  twoByTwo_completePivot_det_bound e11 e22 e21 μ0 μ1 α hμ1 he11 he22 he21 hμ1α
+
+/-- **§11.1.1 2×2 pivot nonsingularity magnitude bound**:
+`|det E| ≥ (1 − α²)μ₀²` for `α ∈ [0,1)`, the printed estimate used to bound
+`E⁻¹` and hence the 2×2-step element growth `(1 + 2/(1−α))μ₀`. -/
+theorem higham11_4_twoByTwo_absdet_lower (e11 e22 e21 μ0 μ1 α : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0) :
+    (1 - α ^ 2) * μ0 ^ 2 ≤ |e11 * e22 - e21 ^ 2| :=
+  twoByTwo_completePivot_absdet_lower e11 e22 e21 μ0 μ1 α
+    hμ1 hα0 hα1 he11 he22 he21 hμ1α
+
 /-! ## §11.1.2 Partial pivoting -/
 
 /-- **Algorithm 11.2** branch predicate for the Bunch-Kaufman partial
