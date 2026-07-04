@@ -2850,6 +2850,88 @@ theorem theorem20_8KappaB_dataSourceTerm_le_firstOrderRHS {m n p : ℕ}
   change theorem20_8KappaB A APplus * baseB ≤ termA + termB + termR
   linarith
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    the source-normalized residual-amplification term is one summand of the
+    first-order coefficient. -/
+theorem theorem20_8Residual_sourceTerm_le_firstOrderRHS {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (hApos : 0 < frobNormRect A) (hBpos : 0 < frobNormRect B)
+    (hxpos : 0 < vecNorm2 x) :
+    theorem20_8ResidualAmplifier A B APplus BAplus *
+        (vecNorm2 r / (frobNormRect A * vecNorm2 x)) ≤
+      theorem20_8FirstOrderRHS A b B d x r APplus BAplus := by
+  let termA : ℝ := theorem20_8KappaA B BAplus *
+    (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1)
+  let termB : ℝ := (1 + theorem20_8KappaB A APplus) *
+    (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1)
+  let termR : ℝ := theorem20_8ResidualAmplifier A B APplus BAplus *
+    (vecNorm2 r / (frobNormRect A * vecNorm2 x))
+  have htermA_nonneg : 0 ≤ termA := by
+    dsimp [termA]
+    apply mul_nonneg
+    · exact theorem20_8KappaA_nonneg B BAplus
+    · have hratio : 0 ≤ vecNorm2 d / (frobNormRect B * vecNorm2 x) := by
+        exact div_nonneg (vecNorm2_nonneg d)
+          (le_of_lt (mul_pos hBpos hxpos))
+      linarith
+  have htermB_nonneg : 0 ≤ termB := by
+    dsimp [termB]
+    apply mul_nonneg
+    · linarith [theorem20_8KappaB_nonneg A APplus]
+    · have hratio : 0 ≤ vecNorm2 b / (frobNormRect A * vecNorm2 x) := by
+        exact div_nonneg (vecNorm2_nonneg b)
+          (le_of_lt (mul_pos hApos hxpos))
+      linarith
+  change termR ≤ theorem20_8FirstOrderRHS A b B d x r APplus BAplus
+  unfold theorem20_8FirstOrderRHS
+  change termR ≤ termA + termB + termR
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    multiplying the residual-amplification summand by `eps * ||x||_2`
+    is bounded by the full first-order coefficient with the same scaling. -/
+theorem theorem20_8Residual_sourceTerm_scaled_le_firstOrderRHS {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hBpos : 0 < frobNormRect B)
+    (hxpos : 0 < vecNorm2 x) :
+    eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+        (vecNorm2 r / (frobNormRect A * vecNorm2 x)) * vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
+        vecNorm2 x := by
+  have hfirst :
+      theorem20_8ResidualAmplifier A B APplus BAplus *
+          (vecNorm2 r / (frobNormRect A * vecNorm2 x)) ≤
+        theorem20_8FirstOrderRHS A b B d x r APplus BAplus :=
+    theorem20_8Residual_sourceTerm_le_firstOrderRHS A b B d x r APplus
+      BAplus hApos hBpos hxpos
+  have hmul := mul_le_mul_of_nonneg_left hfirst heps_nonneg
+  have hmulx := mul_le_mul_of_nonneg_right hmul (le_of_lt hxpos)
+  simpa [mul_assoc] using hmulx
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    the scaled residual summand is the same as the source residual radius
+    `eps * residualAmplifier * ||r||_2 / ||A||_F`. -/
+theorem theorem20_8Residual_sourceTerm_scaled_eq {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hxpos : 0 < vecNorm2 x) :
+    eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+        (vecNorm2 r / (frobNormRect A * vecNorm2 x)) * vecNorm2 x =
+      eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+        (vecNorm2 r / frobNormRect A) := by
+  field_simp [ne_of_gt hApos, ne_of_gt hxpos,
+    mul_ne_zero (ne_of_gt hApos) (ne_of_gt hxpos)]
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     first-order source-coefficient bound for the reduced-problem data-forcing
     term `(AP)^+ * (DeltaA*x - Deltab)` under the displayed relative
