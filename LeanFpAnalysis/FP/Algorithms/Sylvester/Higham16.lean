@@ -1567,6 +1567,25 @@ theorem sylvesterSepInf_le_ratio (n : Nat) (A B X : Fin n -> Fin n -> Real)
   exact csInf_le (sylvesterSepRatios_bddBelow n A B)
     (Exists.intro X (And.intro hX rfl))
 
+/-- In positive dimension, the feasible ratio set in the infimum model of
+    `sep(A,B)` is nonempty: a single-entry test matrix is a nonzero witness. -/
+theorem sylvesterSepRatios_nonempty_of_pos_dim (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (hn : 0 < n) :
+    (sylvesterSepRatios n A B).Nonempty := by
+  classical
+  let i : Fin n := ⟨0, hn⟩
+  let E : Fin n -> Fin n -> Real :=
+    fun r c => if i = r /\ i = c then (1 : Real) else 0
+  refine ⟨frobNorm (sylvesterOp n A B E) / frobNorm E, ?_⟩
+  refine ⟨E, ?_, rfl⟩
+  have hrect : frobNormSqRect E = (1 : Real) ^ 2 := by
+    simpa [E] using frobNormSqRect_single_left i i (1 : Real)
+  rw [frobNormSqRect_eq_frobNormSq] at hrect
+  norm_num at hrect
+  intro hzero
+  rw [hzero] at hrect
+  norm_num at hrect
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal case:
     a uniform lower bound on all diagonal differences gives a Frobenius
     `SepLowerBound` certificate for the diagonal Sylvester operator. -/
@@ -1699,6 +1718,16 @@ theorem SepLowerBound_le_sylvesterSepInf_of_nonempty (n : Nat)
             _ <= frobNorm (sylvesterOp n A B X) / frobNorm X := by
               exact div_le_div_of_nonneg_right hnorm_le (le_of_lt hXnorm_pos)
 
+/-- In positive dimension, a positive `SepLowerBound` certificate is below the
+    exact infimum model of `sep(A,B)`. -/
+theorem SepLowerBound_le_sylvesterSepInf_of_pos_dim (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma) (hn : 0 < n) :
+    sigma <= sylvesterSepInf n A B := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_nonempty n A B sigma hSep
+      (sylvesterSepRatios_nonempty_of_pos_dim n A B hn)
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal case:
     a uniform diagonal-difference gap is below the exact infimum model of
     `sep(A,B)` whenever the feasible ratio set is nonempty. -/
@@ -1714,6 +1743,20 @@ theorem sylvesterSepInf_diagonal_ge_of_entrywise_abs_ge (n : Nat)
       (Matrix.diagonal a) (Matrix.diagonal b) sigma
       (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hsigma hgap)
       hne
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal case:
+    in positive dimension, a uniform diagonal-difference gap is below the exact
+    infimum model of `sep(A,B)`. -/
+theorem sylvesterSepInf_diagonal_ge_of_entrywise_abs_ge_of_pos_dim (n : Nat)
+    (a b : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hn : 0 < n) :
+    sigma <= sylvesterSepInf n (Matrix.diagonal a) (Matrix.diagonal b) := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n
+      (Matrix.diagonal a) (Matrix.diagonal b) sigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hsigma hgap) hn
 
 /-- Any positive number below the exact infimum model of `sep(A,B)` is a valid
     `SepLowerBound` certificate for the existing perturbation infrastructure. -/
@@ -1770,6 +1813,16 @@ theorem SepLowerBound_iff_pos_le_sylvesterSepInf_of_nonempty (n : Nat)
       (SepLowerBound_le_sylvesterSepInf_of_nonempty n A B sigma hSep hne)
   · intro h
     exact SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma h.1 h.2
+
+/-- In positive dimension, the existing positive lower-bound predicate is
+    equivalent to being a positive lower bound of the exact infimum model. -/
+theorem SepLowerBound_iff_pos_le_sylvesterSepInf_of_pos_dim (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real) (hn : 0 < n) :
+    SepLowerBound n A B sigma <->
+      0 < sigma /\ sigma <= sylvesterSepInf n A B := by
+  exact
+    SepLowerBound_iff_pos_le_sylvesterSepInf_of_nonempty n A B sigma
+      (sylvesterSepRatios_nonempty_of_pos_dim n A B hn)
 
 -- ============================================================
 -- A posteriori source wrapper from Chapter 16.4
