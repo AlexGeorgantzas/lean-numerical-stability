@@ -163,6 +163,40 @@ theorem higham11_4_twoByTwo_schur_growth
   exact twoByTwo_schur_growth bij ci1 ci2 cj1 cj2 e11 e12 e21 e22 μ0 α K
     hα0 hα1 hμ hK hb hci1 hci2 hcj1 hcj2 he11 he12 he21 he22
 
+/-- **§11.1.1 printed inverse bound** `|E⁻¹| ≤ K·[[α,1],[1,α]]`, `K = 1/((1−α²)μ₀)`:
+the entrywise bounds on `E⁻¹ = d⁻¹[[e₂₂,−e₂₁],[−e₂₁,e₁₁]]` for a complete-pivoting
+2×2 block, derived from the determinant magnitude bound. -/
+theorem higham11_4_twoByTwo_inverse_entry_bounds (e11 e22 e21 μ0 μ1 α K : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1) :
+    |e22 / (e11 * e22 - e21 ^ 2)| ≤ α * K
+      ∧ |e11 / (e11 * e22 - e21 ^ 2)| ≤ α * K
+      ∧ |e21 / (e11 * e22 - e21 ^ 2)| ≤ K :=
+  twoByTwo_inverse_entry_bounds e11 e22 e21 μ0 μ1 α K
+    hμ1 hα0 hα1 hμ he11 he22 he21 hμ1α hK
+
+/-- **§11.1.1 self-contained 2×2 growth**: substituting the actual inverse block
+`E⁻¹` into the eq-(11.4) Schur entry, `|ã| ≤ (1 + 2/(1−α))μ₀` holds using only the
+pivot-block data (no assumed inverse-entry bounds). -/
+theorem higham11_4_twoByTwo_schur_growth_of_block
+    (bij ci1 ci2 cj1 cj2 e11 e22 e21 μ0 μ1 α K : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1)
+    (hb : |bij| ≤ μ0)
+    (hci1 : |ci1| ≤ μ0) (hci2 : |ci2| ≤ μ0)
+    (hcj1 : |cj1| ≤ μ0) (hcj2 : |cj2| ≤ μ0) :
+    |higham11_4_twoByTwoSchurEntry bij ci1 ci2 cj1 cj2
+        (e22 / (e11 * e22 - e21 ^ 2)) (-(e21 / (e11 * e22 - e21 ^ 2)))
+        (-(e21 / (e11 * e22 - e21 ^ 2))) (e11 / (e11 * e22 - e21 ^ 2))|
+      ≤ (1 + 2 / (1 - α)) * μ0 := by
+  unfold higham11_4_twoByTwoSchurEntry
+  exact twoByTwo_schur_growth_of_block bij ci1 ci2 cj1 cj2 e11 e22 e21 μ0 μ1 α K
+    hμ1 hα0 hα1 hμ he11 he22 he21 hμ1α hK hb hci1 hci2 hcj1 hcj2
+
 /-! ## §11.1.2 Partial pivoting -/
 
 /-- **Algorithm 11.2** branch predicate for the Bunch-Kaufman partial
