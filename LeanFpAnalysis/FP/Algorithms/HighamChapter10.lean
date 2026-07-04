@@ -2158,6 +2158,89 @@ theorem higham10_11_firstOrder_opNorm2 {k m : ℕ}
   rw [htr, norm_smul, Real.norm_eq_abs, abs_of_nonneg hγ,
     Matrix.l2_opNorm_conjTranspose_mul_self]
 
+/-- The displayed Lemma 10.11 perturbation `E = γ·[[I,0],[0,0]]` on `Fin (k+m)`:
+`γ` on the leading `k×k` diagonal block, `0` elsewhere. -/
+def higham10_11_leadingBlockPerturbation (k m : ℕ) (γ : ℝ) :
+    Fin (k + m) → Fin (k + m) → ℝ :=
+  fun i j => if i = j ∧ (i : ℕ) < k then γ else 0
+
+/-- **Lemma 10.11, `‖E‖₂ = γ` for the displayed perturbation.**  The block
+perturbation `E = γ·[[I,0],[0,0]]` (`γ` on the leading `k×k` diagonal block, `0`
+elsewhere) has operator 2-norm exactly `γ` when `k > 0` and `γ ≥ 0`.  This is the
+last elementary ingredient making Lemma 10.11's quantitative identity fully
+self-contained: `‖S(cp(A+E)) − S(A)‖₂ = ‖W‖₂²·γ + O(γ²) = ‖W‖₂²‖E‖₂ + O(‖E‖₂²)`. -/
+theorem higham10_11_leadingBlockPerturbation_opNorm2 {k m : ℕ} (hk : 0 < k)
+    (γ : ℝ) (hγ : 0 ≤ γ) :
+    opNorm2 (higham10_11_leadingBlockPerturbation k m γ) = γ := by
+  have hact : ∀ (x : Fin (k + m) → ℝ) (i : Fin (k + m)),
+      matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) x i
+        = if (i : ℕ) < k then γ * x i else 0 := by
+    intro x i
+    unfold matMulVec higham10_11_leadingBlockPerturbation
+    rw [Finset.sum_eq_single i]
+    · by_cases hi : (i : ℕ) < k <;> simp [hi]
+    · intro j _ hji
+      have hne : ¬ (i = j ∧ (i : ℕ) < k) := fun h => hji h.1.symm
+      simp [hne]
+    · intro h; exact absurd (Finset.mem_univ i) h
+  -- upper bound: opNorm2Le E γ
+  have hupper : opNorm2Le (higham10_11_leadingBlockPerturbation k m γ) γ := by
+    intro x
+    have hsq : vecNorm2Sq
+        (matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) x)
+        ≤ γ ^ 2 * vecNorm2Sq x := by
+      unfold vecNorm2Sq
+      rw [Finset.mul_sum]
+      apply Finset.sum_le_sum
+      intro i _
+      rw [hact x i]
+      by_cases hi : (i : ℕ) < k
+      · rw [if_pos hi]; apply le_of_eq; ring
+      · rw [if_neg hi]; nlinarith [mul_nonneg (sq_nonneg γ) (sq_nonneg (x i))]
+    calc vecNorm2
+          (matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) x)
+        = Real.sqrt (vecNorm2Sq
+            (matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) x)) :=
+          rfl
+      _ ≤ Real.sqrt (γ ^ 2 * vecNorm2Sq x) := Real.sqrt_le_sqrt hsq
+      _ = γ * vecNorm2 x := by
+          rw [Real.sqrt_mul (sq_nonneg γ), Real.sqrt_sq hγ]; rfl
+  have hle : opNorm2 (higham10_11_leadingBlockPerturbation k m γ) ≤ γ :=
+    opNorm2_le_of_opNorm2Le _ hγ hupper
+  -- lower bound via the leading basis vector
+  set i0 : Fin (k + m) := ⟨0, by omega⟩ with hi0
+  set e : Fin (k + m) → ℝ := fun j => if j = i0 then 1 else 0 with he
+  have hi0k : (i0 : ℕ) < k := by rw [hi0]; exact hk
+  have henorm : vecNorm2 e = 1 := by
+    unfold vecNorm2 vecNorm2Sq
+    rw [Finset.sum_eq_single i0 (by intro b _ hb; simp [he, hb]) (by simp)]
+    simp [he]
+  have haction0 :
+      matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) e i0 = γ := by
+    rw [hact e i0, if_pos hi0k]
+    simp [he]
+  have henormE : vecNorm2
+      (matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) e) = γ := by
+    unfold vecNorm2
+    have hsum : vecNorm2Sq
+        (matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) e)
+        = γ ^ 2 := by
+      unfold vecNorm2Sq
+      rw [Finset.sum_eq_single i0]
+      · rw [haction0]
+      · intro j _ hji
+        rw [hact e j]
+        by_cases hj : (j : ℕ) < k
+        · rw [if_pos hj]; simp [he, hji]
+        · rw [if_neg hj]; ring
+      · intro h; exact absurd (Finset.mem_univ i0) h
+    rw [hsum, Real.sqrt_sq hγ]
+  have hlower : γ ≤ opNorm2 (higham10_11_leadingBlockPerturbation k m γ) := by
+    have h := opNorm2Le_opNorm2 (higham10_11_leadingBlockPerturbation k m γ) e
+    rw [henormE, henorm, mul_one] at h
+    exact h
+  exact le_antisymm hle hlower
+
 /-- **Lemma 10.11, pivot-order-preservation half (Higham §10.3.1, source form).**
 Chapter-label wrapper over the complete-pivoting machinery in
 `Cholesky/CholeskyPSD.lean` (`cpPivot_sequence_stable_small`, built on
