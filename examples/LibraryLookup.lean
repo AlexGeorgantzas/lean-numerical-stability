@@ -15128,3 +15128,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check sylvesterPsiDiagonal
 #check sylvesterPsiDiagonal_isPsiFirstOrderBound
 #check H16_eq16_24_structured_condition_diagonal
+#check LyapunovInverseOpBound
+#check lyapunovCond_of_inverseOpBound
+#check lyapunovCondDiagonal
+#check lyapunovCondDiagonal_isLyapunovConditionFirstOrderBound
+#check H16_eq16_27_lyapunov_condition_diagonal
