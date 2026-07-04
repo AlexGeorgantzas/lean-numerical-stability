@@ -283,6 +283,7 @@
   - `lake build LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16 LeanFpAnalysis.FP.Algorithms.HighamChapter9 LeanFpAnalysis.FP.Algorithms.HighamChapter10`: passed before the subsequent broad main merge.
   - `lake build LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16`: passed after a broad main merge regenerated the missing `Higham16.olean` artifact.
   - `lake env lean LeanFpAnalysis/FP.lean`: passed after the broad main merge and after the subsequent latest-main merge.
+  - `#print axioms` for `sylvester_perturbation_bound_of_pos_le_sylvesterSepInf`, `sylvester_relative_perturbation_of_pos_le_sylvesterSepInf`, `sylvester_perturbation_bound_diagonal_of_entrywise_abs_ge`, and `sylvester_relative_perturbation_diagonal_of_entrywise_abs_ge`: only `propext`, `Classical.choice`, and `Quot.sound`.
 
 ## Git and Local-Only Notes
 
