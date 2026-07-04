@@ -1761,6 +1761,29 @@ theorem theorem20_8_perturbed_feasible_point_action_decomp {m n p : ℕ}
           ring
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    projected `AP` step recovered from the action of `A` on a perturbed
+    feasible point and the explicit right-inverse constraint correction. -/
+theorem theorem20_8_AP_difference_eq_action_minus_constraint_correction {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) =
+      fun i =>
+        rectMatMulVec A y i - rectMatMulVec A x i -
+          rectMatMulVec A
+            (rectMatMulVec Bplus
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i := by
+  have haction :=
+    theorem20_8_perturbed_feasible_point_action_decomp
+      A B DeltaB Bplus d Deltad x y hx hy
+  ext i
+  have hi := congrFun haction i
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual decomposition for a point feasible for the perturbed constraint.
 
     The reduced `AP` residual is separated from the three explicit perturbation
@@ -5666,6 +5689,27 @@ theorem LSEFullRowRank.theorem20_8_perturbed_feasible_point_action_decomp
             (rectMatMulVec hB.rightInverse
               (fun l => Deltad l - rectMatMulVec DeltaB y l)) i :=
   _root_.LeanFpAnalysis.FP.theorem20_8_perturbed_feasible_point_action_decomp
+    A B DeltaB hB.rightInverse d Deltad x y hx hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the projected `AP` step identity, with the
+    constraint right inverse supplied by `rank(B)=p`. -/
+theorem LSEFullRowRank.theorem20_8_AP_difference_eq_action_minus_constraint_correction
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec (theorem20_8AP A B hB.rightInverse) (fun k => y k - x k) =
+      fun i =>
+        rectMatMulVec A y i - rectMatMulVec A x i -
+          rectMatMulVec A
+            (rectMatMulVec hB.rightInverse
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_difference_eq_action_minus_constraint_correction
     A B DeltaB hB.rightInverse d Deltad x y hx hy
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
