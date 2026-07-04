@@ -3809,6 +3809,101 @@ theorem theorem20_8_vecNorm2_APplus_data_forcing_difference_le_of_maxRelativePer
         ((eps * frobNormRect A) * vecNorm2 diff) :=
           mul_le_mul_of_nonneg_left (hDeltaA diff) hop_nonneg
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    combined explicit remainder when both first-order correction components
+    are evaluated at the perturbed vector `y` instead of the source vector `x`.
+    The two products `DeltaB*(y-x)` and `DeltaA*(y-x)` remain visible. -/
+theorem theorem20_8_vecNorm2_direct_data_correction_difference_le_of_maxRelativePerturbation
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps) :
+    vecNorm2
+        (fun j : Fin n =>
+          (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+                (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+              rectMatMulVec APplus
+                (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j) -
+            (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+                (fun i : Fin p => Deltad i - rectMatMulVec DeltaB x i) j +
+              rectMatMulVec APplus
+                (fun i : Fin m => rectMatMulVec DeltaA x i - Deltab i) j)) ≤
+      complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+        ((eps * frobNormRect B) * vecNorm2 (fun j : Fin n => y j - x j)) +
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+        ((eps * frobNormRect A) * vecNorm2 (fun j : Fin n => y j - x j)) := by
+  let BAplus := theorem20_8BAplus A B Bplus APplus
+  let directY : Fin n → ℝ :=
+    rectMatMulVec BAplus
+      (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)
+  let directX : Fin n → ℝ :=
+    rectMatMulVec BAplus
+      (fun i : Fin p => Deltad i - rectMatMulVec DeltaB x i)
+  let dataY : Fin n → ℝ :=
+    rectMatMulVec APplus
+      (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i)
+  let dataX : Fin n → ℝ :=
+    rectMatMulVec APplus
+      (fun i : Fin m => rectMatMulVec DeltaA x i - Deltab i)
+  have hsplit :
+      vecNorm2
+          (fun j : Fin n =>
+            (directY j + dataY j) - (directX j + dataX j)) =
+        vecNorm2
+          (fun j : Fin n => (directY j - directX j) + (dataY j - dataX j)) := by
+    congr 1
+    funext j
+    ring
+  have hdirect :
+      vecNorm2 (fun j : Fin n => directY j - directX j) ≤
+        complexMatrixOp2 (realRectToCMatrix BAplus) *
+          ((eps * frobNormRect B) * vecNorm2 (fun j : Fin n => y j - x j)) := by
+    dsimp [directY, directX, BAplus]
+    exact
+      theorem20_8_vecNorm2_BAplus_constraint_defect_difference_le_of_maxRelativePerturbation
+        A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x
+        hApos hbpos hBpos hdpos hmax
+  have hdata :
+      vecNorm2 (fun j : Fin n => dataY j - dataX j) ≤
+        complexMatrixOp2 (realRectToCMatrix APplus) *
+          ((eps * frobNormRect A) * vecNorm2 (fun j : Fin n => y j - x j)) := by
+    dsimp [dataY, dataX]
+    exact
+      theorem20_8_vecNorm2_APplus_data_forcing_difference_le_of_maxRelativePerturbation
+        A DeltaA b Deltab B DeltaB d Deltad APplus y x
+        hApos hbpos hBpos hdpos hmax
+  calc
+    vecNorm2
+        (fun j : Fin n =>
+          (rectMatMulVec BAplus
+                (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+              rectMatMulVec APplus
+                (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j) -
+            (rectMatMulVec BAplus
+                (fun i : Fin p => Deltad i - rectMatMulVec DeltaB x i) j +
+              rectMatMulVec APplus
+                (fun i : Fin m => rectMatMulVec DeltaA x i - Deltab i) j))
+        = vecNorm2
+          (fun j : Fin n => (directY j - directX j) + (dataY j - dataX j)) := by
+            simpa [directY, directX, dataY, dataX, BAplus] using hsplit
+    _ ≤ vecNorm2 (fun j : Fin n => directY j - directX j) +
+        vecNorm2 (fun j : Fin n => dataY j - dataX j) :=
+          vecNorm2_add_le
+            (fun j : Fin n => directY j - directX j)
+            (fun j : Fin n => dataY j - dataX j)
+    _ ≤ complexMatrixOp2 (realRectToCMatrix BAplus) *
+          ((eps * frobNormRect B) * vecNorm2 (fun j : Fin n => y j - x j)) +
+        complexMatrixOp2 (realRectToCMatrix APplus) *
+          ((eps * frobNormRect A) * vecNorm2 (fun j : Fin n => y j - x j)) :=
+          add_le_add hdirect hdata
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     triangle-inequality integration of the direct and reduced-data correction
     vectors under the displayed maximum relative perturbation assumption. -/
@@ -3862,6 +3957,120 @@ theorem theorem20_8_direct_data_correction_residual_relative_self_le_firstOrderR
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x r heps_nonneg
       hApos hbpos hBpos hdpos hxpos hmax
   exact hdiv.trans (by simpa [direct, data, residual] using hbase)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    actual-`y` direct/data correction bound with an explicit remainder term.
+    This replaces the norm-domination side condition by visible
+    `DeltaB*(y-x)` and `DeltaA*(y-x)` products. -/
+theorem theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_remainder_of_maxRelativePerturbation
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ) {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps) :
+    (vecNorm2
+          (fun j : Fin n =>
+            rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+                (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+              rectMatMulVec APplus
+                (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j) +
+        eps * theorem20_8ResidualAmplifier A B APplus
+          (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) /
+        vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) +
+        (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+            ((eps * frobNormRect B) *
+              vecNorm2 (fun j : Fin n => y j - x j)) +
+          complexMatrixOp2 (realRectToCMatrix APplus) *
+            ((eps * frobNormRect A) *
+              vecNorm2 (fun j : Fin n => y j - x j))) /
+          vecNorm2 x := by
+  let BAplus := theorem20_8BAplus A B Bplus APplus
+  let actual : Fin n → ℝ :=
+    fun j =>
+      rectMatMulVec BAplus
+          (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+        rectMatMulVec APplus
+          (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j
+  let source : Fin n → ℝ :=
+    fun j =>
+      rectMatMulVec BAplus
+          (fun i : Fin p => Deltad i - rectMatMulVec DeltaB x i) j +
+        rectMatMulVec APplus
+          (fun i : Fin m => rectMatMulVec DeltaA x i - Deltab i) j
+  let remainder : Fin n → ℝ := fun j => actual j - source j
+  let residual : ℝ :=
+    eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+      (vecNorm2 r / frobNormRect A)
+  let remBound : ℝ :=
+    complexMatrixOp2 (realRectToCMatrix BAplus) *
+        ((eps * frobNormRect B) * vecNorm2 (fun j : Fin n => y j - x j)) +
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+        ((eps * frobNormRect A) * vecNorm2 (fun j : Fin n => y j - x j))
+  have hactual_eq :
+      actual = fun j : Fin n => source j + remainder j := by
+    funext j
+    dsimp [actual, source, remainder]
+    ring
+  have hrem : vecNorm2 remainder ≤ remBound := by
+    dsimp [remainder, actual, source, remBound, BAplus]
+    exact
+      theorem20_8_vecNorm2_direct_data_correction_difference_le_of_maxRelativePerturbation
+        A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x
+        hApos hbpos hBpos hdpos hmax
+  have hactual_norm :
+      vecNorm2 actual ≤ vecNorm2 source + remBound := by
+    calc
+      vecNorm2 actual =
+          vecNorm2 (fun j : Fin n => source j + remainder j) := by
+            rw [hactual_eq]
+      _ ≤ vecNorm2 source + vecNorm2 remainder :=
+            vecNorm2_add_le source remainder
+      _ ≤ vecNorm2 source + remBound :=
+            add_le_add (le_refl (vecNorm2 source)) hrem
+  have hnum :
+      vecNorm2 actual + residual ≤ (vecNorm2 source + residual) + remBound := by
+    linarith
+  have hdiv :
+      (vecNorm2 actual + residual) / vecNorm2 x ≤
+        ((vecNorm2 source + residual) + remBound) / vecNorm2 x :=
+    div_le_div_of_nonneg_right hnum (le_of_lt hxpos)
+  have hsource :
+      (vecNorm2 source + residual) / vecNorm2 x ≤
+        eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus := by
+    dsimp [source, residual, BAplus]
+    exact
+      theorem20_8_direct_data_correction_residual_relative_self_le_firstOrderRHS_of_maxRelativePerturbation
+        A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x r heps_nonneg
+        hApos hbpos hBpos hdpos hxpos hmax
+  calc
+    (vecNorm2
+          (fun j : Fin n =>
+            rectMatMulVec BAplus
+                (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+              rectMatMulVec APplus
+                (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j) +
+        residual) /
+        vecNorm2 x =
+      (vecNorm2 actual + residual) / vecNorm2 x := by
+        rfl
+    _ ≤ ((vecNorm2 source + residual) + remBound) / vecNorm2 x := hdiv
+    _ = (vecNorm2 source + residual) / vecNorm2 x +
+        remBound / vecNorm2 x := by
+        rw [add_div]
+    _ ≤ eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus +
+        remBound / vecNorm2 x :=
+        add_le_add hsource (le_refl (remBound / vecNorm2 x))
 
 /-- Under the natural positive denominator assumptions, the first-order
     coefficient in Theorem 20.8's perturbation bound is nonnegative. -/
