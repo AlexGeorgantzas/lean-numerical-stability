@@ -1182,6 +1182,29 @@ theorem quadForm_gram_conj {n : ℕ} (M G : Fin n → Fin n → ℝ)
   unfold matMulVec
   exact Finset.sum_congr rfl fun i _ => by ring
 
+/-- **Trailing-block quadratic form** (Higham §10.4, ties the (10.29)
+    stage bound's RHS to the trailing block `Q₂₂` of the stage Gram):
+    padding a vector with a leading zero selects the trailing principal
+    block, `(0,y)ᵀ Q (0,y) = yᵀ Q₂₂ y` where `Q₂₂ i j = Q i.succ j.succ`. -/
+theorem trailing_block_quadForm {n : ℕ}
+    (Q : Fin (n + 1) → Fin (n + 1) → ℝ) (y : Fin n → ℝ) :
+    (∑ i : Fin (n + 1), ∑ j : Fin (n + 1),
+        (Fin.cons (0 : ℝ) y : Fin (n + 1) → ℝ) i * Q i j * (Fin.cons (0 : ℝ) y : Fin (n + 1) → ℝ) j) =
+      ∑ i : Fin n, ∑ j : Fin n, y i * Q i.succ j.succ * y j := by
+  rw [Fin.sum_univ_succ]
+  have hrow0 : (∑ j : Fin (n + 1),
+      (Fin.cons (0 : ℝ) y : Fin (n + 1) → ℝ) 0 * Q 0 j * (Fin.cons (0 : ℝ) y : Fin (n + 1) → ℝ) j) = 0 := by
+    simp only [Fin.cons_zero, zero_mul, Finset.sum_const_zero]
+  rw [hrow0, zero_add]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [Fin.sum_univ_succ]
+  have hcol0 : (Fin.cons (0 : ℝ) y : Fin (n + 1) → ℝ) i.succ * Q i.succ 0 *
+      (Fin.cons (0 : ℝ) y : Fin (n + 1) → ℝ) 0 = 0 := by
+    simp only [Fin.cons_zero, mul_zero]
+  rw [hcol0, zero_add]
+  exact Finset.sum_congr rfl fun j _ => by
+    simp only [Fin.cons_succ]
+
 /-- **Stage Loewner monotonicity `Q̂ ⪯ Q₂₂`, quadratic-form level**
     (Higham §10.4, the (10.29) crux, assembled; oracle consult 4).
     For a symmetric PD `(1+m)`-block `H = [[α, fᵀ],[f, G]]` with Schur
