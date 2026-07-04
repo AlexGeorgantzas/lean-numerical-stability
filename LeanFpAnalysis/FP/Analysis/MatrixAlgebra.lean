@@ -8087,6 +8087,82 @@ theorem rectMatMul_assoc {m n p q : ℕ}
   intro l _
   ring
 
+/-- Left distributivity for implicit rectangular multiplication:
+    `(A+B)*C = A*C + B*C`. -/
+theorem rectMatMul_add_left {m n p : ℕ}
+    (A B : Fin m → Fin n → ℝ) (C : Fin n → Fin p → ℝ) :
+    rectMatMul (fun i j => A i j + B i j) C =
+      fun i j => rectMatMul A C i j + rectMatMul B C i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Right distributivity for implicit rectangular multiplication:
+    `A*(B+C) = A*B + A*C`. -/
+theorem rectMatMul_add_right {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B C : Fin n → Fin p → ℝ) :
+    rectMatMul A (fun i j => B i j + C i j) =
+      fun i j => rectMatMul A B i j + rectMatMul A C i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Negation in the left factor of an implicit rectangular product. -/
+theorem rectMatMul_neg_left {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ) :
+    rectMatMul (fun i j => -A i j) B =
+      fun i j => -rectMatMul A B i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_neg_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Negation in the right factor of an implicit rectangular product. -/
+theorem rectMatMul_neg_right {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ) :
+    rectMatMul A (fun i j => -B i j) =
+      fun i j => -rectMatMul A B i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_neg_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Left subtraction for implicit rectangular multiplication:
+    `(A-B)*C = A*C - B*C`. -/
+theorem rectMatMul_sub_left {m n p : ℕ}
+    (A B : Fin m → Fin n → ℝ) (C : Fin n → Fin p → ℝ) :
+    rectMatMul (fun i j => A i j - B i j) C =
+      fun i j => rectMatMul A C i j - rectMatMul B C i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_sub_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Right subtraction for implicit rectangular multiplication:
+    `A*(B-C) = A*B - A*C`. -/
+theorem rectMatMul_sub_right {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B C : Fin n → Fin p → ℝ) :
+    rectMatMul A (fun i j => B i j - C i j) =
+      fun i j => rectMatMul A B i j - rectMatMul A C i j := by
+  ext i j
+  unfold rectMatMul
+  rw [← Finset.sum_sub_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
 /-- A rectangular left inverse `A⁺A = I` makes `AA⁺` an algebraic projection. -/
 theorem rectMatMul_rangeProjection_idempotent_of_left_inverse {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
