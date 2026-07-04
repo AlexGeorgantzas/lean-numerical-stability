@@ -2959,6 +2959,143 @@ theorem theorem20_8Residual_sourceRadius_le_firstOrderRHS_scaled {m n p : ℕ}
   simpa [theorem20_8Residual_sourceTerm_scaled_eq A B x r APplus BAplus
     hApos hxpos] using hscaled
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    the sum of the three printed first-order source coefficients is bounded
+    by the single first-order coefficient `theorem20_8FirstOrderRHS`. -/
+theorem theorem20_8SourceCoefficientSum_le_firstOrderRHS {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (hApos : 0 < frobNormRect A) (hxpos : 0 < vecNorm2 x) :
+    theorem20_8KappaA B BAplus *
+          (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) +
+        theorem20_8KappaB A APplus *
+          (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) +
+        theorem20_8ResidualAmplifier A B APplus BAplus *
+          (vecNorm2 r / (frobNormRect A * vecNorm2 x)) ≤
+      theorem20_8FirstOrderRHS A b B d x r APplus BAplus := by
+  let termA : ℝ := theorem20_8KappaA B BAplus *
+    (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1)
+  let baseB : ℝ := vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1
+  let termBsource : ℝ := theorem20_8KappaB A APplus * baseB
+  let termBfull : ℝ := (1 + theorem20_8KappaB A APplus) * baseB
+  let termR : ℝ := theorem20_8ResidualAmplifier A B APplus BAplus *
+    (vecNorm2 r / (frobNormRect A * vecNorm2 x))
+  have hbaseB_nonneg : 0 ≤ baseB := by
+    dsimp [baseB]
+    have hratio : 0 ≤ vecNorm2 b / (frobNormRect A * vecNorm2 x) := by
+      exact div_nonneg (vecNorm2_nonneg b)
+        (le_of_lt (mul_pos hApos hxpos))
+    linarith
+  have hBsource_le_full : termBsource ≤ termBfull := by
+    dsimp [termBsource, termBfull]
+    have hfactor :
+        theorem20_8KappaB A APplus ≤ 1 + theorem20_8KappaB A APplus := by
+      linarith
+    exact mul_le_mul_of_nonneg_right hfactor hbaseB_nonneg
+  change termA + termBsource + termR ≤
+    theorem20_8FirstOrderRHS A b B d x r APplus BAplus
+  unfold theorem20_8FirstOrderRHS
+  change termA + termBsource + termR ≤ termA + termBfull + termR
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    after multiplication by `eps * ||x||_2`, the integrated source coefficient
+    sum is bounded by the full first-order coefficient with the same scaling. -/
+theorem theorem20_8SourceCoefficientSum_scaled_le_firstOrderRHS {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hxpos : 0 < vecNorm2 x) :
+    eps *
+        (theorem20_8KappaA B BAplus *
+            (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) +
+          theorem20_8KappaB A APplus *
+            (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) +
+          theorem20_8ResidualAmplifier A B APplus BAplus *
+            (vecNorm2 r / (frobNormRect A * vecNorm2 x))) *
+        vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
+        vecNorm2 x := by
+  have hcoeff :
+      theorem20_8KappaA B BAplus *
+            (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) +
+          theorem20_8KappaB A APplus *
+            (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) +
+          theorem20_8ResidualAmplifier A B APplus BAplus *
+            (vecNorm2 r / (frobNormRect A * vecNorm2 x)) ≤
+        theorem20_8FirstOrderRHS A b B d x r APplus BAplus :=
+    theorem20_8SourceCoefficientSum_le_firstOrderRHS A b B d x r APplus
+      BAplus hApos hxpos
+  have hmul := mul_le_mul_of_nonneg_left hcoeff heps_nonneg
+  have hmulx := mul_le_mul_of_nonneg_right hmul (le_of_lt hxpos)
+  simpa [mul_assoc] using hmulx
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    source-radius form of the integrated direct, data-forcing, and residual
+    first-order components, bounded by the full first-order RHS scaling. -/
+theorem theorem20_8SourceRadiiSum_le_firstOrderRHS_scaled {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hxpos : 0 < vecNorm2 x) :
+    eps * theorem20_8KappaA B BAplus *
+          (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) * vecNorm2 x +
+        eps * theorem20_8KappaB A APplus *
+          (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) * vecNorm2 x +
+        eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+          (vecNorm2 r / frobNormRect A) ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
+        vecNorm2 x := by
+  let termA : ℝ := theorem20_8KappaA B BAplus *
+    (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1)
+  let termB : ℝ := theorem20_8KappaB A APplus *
+    (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1)
+  let termR : ℝ := theorem20_8ResidualAmplifier A B APplus BAplus *
+    (vecNorm2 r / (frobNormRect A * vecNorm2 x))
+  have hscaled :
+      eps * (termA + termB + termR) * vecNorm2 x ≤
+        eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
+          vecNorm2 x := by
+    exact theorem20_8SourceCoefficientSum_scaled_le_firstOrderRHS
+      A b B d x r APplus BAplus heps_nonneg hApos hxpos
+  have hres :
+      eps * termR * vecNorm2 x =
+        eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+          (vecNorm2 r / frobNormRect A) := by
+    simpa [termR, mul_assoc] using
+      theorem20_8Residual_sourceTerm_scaled_eq A B x r APplus BAplus
+        hApos hxpos
+  have hsum :
+      eps * termA * vecNorm2 x + eps * termB * vecNorm2 x +
+          eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+            (vecNorm2 r / frobNormRect A) =
+        eps * (termA + termB + termR) * vecNorm2 x := by
+    rw [← hres]
+    ring
+  calc
+    eps * theorem20_8KappaA B BAplus *
+          (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) * vecNorm2 x +
+        eps * theorem20_8KappaB A APplus *
+          (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) * vecNorm2 x +
+        eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+          (vecNorm2 r / frobNormRect A) =
+        eps * termA * vecNorm2 x + eps * termB * vecNorm2 x +
+          eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+            (vecNorm2 r / frobNormRect A) := by
+      dsimp [termA, termB]
+      ring
+    _ = eps * (termA + termB + termR) * vecNorm2 x := hsum
+    _ ≤ eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
+        vecNorm2 x := hscaled
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     first-order source-coefficient bound for the reduced-problem data-forcing
     term `(AP)^+ * (DeltaA*x - Deltab)` under the displayed relative
