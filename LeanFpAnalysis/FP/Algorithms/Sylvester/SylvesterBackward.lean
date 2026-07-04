@@ -1664,4 +1664,41 @@ theorem lyapunovXiSq_le_mu_relative_residual_sq (n : ℕ)
           field_simp [hScale_ne, hSqrt_ne]
         rw [hmul, div_pow, mul_pow, hsqrt_two_sq, hSqrt_sq, frobNorm_sq]
 
+/-- Higham, 2nd ed., Chapter 16.2.1, final Lyapunov display:
+    square-root form of the Lyapunov xi residual amplification bound. -/
+theorem sqrt_lyapunovXiSq_le_mu_relative_residual (n : ℕ)
+    (Y R U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (α γ lamStar : ℝ)
+    (hU : IsOrthogonal n U)
+    (hLam : ∀ i : Fin n, lamStar ^ 2 ≤ lam i ^ 2)
+    (hDenom : 0 < 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)
+    (hScale : 0 < 2 * α * frobNorm Y + γ) :
+    Real.sqrt (lyapunovXiSq n (lyapunovSpectralTransform n U R) lam α γ) ≤
+      lyapunovAmplificationMu α γ (frobNorm Y) lamStar *
+        (frobNorm R / (2 * α * frobNorm Y + γ)) := by
+  let kappa :=
+    lyapunovAmplificationMu α γ (frobNorm Y) lamStar *
+      (frobNorm R / (2 * α * frobNorm Y + γ))
+  have hxi :
+      lyapunovXiSq n (lyapunovSpectralTransform n U R) lam α γ ≤
+        kappa ^ 2 := by
+    simpa [kappa] using
+      lyapunovXiSq_le_mu_relative_residual_sq n Y R U lam α γ lamStar
+        hU hLam hDenom hScale
+  have hmu_nonneg :
+      0 ≤ lyapunovAmplificationMu α γ (frobNorm Y) lamStar := by
+    unfold lyapunovAmplificationMu
+    exact div_nonneg
+      (mul_nonneg (Real.sqrt_nonneg 2) (le_of_lt hScale))
+      (Real.sqrt_nonneg _)
+  have hrel_nonneg :
+      0 ≤ frobNorm R / (2 * α * frobNorm Y + γ) :=
+    div_nonneg (frobNorm_nonneg R) (le_of_lt hScale)
+  have hkappa_nonneg : 0 ≤ kappa := by
+    dsimp [kappa]
+    exact mul_nonneg hmu_nonneg hrel_nonneg
+  have hsqrt := Real.sqrt_le_sqrt hxi
+  rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hkappa_nonneg] at hsqrt
+  simpa [kappa] using hsqrt
+
 end LeanFpAnalysis.FP
