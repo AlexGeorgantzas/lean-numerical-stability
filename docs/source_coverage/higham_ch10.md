@@ -27,7 +27,7 @@ Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean`
 | Theorem 10.8 (Sun, sensitivity) | `higham10_8_sun_normwise_perturbation`, `higham10_8_sun_componentwise_perturbation` | |
 | Theorem 10.9 (PSD Cholesky existence + pivoted form) | `higham10_9_psd_cholesky_existence`, `higham10_9_spd_pivoted_cholesky_full_rank`, `higham10_9_van_der_sluis`, `higham10_9_*cond_bound` | eq (10.11) |
 | Lemma 10.10 (Schur-complement perturbation) | `higham10_10_schur_complement_perturbation` | eqs (10.14)(10.15)(10.16); honest entrywise O(‖E‖²) |
-| Lemma 10.11 (cp perturbation — quantitative half) | `higham10_11_schur_perturbation_leadingBlock`, `higham10_11_firstOrder_eq_WtW` | eq (10.17) worst-case E=γ·[[I,0],[0,0]]; norm change = ‖W‖²‖E‖+O(‖E‖²). Pivot-order half OPEN (see below). |
+| Lemma 10.11 (cp perturbation — quantitative half + pivot-stability core) | `higham10_11_schur_perturbation_leadingBlock`, `higham10_11_firstOrder_eq_WtW`, `higham10_11_pivot_argmax_stable` | eq (10.17): worst-case E=γ·[[I,0],[0,0]] norm change = ‖W‖²‖E‖+O(‖E‖²); plus the no-ties argmax-stability core. Only the `cp`-operator assembly OPEN (see below). |
 | Lemma 10.12 (‖A₁₁⁻¹A₁₂‖ bound) | `higham10_12_w_norm_bound_from_cond`, `higham10_12_psd_w_action_bound`, `higham10_12_w_action_norm_bound` | eq (10.18) |
 | Lemma 10.13 (Frobenius cp bound) | `higham10_13_complete_pivoting_w_bound`, `higham10_13_pivoted_w_frobenius_bound` | eqs (10.19)(10.20): ‖W‖²_F ≤ (n−r)(4ʳ−1)/3 |
 | Theorem 10.14 (PSD backward error) | `higham10_14_psd_cholesky_backward_error`, `higham10_14_fl_psd_cholesky_backward_error` | eqs (10.21)–(10.25) |
@@ -58,12 +58,15 @@ exercise tasks.
 ## Open selected-scope items (not-proved ledger)
 | Source location | Exact claim | Current Lean status | Missing foundation | Smallest next Lean theorem |
 |---|---|---|---|---|
-| Lemma 10.11, first part (p. 204) | For A=cp(A) with no pivot ties (10.17) and small ‖E‖: A+E=cp(A+E) with the same pivot permutation | OPEN | complete-pivoting operator `cp(·)=ΠᵀAΠ` (argmax pivot selection) + strict-domination stability of the Schur pivot ordering under bounded ‖E‖ | `cp` operator def + `pivot_order_preserved_of_strict_domination` (strict argmax stable when ‖E‖ ≤ δ) |
+| Lemma 10.11, first part (p. 204) | For A=cp(A) with no pivot ties (10.17) and small ‖E‖: A+E=cp(A+E) with the same pivot permutation | PARTIAL — argmax-stability core proved (`higham10_11_pivot_argmax_stable`); cp-operator assembly OPEN | complete-pivoting operator `cp(·)=ΠᵀAΠ` (recursive argmax pivot selection) + continuity of the stage Schur diagonal, chaining `higham10_11_pivot_argmax_stable` across all `r` stages | `cp` operator def + `cp_permutation_preserved` (same Π for `A` and `A+E` when ‖E‖ ≤ δ), then combine with `higham10_11_schur_perturbation_leadingBlock` |
 
 The *quantitative* conclusion of Lemma 10.11 (the norm-change identity for the
 displayed worst-case E) is closed by `higham10_11_schur_perturbation_leadingBlock`
-+ `higham10_11_firstOrder_eq_WtW` via Lemma 10.10. Only the pivot-order-preservation
-half needs the cp-operator foundation above.
++ `higham10_11_firstOrder_eq_WtW` via Lemma 10.10. The pivot-order-preservation
+half now has its mathematical core proved (`higham10_11_pivot_argmax_stable`:
+strict argmax survives small perturbations, i.e. condition (10.17) ⇒ unchanged
+pivot choice); the remaining work is defining the `cp` operator and chaining the
+stability across the `r` pivoting stages.
 
 ## Hidden-hypothesis summary
 - `higham10_11_schur_perturbation_leadingBlock`: leading-block inverse data enters
