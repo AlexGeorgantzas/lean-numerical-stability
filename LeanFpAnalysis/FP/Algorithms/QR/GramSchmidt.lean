@@ -3575,13 +3575,6 @@ theorem GramSchmidtOrthonormalColumns.rectOpNorm2Le_matMulRect_square_right
       (rectOpNorm2Le_of_opNorm2Le_square G hG)
   simpa [matMulRect_eq_rectMatMul] using hprod
 
-/-- Transposing a finite rectangular matrix twice gives the original matrix. -/
-theorem finiteTranspose_finiteTranspose {m n : Nat}
-    (M : Fin m -> Fin n -> Real) :
-    finiteTranspose (finiteTranspose M) = M := by
-  ext i j
-  rfl
-
 /-- Finite transpose reverses square matrix multiplication. -/
 theorem finiteTranspose_matMul {n : Nat}
     (A B : Fin n -> Fin n -> Real) :
