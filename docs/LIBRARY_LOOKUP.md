@@ -4278,6 +4278,7 @@ Source-facing Chapter 10 wrappers:
 - `gram_conj_isSymm` ((10.29): conjugated Gram G^T M G is symmetric when M is; so finiteMaxEigenvalue applies to stage matrices)
 - `schur_gram_stage_le` ((10.29) crux CAPSTONE, Q_hat <= Q_22 quadratic-form level: (S_hat y)^T H_hat^{-1} (S_hat y) <= [b;v]^T H^{-1} [b;v], combining block_quadForm_schur_eq + rankOne_update_auxiliary_le with u=k/sqrt(a), g=b/sqrt(a))
 - `higham10_29_luFirstSchurComplement_isNonsymPosDef` ((10.29) GE recursion well-founded: LU-scaffold Schur step preserves nonsym-PD; base for the stage induction on the LUFactSpec/of_firstSchurComplement recursion)
+- `higham10_29_symPart_luSchur_eq` ((10.29): sym(luSchur S) = Z + kk^T/a, i.e. sym part of Schur complement = Schur complement of sym part + skew rank-one; identifies H_hat for schur_gram_stage_le)
 - `kahanR` / `kahan_telescope` / `kahanR_tail_eq` ((10.20): Kahan family satisfies (10.13) with equality on the square part)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)

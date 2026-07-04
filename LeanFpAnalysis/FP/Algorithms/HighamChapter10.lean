@@ -4556,6 +4556,23 @@ theorem higham10_29_luFirstSchurComplement_isNonsymPosDef {m : ℕ}
     higham10_4_IsNonsymPosDef m (luFirstSchurComplement A) :=
   nonsym_pd_first_ge_schur hA
 
+/-- **(10.29) symmetric part of the Schur complement** (Higham §10.4;
+    oracle consult 4's `Ĥ = Z + kkᵀ/α`): the symmetric part of the LU
+    Schur complement equals the Schur complement of the symmetric part
+    (`Z`) plus a rank-one term in the skew off-diagonal `k = (b − c)/2`.
+    This identifies the `Ĥ` matrix that the stage inequality
+    `schur_gram_stage_le` inverts. -/
+theorem higham10_29_symPart_luSchur_eq {m : ℕ}
+    (S : Fin (m + 1) → Fin (m + 1) → ℝ) (i j : Fin m) :
+    symmetricPart m (luFirstSchurComplement S) i j =
+      (symmetricPart (m + 1) S i.succ j.succ -
+        symmetricPart (m + 1) S i.succ 0 *
+          symmetricPart (m + 1) S 0 j.succ / S 0 0) +
+      ((S 0 i.succ - S i.succ 0) / 2) *
+        ((S 0 j.succ - S j.succ 0) / 2) / S 0 0 := by
+  simp only [symmetricPart, luFirstSchurComplement]
+  ring
+
 /-- **Equation (10.29)** / Golub-Van Loan growth-bound interface for exact
 LU factors of a nonsymmetric positive-definite matrix. -/
 theorem higham10_29_nonsym_pd_lu_growth_bound (n : ℕ) (hn : 0 < n)
