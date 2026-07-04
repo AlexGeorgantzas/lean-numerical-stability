@@ -14,10 +14,15 @@ import LeanFpAnalysis.FP.Algorithms.MatrixPowersLp
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersPseudospectral
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersSpectral
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
+import LeanFpAnalysis.FP.Algorithms.QR.HouseholderConstruction2
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Labels
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
 import LeanFpAnalysis.FP.Algorithms.StationaryIterationDrazin
 import LeanFpAnalysis.FP.Algorithms.StationaryIterationSeries
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Minimizers
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Spectrum
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Psi
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Lyapunov
 
 set_option pp.maxSteps 100
 
