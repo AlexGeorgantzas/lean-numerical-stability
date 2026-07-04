@@ -3521,6 +3521,40 @@ theorem theorem20_8_direct_data_residual_relative_le_firstOrderRHS
       heps_nonneg hApos hBpos hxpos hyx
   exact (div_le_iff₀ hxpos).2 (by simpa [mul_assoc] using hscaled)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    source-vector specialization of the relative direct/data/residual handoff.
+    The direct constraint-defect term is evaluated at `x`, matching the
+    first-order linearized source radius, so no `||y||_2 <= ||x||_2`
+    hypothesis is needed. -/
+theorem theorem20_8_direct_data_residual_relative_self_le_firstOrderRHS
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hBpos : 0 < frobNormRect B)
+    (hxpos : 0 < vecNorm2 x) :
+    (vecNorm2
+          (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB x i)) +
+        vecNorm2
+          (rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA x i - Deltab i)) +
+        eps * theorem20_8ResidualAmplifier A B APplus
+          (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) /
+        vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) := by
+  simpa using
+    theorem20_8_direct_data_residual_relative_le_firstOrderRHS
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x x r hbudget
+      heps_nonneg hApos hBpos hxpos (le_refl (vecNorm2 x))
+
 /-- Under the natural positive denominator assumptions, the first-order
     coefficient in Theorem 20.8's perturbation bound is nonnegative. -/
 theorem theorem20_8FirstOrderRHS_nonneg {m n p : ℕ}
