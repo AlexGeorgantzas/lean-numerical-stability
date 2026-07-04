@@ -1460,6 +1460,122 @@ theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_s
   rw [htranspose] at htrans
   simpa [PB, IPA] using htrans
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    conditional transfer of the source-oriented `Aplus` projector bound to
+    the opposite cross projection from an exact complexified operator-norm
+    equality.
+
+The hypothesis is the still-open Stewart--Sun/CS equality route, expressed in
+the exact `complexMatrixOp2` API.  This theorem only packages the consequence;
+it does not prove the equality. -/
+theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_of_complexMatrixOp2_eq
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {delta Aplus_norm : ℝ}
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus_norm_nonneg : 0 ≤ Aplus_norm)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul B Bplus)
+              (fun i j => idMatrix m i j - rectMatMul A Aplus i j))) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul A Aplus)
+              (fun i j => idMatrix m i j - rectMatMul B Bplus i j)))) :
+    rectOpNorm2Le
+      (rectMatMul
+        (rectMatMul B Bplus)
+        (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+      (delta * Aplus_norm) := by
+  let PA : Fin m → Fin m → ℝ := rectMatMul A Aplus
+  let PB : Fin m → Fin m → ℝ := rectMatMul B Bplus
+  let IPA : Fin m → Fin m → ℝ :=
+    fun i j => idMatrix m i j - PA i j
+  let IPB : Fin m → Fin m → ℝ :=
+    fun i j => idMatrix m i j - PB i j
+  have hdelta_nonneg : 0 ≤ delta :=
+    rectOpNorm2Le_radius_nonneg (M := fun i j => B i j - A i j) hDelta
+  have hPAIPB :
+      rectOpNorm2Le (rectMatMul PA IPB) (delta * Aplus_norm) := by
+    simpa [PA, IPB] using
+      wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement
+        A B Aplus Bplus hleftB hSymA hSymB hDelta
+        hAplus_norm_nonneg hAplus
+  exact
+    rectOpNorm2Le_of_complexMatrixOp2_eq_of_rectOpNorm2Le
+      (rectMatMul PB IPA) (rectMatMul PA IPB)
+      (mul_nonneg hdelta_nonneg hAplus_norm_nonneg)
+      (by simpa [PA, PB, IPA, IPB] using hEq)
+      hPAIPB
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    conditional `min` packaging for the source-oriented `P_B(I-P_A)` projector
+    estimate.
+
+Once the still-open Stewart--Sun/CS equality is supplied in exact
+`complexMatrixOp2` form, the two one-sided estimates combine to the source
+radius `delta * min Aplus_norm Bplus_norm`. -/
+theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_min_of_complexMatrixOp2_eq
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {delta Aplus_norm Bplus_norm : ℝ}
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus_norm_nonneg : 0 ≤ Aplus_norm)
+    (hBplus_norm_nonneg : 0 ≤ Bplus_norm)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hBplus : rectOpNorm2Le Bplus Bplus_norm)
+    (hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul B Bplus)
+              (fun i j => idMatrix m i j - rectMatMul A Aplus i j))) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul A Aplus)
+              (fun i j => idMatrix m i j - rectMatMul B Bplus i j)))) :
+    rectOpNorm2Le
+      (rectMatMul
+        (rectMatMul B Bplus)
+        (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+      (delta * min Aplus_norm Bplus_norm) := by
+  have hA_bound :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm) :=
+    wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_of_complexMatrixOp2_eq
+      A B Aplus Bplus hleftB hSymA hSymB hDelta
+      hAplus_norm_nonneg hAplus hEq
+  have hB_bound :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Bplus_norm) :=
+    wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped
+      A B Aplus Bplus hleftA hSymA hSymB hDelta
+      hBplus_norm_nonneg hBplus
+  intro x
+  by_cases hAB : Aplus_norm ≤ Bplus_norm
+  · simpa [min_eq_left hAB] using hA_bound x
+  · have hBA : Bplus_norm ≤ Aplus_norm :=
+      le_of_lt (lt_of_not_ge hAB)
+    simpa [min_eq_right hBA] using hB_bound x
+
 /-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
     the source-oriented Lemma 20.12 projector estimate controls `Bplus*r`
     whenever `r` is orthogonal to the range of `A`.
