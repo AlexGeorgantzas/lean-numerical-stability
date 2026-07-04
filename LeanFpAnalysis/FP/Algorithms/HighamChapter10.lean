@@ -2100,6 +2100,28 @@ theorem higham10_11_firstOrder_eq_WtW {k m : ℕ}
   subst hA
   simp only [Matrix.transpose_mul, hM, Matrix.mul_assoc]
 
+/-- **Lemma 10.11, pivot-order-stability core (Higham §10.3.1, condition
+(10.17)).**  The mathematical content of the "no ties" hypothesis: if a finite
+family `f` has an index `i₀` that strictly dominates every other index with
+margin `2ε` (`f j + 2ε < f i₀` for `j ≠ i₀`), then any perturbation `g` deviating
+entrywise by at most `ε` keeps `i₀` the strict maximizer (`g j < g i₀` for
+`j ≠ i₀`).  Applied to the diagonal of the Schur complement (whose largest entry
+is the complete-pivoting choice, cf. `higham10_13_completePivotingInequality`),
+this shows the pivoting strategy is unchanged by a sufficiently small
+perturbation — the pivot-order-preservation half of Lemma 10.11.  Assembling
+this with a `cp` operator to conclude `cp(A+E)` uses the same permutation as
+`cp(A)` across all `r` stages remains an open foundation. -/
+theorem higham10_11_pivot_argmax_stable {n : ℕ}
+    (f g : Fin n → ℝ) (ε : ℝ) (i₀ : Fin n)
+    (hdom : ∀ j, j ≠ i₀ → f j + 2 * ε < f i₀)
+    (hpert : ∀ j, |g j - f j| ≤ ε) :
+    ∀ j, j ≠ i₀ → g j < g i₀ := by
+  intro j hj
+  have h1 : g j - f j ≤ ε := (abs_le.mp (hpert j)).2
+  have h2 : -ε ≤ g i₀ - f i₀ := (abs_le.mp (hpert i₀)).1
+  have h3 := hdom j hj
+  linarith
+
 /-- **Lemma 10.12**: abstract `W = A11^{-1} A12` norm bound. -/
 theorem higham10_12_w_norm_bound_from_cond
     (W_norm κ_A11 : ℝ) (hκ : 0 ≤ κ_A11)
