@@ -1953,6 +1953,63 @@ theorem wedinLemma20_12_finiteTrace_compressedGram_eq_swapped_of_projection_trac
   rw [hTrace] at hdiff
   linarith
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    a compressed-Gram Loewner comparison plus equal projection traces supplies
+    the exact cross-projection operator-2 equality needed by the conditional
+    `min` packaging route.
+
+This theorem does not prove the missing principal-angle/Stewart--Sun comparison;
+it isolates that remaining foundation as the explicit Loewner hypothesis. -/
+theorem wedinLemma20_12_complexMatrixOp2_crossProjection_eq_of_compressedGram_loewnerLe_trace_eq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (hTrace : finiteTrace P = finiteTrace Q)
+    (hLoewner :
+      finiteLoewnerLe
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+          (fun i j => idMatrix m i j - Q i j))
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+          (fun i j => idMatrix m i j - P i j))) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j))) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul Q (fun i j => idMatrix m i j - P i j))) := by
+  let GP : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+      (fun i j => idMatrix m i j - Q i j)
+  let GQ : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+      (fun i j => idMatrix m i j - P i j)
+  have hGPsym : IsSymmetricFiniteMatrix GP := by
+    simpa [GP] using
+      wedinLemma20_12_compressedGram_symmetric P Q hP hQ hIdemP
+  have hGQsym : IsSymmetricFiniteMatrix GQ := by
+    simpa [GQ] using
+      wedinLemma20_12_compressedGram_symmetric Q P hQ hP hIdemQ
+  have hTraceGram : finiteTrace GP = finiteTrace GQ := by
+    simpa [GP, GQ] using
+      wedinLemma20_12_finiteTrace_compressedGram_eq_swapped_of_projection_trace_eq
+        P Q hIdemP hIdemQ hTrace
+  have hGramEq : GP = GQ :=
+    finiteLoewnerLe_eq_of_finiteTrace_eq hGPsym hGQsym
+      (by simpa [GP, GQ] using hLoewner) hTraceGram
+  have hOpEq :
+      complexMatrixOp2 (realRectToCMatrix GP) =
+        complexMatrixOp2 (realRectToCMatrix GQ) := by
+    rw [hGramEq]
+  exact
+    wedinLemma20_12_complexMatrixOp2_crossProjection_eq_of_compressedGram_eq
+      P Q hP hQ hIdemP hIdemQ (by simpa [GP, GQ] using hOpEq)
+
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
     source-oriented projection perturbation bound.
 
