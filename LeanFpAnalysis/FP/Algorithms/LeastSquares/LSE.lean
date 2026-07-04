@@ -4431,6 +4431,121 @@ theorem theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
   exact hAPleft_null z hz
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    a Penrose-style route to the reduced-operator left-inverse condition on
+    the homogeneous constraint nullspace.  If `AP * (AP)^+ * AP = AP`,
+    `(AP)^+` maps into `null(B)`, and `AP` is injective on `null(B)`, then
+    `(AP)^+` left-inverts `AP` on that nullspace.
+
+    This is still conditional infrastructure: the source Moore--Penrose
+    pseudoinverse and projector assumptions have to supply these hypotheses. -/
+theorem theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_range_null_injective
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hPenrose1 :
+      rectMatMul (rectMatMul (theorem20_8AP A B Bplus) APplus)
+          (theorem20_8AP A B Bplus) =
+        theorem20_8AP A B Bplus)
+    (hAPplus_range_null :
+      ∀ w : Fin m → ℝ,
+        rectMatMulVec B (rectMatMulVec APplus w) =
+          (fun _i : Fin p => 0))
+    (hAP_inj_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec (theorem20_8AP A B Bplus) z =
+              (fun _i : Fin m => 0) →
+            z = (fun _j : Fin n => 0)) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus) z) = z := by
+  intro z hz
+  let AP := theorem20_8AP A B Bplus
+  let w : Fin m → ℝ := rectMatMulVec AP z
+  let u : Fin n → ℝ := fun j => rectMatMulVec APplus w j - z j
+  have hAP_penrose_vec :
+      rectMatMulVec AP (rectMatMulVec APplus w) = w := by
+    calc
+      rectMatMulVec AP (rectMatMulVec APplus w) =
+          rectMatMulVec (rectMatMul AP APplus) w := by
+            exact (rectMatMulVec_rectMatMul AP APplus w).symm
+      _ = rectMatMulVec (rectMatMul (rectMatMul AP APplus) AP) z := by
+            dsimp [w]
+            exact (rectMatMulVec_rectMatMul (rectMatMul AP APplus) AP z).symm
+      _ = rectMatMulVec AP z := by
+            rw [hPenrose1]
+      _ = w := rfl
+  have hB_u : rectMatMulVec B u = (fun _i : Fin p => 0) := by
+    calc
+      rectMatMulVec B u =
+          (fun i : Fin p =>
+            rectMatMulVec B (rectMatMulVec APplus w) i -
+              rectMatMulVec B z i) := by
+            rw [rectMatMulVec_sub]
+      _ = (fun _i : Fin p => 0) := by
+            funext i
+            have hrange_i := congrFun (hAPplus_range_null w) i
+            have hz_i := congrFun hz i
+            rw [hrange_i, hz_i]
+            ring
+  have hAP_u : rectMatMulVec AP u = (fun _i : Fin m => 0) := by
+    calc
+      rectMatMulVec AP u =
+          (fun i : Fin m =>
+            rectMatMulVec AP (rectMatMulVec APplus w) i -
+              rectMatMulVec AP z i) := by
+            rw [rectMatMulVec_sub]
+      _ = (fun _i : Fin m => 0) := by
+            funext i
+            have hpen_i := congrFun hAP_penrose_vec i
+            rw [hpen_i]
+            ring
+  have hu : u = (fun _j : Fin n => 0) :=
+    hAP_inj_null u hB_u hAP_u
+  ext j
+  have huj : rectMatMulVec APplus w j - z j = 0 := by
+    simpa [u] using congrFun hu j
+  exact sub_eq_zero.mp huj
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    projected action `(AP)^+ AP v = Pv` from Penrose-style reduced-operator
+    hypotheses plus source right-invertibility of `B`. -/
+theorem theorem20_8_projected_action_of_AP_penrose1_range_null_injective
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hPenrose1 :
+      rectMatMul (rectMatMul (theorem20_8AP A B Bplus) APplus)
+          (theorem20_8AP A B Bplus) =
+        theorem20_8AP A B Bplus)
+    (hAPplus_range_null :
+      ∀ w : Fin m → ℝ,
+        rectMatMulVec B (rectMatMulVec APplus w) =
+          (fun _i : Fin p => 0))
+    (hAP_inj_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec (theorem20_8AP A B Bplus) z =
+              (fun _i : Fin m => 0) →
+            z = (fun _j : Fin n => 0))
+    (v : Fin n → ℝ) :
+    rectMatMulVec APplus
+        (rectMatMulVec (theorem20_8AP A B Bplus) v) =
+      rectMatMulVec (theorem20_8Projection B Bplus) v := by
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B Bplus) z) = z :=
+    theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_range_null_injective
+      A B Bplus APplus hPenrose1 hAPplus_range_null hAP_inj_null
+  exact
+    theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
+      A B Bplus APplus hright hAPleft_null v
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the projected-difference equation follows from the reduced `AP` equation
     when the reduced pseudoinverse acts as the source projector on the actual
     feasible difference `y - x`. -/
@@ -4575,6 +4690,63 @@ theorem theorem20_8_projected_difference_eq_APplus_of_AP_left_inverse_on_nullspa
       A DeltaA Deltab B DeltaB Bplus APplus Deltad y x hAPaction hAPdiff
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the reduced `AP` equation gives the projected-difference equation when
+    the projected action is derived from Penrose-style reduced-operator
+    hypotheses. -/
+theorem theorem20_8_projected_difference_eq_APplus_of_AP_penrose1_range_null_injective_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hPenrose1 :
+      rectMatMul (rectMatMul (theorem20_8AP A B Bplus) APplus)
+          (theorem20_8AP A B Bplus) =
+        theorem20_8AP A B Bplus)
+    (hAPplus_range_null :
+      ∀ w : Fin m → ℝ,
+        rectMatMulVec B (rectMatMulVec APplus w) =
+          (fun _i : Fin p => 0))
+    (hAP_inj_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec (theorem20_8AP A B Bplus) z =
+              (fun _i : Fin m => 0) →
+            z = (fun _j : Fin n => 0))
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B Bplus)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    rectMatMulVec (theorem20_8Projection B Bplus)
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+          rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j := by
+  have hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k) :=
+    theorem20_8_projected_action_of_AP_penrose1_range_null_injective
+      A B Bplus APplus hright hPenrose1 hAPplus_range_null hAP_inj_null
+      (fun k => y k - x k)
+  exact
+    theorem20_8_projected_difference_eq_APplus_of_projected_action_reduced_difference_eq
+      A DeltaA Deltab B DeltaB Bplus APplus Deltad y x hAPaction hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     exact printed correction-vector identity from the reduced `AP` equation
     and the projected action needed only on the actual feasible difference. -/
 theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_action_reduced_difference_eq
@@ -4671,6 +4843,66 @@ theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_AP_left_inverse_
     theorem20_8_projected_difference_eq_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
       A DeltaA Deltab B DeltaB Bplus APplus Deltad y x hright
       hAPleft_null hAPdiff
+  exact
+    theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_difference
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y hx hy hproj
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    exact printed correction-vector identity from the reduced `AP` equation
+    and Penrose-style reduced-operator hypotheses. -/
+theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_AP_penrose1_range_null_injective_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hPenrose1 :
+      rectMatMul (rectMatMul (theorem20_8AP A B Bplus) APplus)
+          (theorem20_8AP A B Bplus) =
+        theorem20_8AP A B Bplus)
+    (hAPplus_range_null :
+      ∀ w : Fin m → ℝ,
+        rectMatMulVec B (rectMatMulVec APplus w) =
+          (fun _i : Fin p => 0))
+    (hAP_inj_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec (theorem20_8AP A B Bplus) z =
+              (fun _i : Fin m => 0) →
+            z = (fun _j : Fin n => 0))
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B Bplus)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j := by
+  have hproj :
+      rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k) =
+        fun j : Fin n =>
+          rectMatMulVec APplus
+              (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+            rectMatMulVec APplus
+              (rectMatMulVec A
+                (rectMatMulVec Bplus
+                  (fun l : Fin p =>
+                    Deltad l - rectMatMulVec DeltaB y l))) j :=
+    theorem20_8_projected_difference_eq_APplus_of_AP_penrose1_range_null_injective_reduced_difference_eq
+      A DeltaA Deltab B DeltaB Bplus APplus Deltad y x hright
+      hPenrose1 hAPplus_range_null hAP_inj_null hAPdiff
   exact
     theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_difference
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y hx hy hproj
@@ -4996,6 +5228,73 @@ theorem theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_co
     theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_projected_action_reduced_difference_eq
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy hAPaction hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    relative solution-difference transfer from the reduced `AP` equation and
+    Penrose-style reduced-operator hypotheses. -/
+theorem theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_AP_penrose1_range_null_injective_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ) {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hPenrose1 :
+      rectMatMul (rectMatMul (theorem20_8AP A B Bplus) APplus)
+          (theorem20_8AP A B Bplus) =
+        theorem20_8AP A B Bplus)
+    (hAPplus_range_null :
+      ∀ w : Fin m → ℝ,
+        rectMatMulVec B (rectMatMulVec APplus w) =
+          (fun _i : Fin p => 0))
+    (hAP_inj_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec (theorem20_8AP A B Bplus) z =
+              (fun _i : Fin m => 0) →
+            z = (fun _j : Fin n => 0))
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B Bplus)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) +
+        eps ^ 2 * solutionRadius *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B Bplus) z) = z :=
+    theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_range_null_injective
+      A B Bplus APplus hPenrose1 hAPplus_range_null hAP_inj_null
+  exact
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_AP_left_inverse_on_nullspace_reduced_difference_eq
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy hright
+      hAPleft_null hAPdiff
 
 /-- Under the natural positive denominator assumptions, the first-order
     coefficient in Theorem 20.8's perturbation bound is nonnegative. -/
@@ -6086,6 +6385,51 @@ def LSENullIntersectionTrivial {m n p : ℕ}
     rectMatMulVec A v = 0 →
     rectMatMulVec B v = 0 →
     v = 0
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the source condition `null(A) ∩ null(B) = {0}` makes `AP` injective on
+    the homogeneous constraint nullspace.  On that nullspace, `AP = A`. -/
+theorem theorem20_8_AP_injective_on_nullspace_of_nullIntersectionTrivial
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ)
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec (theorem20_8AP A B Bplus) z =
+            (fun _i : Fin m => 0) →
+          z = (fun _j : Fin n => 0) := by
+  intro z hz hAPz
+  have hAz : rectMatMulVec A z = (fun _i : Fin m => 0) := by
+    rw [← theorem20_8AP_apply_nullspace A B Bplus z hz]
+    exact hAPz
+  exact hnull z hAz hz
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    Penrose1 plus range-in-`null(B)` gives the reduced-operator left inverse
+    once the source null-intersection hypothesis supplies injectivity of `AP`
+    on the constraint nullspace. -/
+theorem theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_range_null_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hPenrose1 :
+      rectMatMul (rectMatMul (theorem20_8AP A B Bplus) APplus)
+          (theorem20_8AP A B Bplus) =
+        theorem20_8AP A B Bplus)
+    (hAPplus_range_null :
+      ∀ w : Fin m → ℝ,
+        rectMatMulVec B (rectMatMulVec APplus w) =
+          (fun _i : Fin p => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus) z) = z :=
+  theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_range_null_injective
+    A B Bplus APplus hPenrose1 hAPplus_range_null
+      (theorem20_8_AP_injective_on_nullspace_of_nullIntersectionTrivial
+        A B Bplus hnull)
 
 /-- Higham, 2nd ed., Chapter 20, equation (20.24): vertical stack
     `[A; B]`, the local representation of `[A^T, B^T]^T`. -/
