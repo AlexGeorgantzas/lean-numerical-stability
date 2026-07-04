@@ -2830,6 +2830,66 @@ theorem theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_first
         have hmulx := mul_le_mul_of_nonneg_right hmul (le_of_lt hxpos)
         simpa [mul_assoc] using hmulx
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    norm-dominated variant of the direct solution-side `B_A^+` correction
+    bound.  If the perturbed vector used in the constraint defect has
+    `||y||_2 <= ||x||_2`, the same first-order source coefficient controls
+    `B_A^+ * (Deltad - DeltaB*y)`. -/
+theorem theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_firstOrderRHS_of_vecNorm2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hBpos : 0 < frobNormRect B)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x) :
+    vecNorm2
+        (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+          (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)) ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) * vecNorm2 x := by
+  let BAplus := theorem20_8BAplus A B Bplus APplus
+  have hop : 0 ≤ complexMatrixOp2 (realRectToCMatrix BAplus) :=
+    complexMatrixOp2_nonneg (realRectToCMatrix BAplus)
+  have hinner :
+      eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y ≤
+        eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 x := by
+    have htail :
+        (eps * frobNormRect B) * vecNorm2 y ≤
+          (eps * frobNormRect B) * vecNorm2 x :=
+      mul_le_mul_of_nonneg_left hyx
+        (mul_nonneg heps_nonneg (frobNormRect_nonneg B))
+    exact add_le_add (le_refl (eps * vecNorm2 d)) htail
+  calc
+    vecNorm2
+        (rectMatMulVec BAplus
+          (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i))
+        ≤ complexMatrixOp2 (realRectToCMatrix BAplus) *
+            (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) := by
+            exact theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_op2
+              A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y hbudget
+    _ ≤ complexMatrixOp2 (realRectToCMatrix BAplus) *
+            (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 x) :=
+            mul_le_mul_of_nonneg_left hinner hop
+    _ = eps * theorem20_8KappaA B BAplus *
+          (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) * vecNorm2 x :=
+            theorem20_8KappaA_directCorrection_sourceTerm_eq B BAplus d x hBpos hxpos
+    _ ≤ eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
+          vecNorm2 x := by
+        have hfirst :
+            theorem20_8KappaA B BAplus *
+                (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) ≤
+              theorem20_8FirstOrderRHS A b B d x r APplus BAplus :=
+          theorem20_8KappaA_sourceTerm_le_firstOrderRHS A b B d x r
+            APplus BAplus hApos hxpos
+        have hmul := mul_le_mul_of_nonneg_left hfirst heps_nonneg
+        have hmulx := mul_le_mul_of_nonneg_right hmul (le_of_lt hxpos)
+        simpa [mul_assoc, BAplus] using hmulx
+
 /-- Under the natural positive denominator assumptions, the first-order
     coefficient in Theorem 20.8's perturbation bound is nonnegative. -/
 theorem theorem20_8FirstOrderRHS_nonneg {m n p : ℕ}
