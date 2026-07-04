@@ -6514,6 +6514,55 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_MP_matrix_range_null_nullInt
         A B Bplus APplus hMP)
       hBAPplus hnull
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if the source projector `P = I - B^+B` fixes the columns of `(AP)^+`,
+    then those columns satisfy the constraint nullspace equation. -/
+theorem theorem20_8_APplus_constraint_annihilates_of_projection_range
+    {m n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hProjAPplus :
+      rectMatMul (theorem20_8Projection B Bplus) APplus = APplus) :
+    rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0) := by
+  calc
+    rectMatMul B APplus =
+        rectMatMul B (rectMatMul (theorem20_8Projection B Bplus) APplus) := by
+          rw [hProjAPplus]
+    _ = rectMatMul (rectMatMul B (theorem20_8Projection B Bplus)) APplus := by
+          rw [rectMatMul_assoc]
+    _ = rectMatMul (fun _i : Fin p => fun _j : Fin n => 0) APplus := by
+          rw [theorem20_8Projection_constraint_zero B Bplus hright]
+    _ = (fun _i : Fin p => fun _j : Fin m => 0) := by
+          ext i j
+          unfold rectMatMul
+          simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the reduced-operator left inverse follows from a Moore--Penrose certificate
+    for `(AP)^+`, a projector-range certificate `P*(AP)^+ = (AP)^+`, source
+    right-invertibility of `B^+`, and (20.24)'s null-intersection condition. -/
+theorem theorem20_8_AP_left_inverse_on_nullspace_of_MP_projection_range_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B Bplus) APplus)
+    (hProjAPplus :
+      rectMatMul (theorem20_8Projection B Bplus) APplus = APplus)
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus) z) = z :=
+  theorem20_8_AP_left_inverse_on_nullspace_of_MP_matrix_range_null_nullIntersection
+    A B Bplus APplus hMP
+      (theorem20_8_APplus_constraint_annihilates_of_projection_range
+        B Bplus APplus hright hProjAPplus)
+      hnull
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.24): vertical stack
     `[A; B]`, the local representation of `[A^T, B^T]^T`. -/
 noncomputable def lseStackedMatrix {m n p : ℕ}
