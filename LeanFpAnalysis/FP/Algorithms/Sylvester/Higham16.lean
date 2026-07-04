@@ -661,6 +661,83 @@ theorem sylvesterVecCoeff_diagonal_mul_sylvesterDiagonalVecCoeffInv (m n : Nat)
   case neg =>
     simp [Matrix.diagonal, hpq]
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    the entrywise solution obtained by dividing each right-hand side entry by
+    the separated scalar coefficient `a_i - b_j`. -/
+noncomputable def sylvesterDiagonalSolution (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n) : RMatFn m n :=
+  fun i j => Ring.inverse (a i - b j) * C i j
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), diagonal case:
+    vectorizing the explicit diagonal solution is the same as applying the
+    explicit inverse diagonal vec/Kronecker coefficient. -/
+theorem vec_sylvesterDiagonalSolution_eq_mulVec_inv (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n) :
+    Matrix.vec (sylvesterDiagonalSolution m n a b C) =
+      Matrix.mulVec (sylvesterDiagonalVecCoeffInv m n a b) (Matrix.vec C) := by
+  ext p
+  simp [sylvesterDiagonalSolution, sylvesterDiagonalVecCoeffInv, Matrix.vec,
+    Matrix.mulVec_diagonal]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    the explicit entrywise formula solves the vectorized Sylvester system when
+    the diagonal entries are pairwise separated. -/
+theorem sylvesterVecCoeff_mulVec_vec_sylvesterDiagonalSolution (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Matrix.mulVec (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))
+        (Matrix.vec (sylvesterDiagonalSolution m n a b C)) =
+      Matrix.vec C := by
+  rw [vec_sylvesterDiagonalSolution_eq_mulVec_inv, Matrix.mulVec_mulVec,
+    sylvesterVecCoeff_diagonal_mul_sylvesterDiagonalVecCoeffInv m n a b hsep,
+    Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    the explicit entrywise formula is a Sylvester solution under separation. -/
+theorem isSylvesterSolutionRect_sylvesterDiagonalSolution (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C
+      (sylvesterDiagonalSolution m n a b C) := by
+  exact
+    (sylvester_vec_system_iff_solution m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C
+      (sylvesterDiagonalSolution m n a b C)).mp
+      (sylvesterVecCoeff_mulVec_vec_sylvesterDiagonalSolution m n a b C hsep)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    under separation, any Sylvester solution equals the explicit entrywise
+    diagonal solution. -/
+theorem sylvesterDiagonalSolution_unique (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C X : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C X) :
+    X = sylvesterDiagonalSolution m n a b C := by
+  apply Matrix.vec_inj.mp
+  have hvecX :
+      Matrix.mulVec (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))
+          (Matrix.vec X) =
+        Matrix.vec C :=
+    (sylvester_vec_system_iff_solution m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X).mpr hX
+  rw [vec_sylvesterDiagonalSolution_eq_mulVec_inv, ← hvecX]
+  rw [Matrix.mulVec_mulVec,
+    sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal m n a b hsep,
+    Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    separated diagonal Sylvester equations have exactly one solution, given by
+    the explicit entrywise formula. -/
+theorem existsUnique_isSylvesterSolutionRect_diagonal (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    ExistsUnique
+      (IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C) := by
+  refine ⟨sylvesterDiagonalSolution m n a b C,
+    isSylvesterSolutionRect_sylvesterDiagonalSolution m n a b C hsep, ?_⟩
+  intro X hX
+  exact sylvesterDiagonalSolution_unique m n a b C X hsep hX
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal case:
     the absolute-value matrix exactly bounds the explicit diagonal inverse
     componentwise. -/
