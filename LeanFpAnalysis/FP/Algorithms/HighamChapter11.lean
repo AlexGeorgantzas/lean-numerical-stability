@@ -437,6 +437,122 @@ def higham11_14_aasenNextColumnEquation (n : ℕ)
       (A k i - ∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0) /
         H next i
 
+/-- **Equation (11.12) derivation**: the Aasen diagonal equation holds for any
+`A = L·H` with `L` unit lower triangular.  Exact-arithmetic identity behind the
+Aasen recurrence (not the fl analysis): `A i i = ∑_{j<i} L i j · H j i + H i i`,
+by unit-lower-triangularity of `L`. -/
+theorem higham11_12_aasen_diagonal_equation_of_product (n : ℕ)
+    (A L H : Fin n → Fin n → ℝ)
+    (hLdiag : ∀ i, L i i = 1)
+    (hLupper : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hprod : ∀ i k : Fin n, (∑ j, L i j * H j k) = A i k) :
+    higham11_12_aasenDiagonalEquation n A L H := by
+  intro i
+  have key : ∀ j : Fin n, L i j * H j i
+      = (if j.val < i.val then L i j * H j i else 0)
+        + (if i.val ≤ j.val then L i j * H j i else 0) := by
+    intro j
+    by_cases h : j.val < i.val
+    · simp [h, Nat.not_le.mpr h]
+    · simp [h, Nat.not_lt.mp h]
+  rw [← hprod i i, Finset.sum_congr rfl (fun j _ => key j), Finset.sum_add_distrib]
+  congr 1
+  rw [Finset.sum_eq_single i]
+  · simp [hLdiag i]
+  · intro j _ hji
+    by_cases h : i.val ≤ j.val
+    · have hlt : i.val < j.val :=
+        lt_of_le_of_ne h (fun e => hji (Fin.ext e.symm))
+      simp [h, hLupper i j hlt]
+    · simp [h]
+  · intro hnm; exact absurd (Finset.mem_univ i) hnm
+
+/-- **Equation (11.13) derivation**: the Aasen subdiagonal equation holds for any
+`A = L·H` with `L` unit lower triangular.  For `k = i+1`,
+`A k i = ∑_{j≤i} L k j · H j i + H k i`. -/
+theorem higham11_13_aasen_subdiagonal_equation_of_product (n : ℕ)
+    (A L H : Fin n → Fin n → ℝ)
+    (hLdiag : ∀ i, L i i = 1)
+    (hLupper : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hprod : ∀ i k : Fin n, (∑ j, L i j * H j k) = A i k) :
+    higham11_13_aasenSubdiagonalEquation n A L H := by
+  intro i k hk
+  have key : ∀ j : Fin n, L k j * H j i
+      = (if j.val ≤ i.val then L k j * H j i else 0)
+        + (if k.val ≤ j.val then L k j * H j i else 0) := by
+    intro j
+    by_cases h : j.val ≤ i.val
+    · have hnk : ¬ k.val ≤ j.val := by omega
+      simp [h, hnk]
+    · have hkj : k.val ≤ j.val := by omega
+      simp [h, hkj]
+  rw [← hprod k i, Finset.sum_congr rfl (fun j _ => key j), Finset.sum_add_distrib]
+  congr 1
+  rw [Finset.sum_eq_single k]
+  · simp [hLdiag k]
+  · intro j _ hjk
+    by_cases h : k.val ≤ j.val
+    · have hlt : k.val < j.val :=
+        lt_of_le_of_ne h (fun e => hjk (Fin.ext e.symm))
+      simp [h, hLupper k j hlt]
+    · simp [h]
+  · intro hnm; exact absurd (Finset.mem_univ k) hnm
+
+/-- **Aasen band structure of `H = T·Lᵀ`** (Higham §11.2): with `T` tridiagonal
+and `L` lower triangular, `H j i = ∑ₖ T j k·L i k = 0` for `j > i+1`.  The
+structural fact that lets the column update (11.14) pick out a single term. -/
+theorem higham11_10_aasenH_band (n : ℕ) (T L : Fin n → Fin n → ℝ)
+    (hT : ∀ a b : Fin n, a.val + 1 < b.val ∨ b.val + 1 < a.val → T a b = 0)
+    (hL : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (i j : Fin n) (hji : i.val + 1 < j.val) :
+    higham11_10_aasenH n T L j i = 0 := by
+  unfold higham11_10_aasenH
+  apply Finset.sum_eq_zero
+  intro k _
+  by_cases h : k.val ≤ i.val
+  · rw [hT j k (Or.inr (by omega)), zero_mul]
+  · rw [hL i k (by omega), mul_zero]
+
+/-- **Equation (11.14) derivation**: for `A = L·H` with `L` unit lower triangular
+and `H` banded (`H j i = 0` for `j > i+1`, e.g. from `higham11_10_aasenH_band`),
+the below-diagonal next-column entries of `L` are
+`L k next = (A k i − ∑_{j≤i} L k j·H j i) / H next i` (`next = i+1`, `k ≥ i+2`),
+provided the pivot `H next i ≠ 0`.  Exact-arithmetic Aasen recurrence, toward Thm 11.8. -/
+theorem higham11_14_aasen_next_column_of_product (n : ℕ)
+    (A L H : Fin n → Fin n → ℝ)
+    (hHband : ∀ i j : Fin n, i.val + 1 < j.val → H j i = 0)
+    (hprod : ∀ k i : Fin n, (∑ j, L k j * H j i) = A k i)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0) :
+    higham11_14_aasenNextColumnEquation n A L H := by
+  intro i next k hnext hk
+  have key : ∀ j : Fin n, L k j * H j i
+      = (if j.val ≤ i.val then L k j * H j i else 0)
+        + (if i.val < j.val then L k j * H j i else 0) := by
+    intro j
+    by_cases h : j.val ≤ i.val
+    · simp [h, Nat.not_lt.mpr h]
+    · simp [h, Nat.lt_of_not_le h]
+  have htail : (∑ j, if i.val < j.val then L k j * H j i else 0)
+      = L k next * H next i := by
+    rw [Finset.sum_eq_single next]
+    · have : i.val < next.val := by omega
+      simp [this]
+    · intro j _ hjn
+      by_cases h : i.val < j.val
+      · have hgt : i.val + 1 < j.val := by
+          rcases lt_or_eq_of_le (Nat.succ_le_of_lt h) with h1 | h1
+          · exact h1
+          · exact absurd (Fin.ext (by omega)) hjn
+        rw [hHband i j hgt]; simp
+      · simp [h]
+    · intro hnm; exact absurd (Finset.mem_univ next) hnm
+  have hsum : A k i
+      = (∑ j, if j.val ≤ i.val then L k j * H j i else 0) + L k next * H next i := by
+    rw [← hprod k i, Finset.sum_congr rfl (fun j _ => key j),
+      Finset.sum_add_distrib, htail]
+  rw [eq_div_iff (hHnz i next hnext)]
+  linarith [hsum]
+
 /-- **Equation (11.15)**, the Aasen solve chain
 `L z = P b`, `T y = z`, `L^T w = y`, `x = P w`. -/
 def higham11_15_aasenSolveChain (n : ℕ)
