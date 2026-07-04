@@ -1846,6 +1846,36 @@ theorem theorem20_8_AP_difference_eq_of_perturbed_residual_eq {m n p : ℕ}
   linarith
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-sign version of `theorem20_8_AP_difference_eq_of_perturbed_residual_eq`,
+    using Higham's residual convention `b - A*x`. -/
+theorem theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) =
+      fun i =>
+        (b i - rectMatMulVec A x i) - rHigh i -
+          rectMatMulVec A
+            (rectMatMulVec Bplus
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i -
+          rectMatMulVec DeltaA y i + Deltab i := by
+  have hdecomp :=
+    theorem20_8_perturbed_feasible_residual_decomp
+      A DeltaA b Deltab B DeltaB Bplus d Deltad x y hx hy
+  ext i
+  have hdecomp_i := congrFun hdecomp i
+  have hres_i := congrFun hres i
+  unfold lsResidual at hdecomp_i
+  unfold lsResidualHigham at hres_i
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the constraint-defect vector `Deltad - DeltaB*y` is bounded by the
     supplied perturbation radii. -/
 theorem theorem20_8_vecNorm2_constraint_defect_le {n p : ℕ}
@@ -5790,6 +5820,32 @@ theorem LSEFullRowRank.theorem20_8_AP_difference_eq_of_perturbed_residual_eq
           rectMatMulVec DeltaA y i + Deltab i :=
   _root_.LeanFpAnalysis.FP.theorem20_8_AP_difference_eq_of_perturbed_residual_eq
     A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y rpert hx hy hres
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the Higham-sign reduced `AP` difference
+    identity with an explicit perturbed residual vector. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    rectMatMulVec (theorem20_8AP A B hB.rightInverse) (fun k => y k - x k) =
+      fun i =>
+        (b i - rectMatMulVec A x i) - rHigh i -
+          rectMatMulVec A
+            (rectMatMulVec hB.rightInverse
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i -
+          rectMatMulVec DeltaA y i + Deltab i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq
+    A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y rHigh hx hy hres
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated residual decomposition with the constraint
