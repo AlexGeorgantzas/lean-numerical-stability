@@ -2922,6 +2922,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_chi`
 - `higham9_15_chi_nonneg`
 - `higham9_15_rectMatMul_opNorm2Le`
+- `higham9_15_inverse_product_bounds_of_inverse_products`
 - `higham9_15_kappa2_le_chi_of_inverse_product_bound`
 - `higham9_15_chi_le_kappa2L_mul_kappa2A_of_Uinv_bound`
 - `higham9_15_chi_le_kappa2U_mul_kappa2A_of_Linv_bound`
@@ -2930,6 +2931,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_chi_condition_chain_of_inverse_products`
 - `higham9_15_chi_condition_chain_min_of_inverse_products`
 - `higham9_15_lu_inverse_product_identities_of_source_inverse_identities`
+- `higham9_15_inverse_product_bounds_of_lu_inverse_identities`
 - `higham9_15_matrix_lu_inverse_product_identities_of_source_inverse_identities`
 - `higham9_15_chi_condition_chain_of_lu_inverse_identities`
 - `higham9_15_chi_condition_chain_of_matrix_lu_inverse_identities`

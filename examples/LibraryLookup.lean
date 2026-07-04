@@ -13328,6 +13328,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_15_chi
 #check higham9_15_chi_nonneg
 #check higham9_15_rectMatMul_opNorm2Le
+#check higham9_15_inverse_product_bounds_of_inverse_products
 #check higham9_15_kappa2_le_chi_of_inverse_product_bound
 #check higham9_15_chi_le_kappa2L_mul_kappa2A_of_Uinv_bound
 #check higham9_15_chi_le_kappa2U_mul_kappa2A_of_Linv_bound
@@ -13336,6 +13337,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_15_chi_condition_chain_of_inverse_products
 #check higham9_15_chi_condition_chain_min_of_inverse_products
 #check higham9_15_lu_inverse_product_identities_of_source_inverse_identities
+#check higham9_15_inverse_product_bounds_of_lu_inverse_identities
 #check higham9_15_matrix_lu_inverse_product_identities_of_source_inverse_identities
 #check higham9_15_chi_condition_chain_of_lu_inverse_identities
 #check higham9_15_chi_condition_chain_of_matrix_lu_inverse_identities
