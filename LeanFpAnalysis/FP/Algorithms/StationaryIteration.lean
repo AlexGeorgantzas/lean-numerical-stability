@@ -2125,6 +2125,157 @@ theorem finiteResidualSigma_le_diagonalizable_max_bound (n : ℕ) (hn : 0 < n)
     (diagonalResidualRatioMax_nonneg n J hn hLam) hLam
     (diagonalResidualRatio_le_max n J hn) m
 
+private theorem residualSigmaTsum_entry_le_of_real_diagonalization (n : ℕ)
+    (H X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
+    (hsim : matMul n X_inv (matMul n H X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (sigmaDiag : ℝ)
+    (hLam : ∀ i : Fin n, |J i i| < 1)
+    (hratio : ∀ i : Fin n, |1 - J i i| / (1 - |J i i|) ≤ sigmaDiag)
+    (i j : Fin n) :
+    residualSigmaTsumMatrix n H i j ≤
+      ∑ a : Fin n, |X i a| * sigmaDiag * |X_inv a j| := by
+  let f : ℕ → ℝ :=
+    fun k => |matMul n (matPow n H k) (matSub_id n H) i j|
+  let g : ℕ → ℝ :=
+    fun k => ∑ a : Fin n,
+      |X i a| * (|J a a| ^ k * |1 - J a a|) * |X_inv a j|
+  have hfg : ∀ k : ℕ, f k ≤ g k := by
+    intro k
+    simpa [f, g] using
+      residual_term_entry_abs_le_of_real_diagonalization
+        n H X X_inv J hXr hXl hsim hdiag k i j
+  have hg_a : ∀ a : Fin n,
+      Summable (fun k : ℕ =>
+        |X i a| * (|J a a| ^ k * |1 - J a a|) * |X_inv a j|) := by
+    intro a
+    have hgeom : Summable (fun k : ℕ => |J a a| ^ k) :=
+      summable_geometric_of_lt_one (abs_nonneg _) (hLam a)
+    have hscaled :
+        Summable (fun k : ℕ => |J a a| ^ k * |1 - J a a|) :=
+      Summable.mul_right _ hgeom
+    have hleft :
+        Summable (fun k : ℕ =>
+          |X i a| * (|J a a| ^ k * |1 - J a a|)) :=
+      Summable.mul_left _ hscaled
+    exact Summable.mul_right _ hleft
+  have hg : Summable g := by
+    dsimp [g]
+    simpa using
+      (summable_sum (s := Finset.univ)
+        (fun a _ha => hg_a a))
+  have hf : Summable f :=
+    Summable.of_nonneg_of_le (fun k => abs_nonneg _) hfg hg
+  have hle_tsum : (∑' k : ℕ, f k) ≤ ∑' k : ℕ, g k :=
+    Summable.tsum_le_tsum hfg hf hg
+  have hg_tsum_eq :
+      (∑' k : ℕ, g k) =
+        ∑ a : Fin n, ∑' k : ℕ,
+          |X i a| * (|J a a| ^ k * |1 - J a a|) * |X_inv a j| := by
+    dsimp [g]
+    simpa using
+      (Summable.tsum_finsetSum (s := Finset.univ)
+        (fun a _ha => hg_a a))
+  have hg_tsum_le :
+      (∑' k : ℕ, g k) ≤
+        ∑ a : Fin n, |X i a| * sigmaDiag * |X_inv a j| := by
+    rw [hg_tsum_eq]
+    apply Finset.sum_le_sum
+    intro a _ha
+    have hgeom_tsum :
+        (∑' k : ℕ, |J a a| ^ k * |1 - J a a|) =
+          |1 - J a a| / (1 - |J a a|) := by
+      rw [tsum_mul_right, tsum_geometric_of_lt_one (abs_nonneg _) (hLam a)]
+      rw [div_eq_mul_inv, mul_comm]
+    have hweighted_tsum :
+        (∑' k : ℕ,
+          |X i a| * (|J a a| ^ k * |1 - J a a|) * |X_inv a j|) =
+          |X i a| * (|1 - J a a| / (1 - |J a a|)) * |X_inv a j| := by
+      rw [tsum_mul_right, tsum_mul_left, hgeom_tsum]
+    rw [hweighted_tsum]
+    exact mul_le_mul_of_nonneg_right
+      (mul_le_mul_of_nonneg_left (hratio a) (abs_nonneg _))
+      (abs_nonneg _)
+  calc
+    residualSigmaTsumMatrix n H i j = ∑' k : ℕ, f k := by rfl
+    _ ≤ ∑' k : ℕ, g k := hle_tsum
+    _ ≤ ∑ a : Fin n, |X i a| * sigmaDiag * |X_inv a j| := hg_tsum_le
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20), literal
+    `tsum` diagonalization-certificate form: if `H = X J X^{-1}` with diagonal
+    `J` and `|lambda_i| < 1`, then the entrywise infinite source residual sigma
+    is bounded by `kappa_infty(X) * sigmaDiag`. -/
+theorem residualSigmaTsum_le_diagonalizable_bound (n : ℕ) (_hn : 0 < n)
+    (H X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
+    (hsim : matMul n X_inv (matMul n H X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (sigmaDiag : ℝ) (hsigma : 0 ≤ sigmaDiag)
+    (hLam : ∀ i : Fin n, |J i i| < 1)
+    (hratio : ∀ i : Fin n, |1 - J i i| / (1 - |J i i|) ≤ sigmaDiag) :
+    residualSigmaTsum n H ≤ (infNorm X * infNorm X_inv) * sigmaDiag := by
+  apply residualSigmaTsum_le_of_row_sum_le
+  · intro i
+    have hentry_nonneg :
+        ∀ j : Fin n, 0 ≤ residualSigmaTsumMatrix n H i j := by
+      intro j
+      unfold residualSigmaTsumMatrix
+      exact tsum_nonneg (fun k => abs_nonneg _)
+    calc
+      ∑ j : Fin n, |residualSigmaTsumMatrix n H i j|
+          = ∑ j : Fin n, residualSigmaTsumMatrix n H i j := by
+              apply Finset.sum_congr rfl
+              intro j _hj
+              exact abs_of_nonneg (hentry_nonneg j)
+      _ ≤ ∑ j : Fin n, ∑ a : Fin n,
+            |X i a| * sigmaDiag * |X_inv a j| := by
+              apply Finset.sum_le_sum
+              intro j _hj
+              exact residualSigmaTsum_entry_le_of_real_diagonalization
+                n H X X_inv J hXr hXl hsim hdiag sigmaDiag
+                hLam hratio i j
+      _ = ∑ a : Fin n, |X i a| * sigmaDiag *
+            (∑ j : Fin n, |X_inv a j|) := by
+              rw [Finset.sum_comm]
+              apply Finset.sum_congr rfl
+              intro a _ha
+              rw [← Finset.mul_sum]
+      _ ≤ ∑ a : Fin n, |X i a| * sigmaDiag * infNorm X_inv := by
+              apply Finset.sum_le_sum
+              intro a _ha
+              exact mul_le_mul_of_nonneg_left
+                (row_sum_le_infNorm X_inv a)
+                (mul_nonneg (abs_nonneg _) hsigma)
+      _ = sigmaDiag * infNorm X_inv * (∑ a : Fin n, |X i a|) := by
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro a _ha
+              ring
+      _ ≤ sigmaDiag * infNorm X_inv * infNorm X := by
+              exact mul_le_mul_of_nonneg_left
+                (row_sum_le_infNorm X i)
+                (mul_nonneg hsigma (infNorm_nonneg _))
+      _ = (infNorm X * infNorm X_inv) * sigmaDiag := by
+              ring
+  · exact mul_nonneg (mul_nonneg (infNorm_nonneg X) (infNorm_nonneg X_inv)) hsigma
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20), literal
+    `tsum` maximum form: the entrywise infinite source residual sigma is bounded
+    by `kappa_infty(X)` times the displayed maximum eigenvalue ratio. -/
+theorem residualSigmaTsum_le_diagonalizable_max_bound (n : ℕ) (hn : 0 < n)
+    (H X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
+    (hsim : matMul n X_inv (matMul n H X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (hLam : ∀ i : Fin n, |J i i| < 1) :
+    residualSigmaTsum n H ≤
+      (infNorm X * infNorm X_inv) * diagonalResidualRatioMax n J hn := by
+  exact residualSigmaTsum_le_diagonalizable_bound n hn H X X_inv J
+    hXr hXl hsim hdiag (diagonalResidualRatioMax n J hn)
+    (diagonalResidualRatioMax_nonneg n J hn hLam) hLam
+    (diagonalResidualRatio_le_max n J hn)
+
 /-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20), supremum
     wrapper: the supremum of all finite source-sigma partial norms is bounded by
     `kappa_infty(X)` times the displayed maximum eigenvalue ratio.  This is a

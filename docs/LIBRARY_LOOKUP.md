@@ -2323,6 +2323,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_10_hessenberg_lu_solve_backward_stable_tight`
 - `higham9_11_bohteBound`
 - `higham9_11_bohteBound_tridiagonal`
+- `higham9_11_bohteBound_bandwidth_one_formula`
 - `higham9_11_bohteBound_pentadiagonal_formula`
 - `higham9_11_bohteBound_bandwidth_two_formula`
 - `higham9_11_bohteBound_bandwidth_three_formula`
@@ -2345,6 +2346,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohte_banded_solve_tight_of_bandwidth_le`
 - `higham9_11_bohte_banded_solve_tight_of_isBanded_common`
 - `higham9_11_bohte_banded_solve_tight_of_isBanded_common_growth_le`
+- `higham9_11_bandwidth_one_bohte_solve_tight`
 - `higham9_11_bandwidth_one_bohte_solve_tight_of_isBanded`
 - `higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal`
 - `higham9_11_tridiagonal_bohte_solve_tight`
@@ -4264,6 +4266,7 @@ Source-facing Chapter 10 wrappers:
 - `diag_le_opNorm2Le` / `sqrt_diag_prod_le_opNorm2Le` ((10.29) opNorm-diag bridge: opNorm2Le Q c => Q_ii <= c and sqrt(Q_ii Q_jj) <= c for PSD-diagonal Q)
 - `stage_multiplier_product_le` ((10.29) ASSEMBLED per-stage bound: |S_ik S_kj|/H_kk <= c given opNorm2Le Q c and the row/col Gram-diagonal identifications Q = S Hinv S^T = S^T Hinv S)
 - `finiteMaxEigenvalue_mono_of_quadForm_le` ((10.29) Loewner->opNorm step: y^T A y <= y^T B y forall y => lambda_max(A) <= lambda_max(B); converts schur_gram_stage_le into operator-norm stage monotonicity)
+- `stage_maxEigenvalue_le` ((10.29) operator-norm stage step: from the per-y quadratic-form inequality, lambda_max(Q_hat = S_hat^T H_hat^-1 S_hat) <= lambda_max(Q_22 = trailing block of S^T H^-1 S); combines quadForm_gram_conj + trailing_block_quadForm + mono_of_quadForm)
 - `finiteMaxEigenvalue_trailing_principal_le` ((10.29) Schur monotonicity, ||Q22||_2 <= ||Q||_2 half: trailing m-block max-eigenvalue <= full, via Fin.cons 0 v padding)
 - `sherman_morrison_quadForm_scalar_mono` ((10.29) crux scalar core: Sherman-Morrison rank-one-update monotonicity, gap (gamma-p)^2/(1+r) >= 0 - the algebraic heart of Q_hat <= Q_22)
 - `rankOne_update_quadForm_eq` ((10.29) crux matrix step: x^T (Z+uu^T)^{-1} x = x^T Z^{-1} x - (u^T Z^{-1} x)^2/(1+u^T Z^{-1} u), via the inverse-action vector; no explicit Sherman-Morrison matrix identity)
@@ -4271,6 +4274,7 @@ Source-facing Chapter 10 wrappers:
 - `block_quadForm_schur_eq` ((10.29) crux Q22 side: [b;v]^T H^{-1} [b;v] = b^2/a + (v-(b/a)f)^T Z^{-1} (v-(b/a)f) for symmetric PD block H=[[a,f^T],[f,G]], Z=G-ff^T/a; via inverse-action vector)
 - `quadForm_gram_conj` ((10.29) stage-Gram-as-matrix tool: y^T (G^T M G) y = (Gy)^T M (Gy), via matMulVec_matMul)
 - `trailing_block_quadForm` ((10.29): (0,y)^T Q (0,y) = y^T Q22 y, Q22 i j = Q i.succ j.succ; padded-zero selects the trailing principal block)
+- `spd_inverse_exists` ((10.29): SPD H (repo IsSymPosDef) has a symmetric two-sided function-matrix inverse; trivial kernel -> IsUnit det -> nonsingInv; foundation for the stage Gram Q(S)=S^T H(S)^-1 S)
 - `gram_conj_isSymm` ((10.29): conjugated Gram G^T M G is symmetric when M is; so finiteMaxEigenvalue applies to stage matrices)
 - `schur_gram_stage_le` ((10.29) crux CAPSTONE, Q_hat <= Q_22 quadratic-form level: (S_hat y)^T H_hat^{-1} (S_hat y) <= [b;v]^T H^{-1} [b;v], combining block_quadForm_schur_eq + rankOne_update_auxiliary_le with u=k/sqrt(a), g=b/sqrt(a))
 - `higham10_29_luFirstSchurComplement_isNonsymPosDef` ((10.29) GE recursion well-founded: LU-scaffold Schur step preserves nonsym-PD; base for the stage induction on the LUFactSpec/of_firstSchurComplement recursion)
