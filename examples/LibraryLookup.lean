@@ -13107,6 +13107,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_5_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_det_ne_zero
 #check higham9_11_bohteBound
 #check higham9_11_bohteBound_tridiagonal
+#check higham9_11_bohteBound_bandwidth_one_formula
 #check higham9_11_bohteBound_pentadiagonal_formula
 #check higham9_11_bohteBound_bandwidth_two_formula
 #check higham9_11_bohteBound_bandwidth_three_formula
@@ -13129,6 +13130,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_11_bohte_banded_solve_tight_of_bandwidth_le
 #check higham9_11_bohte_banded_solve_tight_of_isBanded_common
 #check higham9_11_bohte_banded_solve_tight_of_isBanded_common_growth_le
+#check higham9_11_bandwidth_one_bohte_solve_tight
 #check higham9_11_bandwidth_one_bohte_solve_tight_of_isBanded
 #check higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal
 #check higham9_11_tridiagonal_bohte_solve_tight
