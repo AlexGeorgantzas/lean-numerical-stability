@@ -2100,46 +2100,30 @@ theorem higham10_11_firstOrder_eq_WtW {k m : ℕ}
   subst hA
   simp only [Matrix.transpose_mul, hM, Matrix.mul_assoc]
 
-/-- **Lemma 10.11, pivot-order-stability core (Higham §10.3.1, condition
-(10.17)).**  The mathematical content of the "no ties" hypothesis: if a finite
-family `f` has an index `i₀` that strictly dominates every other index with
-margin `2ε` (`f j + 2ε < f i₀` for `j ≠ i₀`), then any perturbation `g` deviating
-entrywise by at most `ε` keeps `i₀` the strict maximizer (`g j < g i₀` for
-`j ≠ i₀`).  Applied to the diagonal of the Schur complement (whose largest entry
-is the complete-pivoting choice, cf. `higham10_13_completePivotingInequality`),
-this shows the pivoting strategy is unchanged by a sufficiently small
-perturbation — the pivot-order-preservation half of Lemma 10.11.  Assembling
-this with a `cp` operator to conclude `cp(A+E)` uses the same permutation as
-`cp(A)` across all `r` stages remains an open foundation. -/
-theorem higham10_11_pivot_argmax_stable {n : ℕ}
-    (f g : Fin n → ℝ) (ε : ℝ) (i₀ : Fin n)
-    (hdom : ∀ j, j ≠ i₀ → f j + 2 * ε < f i₀)
-    (hpert : ∀ j, |g j - f j| ≤ ε) :
-    ∀ j, j ≠ i₀ → g j < g i₀ := by
-  intro j hj
-  have h1 : g j - f j ≤ ε := (abs_le.mp (hpert j)).2
-  have h2 : -ε ≤ g i₀ - f i₀ := (abs_le.mp (hpert i₀)).1
-  have h3 := hdom j hj
-  linarith
-
-/-- **Lemma 10.11, first-stage complete-pivot preservation.**  For a symmetric
-matrix whose largest element lies on the diagonal (true for positive
-semidefinite `A`, cf. Problem 10.1), the first complete-pivoting choice is the
-diagonal argmax.  If some diagonal index `i₀` strictly dominates the diagonal
-with margin `2ε` (Higham's no-ties condition (10.17) at stage 1), then every
-perturbation `E` with `|Eⱼⱼ| ≤ ε` on the diagonal leaves `i₀` the strict
-diagonal maximizer of `A+E`, so `A` and `A+E` select the same first pivot.  This
-instantiates `higham10_11_pivot_argmax_stable` on the matrix diagonal. -/
-theorem higham10_11_first_pivot_preserved {n : ℕ}
-    (A E : Fin n → Fin n → ℝ) (ε : ℝ) (i₀ : Fin n)
-    (hdom : ∀ j, j ≠ i₀ → A j j + 2 * ε < A i₀ i₀)
-    (hE : ∀ j, |E j j| ≤ ε) :
-    ∀ j, j ≠ i₀ → (A + E) j j < (A + E) i₀ i₀ := by
-  have := higham10_11_pivot_argmax_stable
-    (fun i => A i i) (fun i => A i i + E i i) ε i₀ hdom
-    (by intro j; simpa using hE j)
-  intro j hj
-  simpa using this j hj
+/-- **Lemma 10.11, pivot-order-preservation half (Higham §10.3.1, source form).**
+Chapter-label wrapper over the complete-pivoting machinery in
+`Cholesky/CholeskyPSD.lean` (`cpPivot_sequence_stable_small`, built on
+`diagArgmax_stable` and `schurStep_entrywise_perturbation`).  If the
+complete-pivoting run of `A` has no ties — a diagonal gap `δ` at every stage
+(condition (10.17)), a positive pivot floor `ρ`, and an entry cap `c` through the
+first `r` stages — then there is a positive perturbation radius `ε₀` within which
+every matrix `B` with `‖A − B‖ ≤ ε₀` entrywise selects the *same pivot sequence*
+as `A`, i.e. `A + E = cp(A + E)` uses the same permutation as `cp(A)`.  This is
+Higham's "for sufficiently small `‖E‖`, `A + E = cp(A + E)`" claim. -/
+theorem higham10_11_cp_pivot_sequence_stable {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (r : ℕ) (δ ρ c : ℝ)
+    (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n, |cpState hn A t i j| ≤ c) :
+    ∃ ε₀ : ℝ, 0 < ε₀ ∧
+      ∀ B : Fin n → Fin n → ℝ,
+        (∀ i j : Fin n, |A i j - B i j| ≤ ε₀) →
+        ∀ s : ℕ, s < r → cpPivot hn A s = cpPivot hn B s :=
+  cpPivot_sequence_stable_small hn A r δ ρ c hδ hδρ hc hgap hfloor hcap
 
 /-- **Lemma 10.12**: abstract `W = A11^{-1} A12` norm bound. -/
 theorem higham10_12_w_norm_bound_from_cond
