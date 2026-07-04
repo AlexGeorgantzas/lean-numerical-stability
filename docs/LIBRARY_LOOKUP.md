@@ -2896,6 +2896,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_24_scaled_system_equiv`
 - `higham9_24_original_system_of_scaled_system`
 - `higham9_24_scaled_system_iff_original_system`
+- `higham9_24_matrix_scaled_system_equiv`
+- `higham9_24_matrix_original_system_of_scaled_system`
+- `higham9_24_matrix_scaled_system_iff_original_system`
 - `higham9_25_trailingRowInf`
 - `higham9_25_abs_stage_entry_le_trailingRowInf`
 - `higham9_25_trailingRowInf_nonneg`

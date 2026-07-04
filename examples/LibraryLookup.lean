@@ -14840,6 +14840,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_24_scaled_system_equiv
 #check higham9_24_original_system_of_scaled_system
 #check higham9_24_scaled_system_iff_original_system
+#check higham9_24_matrix_scaled_system_equiv
+#check higham9_24_matrix_original_system_of_scaled_system
+#check higham9_24_matrix_scaled_system_iff_original_system
 #check higham9_25_trailingRowInf
 #check higham9_25_abs_stage_entry_le_trailingRowInf
 #check higham9_25_trailingRowInf_nonneg
