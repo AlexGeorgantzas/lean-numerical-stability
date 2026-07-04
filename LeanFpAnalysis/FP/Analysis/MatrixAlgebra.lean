@@ -4477,6 +4477,31 @@ theorem finiteTrace_eq_zero_iff_eq_zero_of_finitePSD {ι : Type*} [Fintype ι]
     rw [hzero]
     simp [finiteTrace]
 
+/-- If two symmetric finite matrices are in Loewner order and have equal
+    finite trace, then they are equal. -/
+theorem finiteLoewnerLe_eq_of_finiteTrace_eq {ι : Type*} [Fintype ι]
+    [DecidableEq ι] {M N : ι → ι → ℝ}
+    (hM : IsSymmetricFiniteMatrix M) (hN : IsSymmetricFiniteMatrix N)
+    (hMN : finiteLoewnerLe M N)
+    (hTrace : finiteTrace M = finiteTrace N) :
+    M = N := by
+  have hDiffSym : IsSymmetricFiniteMatrix (fun i j => N i j - M i j) := by
+    intro i j
+    change N i j - M i j = N j i - M j i
+    rw [hN i j, hM i j]
+  have hDiffPSD : finitePSD (fun i j => N i j - M i j) :=
+    (finiteLoewnerLe_iff_sub_finitePSD M N).mp hMN
+  have hDiffTrace : finiteTrace (fun i j => N i j - M i j) = 0 := by
+    rw [finiteTrace_sub, hTrace]
+    ring
+  have hDiffZero :=
+    finitePSD_eq_zero_of_finiteTrace_eq_zero
+      (fun i j => N i j - M i j) hDiffSym hDiffPSD hDiffTrace
+  ext i j
+  have hz := congrFun (congrFun hDiffZero i) j
+  change N i j - M i j = 0 at hz
+  linarith
+
 /-- A local finite Loewner bound gives a mathlib positive-semidefinite
     difference matrix, provided both sides are locally symmetric. -/
 theorem finiteLoewnerLe.to_matrix_posSemidef_sub {ι : Type*} [Fintype ι]
