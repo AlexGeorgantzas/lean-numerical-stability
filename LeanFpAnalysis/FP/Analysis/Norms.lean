@@ -16381,6 +16381,24 @@ theorem rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le {m n : Nat}
     _ <= c * vecNorm2 x := by
           exact mul_le_mul_of_nonneg_right hOp (vecNorm2_nonneg x)
 
+/-- Transfer a rectangular real operator-2 bound across equality of exact
+    complexified Euclidean operator norms. -/
+theorem rectOpNorm2Le_of_complexMatrixOp2_eq_of_rectOpNorm2Le {m n : Nat}
+    (A B : Fin m -> Fin n -> Real) {c : Real}
+    (hc : 0 <= c)
+    (hEq :
+      complexMatrixOp2 (realRectToCMatrix A) =
+        complexMatrixOp2 (realRectToCMatrix B))
+    (hB : rectOpNorm2Le B c) :
+    rectOpNorm2Le A c := by
+  have hBop :
+      complexMatrixOp2 (realRectToCMatrix B) <= c :=
+    complexMatrixOp2_realRectToCMatrix_le_of_rectOpNorm2Le B hc hB
+  have hAop :
+      complexMatrixOp2 (realRectToCMatrix A) <= c := by
+    simpa [hEq] using hBop
+  exact rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le A hAop
+
 /-- A square real operator-bound certificate bounds the exact Euclidean
     operator norm of its complexification. -/
 theorem complexMatrixOp2_realRectToCMatrix_le_of_opNorm2Le {n : Nat}
