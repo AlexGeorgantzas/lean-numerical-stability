@@ -4609,6 +4609,121 @@ theorem higham10_29_luSchur_mulVec {m : ℕ}
   rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
   exact Finset.sum_congr rfl fun j _ => by ring
 
+/-- **Inverse of an SPD matrix has a nonnegative quadratic form** (Higham
+    §10.4, the positive-semidefiniteness fact `hZinv_psd_k` of
+    `schur_gram_stage_le` needs on the Schur-complement inverse).  Writing the
+    test vector as `u = Z w` (`w = Z⁻¹u`, using the right inverse), the inverse
+    quadratic form `uᵀZ⁻¹u = wᵀZw ≥ 0` reduces to positive definiteness of the
+    forward matrix `Z`. -/
+theorem spd_inv_quadForm_nonneg {n : ℕ} (Z Zinv : Fin n → Fin n → ℝ)
+    (hZpd : IsSymPosDef n Z) (hright : IsRightInverse n Z Zinv)
+    (u : Fin n → ℝ) :
+    0 ≤ ∑ i : Fin n, u i * matMulVec n Zinv u i := by
+  have hu : matMulVec n Z (matMulVec n Zinv u) = u :=
+    matMulVec_of_isRightInverse Z Zinv hright u
+  have huval : ∀ i, u i = ∑ j : Fin n, Z i j * matMulVec n Zinv u j := by
+    intro i
+    calc u i = matMulVec n Z (matMulVec n Zinv u) i := (congrFun hu i).symm
+      _ = ∑ j : Fin n, Z i j * matMulVec n Zinv u j := rfl
+  have hquad : (∑ i : Fin n, u i * matMulVec n Zinv u i) =
+      ∑ i : Fin n, ∑ j : Fin n,
+        matMulVec n Zinv u i * Z i j * matMulVec n Zinv u j := by
+    calc (∑ i : Fin n, u i * matMulVec n Zinv u i)
+        = ∑ i : Fin n, (∑ j : Fin n, Z i j * matMulVec n Zinv u j)
+            * matMulVec n Zinv u i := by
+          refine Finset.sum_congr rfl fun i _ => ?_
+          rw [huval i]
+      _ = ∑ i : Fin n, ∑ j : Fin n,
+            matMulVec n Zinv u i * Z i j * matMulVec n Zinv u j := by
+          refine Finset.sum_congr rfl fun i _ => ?_
+          rw [Finset.sum_mul]
+          exact Finset.sum_congr rfl fun j _ => by ring
+  rw [hquad]
+  by_cases hz : ∃ i, matMulVec n Zinv u i ≠ 0
+  · exact (hZpd.2 (matMulVec n Zinv u) hz).le
+  · push_neg at hz
+    simp only [hz, zero_mul, mul_zero, Finset.sum_const_zero, le_refl]
+
+/-- **(10.29) per-stage quadratic-form monotonicity** (Higham §10.4): the
+    `hstage` hypothesis of `stage_maxEigenvalue_le`, discharged end-to-end for a
+    genuine nonsymmetric-positive-definite stage `S`.  With `H = sym(S)` and
+    `Ĥ = sym(Ŝ)` (`Ŝ = luFirstSchurComplement S`) and their symmetric inverses,
+    the stage Gram form never exceeds the parent trailing-block Gram form:
+    `(Ŝy)ᵀĤ⁻¹(Ŝy) ≤ (S·(0,y))ᵀH⁻¹(S·(0,y))`.  Threads `schur_gram_stage_le`
+    through the alignment lemmas `higham10_29_luSchur_mulVec`,
+    `higham10_29_S_mulVec_cons0`, `higham10_29_symPart_luSchur_eq`, and the
+    positive-semidefinite inverse fact `spd_inv_quadForm_nonneg`. -/
+theorem higham10_29_stage_quadForm_le {m : ℕ}
+    (S : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hS : higham10_4_IsNonsymPosDef (m + 1) S)
+    (Hinv : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (Hhatinv : Fin m → Fin m → ℝ)
+    (hHinvRight : IsRightInverse (m + 1) (symmetricPart (m + 1) S) Hinv)
+    (hHhatinvRight :
+      IsRightInverse m (symmetricPart m (luFirstSchurComplement S)) Hhatinv)
+    (y : Fin m → ℝ) :
+    (∑ p : Fin m, matMulVec m (luFirstSchurComplement S) y p *
+        matMulVec m Hhatinv
+          (matMulVec m (luFirstSchurComplement S) y) p) ≤
+      ∑ p : Fin (m + 1),
+        matMulVec (m + 1) S (Fin.cons 0 y) p *
+        matMulVec (m + 1) Hinv (matMulVec (m + 1) S (Fin.cons 0 y)) p := by
+  set H : Fin (m + 1) → Fin (m + 1) → ℝ := symmetricPart (m + 1) S with hHdef
+  set Hhat : Fin m → Fin m → ℝ :=
+    symmetricPart m (luFirstSchurComplement S) with hHhatdef
+  have hα : (0 : ℝ) < S 0 0 := nonsymPosDef_diag_pos hS 0
+  have hsqrtα : Real.sqrt (S 0 0) * Real.sqrt (S 0 0) = S 0 0 :=
+    Real.mul_self_sqrt hα.le
+  have hkk : ∀ a b : ℝ,
+      a / Real.sqrt (S 0 0) * (b / Real.sqrt (S 0 0)) = a * b / S 0 0 := by
+    intro a b; rw [div_mul_div_comm, hsqrtα]
+  have hHspd : IsSymPosDef (m + 1) H :=
+    (nonsymPosDef_iff_symPartSPD (m + 1) S).mp hS
+  set Z : Fin m → Fin m → ℝ :=
+    fun i j => H i.succ j.succ - H 0 i.succ * H 0 j.succ / S 0 0 with hZdef
+  have hZspd : IsSymPosDef m Z := by
+    have h0 := spd_schur_complement_isSymPosDef H hHspd
+    have heq : H 0 0 = S 0 0 := by rw [hHdef]; unfold symmetricPart; ring
+    simp only [heq] at h0
+    rw [hZdef]; exact h0
+  obtain ⟨Zinv, hZinvSym, hZright, hZleft⟩ := spd_inverse_exists Z hZspd
+  have hβv := schur_gram_stage_le (S 0 0) hα
+      (fun i => H 0 i.succ)
+      (fun i => (S 0 i.succ - S i.succ 0) / 2)
+      (fun i j => H i.succ j.succ)
+      H Hinv Z Zinv Hhat Hhatinv
+      (by rw [hHdef]; unfold symmetricPart; ring)
+      (fun _ => rfl)
+      (fun i => by rw [hHdef]; exact symmetricPart_symmetric (m + 1) S i.succ 0)
+      (fun _ _ => rfl)
+      (fun _ _ => by rw [hZdef])
+      hZinvSym
+      (fun vv => matMulVec_of_isRightInverse Zinv Z hZleft vv)
+      (spd_inv_quadForm_nonneg Z Zinv hZspd hZright
+        (fun j => (S 0 j.succ - S j.succ 0) / 2 / Real.sqrt (S 0 0)))
+      (fun i j => by
+        rw [hHhatdef, higham10_29_symPart_luSchur_eq, hZdef, hHdef]
+        simp only []
+        rw [hkk, symmetricPart_symmetric (m + 1) S i.succ 0])
+      (∑ j : Fin m, S 0 j.succ * y j)
+      (fun i => ∑ j : Fin m, S i.succ j.succ * y j)
+      (matMulVec_of_isRightInverse H Hinv hHinvRight _)
+      (matMulVec_of_isRightInverse Hhat Hhatinv hHhatinvRight _)
+  have hR : matMulVec (m + 1) S (Fin.cons 0 y)
+      = Fin.cons (∑ j : Fin m, S 0 j.succ * y j)
+          (fun i => ∑ j : Fin m, S i.succ j.succ * y j) :=
+    higham10_29_S_mulVec_cons0 S y
+  have hL : matMulVec m (luFirstSchurComplement S) y
+      = (fun i => (∑ j : Fin m, S i.succ j.succ * y j)
+          - (∑ j : Fin m, S 0 j.succ * y j) / S 0 0
+            * (H 0 i.succ - (S 0 i.succ - S i.succ 0) / 2)) := by
+    funext i
+    rw [higham10_29_luSchur_mulVec, hHdef]
+    unfold symmetricPart
+    ring
+  rw [hR, hL]
+  exact hβv
+
 /-- **Equation (10.29)** / Golub-Van Loan growth-bound interface for exact
 LU factors of a nonsymmetric positive-definite matrix. -/
 theorem higham10_29_nonsym_pd_lu_growth_bound (n : ℕ) (hn : 0 < n)

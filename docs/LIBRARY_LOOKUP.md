@@ -4285,6 +4285,8 @@ Source-facing Chapter 10 wrappers:
 - `higham10_29_symPart_luSchur_eq` ((10.29): sym(luSchur S) = Z + kk^T/a, i.e. sym part of Schur complement = Schur complement of sym part + skew rank-one; identifies H_hat for schur_gram_stage_le)
 - `higham10_29_S_mulVec_cons0` ((10.29): S*(0,y) = cons (sum b_j y_j) (Dy); the (beta,v) at which schur_gram_stage_le is evaluated for the stage induction)
 - `higham10_29_luSchur_mulVec` ((10.29): matMulVec(luSchur S) y i = (Dy)_i - (c_i/a)(b^T y); = schur_gram_stage_le LHS vector since f-k=c)
+- `spd_inv_quadForm_nonneg` ((10.29) PSD inverse fact: u^T Z^{-1} u >= 0 for SPD Z with right-inverse Z^{-1}; via u=Zw so u^T Z^{-1} u = w^T Z w >= 0; discharges hZinv_psd_k of schur_gram_stage_le)
+- `higham10_29_stage_quadForm_le` ((10.29) per-stage quadForm monotonicity, THREADED for a genuine nonsym-PD stage S: (Shat y)^T Hhat^{-1} (Shat y) <= (S(0,y))^T H^{-1} (S(0,y)) with H=sym(S), Hhat=sym(luSchur S); instantiates schur_gram_stage_le via the alignment lemmas + spd_inv_quadForm_nonneg. This IS the hstage hypothesis of stage_maxEigenvalue_le)
 - `kahanR` / `kahan_telescope` / `kahanR_tail_eq` ((10.20): Kahan family satisfies (10.13) with equality on the square part)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
