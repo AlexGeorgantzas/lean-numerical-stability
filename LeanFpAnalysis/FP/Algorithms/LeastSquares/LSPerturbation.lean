@@ -1185,6 +1185,140 @@ theorem wedinLemma20_12_projectionComplement_symmetric
     simp [idMatrix, hij, hji, hP i j]
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the complement of an algebraic projection is again an algebraic
+    projection. -/
+theorem wedinLemma20_12_projectionComplement_idempotent
+    {m : ℕ} (P : Fin m → Fin m → ℝ)
+    (hIdem : rectMatMul P P = P) :
+    rectMatMul (fun i j => idMatrix m i j - P i j)
+      (fun i j => idMatrix m i j - P i j) =
+        fun i j => idMatrix m i j - P i j := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp_rw [sub_mul, mul_sub]
+  simp [Finset.sum_sub_distrib, Finset.sum_ite_eq, Finset.mem_univ]
+  have hij := congrFun (congrFun hIdem i) j
+  unfold rectMatMul at hij
+  rw [hij]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    a projection annihilates its complement on the right. -/
+theorem wedinLemma20_12_rangeProjection_mul_projectionComplement_eq_zero
+    {m : ℕ} (P : Fin m → Fin m → ℝ)
+    (hIdem : rectMatMul P P = P) :
+    rectMatMul P (fun i j => idMatrix m i j - P i j) =
+      fun _ _ => 0 := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp_rw [mul_sub]
+  simp [Finset.sum_sub_distrib, Finset.mem_univ]
+  have hij := congrFun (congrFun hIdem i) j
+  unfold rectMatMul at hij
+  rw [hij]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    a projection complement annihilates the projection on the right. -/
+theorem wedinLemma20_12_projectionComplement_mul_rangeProjection_eq_zero
+    {m : ℕ} (P : Fin m → Fin m → ℝ)
+    (hIdem : rectMatMul P P = P) :
+    rectMatMul (fun i j => idMatrix m i j - P i j) P =
+      fun _ _ => 0 := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp_rw [sub_mul]
+  simp [Finset.sum_sub_distrib, Finset.mem_univ]
+  have hij := congrFun (congrFun hIdem i) j
+  unfold rectMatMul at hij
+  rw [hij]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    a symmetric algebraic projection decomposes squared Euclidean norm into
+    range and orthogonal-complement pieces. -/
+theorem wedinLemma20_12_vecNorm2Sq_rangeProjection_add_complement
+    {m : ℕ} (P : Fin m → Fin m → ℝ)
+    (hSym : IsSymmetricFiniteMatrix P)
+    (hIdem : rectMatMul P P = P)
+    (x : Fin m → ℝ) :
+    vecNorm2Sq (rectMatMulVec P x) +
+        vecNorm2Sq (rectMatMulVec (fun i j => idMatrix m i j - P i j) x) =
+      vecNorm2Sq x := by
+  let IP : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - P i j
+  have hIdemFin : ∀ i j : Fin m, finiteMatMul P P i j = P i j := by
+    intro i j
+    simpa [finiteMatMul, rectMatMul] using congrFun (congrFun hIdem i) j
+  have hIPx : rectMatMulVec IP x = fun i => x i - rectMatMulVec P x i := by
+    simpa [IP] using wedinLemma20_12_rectMatMulVec_projectionComplement P x
+  have horth_res :
+      (∑ i : Fin m, (x i - rectMatMulVec P x i) * rectMatMulVec P x i) = 0 := by
+    simpa [finiteMatVec, rectMatMulVec] using
+      finiteVecInnerProduct_projection_residual_range_eq_zero
+        P hSym hIdemFin x x
+  have horth :
+      (∑ i : Fin m, rectMatMulVec P x i * rectMatMulVec IP x i) = 0 := by
+    calc
+      (∑ i : Fin m, rectMatMulVec P x i * rectMatMulVec IP x i)
+          = ∑ i : Fin m, (x i - rectMatMulVec P x i) * rectMatMulVec P x i := by
+              rw [hIPx]
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+      _ = 0 := horth_res
+  have hpyth :=
+    finiteVecNorm2Sq_add_of_inner_eq_zero
+      (rectMatMulVec P x) (rectMatMulVec IP x) horth
+  have hdecomp :
+      (fun i : Fin m => rectMatMulVec P x i + rectMatMulVec IP x i) = x := by
+    rw [hIPx]
+    ext i
+    ring
+  have hpyth' :
+      vecNorm2Sq (fun i : Fin m => rectMatMulVec P x i + rectMatMulVec IP x i) =
+        vecNorm2Sq (rectMatMulVec P x) + vecNorm2Sq (rectMatMulVec IP x) := by
+    simpa [finiteVecNorm2Sq_fin] using hpyth
+  rw [hdecomp] at hpyth'
+  simpa [IP, add_comm] using hpyth'.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    range/complement squared-norm decomposition after applying the complement
+    of another projection.  This is a local CS-route building block for the
+    cross terms `P_B(I-P_A)` and `(I-P_B)(I-P_A)`. -/
+theorem wedinLemma20_12_vecNorm2Sq_rangeProjection_projectionComplement_add_complement
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hSymQ : IsSymmetricFiniteMatrix Q)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (x : Fin m → ℝ) :
+    vecNorm2Sq
+        (rectMatMulVec
+          (rectMatMul Q (fun i j => idMatrix m i j - P i j)) x) +
+      vecNorm2Sq
+        (rectMatMulVec
+          (rectMatMul (fun i j => idMatrix m i j - Q i j)
+            (fun i j => idMatrix m i j - P i j)) x) =
+      vecNorm2Sq
+        (rectMatMulVec (fun i j => idMatrix m i j - P i j) x) := by
+  let IP : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - P i j
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hbase :
+      vecNorm2Sq (rectMatMulVec Q (rectMatMulVec IP x)) +
+          vecNorm2Sq (rectMatMulVec IQ (rectMatMulVec IP x)) =
+        vecNorm2Sq (rectMatMulVec IP x) := by
+    simpa [IQ] using
+      wedinLemma20_12_vecNorm2Sq_rangeProjection_add_complement
+        Q hSymQ hIdemQ (rectMatMulVec IP x)
+  have hQIP :
+      rectMatMulVec (rectMatMul Q IP) x =
+        rectMatMulVec Q (rectMatMulVec IP x) := by
+    rw [rectMatMulVec_rectMatMul]
+  have hIQIP :
+      rectMatMulVec (rectMatMul IQ IP) x =
+        rectMatMulVec IQ (rectMatMulVec IP x) := by
+    rw [rectMatMulVec_rectMatMul]
+  simpa [IP, IQ, hQIP, hIQIP] using hbase
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     transposing a product of symmetric square matrices reverses the product
     order. -/
 theorem wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric
