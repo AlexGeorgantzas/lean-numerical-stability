@@ -1182,6 +1182,28 @@ theorem quadForm_gram_conj {n : ℕ} (M G : Fin n → Fin n → ℝ)
   unfold matMulVec
   exact Finset.sum_congr rfl fun i _ => by ring
 
+/-- **Conjugated Gram is symmetric** (Higham §10.4): for symmetric `M`,
+    the stage Gram `GᵀMG` is symmetric — needed so `finiteMaxEigenvalue`
+    applies to the stage matrices. -/
+theorem gram_conj_isSymm {n : ℕ} (M G : Fin n → Fin n → ℝ)
+    (hM : ∀ i j : Fin n, M i j = M j i) :
+    ∀ i j : Fin n,
+      matMul n (matMul n (fun a b => G b a) M) G i j =
+      matMul n (matMul n (fun a b => G b a) M) G j i := by
+  have hMT : matTranspose M = M := by
+    funext i j; exact (hM j i)
+  have hGT : (fun a b => G b a) = matTranspose G := by funext a b; rfl
+  have hGTT : matTranspose (fun a b : Fin n => G b a) = G := by
+    funext i j; rfl
+  have hkey : matTranspose (matMul n (matMul n (fun a b => G b a) M) G) =
+      matMul n (matMul n (fun a b => G b a) M) G := by
+    rw [matTranspose_matMul, matTranspose_matMul, hGTT, hMT, ← matMul_assoc,
+      ← hGT]
+  intro i j
+  have h := congrFun (congrFun hkey i) j
+  simp only [matTranspose] at h
+  exact h.symm
+
 /-- **Trailing-block quadratic form** (Higham §10.4, ties the (10.29)
     stage bound's RHS to the trailing block `Q₂₂` of the stage Gram):
     padding a vector with a leading zero selects the trailing principal
