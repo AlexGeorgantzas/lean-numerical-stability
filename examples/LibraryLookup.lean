@@ -15,7 +15,9 @@ import LeanFpAnalysis.FP.Algorithms.MatrixPowersPseudospectral
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersSpectral
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
+import LeanFpAnalysis.FP.Algorithms.StationaryIterationDrazin
 import LeanFpAnalysis.FP.Algorithms.StationaryIterationSeries
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Minimizers
 
 set_option pp.maxSteps 100
 
@@ -13328,6 +13330,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_15_chi
 #check higham9_15_chi_nonneg
 #check higham9_15_rectMatMul_opNorm2Le
+#check higham9_15_inverse_product_bounds_of_inverse_products
 #check higham9_15_kappa2_le_chi_of_inverse_product_bound
 #check higham9_15_chi_le_kappa2L_mul_kappa2A_of_Uinv_bound
 #check higham9_15_chi_le_kappa2U_mul_kappa2A_of_Linv_bound
@@ -13336,6 +13339,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_15_chi_condition_chain_of_inverse_products
 #check higham9_15_chi_condition_chain_min_of_inverse_products
 #check higham9_15_lu_inverse_product_identities_of_source_inverse_identities
+#check higham9_15_inverse_product_bounds_of_lu_inverse_identities
 #check higham9_15_matrix_lu_inverse_product_identities_of_source_inverse_identities
 #check higham9_15_chi_condition_chain_of_lu_inverse_identities
 #check higham9_15_chi_condition_chain_of_matrix_lu_inverse_identities
@@ -14425,7 +14429,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_13_rowDiagDom_exists_LUFactSpec_growth_bound_3
 #check higham9_13_rowDiagDom_exists_LUFactSpec_growthFactorEntry_le_three
 #check higham9_13_rowDiagDom_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax
+#check higham9_13_colDiagDom_tridiag_data_exists_LUFactSpec_growth_bound_3
+#check higham9_13_colDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three
 #check higham9_13_colDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax
+#check higham9_13_rowDiagDom_tridiag_data_exists_LUFactSpec_growth_bound_3
+#check higham9_13_rowDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three
 #check higham9_13_rowDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax
 #check higham9_14_colDiagDom_exists_LUFactSpec_fu_bound
 #check higham9_14_rowDiagDom_exists_LUFactSpec_fu_bound
@@ -14970,3 +14978,14 @@ small enough to serve as a smoke check for representative public declarations.
 #check eq_17_31_normwise_bound
 #check eq_17_32_componentwise_bound
 #check tsum_GiE_entry_eq_drazinIG
+#check indexOneDrazinInverse_unique
+#check indexOneDrazinInverse_eq_drazinIG
+
+-- Higham Chapter 16 minimizer/fl-residual surfaces (Higham16Minimizers).
+#check exists_sylvesterSep_minimizer
+#check isLeast_sylvesterSepRatios
+#check exists_sylvesterBackwardError_minimizer
+#check isLeast_sylvesterBackwardErrorValues
+#check flSylvesterResidualRect
+#check sylvester_computed_residual_dR_model
+#check sylvester_practical_error_bound_fl

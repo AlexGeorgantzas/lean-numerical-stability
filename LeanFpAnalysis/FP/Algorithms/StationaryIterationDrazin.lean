@@ -1594,4 +1594,82 @@ theorem eq_17_32_componentwise_bound (n : ℕ)
         add_le_add (add_le_add le_rfl h2) hT3
     _ = _ := hring
 
+-- ============================================================
+-- §17.4  Uniqueness of the index-one Drazin (group) inverse
+-- ============================================================
+
+/-- **Uniqueness of the index-one Drazin inverse** (Higham, Accuracy and
+    Stability of Numerical Algorithms, 2nd ed., §17.4, p. 331: the Drazin
+    inverse is "the unique matrix `A^D` such that" the three identities
+    hold).  Classical group-inverse argument: from the identities,
+    `A·D₁ = A·D₂·A·D₁ = A·D₂`, and then
+    `D₁ = D₁·A·D₁ = D₁·A·D₂ = D₂·A·D₂ = D₂`.  This upgrades
+    `drazinIG_spec` to the printed uniqueness-inclusive definition. -/
+theorem indexOneDrazinInverse_unique (n : ℕ)
+    (A D₁ D₂ : Fin n → Fin n → ℝ)
+    (h1 : IndexOneDrazinInverse n A D₁)
+    (h2 : IndexOneDrazinInverse n A D₂) : D₁ = D₂ := by
+  -- Step 1: A·D₁ = A·D₂ (both equal A·D₂·A·D₁).
+  have hAD : matMul n A D₁ = matMul n A D₂ := by
+    have hleft : matMul n (matMul n A D₂) (matMul n A D₁) =
+        matMul n A D₁ := by
+      -- A·D₂·A·D₁ = (A²·D₂)·D₁ = A·D₁ using comm on D₂ then index_one for D₂
+      calc matMul n (matMul n A D₂) (matMul n A D₁)
+          = matMul n (matMul n (matMul n A D₂) A) D₁ :=
+            (matMul_assoc n (matMul n A D₂) A D₁).symm
+        _ = matMul n (matMul n A (matMul n D₂ A)) D₁ := by
+            rw [matMul_assoc n A D₂ A]
+        _ = matMul n (matMul n A (matMul n A D₂)) D₁ := by
+            rw [h2.comm]
+        _ = matMul n (matMul n (matMul n A A) D₂) D₁ := by
+            rw [matMul_assoc n A A D₂]
+        _ = matMul n A D₁ := by rw [h2.index_one]
+    have hright : matMul n (matMul n A D₂) (matMul n A D₁) =
+        matMul n A D₂ := by
+      -- A·D₂·A·D₁ = D₂·(A²·D₁) = D₂·A = A·D₂ using comm then index_one for D₁
+      calc matMul n (matMul n A D₂) (matMul n A D₁)
+          = matMul n (matMul n D₂ A) (matMul n A D₁) := by
+            rw [h2.comm]
+        _ = matMul n D₂ (matMul n A (matMul n A D₁)) :=
+            matMul_assoc n D₂ A (matMul n A D₁)
+        _ = matMul n D₂ (matMul n (matMul n A A) D₁) := by
+            rw [← matMul_assoc n A A D₁]
+        _ = matMul n D₂ A := by rw [h1.index_one]
+        _ = matMul n A D₂ := by rw [← h2.comm]
+    exact hleft.symm.trans hright
+  -- Step 2: D₁ = D₁·A·D₁ = D₁·A·D₂ = D₂·A·D₂ = D₂.
+  have hD1 : D₁ = matMul n D₁ (matMul n A D₂) := by
+    rw [← hAD]
+    exact h1.reflexive.symm
+  have hswap : matMul n D₁ (matMul n A D₂) = matMul n D₂ (matMul n A D₂) := by
+    calc matMul n D₁ (matMul n A D₂)
+        = matMul n (matMul n D₁ A) D₂ := (matMul_assoc n D₁ A D₂).symm
+      _ = matMul n (matMul n A D₁) D₂ := by rw [← h1.comm]
+      _ = matMul n (matMul n A D₂) D₂ := by rw [hAD]
+      _ = matMul n (matMul n D₂ A) D₂ := by rw [h2.comm]
+      _ = matMul n D₂ (matMul n A D₂) := matMul_assoc n D₂ A D₂
+  rw [hD1, hswap]
+  exact h2.reflexive
+
+/-- **The printed (17.24) with uniqueness**: any index-one Drazin inverse of
+    `I − G` coincides with the block-data construction `drazinIG`.  Combined
+    with `drazinIG_spec` this closes the p. 331 "unique matrix `A^D` such
+    that" formulation for the index-one case the analysis uses. -/
+theorem indexOneDrazinInverse_eq_drazinIG (n r : ℕ)
+    (G J X X_inv W : Fin n → Fin n → ℝ)
+    (hJtop : ∀ i j : Fin n, (i : ℕ) < r → J i j = if i = j then 1 else 0)
+    (hJcross : ∀ i j : Fin n, ¬(i : ℕ) < r → (j : ℕ) < r → J i j = 0)
+    (hWshape : ∀ i j : Fin n, (i : ℕ) < r ∨ (j : ℕ) < r → W i j = 0)
+    (hW1 : matMul n (matSub_id n J) W = bottomProjector n r)
+    (hW2 : matMul n W (matSub_id n J) = bottomProjector n r)
+    (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
+    (hsim : matMul n X_inv (matMul n G X) = J)
+    (D : Fin n → Fin n → ℝ)
+    (hD : IndexOneDrazinInverse n (matSub_id n G) D) :
+    D = drazinIG n X W X_inv :=
+  indexOneDrazinInverse_unique n (matSub_id n G) D
+    (drazinIG n X W X_inv) hD
+    (drazinIG_spec n r G J X X_inv W hJtop hJcross hWshape hW1 hW2
+      hXr hXl hsim)
+
 end LeanFpAnalysis.FP

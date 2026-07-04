@@ -2443,7 +2443,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_13_rowDiagDom_exists_LUFactSpec_growth_bound_3`
 - `higham9_13_rowDiagDom_exists_LUFactSpec_growthFactorEntry_le_three`
 - `higham9_13_rowDiagDom_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax`
+- `higham9_13_colDiagDom_tridiag_data_exists_LUFactSpec_growth_bound_3`
+- `higham9_13_colDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three`
 - `higham9_13_colDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax`
+- `higham9_13_rowDiagDom_tridiag_data_exists_LUFactSpec_growth_bound_3`
+- `higham9_13_rowDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three`
 - `higham9_13_rowDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax`
 - `higham9_13_rowDiagDom_transpose_tridiag_growth_bound_3`
 - `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three`
@@ -2922,6 +2926,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_chi`
 - `higham9_15_chi_nonneg`
 - `higham9_15_rectMatMul_opNorm2Le`
+- `higham9_15_inverse_product_bounds_of_inverse_products`
 - `higham9_15_kappa2_le_chi_of_inverse_product_bound`
 - `higham9_15_chi_le_kappa2L_mul_kappa2A_of_Uinv_bound`
 - `higham9_15_chi_le_kappa2U_mul_kappa2A_of_Linv_bound`
@@ -2930,6 +2935,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_chi_condition_chain_of_inverse_products`
 - `higham9_15_chi_condition_chain_min_of_inverse_products`
 - `higham9_15_lu_inverse_product_identities_of_source_inverse_identities`
+- `higham9_15_inverse_product_bounds_of_lu_inverse_identities`
 - `higham9_15_matrix_lu_inverse_product_identities_of_source_inverse_identities`
 - `higham9_15_chi_condition_chain_of_lu_inverse_identities`
 - `higham9_15_chi_condition_chain_of_matrix_lu_inverse_identities`
@@ -5336,3 +5342,14 @@ Module: `LeanFpAnalysis/FP/Algorithms/StationaryIterationSeries.lean` (complemen
 | Eq (17.20) `residualSigmaTsum` bridges | `residualSigmaTsum_eq_infNorm_residualSigmaMatrix` (the two independently developed literal sigma objects are definitionally equal), `residualSigmaTsum_eq_residualSigmaSup` (literal series = supremum envelope under a q-certificate), `residualSigmaTsum_le_diagonalizable_max_bound_of_infNorm_bound` (q-certificate bridge through the supremum envelope), and `residualSigmaTsum_le_diagonalizable_max_bound_direct` from `StationaryIteration.lean` (the direct literal diagonalizable bound `residualSigmaTsum ≤ κ∞(X)·diagonalResidualRatioMax`). |
 | §17.4 semiconvergent/projector surfaces (module `StationaryIterationSemiconvergent.lean`) | The printed (17.23) block form `G = X·diag(I,Γ)·X⁻¹` as data: `topProjector`, `oneEigenProjector` (the book's I−E) with idempotency and the fixed-point identity `G_fixes_oneEigenProjector_apply` (G(I−E)v = (I−E)v for ALL v), `semiconvergentE`; the headline `singular_error_split_semiconvergent` — the (17.27) three-term split with the fixed-null hypothesis of `singular_error_split_finite` DISCHARGED from the (17.23) data; and `matPow_G_tendsto_oneEigenProjector` — the literal §17.4 semiconvergence limit `Gᵐ → X·diag(I,0)·X⁻¹` entrywise under a row-sum contraction certificate on Γ (an explicit strengthening of the printed ρ(Γ) < 1, noted in docstrings). Semiconvergent-form existence (Jordan background) is not formalized, matching the printed presentation. |
 | §17.4 Drazin vocabulary and infinite singular bounds (module `StationaryIterationDrazin.lean`) | From the (17.22) block data: `eq_17_23_block` (the printed (17.23) `I−G` block identity), `drazinIG` + `drazinIG_spec` (the printed (17.24) `(I−G)^D` with the three index-1 Drazin identities proved; uniqueness not formalized), `stationaryDrazinRangeProjector_drazinIG_eq_semiconvergentE` (connects the two fixed-null discharge routes), `eq_17_25_limit` + `matPow_G_tendsto_limit_drazin` (the literal (17.25) `Gᵐ → I−(I−G)^D(I−G)`), `eq_17_26_stationary_limit` (the literal (17.26) convergence of consistent singular iteration), `eq_17_30_block`/`eq_17_30_pow` (both printed (17.30) identities), `summable_infNorm_GiE_Minv` + `tsum_infNorm_GiE_Minv_le` (the post-(17.31) geometric bound), `eq_17_31_normwise_bound` (the literal (17.31), printed constants), `eq_17_32_componentwise_bound` (the literal (17.32) with the printed c(A) as a certificate hypothesis), and the p. 335 display `Σ'ᵢ GⁱE = (I−G)^D` (`tsum_GiE_entry_eq_drazinIG`). |
+| §17.4 Drazin uniqueness (p. 331 "the unique matrix") | `indexOneDrazinInverse_unique` (any two index-one Drazin inverses of the same matrix coincide — the classical group-inverse computation) and `indexOneDrazinInverse_eq_drazinIG` (any index-one Drazin inverse of `I−G` equals the block-data construction), upgrading (17.24) to the printed uniqueness-inclusive definition. |
+
+## Higham Chapter 16: Sylvester minimizer and fl-residual surfaces
+
+Module: `LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Minimizers.lean` (complements Codex's `Higham16.lean`).
+
+| Topic | Declarations |
+|---|---|
+| Eq (16.26) attained minimum for sep | `exists_sylvesterSep_minimizer` (a unit-Frobenius-sphere minimizer attains `sylvesterSepInf` — compactness of the sphere + continuity), `sylvesterSepInf_mem_sylvesterSepRatios`, `isLeast_sylvesterSepRatios` — the printed minimum, not just the infimum model. |
+| Eq (16.15) attained minimum for η | `exists_sylvesterBackwardError_minimizer` (under positive weights and nonempty feasible values, an optimal perturbation triple attains `sylvesterBackwardErrorInf`), `isLeast_sylvesterBackwardErrorValues`. |
+| Eq (16.29) floating-point residual model | `flSylvesterResidualRect` (the computed residual via `fl_matMul` + fl subtraction/addition), `flSylvesterResidualBudget` (`γ_{m+2}·\|A\|\|X̂\| + γ_{n+1}·\|X̂\|\|B\| + γ₂·\|C\|`), `sylvester_computed_residual_dR_model` (`R̂ = R + dR`, `\|dR\| ≤ Ru`), and the end-to-end `sylvester_practical_error_bound_fl` composing with the diagonal practical-bound certificate. |
