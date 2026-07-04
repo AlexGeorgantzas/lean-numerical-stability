@@ -1567,6 +1567,46 @@ theorem sylvesterSepInf_le_ratio (n : Nat) (A B X : Fin n -> Fin n -> Real)
   exact csInf_le (sylvesterSepRatios_bddBelow n A B)
     (Exists.intro X (And.intro hX rfl))
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal case:
+    a uniform lower bound on all diagonal differences gives a Frobenius
+    `SepLowerBound` certificate for the diagonal Sylvester operator. -/
+theorem SepLowerBound_diagonal_of_entrywise_abs_ge (n : Nat)
+    (a b : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|) :
+    SepLowerBound n (Matrix.diagonal a) (Matrix.diagonal b) sigma := by
+  refine ⟨hsigma, ?_⟩
+  intro X _hX
+  have hop :
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X =
+        fun i j => (a i - b j) * X i j := by
+    rw [← sylvesterOpRect_square_eq_sylvesterOp]
+    ext i j
+    exact sylvesterOpRect_diagonal_apply n n a b X i j
+  rw [hop]
+  unfold frobNormSq
+  calc
+    sigma ^ 2 * (∑ i : Fin n, ∑ j : Fin n, X i j ^ 2)
+        = ∑ i : Fin n, ∑ j : Fin n, sigma ^ 2 * X i j ^ 2 := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro i _hi
+          rw [Finset.mul_sum]
+    _ <= ∑ i : Fin n, ∑ j : Fin n, ((a i - b j) * X i j) ^ 2 := by
+      apply Finset.sum_le_sum
+      intro i _hi
+      apply Finset.sum_le_sum
+      intro j _hj
+      have hleft : -|a i - b j| <= sigma := by
+        linarith [abs_nonneg (a i - b j), le_of_lt hsigma]
+      have hsq_abs : sigma ^ 2 <= |a i - b j| ^ 2 :=
+        sq_le_sq' hleft (hgap i j)
+      have hsq : sigma ^ 2 <= (a i - b j) ^ 2 := by
+        simpa [sq_abs] using hsq_abs
+      have hterm :=
+        mul_le_mul_of_nonneg_right hsq (sq_nonneg (X i j))
+      simpa [mul_pow] using hterm
+
 /-- Higham, 2nd ed., Chapter 16.1 and equation (16.3), diagonal case:
     a common diagonal entry gives a nonzero element of the diagonal Sylvester
     operator kernel. -/
@@ -1658,6 +1698,22 @@ theorem SepLowerBound_le_sylvesterSepInf_of_nonempty (n : Nat)
               field_simp [hXnorm_ne]
             _ <= frobNorm (sylvesterOp n A B X) / frobNorm X := by
               exact div_le_div_of_nonneg_right hnorm_le (le_of_lt hXnorm_pos)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal case:
+    a uniform diagonal-difference gap is below the exact infimum model of
+    `sep(A,B)` whenever the feasible ratio set is nonempty. -/
+theorem sylvesterSepInf_diagonal_ge_of_entrywise_abs_ge (n : Nat)
+    (a b : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hne : (sylvesterSepRatios n (Matrix.diagonal a)
+      (Matrix.diagonal b)).Nonempty) :
+    sigma <= sylvesterSepInf n (Matrix.diagonal a) (Matrix.diagonal b) := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_nonempty n
+      (Matrix.diagonal a) (Matrix.diagonal b) sigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hsigma hgap)
+      hne
 
 /-- Any positive number below the exact infimum model of `sep(A,B)` is a valid
     `SepLowerBound` certificate for the existing perturbation infrastructure. -/
