@@ -4072,6 +4072,132 @@ theorem theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_pl
         remBound / vecNorm2 x :=
         add_le_add hsource (le_refl (remBound / vecNorm2 x))
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if a separate first-order estimate controls `||y-x||_2`, then the
+    explicit direct/data remainder is bounded by the corresponding normalized
+    second-order-looking radius.  This does not prove the missing solution
+    difference estimate; it packages the exact remainder once that estimate is
+    available. -/
+theorem theorem20_8_combined_remainder_relative_le_of_solution_difference_bound
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (y x : Fin n → ℝ)
+    {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hxpos : 0 < vecNorm2 x)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x) :
+    (complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+        ((eps * frobNormRect B) *
+          vecNorm2 (fun j : Fin n => y j - x j)) +
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+        ((eps * frobNormRect A) *
+          vecNorm2 (fun j : Fin n => y j - x j))) /
+      vecNorm2 x ≤
+    (complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+        ((eps * frobNormRect B) *
+          (eps * solutionRadius * vecNorm2 x)) +
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+        ((eps * frobNormRect A) *
+          (eps * solutionRadius * vecNorm2 x))) /
+      vecNorm2 x := by
+  let BAplus := theorem20_8BAplus A B Bplus APplus
+  let diffNorm : ℝ := vecNorm2 (fun j : Fin n => y j - x j)
+  let diffBound : ℝ := eps * solutionRadius * vecNorm2 x
+  have hBAop_nonneg : 0 ≤ complexMatrixOp2 (realRectToCMatrix BAplus) :=
+    complexMatrixOp2_nonneg (realRectToCMatrix BAplus)
+  have hAPop_nonneg : 0 ≤ complexMatrixOp2 (realRectToCMatrix APplus) :=
+    complexMatrixOp2_nonneg (realRectToCMatrix APplus)
+  have hBscale_nonneg : 0 ≤ eps * frobNormRect B :=
+    mul_nonneg heps_nonneg (frobNormRect_nonneg B)
+  have hAscale_nonneg : 0 ≤ eps * frobNormRect A :=
+    mul_nonneg heps_nonneg (frobNormRect_nonneg A)
+  have hdiff : diffNorm ≤ diffBound := by
+    simpa [diffNorm, diffBound] using hyx
+  have hBinner :
+      (eps * frobNormRect B) * diffNorm ≤
+        (eps * frobNormRect B) * diffBound :=
+    mul_le_mul_of_nonneg_left hdiff hBscale_nonneg
+  have hAinner :
+      (eps * frobNormRect A) * diffNorm ≤
+        (eps * frobNormRect A) * diffBound :=
+    mul_le_mul_of_nonneg_left hdiff hAscale_nonneg
+  have hBterm :
+      complexMatrixOp2 (realRectToCMatrix BAplus) *
+          ((eps * frobNormRect B) * diffNorm) ≤
+        complexMatrixOp2 (realRectToCMatrix BAplus) *
+          ((eps * frobNormRect B) * diffBound) :=
+    mul_le_mul_of_nonneg_left hBinner hBAop_nonneg
+  have hAterm :
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+          ((eps * frobNormRect A) * diffNorm) ≤
+        complexMatrixOp2 (realRectToCMatrix APplus) *
+          ((eps * frobNormRect A) * diffBound) :=
+    mul_le_mul_of_nonneg_left hAinner hAPop_nonneg
+  have hsum :=
+    add_le_add hBterm hAterm
+  have hdiv :=
+    div_le_div_of_nonneg_right hsum (le_of_lt hxpos)
+  simpa [BAplus, diffNorm, diffBound] using hdiv
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    actual-`y` direct/data correction bound with the explicit remainder
+    packaged by a supplied first-order solution-difference estimate.  The
+    solution-difference estimate remains a visible hypothesis rather than a
+    hidden proof artifact. -/
+theorem theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_quadratic_remainder_of_solution_difference_bound
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ) {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x) :
+    (vecNorm2
+          (fun j : Fin n =>
+            rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+                (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+              rectMatMulVec APplus
+                (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j) +
+        eps * theorem20_8ResidualAmplifier A B APplus
+          (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) /
+        vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) +
+        (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+            ((eps * frobNormRect B) *
+              (eps * solutionRadius * vecNorm2 x)) +
+          complexMatrixOp2 (realRectToCMatrix APplus) *
+            ((eps * frobNormRect A) *
+              (eps * solutionRadius * vecNorm2 x))) /
+          vecNorm2 x := by
+  let BAplus := theorem20_8BAplus A B Bplus APplus
+  have hbase :=
+    theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_remainder_of_maxRelativePerturbation
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hmax
+  have hrem :=
+    theorem20_8_combined_remainder_relative_le_of_solution_difference_bound
+      A B Bplus APplus y x heps_nonneg hxpos hyx
+  exact hbase.trans (by
+    simpa [BAplus] using
+      add_le_add_left hrem
+        (eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus))
+
 /-- Under the natural positive denominator assumptions, the first-order
     coefficient in Theorem 20.8's perturbation bound is nonnegative. -/
 theorem theorem20_8FirstOrderRHS_nonneg {m n p : ℕ}
