@@ -4596,6 +4596,19 @@ theorem higham10_29_S_mulVec_cons0 {m : ℕ}
     rw [Fin.sum_univ_succ]
     simp only [Fin.cons_zero, Fin.cons_succ, mul_zero, zero_add]
 
+/-- **(10.29) Schur-complement action** (Higham §10.4): the LU Schur
+    complement acts as `Ŝy = Dy − (c/α)·(bᵀy)`.  Since the free `f − k`
+    of `schur_gram_stage_le` instantiates to `c = S_{·,0}`, this is
+    exactly that lemma's left-hand vector at `β = bᵀy`, `v = Dy`. -/
+theorem higham10_29_luSchur_mulVec {m : ℕ}
+    (S : Fin (m + 1) → Fin (m + 1) → ℝ) (y : Fin m → ℝ) (i : Fin m) :
+    matMulVec m (luFirstSchurComplement S) y i =
+      (∑ j : Fin m, S i.succ j.succ * y j) -
+        S i.succ 0 / S 0 0 * (∑ j : Fin m, S 0 j.succ * y j) := by
+  unfold matMulVec luFirstSchurComplement
+  rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
+  exact Finset.sum_congr rfl fun j _ => by ring
+
 /-- **Equation (10.29)** / Golub-Van Loan growth-bound interface for exact
 LU factors of a nonsymmetric positive-definite matrix. -/
 theorem higham10_29_nonsym_pd_lu_growth_bound (n : ℕ) (hn : 0 < n)
