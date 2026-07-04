@@ -2443,7 +2443,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_13_rowDiagDom_exists_LUFactSpec_growth_bound_3`
 - `higham9_13_rowDiagDom_exists_LUFactSpec_growthFactorEntry_le_three`
 - `higham9_13_rowDiagDom_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax`
+- `higham9_13_colDiagDom_tridiag_data_exists_LUFactSpec_growth_bound_3`
+- `higham9_13_colDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three`
 - `higham9_13_colDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax`
+- `higham9_13_rowDiagDom_tridiag_data_exists_LUFactSpec_growth_bound_3`
+- `higham9_13_rowDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three`
 - `higham9_13_rowDiagDom_tridiag_data_exists_LUFactSpec_growthFactorEntry_le_three_exists_hAmax`
 - `higham9_13_rowDiagDom_transpose_tridiag_growth_bound_3`
 - `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three`
@@ -2523,6 +2527,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_colDiagDom_exists_LUFactSpec_fu_bound`
 - `higham9_14_rowDiagDom_exists_LUFactSpec_fu_bound`
+- `higham9_14_colDiagDom_tridiag_data_exists_LUFactSpec_fu_bound`
+- `higham9_14_rowDiagDom_tridiag_data_exists_LUFactSpec_fu_bound`
 - `LUFactSpec.to_LUBackwardError_zero`
 - `higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma_le`
 - `higham9_14_f`
@@ -2533,6 +2539,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_f_le_h`
 - `higham9_20_tridiag_lu_perturbation_model_mono`
 - `higham9_21_tridiag_solve_perturbation_model_mono`
+- `higham9_20_tridiag_lu_perturbation_model_iff_matrix_mul`
+- `higham9_21_tridiag_solve_perturbation_model_iff_matrix_mulVec`
 - `higham9_20_tridiag_lu_perturbation_model_of_LUBackwardError_le`
 - `higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopCertificate`
 - `higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopAbsBudgetCertificate`
@@ -2544,21 +2552,33 @@ Source-facing Chapter 9 wrappers:
 - `higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square_gamma`
 - `higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma_le`
 - `higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma`
+- `higham9_22_matrix_source_f_bound_of_matrix_models`
 - `higham9_14_source_f_bound`
 - `higham9_14_source_h_bound_of_absLUhat_bound`
 - `higham9_14_source_h_bound_of_absLUhat_mul_one_sub_bound`
 - `higham9_14_source_h_bound_of_9_20_9_21_models_absLUhat_bound`
 - `higham9_14_source_h_bound_of_9_20_9_21_models_absLUhat_mul_one_sub_bound`
+- `higham9_14_matrix_source_h_bound_of_matrix_models_absLUhat_bound`
+- `higham9_14_matrix_source_h_bound_of_matrix_models_absLUhat_mul_one_sub_bound`
 - `higham9_14_totalNonnegative_exists_source_h_bound_of_models`
 - `higham9_14_source_h_bound_of_absLU_le_absA_and_9_20_9_21_models`
 - `higham9_14_source_f_bound_of_absLU_le_absA_and_9_20_9_21_models`
 - `higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models`
 - `higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models`
+- `higham9_14_matrix_source_h_bound_of_absLU_le_absA_and_matrix_models`
+- `higham9_14_matrix_source_f_bound_of_absLU_le_const_absA_and_matrix_models`
+- `higham9_14_matrix_source_h_bound_of_absLU_le_const_absA_and_matrix_models`
+- `higham9_14_matrix_source_f_bound_of_absLU_le_absA_and_matrix_models`
 - `higham9_22_source_f_bound_of_9_20_9_21_models_le`
 - `higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models_le`
 - `higham9_14_source_h_bound_of_absLU_le_const_absA_and_9_20_9_21_models_le`
 - `higham9_14_source_f_bound_of_absLU_le_absA_and_9_20_9_21_models_le`
 - `higham9_14_source_h_bound_of_absLU_le_absA_and_9_20_9_21_models_le`
+- `higham9_22_matrix_source_f_bound_of_matrix_models_le`
+- `higham9_14_matrix_source_f_bound_of_absLU_le_const_absA_and_matrix_models_le`
+- `higham9_14_matrix_source_h_bound_of_absLU_le_const_absA_and_matrix_models_le`
+- `higham9_14_matrix_source_f_bound_of_absLU_le_absA_and_matrix_models_le`
+- `higham9_14_matrix_source_h_bound_of_absLU_le_absA_and_matrix_models_le`
 - `higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma_le`
 - `higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le`
@@ -2875,26 +2895,80 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
+- `higham9_23_condSkeel_nonneg`
+- `higham9_23_forward_error_exact_condSkeel`
+- `higham9_23_forward_error_firstOrder_cond_product`
+- `higham9_23_forward_error_exact_condSkeel_of_backward_error`
+- `higham9_23_forward_error_firstOrder_cond_product_of_backward_error`
+- `higham9_23_firstOrderLe_of_backward_error_coeff`
+- `higham9_23_matrix_forward_error_exact_condSkeel`
+- `higham9_23_matrix_forward_error_firstOrder_cond_product`
+- `higham9_23_matrix_forward_error_exact_condSkeel_of_backward_error`
+- `higham9_23_matrix_forward_error_firstOrder_cond_product_of_backward_error`
 - `higham9_24_scaledMatrix`
 - `higham9_24_scaledRhs`
 - `higham9_24_scaledUnknown`
+- `higham9_24_unscaledUnknown`
+- `higham9_24_unscaledUnknown_scaledUnknown`
+- `higham9_24_scaledUnknown_unscaledUnknown`
 - `higham9_24_scaled_system_equiv`
+- `higham9_24_original_system_of_scaled_system`
+- `higham9_24_scaled_system_iff_original_system`
+- `higham9_24_matrix_scaled_system_equiv`
+- `higham9_24_matrix_original_system_of_scaled_system`
+- `higham9_24_matrix_scaled_system_iff_original_system`
 - `higham9_25_trailingRowInf`
+- `higham9_25_abs_stage_entry_le_trailingRowInf`
+- `higham9_25_trailingRowInf_nonneg`
+- `higham9_25_scaled_pivot_ratio_nonneg`
+- `higham9_25_scaled_pivot_ratio_le_one`
 - `higham9_25_implicitRowScalingPivotRule`
+- `higham9_25_implicitRowScalingPivotRule_ratio_nonneg`
+- `higham9_25_implicitRowScalingPivotRule_ratio_le_one`
 - `higham9_25_exists_implicitRowScalingPivotRule`
+- `higham9_25_trailingRowInf_ne_zero_of_stage_entry_ne_zero`
+- `higham9_25_exists_implicitRowScalingPivotRule_of_active_column_nonzero`
+- `higham9_26_prefixLpNorm`
+- `higham9_26_holder_prefix_dot_abs_le`
+- `higham9_26_stage_entry_abs_le`
+- `higham9_26_stage_entry_abs_le_two_norm`
+- `higham9_26_stage_entry_abs_le_of_uniform_bounds`
+- `higham9_26_stage_entry_abs_le_of_two_norm_uniform_bounds`
+- `higham9_26_rowPrefix`
+- `higham9_26_colPrefix`
+- `higham9_26_matrix_stage_entry_abs_le`
+- `higham9_26_matrix_stage_entry_abs_le_two_norm`
+- `higham9_26_matrix_stage_entry_abs_le_of_uniform_bounds`
+- `higham9_26_matrix_stage_entry_abs_le_of_two_norm_uniform_bounds`
 - `higham9_15_lu_perturbation_identity`
 - `higham9_15_lu_perturbation_relative_bound`
 - `higham9_15_lu_perturbation_forward_bound`
 - `higham9_15_ratio_le_of_norm_bounds`
+- `higham9_27_GMatrix_eq_matrix_mul`
 - `higham9_27_GMatrix_frobenius_le`
 - `higham9_27_GMatrix_opNorm2Le`
 - `higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one`
+- `higham9_27_matrix_mul_frobenius_le`
+- `higham9_27_matrix_mul_opNorm2Le`
+- `higham9_27_matrix_mul_opNorm2_lt_one_of_product_lt_one`
 - `higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound`
 - `higham9_15_GMatrix_nonnegative_resolvent_nonsingInv_of_row_sum_bound`
+- `higham9_15_matrix_mul_abs_infNormBound_of_row_sum_bound`
+- `higham9_15_matrix_mul_nonnegative_resolvent_nonsingInv_of_row_sum_bound`
 - `higham9_27_GMatrix_ratio_le_product_ratio`
+- `higham9_27_matrix_mul_ratio_le_product_ratio`
+- `higham9_27_GMatrix_frobenius_le_exact_opNorm2_product`
+- `higham9_27_GMatrix_opNorm2Le_exact_opNorm2_product`
+- `higham9_27_GMatrix_opNorm2_lt_one_of_exact_opNorm2_product_lt_one`
+- `higham9_27_GMatrix_ratio_le_exact_opNorm2_product_ratio`
+- `higham9_27_matrix_mul_frobenius_le_exact_opNorm2_product`
+- `higham9_27_matrix_mul_opNorm2Le_exact_opNorm2_product`
+- `higham9_27_matrix_mul_opNorm2_lt_one_of_exact_opNorm2_product_lt_one`
+- `higham9_27_matrix_mul_ratio_le_exact_opNorm2_product_ratio`
 - `higham9_15_chi`
 - `higham9_15_chi_nonneg`
 - `higham9_15_rectMatMul_opNorm2Le`
+- `higham9_15_inverse_product_bounds_of_inverse_products`
 - `higham9_15_kappa2_le_chi_of_inverse_product_bound`
 - `higham9_15_chi_le_kappa2L_mul_kappa2A_of_Uinv_bound`
 - `higham9_15_chi_le_kappa2U_mul_kappa2A_of_Linv_bound`
@@ -2903,7 +2977,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_chi_condition_chain_of_inverse_products`
 - `higham9_15_chi_condition_chain_min_of_inverse_products`
 - `higham9_15_lu_inverse_product_identities_of_source_inverse_identities`
+- `higham9_15_inverse_product_bounds_of_lu_inverse_identities`
 - `higham9_15_matrix_lu_inverse_product_identities_of_source_inverse_identities`
+- `higham9_15_inverse_product_bounds_of_matrix_inverse_products`
+- `higham9_15_chi_condition_chain_of_matrix_inverse_products`
+- `higham9_15_chi_condition_chain_min_of_matrix_inverse_products`
+- `higham9_15_inverse_product_bounds_of_matrix_lu_inverse_identities`
 - `higham9_15_chi_condition_chain_of_lu_inverse_identities`
 - `higham9_15_chi_condition_chain_of_matrix_lu_inverse_identities`
 - `higham9_15_chi_condition_chain_min_of_lu_inverse_identities`
@@ -3778,6 +3857,14 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_product_majorant_of_factor_triangularity`
 - `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_product_majorant`
 - `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_product_majorant_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_left_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_right_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_right_zero_of_factor_triangularity`
 - `higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant_of_factor_triangularity`
 - `higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_majorant`
 - `higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_majorant_of_factor_triangularity`
@@ -5301,3 +5388,15 @@ Module: `LeanFpAnalysis/FP/Algorithms/StationaryIterationSeries.lean` (complemen
 | Eq (17.20) `residualSigmaTsum` bridges | `residualSigmaTsum_eq_infNorm_residualSigmaMatrix` (the two independently developed literal sigma objects are definitionally equal), `residualSigmaTsum_eq_residualSigmaSup` (literal series = supremum envelope under a q-certificate), `residualSigmaTsum_le_diagonalizable_max_bound_of_infNorm_bound` (q-certificate bridge through the supremum envelope), and `residualSigmaTsum_le_diagonalizable_max_bound_direct` from `StationaryIteration.lean` (the direct literal diagonalizable bound `residualSigmaTsum ≤ κ∞(X)·diagonalResidualRatioMax`). |
 | §17.4 semiconvergent/projector surfaces (module `StationaryIterationSemiconvergent.lean`) | The printed (17.23) block form `G = X·diag(I,Γ)·X⁻¹` as data: `topProjector`, `oneEigenProjector` (the book's I−E) with idempotency and the fixed-point identity `G_fixes_oneEigenProjector_apply` (G(I−E)v = (I−E)v for ALL v), `semiconvergentE`; the headline `singular_error_split_semiconvergent` — the (17.27) three-term split with the fixed-null hypothesis of `singular_error_split_finite` DISCHARGED from the (17.23) data; and `matPow_G_tendsto_oneEigenProjector` — the literal §17.4 semiconvergence limit `Gᵐ → X·diag(I,0)·X⁻¹` entrywise under a row-sum contraction certificate on Γ (an explicit strengthening of the printed ρ(Γ) < 1, noted in docstrings). Semiconvergent-form existence (Jordan background) is not formalized, matching the printed presentation. |
 | §17.4 Drazin vocabulary and infinite singular bounds (module `StationaryIterationDrazin.lean`) | From the (17.22) block data: `eq_17_23_block` (the printed (17.23) `I−G` block identity), `drazinIG` + `drazinIG_spec` (the printed (17.24) `(I−G)^D` with the three index-1 Drazin identities proved; uniqueness not formalized), `stationaryDrazinRangeProjector_drazinIG_eq_semiconvergentE` (connects the two fixed-null discharge routes), `eq_17_25_limit` + `matPow_G_tendsto_limit_drazin` (the literal (17.25) `Gᵐ → I−(I−G)^D(I−G)`), `eq_17_26_stationary_limit` (the literal (17.26) convergence of consistent singular iteration), `eq_17_30_block`/`eq_17_30_pow` (both printed (17.30) identities), `summable_infNorm_GiE_Minv` + `tsum_infNorm_GiE_Minv_le` (the post-(17.31) geometric bound), `eq_17_31_normwise_bound` (the literal (17.31), printed constants), `eq_17_32_componentwise_bound` (the literal (17.32) with the printed c(A) as a certificate hypothesis), and the p. 335 display `Σ'ᵢ GⁱE = (I−G)^D` (`tsum_GiE_entry_eq_drazinIG`). |
+| §17.4 Drazin uniqueness (p. 331 "the unique matrix") | `indexOneDrazinInverse_unique` (any two index-one Drazin inverses of the same matrix coincide — the classical group-inverse computation) and `indexOneDrazinInverse_eq_drazinIG` (any index-one Drazin inverse of `I−G` equals the block-data construction), upgrading (17.24) to the printed uniqueness-inclusive definition. |
+
+## Higham Chapter 16: Sylvester minimizer and fl-residual surfaces
+
+Module: `LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Minimizers.lean` (complements Codex's `Higham16.lean`).
+
+| Topic | Declarations |
+|---|---|
+| Eq (16.26) attained minimum for sep | `exists_sylvesterSep_minimizer` (a unit-Frobenius-sphere minimizer attains `sylvesterSepInf` — compactness of the sphere + continuity), `sylvesterSepInf_mem_sylvesterSepRatios`, `isLeast_sylvesterSepRatios` — the printed minimum, not just the infimum model. |
+| Eq (16.15) attained minimum for η | `exists_sylvesterBackwardError_minimizer` (under positive weights and nonempty feasible values, an optimal perturbation triple attains `sylvesterBackwardErrorInf`), `isLeast_sylvesterBackwardErrorValues`. |
+| Eq (16.29) floating-point residual model | `flSylvesterResidualRect` (the computed residual via `fl_matMul` + fl subtraction/addition), `flSylvesterResidualBudget` (`γ_{m+2}·\|A\|\|X̂\| + γ_{n+1}·\|X̂\|\|B\| + γ₂·\|C\|`), `sylvester_computed_residual_dR_model` (`R̂ = R + dR`, `\|dR\| ≤ Ru`), and the end-to-end `sylvester_practical_error_bound_fl` composing with the diagonal practical-bound certificate. |
+| Eq (16.3) constructive spectral directions + Bartels–Stewart triangular solve (module `Sylvester/Higham16Spectrum.lean`) | `sylvesterVecCoeff_eigenpair` (an (A,Bᵀ) eigenpair yields a Kronecker eigenvector of the vec coefficient with eigenvalue λ−μ, in the module's stacking convention; `_vecMul` left-eigenpair variant), `sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair` ("every difference is an eigenvalue", det form), `sylvesterVecCoeff_singular_of_common_eigenvalue` (common eigenvalue ⇒ det = 0); the converse needs complex Schur (absent from Mathlib) and is recorded open. `sylvester_triangular_column_equation` + `sylvester_triangular_solve_exists_unique` — the (16.5)/(16.6) Bartels–Stewart column recurrence and unique solvability for supplied upper-triangular T with per-column shifted nonsingularity (strong induction); quasi-triangular 2×2 blocks scope-noted. |

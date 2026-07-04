@@ -1,0 +1,842 @@
+-- Algorithms/Sylvester/Higham16Minimizers.lean
+--
+-- Attained-minimum upgrades and the floating-point computed-residual model
+-- for Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+-- Chapter 16 "The Sylvester Equation".
+--
+-- This file closes three infimum-model gaps left open by `Higham16.lean` and
+-- `SylvesterBackward.lean`:
+--
+-- 1. (16.26) `sep(A,B)`: the infimum of the Frobenius ratios
+--    `||AX - XB||_F / ||X||_F` over nonzero `X` is attained by a unit
+--    Frobenius-norm minimizer, so the infimum model `sylvesterSepInf` is a
+--    minimum (`IsLeast`).
+-- 2. (16.15) backward error `eta(Y)`: with positive weights and a nonempty
+--    feasible set, the infimum model `sylvesterBackwardErrorInf` is itself a
+--    feasible backward error, attained by an optimal perturbation triple.
+-- 3. (16.29) the practical bound's computed-residual hypothesis: the residual
+--    `R = C - (A*Xhat - Xhat*B)` evaluated with floating-point matrix products
+--    and a rounded subtract/add pipeline admits an explicit `dR` with
+--    `Rhat = R + dR` and an entrywise `gamma`-weighted budget, which plugs
+--    directly into the diagonal practical error bound of `Higham16.lean`.
+--
+-- All statements are over the repository's legacy function-shaped matrices
+-- `RMatFn m n = Fin m -> Fin n -> Real`, matching the Chapter 16 modules.
+
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16
+import LeanFpAnalysis.FP.Algorithms.MatMul
+
+namespace LeanFpAnalysis.FP
+
+open scoped BigOperators
+
+-- ============================================================
+-- Topological helpers for the Frobenius objectives
+-- ============================================================
+
+/-- A single squared entry is dominated by the squared Frobenius norm. -/
+lemma sq_le_frobNormSq {m n : ℕ} (M : RMatFn m n) (i : Fin m) (j : Fin n) :
+    M i j ^ 2 ≤ frobNormSq M := by
+  unfold frobNormSq
+  have hrow : M i j ^ 2 ≤ ∑ j' : Fin n, M i j' ^ 2 :=
+    Finset.single_le_sum (f := fun j' : Fin n => M i j' ^ 2)
+      (fun j' _ => sq_nonneg _) (Finset.mem_univ j)
+  have hall : (∑ j' : Fin n, M i j' ^ 2) ≤
+      ∑ i' : Fin m, ∑ j' : Fin n, M i' j' ^ 2 :=
+    Finset.single_le_sum (f := fun i' : Fin m => ∑ j' : Fin n, M i' j' ^ 2)
+      (fun i' _ => Finset.sum_nonneg fun j' _ => sq_nonneg _)
+      (Finset.mem_univ i)
+  linarith
+
+/-- Evaluating a fixed entry of a function-shaped matrix is continuous. -/
+lemma continuous_matEntry {m n : ℕ} (i : Fin m) (j : Fin n) :
+    Continuous fun M : RMatFn m n => M i j := by
+  have h1 : Continuous fun M : RMatFn m n => M i := continuous_apply i
+  exact (continuous_apply j).comp h1
+
+/-- The squared Frobenius norm is continuous for the product topology on the
+    repository's function-shaped matrices. -/
+lemma continuous_frobNormSq {m n : ℕ} :
+    Continuous fun M : RMatFn m n => frobNormSq M := by
+  unfold frobNormSq
+  refine continuous_finset_sum _ fun i _ => ?_
+  refine continuous_finset_sum _ fun j _ => ?_
+  exact (continuous_matEntry i j).pow 2
+
+/-- The Frobenius norm is continuous for the product topology on the
+    repository's function-shaped matrices. -/
+lemma continuous_frobNorm {m n : ℕ} :
+    Continuous fun M : RMatFn m n => frobNorm M := by
+  have h : (fun M : RMatFn m n => frobNorm M) =
+      fun M => Real.sqrt (frobNormSq M) :=
+    funext fun M => frobNorm_eq_sqrt_frobNormSq M
+  rw [h]
+  exact Real.continuous_sqrt.comp continuous_frobNormSq
+
+/-- Squared-Frobenius sublevel sets of function-shaped matrices are compact:
+    they are closed, and every entry is bounded by the level. -/
+lemma isCompact_frobNormSq_sublevel {m n : ℕ} (r : ℝ) :
+    IsCompact {M : RMatFn m n | frobNormSq M ≤ r} := by
+  have hclosed : IsClosed {M : RMatFn m n | frobNormSq M ≤ r} :=
+    isClosed_le continuous_frobNormSq continuous_const
+  have hsubset : {M : RMatFn m n | frobNormSq M ≤ r} ⊆
+      Metric.closedBall (0 : RMatFn m n) (Real.sqrt r) := by
+    intro M hM
+    rw [Metric.mem_closedBall, dist_zero_right]
+    rw [pi_norm_le_iff_of_nonneg (Real.sqrt_nonneg r)]
+    intro i
+    rw [pi_norm_le_iff_of_nonneg (Real.sqrt_nonneg r)]
+    intro j
+    rw [Real.norm_eq_abs]
+    have hsq : M i j ^ 2 ≤ r := le_trans (sq_le_frobNormSq M i j) hM
+    calc
+      |M i j| = Real.sqrt (M i j ^ 2) := (Real.sqrt_sq_eq_abs _).symm
+      _ ≤ Real.sqrt r := Real.sqrt_le_sqrt hsq
+  exact IsCompact.of_isClosed_subset
+    (isCompact_closedBall (0 : RMatFn m n) (Real.sqrt r)) hclosed hsubset
+
+/-- The unit sphere of the squared Frobenius norm is compact. -/
+lemma isCompact_frobNormSq_unit_sphere {m n : ℕ} :
+    IsCompact {M : RMatFn m n | frobNormSq M = 1} := by
+  have hclosed : IsClosed {M : RMatFn m n | frobNormSq M = 1} :=
+    isClosed_eq continuous_frobNormSq continuous_const
+  have hsubset : {M : RMatFn m n | frobNormSq M = 1} ⊆
+      {M : RMatFn m n | frobNormSq M ≤ 1} :=
+    fun M hM => le_of_eq hM
+  exact IsCompact.of_isClosed_subset
+    (isCompact_frobNormSq_sublevel 1) hclosed hsubset
+
+/-- The Frobenius norm of the Sylvester-operator image is continuous in the
+    unknown matrix. -/
+lemma continuous_frobNorm_sylvesterOp (n : ℕ) (A B : Fin n → Fin n → ℝ) :
+    Continuous fun X : Fin n → Fin n → ℝ => frobNorm (sylvesterOp n A B X) := by
+  have hOp : Continuous fun X : Fin n → Fin n → ℝ => sylvesterOp n A B X := by
+    refine continuous_pi fun i => continuous_pi fun j => ?_
+    simp only [sylvesterOp, matMul]
+    refine Continuous.sub ?_ ?_
+    · refine continuous_finset_sum _ fun k _ => ?_
+      exact continuous_const.mul (continuous_matEntry k j)
+    · refine continuous_finset_sum _ fun k _ => ?_
+      exact (continuous_matEntry i k).mul continuous_const
+  exact continuous_frobNorm.comp hOp
+
+-- ============================================================
+-- Scaling identities for the sep(A,B) normalization
+-- ============================================================
+
+/-- Entrywise division scales the squared Frobenius norm by the inverse
+    square. -/
+lemma frobNormSq_div {m n : ℕ} (M : RMatFn m n) (t : ℝ) :
+    frobNormSq (fun i j => M i j / t) = frobNormSq M / t ^ 2 := by
+  unfold frobNormSq
+  rw [Finset.sum_div]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [Finset.sum_div]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  rw [div_pow]
+
+/-- Entrywise division by a positive scalar scales the Frobenius norm. -/
+lemma frobNorm_div {m n : ℕ} (M : RMatFn m n) (t : ℝ) (ht : 0 < t) :
+    frobNorm (fun i j => M i j / t) = frobNorm M / t := by
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNormSq_div,
+    Real.sqrt_div (frobNormSq_nonneg M), Real.sqrt_sq ht.le,
+    ← frobNorm_eq_sqrt_frobNormSq]
+
+/-- The Sylvester operator commutes with entrywise scalar division. -/
+lemma sylvesterOp_div (n : ℕ) (A B X : Fin n → Fin n → ℝ) (t : ℝ) :
+    sylvesterOp n A B (fun i j => X i j / t) =
+      fun i j => sylvesterOp n A B X i j / t := by
+  ext i j
+  unfold sylvesterOp matMul
+  simp only [← mul_div_assoc, div_mul_eq_mul_div, ← Finset.sum_div, ← sub_div]
+
+-- ============================================================
+-- (16.26): the sep(A,B) infimum is an attained minimum
+-- ============================================================
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.3,
+    eq (16.26): in positive dimension, `sep(A,B)` modeled as the infimum
+    `sylvesterSepInf` of the nonzero Frobenius ratios is attained by a matrix
+    of unit Frobenius norm.  The witness additionally minimizes
+    `||AX - XB||_F` over the whole unit sphere.  This upgrades the pure
+    infimum model of `Higham16.lean` to an attained minimum; it is an
+    exact-arithmetic statement with no floating-point content. -/
+theorem exists_sylvesterSep_minimizer (n : ℕ) (A B : Fin n → Fin n → ℝ)
+    (hn : 0 < n) :
+    ∃ X : Fin n → Fin n → ℝ,
+      frobNormSq X = 1 ∧
+      frobNorm X = 1 ∧
+      sylvesterSepInf n A B = frobNorm (sylvesterOp n A B X) ∧
+      ∀ Y : Fin n → Fin n → ℝ, frobNormSq Y = 1 →
+        frobNorm (sylvesterOp n A B X) ≤ frobNorm (sylvesterOp n A B Y) := by
+  classical
+  -- the unit sphere is nonempty in positive dimension
+  have hne : ({X : Fin n → Fin n → ℝ | frobNormSq X = 1}).Nonempty := by
+    refine ⟨fun r c =>
+      if (⟨0, hn⟩ : Fin n) = r ∧ (⟨0, hn⟩ : Fin n) = c then (1 : ℝ) else 0, ?_⟩
+    have hrect :=
+      frobNormSqRect_single_left (⟨0, hn⟩ : Fin n) (⟨0, hn⟩ : Fin n) (1 : ℝ)
+    rw [frobNormSqRect_eq_frobNormSq] at hrect
+    simpa using hrect
+  obtain ⟨X0, hX0mem, hmin⟩ :=
+    isCompact_frobNormSq_unit_sphere.exists_isMinOn hne
+      (continuous_frobNorm_sylvesterOp n A B).continuousOn
+  have hX0sq : frobNormSq X0 = 1 := hX0mem
+  have hX0norm : frobNorm X0 = 1 := by
+    rw [frobNorm_eq_sqrt_frobNormSq, hX0sq, Real.sqrt_one]
+  have hX0ne : ¬ frobNormSq X0 = 0 := by
+    rw [hX0sq]
+    norm_num
+  have hminimizer : ∀ Y : Fin n → Fin n → ℝ, frobNormSq Y = 1 →
+      frobNorm (sylvesterOp n A B X0) ≤ frobNorm (sylvesterOp n A B Y) :=
+    fun Y hY => hmin hY
+  refine ⟨X0, hX0sq, hX0norm, ?_, hminimizer⟩
+  apply le_antisymm
+  · -- the infimum is below the value of the minimizer
+    have h := sylvesterSepInf_le_ratio n A B X0 hX0ne
+    rwa [hX0norm, div_one] at h
+  · -- the value of the minimizer is below every feasible ratio
+    unfold sylvesterSepInf
+    apply le_csInf (sylvesterSepRatios_nonempty_of_pos_dim n A B hn)
+    intro rho hrho
+    obtain ⟨X, hXne, rfl⟩ := hrho
+    have hXsq_pos : 0 < frobNormSq X :=
+      lt_of_le_of_ne (frobNormSq_nonneg X) (Ne.symm hXne)
+    have hXnorm_pos : 0 < frobNorm X := by
+      have hs : 0 < frobNorm X ^ 2 := by
+        rw [frobNorm_sq]
+        exact hXsq_pos
+      have hne_norm : ¬ frobNorm X = 0 := sq_pos_iff.mp hs
+      exact lt_of_le_of_ne (frobNorm_nonneg X) (Ne.symm hne_norm)
+    -- normalize X to the unit sphere
+    have hX'sphere : frobNormSq (fun i j => X i j / frobNorm X) = 1 := by
+      rw [frobNormSq_div, ← frobNorm_sq]
+      exact div_self (pow_ne_zero 2 (ne_of_gt hXnorm_pos))
+    have hle : frobNorm (sylvesterOp n A B X0) ≤
+        frobNorm (sylvesterOp n A B (fun i j => X i j / frobNorm X)) :=
+      hmin hX'sphere
+    have hgX' : frobNorm (sylvesterOp n A B (fun i j => X i j / frobNorm X)) =
+        frobNorm (sylvesterOp n A B X) / frobNorm X := by
+      rw [sylvesterOp_div, frobNorm_div _ _ hXnorm_pos]
+    rw [hgX'] at hle
+    exact hle
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.3,
+    eq (16.26): in positive dimension the infimum model of `sep(A,B)` is a
+    member of its own feasible ratio set, i.e. the infimum is attained. -/
+theorem sylvesterSepInf_mem_sylvesterSepRatios (n : ℕ)
+    (A B : Fin n → Fin n → ℝ) (hn : 0 < n) :
+    sylvesterSepInf n A B ∈ sylvesterSepRatios n A B := by
+  obtain ⟨X, hXsq, hXnorm, hval, _⟩ := exists_sylvesterSep_minimizer n A B hn
+  refine ⟨X, by rw [hXsq]; norm_num, ?_⟩
+  rw [hval, hXnorm, div_one]
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.3,
+    eq (16.26): in positive dimension `sylvesterSepInf` is the least element
+    of the feasible Frobenius ratio set, so the source's `min` in (16.26) is
+    faithfully realized by the infimum model. -/
+theorem isLeast_sylvesterSepRatios (n : ℕ) (A B : Fin n → Fin n → ℝ)
+    (hn : 0 < n) :
+    IsLeast (sylvesterSepRatios n A B) (sylvesterSepInf n A B) :=
+  ⟨sylvesterSepInf_mem_sylvesterSepRatios n A B hn,
+    fun _rho hrho => csInf_le (sylvesterSepRatios_bddBelow n A B) hrho⟩
+
+-- ============================================================
+-- (16.15): the backward-error infimum is an attained minimum
+-- ============================================================
+
+private lemma sq_le_sq_of_nonneg_of_le {x y : ℝ} (hx : 0 ≤ x) (hxy : x ≤ y) :
+    x ^ 2 ≤ y ^ 2 := by nlinarith
+
+/-- The affine feasibility set of backward-error perturbation triples
+    `(DA, DB, DC)` for eq (16.15): the perturbed Sylvester equation holds at
+    the fixed approximate solution `Y`. -/
+private def sylvesterBackwardFeasibleSet (n : ℕ)
+    (A B C Y : Fin n → Fin n → ℝ) :
+    Set ((Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ)) :=
+  {p | ∀ i j, sylvesterOp n (fun i' j' => A i' j' + p.1 i' j')
+      (fun i' j' => B i' j' + p.2.1 i' j') Y i j = C i j + p.2.2 i j}
+
+private lemma continuous_tripleFst {n : ℕ} :
+    Continuous fun p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) ×
+        (Fin n → Fin n → ℝ) => p.1 :=
+  continuous_fst
+
+private lemma continuous_tripleSndFst {n : ℕ} :
+    Continuous fun p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) ×
+        (Fin n → Fin n → ℝ) => p.2.1 :=
+  continuous_fst.comp continuous_snd
+
+private lemma continuous_tripleSndSnd {n : ℕ} :
+    Continuous fun p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) ×
+        (Fin n → Fin n → ℝ) => p.2.2 :=
+  continuous_snd.comp continuous_snd
+
+private lemma continuous_tripleFst_entry {n : ℕ} (i k : Fin n) :
+    Continuous fun p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) ×
+        (Fin n → Fin n → ℝ) => p.1 i k :=
+  (continuous_matEntry i k).comp continuous_tripleFst
+
+private lemma continuous_tripleSndFst_entry {n : ℕ} (k j : Fin n) :
+    Continuous fun p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) ×
+        (Fin n → Fin n → ℝ) => p.2.1 k j :=
+  (continuous_matEntry k j).comp continuous_tripleSndFst
+
+private lemma continuous_tripleSndSnd_entry {n : ℕ} (i j : Fin n) :
+    Continuous fun p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) ×
+        (Fin n → Fin n → ℝ) => p.2.2 i j :=
+  (continuous_matEntry i j).comp continuous_tripleSndSnd
+
+private lemma isClosed_sylvesterBackwardFeasibleSet (n : ℕ)
+    (A B C Y : Fin n → Fin n → ℝ) :
+    IsClosed (sylvesterBackwardFeasibleSet n A B C Y) := by
+  have hset : sylvesterBackwardFeasibleSet n A B C Y =
+      ⋂ (i : Fin n), ⋂ (j : Fin n),
+        {p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) |
+          (∑ k : Fin n, (A i k + p.1 i k) * Y k j) -
+            (∑ k : Fin n, Y i k * (B k j + p.2.1 k j)) = C i j + p.2.2 i j} := by
+    ext p
+    constructor
+    · intro hp
+      simp only [Set.mem_iInter, Set.mem_setOf_eq]
+      intro i j
+      have h := hp i j
+      simp only [sylvesterOp, matMul] at h
+      exact h
+    · intro hp i j
+      simp only [Set.mem_iInter, Set.mem_setOf_eq] at hp
+      simp only [sylvesterOp, matMul]
+      exact hp i j
+  rw [hset]
+  refine isClosed_iInter fun i => isClosed_iInter fun j => isClosed_eq ?_ ?_
+  · refine Continuous.sub ?_ ?_
+    · refine continuous_finset_sum _ fun k _ => ?_
+      exact (continuous_const.add (continuous_tripleFst_entry i k)).mul
+        continuous_const
+    · refine continuous_finset_sum _ fun k _ => ?_
+      exact continuous_const.mul
+        (continuous_const.add (continuous_tripleSndFst_entry k j))
+  · exact continuous_const.add (continuous_tripleSndSnd_entry i j)
+
+/-- The scaled max-Frobenius objective whose minimum over the feasibility set
+    is the backward error `eta(Y)` of eq (16.15). -/
+private noncomputable def sylvesterBackwardObjective {n : ℕ}
+    (alpha beta gamma : ℝ)
+    (p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ)) :
+    ℝ :=
+  max (frobNorm p.1 / alpha) (max (frobNorm p.2.1 / beta) (frobNorm p.2.2 / gamma))
+
+private lemma continuous_sylvesterBackwardObjective (n : ℕ)
+    (alpha beta gamma : ℝ) :
+    Continuous (sylvesterBackwardObjective (n := n) alpha beta gamma) := by
+  unfold sylvesterBackwardObjective
+  refine Continuous.max ?_ (Continuous.max ?_ ?_)
+  · exact (continuous_frobNorm.comp continuous_tripleFst).div_const alpha
+  · exact (continuous_frobNorm.comp continuous_tripleSndFst).div_const beta
+  · exact (continuous_frobNorm.comp continuous_tripleSndSnd).div_const gamma
+
+private lemma sylvesterBackwardObjective_nonneg {n : ℕ}
+    {alpha beta gamma : ℝ} (halpha : 0 < alpha)
+    (p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ)) :
+    0 ≤ sylvesterBackwardObjective alpha beta gamma p :=
+  le_trans (div_nonneg (frobNorm_nonneg p.1) halpha.le)
+    (le_max_left _ _)
+
+/-- A feasible triple certifies its own objective value as a backward error. -/
+private lemma isBackwardError_sylvesterBackwardObjective (n : ℕ)
+    (A B C Y : Fin n → Fin n → ℝ) {alpha beta gamma : ℝ}
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ))
+    (hp : p ∈ sylvesterBackwardFeasibleSet n A B C Y) :
+    IsBackwardError n A B C Y alpha beta gamma
+      (sylvesterBackwardObjective alpha beta gamma p) := by
+  refine ⟨p.1, p.2.1, p.2.2, hp, ?_, ?_, ?_⟩
+  · have h1 : frobNorm p.1 / alpha ≤
+        sylvesterBackwardObjective alpha beta gamma p := le_max_left _ _
+    have h1' : frobNorm p.1 ≤
+        sylvesterBackwardObjective alpha beta gamma p * alpha :=
+      (div_le_iff₀ halpha).mp h1
+    rw [← frobNorm_sq]
+    exact sq_le_sq_of_nonneg_of_le (frobNorm_nonneg _) h1'
+  · have h2 : frobNorm p.2.1 / beta ≤
+        sylvesterBackwardObjective alpha beta gamma p :=
+      le_trans (le_max_left _ _) (le_max_right _ _)
+    have h2' : frobNorm p.2.1 ≤
+        sylvesterBackwardObjective alpha beta gamma p * beta :=
+      (div_le_iff₀ hbeta).mp h2
+    rw [← frobNorm_sq]
+    exact sq_le_sq_of_nonneg_of_le (frobNorm_nonneg _) h2'
+  · have h3 : frobNorm p.2.2 / gamma ≤
+        sylvesterBackwardObjective alpha beta gamma p :=
+      le_trans (le_max_right _ _) (le_max_right _ _)
+    have h3' : frobNorm p.2.2 ≤
+        sylvesterBackwardObjective alpha beta gamma p * gamma :=
+      (div_le_iff₀ hgamma).mp h3
+    rw [← frobNorm_sq]
+    exact sq_le_sq_of_nonneg_of_le (frobNorm_nonneg _) h3'
+
+/-- Any backward-error certificate dominates the objective of its witness. -/
+private lemma sylvesterBackwardObjective_le {n : ℕ}
+    {alpha beta gamma eta : ℝ}
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (heta : 0 ≤ eta) (DA DB DC : Fin n → Fin n → ℝ)
+    (hA : frobNormSq DA ≤ (eta * alpha) ^ 2)
+    (hB : frobNormSq DB ≤ (eta * beta) ^ 2)
+    (hC : frobNormSq DC ≤ (eta * gamma) ^ 2) :
+    sylvesterBackwardObjective alpha beta gamma (DA, DB, DC) ≤ eta := by
+  have hfA : frobNorm DA ≤ eta * alpha :=
+    frobNorm_le_of_frobNormSq_le_sq DA (mul_nonneg heta halpha.le) hA
+  have hfB : frobNorm DB ≤ eta * beta :=
+    frobNorm_le_of_frobNormSq_le_sq DB (mul_nonneg heta hbeta.le) hB
+  have hfC : frobNorm DC ≤ eta * gamma :=
+    frobNorm_le_of_frobNormSq_le_sq DC (mul_nonneg heta hgamma.le) hC
+  exact max_le ((div_le_iff₀ halpha).mpr hfA)
+    (max_le ((div_le_iff₀ hbeta).mpr hfB) ((div_le_iff₀ hgamma).mpr hfC))
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.2,
+    eq (16.15): with positive weights `alpha, beta, gamma` and a nonempty
+    feasible set, the infimum model `sylvesterBackwardErrorInf` of the
+    normwise backward error `eta(Y)` is itself a feasible backward error:
+    there is a perturbation triple `(DA, DB, DC)` satisfying the perturbed
+    equation with Frobenius bounds at the infimum level, so the infimum is an
+    attained minimum.  The nonemptiness hypothesis can be discharged by
+    `sylvesterBackwardErrorValues_nonempty_of_svdOptimalPerturbations`. -/
+theorem exists_sylvesterBackwardError_minimizer (n : ℕ)
+    (A B C Y : Fin n → Fin n → ℝ) (alpha beta gamma : ℝ)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hne : (sylvesterBackwardErrorValues n A B C Y alpha beta gamma).Nonempty) :
+    IsBackwardError n A B C Y alpha beta gamma
+      (sylvesterBackwardErrorInf n A B C Y alpha beta gamma) := by
+  classical
+  obtain ⟨eta0, heta0⟩ := hne
+  have heta0_nonneg : 0 ≤ eta0 := heta0.1
+  obtain ⟨DA0, DB0, DC0, hEq0, hA0, hB0, hC0⟩ := heta0.2
+  -- compact constraint set: sublevel product intersected with the closed
+  -- affine feasibility set
+  have hK : IsCompact
+      ((({M : Fin n → Fin n → ℝ | frobNormSq M ≤ (eta0 * alpha) ^ 2} ×ˢ
+          ({M : Fin n → Fin n → ℝ | frobNormSq M ≤ (eta0 * beta) ^ 2} ×ˢ
+            {M : Fin n → Fin n → ℝ | frobNormSq M ≤ (eta0 * gamma) ^ 2}))) ∩
+        sylvesterBackwardFeasibleSet n A B C Y) :=
+    IsCompact.inter_right
+      ((isCompact_frobNormSq_sublevel _).prod
+        ((isCompact_frobNormSq_sublevel _).prod
+          (isCompact_frobNormSq_sublevel _)))
+      (isClosed_sylvesterBackwardFeasibleSet n A B C Y)
+  have hp0 : ((DA0, DB0, DC0) :
+      (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ)) ∈
+      ((({M : Fin n → Fin n → ℝ | frobNormSq M ≤ (eta0 * alpha) ^ 2} ×ˢ
+          ({M : Fin n → Fin n → ℝ | frobNormSq M ≤ (eta0 * beta) ^ 2} ×ˢ
+            {M : Fin n → Fin n → ℝ | frobNormSq M ≤ (eta0 * gamma) ^ 2}))) ∩
+        sylvesterBackwardFeasibleSet n A B C Y) :=
+    ⟨⟨hA0, hB0, hC0⟩, hEq0⟩
+  obtain ⟨pmin, hpmin, hmin⟩ :=
+    hK.exists_isMinOn ⟨(DA0, DB0, DC0), hp0⟩
+      (continuous_sylvesterBackwardObjective n alpha beta gamma).continuousOn
+  have hfeas : IsBackwardError n A B C Y alpha beta gamma
+      (sylvesterBackwardObjective alpha beta gamma pmin) :=
+    isBackwardError_sylvesterBackwardObjective n A B C Y
+      halpha hbeta hgamma pmin hpmin.2
+  have hstar_nonneg : 0 ≤ sylvesterBackwardObjective alpha beta gamma pmin :=
+    sylvesterBackwardObjective_nonneg halpha pmin
+  have hinf_eq : sylvesterBackwardErrorInf n A B C Y alpha beta gamma =
+      sylvesterBackwardObjective alpha beta gamma pmin := by
+    apply le_antisymm
+    · exact csInf_le
+        (sylvesterBackwardErrorValues_bddBelow n A B C Y alpha beta gamma)
+        ⟨hstar_nonneg, hfeas⟩
+    · unfold sylvesterBackwardErrorInf
+      apply le_csInf ⟨eta0, heta0⟩
+      rintro eta ⟨heta_nonneg, DA, DB, DC, hEq, hA, hB, hC⟩
+      by_cases hcase : eta ≤ eta0
+      · -- the witness lies inside the compact constraint set
+        have hAle : (eta * alpha) ^ 2 ≤ (eta0 * alpha) ^ 2 :=
+          sq_le_sq_of_nonneg_of_le (mul_nonneg heta_nonneg halpha.le)
+            (mul_le_mul_of_nonneg_right hcase halpha.le)
+        have hBle : (eta * beta) ^ 2 ≤ (eta0 * beta) ^ 2 :=
+          sq_le_sq_of_nonneg_of_le (mul_nonneg heta_nonneg hbeta.le)
+            (mul_le_mul_of_nonneg_right hcase hbeta.le)
+        have hCle : (eta * gamma) ^ 2 ≤ (eta0 * gamma) ^ 2 :=
+          sq_le_sq_of_nonneg_of_le (mul_nonneg heta_nonneg hgamma.le)
+            (mul_le_mul_of_nonneg_right hcase hgamma.le)
+        have hmem : ((DA, DB, DC) :
+            (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ)) ∈
+            ((({M : Fin n → Fin n → ℝ | frobNormSq M ≤ (eta0 * alpha) ^ 2} ×ˢ
+                ({M : Fin n → Fin n → ℝ | frobNormSq M ≤ (eta0 * beta) ^ 2} ×ˢ
+                  {M : Fin n → Fin n → ℝ |
+                    frobNormSq M ≤ (eta0 * gamma) ^ 2}))) ∩
+              sylvesterBackwardFeasibleSet n A B C Y) :=
+          ⟨⟨le_trans hA hAle, le_trans hB hBle, le_trans hC hCle⟩, hEq⟩
+        have h1 : sylvesterBackwardObjective alpha beta gamma pmin ≤
+            sylvesterBackwardObjective alpha beta gamma (DA, DB, DC) :=
+          hmin hmem
+        have h2 : sylvesterBackwardObjective alpha beta gamma (DA, DB, DC) ≤
+            eta :=
+          sylvesterBackwardObjective_le halpha hbeta hgamma heta_nonneg
+            DA DB DC hA hB hC
+        linarith
+      · push_neg at hcase
+        have h1 : sylvesterBackwardObjective alpha beta gamma pmin ≤
+            sylvesterBackwardObjective alpha beta gamma (DA0, DB0, DC0) :=
+          hmin hp0
+        have h2 : sylvesterBackwardObjective alpha beta gamma
+            (DA0, DB0, DC0) ≤ eta0 :=
+          sylvesterBackwardObjective_le halpha hbeta hgamma heta0_nonneg
+            DA0 DB0 DC0 hA0 hB0 hC0
+        linarith
+  rw [hinf_eq]
+  exact hfeas
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.2,
+    eq (16.15): under positive weights and a nonempty feasible set, the
+    infimum model of the backward error is a member of its own value set. -/
+theorem sylvesterBackwardErrorInf_mem_sylvesterBackwardErrorValues (n : ℕ)
+    (A B C Y : Fin n → Fin n → ℝ) (alpha beta gamma : ℝ)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hne : (sylvesterBackwardErrorValues n A B C Y alpha beta gamma).Nonempty) :
+    sylvesterBackwardErrorInf n A B C Y alpha beta gamma ∈
+      sylvesterBackwardErrorValues n A B C Y alpha beta gamma :=
+  ⟨sylvesterBackwardErrorInf_nonneg n A B C Y alpha beta gamma,
+    exists_sylvesterBackwardError_minimizer n A B C Y alpha beta gamma
+      halpha hbeta hgamma hne⟩
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.2,
+    eq (16.15): under positive weights and a nonempty feasible set,
+    `sylvesterBackwardErrorInf` is the least feasible backward-error value,
+    so the source's `min` in (16.15) is faithfully realized by the infimum
+    model. -/
+theorem isLeast_sylvesterBackwardErrorValues (n : ℕ)
+    (A B C Y : Fin n → Fin n → ℝ) (alpha beta gamma : ℝ)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hne : (sylvesterBackwardErrorValues n A B C Y alpha beta gamma).Nonempty) :
+    IsLeast (sylvesterBackwardErrorValues n A B C Y alpha beta gamma)
+      (sylvesterBackwardErrorInf n A B C Y alpha beta gamma) :=
+  ⟨sylvesterBackwardErrorInf_mem_sylvesterBackwardErrorValues n A B C Y
+      alpha beta gamma halpha hbeta hgamma hne,
+    fun _eta heta => csInf_le
+      (sylvesterBackwardErrorValues_bddBelow n A B C Y alpha beta gamma) heta⟩
+
+-- ============================================================
+-- (16.29): floating-point computed-residual dR model
+-- ============================================================
+
+/-- Elementary gamma bound: `u ≤ γ₁`. -/
+lemma u_le_gamma_one (fp : FPModel) (h1 : gammaValid fp 1) :
+    fp.u ≤ gamma fp 1 := by
+  have h1' : ((1 : ℕ) : ℝ) * fp.u < 1 := h1
+  have hden : (0 : ℝ) < 1 - ((1 : ℕ) : ℝ) * fp.u := by linarith
+  unfold gamma
+  rw [le_div_iff₀ hden]
+  push_cast
+  nlinarith [fp.u_nonneg, sq_nonneg fp.u]
+
+/-- Elementary gamma bound: `2u + u² ≤ γ₂`. -/
+lemma two_u_add_u_sq_le_gamma_two (fp : FPModel) (h2 : gammaValid fp 2) :
+    2 * fp.u + fp.u ^ 2 ≤ gamma fp 2 := by
+  have h2' : ((2 : ℕ) : ℝ) * fp.u < 1 := h2
+  have hden : (0 : ℝ) < 1 - ((2 : ℕ) : ℝ) * fp.u := by linarith
+  unfold gamma
+  rw [le_div_iff₀ hden]
+  push_cast
+  nlinarith [fp.u_nonneg, sq_nonneg fp.u]
+
+/-- Gamma coefficient consolidation for the subtract-then-scale path of the
+    computed Sylvester residual: `(2u + u²) + (1+u)² γₘ ≤ γₘ₊₂`. -/
+lemma sub_then_scale_coeff_le_gamma (fp : FPModel) (m : ℕ)
+    (hval : gammaValid fp (m + 2)) :
+    (2 * fp.u + fp.u ^ 2) + (1 + fp.u) ^ 2 * gamma fp m ≤ gamma fp (m + 2) := by
+  have h2 : gammaValid fp 2 := gammaValid_mono fp (by omega) hval
+  have hm : gammaValid fp m := gammaValid_mono fp (by omega) hval
+  have hγm : 0 ≤ gamma fp m := gamma_nonneg fp hm
+  have hc2 : 2 * fp.u + fp.u ^ 2 ≤ gamma fp 2 :=
+    two_u_add_u_sq_le_gamma_two fp h2
+  have hexp : (1 + fp.u) ^ 2 = 1 + (2 * fp.u + fp.u ^ 2) := by ring
+  have hsq : (1 + fp.u) ^ 2 ≤ 1 + gamma fp 2 := by
+    rw [hexp]
+    linarith
+  have hmul : (1 + fp.u) ^ 2 * gamma fp m ≤ (1 + gamma fp 2) * gamma fp m :=
+    mul_le_mul_of_nonneg_right hsq hγm
+  have hsum : gamma fp m + gamma fp 2 + gamma fp m * gamma fp 2 ≤
+      gamma fp (m + 2) :=
+    gamma_sum_le fp m 2 hval
+  have hprod : (1 + gamma fp 2) * gamma fp m =
+      gamma fp m + gamma fp m * gamma fp 2 := by ring
+  linarith
+
+/-- Gamma coefficient consolidation for the add-then-scale path of the
+    computed Sylvester residual: `u + (1+u) γₙ ≤ γₙ₊₁`. -/
+lemma add_then_scale_coeff_le_gamma (fp : FPModel) (n : ℕ)
+    (hval : gammaValid fp (n + 1)) :
+    fp.u + (1 + fp.u) * gamma fp n ≤ gamma fp (n + 1) := by
+  have h1 : gammaValid fp 1 := gammaValid_mono fp (by omega) hval
+  have hn : gammaValid fp n := gammaValid_mono fp (by omega) hval
+  have hγn : 0 ≤ gamma fp n := gamma_nonneg fp hn
+  have hc1 : fp.u ≤ gamma fp 1 := u_le_gamma_one fp h1
+  have hmul : (1 + fp.u) * gamma fp n ≤ (1 + gamma fp 1) * gamma fp n :=
+    mul_le_mul_of_nonneg_right (by linarith) hγn
+  have hsum : gamma fp n + gamma fp 1 + gamma fp n * gamma fp 1 ≤
+      gamma fp (n + 1) :=
+    gamma_sum_le fp n 1 hval
+  have hprod : (1 + gamma fp 1) * gamma fp n =
+      gamma fp n + gamma fp n * gamma fp 1 := by ring
+  linarith
+
+private lemma abs_sub_add_add_le (w x y z : ℝ) :
+    |w - x + y + z| ≤ |w| + |x| + |y| + |z| := by
+  have h1 : |w - x + y + z| ≤ |w - x + y| + |z| := abs_add_le _ _
+  have h2 : |w - x + y| ≤ |w - x| + |y| := abs_add_le _ _
+  have h3 : |w - x| ≤ |w| + |x| := by
+    simpa [sub_eq_add_neg, abs_neg] using abs_add_le w (-x)
+  linarith
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29): the floating-point computed Sylvester residual
+    `Rhat = fl(C - A*Xhat + Xhat*B)`.  The two matrix products are the
+    repository's column-wise `fl_matMul`, and the combination is evaluated as
+    `fl(fl(C - (A*Xhat)) + (Xhat*B))`, one rounded subtraction followed by one
+    rounded addition per entry. -/
+noncomputable def flSylvesterResidualRect (fp : FPModel) (m n : ℕ)
+    (A : RMatFn m m) (B : RMatFn n n) (C Xhat : RMatFn m n) : RMatFn m n :=
+  fun i j =>
+    fp.fl_add (fp.fl_sub (C i j) (fl_matMul fp m m n A Xhat i j))
+      (fl_matMul fp m n n Xhat B i j)
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29): the entrywise rounding budget `Ru` for the computed residual,
+    the natural gamma-weighted combination of `|A||Xhat|`, `|Xhat||B|`, and
+    `|C|` produced by the floating-point evaluation of
+    `fl(fl(C - (A*Xhat)) + (Xhat*B))`. -/
+noncomputable def flSylvesterResidualBudget (fp : FPModel) (m n : ℕ)
+    (A : RMatFn m m) (B : RMatFn n n) (C Xhat : RMatFn m n) : RMatFn m n :=
+  fun i j =>
+    gamma fp (m + 2) * (∑ k : Fin m, |A i k| * |Xhat k j|) +
+      gamma fp (n + 1) * (∑ k : Fin n, |Xhat i k| * |B k j|) +
+      gamma fp 2 * |C i j|
+
+/-- The computed-residual budget of eq (16.29) is entrywise nonnegative. -/
+lemma flSylvesterResidualBudget_nonneg (fp : FPModel) (m n : ℕ)
+    (A : RMatFn m m) (B : RMatFn n n) (C Xhat : RMatFn m n)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1)) :
+    ∀ i j, 0 ≤ flSylvesterResidualBudget fp m n A B C Xhat i j := by
+  intro i j
+  have h2 : gammaValid fp 2 := gammaValid_mono fp (by omega) hm
+  have hS1 : (0 : ℝ) ≤ ∑ k : Fin m, |A i k| * |Xhat k j| :=
+    Finset.sum_nonneg fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  have hS2 : (0 : ℝ) ≤ ∑ k : Fin n, |Xhat i k| * |B k j| :=
+    Finset.sum_nonneg fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  exact add_nonneg
+    (add_nonneg (mul_nonneg (gamma_nonneg fp hm) hS1)
+      (mul_nonneg (gamma_nonneg fp hn) hS2))
+    (mul_nonneg (gamma_nonneg fp h2) (abs_nonneg _))
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29): floating-point error model for the computed Sylvester
+    residual.  If `Rhat = fl(fl(C - (A*Xhat)) + (Xhat*B))` with the products
+    computed by `fl_matMul`, then there is an explicit `dR` with
+    `Rhat = R(Xhat) + dR` and the entrywise bound
+    `|dR| ≤ γ_{m+2} |A||Xhat| + γ_{n+1} |Xhat||B| + γ₂ |C|`.
+    This is the exact per-term budget yielded by the standard model; it is
+    slightly sharper than the source's aggregated display and implies it by
+    `gamma_mono`.  Scope: this analyzes only the residual computation, not the
+    Sylvester solve producing `Xhat`. -/
+theorem sylvester_computed_residual_dR_model (fp : FPModel) (m n : ℕ)
+    (A : RMatFn m m) (B : RMatFn n n) (C Xhat : RMatFn m n)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1)) :
+    ∃ dR : RMatFn m n,
+      (∀ i j, flSylvesterResidualRect fp m n A B C Xhat i j =
+        sylvesterResidualRect m n A B C Xhat i j + dR i j) ∧
+      ∀ i j, |dR i j| ≤ flSylvesterResidualBudget fp m n A B C Xhat i j := by
+  refine ⟨fun i j => flSylvesterResidualRect fp m n A B C Xhat i j -
+      sylvesterResidualRect m n A B C Xhat i j, fun i j => by ring, ?_⟩
+  intro i j
+  have hgmval : gammaValid fp m := gammaValid_mono fp (by omega) hm
+  have hgnval : gammaValid fp n := gammaValid_mono fp (by omega) hn
+  have h2val : gammaValid fp 2 := gammaValid_mono fp (by omega) hm
+  have hu : 0 ≤ fp.u := fp.u_nonneg
+  -- forward errors of the two floating-point products
+  have hE1 := matMul_error_bound fp m m n A Xhat hgmval i j
+  have hE2 := matMul_error_bound fp m n n Xhat B hgnval i j
+  -- rounded subtraction and addition
+  obtain ⟨δ1, hδ1, hs⟩ :=
+    fp.model_sub (C i j) (fl_matMul fp m m n A Xhat i j)
+  obtain ⟨δ2, hδ2, ha2⟩ :=
+    fp.model_add (fp.fl_sub (C i j) (fl_matMul fp m m n A Xhat i j))
+      (fl_matMul fp m n n Xhat B i j)
+  set P1 := fl_matMul fp m m n A Xhat i j with hP1
+  set P2 := fl_matMul fp m n n Xhat B i j with hP2
+  set M1 := ∑ k : Fin m, A i k * Xhat k j with hM1
+  set M2 := ∑ k : Fin n, Xhat i k * B k j with hM2
+  set S1 := ∑ k : Fin m, |A i k| * |Xhat k j| with hS1
+  set S2 := ∑ k : Fin n, |Xhat i k| * |B k j| with hS2
+  have hS1nn : 0 ≤ S1 := by
+    rw [hS1]
+    exact Finset.sum_nonneg fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  have hS2nn : 0 ≤ S2 := by
+    rw [hS2]
+    exact Finset.sum_nonneg fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  -- fold the exact residual and the computed residual
+  have hRR : sylvesterResidualRect m n A B C Xhat i j = C i j - (M1 - M2) := by
+    simp only [sylvesterResidualRect, sylvesterOpRect, matMulRect]
+    rw [← hM1, ← hM2]
+  have hfl : flSylvesterResidualRect fp m n A B C Xhat i j =
+      fp.fl_add (fp.fl_sub (C i j) P1) P2 := rfl
+  have hkey : fp.fl_add (fp.fl_sub (C i j) P1) P2 - (C i j - (M1 - M2)) =
+      (C i j - M1) * (δ1 + δ2 + δ1 * δ2) -
+        (P1 - M1) * ((1 + δ1) * (1 + δ2)) +
+        M2 * δ2 + (P2 - M2) * (1 + δ2) := by
+    rw [ha2, hs]
+    ring
+  -- absolute-value bounds on the four error terms
+  have hd12 : |δ1 + δ2 + δ1 * δ2| ≤ 2 * fp.u + fp.u ^ 2 := by
+    have habs12 : |δ1 * δ2| ≤ fp.u * fp.u := by
+      rw [abs_mul]
+      exact mul_le_mul hδ1 hδ2 (abs_nonneg _) hu
+    have htri : |δ1 + δ2 + δ1 * δ2| ≤ |δ1 + δ2| + |δ1 * δ2| := abs_add_le _ _
+    have htri2 : |δ1 + δ2| ≤ |δ1| + |δ2| := abs_add_le _ _
+    nlinarith
+  have h1d1 : |1 + δ1| ≤ 1 + fp.u := by
+    have h := abs_add_le (1 : ℝ) δ1
+    rw [abs_one] at h
+    linarith
+  have h1d2 : |1 + δ2| ≤ 1 + fp.u := by
+    have h := abs_add_le (1 : ℝ) δ2
+    rw [abs_one] at h
+    linarith
+  have he12 : |(1 + δ1) * (1 + δ2)| ≤ (1 + fp.u) ^ 2 := by
+    rw [abs_mul, pow_two]
+    exact mul_le_mul h1d1 h1d2 (abs_nonneg _) (by linarith)
+  have hM1abs : |M1| ≤ S1 := by
+    rw [hM1, hS1]
+    calc
+      |∑ k : Fin m, A i k * Xhat k j| ≤ ∑ k : Fin m, |A i k * Xhat k j| :=
+        Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ k : Fin m, |A i k| * |Xhat k j| :=
+        Finset.sum_congr rfl fun k _ => abs_mul _ _
+  have hM2abs : |M2| ≤ S2 := by
+    rw [hM2, hS2]
+    calc
+      |∑ k : Fin n, Xhat i k * B k j| ≤ ∑ k : Fin n, |Xhat i k * B k j| :=
+        Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ k : Fin n, |Xhat i k| * |B k j| :=
+        Finset.sum_congr rfl fun k _ => abs_mul _ _
+  have hCM1 : |C i j - M1| ≤ |C i j| + S1 := by
+    have h : |C i j - M1| ≤ |C i j| + |M1| := by
+      simpa [sub_eq_add_neg, abs_neg] using abs_add_le (C i j) (-M1)
+    linarith
+  -- the four bounded terms
+  have t1 : |(C i j - M1) * (δ1 + δ2 + δ1 * δ2)| ≤
+      (|C i j| + S1) * (2 * fp.u + fp.u ^ 2) := by
+    rw [abs_mul]
+    exact mul_le_mul hCM1 hd12 (abs_nonneg _)
+      (add_nonneg (abs_nonneg _) hS1nn)
+  have t2 : |(P1 - M1) * ((1 + δ1) * (1 + δ2))| ≤
+      (gamma fp m * S1) * (1 + fp.u) ^ 2 := by
+    rw [abs_mul]
+    exact mul_le_mul hE1 he12 (abs_nonneg _)
+      (mul_nonneg (gamma_nonneg fp hgmval) hS1nn)
+  have t3 : |M2 * δ2| ≤ S2 * fp.u := by
+    rw [abs_mul]
+    exact mul_le_mul hM2abs hδ2 (abs_nonneg _) hS2nn
+  have t4 : |(P2 - M2) * (1 + δ2)| ≤ (gamma fp n * S2) * (1 + fp.u) := by
+    rw [abs_mul]
+    exact mul_le_mul hE2 h1d2 (abs_nonneg _)
+      (mul_nonneg (gamma_nonneg fp hgnval) hS2nn)
+  -- gamma consolidation of the per-term coefficients
+  have hc2 : 2 * fp.u + fp.u ^ 2 ≤ gamma fp 2 :=
+    two_u_add_u_sq_le_gamma_two fp h2val
+  have hcm : (2 * fp.u + fp.u ^ 2) + (1 + fp.u) ^ 2 * gamma fp m ≤
+      gamma fp (m + 2) :=
+    sub_then_scale_coeff_le_gamma fp m hm
+  have hcn : fp.u + (1 + fp.u) * gamma fp n ≤ gamma fp (n + 1) :=
+    add_then_scale_coeff_le_gamma fp n hn
+  have hterm1 : (2 * fp.u + fp.u ^ 2) * |C i j| ≤ gamma fp 2 * |C i j| :=
+    mul_le_mul_of_nonneg_right hc2 (abs_nonneg _)
+  have hterm2 : ((2 * fp.u + fp.u ^ 2) + (1 + fp.u) ^ 2 * gamma fp m) * S1 ≤
+      gamma fp (m + 2) * S1 :=
+    mul_le_mul_of_nonneg_right hcm hS1nn
+  have hterm3 : (fp.u + (1 + fp.u) * gamma fp n) * S2 ≤
+      gamma fp (n + 1) * S2 :=
+    mul_le_mul_of_nonneg_right hcn hS2nn
+  have hbudget : flSylvesterResidualBudget fp m n A B C Xhat i j =
+      gamma fp (m + 2) * S1 + gamma fp (n + 1) * S2 + gamma fp 2 * |C i j| := by
+    simp only [flSylvesterResidualBudget]
+    rw [← hS1, ← hS2]
+  -- assemble
+  show |flSylvesterResidualRect fp m n A B C Xhat i j -
+      sylvesterResidualRect m n A B C Xhat i j| ≤
+    flSylvesterResidualBudget fp m n A B C Xhat i j
+  rw [hfl, hRR, hkey, hbudget]
+  calc
+    |(C i j - M1) * (δ1 + δ2 + δ1 * δ2) -
+        (P1 - M1) * ((1 + δ1) * (1 + δ2)) +
+        M2 * δ2 + (P2 - M2) * (1 + δ2)|
+        ≤ |(C i j - M1) * (δ1 + δ2 + δ1 * δ2)| +
+            |(P1 - M1) * ((1 + δ1) * (1 + δ2))| +
+            |M2 * δ2| + |(P2 - M2) * (1 + δ2)| :=
+          abs_sub_add_add_le _ _ _ _
+    _ ≤ (|C i j| + S1) * (2 * fp.u + fp.u ^ 2) +
+          (gamma fp m * S1) * (1 + fp.u) ^ 2 +
+          S2 * fp.u + (gamma fp n * S2) * (1 + fp.u) := by
+        linarith
+    _ = (2 * fp.u + fp.u ^ 2) * |C i j| +
+          ((2 * fp.u + fp.u ^ 2) + (1 + fp.u) ^ 2 * gamma fp m) * S1 +
+          (fp.u + (1 + fp.u) * gamma fp n) * S2 := by
+        ring
+    _ ≤ gamma fp (m + 2) * S1 + gamma fp (n + 1) * S2 +
+          gamma fp 2 * |C i j| := by
+        linarith
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29): the floating-point computed residual together with its
+    gamma-weighted budget satisfies the `IsSylvesterComputedResidualBudget`
+    certificate consumed by the practical error bound of `Higham16.lean`. -/
+theorem isSylvesterComputedResidualBudget_fl (fp : FPModel) (m n : ℕ)
+    (A : RMatFn m m) (B : RMatFn n n) (C Xhat : RMatFn m n)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1)) :
+    IsSylvesterComputedResidualBudget m n A B C Xhat
+      (flSylvesterResidualRect fp m n A B C Xhat)
+      (flSylvesterResidualBudget fp m n A B C Xhat) := by
+  obtain ⟨dR, hRhat, hdR⟩ :=
+    sylvester_computed_residual_dR_model fp m n A B C Xhat hm hn
+  exact sylvesterComputedResidualBudget_of_error_model m n A B C Xhat
+    (flSylvesterResidualRect fp m n A B C Xhat)
+    (flSylvesterResidualBudget fp m n A B C Xhat) dR hRhat
+    (flSylvesterResidualBudget_nonneg fp m n A B C Xhat hm hn) hdR
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), end-to-end diagonal instantiation: for separated diagonal
+    coefficient matrices, the practical relative max-entry forward-error bound
+    holds with the residual computed in floating point by
+    `flSylvesterResidualRect` and the rounding budget
+    `flSylvesterResidualBudget`.  Scope: the coefficient matrices are diagonal
+    (the case with an explicit `|P⁻¹|`), the exact solution `X` is a
+    hypothesis, and only the residual computation is floating-point. -/
+theorem sylvester_practical_error_bound_fl (fp : FPModel) (m n : ℕ)
+    (a : Fin m → ℝ) (b : Fin n → ℝ) (C X Xhat : RMatFn m n)
+    (hsep : ∀ i j, ¬(a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat ≤
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterDiagonalVecCoeffInvAbs m n a b)
+          (flSylvesterResidualRect fp m n
+            (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+          (flSylvesterResidualBudget fp m n
+            (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)) /
+        sylvesterMaxEntryNormRect m n Xhat :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_certificate
+    m n a b C X Xhat
+    (flSylvesterResidualRect fp m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+    (flSylvesterResidualBudget fp m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+    hsep hX
+    (isSylvesterComputedResidualBudget_fl fp m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C Xhat hm hn)
+    hXhat
+
+end LeanFpAnalysis.FP
