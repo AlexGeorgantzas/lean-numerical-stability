@@ -6757,6 +6757,251 @@ theorem
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy
       hB.rightInverse_spec hAPleft_null hAPdiff
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    determinant-facing Moore--Penrose certificate for the concrete Gram table
+    chosen for `(AP)^+` in the source-full-row-rank route.  This instantiates
+    the shared Chapter 21 pseudoinverse construction at the reduced operator
+    `AP = A(I - B^+B)`. -/
+theorem
+    LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (hdet :
+      Matrix.det
+        (rectGram (theorem20_8AP A B hB.rightInverse) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0) :
+    RectMoorePenrosePseudoinverse m n
+      (theorem20_8AP A B hB.rightInverse)
+      (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) :=
+  higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero
+    (theorem20_8AP A B hB.rightInverse) hdet
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    concrete Gram-table form of the projector-range-to-annihilation bridge.
+    The remaining source-specific hypothesis is the projector-range certificate
+    `P*(AP)^+ = (AP)^+` for the chosen Gram pseudoinverse. -/
+theorem
+    LSEFullRowRank.theorem20_8_gram_APplus_constraint_annihilates_of_projection_range
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (hProjAPplus :
+      rectMatMul (theorem20_8Projection B hB.rightInverse)
+          (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) =
+        undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) :
+    rectMatMul B
+        (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) =
+      (fun _i : Fin p => fun _j : Fin m => 0) :=
+  LSEFullRowRank.theorem20_8_APplus_constraint_annihilates_of_projection_range
+    hB (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+    hProjAPplus
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    determinant-facing reduced left-inverse route for the concrete Gram
+    pseudoinverse of `AP`.  The Moore--Penrose certificate is now discharged
+    by nonsingularity of `rectGram(AP)`; the projector-range certificate and
+    (20.24)'s null-intersection condition remain visible. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_projection_range_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (hdet :
+      Matrix.det
+        (rectGram (theorem20_8AP A B hB.rightInverse) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hProjAPplus :
+      rectMatMul (theorem20_8Projection B hB.rightInverse)
+          (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) =
+        undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec
+            (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+            (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+  LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_projection_range_nullIntersection
+    A hB (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+    (LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
+      A hB hdet)
+    hProjAPplus hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    concrete Gram-pseudoinverse form of the projected-difference handoff.
+    This removes the abstract Moore--Penrose certificate from the final route
+    under the determinant hypothesis, while keeping the projector-range and
+    reduced-`AP` equations explicit. -/
+theorem
+    LSEFullRowRank.theorem20_8_projected_difference_eq_gram_APplus_of_projection_range_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ)
+    (hdet :
+      Matrix.det
+        (rectGram (theorem20_8AP A B hB.rightInverse) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hProjAPplus :
+      rectMatMul (theorem20_8Projection B hB.rightInverse)
+          (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) =
+        undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+          rectMatMulVec
+            (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+            (rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j := by
+  exact
+    LSEFullRowRank.theorem20_8_projected_difference_eq_APplus_of_MP_projection_range_nullIntersection_reduced_difference_eq
+      A DeltaA Deltab hB DeltaB
+      (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+      Deltad y x
+      (LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
+        A hB hdet)
+      hProjAPplus hnull hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    concrete Gram-pseudoinverse form of the exact printed correction-vector
+    identity. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_gram_APplus_of_projection_range_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hdet :
+      Matrix.det
+        (rectGram (theorem20_8AP A B hB.rightInverse) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hProjAPplus :
+      rectMatMul (theorem20_8Projection B hB.rightInverse)
+          (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) =
+        undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (theorem20_8BAplus A B hB.rightInverse
+              (undetAplusOfGramNonsingInv
+                (theorem20_8AP A B hB.rightInverse)))
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec
+            (undetAplusOfGramNonsingInv
+              (theorem20_8AP A B hB.rightInverse))
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j := by
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_MP_projection_range_nullIntersection_reduced_difference_eq
+      A DeltaA b Deltab hB DeltaB
+      (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+      d Deltad y x hx hy
+      (LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
+        A hB hdet)
+      hProjAPplus hnull hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    strongest current relative solution-difference handoff specialized to the
+    concrete Gram pseudoinverse of `AP`.  This closes the abstract
+    Moore--Penrose-certificate obligation for this route under
+    `det(rectGram(AP)) != 0`; the projector-range certificate, reduced equation,
+    and first-order radius are still explicit source obligations. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gram_MP_projection_range_nullIntersection_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ)
+    {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hdet :
+      Matrix.det
+        (rectGram (theorem20_8AP A B hB.rightInverse) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hProjAPplus :
+      rectMatMul (theorem20_8Projection B hB.rightInverse)
+          (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) =
+        undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r
+          (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+          (theorem20_8BAplus A B hB.rightInverse
+            (undetAplusOfGramNonsingInv
+              (theorem20_8AP A B hB.rightInverse))) +
+        eps ^ 2 * solutionRadius *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B hB.rightInverse
+                  (undetAplusOfGramNonsingInv
+                    (theorem20_8AP A B hB.rightInverse)))) *
+              frobNormRect B +
+            complexMatrixOp2
+              (realRectToCMatrix
+                (undetAplusOfGramNonsingInv
+                  (theorem20_8AP A B hB.rightInverse))) *
+              frobNormRect A) := by
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_projection_range_nullIntersection_reduced_difference_eq
+      A DeltaA b Deltab hB DeltaB
+      (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
+      d Deltad y x r
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy
+      (LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
+        A hB hdet)
+      hProjAPplus hnull hAPdiff
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.24): vertical stack
     `[A; B]`, the local representation of `[A^T, B^T]^T`. -/
 noncomputable def lseStackedMatrix {m n p : ℕ}
