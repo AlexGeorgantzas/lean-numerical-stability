@@ -4700,6 +4700,183 @@ theorem LSEFullRowRank.theorem20_8_perturbed_feasible_residual_decomp_BAplus
   _root_.LeanFpAnalysis.FP.theorem20_8_perturbed_feasible_residual_decomp_BAplus
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y hx hy
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-instantiated expansion of
+    `B_A^+ = (I - (AP)^+ A) B^+` applied to a constraint-defect vector.
+
+    This uses the right inverse supplied by source full row rank; it does not
+    assert Moore--Penrose optimality for that right inverse. -/
+theorem LSEFullRowRank.theorem20_8BAplus_apply {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (APplus : Fin n → Fin m → ℝ)
+    (e : Fin p → ℝ) :
+    rectMatMulVec (theorem20_8BAplus A B hB.rightInverse APplus) e =
+      fun j : Fin n =>
+        rectMatMulVec hB.rightInverse e j -
+          rectMatMulVec APplus
+            (rectMatMulVec A (rectMatMulVec hB.rightInverse e)) j :=
+  _root_.LeanFpAnalysis.FP.theorem20_8BAplus_apply
+    A B hB.rightInverse APplus e
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-instantiated expansion of the source product `A B_A^+`. -/
+theorem LSEFullRowRank.theorem20_8A_BAplus_apply {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (APplus : Fin n → Fin m → ℝ)
+    (e : Fin p → ℝ) :
+    rectMatMulVec A
+        (rectMatMulVec (theorem20_8BAplus A B hB.rightInverse APplus) e) =
+      fun i : Fin m =>
+        rectMatMulVec A (rectMatMulVec hB.rightInverse e) i -
+          rectMatMulVec A
+            (rectMatMulVec APplus
+              (rectMatMulVec A (rectMatMulVec hB.rightInverse e))) i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8A_BAplus_apply
+    A B hB.rightInverse APplus e
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-instantiated split of the old `A B^+` correction into the
+    reduced-problem correction plus the printed `A B_A^+` correction. -/
+theorem LSEFullRowRank.theorem20_8ABplus_eq_A_APplus_A_Bplus_add_A_BAplus
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (APplus : Fin n → Fin m → ℝ)
+    (e : Fin p → ℝ) :
+    rectMatMulVec A (rectMatMulVec hB.rightInverse e) =
+      fun i : Fin m =>
+        rectMatMulVec A
+            (rectMatMulVec APplus
+              (rectMatMulVec A (rectMatMulVec hB.rightInverse e))) i +
+          rectMatMulVec A
+            (rectMatMulVec
+              (theorem20_8BAplus A B hB.rightInverse APplus) e) i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8ABplus_eq_A_APplus_A_Bplus_add_A_BAplus
+    A B hB.rightInverse APplus e
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-instantiated source-operator-norm bound for the direct
+    `B_A^+` constraint-defect correction under the displayed perturbation
+    budget.  The supplied `(AP)^+` remains explicit. -/
+theorem
+    LSEFullRowRank.theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y : Fin n → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2
+        (rectMatMulVec (theorem20_8BAplus A B hB.rightInverse APplus)
+          (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)) ≤
+      complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_op2
+      A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y hbudget
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-instantiated source-operator-norm bound for the
+    `A B_A^+` residual correction under the displayed perturbation budget. -/
+theorem
+    LSEFullRowRank.theorem20_8_vecNorm2_A_BAplus_constraint_defect_le_of_relativeBudget_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y : Fin n → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec (theorem20_8BAplus A B hB.rightInverse APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i))) ≤
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul A
+              (theorem20_8BAplus A B hB.rightInverse APplus))) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_A_BAplus_constraint_defect_le_of_relativeBudget_op2
+      A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y hbudget
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-instantiated bound for the split constraint-defect correction
+    after `A B^+` is decomposed through `B_A^+`. -/
+theorem
+    LSEFullRowRank.theorem20_8_vecNorm2_BAplus_split_constraint_defect_le_of_relativeBudget_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y : Fin n → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2
+        (fun i : Fin m =>
+          rectMatMulVec A
+              (rectMatMulVec APplus
+                (rectMatMulVec A
+                  (rectMatMulVec hB.rightInverse
+                    (fun l : Fin p =>
+                      Deltad l - rectMatMulVec DeltaB y l)))) i +
+            rectMatMulVec A
+              (rectMatMulVec
+                (theorem20_8BAplus A B hB.rightInverse APplus)
+                (fun l : Fin p => Deltad l - rectMatMulVec DeltaB y l)) i) ≤
+      theorem20_8KappaB A APplus *
+          (complexMatrixOp2 (realRectToCMatrix (rectMatMul A hB.rightInverse)) *
+            (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+        complexMatrixOp2
+            (realRectToCMatrix
+              (rectMatMul A
+                (theorem20_8BAplus A B hB.rightInverse APplus))) *
+          (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_BAplus_split_constraint_defect_le_of_relativeBudget_op2
+      A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y hbudget
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-instantiated residual-correction bound for the split
+    `B_A^+` path, including the explicit `DeltaA*y` and `Deltab` terms. -/
+theorem
+    LSEFullRowRank.theorem20_8_vecNorm2_perturbed_residual_correction_BAplus_split_le_of_relativeBudget_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y : Fin n → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2
+        (fun i : Fin m =>
+          (rectMatMulVec A
+              (rectMatMulVec APplus
+                (rectMatMulVec A
+                  (rectMatMulVec hB.rightInverse
+                    (fun l : Fin p =>
+                      Deltad l - rectMatMulVec DeltaB y l)))) i +
+            rectMatMulVec A
+              (rectMatMulVec
+                (theorem20_8BAplus A B hB.rightInverse APplus)
+                (fun l : Fin p => Deltad l - rectMatMulVec DeltaB y l)) i) +
+            rectMatMulVec DeltaA y i -
+          Deltab i) ≤
+      (theorem20_8KappaB A APplus *
+            (complexMatrixOp2 (realRectToCMatrix (rectMatMul A hB.rightInverse)) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          complexMatrixOp2
+              (realRectToCMatrix
+                (rectMatMul A
+                  (theorem20_8BAplus A B hB.rightInverse APplus))) *
+            (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+        (eps * frobNormRect A) * vecNorm2 y +
+        eps * vecNorm2 b :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_perturbed_residual_correction_BAplus_split_le_of_relativeBudget_op2
+      A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y hbudget
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 rank bridge:
     full row rank of `B` makes the transpose map `Bᵀ` injective.  This is the
     finite-dimensional algebra used by the exact-MGS GQR route to connect the
