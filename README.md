@@ -112,7 +112,11 @@ fixed-null component hypothesis from an index-one Drazin certificate for
 `stationaryDrazinRangeProjector_mul_fixedProjector_eq_zero`,
 `stationaryDrazinFixedProjector_mul_rangeProjector_eq_zero`, and
 `stationaryDrazinFixedProjector_matPow_fixed` needed on the path to the
-semiconvergent limit projector.
+semiconvergent limit projector.  The range side now also has
+`stationaryDrazinRangeProjector_commutes_with_G`,
+`stationaryDrazinRangeProjector_commutes_with_matPow`, and
+`stationaryDrazinRangeProjector_matPow_sandwich`, supporting the future
+range-series manipulation in (17.30).
 The scale-independence passage on p.327 now has checked algebraic and
 characteristic-polynomial wrappers through `stationaryRowColumnScale`,
 `stationaryScaledInverse`, `stationaryRowColumnScale_splittingSpec`,
