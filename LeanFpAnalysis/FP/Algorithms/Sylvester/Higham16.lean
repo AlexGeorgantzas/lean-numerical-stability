@@ -859,6 +859,25 @@ theorem sylvesterVecCoeff_diagonal_mulVec_bijective (m n : Nat)
   ⟨sylvesterVecCoeff_diagonal_mulVec_injective m n a b hsep,
     sylvesterVecCoeff_diagonal_mulVec_surjective m n a b hsep⟩
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), diagonal case:
+    the separated diagonal vectorized Sylvester linear system has a unique
+    solution for every vectorized right-hand side. -/
+theorem existsUnique_sylvesterVecCoeff_diagonal_mulVec (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ∃! x : Prod (Fin n) (Fin m) -> Real,
+      Matrix.mulVec
+        (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b)) x = c := by
+  have hinj :=
+    sylvesterVecCoeff_diagonal_mulVec_injective m n a b hsep
+  have hsurj :=
+    sylvesterVecCoeff_diagonal_mulVec_surjective m n a b hsep
+  obtain ⟨x, hx⟩ := hsurj c
+  refine ⟨x, hx, ?_⟩
+  intro y hy
+  exact hinj (by rw [hy, hx])
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal case:
     the absolute-value matrix exactly bounds the explicit diagonal inverse
     componentwise. -/
@@ -1373,6 +1392,30 @@ theorem sylvesterVecCoeff_schurDiagonal_mulVec_bijective (m n : Nat)
       m n U A V B a b hU hV hA hB hsep,
     sylvesterVecCoeff_schurDiagonal_mulVec_surjective
       m n U A V B a b hU hV hA hB hsep⟩
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
+    Schur-coordinate case: the supplied-factor vectorized Sylvester linear
+    system has a unique solution for every vectorized right-hand side. -/
+theorem existsUnique_sylvesterVecCoeff_schurDiagonal_mulVec (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ∃! x : Prod (Fin n) (Fin m) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c := by
+  have hinj :=
+    sylvesterVecCoeff_schurDiagonal_mulVec_injective
+      m n U A V B a b hU hV hA hB hsep
+  have hsurj :=
+    sylvesterVecCoeff_schurDiagonal_mulVec_surjective
+      m n U A V B a b hU hV hA hB hsep
+  obtain ⟨x, hx⟩ := hsurj c
+  refine ⟨x, hx, ?_⟩
+  intro y hy
+  exact hinj (by rw [hy, hx])
 
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
