@@ -832,6 +832,33 @@ theorem sylvesterVecCoeff_diagonal_mulVec_injective (m n : Nat)
     _ = Matrix.mulVec Pinv (Matrix.mulVec P y) := by rw [hxy]
     _ = y := hy
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), diagonal case:
+    under separated diagonal entries, the vectorized diagonal Sylvester
+    coefficient reaches every right-hand side by the explicit entrywise solve. -/
+theorem sylvesterVecCoeff_diagonal_mulVec_surjective (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Function.Surjective
+      (Matrix.mulVec
+        (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))) := by
+  intro y
+  obtain ⟨C, hC⟩ := Matrix.vec_bijective.surjective y
+  refine ⟨Matrix.vec (sylvesterDiagonalSolution m n a b C), ?_⟩
+  rw [← hC]
+  exact sylvesterVecCoeff_mulVec_vec_sylvesterDiagonalSolution m n a b C hsep
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), diagonal case:
+    separated diagonal entries make the vectorized diagonal Sylvester
+    coefficient a bijection on vectorized unknowns. -/
+theorem sylvesterVecCoeff_diagonal_mulVec_bijective (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Function.Bijective
+      (Matrix.mulVec
+        (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))) :=
+  ⟨sylvesterVecCoeff_diagonal_mulVec_injective m n a b hsep,
+    sylvesterVecCoeff_diagonal_mulVec_surjective m n a b hsep⟩
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal case:
     the absolute-value matrix exactly bounds the explicit diagonal inverse
     componentwise. -/
@@ -1309,6 +1336,43 @@ theorem sylvesterVecCoeff_schurDiagonal_mulVec_injective (m n : Nat)
     rw [← hXvec, hXzero]
     rfl
   exact sub_eq_zero.mp hsub
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
+    Schur-coordinate case: supplied orthogonal diagonal factors with separated
+    diagonal entries make the vectorized Sylvester coefficient surjective. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_surjective (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  intro y
+  obtain ⟨C, hC⟩ := Matrix.vec_bijective.surjective y
+  refine ⟨Matrix.vec (sylvesterSchurDiagonalSolution m n U V a b C), ?_⟩
+  rw [← hC]
+  exact
+    (sylvester_vec_system_iff_solution m n A B C
+      (sylvesterSchurDiagonalSolution m n U V a b C)).mpr
+      (isSylvesterSolutionRect_schurDiagonalSolution
+        m n U A V B a b C hU hV hA hB hsep)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
+    Schur-coordinate case: supplied orthogonal diagonal factors with separated
+    diagonal entries make the vectorized Sylvester coefficient bijective. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_bijective (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff m n A B)) :=
+  ⟨sylvesterVecCoeff_schurDiagonal_mulVec_injective
+      m n U A V B a b hU hV hA hB hsep,
+    sylvesterVecCoeff_schurDiagonal_mulVec_surjective
+      m n U A V B a b hU hV hA hB hsep⟩
 
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
