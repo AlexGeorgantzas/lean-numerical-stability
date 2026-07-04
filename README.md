@@ -92,7 +92,9 @@ finite sigma-form residual estimate `normwise_residual_sigma_finite_bound` for
 `finiteResidualSigma_le_diagonalizable_bound`, the entrywise `tsum` sigma
 surface `residualSigmaTsumMatrix` and scalar wrapper `residualSigmaTsum`, now
 instantiated with the displayed finite maximum by `diagonalResidualRatioMax`
-and `finiteResidualSigma_le_diagonalizable_max_bound`, plus the
+and `finiteResidualSigma_le_diagonalizable_max_bound`, the direct literal
+`tsum` bound `residualSigmaTsum_le_diagonalizable_max_bound_direct`, the
+series bridge `residualSigmaTsum_le_diagonalizable_max_bound`, plus the
 supremum-envelope wrapper `residualSigmaSup_le_diagonalizable_max_bound`, for
 the (17.20) bound,
 the singular exact-iterate identity `singular_stationary_iterate_finite_sum`
@@ -102,7 +104,10 @@ for (17.21), the consistent-system singular telescoping wrappers
 `singular_stationary_iterate_consistent_split` toward (17.26), plus
 `singularErrorSourceTerm` for the (17.28) `S_m` source term and
 `singular_error_split_finite` for the finite algebraic core of the (17.27)
-range/null source split under the explicit fixed-null component hypothesis.
+range/null source split, now with the Drazin-projector wrapper
+`singular_error_split_finite_of_indexOneDrazin_projector` discharging the
+fixed-null component hypothesis from an index-one Drazin certificate for
+`I - G`.
 The scale-independence passage on p.327 now has checked algebraic and
 characteristic-polynomial wrappers through `stationaryRowColumnScale`,
 `stationaryScaledInverse`, `stationaryRowColumnScale_splittingSpec`,
