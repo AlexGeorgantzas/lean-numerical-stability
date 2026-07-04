@@ -20,6 +20,16 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-04 plain inverse-comparison canonical active-pivot wrappers: added
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivotInv_eq_nonsingInv`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivotInv_eq_nonsingInv`,
+  their determinant-nonzero companions, and the Eq.13.23 product-update/
+  dimension-aware companions in `BlockLU.lean`.  These derive the active pivot
+  right-inverse table from active pivot determinant nonzero plus
+  `pivotInv k = nonsingInv r pivot_k`, removing a proof-artifact premise from
+  the plain inverse-comparison route.  This is dependency cleanup only: the
+  Schur-tail inverse comparison, source-strength Eq.13.23 BDD `rho <= 2` data,
+  all-tail source comparisons, and Theorem 13.6 cited estimates remain open.
 - 2026-07-02 Problem 13.4 raw canonical-parent determinant product packaging:
   added
   `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_canonical_parent_inverse_entry_of_det_ne_zero`
