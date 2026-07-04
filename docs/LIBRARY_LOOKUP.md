@@ -2939,6 +2939,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_lu_inverse_product_identities_of_source_inverse_identities`
 - `higham9_15_inverse_product_bounds_of_lu_inverse_identities`
 - `higham9_15_matrix_lu_inverse_product_identities_of_source_inverse_identities`
+- `higham9_15_inverse_product_bounds_of_matrix_inverse_products`
+- `higham9_15_inverse_product_bounds_of_matrix_lu_inverse_identities`
 - `higham9_15_chi_condition_chain_of_lu_inverse_identities`
 - `higham9_15_chi_condition_chain_of_matrix_lu_inverse_identities`
 - `higham9_15_chi_condition_chain_min_of_lu_inverse_identities`
