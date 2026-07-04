@@ -1438,6 +1438,52 @@ theorem sylvesterBackwardErrorInf_le_lyapunovBackwardErrorInf (n : Nat)
     heta.1
     (isBackwardError_of_isLyapunovBackwardError n A C Y alpha gamma eta heta.2)
 
+/-- The Lyapunov residual is the Sylvester residual for the specialization
+    `B = -A^T`. -/
+theorem lyapunovResidual_eq_sylvesterResidual_special (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) :
+    lyapunovResidual n A C Y =
+      sylvesterResidual n A (fun i j => -matTranspose A i j) C Y := by
+  ext i j
+  unfold lyapunovResidual sylvesterResidual
+  rw [lyapunovOp_eq_sylvesterOp]
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    a structured Lyapunov backward-error certificate at cost `eta` gives the
+    Lyapunov residual bound with the tied-perturbation scale
+    `(2 * alpha * ||Y||_F + gamma) * eta`. -/
+theorem lyapunov_residual_bound_of_backward_error (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) (alpha gamma eta : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heta : 0 <= eta)
+    (hLyap : IsLyapunovBackwardError n A C Y alpha gamma eta) :
+    frobNorm (lyapunovResidual n A C Y) <=
+      (2 * alpha * frobNorm Y + gamma) * eta := by
+  rcases isBackwardError_of_isLyapunovBackwardError n A C Y alpha gamma eta hLyap with
+    ⟨DeltaA, DeltaB, DeltaC, hEq, hDeltaA_sq, hDeltaB_sq, hDeltaC_sq⟩
+  have hDeltaA :
+      frobNorm DeltaA <= eta * alpha :=
+    frobNorm_le_of_frobNormSq_le_sq DeltaA
+      (mul_nonneg heta halpha) hDeltaA_sq
+  have hDeltaB :
+      frobNorm DeltaB <= eta * alpha :=
+    frobNorm_le_of_frobNormSq_le_sq DeltaB
+      (mul_nonneg heta halpha) hDeltaB_sq
+  have hDeltaC :
+      frobNorm DeltaC <= eta * gamma :=
+    frobNorm_le_of_frobNormSq_le_sq DeltaC
+      (mul_nonneg heta hgamma) hDeltaC_sq
+  have hres :=
+    residual_bound n A (fun i j => -matTranspose A i j) C Y
+      DeltaA DeltaB DeltaC alpha alpha gamma eta
+      halpha halpha hgamma heta hEq hDeltaA hDeltaB hDeltaC
+  calc
+    frobNorm (lyapunovResidual n A C Y)
+        = frobNorm (sylvesterResidual n A
+            (fun i j => -matTranspose A i j) C Y) := by
+            rw [lyapunovResidual_eq_sylvesterResidual_special]
+    _ <= ((alpha + alpha) * frobNorm Y + gamma) * eta := hres
+    _ = (2 * alpha * frobNorm Y + gamma) * eta := by ring
+
 /-- If `Y = U * Lambda * U^T`, the left perturbation product transforms to
     `DeltaA_tilde * Lambda`. -/
 theorem lyapunovSpectralTransform_mul_spectral_right (n : ℕ)
