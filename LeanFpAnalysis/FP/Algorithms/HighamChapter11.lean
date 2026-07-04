@@ -64,6 +64,16 @@ theorem higham11_1_growth_balance :
       1 + 2 / (1 - higham11_1_bunchParlettAlpha) :=
   bunch_parlett_growth_balance
 
+/-- **§11.1.1 growth-factor recursion**: a stage-maximum sequence `r` obeying the
+single-step ratio bound `r(k+1) ≤ (1 + 1/α)·r k` (supplied for each stage by
+`higham11_1_oneByOne_schur_growth` / `higham11_4_twoByTwo_schur_growth`) satisfies
+`r n ≤ (1 + 1/α)^n · ρ₀`, the derivation of the printed `ρₙ ≤ (1 + α⁻¹)^{n−1}`. -/
+theorem higham11_1_growth_factor_recursion (α ρ0 : ℝ) (r : ℕ → ℝ)
+    (hα : 0 < α) (h0 : r 0 = ρ0)
+    (hstep : ∀ k, r (k + 1) ≤ (1 + 1 / α) * r k) :
+    ∀ n, r n ≤ (1 + 1 / α) ^ n * ρ0 :=
+  geom_growth_iterate α ρ0 r hα h0 hstep
+
 /-- **Equation (11.4)**, the scalar entry of the 2 by 2 Schur complement
 `b_ij - [c_i1 c_i2] E^{-1} [c_j1, c_j2]^T`. -/
 noncomputable def higham11_4_twoByTwoSchurEntry
@@ -153,6 +163,40 @@ theorem higham11_4_twoByTwo_schur_growth
   exact twoByTwo_schur_growth bij ci1 ci2 cj1 cj2 e11 e12 e21 e22 μ0 α K
     hα0 hα1 hμ hK hb hci1 hci2 hcj1 hcj2 he11 he12 he21 he22
 
+/-- **§11.1.1 printed inverse bound** `|E⁻¹| ≤ K·[[α,1],[1,α]]`, `K = 1/((1−α²)μ₀)`:
+the entrywise bounds on `E⁻¹ = d⁻¹[[e₂₂,−e₂₁],[−e₂₁,e₁₁]]` for a complete-pivoting
+2×2 block, derived from the determinant magnitude bound. -/
+theorem higham11_4_twoByTwo_inverse_entry_bounds (e11 e22 e21 μ0 μ1 α K : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1) :
+    |e22 / (e11 * e22 - e21 ^ 2)| ≤ α * K
+      ∧ |e11 / (e11 * e22 - e21 ^ 2)| ≤ α * K
+      ∧ |e21 / (e11 * e22 - e21 ^ 2)| ≤ K :=
+  twoByTwo_inverse_entry_bounds e11 e22 e21 μ0 μ1 α K
+    hμ1 hα0 hα1 hμ he11 he22 he21 hμ1α hK
+
+/-- **§11.1.1 self-contained 2×2 growth**: substituting the actual inverse block
+`E⁻¹` into the eq-(11.4) Schur entry, `|ã| ≤ (1 + 2/(1−α))μ₀` holds using only the
+pivot-block data (no assumed inverse-entry bounds). -/
+theorem higham11_4_twoByTwo_schur_growth_of_block
+    (bij ci1 ci2 cj1 cj2 e11 e22 e21 μ0 μ1 α K : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1)
+    (hb : |bij| ≤ μ0)
+    (hci1 : |ci1| ≤ μ0) (hci2 : |ci2| ≤ μ0)
+    (hcj1 : |cj1| ≤ μ0) (hcj2 : |cj2| ≤ μ0) :
+    |higham11_4_twoByTwoSchurEntry bij ci1 ci2 cj1 cj2
+        (e22 / (e11 * e22 - e21 ^ 2)) (-(e21 / (e11 * e22 - e21 ^ 2)))
+        (-(e21 / (e11 * e22 - e21 ^ 2))) (e11 / (e11 * e22 - e21 ^ 2))|
+      ≤ (1 + 2 / (1 - α)) * μ0 := by
+  unfold higham11_4_twoByTwoSchurEntry
+  exact twoByTwo_schur_growth_of_block bij ci1 ci2 cj1 cj2 e11 e22 e21 μ0 μ1 α K
+    hμ1 hα0 hα1 hμ he11 he22 he21 hμ1α hK hb hci1 hci2 hcj1 hcj2
+
 /-! ## §11.1.2 Partial pivoting -/
 
 /-- **Algorithm 11.2** branch predicate for the Bunch-Kaufman partial
@@ -189,6 +233,30 @@ theorem higham11_3_block_ldlt_backward_error_interface (n : ℕ)
           L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
         A (σ i) (σ j) + ΔA1 i j) :=
   h
+
+/-- **Theorem 11.3 per-step floating-point building block**: the fl backward
+error of one 1×1 Schur-complement update `s = fl(a − fl(fl(c₁/e)·c₂))` equals the
+exact entry `a − c₁c₂/e` plus a derived error `≤ γ₃·(|a| + |c₁c₂/e|)`.  This is a
+genuine (non-assumed) atomic ingredient toward the block-LDLᵀ backward error
+`higham11_3_block_ldlt_backward_error_interface`; the full recursion over all
+stages remains open (see chapter report). -/
+theorem higham11_3_fl_oneByOne_schur_step_error
+    (fp : FPModel) (a e c1 c2 : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 3 * (|a| + |c1 * c2 / e|) ∧
+      fp.fl_sub a (fp.fl_mul (fp.fl_div c1 e) c2) = (a - c1 * c2 / e) + Δ :=
+  fl_oneByOne_schur_step_error fp a e c1 c2 he hval
+
+/-- **Theorem 11.3 / eq (11.5), `s = 1` case**: the computed 1×1 pivot solve
+`x̂ = fl(b/e)` of `e·x = b` satisfies `(e + Δe)·x̂ = b` with `|Δe| ≤ γ₁·|e|` — a
+derived (non-assumed) instance of the block-solve perturbation hypothesis (11.5)
+for 1×1 pivots. -/
+theorem higham11_3_fl_oneByOne_solve_backward_error
+    (fp : FPModel) (b e : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 1) :
+    ∃ Δe : ℝ, |Δe| ≤ gamma fp 1 * |e| ∧ (e + Δe) * fp.fl_div b e = b :=
+  fl_oneByOne_solve_backward_error fp b e he hval
 
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
@@ -451,6 +519,28 @@ theorem higham11_9_skew_L_entry_bound_interface (n : ℕ)
 def higham11_9_skewSchurEntryBound
     (sij Amax : ℝ) : Prop :=
   |sij| ≤ 3 * Amax
+
+/-- **Algorithm 11.9 multiplier bound**, proved: for a skew 2×2 pivot the
+multiplier `c/a₂₁` (an entry of `CE⁻¹`, hence of `L`) satisfies `|c/a₂₁| ≤ 1`
+whenever the pivot `a₂₁` has the largest magnitude (`|c| ≤ |a₂₁|`).  This is the
+honest derivation behind `higham11_9_skew_L_entry_bound_interface`. -/
+theorem higham11_9_skew_multiplier_bound (c a21 : ℝ)
+    (ha : a21 ≠ 0) (hc : |c| ≤ |a21|) :
+    |c / a21| ≤ 1 :=
+  skew_twoByTwo_multiplier_bound c a21 ha hc
+
+/-- **Algorithm 11.9 Schur-entry bound**, proved: the skew 2×2 Schur entry
+`s = a_ij − (a_{i2}/a₂₁)a_{j1} + (a_{i1}/a₂₁)a_{j2}` satisfies the printed
+`higham11_9_skewSchurEntryBound s M`, i.e. `|s| ≤ 3M`, when every active entry is
+`≤ M` and the multipliers are `≤ 1` (`|a_{i1}|,|a_{i2}| ≤ |a₂₁|`). -/
+theorem higham11_9_skew_schur_entry_bound
+    (aij ai1 ai2 aj1 aj2 a21 M : ℝ) (ha : a21 ≠ 0)
+    (hij : |aij| ≤ M) (hj1 : |aj1| ≤ M) (hj2 : |aj2| ≤ M)
+    (hi1 : |ai1| ≤ |a21|) (hi2 : |ai2| ≤ |a21|) :
+    higham11_9_skewSchurEntryBound
+      (aij - (ai2 / a21) * aj1 + (ai1 / a21) * aj2) M :=
+  skew_twoByTwo_schur_entry_bound aij ai1 ai2 aj1 aj2 a21 M
+    ha hij hj1 hj2 hi1 hi2
 
 /-- The printed skew growth-factor bound
 `rho_n <= (sqrt 3)^(n-2)`. -/

@@ -2221,6 +2221,118 @@ theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_s
       le_of_lt (lt_of_not_ge hAB)
     simpa [min_eq_right hBA] using hB_bound x
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    conditional Loewner-to-`min` packaging for the source-oriented
+    `P_B(I-P_A)` projector estimate.
+
+This closes the `delta * min Aplus_norm Bplus_norm` projector bound once the
+compressed-Gram Loewner comparison and equal projection traces are supplied.
+It still leaves the Stewart--Sun/principal-angle comparison as the explicit
+`hLoewner` hypothesis. -/
+theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_min_of_compressedGram_loewnerLe_trace_eq
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {delta Aplus_norm Bplus_norm : ℝ}
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hTrace :
+      finiteTrace (rectMatMul B Bplus) =
+        finiteTrace (rectMatMul A Aplus))
+    (hLoewner :
+      finiteLoewnerLe
+        (rectMatMul
+          (rectMatMul
+            (fun i j => idMatrix m i j - rectMatMul A Aplus i j)
+            (rectMatMul B Bplus))
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (rectMatMul
+          (rectMatMul
+            (fun i j => idMatrix m i j - rectMatMul B Bplus i j)
+            (rectMatMul A Aplus))
+          (fun i j => idMatrix m i j - rectMatMul B Bplus i j)))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus_norm_nonneg : 0 ≤ Aplus_norm)
+    (hBplus_norm_nonneg : 0 ≤ Bplus_norm)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hBplus : rectOpNorm2Le Bplus Bplus_norm) :
+    rectOpNorm2Le
+      (rectMatMul
+        (rectMatMul B Bplus)
+        (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+      (delta * min Aplus_norm Bplus_norm) := by
+  let PA : Fin m → Fin m → ℝ := rectMatMul A Aplus
+  let PB : Fin m → Fin m → ℝ := rectMatMul B Bplus
+  have hPAidem : rectMatMul PA PA = PA := by
+    simpa [PA] using
+      rectMatMul_rangeProjection_idempotent_of_left_inverse A Aplus hleftA
+  have hPBidem : rectMatMul PB PB = PB := by
+    simpa [PB] using
+      rectMatMul_rangeProjection_idempotent_of_left_inverse B Bplus hleftB
+  have hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul PB (fun i j => idMatrix m i j - PA i j))) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul PA (fun i j => idMatrix m i j - PB i j))) := by
+    simpa [PA, PB] using
+      wedinLemma20_12_complexMatrixOp2_crossProjection_eq_of_compressedGram_loewnerLe_trace_eq
+        PB PA hSymB hSymA hPBidem hPAidem hTrace hLoewner
+  exact
+    wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_min_of_complexMatrixOp2_eq
+      A B Aplus Bplus hleftA hleftB hSymA hSymB hDelta
+      hAplus_norm_nonneg hBplus_norm_nonneg hAplus hBplus hEq
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    conditional Loewner-to-`min` packaging with the equal projection trace
+    discharged from the two full-column left inverses.
+
+This keeps the missing Stewart--Sun/principal-angle comparison explicit as
+`hLoewner`, but no longer requires callers to provide the equal-trace fact
+separately. -/
+theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_min_of_compressedGram_loewnerLe
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {delta Aplus_norm Bplus_norm : ℝ}
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hLoewner :
+      finiteLoewnerLe
+        (rectMatMul
+          (rectMatMul
+            (fun i j => idMatrix m i j - rectMatMul A Aplus i j)
+            (rectMatMul B Bplus))
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (rectMatMul
+          (rectMatMul
+            (fun i j => idMatrix m i j - rectMatMul B Bplus i j)
+            (rectMatMul A Aplus))
+          (fun i j => idMatrix m i j - rectMatMul B Bplus i j)))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus_norm_nonneg : 0 ≤ Aplus_norm)
+    (hBplus_norm_nonneg : 0 ≤ Bplus_norm)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hBplus : rectOpNorm2Le Bplus Bplus_norm) :
+    rectOpNorm2Le
+      (rectMatMul
+        (rectMatMul B Bplus)
+        (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+      (delta * min Aplus_norm Bplus_norm) := by
+  have hTrace :
+      finiteTrace (rectMatMul B Bplus) =
+        finiteTrace (rectMatMul A Aplus) := by
+    simpa using
+      (finiteTrace_rangeProjection_eq_of_left_inverses
+        B A Bplus Aplus hleftB hleftA)
+  exact
+    wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_min_of_compressedGram_loewnerLe_trace_eq
+      A B Aplus Bplus hleftA hleftB hSymA hSymB hTrace hLoewner
+      hDelta hAplus_norm_nonneg hBplus_norm_nonneg hAplus hBplus
+
 /-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
     the source-oriented Lemma 20.12 projector estimate controls `Bplus*r`
     whenever `r` is orthogonal to the range of `A`.
