@@ -15394,6 +15394,24 @@ theorem realRectToCMatrix_matTranspose {n : Nat}
   simp [realRectToCMatrix, matTranspose, complexMatrixAdjoint,
     complexMatrixTranspose, complexConjMatrix]
 
+/-- Complexification commutes with the repository's rectangular real finite
+    transpose. -/
+theorem realRectToCMatrix_finiteTranspose {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    realRectToCMatrix (finiteTranspose A) =
+      complexMatrixAdjoint (realRectToCMatrix A) := by
+  ext j i
+  simp [realRectToCMatrix, finiteTranspose, complexMatrixAdjoint,
+    complexMatrixTranspose, complexConjMatrix]
+
+/-- The exact Euclidean operator `2`-norm of a complexified real rectangular
+    matrix is invariant under the repository's finite transpose. -/
+theorem complexMatrixOp2_realRectToCMatrix_finiteTranspose_eq {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    complexMatrixOp2 (realRectToCMatrix (finiteTranspose A)) =
+      complexMatrixOp2 (realRectToCMatrix A) := by
+  rw [realRectToCMatrix_finiteTranspose, complexMatrixOp2_adjoint_eq]
+
 /-- Complexification commutes with the repository's real square matrix
     multiplication. -/
 theorem realRectToCMatrix_matMul {n : Nat}
