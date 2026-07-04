@@ -2641,6 +2641,75 @@ theorem theorem20_8KappaA_nonneg {n p : ℕ}
   exact mul_nonneg (frobNormRect_nonneg B)
     (complexMatrixOp2_nonneg (realRectToCMatrix BAplus))
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    applying the source correction matrix `B_A^+` is bounded by its operator
+    2-norm. -/
+theorem theorem20_8_vecNorm2_BAplus_apply_le {n p : ℕ}
+    (BAplus : Fin n → Fin p → ℝ) (z : Fin p → ℝ) :
+    vecNorm2 (rectMatMulVec BAplus z) ≤
+      complexMatrixOp2 (realRectToCMatrix BAplus) * vecNorm2 z := by
+  exact
+    rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le BAplus le_rfl z
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the direct `B_A^+` constraint-defect correction is bounded by supplied
+    operator and perturbation radii. -/
+theorem theorem20_8_vecNorm2_BAplus_constraint_defect_le {n p : ℕ}
+    (DeltaB : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (Deltad : Fin p → ℝ) (y : Fin n → ℝ)
+    {BAplus_norm DeltaB_norm Deltad_norm : ℝ}
+    (hBAplus_nonneg : 0 ≤ BAplus_norm)
+    (hBAplus : rectOpNorm2Le BAplus BAplus_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm) :
+    vecNorm2
+        (rectMatMulVec BAplus
+          (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)) ≤
+      BAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) := by
+  let defect : Fin p → ℝ :=
+    fun i => Deltad i - rectMatMulVec DeltaB y i
+  have hdefect :
+      vecNorm2 defect ≤ Deltad_norm + DeltaB_norm * vecNorm2 y := by
+    exact theorem20_8_vecNorm2_constraint_defect_le DeltaB Deltad y
+      hDeltaB hDeltad
+  calc
+    vecNorm2
+        (rectMatMulVec BAplus
+          (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i))
+        = vecNorm2 (rectMatMulVec BAplus defect) := by
+            rfl
+    _ ≤ BAplus_norm * vecNorm2 defect := hBAplus defect
+    _ ≤ BAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) :=
+      mul_le_mul_of_nonneg_left hdefect hBAplus_nonneg
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-operator-norm version of the direct `B_A^+` constraint-defect
+    correction under the displayed relative perturbation budget. -/
+theorem theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2
+        (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+          (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)) ≤
+      complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) := by
+  exact theorem20_8_vecNorm2_BAplus_constraint_defect_le
+    DeltaB (theorem20_8BAplus A B Bplus APplus) Deltad y
+    (complexMatrixOp2_nonneg
+      (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)))
+    (rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+      (theorem20_8BAplus A B Bplus APplus) le_rfl)
+    (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    hbudget.2.2.2
+
 /-- Under the natural nonzero-`A` denominator side condition, the residual
     amplifier in Theorem 20.8's first-order coefficient is nonnegative. -/
 theorem theorem20_8ResidualAmplifier_nonneg {m n p : ℕ}
