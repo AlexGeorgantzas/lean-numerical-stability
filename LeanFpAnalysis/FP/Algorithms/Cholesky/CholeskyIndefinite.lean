@@ -680,6 +680,39 @@ theorem fl_oneByOne_schur_step_error (fp : FPModel) (a e c1 c2 : ℝ)
     exact le_trans e1 e2
   · rw [hs_eq]; ring
 
+/-- **Floating-point backward error of a 1×1 pivot solve** (Higham §11.1, the
+    `s = 1` case of eq (11.5)).  The computed solution `x̂ = fl(b/e)` of the
+    scalar system `e·x = b` satisfies `(e + Δe)·x̂ = b` with a backward error `Δe`
+    in the pivot bounded by `γ₁·|e|` (constant `c = 1`, no `O(u²)` term).  Derived
+    from the standard division model, not assumed; the 1×1 instance of the
+    Theorem 11.3 solve-perturbation hypothesis (11.5). -/
+theorem fl_oneByOne_solve_backward_error (fp : FPModel) (b e : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 1) :
+    ∃ Δe : ℝ, |Δe| ≤ gamma fp 1 * |e| ∧ (e + Δe) * fp.fl_div b e = b := by
+  obtain ⟨δ, hδ, hd⟩ := fp.model_div b e he
+  have hu1 : fp.u < 1 := by
+    have h := hval; unfold gammaValid at h; simpa using h
+  have hδ1 : |δ| < 1 := lt_of_le_of_lt hδ hu1
+  have hpos : 0 < 1 + δ := by
+    have hlo : -1 < δ := (abs_lt.mp hδ1).1
+    linarith
+  have hg0 : 0 ≤ gamma fp 1 := gamma_nonneg fp hval
+  have h1u : (1 : ℝ) - fp.u ≠ 0 := by linarith
+  have hgeq : gamma fp 1 * (1 - fp.u) = fp.u := by
+    unfold gamma; rw [Nat.cast_one, one_mul]; field_simp
+  refine ⟨-e * δ / (1 + δ), ?_, ?_⟩
+  · rw [abs_div, abs_mul, abs_neg, abs_of_pos hpos, div_le_iff₀ hpos]
+    have key : |δ| ≤ gamma fp 1 * (1 + δ) := by
+      have h1 : gamma fp 1 * (1 - fp.u) ≤ gamma fp 1 * (1 + δ) :=
+        mul_le_mul_of_nonneg_left (by linarith [(abs_le.mp hδ).1]) hg0
+      calc |δ| ≤ fp.u := hδ
+        _ = gamma fp 1 * (1 - fp.u) := hgeq.symm
+        _ ≤ gamma fp 1 * (1 + δ) := h1
+    calc |e| * |δ| ≤ |e| * (gamma fp 1 * (1 + δ)) :=
+          mul_le_mul_of_nonneg_left key (abs_nonneg e)
+      _ = gamma fp 1 * |e| * (1 + δ) := by ring
+  · rw [hd]; field_simp; ring
+
 -- ============================================================
 -- Chapter 11.1.4  Tridiagonal symmetric matrices
 -- ============================================================

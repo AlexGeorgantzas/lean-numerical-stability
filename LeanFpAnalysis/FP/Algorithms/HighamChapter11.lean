@@ -248,6 +248,16 @@ theorem higham11_3_fl_oneByOne_schur_step_error
       fp.fl_sub a (fp.fl_mul (fp.fl_div c1 e) c2) = (a - c1 * c2 / e) + Δ :=
   fl_oneByOne_schur_step_error fp a e c1 c2 he hval
 
+/-- **Theorem 11.3 / eq (11.5), `s = 1` case**: the computed 1×1 pivot solve
+`x̂ = fl(b/e)` of `e·x = b` satisfies `(e + Δe)·x̂ = b` with `|Δe| ≤ γ₁·|e|` — a
+derived (non-assumed) instance of the block-solve perturbation hypothesis (11.5)
+for 1×1 pivots. -/
+theorem higham11_3_fl_oneByOne_solve_backward_error
+    (fp : FPModel) (b e : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 1) :
+    ∃ Δe : ℝ, |Δe| ≤ gamma fp 1 * |e| ∧ (e + Δe) * fp.fl_div b e = b :=
+  fl_oneByOne_solve_backward_error fp b e he hval
+
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
     (ε : ℝ) : Fin 3 → Fin 3 → ℝ :=
