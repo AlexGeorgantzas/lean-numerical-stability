@@ -13321,6 +13321,10 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound
 #check higham9_15_GMatrix_nonnegative_resolvent_nonsingInv_of_row_sum_bound
 #check higham9_27_GMatrix_ratio_le_product_ratio
+#check higham9_27_GMatrix_frobenius_le_exact_opNorm2_product
+#check higham9_27_GMatrix_opNorm2Le_exact_opNorm2_product
+#check higham9_27_GMatrix_opNorm2_lt_one_of_exact_opNorm2_product_lt_one
+#check higham9_27_GMatrix_ratio_le_exact_opNorm2_product_ratio
 #check higham9_15_chi
 #check higham9_15_chi_nonneg
 #check higham9_15_rectMatMul_opNorm2Le

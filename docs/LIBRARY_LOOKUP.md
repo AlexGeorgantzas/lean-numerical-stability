@@ -2904,6 +2904,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound`
 - `higham9_15_GMatrix_nonnegative_resolvent_nonsingInv_of_row_sum_bound`
 - `higham9_27_GMatrix_ratio_le_product_ratio`
+- `higham9_27_GMatrix_frobenius_le_exact_opNorm2_product`
+- `higham9_27_GMatrix_opNorm2Le_exact_opNorm2_product`
+- `higham9_27_GMatrix_opNorm2_lt_one_of_exact_opNorm2_product_lt_one`
+- `higham9_27_GMatrix_ratio_le_exact_opNorm2_product_ratio`
 - `higham9_15_chi`
 - `higham9_15_chi_nonneg`
 - `higham9_15_rectMatMul_opNorm2Le`
