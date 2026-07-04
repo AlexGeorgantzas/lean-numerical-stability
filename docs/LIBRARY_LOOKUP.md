@@ -2884,7 +2884,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_24_scaledMatrix`
 - `higham9_24_scaledRhs`
 - `higham9_24_scaledUnknown`
+- `higham9_24_unscaledUnknown`
+- `higham9_24_unscaledUnknown_scaledUnknown`
+- `higham9_24_scaledUnknown_unscaledUnknown`
 - `higham9_24_scaled_system_equiv`
+- `higham9_24_original_system_of_scaled_system`
+- `higham9_24_scaled_system_iff_original_system`
 - `higham9_25_trailingRowInf`
 - `higham9_25_implicitRowScalingPivotRule`
 - `higham9_25_exists_implicitRowScalingPivotRule`

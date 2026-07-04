@@ -14818,7 +14818,14 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_23_forward_error_firstOrder_cond_product_of_backward_error
 #check higham9_23_firstOrderLe_of_backward_error_coeff
 #check higham9_24_scaledMatrix
+#check higham9_24_scaledRhs
+#check higham9_24_scaledUnknown
+#check higham9_24_unscaledUnknown
+#check higham9_24_unscaledUnknown_scaledUnknown
+#check higham9_24_scaledUnknown_unscaledUnknown
 #check higham9_24_scaled_system_equiv
+#check higham9_24_original_system_of_scaled_system
+#check higham9_24_scaled_system_iff_original_system
 #check higham9_25_trailingRowInf
 #check higham9_25_implicitRowScalingPivotRule
 #check higham9_25_exists_implicitRowScalingPivotRule
