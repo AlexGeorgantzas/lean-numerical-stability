@@ -2281,6 +2281,109 @@ theorem theorem20_8KappaB_nonneg {m n : ℕ}
   exact mul_nonneg (frobNormRect_nonneg A)
     (complexMatrixOp2_nonneg (realRectToCMatrix APplus))
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the source coefficient `kappa_B(A)` is an operator-2 bound for
+    `A (AP)^+`. -/
+theorem theorem20_8_rectOpNorm2Le_A_APplus_kappaB {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ) :
+    rectOpNorm2Le (rectMatMul A APplus)
+      (theorem20_8KappaB A APplus) := by
+  unfold theorem20_8KappaB
+  exact rectOpNorm2Le_rectMatMul A APplus (frobNormRect_nonneg A)
+    (rectOpNorm2Le_of_frobNormRect_le A le_rfl)
+    (rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le APplus le_rfl)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    applying `A (AP)^+` is bounded by the source coefficient
+    `kappa_B(A)`. -/
+theorem theorem20_8_vecNorm2_A_APplus_apply_le {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (z : Fin m → ℝ) :
+    vecNorm2 (rectMatMulVec A (rectMatMulVec APplus z)) ≤
+      theorem20_8KappaB A APplus * vecNorm2 z := by
+  simpa [rectMatMulVec_rectMatMul] using
+    (theorem20_8_rectOpNorm2Le_A_APplus_kappaB A APplus z)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the reduced-problem pseudo-inverse correction created by splitting
+    `A B^+` through `B_A^+` is bounded by `kappa_B(A)` times the
+    `A B^+` constraint-defect bound. -/
+theorem theorem20_8_vecNorm2_A_APplus_ABplus_constraint_defect_le
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (DeltaB : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (Deltad : Fin p → ℝ) (y : Fin n → ℝ)
+    {ABplus_norm DeltaB_norm Deltad_norm : ℝ}
+    (hABplus_nonneg : 0 ≤ ABplus_norm)
+    (hABplus : rectOpNorm2Le (rectMatMul A Bplus) ABplus_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm) :
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i))))) ≤
+      theorem20_8KappaB A APplus *
+        (ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y)) := by
+  let defect : Fin p → ℝ :=
+    fun i => Deltad i - rectMatMulVec DeltaB y i
+  have hABdefect :
+      vecNorm2 (rectMatMulVec A (rectMatMulVec Bplus defect)) ≤
+        ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) := by
+    exact theorem20_8_vecNorm2_ABplus_constraint_defect_le
+      A DeltaB Bplus Deltad y hABplus_nonneg hABplus hDeltaB hDeltad
+  calc
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)))))
+        = vecNorm2
+            (rectMatMulVec A
+              (rectMatMulVec APplus
+                (rectMatMulVec A (rectMatMulVec Bplus defect)))) := by
+            rfl
+    _ ≤ theorem20_8KappaB A APplus *
+          vecNorm2 (rectMatMulVec A (rectMatMulVec Bplus defect)) :=
+            theorem20_8_vecNorm2_A_APplus_apply_le A APplus
+              (rectMatMulVec A (rectMatMulVec Bplus defect))
+    _ ≤ theorem20_8KappaB A APplus *
+          (ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y)) :=
+            mul_le_mul_of_nonneg_left hABdefect
+              (theorem20_8KappaB_nonneg A APplus)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-norm version of the reduced-problem pseudo-inverse correction
+    bound under the displayed relative perturbation budget. -/
+theorem theorem20_8_vecNorm2_A_APplus_ABplus_constraint_defect_le_of_relativeBudget_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i))))) ≤
+      theorem20_8KappaB A APplus *
+        (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+          (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) := by
+  exact theorem20_8_vecNorm2_A_APplus_ABplus_constraint_defect_le
+    A DeltaB Bplus APplus Deltad y
+    (complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul A Bplus)))
+    (rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+      (rectMatMul A Bplus) le_rfl)
+    (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    hbudget.2.2.2
+
 /-- The source quantity `kappa_A(B)` in Theorem 20.8 is nonnegative. -/
 theorem theorem20_8KappaA_nonneg {n p : ℕ}
     (B : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ) :
