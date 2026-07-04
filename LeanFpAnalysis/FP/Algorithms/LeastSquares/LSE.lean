@@ -4272,6 +4272,249 @@ theorem theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_pl
       A B Bplus APplus x (eps := eps) (solutionRadius := solutionRadius) hxpos
   simpa [BAplus, hquad] using hbase
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if the reduced-problem pseudoinverse equation has supplied the projected
+    feasible-difference component, then the full feasible difference is exactly
+    the printed `B_A^+` direct correction plus the `(AP)^+` data correction. -/
+theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_difference
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (_b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hproj :
+      rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k) =
+        fun j : Fin n =>
+          rectMatMulVec APplus
+              (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+            rectMatMulVec APplus
+              (rectMatMulVec A
+                (rectMatMulVec Bplus
+                  (fun l : Fin p =>
+                    Deltad l - rectMatMulVec DeltaB y l))) j) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j := by
+  let defect : Fin p → ℝ :=
+    fun i => Deltad i - rectMatMulVec DeltaB y i
+  have hdecomp :=
+    theorem20_8_perturbed_feasible_difference_decomp
+      B DeltaB Bplus d Deltad x y hx hy
+  have hBA :=
+    theorem20_8BAplus_apply A B Bplus APplus defect
+  ext j
+  have hdecomp_j := congrFun hdecomp j
+  have hproj_j := congrFun hproj j
+  have hBA_j := congrFun hBA j
+  change
+    y j - x j =
+      rectMatMulVec (theorem20_8BAplus A B Bplus APplus) defect j +
+        rectMatMulVec APplus
+          (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j
+  rw [hdecomp_j, hproj_j, hBA_j]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the projected-difference equation follows from the reduced `AP` equation
+    once `(AP)^+ AP` is identified with the source nullspace projector `P`. -/
+theorem theorem20_8_projected_difference_eq_APplus_of_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B Bplus)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    rectMatMulVec (theorem20_8Projection B Bplus)
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+          rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j := by
+  let diff : Fin n → ℝ := fun k => y k - x k
+  let defect : Fin p → ℝ :=
+    fun l => Deltad l - rectMatMulVec DeltaB y l
+  let forcing : Fin m → ℝ := fun i => rectMatMulVec DeltaA y i - Deltab i
+  let correction : Fin m → ℝ :=
+    rectMatMulVec A (rectMatMulVec Bplus defect)
+  calc
+    rectMatMulVec (theorem20_8Projection B Bplus) diff =
+        rectMatMulVec (rectMatMul APplus (theorem20_8AP A B Bplus)) diff := by
+          rw [hAPleft]
+    _ = rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus) diff) := by
+          rw [rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec APplus (fun i : Fin m => forcing i - correction i) := by
+          rw [hAPdiff]
+    _ = fun j : Fin n =>
+          rectMatMulVec APplus forcing j -
+            rectMatMulVec APplus correction j := by
+          rw [rectMatMulVec_sub]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    final transfer from the printed correction vector to the relative
+    solution-difference estimate, assuming the projected-difference equation
+    and the separate first-order radius for `||y-x||_2`. -/
+theorem theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_projected_difference
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ) {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hproj :
+      rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k) =
+        fun j : Fin n =>
+          rectMatMulVec APplus
+              (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+            rectMatMulVec APplus
+              (rectMatMulVec A
+                (rectMatMulVec Bplus
+                  (fun l : Fin p =>
+                    Deltad l - rectMatMulVec DeltaB y l))) j) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) +
+        eps ^ 2 * solutionRadius *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  let BAplus := theorem20_8BAplus A B Bplus APplus
+  let correction : Fin n → ℝ :=
+    fun j =>
+      rectMatMulVec BAplus
+          (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+        rectMatMulVec APplus
+          (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j
+  let residualTerm : ℝ :=
+    eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+      (vecNorm2 r / frobNormRect A)
+  have hdiff_eq :
+      (fun j : Fin n => y j - x j) = correction := by
+    simpa [correction, BAplus] using
+      theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_difference
+        A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y hx hy hproj
+  have hresidual_nonneg : 0 ≤ residualTerm := by
+    exact mul_nonneg
+      (mul_nonneg heps_nonneg
+        (theorem20_8ResidualAmplifier_nonneg A B APplus BAplus hApos))
+      (div_nonneg (vecNorm2_nonneg r) (le_of_lt hApos))
+  have hnum :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        vecNorm2 correction + residualTerm := by
+    rw [hdiff_eq]
+    exact le_add_of_nonneg_right hresidual_nonneg
+  have hdiv :
+      vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+        (vecNorm2 correction + residualTerm) / vecNorm2 x :=
+    div_le_div_of_nonneg_right hnum (le_of_lt hxpos)
+  have hcorr :
+      (vecNorm2 correction + residualTerm) / vecNorm2 x ≤
+        eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus +
+          eps ^ 2 * solutionRadius *
+            (complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
+              complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+    simpa [correction, residualTerm, BAplus] using
+      theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_solution_difference_bound
+        A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r
+        heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx
+  exact hdiv.trans hcorr
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    relative solution-difference transfer with the projected-difference
+    equation derived from the reduced `AP` equation and `(AP)^+ AP = P`. -/
+theorem theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ) {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B Bplus)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) +
+        eps ^ 2 * solutionRadius *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hproj :
+      rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k) =
+        fun j : Fin n =>
+          rectMatMulVec APplus
+              (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+            rectMatMulVec APplus
+              (rectMatMulVec A
+                (rectMatMulVec Bplus
+                  (fun l : Fin p =>
+                    Deltad l - rectMatMulVec DeltaB y l))) j :=
+    theorem20_8_projected_difference_eq_APplus_of_reduced_difference_eq
+      A DeltaA Deltab B DeltaB Bplus APplus Deltad y x hAPleft hAPdiff
+  exact
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_projected_difference
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy hproj
+
 /-- Under the natural positive denominator assumptions, the first-order
     coefficient in Theorem 20.8's perturbation bound is nonnegative. -/
 theorem theorem20_8FirstOrderRHS_nonneg {m n p : ℕ}
