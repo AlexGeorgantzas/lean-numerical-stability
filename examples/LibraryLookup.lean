@@ -14839,3 +14839,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check residualSigmaTsum_eq_infNorm_residualSigmaMatrix
 #check residualSigmaTsum_eq_residualSigmaSup
 #check residualSigmaTsum_le_diagonalizable_max_bound
+#check topProjector
+#check oneEigenProjector
+#check G_fixes_oneEigenProjector_apply
+#check semiconvergentE
+#check singular_error_split_semiconvergent
+#check matPow_G_tendsto_oneEigenProjector
