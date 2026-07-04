@@ -6834,6 +6834,51 @@ theorem theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constrain
           simp
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if `P = I - B^+B` is symmetric, then the reduced-operator transpose
+    columns lie in the constraint nullspace: `B*(AP)^T = 0`. -/
+theorem theorem20_8_AP_transpose_constraint_annihilates_of_projection_symmetric
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hPsym : IsSymmetricFiniteMatrix (theorem20_8Projection B Bplus)) :
+    rectMatMul B (finiteTranspose (theorem20_8AP A B Bplus)) =
+      (fun _i : Fin p => fun _j : Fin m => 0) := by
+  let P : Fin n → Fin n → ℝ := theorem20_8Projection B Bplus
+  have hBP : rectMatMul B P = (fun _i : Fin p => fun _j : Fin n => 0) :=
+    theorem20_8Projection_constraint_zero B Bplus hright
+  have hPsymP : IsSymmetricFiniteMatrix P := hPsym
+  ext i l
+  change (∑ j : Fin n, B i j * (∑ k : Fin n, A l k * P k j)) = 0
+  calc
+    (∑ j : Fin n, B i j * (∑ k : Fin n, A l k * P k j)) =
+        ∑ j : Fin n, ∑ k : Fin n, B i j * (A l k * P k j) := by
+          apply Finset.sum_congr rfl
+          intro j _
+          rw [Finset.mul_sum]
+    _ = ∑ k : Fin n, ∑ j : Fin n, B i j * (A l k * P k j) := by
+          rw [Finset.sum_comm]
+    _ = ∑ k : Fin n, A l k * (∑ j : Fin n, B i j * P j k) := by
+          apply Finset.sum_congr rfl
+          intro k _
+          calc
+            (∑ j : Fin n, B i j * (A l k * P k j)) =
+                ∑ j : Fin n, A l k * (B i j * P j k) := by
+                  apply Finset.sum_congr rfl
+                  intro j _
+                  rw [hPsymP k j]
+                  ring
+            _ = A l k * (∑ j : Fin n, B i j * P j k) := by
+                  rw [Finset.mul_sum]
+    _ = ∑ k : Fin n, A l k * 0 := by
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [show (∑ j : Fin n, B i j * P j k) = 0 by
+            have hBPik := congrFun (congrFun hBP i) k
+            simpa [rectMatMul] using hBPik]
+    _ = 0 := by simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank specialization of the transpose-range-to-annihilation
     bridge for the concrete Gram table chosen for `(AP)^+`. -/
 theorem
@@ -6850,6 +6895,19 @@ theorem
       (fun _i : Fin p => fun _j : Fin m => 0) :=
   _root_.LeanFpAnalysis.FP.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
     A B hB.rightInverse hBAPt
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank specialization of the symmetric-projector proof of
+    `B*(AP)^T = 0`. -/
+theorem LSEFullRowRank.theorem20_8_AP_transpose_constraint_annihilates_of_projection_symmetric
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (hPsym : IsSymmetricFiniteMatrix (theorem20_8Projection B hB.rightInverse)) :
+    rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+      (fun _i : Fin p => fun _j : Fin m => 0) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_transpose_constraint_annihilates_of_projection_symmetric
+    A B hB.rightInverse hB.rightInverse_spec hPsym
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     determinant-facing reduced left-inverse route for the concrete Gram
