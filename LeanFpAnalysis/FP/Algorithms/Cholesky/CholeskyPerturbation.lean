@@ -1152,6 +1152,36 @@ theorem block_quadForm_schur_eq {m : ℕ} (α : ℝ) (hα : α ≠ 0)
     rw [hexpand]; field_simp; ring
   rw [hQF, hfinal, hξt_eq]
 
+/-- **Gram-conjugation quadratic form** (Higham §10.4, the tool that
+    presents a stage Gram `GᵀMG` as a matrix so `schur_gram_stage_le`
+    becomes a Loewner statement): `yᵀ(GᵀMG)y = (Gy)ᵀM(Gy)`.  Proved
+    through `matMulVec_matMul` (so only a single sum-swap is needed). -/
+theorem quadForm_gram_conj {n : ℕ} (M G : Fin n → Fin n → ℝ)
+    (y : Fin n → ℝ) :
+    (∑ i : Fin n, y i *
+        matMulVec n (matMul n (matMul n (fun a b => G b a) M) G) y i) =
+      ∑ p : Fin n,
+        matMulVec n G y p * matMulVec n M (matMulVec n G y) p := by
+  have hQy : ∀ i : Fin n,
+      matMulVec n (matMul n (matMul n (fun a b => G b a) M) G) y i =
+      ∑ p : Fin n, G p i * matMulVec n M (matMulVec n G y) p := by
+    intro i
+    rw [matMulVec_matMul n (matMul n (fun a b => G b a) M) G y i,
+      matMulVec_matMul n (fun a b => G b a) M (matMulVec n G y) i]
+    rfl
+  simp_rw [hQy, Finset.mul_sum]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun p _ => ?_
+  rw [show (∑ i : Fin n, y i * (G p i *
+        matMulVec n M (matMulVec n G y) p)) =
+      (∑ i : Fin n, y i * G p i) *
+        matMulVec n M (matMulVec n G y) p from by
+    rw [Finset.sum_mul]
+    exact Finset.sum_congr rfl fun i _ => by ring]
+  congr 1
+  unfold matMulVec
+  exact Finset.sum_congr rfl fun i _ => by ring
+
 /-- **Stage Loewner monotonicity `Q̂ ⪯ Q₂₂`, quadratic-form level**
     (Higham §10.4, the (10.29) crux, assembled; oracle consult 4).
     For a symmetric PD `(1+m)`-block `H = [[α, fᵀ],[f, G]]` with Schur
