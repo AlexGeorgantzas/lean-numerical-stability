@@ -6563,6 +6563,43 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_MP_projection_range_nullInte
         B Bplus APplus hright hProjAPplus)
       hnull
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source full row rank instantiates the projector-range-to-annihilation bridge
+    for the noncomputable right inverse obtained from `rank(B)=p`. -/
+theorem LSEFullRowRank.theorem20_8_APplus_constraint_annihilates_of_projection_range
+    {m n p : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hProjAPplus :
+      rectMatMul (theorem20_8Projection B hB.rightInverse) APplus = APplus) :
+    rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_APplus_constraint_annihilates_of_projection_range
+    B hB.rightInverse APplus hB.rightInverse_spec hProjAPplus
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the current Moore--Penrose/projector-range
+    reduced-left-inverse route.  The remaining supplied hypotheses are the
+    source-specific Moore--Penrose certificate for `(AP)^+`, the projector-range
+    certificate, and (20.24)'s null-intersection condition. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_projection_range_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hProjAPplus :
+      rectMatMul (theorem20_8Projection B hB.rightInverse) APplus = APplus)
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_left_inverse_on_nullspace_of_MP_projection_range_nullIntersection
+    A B hB.rightInverse APplus hB.rightInverse_spec hMP hProjAPplus hnull
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.24): vertical stack
     `[A; B]`, the local representation of `[A^T, B^T]^T`. -/
 noncomputable def lseStackedMatrix {m n p : ℕ}
