@@ -2891,7 +2891,13 @@ Source-facing Chapter 9 wrappers:
 - `higham9_24_original_system_of_scaled_system`
 - `higham9_24_scaled_system_iff_original_system`
 - `higham9_25_trailingRowInf`
+- `higham9_25_abs_stage_entry_le_trailingRowInf`
+- `higham9_25_trailingRowInf_nonneg`
+- `higham9_25_scaled_pivot_ratio_nonneg`
+- `higham9_25_scaled_pivot_ratio_le_one`
 - `higham9_25_implicitRowScalingPivotRule`
+- `higham9_25_implicitRowScalingPivotRule_ratio_nonneg`
+- `higham9_25_implicitRowScalingPivotRule_ratio_le_one`
 - `higham9_25_exists_implicitRowScalingPivotRule`
 - `higham9_26_prefixLpNorm`
 - `higham9_26_holder_prefix_dot_abs_le`

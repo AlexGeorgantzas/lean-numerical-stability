@@ -14827,7 +14827,13 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_24_original_system_of_scaled_system
 #check higham9_24_scaled_system_iff_original_system
 #check higham9_25_trailingRowInf
+#check higham9_25_abs_stage_entry_le_trailingRowInf
+#check higham9_25_trailingRowInf_nonneg
+#check higham9_25_scaled_pivot_ratio_nonneg
+#check higham9_25_scaled_pivot_ratio_le_one
 #check higham9_25_implicitRowScalingPivotRule
+#check higham9_25_implicitRowScalingPivotRule_ratio_nonneg
+#check higham9_25_implicitRowScalingPivotRule_ratio_le_one
 #check higham9_25_exists_implicitRowScalingPivotRule
 #check higham9_26_prefixLpNorm
 #check higham9_26_holder_prefix_dot_abs_le
