@@ -2186,6 +2186,56 @@ theorem theorem20_8_vecNorm2_A_BAplus_constraint_defect_le_of_relativeBudget_op2
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     hbudget.2.2.2
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual decomposition with the constraint-defect correction split through
+    the printed source quantity `B_A^+`. -/
+theorem theorem20_8_perturbed_feasible_residual_decomp_BAplus {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    lsResidual (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i) y =
+      fun i =>
+        lsResidual (theorem20_8AP A B Bplus)
+            (fun i => b i - rectMatMulVec A x i) (fun j => y j - x j) i +
+          (rectMatMulVec A
+              (rectMatMulVec APplus
+                (rectMatMulVec A
+                  (rectMatMulVec Bplus
+                    (fun l => Deltad l - rectMatMulVec DeltaB y l)))) i +
+            rectMatMulVec A
+              (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+                (fun l => Deltad l - rectMatMulVec DeltaB y l)) i) +
+          rectMatMulVec DeltaA y i -
+          Deltab i := by
+  ext i
+  let defect : Fin p → ℝ :=
+    fun l => Deltad l - rectMatMulVec DeltaB y l
+  have hres :=
+    congrFun
+      (theorem20_8_perturbed_feasible_residual_decomp
+        A DeltaA b Deltab B DeltaB Bplus d Deltad x y hx hy) i
+  have hsplit :=
+    congrFun
+      (theorem20_8ABplus_eq_A_APplus_A_Bplus_add_A_BAplus
+        A B Bplus APplus defect) i
+  change
+    lsResidual (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y i =
+      lsResidual (theorem20_8AP A B Bplus)
+          (fun i => b i - rectMatMulVec A x i) (fun j => y j - x j) i +
+        (rectMatMulVec A
+            (rectMatMulVec APplus
+              (rectMatMulVec A (rectMatMulVec Bplus defect))) i +
+          rectMatMulVec A
+            (rectMatMulVec (theorem20_8BAplus A B Bplus APplus) defect) i) +
+        rectMatMulVec DeltaA y i -
+        Deltab i
+  rw [hres, hsplit]
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     condition quantity `kappa_B(A) = ||A||_F ||(AP)^+||_2`. -/
 noncomputable def theorem20_8KappaB {m n : ℕ}
