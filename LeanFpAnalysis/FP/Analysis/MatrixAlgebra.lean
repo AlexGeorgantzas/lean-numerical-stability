@@ -3235,6 +3235,11 @@ noncomputable def finiteTranspose {ι κ : Type*} (M : ι → κ → ℝ) :
     κ → ι → ℝ :=
   fun j i => M i j
 
+/-- Finite transpose is involutive. -/
+theorem finiteTranspose_finiteTranspose {ι κ : Type*} (M : ι → κ → ℝ) :
+    finiteTranspose (finiteTranspose M) = M := by
+  rfl
+
 /-- Rectangular squared Frobenius norm is invariant under finite transpose. -/
 theorem frobNormSqRect_finiteTranspose {m n : ℕ}
     (A : Fin m → Fin n → ℝ) :
@@ -8221,6 +8226,13 @@ theorem rectMatMul_self_transpose_symmetric {m n : ℕ}
   intro k _
   ring
 
+/-- A rectangular Gram product `Mᵀ M` is symmetric. -/
+theorem rectMatMul_transpose_self_symmetric {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) :
+    IsSymmetricFiniteMatrix (rectMatMul (finiteTranspose M) M) := by
+  simpa [finiteTranspose_finiteTranspose] using
+    rectMatMul_self_transpose_symmetric (finiteTranspose M)
+
 /-- The quadratic form of `M Mᵀ` is the squared norm of `Mᵀ x`. -/
 theorem finiteQuadraticForm_rectMatMul_self_transpose_eq_sum_sq
     {m n : ℕ} (M : Fin m → Fin n → ℝ) (x : Fin m → ℝ) :
@@ -8290,6 +8302,13 @@ theorem finitePSD_rectMatMul_self_transpose {m n : ℕ}
   rw [finiteQuadraticForm_rectMatMul_self_transpose_eq_sum_sq M x]
   exact Finset.sum_nonneg fun k _ => sq_nonneg _
 
+/-- A rectangular Gram product `Mᵀ M` is positive semidefinite. -/
+theorem finitePSD_rectMatMul_transpose_self {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) :
+    finitePSD (rectMatMul (finiteTranspose M) M) := by
+  simpa [finiteTranspose_finiteTranspose] using
+    finitePSD_rectMatMul_self_transpose (finiteTranspose M)
+
 /-- Symmetry transported across equality with a rectangular Gram product. -/
 theorem IsSymmetricFiniteMatrix_of_eq_rectMatMul_self_transpose
     {m n : ℕ} {A : Fin m → Fin m → ℝ}
@@ -8298,6 +8317,16 @@ theorem IsSymmetricFiniteMatrix_of_eq_rectMatMul_self_transpose
     IsSymmetricFiniteMatrix A := by
   rw [hA]
   exact rectMatMul_self_transpose_symmetric M
+
+/-- Symmetry transported across equality with a transposed rectangular Gram
+    product. -/
+theorem IsSymmetricFiniteMatrix_of_eq_rectMatMul_transpose_self
+    {m n : ℕ} {A : Fin n → Fin n → ℝ}
+    (M : Fin m → Fin n → ℝ)
+    (hA : A = rectMatMul (finiteTranspose M) M) :
+    IsSymmetricFiniteMatrix A := by
+  rw [hA]
+  exact rectMatMul_transpose_self_symmetric M
 
 /-- Positive semidefiniteness transported across equality with a rectangular
     Gram product. -/
@@ -8308,6 +8337,16 @@ theorem finitePSD_of_eq_rectMatMul_self_transpose
     finitePSD A := by
   rw [hA]
   exact finitePSD_rectMatMul_self_transpose M
+
+/-- Positive semidefiniteness transported across equality with a transposed
+    rectangular Gram product. -/
+theorem finitePSD_of_eq_rectMatMul_transpose_self
+    {m n : ℕ} {A : Fin n → Fin n → ℝ}
+    (M : Fin m → Fin n → ℝ)
+    (hA : A = rectMatMul (finiteTranspose M) M) :
+    finitePSD A := by
+  rw [hA]
+  exact finitePSD_rectMatMul_transpose_self M
 
 /-- If `Rinv` is a two-sided inverse of `R`, then
     `Rinv Rinvᵀ` is a right inverse of the Gram matrix `RᵀR`. -/
