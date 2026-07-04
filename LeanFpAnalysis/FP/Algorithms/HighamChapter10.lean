@@ -4609,6 +4609,22 @@ theorem higham10_29_luSchur_mulVec {m : ℕ}
   rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
   exact Finset.sum_congr rfl fun j _ => by ring
 
+/-- **Two-sided inverses of a finite square matrix are unique** (Higham §10.4,
+    the well-definedness fact the GE stage induction needs so the stage Gram
+    `Q(S) = Sᵀ H⁻¹ S` does not depend on which `spd_inverse_exists` inverse is
+    chosen at each stage): a left inverse `A` and a right inverse `B` of the same
+    `T` coincide, `A = A(TB) = (AT)B = B`. -/
+theorem matMul_leftInverse_eq_rightInverse {n : ℕ}
+    (T A B : Fin n → Fin n → ℝ)
+    (hA : IsLeftInverse n T A) (hB : IsRightInverse n T B) : A = B := by
+  have hAT : matMul n A T = idMatrix n := by funext i j; exact hA i j
+  have hTB : matMul n T B = idMatrix n := by funext i j; exact hB i j
+  calc A = matMul n A (idMatrix n) := (matMul_id_right n A).symm
+    _ = matMul n A (matMul n T B) := by rw [hTB]
+    _ = matMul n (matMul n A T) B := (matMul_assoc n A T B).symm
+    _ = matMul n (idMatrix n) B := by rw [hAT]
+    _ = B := matMul_id_left n B
+
 /-- **Inverse of an SPD matrix has a nonnegative quadratic form** (Higham
     §10.4, the positive-semidefiniteness fact `hZinv_psd_k` of
     `schur_gram_stage_le` needs on the Schur-complement inverse).  Writing the
