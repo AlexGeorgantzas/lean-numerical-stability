@@ -683,6 +683,14 @@ noncomputable def sylvesterDiagonalSolution (m n : Nat)
     (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n) : RMatFn m n :=
   fun i j => Ring.inverse (a i - b j) * C i j
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    the explicit diagonal solution of the homogeneous equation is zero. -/
+theorem sylvesterDiagonalSolution_zero (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    sylvesterDiagonalSolution m n a b (0 : RMatFn m n) = 0 := by
+  ext i j
+  simp [sylvesterDiagonalSolution]
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), diagonal case:
     vectorizing the explicit diagonal solution is the same as applying the
     explicit inverse diagonal vec/Kronecker coefficient. -/
@@ -765,6 +773,37 @@ theorem existsUnique_isSylvesterSolutionRect_diagonal (m n : Nat)
     isSylvesterSolutionRect_sylvesterDiagonalSolution m n a b C hsep, ?_⟩
   intro X hX
   exact sylvesterDiagonalSolution_unique m n a b C X hsep hX
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), diagonal case:
+    under separated diagonal entries, the vectorized diagonal Sylvester
+    coefficient has trivial kernel. -/
+theorem sylvesterVecCoeff_diagonal_mulVec_eq_zero_iff (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (X : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Matrix.mulVec (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))
+        (Matrix.vec X) = 0 <->
+      X = 0 := by
+  constructor
+  case mp =>
+    intro h
+    have hpinv :
+        Matrix.mulVec (sylvesterDiagonalVecCoeffInv m n a b)
+            (Matrix.mulVec
+              (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))
+              (Matrix.vec X)) =
+          Matrix.mulVec (sylvesterDiagonalVecCoeffInv m n a b) 0 := by
+      rw [h]
+    rw [Matrix.mulVec_mulVec,
+      sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal m n a b hsep,
+      Matrix.one_mulVec, Matrix.mulVec_zero] at hpinv
+    exact Matrix.vec_eq_zero_iff.mp hpinv
+  case mpr =>
+    intro hX
+    rw [hX]
+    change Matrix.mulVec
+        (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))
+        (0 : Prod (Fin n) (Fin m) -> Real) = 0
+    exact Matrix.mulVec_zero _
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal case:
     the absolute-value matrix exactly bounds the explicit diagonal inverse
@@ -1082,6 +1121,24 @@ noncomputable def sylvesterSchurDiagonalSolution (m n : Nat)
         (rectMatMul (matTranspose U) (rectMatMul C V)))
       (matTranspose V))
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.3)-(16.5), diagonal
+    Schur-coordinate case: the reconstructed solution for zero right-hand side
+    is zero. -/
+theorem sylvesterSchurDiagonalSolution_zero (m n : Nat)
+    (U : RMatFn m m) (V : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    sylvesterSchurDiagonalSolution m n U V a b (0 : RMatFn m n) = 0 := by
+  unfold sylvesterSchurDiagonalSolution
+  have hcoord :
+      rectMatMul (matTranspose U) (rectMatMul (0 : RMatFn m n) V) =
+        (0 : RMatFn m n) := by
+    ext i j
+    simp [rectMatMul]
+  rw [hcoord]
+  rw [sylvesterDiagonalSolution_zero]
+  ext i j
+  simp [rectMatMul]
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5), diagonal
     Schur-coordinate case: if supplied orthogonal factors diagonalize `A` and
     `B`, the reconstructed explicit diagonal-coordinate solution solves the
@@ -1163,6 +1220,37 @@ theorem existsUnique_isSylvesterSolutionRect_schurDiagonal (m n : Nat)
   intro X hX
   exact sylvesterSchurDiagonalSolution_unique m n U A V B a b C X
     hU hV hA hB hsep hX
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
+    Schur-coordinate case: supplied orthogonal diagonal factors with separated
+    diagonal entries make the vectorized Sylvester coefficient have trivial
+    kernel. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_eq_zero_iff (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real) (X : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec X) = 0 <->
+      X = 0 := by
+  constructor
+  case mp =>
+    intro h
+    have hsol : IsSylvesterSolutionRect m n A B (0 : RMatFn m n) X :=
+      (sylvester_vec_system_iff_solution m n A B (0 : RMatFn m n) X).mp
+        (by simpa using h)
+    have hX :
+        X = sylvesterSchurDiagonalSolution m n U V a b (0 : RMatFn m n) :=
+      sylvesterSchurDiagonalSolution_unique m n U A V B a b
+        (0 : RMatFn m n) X hU hV hA hB hsep hsol
+    rw [hX, sylvesterSchurDiagonalSolution_zero]
+  case mpr =>
+    intro hX
+    rw [hX]
+    change Matrix.mulVec (sylvesterVecCoeff m n A B)
+        (0 : Prod (Fin n) (Fin m) -> Real) = 0
+    exact Matrix.mulVec_zero _
 
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
