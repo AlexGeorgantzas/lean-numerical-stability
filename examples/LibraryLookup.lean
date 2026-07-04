@@ -14822,3 +14822,22 @@ small enough to serve as a smoke check for representative public declarations.
 #check complexVecLpNorm_shift_le
 #check complexMatrixLpNormOfReal_bidiagonal_le
 #check higham_eq_18_5_alt_lp_jordan
+
+-- Higham Chapter 17 infinite-series surfaces (StationaryIterationSeries).
+#check summable_infNorm_matPow
+#check tsum_infNorm_matPow_le
+#check summable_infNorm_matPow_of_spectralRadius
+#check stationarySeriesEntry
+#check partialSumBound_of_stationarySeriesEntry_le
+#check cALiteral
+#check cALiteral_mem
+#check partialSumBound_cALiteral
+#check literal_norm_form_forward_bound
+#check literal_norm_form_jacobi_forward_bound
+#check literal_norm_form_sor_forward_bound
+#check literal_norm_form_gaussSeidel_forward_bound
+#check residualSigmaEntry
+#check infNorm_residualSigmaMatrix_eq_residualSigmaSup
+#check residualSigmaTsum_eq_infNorm_residualSigmaMatrix
+#check residualSigmaTsum_eq_residualSigmaSup
+#check residualSigmaTsum_le_diagonalizable_max_bound
