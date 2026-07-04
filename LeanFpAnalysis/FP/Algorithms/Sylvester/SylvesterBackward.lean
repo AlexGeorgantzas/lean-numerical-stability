@@ -1289,6 +1289,31 @@ theorem lyapunovSpectralTransform_frobNormSq (n : ℕ)
   unfold lyapunovSpectralTransform
   rw [frobNormSq_orthogonal_right _ _ hU, frobNormSq_orthogonal_left _ _ hU.transpose]
 
+/-- The Lyapunov spectral-coordinate transform commutes with transpose. -/
+theorem lyapunovSpectralTransform_transpose (n : ℕ)
+    (U M : Fin n → Fin n → ℝ) :
+    matTranspose (lyapunovSpectralTransform n U M) =
+      lyapunovSpectralTransform n U (matTranspose M) := by
+  unfold lyapunovSpectralTransform
+  rw [matTranspose_matMul]
+  rw [matTranspose_matMul]
+  rw [matTranspose_involutive]
+  exact (matMul_assoc n (matTranspose U) (matTranspose M) U).symm
+
+/-- Symmetry of the right-hand Lyapunov perturbation is preserved after the
+    spectral-coordinate transform `U^T M U`. -/
+theorem lyapunovSpectralTransform_symmetric (n : ℕ)
+    (U M : Fin n → Fin n → ℝ)
+    (hM : IsSymmetricFiniteMatrix M) :
+    IsSymmetricFiniteMatrix (lyapunovSpectralTransform n U M) := by
+  intro i j
+  have hMt : matTranspose M = M := by
+    ext a b
+    exact hM b a
+  have hT := lyapunovSpectralTransform_transpose n U M
+  rw [hMt] at hT
+  simpa [matTranspose] using congrFun (congrFun hT j) i
+
 /-- Spectral-coordinate transforms distribute over the `M + N - P` matrix
     combination used in the Lyapunov perturbation residual. -/
 theorem lyapunovSpectralTransform_add_sub (n : ℕ)
@@ -1308,6 +1333,201 @@ theorem lyapunovSpectralTransform_add_sub (n : ℕ)
 noncomputable def lyapunovBackwardResidual (n : ℕ)
     (DA DC Y : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   fun i j => matMul n DA Y i j + matMul n Y (matTranspose DA) i j - DC i j
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    nonnegative feasible values for the structured Lyapunov backward error
+    `eta(Y)`, with a tied `DeltaA`/`DeltaA^T` perturbation and symmetric
+    `DeltaC`. -/
+def lyapunovBackwardErrorValues (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) (alpha gamma : Real) : Set Real :=
+  {eta | 0 <= eta ∧ IsLyapunovBackwardError n A C Y alpha gamma eta}
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    structured Lyapunov `eta(Y)` modeled as the infimum of nonnegative feasible
+    structured certificates.  This records the source's Lyapunov-specific
+    feasible set separately from the general Sylvester eta model. -/
+noncomputable def lyapunovBackwardErrorInf (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) (alpha gamma : Real) : Real :=
+  sInf (lyapunovBackwardErrorValues n A C Y alpha gamma)
+
+/-- The nonnegative feasible-value set for the structured Lyapunov eta model
+    is bounded below by zero. -/
+theorem lyapunovBackwardErrorValues_bddBelow (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) (alpha gamma : Real) :
+    BddBelow (lyapunovBackwardErrorValues n A C Y alpha gamma) := by
+  refine ⟨0, ?_⟩
+  intro eta heta
+  exact heta.1
+
+/-- The structured Lyapunov eta infimum is nonnegative because all feasible
+    values are explicitly nonnegative. -/
+theorem lyapunovBackwardErrorInf_nonneg (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) (alpha gamma : Real) :
+    0 <= lyapunovBackwardErrorInf n A C Y alpha gamma := by
+  unfold lyapunovBackwardErrorInf lyapunovBackwardErrorValues
+  apply Real.sInf_nonneg
+  intro eta heta
+  exact heta.1
+
+/-- Any nonnegative structured Lyapunov backward-error certificate lies above
+    the structured Lyapunov eta infimum. -/
+theorem lyapunovBackwardErrorInf_le_of_backwardError (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) (alpha gamma eta : Real)
+    (heta_nonneg : 0 <= eta)
+    (hBack : IsLyapunovBackwardError n A C Y alpha gamma eta) :
+    lyapunovBackwardErrorInf n A C Y alpha gamma <= eta := by
+  unfold lyapunovBackwardErrorInf
+  exact csInf_le
+    (lyapunovBackwardErrorValues_bddBelow n A C Y alpha gamma)
+    ⟨heta_nonneg, hBack⟩
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    from the perturbed Lyapunov equation, the residual decomposes as
+    `R = DeltaA * Y + Y * DeltaA^T - DeltaC`. -/
+theorem lyapunovResidual_decomposition (n : Nat)
+    (A C Y DeltaA DeltaC : Fin n -> Fin n -> Real)
+    (hEq : ∀ i j, lyapunovOp n (fun i' j' => A i' j' + DeltaA i' j') Y i j =
+      C i j + DeltaC i j) :
+    lyapunovResidual n A C Y =
+      lyapunovBackwardResidual n DeltaA DeltaC Y := by
+  ext i j
+  have h := hEq i j
+  unfold lyapunovOp at h
+  unfold lyapunovResidual lyapunovOp lyapunovBackwardResidual
+  unfold matMul matTranspose at h ⊢
+  simp only [add_mul, mul_add, Finset.sum_add_distrib] at h
+  linarith
+
+/-- A Lyapunov perturbation residual is the Sylvester perturbation residual
+    with the tied choice `DeltaB = -DeltaA^T`. -/
+theorem lyapunovBackwardResidual_eq_sylvesterBackwardResidual_tied (n : Nat)
+    (DeltaA DeltaC Y : Fin n -> Fin n -> Real) :
+    lyapunovBackwardResidual n DeltaA DeltaC Y =
+      sylvesterBackwardResidual n DeltaA
+        (fun i j => -matTranspose DeltaA i j) DeltaC Y := by
+  ext i j
+  unfold lyapunovBackwardResidual sylvesterBackwardResidual matMul matTranspose
+  simp only [mul_neg, Finset.sum_neg_distrib]
+  ring
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    every structured Lyapunov backward-error certificate is a general
+    Sylvester backward-error certificate for the specialization
+    `B = -A^T`, with the tied perturbation `DeltaB = -DeltaA^T`. -/
+theorem isBackwardError_of_isLyapunovBackwardError (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) (alpha gamma eta : Real)
+    (hLyap : IsLyapunovBackwardError n A C Y alpha gamma eta) :
+    IsBackwardError n A (fun i j => -matTranspose A i j) C Y
+      alpha alpha gamma eta := by
+  rcases hLyap with ⟨DeltaA, DeltaC, _hDeltaC_sym, hEq, hDeltaA, hDeltaC⟩
+  refine ⟨DeltaA, (fun i j => -matTranspose DeltaA i j), DeltaC, ?_, hDeltaA, ?_, hDeltaC⟩
+  · intro i j
+    have h := hEq i j
+    unfold lyapunovOp at h
+    unfold sylvesterOp
+    unfold matMul matTranspose at h ⊢
+    simp only [add_mul, mul_add, mul_neg, Finset.sum_add_distrib,
+      Finset.sum_neg_distrib] at h ⊢
+    linarith
+  · calc
+      frobNormSq (fun i j : Fin n => -matTranspose DeltaA i j)
+          = frobNormSq (matTranspose DeltaA) := by
+            simpa using frobNormSq_neg (matTranspose DeltaA)
+      _ = frobNormSq DeltaA := frobNormSq_transpose DeltaA
+      _ <= (eta * alpha) ^ 2 := hDeltaA
+
+/-- A structured Lyapunov feasible value is also feasible for the relaxed
+    general Sylvester eta model with `B = -A^T` and equal `A`/`B` weights. -/
+theorem sylvesterBackwardErrorValues_of_lyapunovBackwardErrorValues (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) (alpha gamma eta : Real)
+    (heta : eta ∈ lyapunovBackwardErrorValues n A C Y alpha gamma) :
+    eta ∈ sylvesterBackwardErrorValues n A
+      (fun i j => -matTranspose A i j) C Y alpha alpha gamma := by
+  exact ⟨heta.1,
+    isBackwardError_of_isLyapunovBackwardError n A C Y alpha gamma eta heta.2⟩
+
+/-- Since the structured Lyapunov feasible set is a subset of the relaxed
+    Sylvester feasible set, the relaxed Sylvester eta infimum is no larger than
+    the structured Lyapunov eta infimum whenever the structured set is nonempty. -/
+theorem sylvesterBackwardErrorInf_le_lyapunovBackwardErrorInf (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) (alpha gamma : Real)
+    (hne : (lyapunovBackwardErrorValues n A C Y alpha gamma).Nonempty) :
+    sylvesterBackwardErrorInf n A (fun i j => -matTranspose A i j) C Y
+      alpha alpha gamma <=
+        lyapunovBackwardErrorInf n A C Y alpha gamma := by
+  unfold lyapunovBackwardErrorInf
+  apply le_csInf hne
+  intro eta heta
+  exact sylvesterBackwardErrorInf_le_of_backwardError n A
+    (fun i j => -matTranspose A i j) C Y alpha alpha gamma eta
+    heta.1
+    (isBackwardError_of_isLyapunovBackwardError n A C Y alpha gamma eta heta.2)
+
+/-- The Lyapunov residual is the Sylvester residual for the specialization
+    `B = -A^T`. -/
+theorem lyapunovResidual_eq_sylvesterResidual_special (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) :
+    lyapunovResidual n A C Y =
+      sylvesterResidual n A (fun i j => -matTranspose A i j) C Y := by
+  ext i j
+  unfold lyapunovResidual sylvesterResidual
+  rw [lyapunovOp_eq_sylvesterOp]
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    a structured Lyapunov backward-error certificate at cost `eta` gives the
+    Lyapunov residual bound with the tied-perturbation scale
+    `(2 * alpha * ||Y||_F + gamma) * eta`. -/
+theorem lyapunov_residual_bound_of_backward_error (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) (alpha gamma eta : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heta : 0 <= eta)
+    (hLyap : IsLyapunovBackwardError n A C Y alpha gamma eta) :
+    frobNorm (lyapunovResidual n A C Y) <=
+      (2 * alpha * frobNorm Y + gamma) * eta := by
+  rcases isBackwardError_of_isLyapunovBackwardError n A C Y alpha gamma eta hLyap with
+    ⟨DeltaA, DeltaB, DeltaC, hEq, hDeltaA_sq, hDeltaB_sq, hDeltaC_sq⟩
+  have hDeltaA :
+      frobNorm DeltaA <= eta * alpha :=
+    frobNorm_le_of_frobNormSq_le_sq DeltaA
+      (mul_nonneg heta halpha) hDeltaA_sq
+  have hDeltaB :
+      frobNorm DeltaB <= eta * alpha :=
+    frobNorm_le_of_frobNormSq_le_sq DeltaB
+      (mul_nonneg heta halpha) hDeltaB_sq
+  have hDeltaC :
+      frobNorm DeltaC <= eta * gamma :=
+    frobNorm_le_of_frobNormSq_le_sq DeltaC
+      (mul_nonneg heta hgamma) hDeltaC_sq
+  have hres :=
+    residual_bound n A (fun i j => -matTranspose A i j) C Y
+      DeltaA DeltaB DeltaC alpha alpha gamma eta
+      halpha halpha hgamma heta hEq hDeltaA hDeltaB hDeltaC
+  calc
+    frobNorm (lyapunovResidual n A C Y)
+        = frobNorm (sylvesterResidual n A
+            (fun i j => -matTranspose A i j) C Y) := by
+            rw [lyapunovResidual_eq_sylvesterResidual_special]
+    _ <= ((alpha + alpha) * frobNorm Y + gamma) * eta := hres
+    _ = (2 * alpha * frobNorm Y + gamma) * eta := by ring
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    the residual ratio with Lyapunov scale `2 * alpha * ||Y||_F + gamma`
+    is a lower bound for the structured Lyapunov backward-error infimum. -/
+theorem lyapunov_relative_residual_le_backwardErrorInf (n : Nat)
+    (A C Y : Fin n -> Fin n -> Real) (alpha gamma : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma)
+    (hscale : 0 < 2 * alpha * frobNorm Y + gamma)
+    (hne : (lyapunovBackwardErrorValues n A C Y alpha gamma).Nonempty) :
+    frobNorm (lyapunovResidual n A C Y) /
+        (2 * alpha * frobNorm Y + gamma) <=
+      lyapunovBackwardErrorInf n A C Y alpha gamma := by
+  unfold lyapunovBackwardErrorInf
+  apply le_csInf hne
+  intro eta heta
+  have hbound :=
+    lyapunov_residual_bound_of_backward_error n A C Y alpha gamma eta
+      halpha hgamma heta.1 heta.2
+  rw [div_le_iff₀ hscale]
+  simpa [mul_comm, mul_left_comm, mul_assoc] using hbound
 
 /-- If `Y = U * Lambda * U^T`, the left perturbation product transforms to
     `DeltaA_tilde * Lambda`. -/
@@ -1488,6 +1708,65 @@ theorem lyapunovBackwardScalarEq_of_spectral_decomposition (n : ℕ)
         (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))))
     hα hγ]
   exact (lyapunovSpectralTransform_backwardResidual n U DA DC lam hU).symm
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    any structured Lyapunov backward-error certificate for a symmetric
+    approximation with spectral decomposition `Y = U * Lambda * U^T` gives the
+    printed scalar residual equation in spectral coordinates.  The orthogonal
+    change of basis preserves the Frobenius bounds on the two perturbations. -/
+theorem lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition
+    (n : ℕ)
+    (A C Y U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (alpha gamma eta : ℝ)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U) (halpha : alpha ≠ 0) (hgamma : gamma ≠ 0)
+    (hLyap : IsLyapunovBackwardError n A C Y alpha gamma eta) :
+    ∃ DeltaA DeltaC : Fin n → Fin n → ℝ,
+      IsSymmetricFiniteMatrix DeltaC ∧
+      frobNormSq (lyapunovSpectralTransform n U DeltaA) ≤ (eta * alpha) ^ 2 ∧
+      frobNormSq (lyapunovSpectralTransform n U DeltaC) ≤ (eta * gamma) ^ 2 ∧
+      lyapunovBackwardScalarEq n lam alpha gamma
+        (lyapunovSpectralTransform n U DeltaA)
+        (lyapunovSpectralTransform n U DeltaC)
+        (lyapunovSpectralTransform n U (lyapunovResidual n A C Y)) := by
+  subst Y
+  rcases hLyap with ⟨DeltaA, DeltaC, hDeltaC_sym, hEq, hDeltaA, hDeltaC⟩
+  refine ⟨DeltaA, DeltaC, hDeltaC_sym, ?_, ?_, ?_⟩
+  · simpa [lyapunovSpectralTransform_frobNormSq n U DeltaA hU] using hDeltaA
+  · simpa [lyapunovSpectralTransform_frobNormSq n U DeltaC hU] using hDeltaC
+  · have hresid := lyapunovResidual_decomposition n A C
+      (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+      DeltaA DeltaC hEq
+    have hscalar :=
+      lyapunovBackwardScalarEq_of_spectral_decomposition n U DeltaA DeltaC lam
+        alpha gamma hU halpha hgamma
+    simpa [hresid] using hscalar
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    the structured certificate-to-scalar bridge with the transformed symmetric
+    right-hand perturbation side condition exposed explicitly. -/
+theorem lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition_symm
+    (n : ℕ)
+    (A C Y U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (alpha gamma eta : ℝ)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U) (halpha : alpha ≠ 0) (hgamma : gamma ≠ 0)
+    (hLyap : IsLyapunovBackwardError n A C Y alpha gamma eta) :
+    ∃ DeltaA DeltaC : Fin n → Fin n → ℝ,
+      IsSymmetricFiniteMatrix (lyapunovSpectralTransform n U DeltaC) ∧
+      frobNormSq (lyapunovSpectralTransform n U DeltaA) ≤ (eta * alpha) ^ 2 ∧
+      frobNormSq (lyapunovSpectralTransform n U DeltaC) ≤ (eta * gamma) ^ 2 ∧
+      lyapunovBackwardScalarEq n lam alpha gamma
+        (lyapunovSpectralTransform n U DeltaA)
+        (lyapunovSpectralTransform n U DeltaC)
+        (lyapunovSpectralTransform n U (lyapunovResidual n A C Y)) := by
+  rcases
+    lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition
+      n A C Y U lam alpha gamma eta hY hU halpha hgamma hLyap with
+    ⟨DeltaA, DeltaC, hDeltaC_sym, hDeltaA, hDeltaC, hscalar⟩
+  exact ⟨DeltaA, DeltaC,
+    lyapunovSpectralTransform_symmetric n U DeltaC hDeltaC_sym,
+    hDeltaA, hDeltaC, hscalar⟩
 
 /-- Equation (16.21) as the diagonal-matrix residual equation
     `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde = R_tilde`. -/
