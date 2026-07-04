@@ -2558,6 +2558,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_source_h_bound_of_absLUhat_mul_one_sub_bound`
 - `higham9_14_source_h_bound_of_9_20_9_21_models_absLUhat_bound`
 - `higham9_14_source_h_bound_of_9_20_9_21_models_absLUhat_mul_one_sub_bound`
+- `higham9_14_matrix_source_h_bound_of_matrix_models_absLUhat_bound`
+- `higham9_14_matrix_source_h_bound_of_matrix_models_absLUhat_mul_one_sub_bound`
 - `higham9_14_totalNonnegative_exists_source_h_bound_of_models`
 - `higham9_14_source_h_bound_of_absLU_le_absA_and_9_20_9_21_models`
 - `higham9_14_source_f_bound_of_absLU_le_absA_and_9_20_9_21_models`
