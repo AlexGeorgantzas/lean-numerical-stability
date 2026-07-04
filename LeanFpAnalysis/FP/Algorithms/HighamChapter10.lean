@@ -2028,6 +2028,78 @@ theorem higham10_10_schur_complement_perturbation {k m : ℕ}
   exact schur_perturbation_remainder_bound A21 E21 A12 E12 M X E11
     α μ χ ε hα hμ hχ hε hA21 hA12 hE21 hE12 hE11 hMb hXb
 
+/-- **Lemma 10.11, first-order Schur-complement identity (Higham §10.3.1)** for
+the displayed perturbation `E = γ · [[I,0],[0,0]]`, which acts only on the
+leading block.  Specializing Lemma 10.10 to `E₂₂ = E₂₁ = E₁₂ = 0`,
+`E₁₁ = γ·I` gives, with `M = A₁₁⁻¹`,
+
+  `S(A+E) = S(A) + γ·(A₂₁ M² A₁₂) + R`,   `|Rᵢⱼ| ≤ (poly)·γ²`,
+
+i.e. the exact `S(A+E) − S(A) = γ·(A₂₁M²A₁₂) + O(‖E‖²)` behind the source's
+`‖S(cp(A+E)) − S(A)‖ = ‖W‖²‖E‖ + O(‖E‖²)` (see
+`higham10_11_firstOrder_eq_WtW`, which rewrites the first-order term as `WᵀW`
+with `W = M A₁₂`; here `‖E‖₂ = γ`).  The pivot-order-preservation half —
+condition (10.17) ⇒ `cp(A+E)` uses the same permutation as `cp(A)` — needs the
+complete-pivoting operator and remains an open foundation. -/
+theorem higham10_11_schur_perturbation_leadingBlock {k m : ℕ}
+    (A11 M X : Matrix (Fin k) (Fin k) ℝ)
+    (A21 : Matrix (Fin m) (Fin k) ℝ)
+    (A12 : Matrix (Fin k) (Fin m) ℝ)
+    (A22 : Matrix (Fin m) (Fin m) ℝ)
+    (γ : ℝ) (hγ : 0 ≤ γ)
+    (hM : M * A11 = 1)
+    (hXi : (A11 + γ • (1 : Matrix (Fin k) (Fin k) ℝ)) * X = 1)
+    (α μ χ : ℝ) (hα : 0 ≤ α) (hμ : 0 ≤ μ) (hχ : 0 ≤ χ)
+    (hA21 : ∀ i j, |A21 i j| ≤ α) (hA12 : ∀ i j, |A12 i j| ≤ α)
+    (hMb : ∀ i j, |M i j| ≤ μ) (hXb : ∀ i j, |X i j| ≤ χ) :
+    ∃ R : Matrix (Fin m) (Fin m) ℝ,
+      A22 - A21 * X * A12
+        = (A22 - A21 * M * A12) + γ • (A21 * (M * M) * A12) + R ∧
+      ∀ i j : Fin m, |R i j| ≤
+        ((k : ℝ) ^ 2 * μ + (k : ℝ) ^ 6 * α ^ 2 * μ ^ 2 * χ
+          + 2 * ((k : ℝ) ^ 4 * α * μ * χ) + (k : ℝ) ^ 4 * μ * χ * γ)
+          * γ ^ 2 := by
+  obtain ⟨R, hEq, hR⟩ :=
+    higham10_10_schur_complement_perturbation A11
+      (γ • (1 : Matrix (Fin k) (Fin k) ℝ)) M X
+      A21 (0 : Matrix (Fin m) (Fin k) ℝ)
+      A12 (0 : Matrix (Fin k) (Fin m) ℝ)
+      A22 (0 : Matrix (Fin m) (Fin m) ℝ)
+      hM hXi α μ χ γ hα hμ hχ hγ
+      hA21 hA12
+      (by intro i j; simpa using hγ)
+      (by intro i j; simpa using hγ)
+      (by
+        intro i j
+        have h0 : (γ • (1 : Matrix (Fin k) (Fin k) ℝ)) i j
+            = if i = j then γ else 0 := by simp [Matrix.one_apply]
+        rw [h0]
+        by_cases h : i = j <;> simp [h, abs_of_nonneg hγ, hγ])
+      hMb hXb
+  refine ⟨R, ?_, hR⟩
+  have hterm : A21 * (M * (γ • (1 : Matrix (Fin k) (Fin k) ℝ)) * M) * A12
+      = γ • (A21 * (M * M) * A12) := by
+    simp only [Matrix.mul_smul, Matrix.smul_mul, Matrix.mul_one]
+  have hLHS : A22 - A21 * X * A12
+      = (A22 + (0 : Matrix (Fin m) (Fin m) ℝ))
+        - (A21 + 0) * X * (A12 + 0) := by simp
+  rw [hLHS, hEq]
+  simp only [Matrix.zero_mul, Matrix.mul_zero, sub_zero, zero_sub, neg_zero,
+    zero_add, add_zero]
+  rw [hterm]
+
+/-- **Lemma 10.11 first-order term as `WᵀW`.**  When `A` is symmetric
+(`A₂₁ = A₁₂ᵀ`) and `M = A₁₁⁻¹` is symmetric, the first-order coefficient of the
+Schur-complement perturbation equals `WᵀW` with `W = M A₁₂ = A₁₁⁻¹A₁₂`, so the
+first-order term is `γ·WᵀW`, whose 2-norm is `γ‖W‖₂² = ‖E‖₂‖W‖₂²`. -/
+theorem higham10_11_firstOrder_eq_WtW {k m : ℕ}
+    (M : Matrix (Fin k) (Fin k) ℝ) (A12 : Matrix (Fin k) (Fin m) ℝ)
+    (A21 : Matrix (Fin m) (Fin k) ℝ)
+    (hA : A21 = Matrix.transpose A12) (hM : Matrix.transpose M = M) :
+    A21 * (M * M) * A12 = Matrix.transpose (M * A12) * (M * A12) := by
+  subst hA
+  simp only [Matrix.transpose_mul, hM, Matrix.mul_assoc]
+
 /-- **Lemma 10.12**: abstract `W = A11^{-1} A12` norm bound. -/
 theorem higham10_12_w_norm_bound_from_cond
     (W_norm κ_A11 : ℝ) (hκ : 0 ≤ κ_A11)
