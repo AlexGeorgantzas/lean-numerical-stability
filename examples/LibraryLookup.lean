@@ -14933,3 +14933,14 @@ small enough to serve as a smoke check for representative public declarations.
 #check eq_17_31_normwise_bound
 #check eq_17_32_componentwise_bound
 #check tsum_GiE_entry_eq_drazinIG
+#check indexOneDrazinInverse_unique
+#check indexOneDrazinInverse_eq_drazinIG
+
+-- Higham Chapter 16 minimizer/fl-residual surfaces (Higham16Minimizers).
+#check exists_sylvesterSep_minimizer
+#check isLeast_sylvesterSepRatios
+#check exists_sylvesterBackwardError_minimizer
+#check isLeast_sylvesterBackwardErrorValues
+#check flSylvesterResidualRect
+#check sylvester_computed_residual_dR_model
+#check sylvester_practical_error_bound_fl
