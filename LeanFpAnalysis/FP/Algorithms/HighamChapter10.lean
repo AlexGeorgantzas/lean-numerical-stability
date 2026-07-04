@@ -4760,6 +4760,41 @@ theorem higham10_29_stage_operator_le {m : ℕ} (hm : 0 < m)
       (fun i j => gram_conj_isSymm Hinv S hHinvSym i.succ j.succ)
   exact le_trans hstep htrail
 
+/-- **(10.29) self-contained operator-norm single-stage decrease** (Higham
+    §10.4): the induction-ready form of `higham10_29_stage_operator_le` whose
+    only hypothesis is that the stage `S` is nonsymmetric positive definite.
+    The symmetric inverses `H⁻¹ = sym(S)⁻¹` and `Ĥ⁻¹ = sym(luSchur S)⁻¹` are
+    produced internally by `spd_inverse_exists` (the symmetric parts are SPD via
+    `nonsymPosDef_iff_symPartSPD`, and `luFirstSchurComplement S` stays nonsym-PD
+    via `higham10_29_luFirstSchurComplement_isNonsymPosDef`), so a GE stage
+    induction can chain the decrease `λ_max(Q(Ŝ)) ≤ λ_max(Q(S))` across the
+    Schur-complement recursion without threading inverse data by hand. -/
+theorem higham10_29_stage_operator_le_exists {m : ℕ} (hm : 0 < m)
+    (S : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hS : higham10_4_IsNonsymPosDef (m + 1) S) :
+    ∃ (Hinv : Fin (m + 1) → Fin (m + 1) → ℝ)
+      (Hhatinv : Fin m → Fin m → ℝ)
+      (hHinvSym : ∀ i j, Hinv i j = Hinv j i)
+      (hHhatinvSym : ∀ i j, Hhatinv i j = Hhatinv j i),
+      finiteMaxEigenvalue hm
+          (matMul m
+            (matMul m (fun a b => luFirstSchurComplement S b a) Hhatinv)
+            (luFirstSchurComplement S))
+          (gram_conj_isSymm Hhatinv (luFirstSchurComplement S) hHhatinvSym) ≤
+        finiteMaxEigenvalue (Nat.succ_pos m)
+          (matMul (m + 1) (matMul (m + 1) (fun a b => S b a) Hinv) S)
+          (gram_conj_isSymm Hinv S hHinvSym) := by
+  obtain ⟨Hinv, hHinvSym, hHinvRight, _⟩ :=
+    spd_inverse_exists (symmetricPart (m + 1) S)
+      ((nonsymPosDef_iff_symPartSPD (m + 1) S).mp hS)
+  obtain ⟨Hhatinv, hHhatinvSym, hHhatinvRight, _⟩ :=
+    spd_inverse_exists (symmetricPart m (luFirstSchurComplement S))
+      ((nonsymPosDef_iff_symPartSPD m (luFirstSchurComplement S)).mp
+        (higham10_29_luFirstSchurComplement_isNonsymPosDef S hS))
+  exact ⟨Hinv, Hhatinv, hHinvSym, hHhatinvSym,
+    higham10_29_stage_operator_le hm S hS Hinv Hhatinv hHinvSym hHhatinvSym
+      hHinvRight hHhatinvRight⟩
+
 /-- **Equation (10.29)** / Golub-Van Loan growth-bound interface for exact
 LU factors of a nonsymmetric positive-definite matrix. -/
 theorem higham10_29_nonsym_pd_lu_growth_bound (n : ℕ) (hn : 0 < n)
