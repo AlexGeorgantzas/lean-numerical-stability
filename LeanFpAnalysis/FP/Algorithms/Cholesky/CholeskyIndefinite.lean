@@ -395,6 +395,55 @@ theorem twoByTwo_completePivot_absdet_lower (e11 e22 e21 μ0 μ1 α : ℝ)
   rw [abs_of_nonpos hneg]
   nlinarith [hdet]
 
+/-- **2×2 inverse-block entrywise bounds** (Higham §11.1.1).  For the
+    complete-pivoting 2×2 block `E = [[e₁₁,e₂₁],[e₂₁,e₂₂]]`
+    (`|e₁₁|,|e₂₂| ≤ μ₁ ≤ αμ₀`, `e₂₁² = μ₀²`, `α ∈ [0,1)`, `μ₀ > 0`), with
+    `d = det E = e₁₁e₂₂ − e₂₁²` and `K = 1/((1−α²)μ₀)`, the entries of
+    `E⁻¹ = d⁻¹[[e₂₂,−e₂₁],[−e₂₁,e₁₁]]` are bounded by
+    `|e₂₂/d|, |e₁₁/d| ≤ αK` and `|e₂₁/d| ≤ K`.  This is the printed
+    `|E⁻¹| ≤ K·[[α,1],[1,α]]`, derived from `twoByTwo_completePivot_absdet_lower`. -/
+theorem twoByTwo_inverse_entry_bounds (e11 e22 e21 μ0 μ1 α K : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1) :
+    |e22 / (e11 * e22 - e21 ^ 2)| ≤ α * K
+      ∧ |e11 / (e11 * e22 - e21 ^ 2)| ≤ α * K
+      ∧ |e21 / (e11 * e22 - e21 ^ 2)| ≤ K := by
+  have hα2 : α ^ 2 < 1 := by nlinarith [hα0, hα1]
+  have hD : 0 < (1 - α ^ 2) * μ0 ^ 2 := mul_pos (by linarith [hα2]) (pow_pos hμ 2)
+  have habs := twoByTwo_completePivot_absdet_lower e11 e22 e21 μ0 μ1 α
+    hμ1 hα0 hα1 he11 he22 he21 hμ1α
+  set d := e11 * e22 - e21 ^ 2 with hd
+  have hdpos : 0 < |d| := lt_of_lt_of_le hD habs
+  have hK0 : 0 ≤ K := by
+    nlinarith [hK, mul_pos (by linarith [hα2] : (0 : ℝ) < 1 - α ^ 2) hμ]
+  have hαK0 : 0 ≤ α * K := mul_nonneg hα0 hK0
+  have hkey1 : α * μ0 ≤ α * K * |d| := by
+    have hval : α * K * ((1 - α ^ 2) * μ0 ^ 2) = α * μ0 := by
+      have h1 : K * ((1 - α ^ 2) * μ0) = 1 := by linarith [hK]
+      nlinarith [h1]
+    nlinarith [mul_le_mul_of_nonneg_left habs hαK0, hval]
+  have hkey2 : μ0 ≤ K * |d| := by
+    have hval : K * ((1 - α ^ 2) * μ0 ^ 2) = μ0 := by
+      have h1 : K * ((1 - α ^ 2) * μ0) = 1 := by linarith [hK]
+      nlinarith [h1]
+    nlinarith [mul_le_mul_of_nonneg_left habs hK0, hval]
+  have h21abs : |e21| = μ0 := by
+    rw [← Real.sqrt_sq_eq_abs, he21, Real.sqrt_sq (le_of_lt hμ)]
+  refine ⟨?_, ?_, ?_⟩
+  · rw [abs_div, div_le_iff₀ hdpos]
+    calc |e22| ≤ μ1 := he22
+      _ ≤ α * μ0 := hμ1α
+      _ ≤ α * K * |d| := hkey1
+  · rw [abs_div, div_le_iff₀ hdpos]
+    calc |e11| ≤ μ1 := he11
+      _ ≤ α * μ0 := hμ1α
+      _ ≤ α * K * |d| := hkey1
+  · rw [abs_div, div_le_iff₀ hdpos]
+    calc |e21| = μ0 := h21abs
+      _ ≤ K * |d| := hkey2
+
 /-- Elementary bound `|x·y·z| ≤ p·q·r` from `|x| ≤ p`, `|y| ≤ q`, `|z| ≤ r`
     with `p, q ≥ 0`.  Used to bound the length-two inner products in the 2×2
     Schur-complement growth estimate. -/
@@ -485,6 +534,35 @@ theorem twoByTwo_schur_growth
     field_simp
   rw [hrhs]
   exact hfinal
+
+/-- **Self-contained 2×2 complete-pivoting element growth** (Higham §11.1.1,
+    eq. (11.4)).  Combining `twoByTwo_inverse_entry_bounds` with
+    `twoByTwo_schur_growth`: the Schur entry formed with the *actual* inverse of
+    the pivot block `E`, namely `E⁻¹ = d⁻¹[[e₂₂,−e₂₁],[−e₂₁,e₁₁]]`, is bounded by
+    `(1 + 2/(1−α))·μ₀` using only the pivot-block data and the entry bound `μ₀` —
+    no inverse-entry bounds are assumed. -/
+theorem twoByTwo_schur_growth_of_block
+    (b ci1 ci2 cj1 cj2 e11 e22 e21 μ0 μ1 α K : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1)
+    (hb : |b| ≤ μ0)
+    (hci1 : |ci1| ≤ μ0) (hci2 : |ci2| ≤ μ0)
+    (hcj1 : |cj1| ≤ μ0) (hcj2 : |cj2| ≤ μ0) :
+    |b - (ci1 * (e22 / (e11 * e22 - e21 ^ 2) * cj1
+            + -(e21 / (e11 * e22 - e21 ^ 2)) * cj2)
+          + ci2 * (-(e21 / (e11 * e22 - e21 ^ 2)) * cj1
+            + e11 / (e11 * e22 - e21 ^ 2) * cj2))|
+      ≤ (1 + 2 / (1 - α)) * μ0 := by
+  obtain ⟨hInv22, hInv11, hInv21⟩ :=
+    twoByTwo_inverse_entry_bounds e11 e22 e21 μ0 μ1 α K
+      hμ1 hα0 hα1 hμ he11 he22 he21 hμ1α hK
+  exact twoByTwo_schur_growth b ci1 ci2 cj1 cj2
+    (e22 / (e11 * e22 - e21 ^ 2)) (-(e21 / (e11 * e22 - e21 ^ 2)))
+    (-(e21 / (e11 * e22 - e21 ^ 2))) (e11 / (e11 * e22 - e21 ^ 2)) μ0 α K
+    hα0 hα1 hμ hK hb hci1 hci2 hcj1 hcj2
+    hInv22 (by rw [abs_neg]; exact hInv21) (by rw [abs_neg]; exact hInv21) hInv11
 
 -- ============================================================
 -- Chapter 11.1.2  Partial pivoting (Bunch-Kaufman)
