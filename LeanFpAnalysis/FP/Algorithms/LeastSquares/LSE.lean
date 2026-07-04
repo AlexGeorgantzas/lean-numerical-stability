@@ -6431,6 +6431,50 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_range_null_nullInte
       (theorem20_8_AP_injective_on_nullspace_of_nullIntersectionTrivial
         A B Bplus hnull)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    a matrix-level annihilation certificate `B * (AP)^+ = 0` gives the
+    range-in-`null(B)` hypothesis needed by the Penrose-style bridge. -/
+theorem theorem20_8_APplus_range_null_of_constraint_annihilates
+    {m n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hBAPplus : rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0)) :
+    ∀ w : Fin m → ℝ,
+      rectMatMulVec B (rectMatMulVec APplus w) = (fun _i : Fin p => 0) := by
+  intro w
+  calc
+    rectMatMulVec B (rectMatMulVec APplus w) =
+        rectMatMulVec (rectMatMul B APplus) w := by
+          exact (rectMatMulVec_rectMatMul B APplus w).symm
+    _ = rectMatMulVec (fun _i : Fin p => fun _j : Fin m => 0) w := by
+          rw [hBAPplus]
+    _ = (fun _i : Fin p => 0) := by
+          ext i
+          unfold rectMatMulVec
+          simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    Penrose1 plus the matrix-level annihilation `B * (AP)^+ = 0` gives the
+    reduced-operator left inverse once (20.24)'s null-intersection condition is
+    available. -/
+theorem theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_matrix_range_null_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hPenrose1 :
+      rectMatMul (rectMatMul (theorem20_8AP A B Bplus) APplus)
+          (theorem20_8AP A B Bplus) =
+        theorem20_8AP A B Bplus)
+    (hBAPplus : rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus) z) = z :=
+  theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_range_null_nullIntersection
+    A B Bplus APplus hPenrose1
+      (theorem20_8_APplus_range_null_of_constraint_annihilates B APplus hBAPplus)
+      hnull
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.24): vertical stack
     `[A; B]`, the local representation of `[A^T, B^T]^T`. -/
 noncomputable def lseStackedMatrix {m n p : ℕ}
