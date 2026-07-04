@@ -1816,6 +1816,36 @@ theorem theorem20_8_perturbed_feasible_residual_decomp {m n p : ℕ}
   ring
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    solving the perturbed-residual decomposition for the reduced `AP`
+    difference.  The perturbed residual is kept explicit, so this does not
+    assume the reduced least-squares/Wedin forcing equation. -/
+theorem theorem20_8_AP_difference_eq_of_perturbed_residual_eq {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rpert : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidual (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rpert) :
+    rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) =
+      fun i =>
+        rpert i + (b i - rectMatMulVec A x i) -
+          rectMatMulVec A
+            (rectMatMulVec Bplus
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i -
+          rectMatMulVec DeltaA y i + Deltab i := by
+  have hdecomp :=
+    theorem20_8_perturbed_feasible_residual_decomp
+      A DeltaA b Deltab B DeltaB Bplus d Deltad x y hx hy
+  ext i
+  have hdecomp_i := congrFun hdecomp i
+  have hres_i := congrFun hres i
+  unfold lsResidual at hdecomp_i hres_i
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the constraint-defect vector `Deltad - DeltaB*y` is bounded by the
     supplied perturbation radii. -/
 theorem theorem20_8_vecNorm2_constraint_defect_le {n p : ℕ}
@@ -5735,6 +5765,31 @@ theorem LSEFullRowRank.theorem20_8_perturbed_feasible_residual_decomp
           Deltab i :=
   _root_.LeanFpAnalysis.FP.theorem20_8_perturbed_feasible_residual_decomp
     A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y hx hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the reduced `AP` difference solved from an
+    explicit perturbed residual vector. -/
+theorem LSEFullRowRank.theorem20_8_AP_difference_eq_of_perturbed_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rpert : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidual (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rpert) :
+    rectMatMulVec (theorem20_8AP A B hB.rightInverse) (fun k => y k - x k) =
+      fun i =>
+        rpert i + (b i - rectMatMulVec A x i) -
+          rectMatMulVec A
+            (rectMatMulVec hB.rightInverse
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i -
+          rectMatMulVec DeltaA y i + Deltab i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_difference_eq_of_perturbed_residual_eq
+    A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y rpert hx hy hres
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated residual decomposition with the constraint
