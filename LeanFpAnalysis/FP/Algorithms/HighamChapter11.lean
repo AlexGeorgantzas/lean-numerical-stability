@@ -234,6 +234,20 @@ theorem higham11_3_block_ldlt_backward_error_interface (n : ℕ)
         A (σ i) (σ j) + ΔA1 i j) :=
   h
 
+/-- **Theorem 11.3 per-step floating-point building block**: the fl backward
+error of one 1×1 Schur-complement update `s = fl(a − fl(fl(c₁/e)·c₂))` equals the
+exact entry `a − c₁c₂/e` plus a derived error `≤ γ₃·(|a| + |c₁c₂/e|)`.  This is a
+genuine (non-assumed) atomic ingredient toward the block-LDLᵀ backward error
+`higham11_3_block_ldlt_backward_error_interface`; the full recursion over all
+stages remains open (see chapter report). -/
+theorem higham11_3_fl_oneByOne_schur_step_error
+    (fp : FPModel) (a e c1 c2 : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 3 * (|a| + |c1 * c2 / e|) ∧
+      fp.fl_sub a (fp.fl_mul (fp.fl_div c1 e) c2) = (a - c1 * c2 / e) + Δ :=
+  fl_oneByOne_schur_step_error fp a e c1 c2 he hval
+
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
     (ε : ℝ) : Fin 3 → Fin 3 → ℝ :=
