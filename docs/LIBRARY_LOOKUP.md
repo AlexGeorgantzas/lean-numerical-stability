@@ -2916,6 +2916,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_26_stage_entry_abs_le_two_norm`
 - `higham9_26_stage_entry_abs_le_of_uniform_bounds`
 - `higham9_26_stage_entry_abs_le_of_two_norm_uniform_bounds`
+- `higham9_26_rowPrefix`
+- `higham9_26_colPrefix`
+- `higham9_26_matrix_stage_entry_abs_le`
+- `higham9_26_matrix_stage_entry_abs_le_two_norm`
+- `higham9_26_matrix_stage_entry_abs_le_of_uniform_bounds`
+- `higham9_26_matrix_stage_entry_abs_le_of_two_norm_uniform_bounds`
 - `higham9_15_lu_perturbation_identity`
 - `higham9_15_lu_perturbation_relative_bound`
 - `higham9_15_lu_perturbation_forward_bound`
