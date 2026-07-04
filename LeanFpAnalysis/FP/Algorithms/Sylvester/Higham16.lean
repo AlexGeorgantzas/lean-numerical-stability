@@ -110,6 +110,49 @@ theorem vec_right_mul_rect (m n p : Nat)
     (Matrix.kronecker_mulVec_vec (1 : Matrix (Fin m) (Fin m) Real)
       X (Matrix.transpose B)).symm
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    the product-index Lyapunov coefficient `I_n kron A + A kron I_n`
+    for vectorized Lyapunov systems `A X + X A^T = C`. -/
+noncomputable def lyapunovVecCoeff (n : Nat)
+    (A : Matrix (Fin n) (Fin n) Real) :
+    Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real :=
+  Matrix.kronecker (1 : Matrix (Fin n) (Fin n) Real) A +
+    Matrix.kronecker A (1 : Matrix (Fin n) (Fin n) Real)
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    applying `I_n kron A + A kron I_n` to `vec(X)` gives
+    `vec(A X + X A^T)`. -/
+theorem lyapunovVecCoeff_mulVec_vec (n : Nat)
+    (A X : Matrix (Fin n) (Fin n) Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A) (Matrix.vec X) =
+      Matrix.vec (A * X + X * Matrix.transpose A) := by
+  ext p
+  have hleft := congrFun (vec_left_mul_rect n n n A X) p
+  have hright := congrFun (vec_right_mul_rect n n n X (Matrix.transpose A)) p
+  have hright' :
+      (X * Matrix.transpose A).vec p =
+        (Matrix.kronecker A (1 : Matrix (Fin n) (Fin n) Real)).mulVec X.vec p := by
+    simpa using hright
+  simp only [lyapunovVecCoeff, Matrix.add_mulVec, Pi.add_apply]
+  rw [← hleft, ← hright']
+  simp [Matrix.vec]
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    the vec-permutation matrix `Pi` in product-index form.  It swaps the
+    column-stacking product index `(j,i)` to `(i,j)`. -/
+noncomputable def vecTransposePermutation (n : Nat) :
+    Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real :=
+  fun p q => if q = (p.2, p.1) then 1 else 0
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    defining property of the vec-permutation matrix, `vec(A^T) = Pi vec(A)`. -/
+theorem vecTransposePermutation_mulVec_vec (n : Nat)
+    (A : Matrix (Fin n) (Fin n) Real) :
+    Matrix.mulVec (vecTransposePermutation n) (Matrix.vec A) =
+      Matrix.vec (Matrix.transpose A) := by
+  ext p
+  simp [vecTransposePermutation, Matrix.mulVec, dotProduct, Matrix.vec]
+
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.2):
     applying `I_n kron A - B^T kron I_m` to `vec(X)` gives
     `vec(AX - XB)`. -/
