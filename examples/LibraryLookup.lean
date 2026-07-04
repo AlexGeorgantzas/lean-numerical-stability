@@ -14989,3 +14989,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check flSylvesterResidualRect
 #check sylvester_computed_residual_dR_model
 #check sylvester_practical_error_bound_fl
+#check sylvesterVecCoeff_eigenpair
+#check sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair
+#check sylvesterVecCoeff_singular_of_common_eigenvalue
+#check sylvester_triangular_column_equation
+#check sylvester_triangular_solve_exists_unique
