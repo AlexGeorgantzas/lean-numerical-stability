@@ -15133,3 +15133,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check lyapunovCondDiagonal
 #check lyapunovCondDiagonal_isLyapunovConditionFirstOrderBound
 #check H16_eq16_27_lyapunov_condition_diagonal
+#check pseudospectrum_in_unit_disc_of_pseudospectralRadiusLt
+#check spectralRadius_lt_one_of_pseudospectralRadiusLt
+#check higham_18_2_pseudospectral_criterion
+#check H19_eq19_13_formed_Q_backward_error
+#check H19_eq19_13_formed_Q_backward_error_gamma

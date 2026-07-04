@@ -154,6 +154,11 @@ of values in Mathlib/repo).
 | Gelfand limit citation (p. 342, unnumbered) | — | — | CLOSED as a dependency: `matPow_eq_matrix_pow` + `eventually_matPow_abs_le_of_spectralRadius_le` import Mathlib's Gelfand formula into repo vocabulary (used by the (18.12) literal closure) | closed (dependency) |
 | numerical radius bound (p. 343, unnumbered) | field of values | — | absent from Mathlib/repo | DEFERRED |
 
+### Blocked-Foundation Progress (2026-07-04, goal: resolve blocked rows)
+
+- **Theorem 18.2 pseudospectral criterion — STRENGTHENED to unconditional** (`MatrixPowersPseudospectralCriterion.lean`): `pseudospectrum_in_unit_disc_of_pseudospectralRadiusLt`, `spectralRadius_lt_one_of_pseudospectralRadiusLt`, and `higham_18_2_pseudospectral_criterion` derive the criterion→convergence direction WITHOUT the [620] `h620` witness (the ε-pseudospectrum's spectrum-in-unit-disc content is proved inline). Only the achievability lower bound `ρ_ε ≥ ρ+g` still needs h620 (the [620] dominant-perturbation existence the book takes on faith; direction-mismatch means Bauer-Fike cannot supply it — genuine allowed-BLOCKED).
+- **eq (18.8) Trefethen resolvent bound — DEFERRED (exact obstruction):** needs a matrix holomorphic/Dunford functional calculus + resolvent-norm inequality, both absent from Mathlib v4.29 (only the scalar `circleIntegral` exists).
+
 ## Verification Log
 
 | Command | Result | Notes |
