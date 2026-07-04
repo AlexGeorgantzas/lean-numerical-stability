@@ -2328,6 +2328,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohteBound_bandwidth_two_formula`
 - `higham9_11_bohteBound_bandwidth_three_formula`
 - `higham9_11_bohteBound_bandwidth_four_formula`
+- `higham9_11_bohteBound_bandwidth_five_formula`
 - `higham9_11_bohteBound_zero`
 - `higham9_11_bohteBound_nonneg`
 - `higham9_11_bohteBound_ge_two`
@@ -2370,6 +2371,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bandwidth_four_bohte_solve_tight_of_growth_le`
 - `higham9_11_bandwidth_four_bohte_solve_tight_of_isBanded`
 - `higham9_11_bandwidth_four_bohte_solve_tight_of_isBanded_growth_le`
+- `higham9_11_bandwidth_five_bohte_solve_tight`
+- `higham9_11_bandwidth_five_bohte_solve_tight_of_growth_le`
+- `higham9_11_bandwidth_five_bohte_solve_tight_of_isBanded`
+- `higham9_11_bandwidth_five_bohte_solve_tight_of_isBanded_growth_le`
 - `higham9_12_spd_lu_backward_error`
 - `tridiag_spd_shape_absLU_eq_absA`
 - `higham9_12_spd_tridiag_absLU_eq_of_positive_DLT`
