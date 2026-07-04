@@ -1419,6 +1419,77 @@ theorem wedinLemma20_12_complexMatrixOp2_compressedGram_eq_crossProjection_sq
     _ = complexMatrixOp2 (realRectToCMatrix (rectMatMul P IQ)) ^ 2 := hgram
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the transposed self-product of `P(I-Q)` is the compressed Gram product
+    `(I-Q)P(I-Q)`. -/
+theorem wedinLemma20_12_crossProjection_transpose_mul_self_eq_compressedGram
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    rectMatMul
+        (finiteTranspose
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j)))
+        (rectMatMul P (fun i j => idMatrix m i j - Q i j)) =
+      rectMatMul
+        (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+        (fun i j => idMatrix m i j - Q i j) := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hIQ : IsSymmetricFiniteMatrix IQ :=
+    wedinLemma20_12_projectionComplement_symmetric Q hQ
+  have htranspose :
+      finiteTranspose (rectMatMul P IQ) = rectMatMul IQ P :=
+    wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric P IQ hP hIQ
+  rw [htranspose]
+  calc
+    rectMatMul (rectMatMul IQ P) (rectMatMul P IQ)
+        = rectMatMul IQ (rectMatMul P (rectMatMul P IQ)) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul IQ (rectMatMul (rectMatMul P P) IQ) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul IQ (rectMatMul P IQ) := by
+            rw [hIdemP]
+    _ = rectMatMul (rectMatMul IQ P) IQ := by
+            rw [← rectMatMul_assoc]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the compressed Gram product `(I-Q)P(I-Q)` is symmetric. -/
+theorem wedinLemma20_12_compressedGram_symmetric
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    IsSymmetricFiniteMatrix
+      (rectMatMul
+        (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+        (fun i j => idMatrix m i j - Q i j)) := by
+  have hEq :=
+    wedinLemma20_12_crossProjection_transpose_mul_self_eq_compressedGram
+      P Q hP hQ hIdemP
+  exact
+    IsSymmetricFiniteMatrix_of_eq_rectMatMul_transpose_self
+      (rectMatMul P (fun i j => idMatrix m i j - Q i j))
+      hEq.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the compressed Gram product `(I-Q)P(I-Q)` is positive semidefinite. -/
+theorem wedinLemma20_12_compressedGram_finitePSD
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    finitePSD
+      (rectMatMul
+        (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+        (fun i j => idMatrix m i j - Q i j)) := by
+  have hEq :=
+    wedinLemma20_12_crossProjection_transpose_mul_self_eq_compressedGram
+      P Q hP hQ hIdemP
+  exact
+    finitePSD_of_eq_rectMatMul_transpose_self
+      (rectMatMul P (fun i j => idMatrix m i j - Q i j))
+      hEq.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     an equality between the compressed Gram projector products implies the
     desired equality between the original cross-projection exact operator-2
     norms.
