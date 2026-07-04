@@ -40,6 +40,242 @@ noncomputable def iterMatrix (n : ℕ) (M_inv N : Fin n → Fin n → ℝ) :
 noncomputable def dualIterMatrix (n : ℕ) (N M_inv : Fin n → Fin n → ℝ) :
     Fin n → Fin n → ℝ := matMul n N M_inv
 
+/-- Row/column diagonal scaling of a square matrix, `D_left A D_right`.
+    This is the matrix part of Higham's scaled system
+    `A x = b -> D1 A D2 (D2^{-1} x) = D1 b`. -/
+noncomputable def stationaryRowColumnScale (n : ℕ)
+    (dLeft dRight : Fin n → ℝ) (A : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  matMul n (diagMatrix dLeft) (matMul n A (diagMatrix dRight))
+
+/-- Inverse candidate for a row/column-scaled splitting matrix:
+    `(D1 M D2)^{-1} = D2^{-1} M^{-1} D1^{-1}`. -/
+noncomputable def stationaryScaledInverse (n : ℕ)
+    (dLeftInv dRightInv : Fin n → ℝ) (M_inv : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  matMul n (diagMatrix dRightInv) (matMul n M_inv (diagMatrix dLeftInv))
+
+/-- A diagonal matrix times its reciprocal diagonal is the identity. -/
+theorem diagMatrix_mul_diagMatrix_eq_id (n : ℕ) (d e : Fin n → ℝ)
+    (h : ∀ i, d i * e i = 1) :
+    matMul n (diagMatrix d) (diagMatrix e) = idMatrix n := by
+  ext i j
+  rw [matMul_diagMatrix_left]
+  by_cases hij : i = j
+  · subst j
+    simp [diagMatrix, idMatrix, h i]
+  · simp [diagMatrix, idMatrix, hij]
+
+/-- Entrywise form of the row/column diagonal scaling used for stationary
+    iteration. -/
+theorem stationaryRowColumnScale_apply (n : ℕ)
+    (dLeft dRight : Fin n → ℝ) (A : Fin n → Fin n → ℝ) (i j : Fin n) :
+    stationaryRowColumnScale n dLeft dRight A i j =
+      dLeft i * A i j * dRight j := by
+  unfold stationaryRowColumnScale
+  rw [matMul_diagMatrix_left]
+  rw [matMul_diagMatrix_right]
+  ring
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, p. 327, scale-independence
+    passage: a diagonal row/column scaling preserves the splitting structure
+    when `A`, `M`, and `N` are scaled in corresponding positions. -/
+theorem stationaryRowColumnScale_splittingSpec (n : ℕ)
+    (A M N M_inv : Fin n → Fin n → ℝ) (hS : SplittingSpec n A M N M_inv)
+    (dLeft dLeftInv dRight dRightInv : Fin n → ℝ)
+    (hdLeft : ∀ i, dLeftInv i * dLeft i = 1)
+    (hdRight : ∀ i, dRightInv i * dRight i = 1) :
+    SplittingSpec n
+      (stationaryRowColumnScale n dLeft dRight A)
+      (stationaryRowColumnScale n dLeft dRight M)
+      (stationaryRowColumnScale n dLeft dRight N)
+      (stationaryScaledInverse n dLeftInv dRightInv M_inv) where
+  splitting := by
+    intro i j
+    repeat rw [stationaryRowColumnScale_apply]
+    rw [hS.splitting i j]
+    ring
+  inv_left := by
+    have hDLeft :
+        matMul n (diagMatrix dLeftInv) (diagMatrix dLeft) = idMatrix n :=
+      diagMatrix_mul_diagMatrix_eq_id n dLeftInv dLeft hdLeft
+    have hDRight :
+        matMul n (diagMatrix dRightInv) (diagMatrix dRight) = idMatrix n :=
+      diagMatrix_mul_diagMatrix_eq_id n dRightInv dRight hdRight
+    have hMLeft : matMul n M_inv M = idMatrix n := by
+      ext i j
+      exact hS.inv_left i j
+    have hLeftMat :
+        matMul n (stationaryScaledInverse n dLeftInv dRightInv M_inv)
+          (stationaryRowColumnScale n dLeft dRight M) = idMatrix n := by
+      unfold stationaryScaledInverse stationaryRowColumnScale
+      calc
+        matMul n (matMul n (diagMatrix dRightInv)
+              (matMul n M_inv (diagMatrix dLeftInv)))
+            (matMul n (diagMatrix dLeft) (matMul n M (diagMatrix dRight)))
+            =
+          matMul n (diagMatrix dRightInv)
+            (matMul n M_inv
+              (matMul n (diagMatrix dLeftInv)
+                (matMul n (diagMatrix dLeft)
+                  (matMul n M (diagMatrix dRight))))) := by
+              rw [matMul_assoc]
+              rw [matMul_assoc]
+        _ =
+          matMul n (diagMatrix dRightInv)
+            (matMul n M_inv (matMul n M (diagMatrix dRight))) := by
+              rw [← matMul_assoc n (diagMatrix dLeftInv) (diagMatrix dLeft)
+                (matMul n M (diagMatrix dRight))]
+              rw [hDLeft, matMul_id_left]
+        _ =
+          matMul n (diagMatrix dRightInv)
+            (matMul n (matMul n M_inv M) (diagMatrix dRight)) := by
+              rw [matMul_assoc]
+        _ = matMul n (diagMatrix dRightInv) (diagMatrix dRight) := by
+              rw [hMLeft, matMul_id_left]
+        _ = idMatrix n := hDRight
+    intro i j
+    have hentry := congrArg (fun T : Fin n → Fin n → ℝ => T i j) hLeftMat
+    simpa [matMul, idMatrix] using hentry
+  inv_right := by
+    have hDLeft :
+        matMul n (diagMatrix dLeft) (diagMatrix dLeftInv) = idMatrix n :=
+      diagMatrix_mul_diagMatrix_eq_id n dLeft dLeftInv
+        (fun i => by rw [mul_comm]; exact hdLeft i)
+    have hDRight :
+        matMul n (diagMatrix dRight) (diagMatrix dRightInv) = idMatrix n :=
+      diagMatrix_mul_diagMatrix_eq_id n dRight dRightInv
+        (fun i => by rw [mul_comm]; exact hdRight i)
+    have hMRight : matMul n M M_inv = idMatrix n := by
+      ext i j
+      exact hS.inv_right i j
+    have hRightMat :
+        matMul n (stationaryRowColumnScale n dLeft dRight M)
+          (stationaryScaledInverse n dLeftInv dRightInv M_inv) = idMatrix n := by
+      unfold stationaryScaledInverse stationaryRowColumnScale
+      calc
+        matMul n (matMul n (diagMatrix dLeft)
+              (matMul n M (diagMatrix dRight)))
+            (matMul n (diagMatrix dRightInv)
+              (matMul n M_inv (diagMatrix dLeftInv)))
+            =
+          matMul n (diagMatrix dLeft)
+            (matMul n M
+              (matMul n (diagMatrix dRight)
+                (matMul n (diagMatrix dRightInv)
+                  (matMul n M_inv (diagMatrix dLeftInv))))) := by
+              rw [matMul_assoc]
+              rw [matMul_assoc]
+        _ =
+          matMul n (diagMatrix dLeft)
+            (matMul n M (matMul n M_inv (diagMatrix dLeftInv))) := by
+              rw [← matMul_assoc n (diagMatrix dRight) (diagMatrix dRightInv)
+                (matMul n M_inv (diagMatrix dLeftInv))]
+              rw [hDRight, matMul_id_left]
+        _ =
+          matMul n (diagMatrix dLeft)
+            (matMul n (matMul n M M_inv) (diagMatrix dLeftInv)) := by
+              rw [matMul_assoc]
+        _ = matMul n (diagMatrix dLeft) (diagMatrix dLeftInv) := by
+              rw [hMRight, matMul_id_left]
+        _ = idMatrix n := hDLeft
+    intro i j
+    have hentry := congrArg (fun T : Fin n → Fin n → ℝ => T i j) hRightMat
+    simpa [matMul, idMatrix] using hentry
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, p. 327, scale-independence
+    passage: after row/column diagonal scaling, the new iteration matrix is
+    similar to the old one by the column scaling matrix. This is the algebraic
+    certificate behind the statement that the eigenvalues of `M^{-1}N` are
+    unchanged. -/
+theorem stationaryScaledIterMatrix_similarity (n : ℕ)
+    (M_inv N : Fin n → Fin n → ℝ)
+    (dLeft dLeftInv dRight dRightInv : Fin n → ℝ)
+    (hdLeft : ∀ i, dLeftInv i * dLeft i = 1)
+    (_hdRight : ∀ i, dRightInv i * dRight i = 1) :
+    iterMatrix n
+      (stationaryScaledInverse n dLeftInv dRightInv M_inv)
+      (stationaryRowColumnScale n dLeft dRight N) =
+      matMul n (diagMatrix dRightInv)
+        (matMul n (iterMatrix n M_inv N) (diagMatrix dRight)) := by
+  have hDLeft :
+      matMul n (diagMatrix dLeftInv) (diagMatrix dLeft) = idMatrix n :=
+    diagMatrix_mul_diagMatrix_eq_id n dLeftInv dLeft hdLeft
+  unfold iterMatrix stationaryScaledInverse stationaryRowColumnScale
+  calc
+    matMul n (matMul n (diagMatrix dRightInv)
+          (matMul n M_inv (diagMatrix dLeftInv)))
+        (matMul n (diagMatrix dLeft) (matMul n N (diagMatrix dRight)))
+        =
+      matMul n (diagMatrix dRightInv)
+        (matMul n M_inv
+          (matMul n (diagMatrix dLeftInv)
+            (matMul n (diagMatrix dLeft) (matMul n N (diagMatrix dRight))))) := by
+          rw [matMul_assoc]
+          rw [matMul_assoc]
+    _ =
+      matMul n (diagMatrix dRightInv)
+        (matMul n M_inv (matMul n N (diagMatrix dRight))) := by
+          rw [← matMul_assoc n (diagMatrix dLeftInv) (diagMatrix dLeft)
+            (matMul n N (diagMatrix dRight))]
+          rw [hDLeft, matMul_id_left]
+    _ =
+      matMul n (diagMatrix dRightInv)
+        (matMul n (matMul n M_inv N) (diagMatrix dRight)) := by
+          rw [matMul_assoc]
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, p. 327, scale-independence
+    passage: the scaled iteration matrix has the same characteristic polynomial
+    as the original `M^{-1}N`, so the eigenvalue data encoded by the
+    characteristic polynomial is unchanged. -/
+theorem stationaryScaledIterMatrix_charpoly_eq (n : ℕ)
+    (M_inv N : Fin n → Fin n → ℝ)
+    (dLeft dLeftInv dRight dRightInv : Fin n → ℝ)
+    (hdLeft : ∀ i, dLeftInv i * dLeft i = 1)
+    (hdRight : ∀ i, dRightInv i * dRight i = 1) :
+    Matrix.charpoly
+      (iterMatrix n
+        (stationaryScaledInverse n dLeftInv dRightInv M_inv)
+        (stationaryRowColumnScale n dLeft dRight N) :
+        Matrix (Fin n) (Fin n) ℝ) =
+      Matrix.charpoly (iterMatrix n M_inv N : Matrix (Fin n) (Fin n) ℝ) := by
+  let G : Fin n → Fin n → ℝ := iterMatrix n M_inv N
+  let D : Fin n → Fin n → ℝ := diagMatrix dRight
+  let Dinv : Fin n → Fin n → ℝ := diagMatrix dRightInv
+  have hDRight : matMul n D Dinv = idMatrix n :=
+    diagMatrix_mul_diagMatrix_eq_id n dRight dRightInv
+      (fun i => by rw [mul_comm]; exact hdRight i)
+  have hsim :
+      iterMatrix n
+        (stationaryScaledInverse n dLeftInv dRightInv M_inv)
+        (stationaryRowColumnScale n dLeft dRight N) =
+        matMul n Dinv (matMul n G D) := by
+    simpa [G, D, Dinv] using
+      stationaryScaledIterMatrix_similarity n M_inv N dLeft dLeftInv dRight
+        dRightInv hdLeft hdRight
+  have hcomm :
+      Matrix.charpoly (matMul n Dinv (matMul n G D) : Matrix (Fin n) (Fin n) ℝ) =
+        Matrix.charpoly (matMul n (matMul n G D) Dinv :
+          Matrix (Fin n) (Fin n) ℝ) := by
+    simpa [matMul, Matrix.mul_apply] using
+      (Matrix.charpoly_mul_comm
+        (A := (Dinv : Matrix (Fin n) (Fin n) ℝ))
+        (B := (matMul n G D : Matrix (Fin n) (Fin n) ℝ)))
+  have hcollapse : matMul n (matMul n G D) Dinv = G := by
+    rw [matMul_assoc, hDRight, matMul_id_right]
+  calc
+    Matrix.charpoly
+      (iterMatrix n
+        (stationaryScaledInverse n dLeftInv dRightInv M_inv)
+        (stationaryRowColumnScale n dLeft dRight N) :
+        Matrix (Fin n) (Fin n) ℝ)
+        = Matrix.charpoly (matMul n Dinv (matMul n G D) :
+            Matrix (Fin n) (Fin n) ℝ) := by rw [hsim]
+    _ = Matrix.charpoly (matMul n (matMul n G D) Dinv :
+            Matrix (Fin n) (Fin n) ℝ) := hcomm
+    _ = Matrix.charpoly (iterMatrix n M_inv N : Matrix (Fin n) (Fin n) ℝ) := by
+          rw [hcollapse]
+
 -- ============================================================
 -- AG = HA identity
 -- ============================================================
@@ -880,6 +1116,160 @@ theorem singular_error_split_finite (n : ℕ)
         rw [hsumC]
         ring
 
+/-- The componentwise source vector `( |M| + |N| ) |x|` appearing in Higham,
+    2nd ed., Chapter 17, equations (17.10), (17.29), and (17.32). -/
+noncomputable def stationaryLocalErrorSourceVector (n : ℕ)
+    (M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ) : Fin n → ℝ :=
+  fun i => ∑ j : Fin n, (|M i j| + |N i j|) * |x j|
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.29):
+    finite normwise coefficient `sum ||G^k E M⁻¹||_∞` for the singular
+    source term `S_m`. -/
+noncomputable def singularErrorSourceNormSum (n : ℕ)
+    (G E M_inv : Fin n → Fin n → ℝ) (m : ℕ) : ℝ :=
+  ∑ k ∈ Finset.range (m + 1),
+    infNorm (matMul n (matMul n (matPow n G k) E) M_inv)
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.29):
+    finite componentwise right-hand side
+    `c_n u (1+theta_x) sum |G^k E M⁻¹| (|M|+|N|)|x|`
+    for the singular source term `S_m`. -/
+noncomputable def singularErrorSourceComponentBound (n : ℕ)
+    (G E M_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (cn_u theta_x : ℝ) (m : ℕ) : Fin n → ℝ :=
+  fun i => cn_u * (1 + theta_x) *
+    ∑ k ∈ Finset.range (m + 1),
+      matMulVec n
+        (absMatrix n (matMul n (matMul n (matPow n G k) E) M_inv))
+        (stationaryLocalErrorSourceVector n M N x) i
+
+/-- The action defining `S_m` is the matrix product
+    `(G^k E M⁻¹) ξ_{m-k}` term by term. -/
+private theorem singularErrorSourceTerm_term_eq (n : ℕ)
+    (G E M_inv : Fin n → Fin n → ℝ) (ξ : ℕ → Fin n → ℝ)
+    (m k : ℕ) :
+    matMulVec n (matPow n G k)
+        (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) =
+      matMulVec n (matMul n (matMul n (matPow n G k) E) M_inv)
+        (ξ (m - k)) := by
+  ext i
+  calc
+    matMulVec n (matPow n G k)
+        (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i =
+      matMulVec n (matMul n (matPow n G k) E)
+        (matMulVec n M_inv (ξ (m - k))) i := by
+        rw [← matMulVec_matMul]
+    _ = matMulVec n (matMul n (matMul n (matPow n G k) E) M_inv)
+        (ξ (m - k)) i := by
+        rw [← matMulVec_matMul]
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.29), finite
+    normwise surface: a uniform local-error norm bound `||ξ_t||∞ ≤ μ` bounds
+    `||S_m||∞` by `μ sum ||G^k E M⁻¹||∞`.  The source's displayed
+    `c_n u(1+gamma_x)(||M||∞+||N||∞)||x||∞` is obtained by instantiating `μ`
+    with the normwise local-error estimate. -/
+theorem singularErrorSourceTerm_norm_bound (n : ℕ) (hn : 0 < n)
+    (G E M_inv : Fin n → Fin n → ℝ) (ξ : ℕ → Fin n → ℝ)
+    (μ : ℝ) (hμ : 0 ≤ μ)
+    (hξ : ∀ t : ℕ, infNormVec (ξ t) ≤ μ) (m : ℕ) :
+    infNormVec (singularErrorSourceTerm n G E M_inv ξ m) ≤
+      μ * singularErrorSourceNormSum n G E M_inv m := by
+  apply infNormVec_le_of_abs_le
+  · intro i
+    calc
+      |singularErrorSourceTerm n G E M_inv ξ m i|
+          = |∑ k ∈ Finset.range (m + 1),
+              matMulVec n (matPow n G k)
+                (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i| := by
+              rfl
+      _ ≤ ∑ k ∈ Finset.range (m + 1),
+            |matMulVec n (matPow n G k)
+              (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i| :=
+            Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ k ∈ Finset.range (m + 1),
+            infNorm (matMul n (matMul n (matPow n G k) E) M_inv) * μ := by
+            apply Finset.sum_le_sum
+            intro k _hk
+            let P := matMul n (matMul n (matPow n G k) E) M_inv
+            have hterm :=
+              congrFun (singularErrorSourceTerm_term_eq n G E M_inv ξ m k) i
+            calc
+              |matMulVec n (matPow n G k)
+                  (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i|
+                  = |matMulVec n P (ξ (m - k)) i| := by
+                    rw [hterm]
+              _ ≤ infNormVec (matMulVec n P (ξ (m - k))) :=
+                    abs_le_infNormVec _ i
+              _ ≤ infNorm P * infNormVec (ξ (m - k)) :=
+                    infNormVec_matMulVec_le hn P (ξ (m - k))
+              _ ≤ infNorm P * μ := by
+                    exact mul_le_mul_of_nonneg_left (hξ (m - k)) (infNorm_nonneg P)
+      _ = μ * singularErrorSourceNormSum n G E M_inv m := by
+            unfold singularErrorSourceNormSum
+            rw [← Finset.sum_mul]
+            ring
+  · unfold singularErrorSourceNormSum
+    exact mul_nonneg hμ
+      (Finset.sum_nonneg (fun k _hk => infNorm_nonneg _))
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.29), finite
+    componentwise surface: if the local errors satisfy the already-simplified
+    componentwise source bound, then the singular source term `S_m` is bounded
+    by `c_n u(1+theta_x) sum |G^k E M⁻¹|(|M|+|N|)|x|`. -/
+theorem singularErrorSourceTerm_componentwise_bound (n : ℕ)
+    (G E M_inv M N : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (ξ : ℕ → Fin n → ℝ) (cn_u theta_x : ℝ)
+    (hξ : ∀ (t : ℕ) (j : Fin n),
+      |ξ t j| ≤ cn_u * (1 + theta_x) *
+        stationaryLocalErrorSourceVector n M N x j)
+    (m : ℕ) :
+    ∀ i, |singularErrorSourceTerm n G E M_inv ξ m i| ≤
+      singularErrorSourceComponentBound n G E M_inv M N x cn_u theta_x m i := by
+  intro i
+  let coeff := cn_u * (1 + theta_x)
+  calc
+    |singularErrorSourceTerm n G E M_inv ξ m i|
+        = |∑ k ∈ Finset.range (m + 1),
+            matMulVec n (matPow n G k)
+              (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i| := by
+            rfl
+    _ ≤ ∑ k ∈ Finset.range (m + 1),
+          |matMulVec n (matPow n G k)
+            (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i| :=
+          Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ k ∈ Finset.range (m + 1),
+          coeff *
+            matMulVec n
+              (absMatrix n (matMul n (matMul n (matPow n G k) E) M_inv))
+              (stationaryLocalErrorSourceVector n M N x) i := by
+          apply Finset.sum_le_sum
+          intro k _hk
+          let P := matMul n (matMul n (matPow n G k) E) M_inv
+          have hterm :=
+            congrFun (singularErrorSourceTerm_term_eq n G E M_inv ξ m k) i
+          calc
+            |matMulVec n (matPow n G k)
+                (matMulVec n E (matMulVec n M_inv (ξ (m - k)))) i|
+                = |matMulVec n P (ξ (m - k)) i| := by
+                  rw [hterm]
+            _ ≤ ∑ j : Fin n, |P i j| * |ξ (m - k) j| :=
+                  abs_matMulVec_le n P (ξ (m - k)) i
+            _ ≤ ∑ j : Fin n, |P i j| *
+                  (coeff * stationaryLocalErrorSourceVector n M N x j) := by
+                  apply Finset.sum_le_sum
+                  intro j _hj
+                  exact mul_le_mul_of_nonneg_left
+                    (by simpa [coeff] using hξ (m - k) j) (abs_nonneg _)
+            _ = coeff *
+                  matMulVec n (absMatrix n P)
+                    (stationaryLocalErrorSourceVector n M N x) i := by
+                  unfold matMulVec absMatrix
+                  rw [Finset.mul_sum]
+                  exact Finset.sum_congr rfl (fun j _hj => by ring)
+    _ = singularErrorSourceComponentBound n G E M_inv M N x cn_u theta_x m i := by
+          unfold singularErrorSourceComponentBound
+          rw [← Finset.mul_sum]
+
 -- ============================================================
 -- §17.2  Componentwise forward bound (eq 17.6)
 -- ============================================================
@@ -1082,6 +1472,191 @@ theorem local_error_simplified (n : ℕ) (M N : Fin n → Fin n → ℝ)
         apply mul_le_mul_of_nonneg_left hSum hcn
     _ = cn_u * (1 + θ_x) * ∑ j, (|M i j| + |N i j|) * |x j| := by ring
 
+/-- Higham, 2nd ed., Chapter 17, equations (17.2), (17.7), and (17.29):
+    normwise simplification of the local-error model using the iterate-growth
+    bound `||xhat_k||_∞ <= gamma_x ||x||_∞`. -/
+theorem local_error_normwise_simplified (n : ℕ)
+    (M N : Fin n → Fin n → ℝ)
+    (b x : Fin n → ℝ)
+    (hAx : ∀ i, ∑ j : Fin n, (M i j - N i j) * x j = b i)
+    (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
+    (cn_u gamma_x : ℝ) (hcn : 0 ≤ cn_u) (hgamma : 0 ≤ gamma_x)
+    (hx_bound : NormwiseIterateGrowthBound n x x_hat gamma_x)
+    (hLocal : LocalErrorBound n M N b x_hat ξ cn_u) :
+    ∀ k, infNormVec (ξ k) ≤
+      cn_u * (1 + gamma_x) * (infNorm M + infNorm N) * infNormVec x := by
+  intro k
+  apply infNormVec_le_of_abs_le
+  · intro i
+    have hL := hLocal k i
+    have hMrow :
+        ∑ j : Fin n, |M i j| * |x_hat (k + 1) j| ≤
+          infNorm M * (gamma_x * infNormVec x) := by
+      calc
+        ∑ j : Fin n, |M i j| * |x_hat (k + 1) j|
+            ≤ ∑ j : Fin n, |M i j| * infNormVec (x_hat (k + 1)) := by
+              apply Finset.sum_le_sum
+              intro j _hj
+              exact mul_le_mul_of_nonneg_left
+                (abs_le_infNormVec (x_hat (k + 1)) j) (abs_nonneg _)
+        _ = (∑ j : Fin n, |M i j|) * infNormVec (x_hat (k + 1)) := by
+              rw [Finset.sum_mul]
+        _ ≤ infNorm M * infNormVec (x_hat (k + 1)) := by
+              exact mul_le_mul_of_nonneg_right
+                (row_sum_le_infNorm M i) (infNormVec_nonneg _)
+        _ ≤ infNorm M * (gamma_x * infNormVec x) := by
+              exact mul_le_mul_of_nonneg_left
+                (hx_bound (k + 1)) (infNorm_nonneg M)
+    have hNrow :
+        ∑ j : Fin n, |N i j| * |x_hat k j| ≤
+          infNorm N * (gamma_x * infNormVec x) := by
+      calc
+        ∑ j : Fin n, |N i j| * |x_hat k j|
+            ≤ ∑ j : Fin n, |N i j| * infNormVec (x_hat k) := by
+              apply Finset.sum_le_sum
+              intro j _hj
+              exact mul_le_mul_of_nonneg_left
+                (abs_le_infNormVec (x_hat k) j) (abs_nonneg _)
+        _ = (∑ j : Fin n, |N i j|) * infNormVec (x_hat k) := by
+              rw [Finset.sum_mul]
+        _ ≤ infNorm N * infNormVec (x_hat k) := by
+              exact mul_le_mul_of_nonneg_right
+                (row_sum_le_infNorm N i) (infNormVec_nonneg _)
+        _ ≤ infNorm N * (gamma_x * infNormVec x) := by
+              exact mul_le_mul_of_nonneg_left
+                (hx_bound k) (infNorm_nonneg N)
+    have hMexact :
+        ∑ j : Fin n, |M i j| * |x j| ≤ infNorm M * infNormVec x := by
+      calc
+        ∑ j : Fin n, |M i j| * |x j|
+            ≤ ∑ j : Fin n, |M i j| * infNormVec x := by
+              apply Finset.sum_le_sum
+              intro j _hj
+              exact mul_le_mul_of_nonneg_left (abs_le_infNormVec x j) (abs_nonneg _)
+        _ = (∑ j : Fin n, |M i j|) * infNormVec x := by
+              rw [Finset.sum_mul]
+        _ ≤ infNorm M * infNormVec x := by
+              exact mul_le_mul_of_nonneg_right
+                (row_sum_le_infNorm M i) (infNormVec_nonneg x)
+    have hNexact :
+        ∑ j : Fin n, |N i j| * |x j| ≤ infNorm N * infNormVec x := by
+      calc
+        ∑ j : Fin n, |N i j| * |x j|
+            ≤ ∑ j : Fin n, |N i j| * infNormVec x := by
+              apply Finset.sum_le_sum
+              intro j _hj
+              exact mul_le_mul_of_nonneg_left (abs_le_infNormVec x j) (abs_nonneg _)
+        _ = (∑ j : Fin n, |N i j|) * infNormVec x := by
+              rw [Finset.sum_mul]
+        _ ≤ infNorm N * infNormVec x := by
+              exact mul_le_mul_of_nonneg_right
+                (row_sum_le_infNorm N i) (infNormVec_nonneg x)
+    have hb :
+        |b i| ≤ (infNorm M + infNorm N) * infNormVec x := by
+      calc
+        |b i| = |∑ j : Fin n, (M i j - N i j) * x j| := by
+            rw [hAx]
+        _ ≤ ∑ j : Fin n, |(M i j - N i j) * x j| :=
+            Finset.abs_sum_le_sum_abs _ _
+        _ = ∑ j : Fin n, |M i j - N i j| * |x j| := by
+            apply Finset.sum_congr rfl
+            intro j _hj
+            exact abs_mul _ _
+        _ ≤ ∑ j : Fin n, (|M i j| + |N i j|) * |x j| := by
+            apply Finset.sum_le_sum
+            intro j _hj
+            exact mul_le_mul_of_nonneg_right
+              (by
+                calc
+                  |M i j - N i j| = |M i j + (-N i j)| := by ring_nf
+                  _ ≤ |M i j| + |(-N i j)| := abs_add_le _ _
+                  _ = |M i j| + |N i j| := by rw [abs_neg])
+              (abs_nonneg _)
+        _ = ∑ j : Fin n, |M i j| * |x j| +
+              ∑ j : Fin n, |N i j| * |x j| := by
+            rw [← Finset.sum_add_distrib]
+            apply Finset.sum_congr rfl
+            intro j _hj
+            ring
+        _ ≤ infNorm M * infNormVec x + infNorm N * infNormVec x := by
+            exact add_le_add hMexact hNexact
+        _ = (infNorm M + infNorm N) * infNormVec x := by ring
+    have hinside :
+        ∑ j : Fin n, |M i j| * |x_hat (k + 1) j| +
+          ∑ j : Fin n, |N i j| * |x_hat k j| + |b i| ≤
+        (1 + gamma_x) * (infNorm M + infNorm N) * infNormVec x := by
+      nlinarith [hMrow, hNrow, hb, hgamma,
+        infNorm_nonneg M, infNorm_nonneg N, infNormVec_nonneg x]
+    calc
+      |ξ k i| ≤ cn_u *
+          (∑ j : Fin n, |M i j| * |x_hat (k + 1) j| +
+            ∑ j : Fin n, |N i j| * |x_hat k j| + |b i|) := hL
+      _ ≤ cn_u * ((1 + gamma_x) * (infNorm M + infNorm N) * infNormVec x) := by
+          exact mul_le_mul_of_nonneg_left hinside hcn
+      _ = cn_u * (1 + gamma_x) * (infNorm M + infNorm N) * infNormVec x := by
+          ring
+  · exact mul_nonneg
+      (mul_nonneg
+        (mul_nonneg hcn (by linarith))
+        (add_nonneg (infNorm_nonneg M) (infNorm_nonneg N)))
+      (infNormVec_nonneg x)
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.29), normwise
+    surface instantiated from the source local-error model (17.2) and
+    `gamma_x` iterate-growth hypothesis (17.7). -/
+theorem singularErrorSourceTerm_norm_bound_of_local_error (n : ℕ) (hn : 0 < n)
+    (G E M_inv M N : Fin n → Fin n → ℝ)
+    (b x : Fin n → ℝ)
+    (hAx : ∀ i, ∑ j : Fin n, (M i j - N i j) * x j = b i)
+    (x_hat ξ : ℕ → Fin n → ℝ) (cn_u gamma_x : ℝ)
+    (hcn : 0 ≤ cn_u) (hgamma : 0 ≤ gamma_x)
+    (hx_bound : NormwiseIterateGrowthBound n x x_hat gamma_x)
+    (hLocal : LocalErrorBound n M N b x_hat ξ cn_u)
+    (m : ℕ) :
+    infNormVec (singularErrorSourceTerm n G E M_inv ξ m) ≤
+      cn_u * (1 + gamma_x) * (infNorm M + infNorm N) * infNormVec x *
+        singularErrorSourceNormSum n G E M_inv m := by
+  let μ := cn_u * (1 + gamma_x) * (infNorm M + infNorm N) * infNormVec x
+  have hμ : 0 ≤ μ := by
+    exact mul_nonneg
+      (mul_nonneg
+        (mul_nonneg hcn (by linarith))
+        (add_nonneg (infNorm_nonneg M) (infNorm_nonneg N)))
+      (infNormVec_nonneg x)
+  have hξ :
+      ∀ t : ℕ, infNormVec (ξ t) ≤ μ := by
+    simpa [μ] using
+      local_error_normwise_simplified n M N b x hAx x_hat ξ
+        cn_u gamma_x hcn hgamma hx_bound hLocal
+  simpa [μ] using
+    singularErrorSourceTerm_norm_bound n hn G E M_inv ξ μ hμ hξ m
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.29), instantiated
+    componentwise surface: the displayed bound for `S_m` follows from the
+    source local-error model (17.2), the exact equation `Mx-Nx=b`, and the
+    componentwise iterate-growth hypothesis from (17.9). -/
+theorem singularErrorSourceTerm_componentwise_bound_of_local_error (n : ℕ)
+    (G E M_inv M N : Fin n → Fin n → ℝ)
+    (b x : Fin n → ℝ)
+    (hAx : ∀ i, ∑ j : Fin n, (M i j - N i j) * x j = b i)
+    (x_hat ξ : ℕ → Fin n → ℝ) (cn_u theta_x : ℝ)
+    (hcn : 0 ≤ cn_u) (hθ : 0 ≤ theta_x)
+    (hx_bound : ComponentwiseIterateGrowthBound n x x_hat theta_x)
+    (hLocal : LocalErrorBound n M N b x_hat ξ cn_u)
+    (m : ℕ) :
+    ∀ i, |singularErrorSourceTerm n G E M_inv ξ m i| ≤
+      singularErrorSourceComponentBound n G E M_inv M N x cn_u theta_x m i := by
+  have hξ :
+      ∀ (t : ℕ) (j : Fin n),
+        |ξ t j| ≤ cn_u * (1 + theta_x) *
+          stationaryLocalErrorSourceVector n M N x j := by
+    intro t j
+    simpa [stationaryLocalErrorSourceVector] using
+      local_error_simplified n M N b x hAx x_hat ξ cn_u theta_x
+        hcn hθ hx_bound hLocal t j
+  exact singularErrorSourceTerm_componentwise_bound
+    n G E M_inv M N x ξ cn_u theta_x hξ m
+
 -- ============================================================
 -- §17.2  c(A) constant and main bound (eqs 17.12–17.13)
 -- ============================================================
@@ -1240,6 +1815,61 @@ noncomputable def finiteResidualSigmaMatrix (n : ℕ)
 noncomputable def finiteResidualSigma (n : ℕ)
     (H : Fin n → Fin n → ℝ) (m : ℕ) : ℝ :=
   infNorm (finiteResidualSigmaMatrix n H m)
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20):
+    entrywise `tsum` matrix for the source residual sigma
+    `sum_{k >= 0} |H^k(I-H)|`.  Convergence is intentionally not hidden in the
+    definition; use the `HasSum` wrapper below when a concrete convergence
+    certificate is available. -/
+noncomputable def residualSigmaTsumMatrix (n : ℕ)
+    (H : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    ∑' k : ℕ, |matMul n (matPow n H k) (matSub_id n H) i j|
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20):
+    scalar infinity-norm version of the entrywise `tsum` residual sigma. -/
+noncomputable def residualSigmaTsum (n : ℕ)
+    (H : Fin n → Fin n → ℝ) : ℝ :=
+  infNorm (residualSigmaTsumMatrix n H)
+
+/-- Entrywise unfolding of the literal `tsum` residual-sigma matrix. -/
+theorem residualSigmaTsumMatrix_apply (n : ℕ)
+    (H : Fin n → Fin n → ℝ) (i j : Fin n) :
+    residualSigmaTsumMatrix n H i j =
+      ∑' k : ℕ, |matMul n (matPow n H k) (matSub_id n H) i j| := by
+  rfl
+
+/-- If each entrywise source residual-sigma series has sum `S i j`, then the
+    `tsum` matrix is exactly `S`. -/
+theorem residualSigmaTsumMatrix_eq_of_hasSum (n : ℕ)
+    (H S : Fin n → Fin n → ℝ)
+    (hsum : ∀ i j,
+      HasSum (fun k : ℕ => |matMul n (matPow n H k) (matSub_id n H) i j|)
+        (S i j)) :
+    residualSigmaTsumMatrix n H = S := by
+  ext i j
+  unfold residualSigmaTsumMatrix
+  exact (hsum i j).tsum_eq
+
+/-- Norm-level form of `residualSigmaTsumMatrix_eq_of_hasSum`. -/
+theorem residualSigmaTsum_eq_infNorm_of_hasSum (n : ℕ)
+    (H S : Fin n → Fin n → ℝ)
+    (hsum : ∀ i j,
+      HasSum (fun k : ℕ => |matMul n (matPow n H k) (matSub_id n H) i j|)
+        (S i j)) :
+    residualSigmaTsum n H = infNorm S := by
+  unfold residualSigmaTsum
+  rw [residualSigmaTsumMatrix_eq_of_hasSum n H S hsum]
+
+/-- A row-sum certificate bounds the literal `tsum` residual sigma. -/
+theorem residualSigmaTsum_le_of_row_sum_le (n : ℕ)
+    (H : Fin n → Fin n → ℝ) {sigma : ℝ}
+    (hrows : ∀ i : Fin n,
+      ∑ j : Fin n, |residualSigmaTsumMatrix n H i j| ≤ sigma)
+    (hsigma : 0 ≤ sigma) :
+    residualSigmaTsum n H ≤ sigma := by
+  unfold residualSigmaTsum
+  exact infNorm_le_of_row_sum_le (residualSigmaTsumMatrix n H) hrows hsigma
 
 /-- Higham, 2nd ed., Chapter 17, Section 17.3:
     candidate finite partial norms for the source residual sigma.  This is the

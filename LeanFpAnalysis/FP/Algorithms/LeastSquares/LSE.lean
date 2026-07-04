@@ -1290,12 +1290,717 @@ noncomputable def theorem20_8Projection {p n : ℕ}
     Fin n → Fin n → ℝ :=
   fun i j => idMatrix n i j - rectMatMul Bplus B i j
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if the supplied `Bplus` is a right inverse of `B`, then the source
+    projector `P = I - B^+ B` maps every vector into the constraint nullspace. -/
+theorem theorem20_8Projection_constraint_zero {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p) :
+    rectMatMul B (theorem20_8Projection B Bplus) =
+      (fun _i _j => 0) := by
+  calc
+    rectMatMul B (theorem20_8Projection B Bplus)
+        = fun i j =>
+            rectMatMul B (idMatrix n) i j -
+              rectMatMul B (rectMatMul Bplus B) i j := by
+            ext i j
+            unfold theorem20_8Projection rectMatMul
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+    _ = fun i j =>
+          B i j - rectMatMul (rectMatMul B Bplus) B i j := by
+            ext i j
+            rw [rectMatMul_id_right]
+            rw [rectMatMul_assoc]
+    _ = fun i j => B i j - rectMatMul (idMatrix p) B i j := by
+            rw [hright]
+    _ = fun i j => B i j - B i j := by
+            rw [rectMatMul_id_left]
+    _ = fun _i _j => 0 := by
+            ext i j
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    vector form of `B(I - B^+B) = 0`. -/
+theorem theorem20_8Projection_constraint_vec_zero {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (x : Fin n → ℝ) :
+    rectMatMulVec B (rectMatMulVec (theorem20_8Projection B Bplus) x) =
+      (fun _i => 0) := by
+  rw [← rectMatMulVec_rectMatMul B (theorem20_8Projection B Bplus) x]
+  rw [theorem20_8Projection_constraint_zero B Bplus hright]
+  ext i
+  simp [rectMatMulVec]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the projector `P = I - B^+B` fixes every vector in the nullspace of `B`. -/
+theorem theorem20_8Projection_apply_nullspace {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (x : Fin n → ℝ)
+    (hBx : rectMatMulVec B x = (fun _i => 0)) :
+    rectMatMulVec (theorem20_8Projection B Bplus) x = x := by
+  ext i
+  calc
+    rectMatMulVec (theorem20_8Projection B Bplus) x i
+        = rectMatMulVec (idMatrix n) x i -
+            rectMatMulVec (rectMatMul Bplus B) x i := by
+            unfold theorem20_8Projection rectMatMulVec
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+    _ = x i - rectMatMulVec Bplus (rectMatMulVec B x) i := by
+            rw [rectMatMulVec_idMatrix]
+            rw [rectMatMulVec_rectMatMul]
+    _ = x i := by
+            rw [hBx]
+            simp [rectMatMulVec]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    vector idempotence of the nullspace projector `P = I - B^+B`. -/
+theorem theorem20_8Projection_vec_idempotent {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (x : Fin n → ℝ) :
+    rectMatMulVec (theorem20_8Projection B Bplus)
+        (rectMatMulVec (theorem20_8Projection B Bplus) x) =
+      rectMatMulVec (theorem20_8Projection B Bplus) x := by
+  exact
+    theorem20_8Projection_apply_nullspace B Bplus
+      (rectMatMulVec (theorem20_8Projection B Bplus) x)
+      (theorem20_8Projection_constraint_vec_zero B Bplus hright x)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     the source product `A P`, where `P = I - B^+ B`. -/
 noncomputable def theorem20_8AP {m n p : ℕ}
     (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
     (Bplus : Fin n → Fin p → ℝ) : Fin m → Fin n → ℝ :=
   rectMatMul A (theorem20_8Projection B Bplus)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    on vectors satisfying the equality constraint's homogeneous equation
+    `B x = 0`, the source product `A P` acts as `A`. -/
+theorem theorem20_8AP_apply_nullspace {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (x : Fin n → ℝ)
+    (hBx : rectMatMulVec B x = (fun _i => 0)) :
+    rectMatMulVec (theorem20_8AP A B Bplus) x =
+      rectMatMulVec A x := by
+  rw [theorem20_8AP, rectMatMulVec_rectMatMul]
+  rw [theorem20_8Projection_apply_nullspace B Bplus x hBx]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the difference of two feasible LSE points lies in the nullspace of `B`. -/
+theorem theorem20_8_feasible_difference_constraint_zero {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x) (hy : LSEFeasible B d y) :
+    rectMatMulVec B (fun j => x j - y j) = (fun _i => 0) := by
+  rw [rectMatMulVec_sub]
+  ext i
+  rw [hx i, hy i]
+  simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    `P = I - B^+B` fixes feasible differences. -/
+theorem theorem20_8Projection_apply_feasible_difference {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x) (hy : LSEFeasible B d y) :
+    rectMatMulVec (theorem20_8Projection B Bplus) (fun j => x j - y j) =
+      (fun j => x j - y j) :=
+  theorem20_8Projection_apply_nullspace B Bplus (fun j => x j - y j)
+    (theorem20_8_feasible_difference_constraint_zero B d x y hx hy)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    on feasible differences, `A P` acts exactly as `A`. -/
+theorem theorem20_8AP_apply_feasible_difference {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ)
+    (d : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x) (hy : LSEFeasible B d y) :
+    rectMatMulVec (theorem20_8AP A B Bplus) (fun j => x j - y j) =
+      rectMatMulVec A (fun j => x j - y j) :=
+  theorem20_8AP_apply_nullspace A B Bplus (fun j => x j - y j)
+    (theorem20_8_feasible_difference_constraint_zero B d x y hx hy)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    adding a projected direction `P z` to a feasible point preserves the
+    equality constraint. -/
+theorem theorem20_8Projection_feasible_step {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d : Fin p → ℝ) (x0 z : Fin n → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hx0 : LSEFeasible B d x0) :
+    LSEFeasible B d
+      (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) := by
+  intro i
+  have hstep :=
+    theorem20_8Projection_constraint_vec_zero B Bplus hright z
+  rw [rectMatMulVec_add]
+  change
+    rectMatMulVec B x0 i +
+        rectMatMulVec B (rectMatMulVec (theorem20_8Projection B Bplus) z) i =
+      d i
+  have hstep_i := congrFun hstep i
+  rw [hx0 i, hstep_i]
+  simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    exact action of `A` on a feasible nullspace step `x0 + P z`. -/
+theorem theorem20_8AP_feasible_step_action {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ)
+    (x0 z : Fin n → ℝ) :
+    rectMatMulVec A
+        (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) =
+      fun i =>
+        rectMatMulVec A x0 i +
+          rectMatMulVec (theorem20_8AP A B Bplus) z i := by
+  rw [rectMatMulVec_add]
+  rw [theorem20_8AP, rectMatMulVec_rectMatMul]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual identity for the nullspace parametrization `x = x0 + P z`.
+
+    The reduced unconstrained least-squares right-hand side is `b - A x0`,
+    matching the source transformation of the feasible LSE problem (20.23). -/
+theorem theorem20_8AP_feasible_step_residual {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (x0 z : Fin n → ℝ) :
+    lsResidual A b
+        (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) =
+      lsResidual (theorem20_8AP A B Bplus)
+        (fun i => b i - rectMatMulVec A x0 i) z := by
+  ext i
+  unfold lsResidual
+  have hact := congrFun (theorem20_8AP_feasible_step_action A B Bplus x0 z) i
+  rw [hact]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    objective identity for the nullspace parametrization of the LSE problem.
+
+    This is the exact algebraic reduction of feasible steps in (20.23) to the
+    unconstrained least-squares objective with matrix `AP`. -/
+theorem theorem20_8AP_feasible_step_objective {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (x0 z : Fin n → ℝ) :
+    lsObjective A b
+        (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) =
+      lsObjective (theorem20_8AP A B Bplus)
+        (fun i => b i - rectMatMulVec A x0 i) z := by
+  unfold lsObjective
+  rw [theorem20_8AP_feasible_step_residual A b B Bplus x0 z]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if `x0` and `y` are feasible for the same equality constraint, then the
+    nullspace projector reconstructs `y` from the feasible base point `x0`. -/
+theorem theorem20_8Projection_feasible_difference_decomp {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d : Fin p → ℝ) (x0 y : Fin n → ℝ)
+    (hx0 : LSEFeasible B d x0) (hy : LSEFeasible B d y) :
+    (fun j => x0 j +
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k => y k - x0 k) j) =
+      y := by
+  have hproj :=
+    theorem20_8Projection_apply_feasible_difference B Bplus d y x0 hy hx0
+  ext j
+  have hj := congrFun hproj j
+  rw [hj]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    an exact minimizer of the reduced unconstrained problem in the nullspace
+    variable lifts to an exact LSE minimizer. -/
+theorem theorem20_8AP_unconstrained_minimizer_lifts {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d : Fin p → ℝ) (x0 z : Fin n → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hx0 : LSEFeasible B d x0)
+    (hmin : IsLeastSquaresMinimizer (theorem20_8AP A B Bplus)
+      (fun i => b i - rectMatMulVec A x0 i) z) :
+    IsLSEMinimizer A b B d
+      (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) := by
+  constructor
+  · exact theorem20_8Projection_feasible_step B Bplus d x0 z hright hx0
+  · intro y hy
+    calc
+      lsObjective A b
+          (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j)
+          =
+        lsObjective (theorem20_8AP A B Bplus)
+          (fun i => b i - rectMatMulVec A x0 i) z := by
+          exact theorem20_8AP_feasible_step_objective A b B Bplus x0 z
+      _ ≤ lsObjective (theorem20_8AP A B Bplus)
+            (fun i => b i - rectMatMulVec A x0 i)
+            (fun j => y j - x0 j) :=
+          hmin (fun j => y j - x0 j)
+      _ = lsObjective A b
+            (fun j => x0 j +
+              rectMatMulVec (theorem20_8Projection B Bplus)
+                (fun k => y k - x0 k) j) := by
+          exact (theorem20_8AP_feasible_step_objective A b B Bplus
+            x0 (fun j => y j - x0 j)).symm
+      _ = lsObjective A b y := by
+          rw [theorem20_8Projection_feasible_difference_decomp
+            B Bplus d x0 y hx0 hy]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    every exact LSE minimizer gives an exact minimizer of the reduced
+    unconstrained problem when written relative to a feasible base point. -/
+theorem theorem20_8AP_unconstrained_minimizer_of_lse_minimizer {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d : Fin p → ℝ) (x0 x : Fin n → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hx0 : LSEFeasible B d x0)
+    (hx : IsLSEMinimizer A b B d x) :
+    IsLeastSquaresMinimizer (theorem20_8AP A B Bplus)
+      (fun i => b i - rectMatMulVec A x0 i)
+      (fun j => x j - x0 j) := by
+  intro z
+  have hstep :
+      LSEFeasible B d
+        (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) :=
+    theorem20_8Projection_feasible_step B Bplus d x0 z hright hx0
+  have hx_feas : LSEFeasible B d x := hx.1
+  have hle := hx.2
+    (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) hstep
+  calc
+    lsObjective (theorem20_8AP A B Bplus)
+        (fun i => b i - rectMatMulVec A x0 i)
+        (fun j => x j - x0 j)
+        =
+      lsObjective A b
+        (fun j => x0 j +
+          rectMatMulVec (theorem20_8Projection B Bplus)
+            (fun k => x k - x0 k) j) := by
+        exact (theorem20_8AP_feasible_step_objective A b B Bplus
+          x0 (fun j => x j - x0 j)).symm
+    _ = lsObjective A b x := by
+        rw [theorem20_8Projection_feasible_difference_decomp
+          B Bplus d x0 x hx0 hx_feas]
+    _ ≤ lsObjective A b
+          (fun j => x0 j + rectMatMulVec (theorem20_8Projection B Bplus) z j) :=
+        hle
+    _ = lsObjective (theorem20_8AP A B Bplus)
+          (fun i => b i - rectMatMulVec A x0 i) z := by
+        exact theorem20_8AP_feasible_step_objective A b B Bplus x0 z
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    applying `P = I - B^+B` to a vector with a known constraint residual
+    subtracts the supplied `B^+` correction. -/
+theorem theorem20_8Projection_apply_of_constraint {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (v : Fin n → ℝ) (e : Fin p → ℝ)
+    (hBv : rectMatMulVec B v = e) :
+    rectMatMulVec (theorem20_8Projection B Bplus) v =
+      fun j => v j - rectMatMulVec Bplus e j := by
+  ext j
+  calc
+    rectMatMulVec (theorem20_8Projection B Bplus) v j
+        = rectMatMulVec (idMatrix n) v j -
+            rectMatMulVec (rectMatMul Bplus B) v j := by
+            unfold theorem20_8Projection rectMatMulVec
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+    _ = v j - rectMatMulVec Bplus (rectMatMulVec B v) j := by
+            rw [rectMatMulVec_idMatrix]
+            rw [rectMatMulVec_rectMatMul]
+    _ = v j - rectMatMulVec Bplus e j := by
+            rw [hBv]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if `x` is feasible for `(B,d)` and `y` is feasible for the perturbed
+    constraint `(B + DeltaB)y = d + Deltad`, then the solution difference has
+    constraint defect `Deltad - DeltaB*y` for the original constraint matrix. -/
+theorem theorem20_8_perturbed_feasible_difference_constraint {n p : ℕ}
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec B (fun j => y j - x j) =
+      fun i => Deltad i - rectMatMulVec DeltaB y i := by
+  ext i
+  have hdiff := congrFun (rectMatMulVec_sub B y x) i
+  have hy_add :
+      rectMatMulVec B y i + rectMatMulVec DeltaB y i = d i + Deltad i := by
+    have hmat := congrFun (rectMatMulVec_mat_add B DeltaB y) i
+    have hyi := hy i
+    rw [hmat] at hyi
+    exact hyi
+  rw [hdiff, hx i]
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    projection of a difference between an original feasible point and a
+    perturbed feasible point. -/
+theorem theorem20_8Projection_apply_perturbed_feasible_difference {n p : ℕ}
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec (theorem20_8Projection B Bplus) (fun j => y j - x j) =
+      fun j =>
+        (y j - x j) -
+          rectMatMulVec Bplus (fun i => Deltad i - rectMatMulVec DeltaB y i) j :=
+  theorem20_8Projection_apply_of_constraint B Bplus (fun j => y j - x j)
+    (fun i => Deltad i - rectMatMulVec DeltaB y i)
+    (theorem20_8_perturbed_feasible_difference_constraint
+      B DeltaB d Deltad x y hx hy)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the difference between an original feasible point and a perturbed feasible
+    point splits into a nullspace-projected part plus the supplied `B^+`
+    correction for the constraint defect. -/
+theorem theorem20_8_perturbed_feasible_difference_decomp {n p : ℕ}
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    (fun j => y j - x j) =
+      fun j =>
+        rectMatMulVec (theorem20_8Projection B Bplus) (fun k => y k - x k) j +
+          rectMatMulVec Bplus (fun i => Deltad i - rectMatMulVec DeltaB y i) j := by
+  have hproj :=
+    theorem20_8Projection_apply_perturbed_feasible_difference
+      B DeltaB Bplus d Deltad x y hx hy
+  ext j
+  have hj := congrFun hproj j
+  rw [hj]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    point form of the perturbed-feasible decomposition. -/
+theorem theorem20_8_perturbed_feasible_point_decomp {n p : ℕ}
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    y =
+      fun j =>
+        x j +
+          rectMatMulVec (theorem20_8Projection B Bplus) (fun k => y k - x k) j +
+          rectMatMulVec Bplus (fun i => Deltad i - rectMatMulVec DeltaB y i) j := by
+  have hdecomp :=
+    theorem20_8_perturbed_feasible_difference_decomp
+      B DeltaB Bplus d Deltad x y hx hy
+  ext j
+  have hj := congrFun hdecomp j
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    action of `A` on a perturbed feasible point after the source nullspace
+    decomposition.  The last term is the explicit correction caused by the
+    perturbed constraint defect `Deltad - DeltaB*y`. -/
+theorem theorem20_8_perturbed_feasible_point_action_decomp {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec A y =
+      fun i =>
+        rectMatMulVec A x i +
+          rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) i +
+          rectMatMulVec A
+            (rectMatMulVec Bplus
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i := by
+  have hpoint :=
+    theorem20_8_perturbed_feasible_point_decomp
+      B DeltaB Bplus d Deltad x y hx hy
+  calc
+    rectMatMulVec A y =
+        rectMatMulVec A
+          (fun j =>
+            x j + rectMatMulVec (theorem20_8Projection B Bplus)
+              (fun k => y k - x k) j +
+              rectMatMulVec Bplus
+                (fun l => Deltad l - rectMatMulVec DeltaB y l) j) := by
+          conv_lhs => rw [hpoint]
+    _ = fun i =>
+          rectMatMulVec A
+              (fun j =>
+                x j + rectMatMulVec (theorem20_8Projection B Bplus)
+                  (fun k => y k - x k) j) i +
+            rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l => Deltad l - rectMatMulVec DeltaB y l)) i := by
+          rw [rectMatMulVec_add]
+    _ = fun i =>
+          (rectMatMulVec A x i +
+            rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) i) +
+            rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l => Deltad l - rectMatMulVec DeltaB y l)) i := by
+          rw [theorem20_8AP_feasible_step_action A B Bplus x
+            (fun k => y k - x k)]
+    _ = fun i =>
+          rectMatMulVec A x i +
+            rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) i +
+            rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l => Deltad l - rectMatMulVec DeltaB y l)) i := by
+          ext i
+          ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual decomposition for a point feasible for the perturbed constraint.
+
+    The reduced `AP` residual is separated from the three explicit perturbation
+    terms that must be bounded in the first-order LSE perturbation proof:
+    `A*Bplus*(Deltad-DeltaB*y)`, `DeltaA*y`, and `Deltab`. -/
+theorem theorem20_8_perturbed_feasible_residual_decomp {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    lsResidual (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i) y =
+      fun i =>
+        lsResidual (theorem20_8AP A B Bplus)
+          (fun i => b i - rectMatMulVec A x i) (fun j => y j - x j) i +
+          rectMatMulVec A
+            (rectMatMulVec Bplus
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i +
+          rectMatMulVec DeltaA y i -
+          Deltab i := by
+  ext i
+  unfold lsResidual
+  have hmat := congrFun (rectMatMulVec_mat_add A DeltaA y) i
+  have hA :=
+    congrFun
+      (theorem20_8_perturbed_feasible_point_action_decomp
+        A B DeltaB Bplus d Deltad x y hx hy) i
+  rw [hmat, hA]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the constraint-defect vector `Deltad - DeltaB*y` is bounded by the
+    supplied perturbation radii. -/
+theorem theorem20_8_vecNorm2_constraint_defect_le {n p : ℕ}
+    (DeltaB : Fin p → Fin n → ℝ) (Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) {DeltaB_norm Deltad_norm : ℝ}
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm) :
+    vecNorm2 (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) ≤
+      Deltad_norm + DeltaB_norm * vecNorm2 y := by
+  calc
+    vecNorm2 (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)
+        ≤ vecNorm2 Deltad +
+            vecNorm2 (fun i : Fin p => -rectMatMulVec DeltaB y i) := by
+            simpa [sub_eq_add_neg] using
+              vecNorm2_add_le Deltad
+                (fun i : Fin p => -rectMatMulVec DeltaB y i)
+    _ = vecNorm2 Deltad + vecNorm2 (rectMatMulVec DeltaB y) := by
+            rw [vecNorm2_neg]
+    _ ≤ Deltad_norm + DeltaB_norm * vecNorm2 y :=
+            add_le_add hDeltad (hDeltaB y)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    applying `A*Bplus` to a constraint-defect vector is controlled by an
+    operator-2 bound for the product. -/
+theorem theorem20_8_vecNorm2_ABplus_apply_le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (e : Fin p → ℝ) {ABplus_norm : ℝ}
+    (hABplus : rectOpNorm2Le (rectMatMul A Bplus) ABplus_norm) :
+    vecNorm2 (rectMatMulVec A (rectMatMulVec Bplus e)) ≤
+      ABplus_norm * vecNorm2 e := by
+  simpa [rectMatMulVec_rectMatMul] using hABplus e
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the explicit `A*Bplus*(Deltad-DeltaB*y)` correction term is bounded by
+    perturbation radii and an operator-2 bound for `A*Bplus`. -/
+theorem theorem20_8_vecNorm2_ABplus_constraint_defect_le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (DeltaB : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) {ABplus_norm DeltaB_norm Deltad_norm : ℝ}
+    (hABplus_nonneg : 0 ≤ ABplus_norm)
+    (hABplus : rectOpNorm2Le (rectMatMul A Bplus) ABplus_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm) :
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec Bplus
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i))) ≤
+      ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) := by
+  let defect : Fin p → ℝ :=
+    fun i => Deltad i - rectMatMulVec DeltaB y i
+  have hdefect :
+      vecNorm2 defect ≤ Deltad_norm + DeltaB_norm * vecNorm2 y := by
+    exact theorem20_8_vecNorm2_constraint_defect_le DeltaB Deltad y
+      hDeltaB hDeltad
+  calc
+    vecNorm2 (rectMatMulVec A (rectMatMulVec Bplus defect))
+        ≤ ABplus_norm * vecNorm2 defect :=
+            theorem20_8_vecNorm2_ABplus_apply_le A Bplus defect hABplus
+    _ ≤ ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) :=
+            mul_le_mul_of_nonneg_left hdefect hABplus_nonneg
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the three explicit correction terms in the perturbed residual decomposition
+    are bounded by supplied operator and vector perturbation radii. -/
+theorem theorem20_8_vecNorm2_perturbed_residual_correction_le {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (Deltad : Fin p → ℝ) (y : Fin n → ℝ)
+    {ABplus_norm DeltaA_norm DeltaB_norm Deltad_norm Deltab_norm : ℝ}
+    (hABplus_nonneg : 0 ≤ ABplus_norm)
+    (hABplus : rectOpNorm2Le (rectMatMul A Bplus) ABplus_norm)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm) :
+    vecNorm2
+        (fun i : Fin m =>
+          rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p => Deltad l - rectMatMulVec DeltaB y l)) i +
+            rectMatMulVec DeltaA y i - Deltab i) ≤
+      ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+        DeltaA_norm * vecNorm2 y + Deltab_norm := by
+  let defect : Fin p → ℝ :=
+    fun l => Deltad l - rectMatMulVec DeltaB y l
+  let correction : Fin m → ℝ :=
+    rectMatMulVec A (rectMatMulVec Bplus defect)
+  let deltaAction : Fin m → ℝ := rectMatMulVec DeltaA y
+  have hcorrection :
+      vecNorm2 correction ≤
+        ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) := by
+    exact theorem20_8_vecNorm2_ABplus_constraint_defect_le
+      A DeltaB Bplus Deltad y hABplus_nonneg hABplus hDeltaB hDeltad
+  have hdelta :
+      vecNorm2 deltaAction ≤ DeltaA_norm * vecNorm2 y := hDeltaA y
+  have htwo :
+      vecNorm2 (fun i : Fin m => correction i + deltaAction i) ≤
+        ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+          DeltaA_norm * vecNorm2 y := by
+    exact (vecNorm2_add_le correction deltaAction).trans
+      (add_le_add hcorrection hdelta)
+  calc
+    vecNorm2 (fun i : Fin m => correction i + deltaAction i - Deltab i)
+        ≤ vecNorm2 (fun i : Fin m => correction i + deltaAction i) +
+            vecNorm2 (fun i : Fin m => -Deltab i) := by
+            simpa [sub_eq_add_neg] using
+              vecNorm2_add_le
+                (fun i : Fin m => correction i + deltaAction i)
+                (fun i : Fin m => -Deltab i)
+    _ = vecNorm2 (fun i : Fin m => correction i + deltaAction i) +
+          vecNorm2 Deltab := by
+            rw [vecNorm2_neg]
+    _ ≤ (ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+          DeltaA_norm * vecNorm2 y) + Deltab_norm :=
+            add_le_add htwo hDeltab
+    _ = ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+          DeltaA_norm * vecNorm2 y + Deltab_norm := by
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the relative perturbation budget supplies the operator-2 bound for
+    `DeltaA` needed by the residual-correction estimate. -/
+theorem theorem20_8_rectOpNorm2Le_DeltaA_of_relativePerturbationBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    rectOpNorm2Le DeltaA (eps * frobNormRect A) := by
+  exact rectOpNorm2Le_of_frobNormRect_le DeltaA hbudget.1
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the relative perturbation budget supplies the operator-2 bound for
+    `DeltaB` needed by the constraint-defect estimate. -/
+theorem theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    rectOpNorm2Le DeltaB (eps * frobNormRect B) := by
+  exact rectOpNorm2Le_of_frobNormRect_le DeltaB hbudget.2.2.1
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    specialization of the explicit residual-correction bound to the source
+    relative perturbation budget. -/
+theorem theorem20_8_vecNorm2_perturbed_residual_correction_le_of_relativeBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (y : Fin n → ℝ)
+    {eps ABplus_norm : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hABplus_nonneg : 0 ≤ ABplus_norm)
+    (hABplus : rectOpNorm2Le (rectMatMul A Bplus) ABplus_norm) :
+    vecNorm2
+        (fun i : Fin m =>
+          rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p => Deltad l - rectMatMulVec DeltaB y l)) i +
+            rectMatMulVec DeltaA y i - Deltab i) ≤
+      ABplus_norm *
+          (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        (eps * frobNormRect A) * vecNorm2 y +
+        eps * vecNorm2 b := by
+  exact theorem20_8_vecNorm2_perturbed_residual_correction_le
+    A DeltaA Deltab DeltaB Bplus Deltad y
+    hABplus_nonneg hABplus
+    (theorem20_8_rectOpNorm2Le_DeltaA_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    hbudget.2.2.2 hbudget.2.1
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-norm variant of the residual-correction estimate, using the exact
+    operator 2-norm of the real product `A*Bplus` as the explicit product
+    radius. -/
+theorem
+    theorem20_8_vecNorm2_perturbed_residual_correction_le_of_relativeBudget_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (y : Fin n → ℝ)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2
+        (fun i : Fin m =>
+          rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p => Deltad l - rectMatMulVec DeltaB y l)) i +
+            rectMatMulVec DeltaA y i - Deltab i) ≤
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+          (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        (eps * frobNormRect A) * vecNorm2 y +
+        eps * vecNorm2 b := by
+  exact theorem20_8_vecNorm2_perturbed_residual_correction_le_of_relativeBudget
+    A DeltaA b Deltab B DeltaB Bplus d Deltad y hbudget
+    (complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul A Bplus)))
+    (rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+      (rectMatMul A Bplus) le_rfl)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     source table `B_A^+ = (I - (AP)^+ A)B^+`.
@@ -1308,6 +2013,228 @@ noncomputable def theorem20_8BAplus {m n p : ℕ}
     (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ) :
     Fin n → Fin p → ℝ :=
   rectMatMul (fun i j => idMatrix n i j - rectMatMul APplus A i j) Bplus
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    applying `B_A^+ = (I - (AP)^+ A)B^+` to a vector expands into the
+    `B^+` term minus the reduced-problem pseudo-inverse correction. -/
+theorem theorem20_8BAplus_apply {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (e : Fin p → ℝ) :
+    rectMatMulVec (theorem20_8BAplus A B Bplus APplus) e =
+      fun j : Fin n =>
+        rectMatMulVec Bplus e j -
+          rectMatMulVec APplus
+            (rectMatMulVec A (rectMatMulVec Bplus e)) j := by
+  ext j
+  unfold theorem20_8BAplus
+  rw [rectMatMulVec_rectMatMul]
+  unfold rectMatMulVec
+  have hsplit :
+      (∑ k : Fin n,
+          (idMatrix n j k - rectMatMul APplus A j k) *
+            (∑ x : Fin p, Bplus k x * e x)) =
+        (∑ k : Fin n,
+          idMatrix n j k * (∑ x : Fin p, Bplus k x * e x)) -
+        (∑ k : Fin n,
+          rectMatMul APplus A j k *
+            (∑ x : Fin p, Bplus k x * e x)) := by
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro k _
+    ring
+  have hid :=
+    congrFun (rectMatMulVec_idMatrix (fun k : Fin n =>
+      ∑ x : Fin p, Bplus k x * e x)) j
+  have hcomp :=
+    congrFun (rectMatMulVec_rectMatMul APplus A
+      (rectMatMulVec Bplus e)) j
+  have hid' :
+      (∑ k : Fin n, idMatrix n j k *
+          (∑ x : Fin p, Bplus k x * e x)) =
+        ∑ x : Fin p, Bplus j x * e x := by
+    simpa [rectMatMulVec] using hid
+  have hcomp' :
+      (∑ k : Fin n, rectMatMul APplus A j k *
+          (∑ x : Fin p, Bplus k x * e x)) =
+        ∑ x : Fin m,
+          APplus j x *
+            (∑ x_1 : Fin n,
+              A x x_1 * (∑ x_2 : Fin p, Bplus x_1 x_2 * e x_2)) := by
+    simpa [rectMatMulVec] using hcomp
+  rw [hsplit, hid', hcomp']
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the source product `A B_A^+` splits into `A B^+` minus the
+    `(AP)^+`-correction term. -/
+theorem theorem20_8A_BAplus_apply {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (e : Fin p → ℝ) :
+    rectMatMulVec A
+        (rectMatMulVec (theorem20_8BAplus A B Bplus APplus) e) =
+      fun i : Fin m =>
+        rectMatMulVec A (rectMatMulVec Bplus e) i -
+          rectMatMulVec A
+            (rectMatMulVec APplus
+              (rectMatMulVec A (rectMatMulVec Bplus e))) i := by
+  rw [theorem20_8BAplus_apply, rectMatMulVec_sub]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the `A B^+` constraint-defect correction decomposes into the source
+    `A B_A^+` term plus the reduced-problem pseudo-inverse correction. -/
+theorem theorem20_8ABplus_eq_A_APplus_A_Bplus_add_A_BAplus {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (e : Fin p → ℝ) :
+    rectMatMulVec A (rectMatMulVec Bplus e) =
+      fun i : Fin m =>
+        rectMatMulVec A
+            (rectMatMulVec APplus
+              (rectMatMulVec A (rectMatMulVec Bplus e))) i +
+          rectMatMulVec A
+            (rectMatMulVec (theorem20_8BAplus A B Bplus APplus) e) i := by
+  ext i
+  have h :=
+    congrFun (theorem20_8A_BAplus_apply A B Bplus APplus e) i
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    applying the source product `A B_A^+` is controlled by an operator-2
+    bound for that product. -/
+theorem theorem20_8_vecNorm2_A_BAplus_apply_le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (e : Fin p → ℝ) {ABAplus_norm : ℝ}
+    (hABAplus :
+      rectOpNorm2Le (rectMatMul A (theorem20_8BAplus A B Bplus APplus))
+        ABAplus_norm) :
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec (theorem20_8BAplus A B Bplus APplus) e)) ≤
+      ABAplus_norm * vecNorm2 e := by
+  simpa [rectMatMulVec_rectMatMul] using hABAplus e
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the source `A B_A^+` constraint-defect correction is bounded by
+    perturbation radii and an operator-2 bound for `A B_A^+`. -/
+theorem theorem20_8_vecNorm2_A_BAplus_constraint_defect_le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B DeltaB : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (Deltad : Fin p → ℝ) (y : Fin n → ℝ)
+    {ABAplus_norm DeltaB_norm Deltad_norm : ℝ}
+    (hABAplus_nonneg : 0 ≤ ABAplus_norm)
+    (hABAplus :
+      rectOpNorm2Le (rectMatMul A (theorem20_8BAplus A B Bplus APplus))
+        ABAplus_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm) :
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i))) ≤
+      ABAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) := by
+  let defect : Fin p → ℝ :=
+    fun i => Deltad i - rectMatMulVec DeltaB y i
+  have hdefect :
+      vecNorm2 defect ≤ Deltad_norm + DeltaB_norm * vecNorm2 y := by
+    exact theorem20_8_vecNorm2_constraint_defect_le DeltaB Deltad y
+      hDeltaB hDeltad
+  calc
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)))
+        = vecNorm2
+            (rectMatMulVec A
+              (rectMatMulVec (theorem20_8BAplus A B Bplus APplus) defect)) := by
+            rfl
+    _ ≤ ABAplus_norm * vecNorm2 defect :=
+            theorem20_8_vecNorm2_A_BAplus_apply_le A B Bplus APplus
+              defect hABAplus
+    _ ≤ ABAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) :=
+            mul_le_mul_of_nonneg_left hdefect hABAplus_nonneg
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-norm version of the `A B_A^+` constraint-defect bound under the
+    displayed relative perturbation budget. -/
+theorem theorem20_8_vecNorm2_A_BAplus_constraint_defect_le_of_relativeBudget_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2
+        (rectMatMulVec A
+          (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i))) ≤
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) := by
+  exact theorem20_8_vecNorm2_A_BAplus_constraint_defect_le
+    A B DeltaB Bplus APplus Deltad y
+    (complexMatrixOp2_nonneg
+      (realRectToCMatrix
+        (rectMatMul A (theorem20_8BAplus A B Bplus APplus))))
+    (rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+      (rectMatMul A (theorem20_8BAplus A B Bplus APplus)) le_rfl)
+    (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    hbudget.2.2.2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual decomposition with the constraint-defect correction split through
+    the printed source quantity `B_A^+`. -/
+theorem theorem20_8_perturbed_feasible_residual_decomp_BAplus {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    lsResidual (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i) y =
+      fun i =>
+        lsResidual (theorem20_8AP A B Bplus)
+            (fun i => b i - rectMatMulVec A x i) (fun j => y j - x j) i +
+          (rectMatMulVec A
+              (rectMatMulVec APplus
+                (rectMatMulVec A
+                  (rectMatMulVec Bplus
+                    (fun l => Deltad l - rectMatMulVec DeltaB y l)))) i +
+            rectMatMulVec A
+              (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+                (fun l => Deltad l - rectMatMulVec DeltaB y l)) i) +
+          rectMatMulVec DeltaA y i -
+          Deltab i := by
+  ext i
+  let defect : Fin p → ℝ :=
+    fun l => Deltad l - rectMatMulVec DeltaB y l
+  have hres :=
+    congrFun
+      (theorem20_8_perturbed_feasible_residual_decomp
+        A DeltaA b Deltab B DeltaB Bplus d Deltad x y hx hy) i
+  have hsplit :=
+    congrFun
+      (theorem20_8ABplus_eq_A_APplus_A_Bplus_add_A_BAplus
+        A B Bplus APplus defect) i
+  change
+    lsResidual (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y i =
+      lsResidual (theorem20_8AP A B Bplus)
+          (fun i => b i - rectMatMulVec A x i) (fun j => y j - x j) i +
+        (rectMatMulVec A
+            (rectMatMulVec APplus
+              (rectMatMulVec A (rectMatMulVec Bplus defect))) i +
+          rectMatMulVec A
+            (rectMatMulVec (theorem20_8BAplus A B Bplus APplus) defect) i) +
+        rectMatMulVec DeltaA y i -
+        Deltab i
+  rw [hres, hsplit]
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     condition quantity `kappa_B(A) = ||A||_F ||(AP)^+||_2`. -/

@@ -2753,6 +2753,40 @@ theorem finiteMaxEigenvalue_leading_principal_le (n : ℕ) (hn : 0 < n)
   rw [hpadquad] at hray
   exact hray
 
+/-- **Max-eigenvalue monotonicity from quadratic-form ordering** (Higham
+    §10.4, the Loewner→operator-norm step of the (10.29) stage
+    monotonicity): if `yᵀAy ≤ yᵀBy` for all `y` (symmetric `A, B`), then
+    `λ_max(A) ≤ λ_max(B)`.  Evaluate at `A`'s top unit eigenvector: it
+    realizes `λ_max(A)`, and the `B`-Rayleigh bound caps it by
+    `λ_max(B)`. -/
+theorem finiteMaxEigenvalue_mono_of_quadForm_le {n : ℕ} (hn : 0 < n)
+    (A B : Fin n → Fin n → ℝ)
+    (hA : IsSymmetricFiniteMatrix A) (hB : IsSymmetricFiniteMatrix B)
+    (hle : ∀ y : Fin n → ℝ,
+      (∑ i : Fin n, ∑ j : Fin n, y i * A i j * y j) ≤
+       ∑ i : Fin n, ∑ j : Fin n, y i * B i j * y j) :
+    finiteMaxEigenvalue hn A hA ≤ finiteMaxEigenvalue hn B hB := by
+  obtain ⟨a, ha⟩ := exists_finiteMaxEigenvalue_eq hn A hA
+  have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one A hA a
+  have hq :=
+    finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+      A hA a
+  rw [hnorm, mul_one] at hq
+  set v : Fin n → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian A hA).eigenvectorBasis a)
+    with hv
+  have hvsq : ∑ i : Fin n, v i ^ 2 = 1 := by
+    have := hnorm; unfold finiteVecNorm2Sq at this; exact this
+  have hvA : (∑ i : Fin n, ∑ j : Fin n, v i * A i j * v j) =
+      finiteMaxEigenvalue hn A hA := by
+    rw [← finiteQuadraticForm_eq_sum_sum, hq, ha]
+  have hvB := finiteMaxEigenvalue_rayleigh hn B hB v
+  rw [hvsq, mul_one] at hvB
+  calc finiteMaxEigenvalue hn A hA
+      = ∑ i : Fin n, ∑ j : Fin n, v i * A i j * v j := hvA.symm
+    _ ≤ ∑ i : Fin n, ∑ j : Fin n, v i * B i j * v j := hle v
+    _ ≤ finiteMaxEigenvalue hn B hB := hvB
+
 /-- **Trailing-block eigenvalue interlacing** (Higham §10.4, the
     `‖Q₂₂‖₂ ≤ ‖Q‖₂` half of the (10.29) Schur monotonicity): the maximum
     eigenvalue of the trailing `m × m` principal submatrix (drop row/column
@@ -4441,6 +4475,20 @@ theorem higham10_29_nonsymPosDef_iff_symPartSPD (n : ℕ)
     (A : Fin n → Fin n → ℝ) :
     higham10_4_IsNonsymPosDef n A ↔ IsSymPosDef n (symmetricPart n A) :=
   nonsymPosDef_iff_symPartSPD n A
+
+/-- **(10.29) GE recursion is well-founded for nonsymmetric-positive-definite
+    matrices** (Higham §10.4): the LU-recursion Schur complement
+    `luFirstSchurComplement A = D − c bᵀ/α` of a nonsym-PD matrix is again
+    nonsym-PD.  This is exactly the class-closure `nonsym_pd_first_ge_schur`,
+    now stated on the `GaussianElimination` scaffold's Schur step, so the
+    unpivoted GE/LU recursion (`LUFactSpec.of_firstSchurComplement`) stays in
+    the nonsym-PD class at every stage — the base for the (10.29) `‖|L||U|‖_F`
+    stage induction. -/
+theorem higham10_29_luFirstSchurComplement_isNonsymPosDef {m : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hA : higham10_4_IsNonsymPosDef (m + 1) A) :
+    higham10_4_IsNonsymPosDef m (luFirstSchurComplement A) :=
+  nonsym_pd_first_ge_schur hA
 
 /-- **Equation (10.29)** / Golub-Van Loan growth-bound interface for exact
 LU factors of a nonsymmetric positive-definite matrix. -/
