@@ -1761,6 +1761,29 @@ theorem theorem20_8_perturbed_feasible_point_action_decomp {m n p : ℕ}
           ring
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    projected `AP` step recovered from the action of `A` on a perturbed
+    feasible point and the explicit right-inverse constraint correction. -/
+theorem theorem20_8_AP_difference_eq_action_minus_constraint_correction {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) =
+      fun i =>
+        rectMatMulVec A y i - rectMatMulVec A x i -
+          rectMatMulVec A
+            (rectMatMulVec Bplus
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i := by
+  have haction :=
+    theorem20_8_perturbed_feasible_point_action_decomp
+      A B DeltaB Bplus d Deltad x y hx hy
+  ext i
+  have hi := congrFun haction i
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual decomposition for a point feasible for the perturbed constraint.
 
     The reduced `AP` residual is separated from the three explicit perturbation
@@ -1791,6 +1814,36 @@ theorem theorem20_8_perturbed_feasible_residual_decomp {m n p : ℕ}
         A B DeltaB Bplus d Deltad x y hx hy) i
   rw [hmat, hA]
   ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    solving the perturbed-residual decomposition for the reduced `AP`
+    difference.  The perturbed residual is kept explicit, so this does not
+    assume the reduced least-squares/Wedin forcing equation. -/
+theorem theorem20_8_AP_difference_eq_of_perturbed_residual_eq {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rpert : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidual (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rpert) :
+    rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) =
+      fun i =>
+        rpert i + (b i - rectMatMulVec A x i) -
+          rectMatMulVec A
+            (rectMatMulVec Bplus
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i -
+          rectMatMulVec DeltaA y i + Deltab i := by
+  have hdecomp :=
+    theorem20_8_perturbed_feasible_residual_decomp
+      A DeltaA b Deltab B DeltaB Bplus d Deltad x y hx hy
+  ext i
+  have hdecomp_i := congrFun hdecomp i
+  have hres_i := congrFun hres i
+  unfold lsResidual at hdecomp_i hres_i
+  linarith
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the constraint-defect vector `Deltad - DeltaB*y` is bounded by the
@@ -5669,6 +5722,27 @@ theorem LSEFullRowRank.theorem20_8_perturbed_feasible_point_action_decomp
     A B DeltaB hB.rightInverse d Deltad x y hx hy
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the projected `AP` step identity, with the
+    constraint right inverse supplied by `rank(B)=p`. -/
+theorem LSEFullRowRank.theorem20_8_AP_difference_eq_action_minus_constraint_correction
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec (theorem20_8AP A B hB.rightInverse) (fun k => y k - x k) =
+      fun i =>
+        rectMatMulVec A y i - rectMatMulVec A x i -
+          rectMatMulVec A
+            (rectMatMulVec hB.rightInverse
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_difference_eq_action_minus_constraint_correction
+    A B DeltaB hB.rightInverse d Deltad x y hx hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual decomposition for a point feasible for the perturbed constraint,
     with the constraint right inverse supplied by source full row rank. -/
 theorem LSEFullRowRank.theorem20_8_perturbed_feasible_residual_decomp
@@ -5691,6 +5765,31 @@ theorem LSEFullRowRank.theorem20_8_perturbed_feasible_residual_decomp
           Deltab i :=
   _root_.LeanFpAnalysis.FP.theorem20_8_perturbed_feasible_residual_decomp
     A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y hx hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the reduced `AP` difference solved from an
+    explicit perturbed residual vector. -/
+theorem LSEFullRowRank.theorem20_8_AP_difference_eq_of_perturbed_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rpert : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidual (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rpert) :
+    rectMatMulVec (theorem20_8AP A B hB.rightInverse) (fun k => y k - x k) =
+      fun i =>
+        rpert i + (b i - rectMatMulVec A x i) -
+          rectMatMulVec A
+            (rectMatMulVec hB.rightInverse
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i -
+          rectMatMulVec DeltaA y i + Deltab i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_difference_eq_of_perturbed_residual_eq
+    A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y rpert hx hy hres
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated residual decomposition with the constraint
