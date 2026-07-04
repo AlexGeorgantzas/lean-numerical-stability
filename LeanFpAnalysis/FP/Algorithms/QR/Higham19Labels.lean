@@ -10,6 +10,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.HouseholderReflector
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderSpec
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderApply
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderOneStep
+import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 import LeanFpAnalysis.FP.Algorithms.QR.GivensSpec
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
 import LeanFpAnalysis.FP.Analysis.Rounding
@@ -739,5 +740,44 @@ theorem H19_Theorem19_5_qr_solve_columnwise_backward_error (fp : FPModel)
       (householderQRRhsBackwardBound fp n A b) :=
   fl_householderQR_solve_backward_error_gammaHigham_of_global_gammaValid
     fp n A b hn hvalid hdiag
+
+-- ============================================================
+-- Lemma 19.3 (sequence of reflectors), square normwise form
+-- ============================================================
+
+/-- **Lemma 19.3, square normwise form** (Higham, Accuracy and Stability of
+    Numerical Algorithms, 2nd ed., §19.3, p. 359): after a sequence of `r`
+    computed Householder reflectors applied to an `n×n` matrix, the result is
+    `Q^T (A + ΔA)` with `Q` orthogonal and `‖ΔA‖_F` bounded by the accumulated
+    reflector bound times `‖A‖_F`.
+
+    This is the labeled relabel of the concrete
+    `fl_householder_sequence_backward_error`.  Scope: it is the SQUARE,
+    NORMWISE (Frobenius) reading; the printed Lemma 19.3 additionally gives
+    the columnwise bound `‖Δa_j‖₂ ≤ r·γ̃_m·‖a_j‖₂` in the rectangular case,
+    whose concrete-algorithm form needs the rectangular fl-sequence
+    instantiation (the abstract columnwise sequence result is
+    `rect_orthogonal_columnwise_vector_sequence_geometric`, and the `n = 1`
+    `(Q+ΔQ)ᵀ` corollary is `H19_Lemma19_3_vector_QplusDeltaQ_form`).  The
+    constant `residualAccumBound (householderConstructApplyBound fp n) r` is
+    of the printed `r·γ̃`-class. -/
+theorem H19_Lemma19_3_sequence_normwise_backward_error (fp : FPModel)
+    {n r : ℕ} (hn0 : 0 < n)
+    (Aseq : ℕ → Fin n → Fin n → ℝ) (xseq : ℕ → Fin n → ℝ)
+    (hx : ∀ k : ℕ, k < r → xseq k ≠ 0)
+    (hvalid : gammaValid fp (11 * n + 23))
+    (hAstep : ∀ k : ℕ, k < r →
+      Aseq (k + 1) =
+        fl_householderApplyMatrix fp n
+          (fl_householderNormalizedVector fp hn0 (xseq k)) 1 (Aseq k)) :
+    ∃ (Q : Fin n → Fin n → ℝ) (ΔA : Fin n → Fin n → ℝ),
+      IsOrthogonal n Q ∧
+      (∀ i j : Fin n, Aseq r i j =
+        matMul n (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤
+        residualAccumBound (householderConstructApplyBound fp n) r *
+          frobNorm (Aseq 0) :=
+  fl_householder_sequence_backward_error fp hn0 Aseq xseq hx hvalid hAstep
 
 end LeanFpAnalysis.FP
