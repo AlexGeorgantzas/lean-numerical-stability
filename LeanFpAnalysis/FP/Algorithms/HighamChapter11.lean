@@ -520,6 +520,28 @@ def higham11_9_skewSchurEntryBound
     (sij Amax : ℝ) : Prop :=
   |sij| ≤ 3 * Amax
 
+/-- **Algorithm 11.9 multiplier bound**, proved: for a skew 2×2 pivot the
+multiplier `c/a₂₁` (an entry of `CE⁻¹`, hence of `L`) satisfies `|c/a₂₁| ≤ 1`
+whenever the pivot `a₂₁` has the largest magnitude (`|c| ≤ |a₂₁|`).  This is the
+honest derivation behind `higham11_9_skew_L_entry_bound_interface`. -/
+theorem higham11_9_skew_multiplier_bound (c a21 : ℝ)
+    (ha : a21 ≠ 0) (hc : |c| ≤ |a21|) :
+    |c / a21| ≤ 1 :=
+  skew_twoByTwo_multiplier_bound c a21 ha hc
+
+/-- **Algorithm 11.9 Schur-entry bound**, proved: the skew 2×2 Schur entry
+`s = a_ij − (a_{i2}/a₂₁)a_{j1} + (a_{i1}/a₂₁)a_{j2}` satisfies the printed
+`higham11_9_skewSchurEntryBound s M`, i.e. `|s| ≤ 3M`, when every active entry is
+`≤ M` and the multipliers are `≤ 1` (`|a_{i1}|,|a_{i2}| ≤ |a₂₁|`). -/
+theorem higham11_9_skew_schur_entry_bound
+    (aij ai1 ai2 aj1 aj2 a21 M : ℝ) (ha : a21 ≠ 0)
+    (hij : |aij| ≤ M) (hj1 : |aj1| ≤ M) (hj2 : |aj2| ≤ M)
+    (hi1 : |ai1| ≤ |a21|) (hi2 : |ai2| ≤ |a21|) :
+    higham11_9_skewSchurEntryBound
+      (aij - (ai2 / a21) * aj1 + (ai1 / a21) * aj2) M :=
+  skew_twoByTwo_schur_entry_bound aij ai1 ai2 aj1 aj2 a21 M
+    ha hij hj1 hj2 hi1 hi2
+
 /-- The printed skew growth-factor bound
 `rho_n <= (sqrt 3)^(n-2)`. -/
 def higham11_9_skewGrowthBound (n : ℕ) (ρ_n : ℝ) : Prop :=
