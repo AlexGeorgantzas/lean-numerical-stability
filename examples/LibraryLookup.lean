@@ -15133,3 +15133,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check fl_householderConstruction2Error
 #check H19_Lemma19_1_construction2_backward_error
 #check H19_Lemma19_3_sequence_normwise_backward_error
+#check SylvesterInverseOpBound
+#check sylvesterPsi_of_inverseOpBound_isPsiFirstOrderBound
+#check sylvesterPsiDiagonal
+#check sylvesterPsiDiagonal_isPsiFirstOrderBound
+#check H16_eq16_24_structured_condition_diagonal
