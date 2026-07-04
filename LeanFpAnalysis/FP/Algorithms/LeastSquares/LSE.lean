@@ -1846,6 +1846,36 @@ theorem theorem20_8_AP_difference_eq_of_perturbed_residual_eq {m n p : ℕ}
   linarith
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-sign version of `theorem20_8_AP_difference_eq_of_perturbed_residual_eq`,
+    using Higham's residual convention `b - A*x`. -/
+theorem theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) =
+      fun i =>
+        (b i - rectMatMulVec A x i) - rHigh i -
+          rectMatMulVec A
+            (rectMatMulVec Bplus
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i -
+          rectMatMulVec DeltaA y i + Deltab i := by
+  have hdecomp :=
+    theorem20_8_perturbed_feasible_residual_decomp
+      A DeltaA b Deltab B DeltaB Bplus d Deltad x y hx hy
+  ext i
+  have hdecomp_i := congrFun hdecomp i
+  have hres_i := congrFun hres i
+  unfold lsResidual at hdecomp_i
+  unfold lsResidualHigham at hres_i
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the constraint-defect vector `Deltad - DeltaB*y` is bounded by the
     supplied perturbation radii. -/
 theorem theorem20_8_vecNorm2_constraint_defect_le {n p : ℕ}
@@ -4376,6 +4406,159 @@ theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_differ
   ring
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual-explicit exact solution-difference identity.  This is the exact
+    algebraic counterpart of the printed correction-vector identity before the
+    reduced-LS/Wedin forcing equation removes the visible residual terms. -/
+theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m =>
+              (b i - rectMatMulVec A x i) - rHigh i -
+                rectMatMulVec DeltaA y i + Deltab i) j := by
+  let defect : Fin p → ℝ :=
+    fun i => Deltad i - rectMatMulVec DeltaB y i
+  let forcing : Fin m → ℝ :=
+    fun i => (b i - rectMatMulVec A x i) - rHigh i -
+      rectMatMulVec DeltaA y i + Deltab i
+  let correction : Fin m → ℝ :=
+    rectMatMulVec A (rectMatMulVec Bplus defect)
+  have hdecomp :=
+    theorem20_8_perturbed_feasible_difference_decomp
+      B DeltaB Bplus d Deltad x y hx hy
+  have hAPdiff :=
+    theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq
+      A DeltaA b Deltab B DeltaB Bplus d Deltad x y rHigh hx hy hres
+  have hAPdiff_split :
+      rectMatMulVec (theorem20_8AP A B Bplus) (fun k => y k - x k) =
+        fun i : Fin m => forcing i - correction i := by
+    ext i
+    have hi := congrFun hAPdiff i
+    dsimp [forcing, correction, defect] at hi ⊢
+    linarith
+  have hproj :
+      rectMatMulVec (theorem20_8Projection B Bplus) (fun k => y k - x k) =
+        fun j : Fin n =>
+          rectMatMulVec APplus forcing j -
+            rectMatMulVec APplus correction j := by
+    calc
+      rectMatMulVec (theorem20_8Projection B Bplus) (fun k => y k - x k) =
+          rectMatMulVec (rectMatMul APplus (theorem20_8AP A B Bplus))
+            (fun k => y k - x k) := by
+            rw [hAPleft]
+      _ = rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B Bplus)
+              (fun k => y k - x k)) := by
+            rw [rectMatMulVec_rectMatMul]
+      _ = rectMatMulVec APplus (fun i : Fin m => forcing i - correction i) := by
+            rw [hAPdiff_split]
+      _ = fun j : Fin n =>
+            rectMatMulVec APplus forcing j -
+              rectMatMulVec APplus correction j := by
+            rw [rectMatMulVec_sub]
+  have hBA :=
+    theorem20_8BAplus_apply A B Bplus APplus defect
+  ext j
+  have hdecomp_j := congrFun hdecomp j
+  have hproj_j := congrFun hproj j
+  have hBA_j := congrFun hBA j
+  change
+    y j - x j =
+      rectMatMulVec (theorem20_8BAplus A B Bplus APplus) defect j +
+        rectMatMulVec APplus forcing j
+  rw [hdecomp_j, hproj_j, hBA_j]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual-explicit norm bound for the exact solution-difference identity.
+    The bound keeps the visible Higham-sign residual forcing as a separate
+    supplied radius. -/
+theorem theorem20_8_vecNorm2_solution_difference_residual_forcing_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    {BAplus_norm DeltaB_norm Deltad_norm forcing_norm : ℝ}
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hBAplus_nonneg : 0 ≤ BAplus_norm)
+    (hBAplus :
+      rectOpNorm2Le (theorem20_8BAplus A B Bplus APplus) BAplus_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm)
+    (hforcing :
+      vecNorm2
+          (fun i : Fin m =>
+            (b i - rectMatMulVec A x i) - rHigh i -
+              rectMatMulVec DeltaA y i + Deltab i) ≤ forcing_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      BAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm := by
+  let defect : Fin p → ℝ :=
+    fun i => Deltad i - rectMatMulVec DeltaB y i
+  let forcing : Fin m → ℝ :=
+    fun i => (b i - rectMatMulVec A x i) - rHigh i -
+      rectMatMulVec DeltaA y i + Deltab i
+  let BAplus := theorem20_8BAplus A B Bplus APplus
+  have hsol :=
+    theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham_residual_eq
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y rHigh
+      hAPleft hx hy hres
+  have hdirect :
+      vecNorm2 (rectMatMulVec BAplus defect) ≤
+        BAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) := by
+    exact theorem20_8_vecNorm2_BAplus_constraint_defect_le
+      DeltaB BAplus Deltad y hBAplus_nonneg hBAplus hDeltaB hDeltad
+  have hop_nonneg : 0 ≤ complexMatrixOp2 (realRectToCMatrix APplus) :=
+    complexMatrixOp2_nonneg (realRectToCMatrix APplus)
+  have hforcing_bound :
+      vecNorm2 (rectMatMulVec APplus forcing) ≤
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm := by
+    calc
+      vecNorm2 (rectMatMulVec APplus forcing)
+          ≤ complexMatrixOp2 (realRectToCMatrix APplus) * vecNorm2 forcing :=
+              rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+                APplus le_rfl forcing
+      _ ≤ complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
+              mul_le_mul_of_nonneg_left hforcing hop_nonneg
+  calc
+    vecNorm2 (fun j : Fin n => y j - x j) =
+        vecNorm2 (fun j : Fin n =>
+          rectMatMulVec BAplus defect j + rectMatMulVec APplus forcing j) := by
+          rw [hsol]
+    _ ≤ vecNorm2 (rectMatMulVec BAplus defect) +
+          vecNorm2 (rectMatMulVec APplus forcing) :=
+          vecNorm2_add_le (rectMatMulVec BAplus defect)
+            (rectMatMulVec APplus forcing)
+    _ ≤ BAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+          complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
+          add_le_add hdirect hforcing_bound
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the projected-difference equation follows from the reduced `AP` equation
     once `(AP)^+ AP` is identified with the source nullspace projector `P`. -/
 theorem theorem20_8_projected_difference_eq_APplus_of_reduced_difference_eq
@@ -4425,6 +4608,80 @@ theorem theorem20_8_projected_difference_eq_APplus_of_reduced_difference_eq
           rectMatMulVec APplus forcing j -
             rectMatMulVec APplus correction j := by
           rw [rectMatMulVec_sub]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual-explicit projected-difference bridge in Higham's residual sign
+    convention.  This is the exact version before the reduced-LS/Wedin route
+    supplies the stronger source forcing equation. -/
+theorem theorem20_8_projected_difference_eq_APplus_of_perturbed_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    rectMatMulVec (theorem20_8Projection B Bplus)
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec APplus
+            (fun i : Fin m =>
+              (b i - rectMatMulVec A x i) - rHigh i -
+                rectMatMulVec DeltaA y i + Deltab i) j -
+          rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j := by
+  let diff : Fin n → ℝ := fun k => y k - x k
+  let defect : Fin p → ℝ :=
+    fun l => Deltad l - rectMatMulVec DeltaB y l
+  let forcing : Fin m → ℝ :=
+    fun i => (b i - rectMatMulVec A x i) - rHigh i -
+      rectMatMulVec DeltaA y i + Deltab i
+  let correction : Fin m → ℝ :=
+    rectMatMulVec A (rectMatMulVec Bplus defect)
+  have hAPdiff :=
+    theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq
+      A DeltaA b Deltab B DeltaB Bplus d Deltad x y rHigh hx hy hres
+  have hAPdiff_split :
+      rectMatMulVec (theorem20_8AP A B Bplus) diff =
+        fun i : Fin m => forcing i - correction i := by
+    ext i
+    have hi := congrFun hAPdiff i
+    dsimp [diff, forcing, correction, defect] at hi ⊢
+    linarith
+  calc
+    rectMatMulVec (theorem20_8Projection B Bplus) diff =
+        rectMatMulVec (rectMatMul APplus (theorem20_8AP A B Bplus)) diff := by
+          rw [hAPleft]
+    _ = rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus) diff) := by
+          rw [rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec APplus (fun i : Fin m => forcing i - correction i) := by
+          rw [hAPdiff_split]
+    _ = fun j : Fin n =>
+          rectMatMulVec APplus forcing j -
+            rectMatMulVec APplus correction j := by
+          rw [rectMatMulVec_sub]
+    _ = fun j : Fin n =>
+          rectMatMulVec APplus
+              (fun i : Fin m =>
+                (b i - rectMatMulVec A x i) - rHigh i -
+                  rectMatMulVec DeltaA y i + Deltab i) j -
+            rectMatMulVec APplus
+              (rectMatMulVec A
+                (rectMatMulVec Bplus
+                  (fun l : Fin p =>
+                    Deltad l - rectMatMulVec DeltaB y l))) j := by
+          rfl
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a source-shaped sufficient condition for the projected action
@@ -5792,6 +6049,32 @@ theorem LSEFullRowRank.theorem20_8_AP_difference_eq_of_perturbed_residual_eq
     A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y rpert hx hy hres
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the Higham-sign reduced `AP` difference
+    identity with an explicit perturbed residual vector. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    rectMatMulVec (theorem20_8AP A B hB.rightInverse) (fun k => y k - x k) =
+      fun i =>
+        (b i - rectMatMulVec A x i) - rHigh i -
+          rectMatMulVec A
+            (rectMatMulVec hB.rightInverse
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i -
+          rectMatMulVec DeltaA y i + Deltab i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq
+    A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y rHigh hx hy hres
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated residual decomposition with the constraint
     correction split through the printed source quantity `B_A^+`.
 
@@ -6088,6 +6371,41 @@ theorem
       hAPleft hAPdiff
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank residual-explicit projected-difference bridge in
+    Higham's residual sign convention. -/
+theorem
+    LSEFullRowRank.theorem20_8_projected_difference_eq_APplus_of_perturbed_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y x : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec APplus
+            (fun i : Fin m =>
+              (b i - rectMatMulVec A x i) - rHigh i -
+                rectMatMulVec DeltaA y i + Deltab i) j -
+          rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_projected_difference_eq_APplus_of_perturbed_higham_residual_eq
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x rHigh
+    hAPleft hx hy hres
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank exact solution-difference identity from the reduced
     `AP` obligations.  The conclusion is the printed correction vector
     `B_A^+*(Deltad-DeltaB*y) + (AP)^+*(DeltaA*y-Deltab)`.
@@ -6140,6 +6458,74 @@ theorem
     _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_difference
       A DeltaA (fun _ : Fin m => 0) Deltab B DeltaB hB.rightInverse APplus
       d Deltad x y hx hy hproj
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank residual-explicit solution-difference identity in
+    Higham's residual sign convention. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec (theorem20_8BAplus A B hB.rightInverse APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m =>
+              (b i - rectMatMulVec A x i) - rHigh i -
+                rectMatMulVec DeltaA y i + Deltab i) j :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham_residual_eq
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y rHigh
+    hAPleft hx hy hres
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank residual-explicit solution-difference norm bound. -/
+theorem
+    LSEFullRowRank.theorem20_8_vecNorm2_solution_difference_residual_forcing_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    {BAplus_norm DeltaB_norm Deltad_norm forcing_norm : ℝ}
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hBAplus_nonneg : 0 ≤ BAplus_norm)
+    (hBAplus :
+      rectOpNorm2Le
+        (theorem20_8BAplus A B hB.rightInverse APplus) BAplus_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltad : vecNorm2 Deltad ≤ Deltad_norm)
+    (hforcing :
+      vecNorm2
+          (fun i : Fin m =>
+            (b i - rectMatMulVec A x i) - rHigh i -
+              rectMatMulVec DeltaA y i + Deltab i) ≤ forcing_norm) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      BAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_solution_difference_residual_forcing_le
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y rHigh
+    hAPleft hx hy hres hBAplus_nonneg hBAplus hDeltaB hDeltad hforcing
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the reduced-`AP` relative solution-difference

@@ -500,4 +500,80 @@ theorem sylvester_triangular_solve_exists_unique (m n : Nat)
   exact sylvester_triangular_solution_unique m n A T C Y (fun i j => x j i)
     hT hshift hY hsol
 
+private theorem rectMatMul_schur_coords_expand_for_triangular {m n : Nat}
+    (U : RMatFn m m) (V : RMatFn n n) (C : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V) :
+    rectMatMul U
+      (rectMatMul (rectMatMul (matTranspose U) (rectMatMul C V)) (matTranspose V)) = C := by
+  have hUUt : rectMatMul U (matTranspose U) = idMatrix m := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hU.right_inv i j
+  have hVVt : rectMatMul V (matTranspose V) = idMatrix n := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hV.right_inv i j
+  calc
+    rectMatMul U
+        (rectMatMul (rectMatMul (matTranspose U) (rectMatMul C V)) (matTranspose V))
+        = rectMatMul (rectMatMul U
+            (rectMatMul (matTranspose U) (rectMatMul C V))) (matTranspose V) := by
+            exact (rectMatMul_assoc U
+              (rectMatMul (matTranspose U) (rectMatMul C V)) (matTranspose V)).symm
+    _ = rectMatMul (rectMatMul (rectMatMul U (matTranspose U))
+            (rectMatMul C V)) (matTranspose V) := by
+            exact congrArg (fun Z => rectMatMul Z (matTranspose V))
+              (rectMatMul_assoc U (matTranspose U) (rectMatMul C V)).symm
+    _ = rectMatMul (rectMatMul (idMatrix m) (rectMatMul C V)) (matTranspose V) := by
+            rw [hUUt]
+    _ = rectMatMul (rectMatMul C V) (matTranspose V) := by
+            rw [rectMatMul_id_left]
+    _ = rectMatMul C (rectMatMul V (matTranspose V)) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul C (idMatrix n) := by
+            rw [hVVt]
+    _ = C := by
+            rw [rectMatMul_id_right]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.6), supplied Schur
+    triangular solve: if orthogonal supplied factors put `A` and `B` into
+    coordinates `R` and upper-triangular `S`, and every shifted column
+    coefficient `R - s_kk I` is nonsingular, then the original-coordinate
+    equation `AX - XB = C` has exactly one solution.  This composes the
+    supplied-factor Schur equivalence `sylvester_schur_transform_solution_iff`
+    with the Bartels-Stewart column solve `sylvester_triangular_solve_exists_unique`.
+    Scope: exact arithmetic only; Schur existence, real quasi-triangular 2x2
+    blocks, Hessenberg-Schur reductions, and floating-point stability remain
+    separate open rows. -/
+theorem existsUnique_isSylvesterSolutionRect_schurTriangular (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n) (C : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  let Cschur : RMatFn m n := rectMatMul (matTranspose U) (rectMatMul C V)
+  obtain ⟨Y, hY, hYuniq⟩ :=
+    sylvester_triangular_solve_exists_unique m n R S Cschur hS hshift
+  refine ⟨rectMatMul U (rectMatMul Y (matTranspose V)), ?_, ?_⟩
+  · exact (sylvester_schur_transform_solution_iff m n
+      U R A V S B C Y hU hV hA hB).mpr hY
+  · intro X hX
+    let YX : RMatFn m n := rectMatMul (matTranspose U) (rectMatMul X V)
+    have hXexpand : rectMatMul U (rectMatMul YX (matTranspose V)) = X :=
+      rectMatMul_schur_coords_expand_for_triangular U V X hU hV
+    have hXsol :
+        IsSylvesterSolutionRect m n A B C
+          (rectMatMul U (rectMatMul YX (matTranspose V))) := by
+      rw [hXexpand]
+      exact hX
+    have hYX :
+        IsSylvesterSolutionRect m n R S Cschur YX :=
+      (sylvester_schur_transform_solution_iff m n
+        U R A V S B C YX hU hV hA hB).mp hXsol
+    have hYeq : YX = Y := hYuniq YX hYX
+    calc
+      X = rectMatMul U (rectMatMul YX (matTranspose V)) := hXexpand.symm
+      _ = rectMatMul U (rectMatMul Y (matTranspose V)) := by rw [hYeq]
+
 end LeanFpAnalysis.FP
