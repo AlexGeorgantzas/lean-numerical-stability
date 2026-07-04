@@ -14852,6 +14852,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_25_implicitRowScalingPivotRule_ratio_nonneg
 #check higham9_25_implicitRowScalingPivotRule_ratio_le_one
 #check higham9_25_exists_implicitRowScalingPivotRule
+#check higham9_25_trailingRowInf_ne_zero_of_stage_entry_ne_zero
+#check higham9_25_exists_implicitRowScalingPivotRule_of_active_column_nonzero
 #check higham9_26_prefixLpNorm
 #check higham9_26_holder_prefix_dot_abs_le
 #check higham9_26_stage_entry_abs_le
