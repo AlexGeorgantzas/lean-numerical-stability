@@ -714,4 +714,30 @@ theorem existsUnique_sylvesterVecCoeff_schurTriangular_mulVec (m n : Nat)
   intro y hy
   exact hinj (by rw [hy, hx])
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6),
+    supplied triangular Schur-coordinate case: the vec/Kronecker Sylvester
+    coefficient itself is nonsingular under the exact supplied-factor
+    assumptions.  This records the determinant form corresponding to the
+    bijective vectorized solve above; it is still a supplied-factor result,
+    not a proof of Schur existence or floating-point stability. -/
+theorem sylvesterVecCoeff_schurTriangular_det_ne_zero (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Not (Matrix.det (sylvesterVecCoeff m n A B) = 0) := by
+  intro hdet
+  obtain ⟨x, hxne, hxzero⟩ :=
+    Matrix.exists_mulVec_eq_zero_iff.mpr hdet
+  have hinj :=
+    sylvesterVecCoeff_schurTriangular_mulVec_injective
+      m n U R A V S B hU hV hA hB hS hshift
+  have hxzero' : x = 0 := by
+    apply hinj
+    rw [hxzero, Matrix.mulVec_zero]
+  exact hxne hxzero'
+
 end LeanFpAnalysis.FP
