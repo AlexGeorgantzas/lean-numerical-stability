@@ -388,6 +388,110 @@ theorem sylvester_practical_error_bound_of_inverse_residual_budget (m n : Nat)
             rfl
   · exact hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact residual identity:
+    if `X` solves the Sylvester equation, then the exact residual of `Xhat`
+    is the Sylvester operator applied to the forward error `X - Xhat`. -/
+theorem sylvesterResidualRect_eq_sylvesterOpRect_error (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat : RMatFn m n)
+    (hX : IsSylvesterSolutionRect m n A B C X) :
+    sylvesterResidualRect m n A B C Xhat =
+      sylvesterOpRect m n A B (fun i j => X i j - Xhat i j) := by
+  ext i j
+  have h := hX i j
+  unfold sylvesterResidualRect sylvesterOpRect matMulRect at h ⊢
+  rw [← h]
+  simp only [sub_mul, mul_sub, Finset.sum_sub_distrib]
+  ring
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), inverse-residual bridge:
+    if `Pinv` is a left inverse for the vec/Kronecker Sylvester coefficient,
+    then the vectorized forward error is `Pinv` applied to the exact residual. -/
+theorem sylvester_vec_error_eq_inverse_residual_of_left_inverse (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat : RMatFn m n)
+    (Pinv :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1) :
+    Matrix.vec (fun i j => X i j - Xhat i j) =
+      Matrix.mulVec Pinv (Matrix.vec (sylvesterResidualRect m n A B C Xhat)) := by
+  let P := sylvesterVecCoeff m n A B
+  let E : RMatFn m n := fun i j => X i j - Xhat i j
+  change Matrix.vec E =
+    Matrix.mulVec Pinv (Matrix.vec (sylvesterResidualRect m n A B C Xhat))
+  have hLeftP : Pinv * P = 1 := by
+    simpa [P] using hLeft
+  have hres : Matrix.mulVec P (Matrix.vec E) =
+      Matrix.vec (sylvesterResidualRect m n A B C Xhat) := by
+    rw [show P = sylvesterVecCoeff m n A B by rfl]
+    rw [sylvesterVecCoeff_mulVec_vec]
+    rw [sylvesterResidualRect_eq_sylvesterOpRect_error m n A B C X Xhat hX]
+  calc
+    Matrix.vec E =
+        Matrix.mulVec (1 :
+          Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+          (Matrix.vec E) := by
+            simp
+    _ = Matrix.mulVec (Pinv * P) (Matrix.vec E) := by
+          rw [hLeftP]
+    _ = Matrix.mulVec Pinv (Matrix.mulVec P (Matrix.vec E)) := by
+          rw [Matrix.mulVec_mulVec]
+    _ = Matrix.mulVec Pinv (Matrix.vec (sylvesterResidualRect m n A B C Xhat)) := by
+          rw [hres]
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    if a computed residual `Rhat` differs from the exact residual `R` by
+    the nonnegative componentwise budget `Ru`, then
+    `|vec(R)| <= |vec(Rhat)| + vec(Ru)`. -/
+theorem sylvester_exact_residual_vec_abs_le_computed_residual_budget (m n : Nat)
+    (R Rhat Ru : RMatFn m n)
+    (hRhat : forall i j, |R i j - Rhat i j| <= Ru i j) :
+    forall q : Prod (Fin n) (Fin m),
+      |Matrix.vec R q| <= |Matrix.vec Rhat q| + Matrix.vec Ru q := by
+  intro q
+  calc
+    |Matrix.vec R q| = |R q.2 q.1| := by
+        simp [Matrix.vec]
+    _ = |Rhat q.2 q.1 + (R q.2 q.1 - Rhat q.2 q.1)| := by
+        congr 1
+        ring
+    _ <= |Rhat q.2 q.1| + |R q.2 q.1 - Rhat q.2 q.1| :=
+        abs_add_le _ _
+    _ <= |Rhat q.2 q.1| + Ru q.2 q.1 := by
+        exact add_le_add (le_refl |Rhat q.2 q.1|) (hRhat q.2 q.1)
+    _ = |Matrix.vec Rhat q| + Matrix.vec Ru q := by
+        simp [Matrix.vec]
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), computed-residual
+    certificate form: a left inverse for the vec/Kronecker coefficient,
+    an entrywise inverse bound, and a computed-residual budget instantiate
+    the practical relative max-entry error bound. -/
+theorem sylvester_practical_error_bound_of_computed_residual_budget (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat Rhat Ru : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_inverse_residual_budget m n
+      X Xhat Rhat Ru Pinv PinvAbs
+      (Matrix.vec (sylvesterResidualRect m n A B C Xhat))
+      (sylvester_vec_error_eq_inverse_residual_of_left_inverse
+        m n A B C X Xhat Pinv hX hLeft)
+      hPinvAbs hRu
+      (sylvester_exact_residual_vec_abs_le_computed_residual_budget
+        m n (sylvesterResidualRect m n A B C Xhat) Rhat Ru hRhat)
+      hXhat
+
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
     if `A` and `B` are diagonal in the chosen bases, the vec/Kronecker
     Sylvester coefficient is diagonal with entries `a_i - b_j`.
