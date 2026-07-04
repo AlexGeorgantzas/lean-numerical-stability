@@ -1365,6 +1365,256 @@ theorem wedinLemma20_12_complexMatrixOp2_crossProjection_transpose_eq
     _ = complexMatrixOp2 (realRectToCMatrix (rectMatMul IQ P)) := by
             rw [complexMatrixOp2_realRectToCMatrix_finiteTranspose_eq]
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the squared exact operator-2 norm of the cross projection `P(I-Q)` is
+    the exact operator-2 norm of the compressed Gram product
+    `(I-Q)P(I-Q)`.
+
+This is a CS-route reduction step.  It uses only symmetric-idempotent
+projection algebra and the rectangular Gram bridge; it does not prove the
+Stewart--Sun equality between the two different cross projections. -/
+theorem wedinLemma20_12_complexMatrixOp2_compressedGram_eq_crossProjection_sq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul
+            (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+            (fun i j => idMatrix m i j - Q i j))) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j))) ^ 2 := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hIQ : IsSymmetricFiniteMatrix IQ :=
+    wedinLemma20_12_projectionComplement_symmetric Q hQ
+  have hgram :=
+    complexMatrixOp2_realRectToCMatrix_finiteTranspose_mul_self_eq_sq
+      (rectMatMul P IQ)
+  have htranspose :
+      finiteTranspose (rectMatMul P IQ) = rectMatMul IQ P :=
+    wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric P IQ hP hIQ
+  have hcompressed :
+      rectMatMul (finiteTranspose (rectMatMul P IQ)) (rectMatMul P IQ) =
+        rectMatMul (rectMatMul IQ P) IQ := by
+    rw [htranspose]
+    calc
+      rectMatMul (rectMatMul IQ P) (rectMatMul P IQ)
+          = rectMatMul IQ (rectMatMul P (rectMatMul P IQ)) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul IQ (rectMatMul (rectMatMul P P) IQ) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul IQ (rectMatMul P IQ) := by
+              rw [hIdemP]
+      _ = rectMatMul (rectMatMul IQ P) IQ := by
+              rw [← rectMatMul_assoc]
+  calc
+    complexMatrixOp2 (realRectToCMatrix (rectMatMul (rectMatMul IQ P) IQ))
+        = complexMatrixOp2
+            (realRectToCMatrix
+              (rectMatMul (finiteTranspose (rectMatMul P IQ))
+                (rectMatMul P IQ))) := by
+            rw [hcompressed]
+    _ = complexMatrixOp2 (realRectToCMatrix (rectMatMul P IQ)) ^ 2 := hgram
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the transposed self-product of `P(I-Q)` is the compressed Gram product
+    `(I-Q)P(I-Q)`. -/
+theorem wedinLemma20_12_crossProjection_transpose_mul_self_eq_compressedGram
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    rectMatMul
+        (finiteTranspose
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j)))
+        (rectMatMul P (fun i j => idMatrix m i j - Q i j)) =
+      rectMatMul
+        (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+        (fun i j => idMatrix m i j - Q i j) := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hIQ : IsSymmetricFiniteMatrix IQ :=
+    wedinLemma20_12_projectionComplement_symmetric Q hQ
+  have htranspose :
+      finiteTranspose (rectMatMul P IQ) = rectMatMul IQ P :=
+    wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric P IQ hP hIQ
+  rw [htranspose]
+  calc
+    rectMatMul (rectMatMul IQ P) (rectMatMul P IQ)
+        = rectMatMul IQ (rectMatMul P (rectMatMul P IQ)) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul IQ (rectMatMul (rectMatMul P P) IQ) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul IQ (rectMatMul P IQ) := by
+            rw [hIdemP]
+    _ = rectMatMul (rectMatMul IQ P) IQ := by
+            rw [← rectMatMul_assoc]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the compressed Gram product `(I-Q)P(I-Q)` is symmetric. -/
+theorem wedinLemma20_12_compressedGram_symmetric
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    IsSymmetricFiniteMatrix
+      (rectMatMul
+        (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+        (fun i j => idMatrix m i j - Q i j)) := by
+  have hEq :=
+    wedinLemma20_12_crossProjection_transpose_mul_self_eq_compressedGram
+      P Q hP hQ hIdemP
+  exact
+    IsSymmetricFiniteMatrix_of_eq_rectMatMul_transpose_self
+      (rectMatMul P (fun i j => idMatrix m i j - Q i j))
+      hEq.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the compressed Gram product `(I-Q)P(I-Q)` is positive semidefinite. -/
+theorem wedinLemma20_12_compressedGram_finitePSD
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    finitePSD
+      (rectMatMul
+        (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+        (fun i j => idMatrix m i j - Q i j)) := by
+  have hEq :=
+    wedinLemma20_12_crossProjection_transpose_mul_self_eq_compressedGram
+      P Q hP hQ hIdemP
+  exact
+    finitePSD_of_eq_rectMatMul_transpose_self
+      (rectMatMul P (fun i j => idMatrix m i j - Q i j))
+      hEq.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    an equality between the compressed Gram projector products implies the
+    desired equality between the original cross-projection exact operator-2
+    norms.
+
+The remaining mathematical work for the Stewart--Sun/CS route is therefore
+isolated to proving the compressed-Gram equality under equal projection ranks. -/
+theorem wedinLemma20_12_complexMatrixOp2_crossProjection_eq_of_compressedGram_eq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+              (fun i j => idMatrix m i j - Q i j))) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+              (fun i j => idMatrix m i j - P i j)))) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j))) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul Q (fun i j => idMatrix m i j - P i j))) := by
+  let IP : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - P i j
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hP_sq :=
+    wedinLemma20_12_complexMatrixOp2_compressedGram_eq_crossProjection_sq
+      P Q hP hQ hIdemP
+  have hQ_sq :=
+    wedinLemma20_12_complexMatrixOp2_compressedGram_eq_crossProjection_sq
+      Q P hQ hP hIdemQ
+  have hsquares :
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul P IQ)) ^ 2 =
+        complexMatrixOp2 (realRectToCMatrix (rectMatMul Q IP)) ^ 2 := by
+    calc
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul P IQ)) ^ 2
+          = complexMatrixOp2
+              (realRectToCMatrix (rectMatMul (rectMatMul IQ P) IQ)) := by
+              rw [hP_sq]
+      _ = complexMatrixOp2
+              (realRectToCMatrix (rectMatMul (rectMatMul IP Q) IP)) := by
+              simpa [IP, IQ] using hEq
+      _ = complexMatrixOp2 (realRectToCMatrix (rectMatMul Q IP)) ^ 2 := by
+              rw [hQ_sq]
+  exact (sq_eq_sq₀
+    (complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul P IQ)))
+    (complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul Q IP)))).mp
+    hsquares
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    left multiplication by the complement `(I-Q)` agrees with multiplication
+    by the projection difference `(P-Q)` after a right factor `P`. -/
+theorem wedinLemma20_12_projectionComplement_mul_projection_eq_diff_mul_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P) :
+    rectMatMul (fun i j => idMatrix m i j - Q i j) P =
+      rectMatMul (fun i j => P i j - Q i j) P := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp_rw [sub_mul]
+  rw [Finset.sum_sub_distrib, Finset.sum_sub_distrib]
+  simp [Finset.sum_ite_eq, Finset.mem_univ]
+  have hij := congrFun (congrFun hIdemP i) j
+  unfold rectMatMul at hij
+  rw [hij]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    right multiplication by the complement `(I-Q)` agrees with multiplication
+    by the projection difference `(P-Q)` after a left factor `P`. -/
+theorem wedinLemma20_12_projection_mul_projectionComplement_eq_projection_mul_diff
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P) :
+    rectMatMul P (fun i j => idMatrix m i j - Q i j) =
+      rectMatMul P (fun i j => P i j - Q i j) := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp_rw [mul_sub]
+  rw [Finset.sum_sub_distrib, Finset.sum_sub_distrib]
+  simp [Finset.mem_univ]
+  have hij := congrFun (congrFun hIdemP i) j
+  unfold rectMatMul at hij
+  rw [hij]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the compressed Gram product `(I-Q)P(I-Q)` can be written as
+    `(P-Q)P(P-Q)`.
+
+This is the projector-difference normal form used by spectral proofs of the
+equal-rank cross-projection norm identity. -/
+theorem wedinLemma20_12_compressedGram_eq_diff_projection_diff
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P) :
+    rectMatMul
+        (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+        (fun i j => idMatrix m i j - Q i j) =
+      rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j) P)
+        (fun i j => P i j - Q i j) := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  have hleft : rectMatMul IQ P = rectMatMul D P := by
+    simpa [IQ, D] using
+      wedinLemma20_12_projectionComplement_mul_projection_eq_diff_mul_projection
+        P Q hIdemP
+  have hright : rectMatMul P IQ = rectMatMul P D := by
+    simpa [IQ, D] using
+      wedinLemma20_12_projection_mul_projectionComplement_eq_projection_mul_diff
+        P Q hIdemP
+  calc
+    rectMatMul (rectMatMul IQ P) IQ
+        = rectMatMul (rectMatMul D P) IQ := by
+            rw [hleft]
+    _ = rectMatMul D (rectMatMul P IQ) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul D (rectMatMul P D) := by
+            rw [hright]
+    _ = rectMatMul (rectMatMul D P) D := by
+            rw [← rectMatMul_assoc]
+
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
     source-oriented projection perturbation bound.
 
