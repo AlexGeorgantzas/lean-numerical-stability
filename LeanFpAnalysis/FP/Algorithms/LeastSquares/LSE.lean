@@ -6386,6 +6386,51 @@ def LSENullIntersectionTrivial {m n p : ℕ}
     rectMatMulVec B v = 0 →
     v = 0
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the source condition `null(A) ∩ null(B) = {0}` makes `AP` injective on
+    the homogeneous constraint nullspace.  On that nullspace, `AP = A`. -/
+theorem theorem20_8_AP_injective_on_nullspace_of_nullIntersectionTrivial
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ)
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec (theorem20_8AP A B Bplus) z =
+            (fun _i : Fin m => 0) →
+          z = (fun _j : Fin n => 0) := by
+  intro z hz hAPz
+  have hAz : rectMatMulVec A z = (fun _i : Fin m => 0) := by
+    rw [← theorem20_8AP_apply_nullspace A B Bplus z hz]
+    exact hAPz
+  exact hnull z hAz hz
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    Penrose1 plus range-in-`null(B)` gives the reduced-operator left inverse
+    once the source null-intersection hypothesis supplies injectivity of `AP`
+    on the constraint nullspace. -/
+theorem theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_range_null_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hPenrose1 :
+      rectMatMul (rectMatMul (theorem20_8AP A B Bplus) APplus)
+          (theorem20_8AP A B Bplus) =
+        theorem20_8AP A B Bplus)
+    (hAPplus_range_null :
+      ∀ w : Fin m → ℝ,
+        rectMatMulVec B (rectMatMulVec APplus w) =
+          (fun _i : Fin p => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus) z) = z :=
+  theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_range_null_injective
+    A B Bplus APplus hPenrose1 hAPplus_range_null
+      (theorem20_8_AP_injective_on_nullspace_of_nullIntersectionTrivial
+        A B Bplus hnull)
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.24): vertical stack
     `[A; B]`, the local representation of `[A^T, B^T]^T`. -/
 noncomputable def lseStackedMatrix {m n p : ℕ}
