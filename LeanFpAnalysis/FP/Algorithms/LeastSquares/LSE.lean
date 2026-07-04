@@ -5031,6 +5031,36 @@ theorem theorem20_8_vecNorm2_source_residual_forcing_le_of_residual_gap_relative
             ring
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    exact same-residual subcase of the source residual-forcing bound.  This
+    discharges the residual-gap radius only under the explicit assumption that
+    the source and perturbed Higham-sign residual vectors coincide. -/
+theorem theorem20_8_vecNorm2_source_residual_forcing_le_of_same_residual_relativeBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hsame : r = rHigh) :
+    vecNorm2
+        (fun i : Fin m =>
+          r i - rHigh i - rectMatMulVec DeltaA y i + Deltab i) ≤
+      (eps * frobNormRect A) * vecNorm2 y + eps * vecNorm2 b := by
+  have hgap : vecNorm2 (fun i : Fin m => r i - rHigh i) ≤ (0 : ℝ) := by
+    have hzero : (fun i : Fin m => r i - rHigh i) = (fun _i : Fin m => 0) := by
+      funext i
+      rw [hsame]
+      ring
+    rw [hzero, vecNorm2_zero]
+  have h :=
+    theorem20_8_vecNorm2_source_residual_forcing_le_of_residual_gap_relativeBudget
+      A DeltaA b Deltab B DeltaB d Deltad y r rHigh hbudget
+      (residual_gap_norm := 0) hgap
+  simpa using h
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     max-relative perturbation form of the residual-explicit solution bound with
     the remaining reduced-residual obligation stated only as a residual-gap
     radius `||r-rHigh||_2`. -/
@@ -5076,6 +5106,52 @@ theorem theorem20_8_vecNorm2_solution_difference_source_residual_gap_le_of_maxRe
       hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres
       (theorem20_8_vecNorm2_source_residual_forcing_le_of_residual_gap_relativeBudget
         A DeltaA b Deltab B DeltaB d Deltad y r rHigh hbudget hgap)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    exact same-residual subcase of the residual-explicit solution-difference
+    bound.  The residual gap is not hidden; it is specialized to zero from the
+    explicit equality `r = rHigh`. -/
+theorem theorem20_8_vecNorm2_solution_difference_same_source_residual_le_of_maxRelativePerturbation_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hsame : r = rHigh) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) *
+          ((eps * frobNormRect A) * vecNorm2 y + eps * vecNorm2 b) := by
+  have hgap : vecNorm2 (fun i : Fin m => r i - rHigh i) ≤ (0 : ℝ) := by
+    have hzero : (fun i : Fin m => r i - rHigh i) = (fun _i : Fin m => 0) := by
+      funext i
+      rw [hsame]
+      ring
+    rw [hzero, vecNorm2_zero]
+  have h :=
+    theorem20_8_vecNorm2_solution_difference_source_residual_gap_le_of_maxRelativePerturbation_op2
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+      hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres
+      (residual_gap_norm := 0) hgap
+  simpa using h
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the projected-difference equation follows from the reduced `AP` equation
@@ -7208,6 +7284,45 @@ theorem
   _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_solution_difference_source_residual_gap_le_of_maxRelativePerturbation_op2
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
     hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres hgap
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank same-residual subcase of the residual-explicit
+    solution-difference bound.  This removes the residual-gap radius only under
+    the explicit equality of the source and perturbed Higham-sign residuals. -/
+theorem
+    LSEFullRowRank.theorem20_8_vecNorm2_solution_difference_same_source_residual_le_of_maxRelativePerturbation_op2
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hsame : r = rHigh) :
+    vecNorm2 (fun j : Fin n => y j - x j) ≤
+      complexMatrixOp2
+          (realRectToCMatrix
+            (theorem20_8BAplus A B hB.rightInverse APplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        complexMatrixOp2 (realRectToCMatrix APplus) *
+          ((eps * frobNormRect A) * vecNorm2 y + eps * vecNorm2 b) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_solution_difference_same_source_residual_le_of_maxRelativePerturbation_op2
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
+    hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres hsame
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the reduced-`AP` relative solution-difference
