@@ -6270,6 +6270,133 @@ theorem LSEFullRowRank.of_transpose_rectMatMulVec_injective {p n : ℕ}
   refine ⟨rectMatMulVec Bt y, ?_⟩
   simpa [C, lseConstraintLinearMap] using hy
 
+/-- Rectangular Gram nonsingularity from injectivity of the transpose action.
+    This is the algebraic bridge from a full-row-rank rectangular matrix to
+    invertibility of `A Aᵀ`, used by the Chapter 20 Gram-pseudoinverse route. -/
+theorem rectGram_det_ne_zero_of_transpose_rectMatMulVec_injective {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (hAt :
+      Function.Injective
+        (rectMatMulVec (fun j : Fin n => fun i : Fin m => A i j))) :
+    Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0 := by
+  let At : Fin n → Fin m → ℝ := fun j => fun i => A i j
+  have hAt' : Function.Injective (rectMatMulVec At) := by
+    simpa [At] using hAt
+  have hGram_inj : Function.Injective (rectMatMulVec (rectGram A)) := by
+    intro y z hyz
+    let w : Fin m → ℝ := fun i => y i - z i
+    have hGram_w_zero : rectMatMulVec (rectGram A) w = 0 := by
+      ext i
+      have hentry := congrFun hyz i
+      change (∑ j : Fin m, rectGram A i j * y j) =
+        (∑ j : Fin m, rectGram A i j * z j) at hentry
+      unfold w
+      change (∑ j : Fin m, rectGram A i j * (y j - z j)) = 0
+      calc
+        (∑ j : Fin m, rectGram A i j * (y j - z j))
+            = ∑ j : Fin m,
+                (rectGram A i j * y j - rectGram A i j * z j) := by
+                apply Finset.sum_congr rfl
+                intro j _
+                ring
+        _ = (∑ j : Fin m, rectGram A i j * y j) -
+              (∑ j : Fin m, rectGram A i j * z j) := by
+                rw [Finset.sum_sub_distrib]
+        _ = 0 := sub_eq_zero.mpr hentry
+    have hAt_eq_transpose :
+        rectMatMulVec At w = rectTransposeMulVec A w := by
+      ext j
+      simp [At, rectMatMulVec, rectTransposeMulVec]
+    have hAw_zero : rectMatMulVec A (rectMatMulVec At w) = 0 := by
+      rw [hAt_eq_transpose, rectMatMulVec_rectTransposeMulVec]
+      ext i
+      have hi := congrFun hGram_w_zero i
+      simpa [matMulVec, rectMatMulVec] using hi
+    have hinner :
+        (∑ i : Fin m, w i * rectMatMulVec A (rectMatMulVec At w) i) =
+          vecNorm2Sq (rectMatMulVec At w) := by
+      calc
+        (∑ i : Fin m, w i * rectMatMulVec A (rectMatMulVec At w) i)
+            = ∑ i : Fin m, ∑ j : Fin n,
+                w i * (A i j * rectMatMulVec At w j) := by
+                unfold rectMatMulVec
+                apply Finset.sum_congr rfl
+                intro i _
+                rw [Finset.mul_sum]
+        _ = ∑ j : Fin n, ∑ i : Fin m,
+                w i * (A i j * rectMatMulVec At w j) := by
+                rw [Finset.sum_comm]
+        _ = ∑ j : Fin n,
+                (∑ i : Fin m, A i j * w i) * rectMatMulVec At w j := by
+                apply Finset.sum_congr rfl
+                intro j _
+                calc
+                  (∑ i : Fin m, w i * (A i j * rectMatMulVec At w j))
+                      = ∑ i : Fin m, (A i j * w i) *
+                          rectMatMulVec At w j := by
+                          apply Finset.sum_congr rfl
+                          intro i _
+                          ring
+                  _ = (∑ i : Fin m, A i j * w i) *
+                          rectMatMulVec At w j := by
+                          rw [Finset.sum_mul]
+        _ = ∑ j : Fin n, rectMatMulVec At w j *
+                rectMatMulVec At w j := by
+                unfold rectMatMulVec At
+                rfl
+        _ = vecNorm2Sq (rectMatMulVec At w) := by
+                unfold vecNorm2Sq
+                apply Finset.sum_congr rfl
+                intro j _
+                ring
+    have hinner_zero :
+        (∑ i : Fin m, w i * rectMatMulVec A (rectMatMulVec At w) i) = 0 := by
+      apply Finset.sum_eq_zero
+      intro i _
+      have hi : rectMatMulVec A (rectMatMulVec At w) i = 0 := by
+        simpa using congrFun hAw_zero i
+      rw [hi]
+      ring
+    have hsq : vecNorm2Sq (rectMatMulVec At w) = 0 := by
+      rw [← hinner]
+      exact hinner_zero
+    have hnorm : vecNorm2 (rectMatMulVec At w) = 0 := by
+      unfold vecNorm2
+      rw [Real.sqrt_eq_zero (vecNorm2Sq_nonneg (rectMatMulVec At w))]
+      exact hsq
+    have hAt_w_zero : rectMatMulVec At w = 0 := by
+      ext j
+      exact (vecNorm2_eq_zero_iff (rectMatMulVec At w)).mp hnorm j
+    have hAt_w_eq :
+        rectMatMulVec At w = rectMatMulVec At (0 : Fin m → ℝ) := by
+      rw [hAt_w_zero]
+      ext j
+      simp [rectMatMulVec]
+    have hw_zero := hAt' hAt_w_eq
+    ext i
+    have hi := congrFun hw_zero i
+    dsimp [w] at hi
+    exact sub_eq_zero.mp hi
+  let M : Matrix (Fin m) (Fin m) ℝ := rectGram A
+  have hM_inj : Function.Injective M.mulVec := by
+    intro x y hxy
+    apply hGram_inj
+    ext i
+    have hi := congrFun hxy i
+    simpa [M, rectMatMulVec, Matrix.mulVec] using hi
+  have hunitM : IsUnit M := Matrix.mulVec_injective_iff_isUnit.mp hM_inj
+  have hdetUnit : IsUnit M.det := (Matrix.isUnit_iff_isUnit_det M).mp hunitM
+  have hdetNe : M.det ≠ 0 := isUnit_iff_ne_zero.mp hdetUnit
+  simpa [M] using hdetNe
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24) support:
+    source full row rank makes the Gram matrix `B Bᵀ` nonsingular. -/
+theorem LSEFullRowRank.rectGram_det_ne_zero {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) :
+    Matrix.det (rectGram B : Matrix (Fin p) (Fin p) ℝ) ≠ 0 :=
+  rectGram_det_ne_zero_of_transpose_rectMatMulVec_injective B
+    hB.transpose_rectMatMulVec_injective
+
 /-- Perturbation form of the full-row-rank side of Higham's Chapter 20 rank
     condition.  A strict operator-2 perturbation of `Bᵀ` below a source
     transpose lower-bound margin preserves full row rank of `B`. -/
@@ -7001,6 +7128,30 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_gram_projection_null
       (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) hdetAP)
     (theorem20_8_gram_APplus_constraint_annihilates_of_gram_projection A B hdetB)
     hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-facing version of the Gram-pseudoinverse reduced left-inverse
+    route.  The source rank hypothesis discharges nonsingularity of `B Bᵀ`;
+    nonsingularity of the reduced Gram matrix `(AP)(AP)ᵀ` remains explicit. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_gram_projection_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (hdetAP :
+      Matrix.det
+        (rectGram (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec
+            (undetAplusOfGramNonsingInv
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)))
+            (rectMatMulVec
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) z) = z :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_gram_projection_nullIntersection
+    A B hB.rectGram_det_ne_zero hdetAP hnull
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     determinant-facing reduced left-inverse route for the concrete Gram
