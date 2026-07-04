@@ -65,7 +65,7 @@ floating-point backward-error derivation — is the missing foundation.
 
 | Source label | Exact claim | Current Lean status | Missing foundation | Smallest next Lean theorem |
 |---|---|---|---|---|
-| Theorem 11.3 | block LDLᵀ backward error: `P(A+ΔA₁)Pᵀ = L̂D̂L̂ᵀ`, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ p(n)u(|A|+Pᵀ|L̂||D̂||L̂ᵀ|P)+O(u²)` (eq 11.5) | `higham11_3_block_ldlt_backward_error_interface` (assumes the bound) | remaining: fl-model **recursion** over all stages + the per-2×2-pivot solve error (11.5). The atomic per-step 1×1 fl update error is now **proved** (`fl_oneByOne_schur_step_error`). | fl error for one 2×2 pivot solve (11.5), then accumulate the per-step 1×1/2×2 errors over the factorization recursion |
+| Theorem 11.3 | block LDLᵀ backward error: `P(A+ΔA₁)Pᵀ = L̂D̂L̂ᵀ`, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ p(n)u(|A|+Pᵀ|L̂||D̂||L̂ᵀ|P)+O(u²)` (eq 11.5) | `higham11_3_block_ldlt_backward_error_interface` (assumes the whole conclusion — should be weakened to assume only (11.5)) | remaining: the fl-model **recursion** over all stages, **assuming (11.5) as the theorem's own stated hypothesis**. NOTE: proving (11.5) itself for 2×2 pivots is **Problem 11.5 — benchmark-reserved**, so it must stay a hypothesis, never a formalized lemma. The atomic per-step 1×1 fl update error and 1×1 solve error are **proved** (`fl_oneByOne_schur_step_error`, `fl_oneByOne_solve_backward_error`); the 2×2 solve error is the (11.5) hypothesis. | a block-factorization data structure whose per-stage errors (1×1 from the proved lemmas; 2×2 from the (11.5) hypothesis) accumulate into the global backward error |
 | Theorem 11.4 | Bunch–Kaufman normwise stability `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M+O(u²)` via `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36nρₙ‖A‖_M` | `higham11_4_bunch_kaufman_stability` / `..._solve_backward_error_interface` (assume) | remaining: the `36nρₙ` product bound [608,1997] + a factorization data structure discharging the per-stage ratio hypothesis for the computed matrices. The single-step growth bounds AND their geometric recursion `geom_growth_iterate` (⇒ `ρₙ ≤ (1+α⁻¹)^{n−1}`) are now proved. | a `cpState`-style recursion whose stage maxima satisfy `oneByOne_schur_growth`/`twoByTwo_schur_growth`, fed into `geom_growth_iterate` |
 | Theorem 11.7 | Bunch tridiagonal normwise stability, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ c·u·‖A‖` | `higham11_7_tridiagonal_backward_error_interface` (assumes) | tridiagonal block-LDLᵀ fl analysis | fl error for one 2×2 tridiagonal pivot step |
 | Theorem 11.8 | Aasen componentwise backward error + `‖ΔA‖_∞ ≤ (n−1)²γ_{15n+25}‖T̂‖_∞` | `higham11_8_aasen_backward_error_interface` (assumes) | fl analysis of the Aasen recurrences (11.12)–(11.14) + solve chain (11.15) | fl error for the Aasen column update (11.14) |
@@ -92,6 +92,17 @@ are benchmark-reserved. Some independent, reusable symmetric/SPD/quasidefinite a
 carry `higham11_problem_11_*` names; they are general lemmas (e.g. singular-principal-pivots ⇒
 zero matrix, quasidefinite kernel-trivial), not transcriptions of the exercise tasks, and are
 used only as chapter infrastructure.
+
+**Important scope note (Problem 11.5).** Problem 11.5 asks to prove that condition
+(11.5) — `(E+ΔE)ŷ=f`, `|ΔE| ≤ (cu+O(u²))|E|` — holds for the 2×2 pivots when the
+system is solved by GEPP or the explicit inverse. This is exactly the *hypothesis*
+of Theorem 11.3. Because Problem 11.5 is benchmark-reserved, (11.5) for 2×2 pivots
+must remain a **hypothesis** of any honest Theorem 11.3 formalization and must not be
+proved as chapter work. The 1×1 instance of (11.5) is *not* the reserved problem
+(1×1 pivots "involve no computation" per §11.3) and is proved as
+`fl_oneByOne_solve_backward_error`; the atomic 1×1 Schur-update fl error
+(`fl_oneByOne_schur_step_error`) is likewise general chapter infrastructure, not a
+Problem transcription.
 
 ## Hidden-hypothesis summary
 - New lemmas (`oneByOne_multiplier_bound`, `oneByOne_schur_growth`,
