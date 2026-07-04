@@ -1182,6 +1182,65 @@ theorem quadForm_gram_conj {n : ℕ} (M G : Fin n → Fin n → ℝ)
   unfold matMulVec
   exact Finset.sum_congr rfl fun i _ => by ring
 
+open Matrix in
+/-- **SPD matrices have a symmetric two-sided inverse** (Higham §10.4,
+    the existence foundation for the stage Gram `Q(S) = SᵀH(S)⁻¹S`):
+    a symmetric positive-definite `H` (repo `IsSymPosDef`) is invertible
+    (trivial kernel), and its inverse is symmetric. -/
+theorem spd_inverse_exists {n : ℕ} (H : Fin n → Fin n → ℝ)
+    (hH : IsSymPosDef n H) :
+    ∃ Hinv : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, Hinv i j = Hinv j i) ∧
+      IsRightInverse n H Hinv ∧ IsLeftInverse n H Hinv := by
+  classical
+  set M : Matrix (Fin n) (Fin n) ℝ := Matrix.of H with hM
+  have hMij : ∀ i j : Fin n, M i j = H i j := fun i j => rfl
+  -- trivial kernel: M.mulVec u = 0 → u = 0
+  have hker : ∀ u : Fin n → ℝ, M.mulVec u = 0 → u = 0 := by
+    intro u hu
+    by_contra hne
+    have hex : ∃ i, u i ≠ 0 := by
+      by_contra h; push_neg at h; exact hne (funext h)
+    have hpos := hH.2 u hex
+    have hrow : ∀ i : Fin n, (∑ j : Fin n, H i j * u j) = 0 := by
+      intro i
+      have hi := congrFun hu i
+      simpa [Matrix.mulVec, dotProduct, hMij] using hi
+    have hzero : (∑ i : Fin n, ∑ j : Fin n, u i * H i j * u j) = 0 := by
+      rw [show (∑ i : Fin n, ∑ j : Fin n, u i * H i j * u j) =
+          ∑ i : Fin n, u i * (∑ j : Fin n, H i j * u j) from
+        Finset.sum_congr rfl fun i _ => by
+          rw [Finset.mul_sum]
+          exact Finset.sum_congr rfl fun j _ => by ring]
+      exact Finset.sum_eq_zero fun i _ => by rw [hrow i]; ring
+    linarith
+  have hunit : IsUnit M := by
+    rw [← Matrix.mulVec_injective_iff_isUnit]
+    intro v w hvw
+    have hz : M.mulVec (v - w) = 0 := by
+      rw [Matrix.mulVec_sub, hvw, sub_self]
+    exact sub_eq_zero.mp (hker _ hz)
+  have hdet : IsUnit M.det := M.isUnit_iff_isUnit_det.mp hunit
+  haveI : Invertible M := M.invertibleOfIsUnitDet hdet
+  have hMsym : Mᵀ = M := by
+    funext i j; rw [Matrix.transpose_apply, hMij, hMij]; exact (hH.1 j i)
+  refine ⟨fun i j => M⁻¹ i j, ?_, ?_, ?_⟩
+  · intro i j
+    have h2 : M⁻¹ᵀ = M⁻¹ := by rw [Matrix.transpose_nonsing_inv, hMsym]
+    have h := congrFun (congrFun h2 j) i
+    rw [Matrix.transpose_apply] at h
+    exact h
+  · intro i j
+    have hmul := Matrix.mul_nonsing_inv M hdet
+    have h := congrFun (congrFun hmul i) j
+    simp only [Matrix.mul_apply, Matrix.one_apply, hMij] at h
+    exact h
+  · intro i j
+    have hmul := Matrix.nonsing_inv_mul M hdet
+    have h := congrFun (congrFun hmul i) j
+    simp only [Matrix.mul_apply, Matrix.one_apply, hMij] at h
+    exact h
+
 /-- **Conjugated Gram is symmetric** (Higham §10.4): for symmetric `M`,
     the stage Gram `GᵀMG` is symmetric — needed so `finiteMaxEigenvalue`
     applies to the stage matrices. -/

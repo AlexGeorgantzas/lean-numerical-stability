@@ -2263,7 +2263,7 @@ theorem residualSigmaTsum_le_diagonalizable_bound (n : ℕ) (_hn : 0 < n)
 /-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20), literal
     `tsum` maximum form: the entrywise infinite source residual sigma is bounded
     by `kappa_infty(X)` times the displayed maximum eigenvalue ratio. -/
-theorem residualSigmaTsum_le_diagonalizable_max_bound (n : ℕ) (hn : 0 < n)
+theorem residualSigmaTsum_le_diagonalizable_max_bound_direct (n : ℕ) (hn : 0 < n)
     (H X X_inv J : Fin n → Fin n → ℝ)
     (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
     (hsim : matMul n X_inv (matMul n H X) = J)
