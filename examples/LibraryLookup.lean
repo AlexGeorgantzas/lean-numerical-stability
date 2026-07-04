@@ -15,6 +15,7 @@ import LeanFpAnalysis.FP.Algorithms.MatrixPowersPseudospectral
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersSpectral
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
+import LeanFpAnalysis.FP.Algorithms.StationaryIterationSeries
 
 set_option pp.maxSteps 100
 
@@ -13131,9 +13132,13 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_11_bohte_banded_solve_tight_of_isBanded_common
 #check higham9_11_bohte_banded_solve_tight_of_isBanded_common_growth_le
 #check higham9_11_bandwidth_one_bohte_solve_tight
+#check higham9_11_bandwidth_one_bohte_solve_tight_of_growth_le
 #check higham9_11_bandwidth_one_bohte_solve_tight_of_isBanded
+#check higham9_11_bandwidth_one_bohte_solve_tight_of_isBanded_growth_le
 #check higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal
+#check higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal_growth_le
 #check higham9_11_tridiagonal_bohte_solve_tight
+#check higham9_11_tridiagonal_bohte_solve_tight_of_growth_le
 #check higham9_11_pentadiagonal_bohte_solve_tight
 #check higham9_11_pentadiagonal_bohte_solve_tight_of_isBanded
 #check higham9_11_bandwidth_two_bohte_solve_tight
@@ -14820,3 +14825,23 @@ small enough to serve as a smoke check for representative public declarations.
 #check complexVecLpNorm_shift_le
 #check complexMatrixLpNormOfReal_bidiagonal_le
 #check higham_eq_18_5_alt_lp_jordan
+
+-- Higham Chapter 17 infinite-series surfaces (StationaryIterationSeries).
+#check summable_infNorm_matPow
+#check tsum_infNorm_matPow_le
+#check summable_infNorm_matPow_of_spectralRadius
+#check stationarySeriesEntry
+#check partialSumBound_of_stationarySeriesEntry_le
+#check cALiteral
+#check cALiteral_mem
+#check partialSumBound_cALiteral
+#check literal_norm_form_forward_bound
+#check literal_norm_form_jacobi_forward_bound
+#check literal_norm_form_sor_forward_bound
+#check literal_norm_form_gaussSeidel_forward_bound
+#check residualSigmaEntry
+#check infNorm_residualSigmaMatrix_eq_residualSigmaSup
+#check residualSigmaTsum_eq_infNorm_residualSigmaMatrix
+#check residualSigmaTsum_eq_residualSigmaSup
+#check residualSigmaTsum_le_diagonalizable_max_bound_of_infNorm_bound
+#check residualSigmaTsum_le_diagonalizable_max_bound_direct
