@@ -107,7 +107,16 @@ for (17.21), the consistent-system singular telescoping wrappers
 range/null source split, now with the Drazin-projector wrapper
 `singular_error_split_finite_of_indexOneDrazin_projector` discharging the
 fixed-null component hypothesis from an index-one Drazin certificate for
-`I - G`.
+`I - G`, plus the complementary projector algebra
+`stationaryDrazinFixedProjector_idempotent`,
+`stationaryDrazinRangeProjector_mul_fixedProjector_eq_zero`,
+`stationaryDrazinFixedProjector_mul_rangeProjector_eq_zero`, and
+`stationaryDrazinFixedProjector_matPow_fixed` needed on the path to the
+semiconvergent limit projector.  The range side now also has
+`stationaryDrazinRangeProjector_commutes_with_G`,
+`stationaryDrazinRangeProjector_commutes_with_matPow`, and
+`stationaryDrazinRangeProjector_matPow_sandwich`, supporting the future
+range-series manipulation in (17.30).
 The scale-independence passage on p.327 now has checked algebraic and
 characteristic-polynomial wrappers through `stationaryRowColumnScale`,
 `stationaryScaledInverse`, `stationaryRowColumnScale_splittingSpec`,
@@ -149,8 +158,8 @@ finite norm-form surface `jacobiForwardBoundVector`,
 corollary `sorForwardFactor_one` and
 `finite_norm_form_gaussSeidel_forward_bound`.  The exact infinite-sum,
 literal infinite-sigma, and singular-system Drazin/semiconvergence rows needed
-to justify the projector/fixed-null hypotheses and limiting formulas remain
-open in the Chapter 17 ledger.
+to derive Drazin existence, identify the limit of `G^m`, and close the limiting
+singular forward-error formulas remain open in the Chapter 17 ledger.
 
 Chapter 19 QR work is tracked in
 [`docs/source_coverage/higham_ch19.md`](docs/source_coverage/higham_ch19.md).
