@@ -1333,6 +1333,38 @@ theorem wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric
   rw [hP j l, hQ l i]
   ring
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    exact complexified operator-2 norms agree for a cross-projection product
+    and its transpose.
+
+This turns the repository's algebraic transpose identity for symmetric
+projections into an exact `complexMatrixOp2` equality, which is needed by the
+CS route toward the missing cross-projection norm equality. -/
+theorem wedinLemma20_12_complexMatrixOp2_crossProjection_transpose_eq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j))) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)) := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hIQ : IsSymmetricFiniteMatrix IQ :=
+    wedinLemma20_12_projectionComplement_symmetric Q hQ
+  have htranspose :
+      finiteTranspose (rectMatMul IQ P) = rectMatMul P IQ :=
+    wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric
+      IQ P hIQ hP
+  calc
+    complexMatrixOp2 (realRectToCMatrix (rectMatMul P IQ))
+        = complexMatrixOp2
+            (realRectToCMatrix (finiteTranspose (rectMatMul IQ P))) := by
+            rw [htranspose]
+    _ = complexMatrixOp2 (realRectToCMatrix (rectMatMul IQ P)) := by
+            rw [complexMatrixOp2_realRectToCMatrix_finiteTranspose_eq]
+
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
     source-oriented projection perturbation bound.
 
