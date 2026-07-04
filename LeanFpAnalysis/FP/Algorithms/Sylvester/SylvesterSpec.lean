@@ -115,6 +115,12 @@ noncomputable def lyapunovOp (n : ℕ) (A : Fin n → Fin n → ℝ)
     (X : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   fun i j => matMul n A X i j + matMul n X (matTranspose A) i j
 
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    Lyapunov residual `R = C - (A Y + Y A^T)` for an approximate solution. -/
+noncomputable def lyapunovResidual (n : Nat) (A C Y : Fin n -> Fin n -> Real) :
+    Fin n -> Fin n -> Real :=
+  fun i j => C i j - lyapunovOp n A Y i j
+
 /-- Lyapunov operator is Sylvester operator with B = -Aᵀ:
     L(X) = AX + XAᵀ = AX - X(-Aᵀ). -/
 theorem lyapunovOp_eq_sylvesterOp (n : ℕ) (A X : Fin n → Fin n → ℝ) :
@@ -142,6 +148,20 @@ def IsBackwardError (n : ℕ) (A B C Y : Fin n → Fin n → ℝ)
     frobNormSq ΔA ≤ (η * α) ^ 2 ∧
     frobNormSq ΔB ≤ (η * β) ^ 2 ∧
     frobNormSq ΔC ≤ (η * γ) ^ 2
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    structured Lyapunov normwise backward-error certificate.  The perturbation
+    of `A` is tied on both sides as `DeltaA` and `DeltaA^T`, and the right-hand
+    perturbation `DeltaC` is symmetric, matching the source definition of the
+    Lyapunov eta model. -/
+def IsLyapunovBackwardError (n : Nat) (A C Y : Fin n -> Fin n -> Real)
+    (alpha gamma eta : Real) : Prop :=
+  ∃ (DeltaA DeltaC : Fin n -> Fin n -> Real),
+    IsSymmetricFiniteMatrix DeltaC ∧
+    (∀ i j, lyapunovOp n (fun i' j' => A i' j' + DeltaA i' j') Y i j =
+      C i j + DeltaC i j) ∧
+    frobNormSq DeltaA ≤ (eta * alpha) ^ 2 ∧
+    frobNormSq DeltaC ≤ (eta * gamma) ^ 2
 
 -- ============================================================
 -- Residual bound (§15.2, eq 15.12)
