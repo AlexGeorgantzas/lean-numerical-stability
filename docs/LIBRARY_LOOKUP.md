@@ -2887,6 +2887,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_23_forward_error_exact_condSkeel_of_backward_error`
 - `higham9_23_forward_error_firstOrder_cond_product_of_backward_error`
 - `higham9_23_firstOrderLe_of_backward_error_coeff`
+- `higham9_23_matrix_forward_error_exact_condSkeel`
+- `higham9_23_matrix_forward_error_firstOrder_cond_product`
+- `higham9_23_matrix_forward_error_exact_condSkeel_of_backward_error`
+- `higham9_23_matrix_forward_error_firstOrder_cond_product_of_backward_error`
 - `higham9_24_scaledMatrix`
 - `higham9_24_scaledRhs`
 - `higham9_24_scaledUnknown`
