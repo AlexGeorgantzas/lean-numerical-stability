@@ -2839,6 +2839,72 @@ theorem finiteMaxEigenvalue_trailing_principal_le (m : ℕ) (hm : 0 < m)
   rw [hquad] at hray
   exact hray
 
+/-- **Operator-norm stage monotonicity `λ_max(Q̂) ≤ λ_max(Q₂₂)`**
+    (Higham §10.4, the (10.29) stage step packaged at the eigenvalue
+    level).  Given only the per-stage quadratic-form inequality
+    `(Ŝy)ᵀĤ⁻¹(Ŝy) ≤ (S·(0,y))ᵀH⁻¹(S·(0,y))` for all `y`, the stage Gram
+    `Q̂ = ŜᵀĤ⁻¹Ŝ` has maximum eigenvalue at most that of the trailing
+    block `Q₂₂` of the parent Gram `Q = SᵀH⁻¹S`.  Combines
+    `quadForm_gram_conj` (both sides), `trailing_block_quadForm`, and
+    `finiteMaxEigenvalue_mono_of_quadForm_le`. -/
+theorem stage_maxEigenvalue_le {m : ℕ} (hm : 0 < m)
+    (S Hinv : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (Shat Hhatinv : Fin m → Fin m → ℝ)
+    (hHinvSym : ∀ i j : Fin (m + 1), Hinv i j = Hinv j i)
+    (hHhatinvSym : ∀ i j : Fin m, Hhatinv i j = Hhatinv j i)
+    (hstage : ∀ y : Fin m → ℝ,
+      (∑ p : Fin m, matMulVec m Shat y p *
+          matMulVec m Hhatinv (matMulVec m Shat y) p) ≤
+        ∑ p : Fin (m + 1),
+          matMulVec (m + 1) S (Fin.cons 0 y) p *
+          matMulVec (m + 1) Hinv (matMulVec (m + 1) S (Fin.cons 0 y)) p) :
+    finiteMaxEigenvalue hm
+        (matMul m (matMul m (fun a b => Shat b a) Hhatinv) Shat)
+        (gram_conj_isSymm Hhatinv Shat hHhatinvSym) ≤
+      finiteMaxEigenvalue hm
+        (fun i j : Fin m =>
+          matMul (m + 1) (matMul (m + 1) (fun a b => S b a) Hinv) S
+            i.succ j.succ)
+        (fun i j => gram_conj_isSymm Hinv S hHinvSym i.succ j.succ) := by
+  refine finiteMaxEigenvalue_mono_of_quadForm_le hm _ _ _ _ ?_
+  intro y
+  -- bridge ∑∑ y·A·y = ∑ y·(A y) for both matrices
+  have hbridge : ∀ (A : Fin m → Fin m → ℝ),
+      (∑ i : Fin m, ∑ j : Fin m, y i * A i j * y j) =
+      ∑ i : Fin m, y i * matMulVec m A y i := by
+    intro A
+    refine Finset.sum_congr rfl fun i _ => ?_
+    unfold matMulVec
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun j _ => by ring
+  -- LHS = (Ŝy)ᵀĤ⁻¹(Ŝy)
+  rw [hbridge, quadForm_gram_conj Hhatinv Shat y]
+  -- RHS: trailing block → padded → (S(0,y))ᵀH⁻¹(S(0,y))
+  have hRHS : (∑ i : Fin m, ∑ j : Fin m, y i *
+        (matMul (m + 1) (matMul (m + 1) (fun a b => S b a) Hinv) S)
+          i.succ j.succ * y j) =
+      ∑ p : Fin (m + 1),
+        matMulVec (m + 1) S (Fin.cons 0 y) p *
+        matMulVec (m + 1) Hinv (matMulVec (m + 1) S (Fin.cons 0 y)) p := by
+    rw [← trailing_block_quadForm
+      (matMul (m + 1) (matMul (m + 1) (fun a b => S b a) Hinv) S) y]
+    rw [show (∑ i : Fin (m + 1), ∑ j : Fin (m + 1),
+        (Fin.cons (0 : ℝ) y : Fin (m + 1) → ℝ) i *
+        (matMul (m + 1) (matMul (m + 1) (fun a b => S b a) Hinv) S) i j *
+        (Fin.cons (0 : ℝ) y : Fin (m + 1) → ℝ) j) =
+        ∑ i : Fin (m + 1),
+          (Fin.cons (0 : ℝ) y : Fin (m + 1) → ℝ) i *
+          matMulVec (m + 1)
+            (matMul (m + 1) (matMul (m + 1) (fun a b => S b a) Hinv) S)
+            (Fin.cons (0 : ℝ) y) i from by
+      refine Finset.sum_congr rfl fun i _ => ?_
+      unfold matMulVec
+      rw [Finset.mul_sum]
+      exact Finset.sum_congr rfl fun j _ => by ring]
+    exact quadForm_gram_conj Hinv S (Fin.cons 0 y)
+  rw [hRHS]
+  exact hstage y
+
 /-- Quadratic-form-certificate variant of the scaled interior mass
     (composes with zero-pad restriction, unlike the `opNorm2Le`
     form). -/
