@@ -2328,6 +2328,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohteBound_bandwidth_two_formula`
 - `higham9_11_bohteBound_bandwidth_three_formula`
 - `higham9_11_bohteBound_bandwidth_four_formula`
+- `higham9_11_bohteBound_bandwidth_five_formula`
 - `higham9_11_bohteBound_zero`
 - `higham9_11_bohteBound_nonneg`
 - `higham9_11_bohteBound_ge_two`
@@ -2355,13 +2356,25 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_tridiagonal_bohte_solve_tight`
 - `higham9_11_tridiagonal_bohte_solve_tight_of_growth_le`
 - `higham9_11_pentadiagonal_bohte_solve_tight`
+- `higham9_11_pentadiagonal_bohte_solve_tight_of_growth_le`
 - `higham9_11_pentadiagonal_bohte_solve_tight_of_isBanded`
+- `higham9_11_pentadiagonal_bohte_solve_tight_of_isBanded_growth_le`
 - `higham9_11_bandwidth_two_bohte_solve_tight`
+- `higham9_11_bandwidth_two_bohte_solve_tight_of_growth_le`
 - `higham9_11_bandwidth_two_bohte_solve_tight_of_isBanded`
+- `higham9_11_bandwidth_two_bohte_solve_tight_of_isBanded_growth_le`
 - `higham9_11_bandwidth_three_bohte_solve_tight`
+- `higham9_11_bandwidth_three_bohte_solve_tight_of_growth_le`
 - `higham9_11_bandwidth_three_bohte_solve_tight_of_isBanded`
+- `higham9_11_bandwidth_three_bohte_solve_tight_of_isBanded_growth_le`
 - `higham9_11_bandwidth_four_bohte_solve_tight`
+- `higham9_11_bandwidth_four_bohte_solve_tight_of_growth_le`
 - `higham9_11_bandwidth_four_bohte_solve_tight_of_isBanded`
+- `higham9_11_bandwidth_four_bohte_solve_tight_of_isBanded_growth_le`
+- `higham9_11_bandwidth_five_bohte_solve_tight`
+- `higham9_11_bandwidth_five_bohte_solve_tight_of_growth_le`
+- `higham9_11_bandwidth_five_bohte_solve_tight_of_isBanded`
+- `higham9_11_bandwidth_five_bohte_solve_tight_of_isBanded_growth_le`
 - `higham9_12_spd_lu_backward_error`
 - `tridiag_spd_shape_absLU_eq_absA`
 - `higham9_12_spd_tridiag_absLU_eq_of_positive_DLT`
@@ -2862,13 +2875,36 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_data_rowDiagDom_source_h_bound_from_LUFactSpec_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma`
+- `higham9_23_condSkeel_nonneg`
+- `higham9_23_forward_error_exact_condSkeel`
+- `higham9_23_forward_error_firstOrder_cond_product`
+- `higham9_23_forward_error_exact_condSkeel_of_backward_error`
+- `higham9_23_forward_error_firstOrder_cond_product_of_backward_error`
+- `higham9_23_firstOrderLe_of_backward_error_coeff`
 - `higham9_24_scaledMatrix`
 - `higham9_24_scaledRhs`
 - `higham9_24_scaledUnknown`
+- `higham9_24_unscaledUnknown`
+- `higham9_24_unscaledUnknown_scaledUnknown`
+- `higham9_24_scaledUnknown_unscaledUnknown`
 - `higham9_24_scaled_system_equiv`
+- `higham9_24_original_system_of_scaled_system`
+- `higham9_24_scaled_system_iff_original_system`
 - `higham9_25_trailingRowInf`
+- `higham9_25_abs_stage_entry_le_trailingRowInf`
+- `higham9_25_trailingRowInf_nonneg`
+- `higham9_25_scaled_pivot_ratio_nonneg`
+- `higham9_25_scaled_pivot_ratio_le_one`
 - `higham9_25_implicitRowScalingPivotRule`
+- `higham9_25_implicitRowScalingPivotRule_ratio_nonneg`
+- `higham9_25_implicitRowScalingPivotRule_ratio_le_one`
 - `higham9_25_exists_implicitRowScalingPivotRule`
+- `higham9_26_prefixLpNorm`
+- `higham9_26_holder_prefix_dot_abs_le`
+- `higham9_26_stage_entry_abs_le`
+- `higham9_26_stage_entry_abs_le_two_norm`
+- `higham9_26_stage_entry_abs_le_of_uniform_bounds`
+- `higham9_26_stage_entry_abs_le_of_two_norm_uniform_bounds`
 - `higham9_15_lu_perturbation_identity`
 - `higham9_15_lu_perturbation_relative_bound`
 - `higham9_15_lu_perturbation_forward_bound`
@@ -2879,6 +2915,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound`
 - `higham9_15_GMatrix_nonnegative_resolvent_nonsingInv_of_row_sum_bound`
 - `higham9_27_GMatrix_ratio_le_product_ratio`
+- `higham9_27_GMatrix_frobenius_le_exact_opNorm2_product`
+- `higham9_27_GMatrix_opNorm2Le_exact_opNorm2_product`
+- `higham9_27_GMatrix_opNorm2_lt_one_of_exact_opNorm2_product_lt_one`
+- `higham9_27_GMatrix_ratio_le_exact_opNorm2_product_ratio`
 - `higham9_15_chi`
 - `higham9_15_chi_nonneg`
 - `higham9_15_rectMatMul_opNorm2Le`
@@ -3709,6 +3749,70 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_componentwise_source_bound_of_factorization_Gtilde_majorant_of_factor_triangularity`
 - `higham9_15_componentwise_source_bound_of_factorization_Gtilde_local_majorant_of_factor_triangularity`
 - `higham9_15_componentwise_source_firstOrder_of_componentwise_bounds`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_inverse_identities`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_inverse_identities_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_inverse_identities_product_majorant`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_inverse_identities_product_majorant_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_product_majorant`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_product_majorant_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_inverse_identities_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_inverse_identities_left_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_inverse_identities_right_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_inverse_identities_right_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_left_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_right_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_right_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_product_majorant`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_product_majorant_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_product_majorant`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_product_majorant_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_left_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_right_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_left_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_right_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one_right_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound_product_majorant`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound_product_majorant_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_product_majorant`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_product_majorant_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound_left_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound_right_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_infNormBound_right_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_left_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_right_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_infNormBound_right_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_product_majorant`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_product_majorant_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_product_majorant`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_product_majorant_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound_left_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_row_sum_bound_right_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_left_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_left_zero_of_factor_triangularity`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_right_zero`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_row_sum_bound_right_zero_of_factor_triangularity`
 - `higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant_of_factor_triangularity`
 - `higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_majorant`
 - `higham9_15_componentwise_source_firstOrder_of_factorization_G_resolvent_majorant_of_factor_triangularity`
@@ -4282,6 +4386,14 @@ Source-facing Chapter 10 wrappers:
 - `gram_conj_isSymm` ((10.29): conjugated Gram G^T M G is symmetric when M is; so finiteMaxEigenvalue applies to stage matrices)
 - `schur_gram_stage_le` ((10.29) crux CAPSTONE, Q_hat <= Q_22 quadratic-form level: (S_hat y)^T H_hat^{-1} (S_hat y) <= [b;v]^T H^{-1} [b;v], combining block_quadForm_schur_eq + rankOne_update_auxiliary_le with u=k/sqrt(a), g=b/sqrt(a))
 - `higham10_29_luFirstSchurComplement_isNonsymPosDef` ((10.29) GE recursion well-founded: LU-scaffold Schur step preserves nonsym-PD; base for the stage induction on the LUFactSpec/of_firstSchurComplement recursion)
+- `higham10_29_symPart_luSchur_eq` ((10.29): sym(luSchur S) = Z + kk^T/a, i.e. sym part of Schur complement = Schur complement of sym part + skew rank-one; identifies H_hat for schur_gram_stage_le)
+- `higham10_29_S_mulVec_cons0` ((10.29): S*(0,y) = cons (sum b_j y_j) (Dy); the (beta,v) at which schur_gram_stage_le is evaluated for the stage induction)
+- `higham10_29_luSchur_mulVec` ((10.29): matMulVec(luSchur S) y i = (Dy)_i - (c_i/a)(b^T y); = schur_gram_stage_le LHS vector since f-k=c)
+- `spd_inv_quadForm_nonneg` ((10.29) PSD inverse fact: u^T Z^{-1} u >= 0 for SPD Z with right-inverse Z^{-1}; via u=Zw so u^T Z^{-1} u = w^T Z w >= 0; discharges hZinv_psd_k of schur_gram_stage_le)
+- `higham10_29_stage_quadForm_le` ((10.29) per-stage quadForm monotonicity, THREADED for a genuine nonsym-PD stage S: (Shat y)^T Hhat^{-1} (Shat y) <= (S(0,y))^T H^{-1} (S(0,y)) with H=sym(S), Hhat=sym(luSchur S); instantiates schur_gram_stage_le via the alignment lemmas + spd_inv_quadForm_nonneg. This IS the hstage hypothesis of stage_maxEigenvalue_le)
+- `higham10_29_stage_operator_le` ((10.29) operator-norm single-stage decrease: lambda_max(Q(luSchur S)) <= lambda_max(Q(S)) for nonsym-PD S, Q(X)=X^T sym(X)^-1 X; composes stage_quadForm_le (as hstage of stage_maxEigenvalue_le) with finiteMaxEigenvalue_trailing_principal_le. The per-stage operator-norm step chained by the GE stage induction)
+- `higham10_29_stage_operator_le_exists` ((10.29) INDUCTION-READY stage decrease: sole hypothesis IsNonsymPosDef (m+1) S; derives the sym-part inverses internally via spd_inverse_exists (+ nonsymPosDef_iff_symPartSPD, higham10_29_luFirstSchurComplement_isNonsymPosDef) and yields ∃ Hinv Hhatinv, lambda_max(Q(luSchur S)) <= lambda_max(Q(S)). Removes inverse-threading so the GE stage induction chains cleanly)
+- `matMul_leftInverse_eq_rightInverse` ((10.29) well-definedness helper: a left inverse and a right inverse of the same finite square matrix coincide (A=A(TB)=(AT)B=B via matMul_assoc + matMul_id); makes the stage Gram Q(S)=S^T H^-1 S independent of which spd_inverse_exists inverse each stage picks, so the GE recursion chains)
 - `kahanR` / `kahan_telescope` / `kahanR_tail_eq` ((10.20): Kahan family satisfies (10.13) with equality on the square part)
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
@@ -5223,3 +5335,4 @@ Module: `LeanFpAnalysis/FP/Algorithms/StationaryIterationSeries.lean` (complemen
 | Eq (17.20) literal sigma | `residualSigmaEntry`/`residualSigmaMatrix` (entrywise `tsum` of `\|Hᵏ(I−H)\|`), `summable_residualSigmaEntry`, and the closing equality `infNorm_residualSigmaMatrix_eq_residualSigmaSup` identifying the literal series object with the supremum envelope of the finite partial norms. |
 | Eq (17.20) `residualSigmaTsum` bridges | `residualSigmaTsum_eq_infNorm_residualSigmaMatrix` (the two independently developed literal sigma objects are definitionally equal), `residualSigmaTsum_eq_residualSigmaSup` (literal series = supremum envelope under a q-certificate), `residualSigmaTsum_le_diagonalizable_max_bound_of_infNorm_bound` (q-certificate bridge through the supremum envelope), and `residualSigmaTsum_le_diagonalizable_max_bound_direct` from `StationaryIteration.lean` (the direct literal diagonalizable bound `residualSigmaTsum ≤ κ∞(X)·diagonalResidualRatioMax`). |
 | §17.4 semiconvergent/projector surfaces (module `StationaryIterationSemiconvergent.lean`) | The printed (17.23) block form `G = X·diag(I,Γ)·X⁻¹` as data: `topProjector`, `oneEigenProjector` (the book's I−E) with idempotency and the fixed-point identity `G_fixes_oneEigenProjector_apply` (G(I−E)v = (I−E)v for ALL v), `semiconvergentE`; the headline `singular_error_split_semiconvergent` — the (17.27) three-term split with the fixed-null hypothesis of `singular_error_split_finite` DISCHARGED from the (17.23) data; and `matPow_G_tendsto_oneEigenProjector` — the literal §17.4 semiconvergence limit `Gᵐ → X·diag(I,0)·X⁻¹` entrywise under a row-sum contraction certificate on Γ (an explicit strengthening of the printed ρ(Γ) < 1, noted in docstrings). Semiconvergent-form existence (Jordan background) is not formalized, matching the printed presentation. |
+| §17.4 Drazin vocabulary and infinite singular bounds (module `StationaryIterationDrazin.lean`) | From the (17.22) block data: `eq_17_23_block` (the printed (17.23) `I−G` block identity), `drazinIG` + `drazinIG_spec` (the printed (17.24) `(I−G)^D` with the three index-1 Drazin identities proved; uniqueness not formalized), `stationaryDrazinRangeProjector_drazinIG_eq_semiconvergentE` (connects the two fixed-null discharge routes), `eq_17_25_limit` + `matPow_G_tendsto_limit_drazin` (the literal (17.25) `Gᵐ → I−(I−G)^D(I−G)`), `eq_17_26_stationary_limit` (the literal (17.26) convergence of consistent singular iteration), `eq_17_30_block`/`eq_17_30_pow` (both printed (17.30) identities), `summable_infNorm_GiE_Minv` + `tsum_infNorm_GiE_Minv_le` (the post-(17.31) geometric bound), `eq_17_31_normwise_bound` (the literal (17.31), printed constants), `eq_17_32_componentwise_bound` (the literal (17.32) with the printed c(A) as a certificate hypothesis), and the p. 335 display `Σ'ᵢ GⁱE = (I−G)^D` (`tsum_GiE_entry_eq_drazinIG`). |

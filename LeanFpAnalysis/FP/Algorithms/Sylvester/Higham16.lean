@@ -237,6 +237,315 @@ theorem sylvester_perturbation_first_order_vec (n : Nat)
   simpa [sylvesterOpRect] using
     sylvester_perturbation_first_order n A B X dA dB dC dX hLin p.2 p.1
 
+-- ============================================================
+-- Practical max-entry error bounds from Chapter 16.4
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    the vector max norm on a vectorized rectangular matrix, using Mathlib's
+    finite-function sup norm. -/
+noncomputable def sylvesterVecMaxNorm (m n : Nat)
+    (v : Prod (Fin n) (Fin m) -> Real) : Real :=
+  norm v
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    `||X|| := max_{i,j} |x_ij|`, represented as the vector max norm of
+    `vec(X)` in column-stacking order. -/
+noncomputable def sylvesterMaxEntryNormRect (m n : Nat)
+    (X : RMatFn m n) : Real :=
+  sylvesterVecMaxNorm m n (Matrix.vec X)
+
+lemma sylvesterVecMaxNorm_nonneg (m n : Nat)
+    (v : Prod (Fin n) (Fin m) -> Real) :
+    0 <= sylvesterVecMaxNorm m n v := by
+  unfold sylvesterVecMaxNorm
+  exact norm_nonneg v
+
+lemma abs_le_sylvesterVecMaxNorm (m n : Nat)
+    (v : Prod (Fin n) (Fin m) -> Real) (p : Prod (Fin n) (Fin m)) :
+    |v p| <= sylvesterVecMaxNorm m n v := by
+  unfold sylvesterVecMaxNorm
+  simpa [Real.norm_eq_abs] using norm_le_pi_norm v p
+
+lemma sylvesterVecMaxNorm_le_of_abs_le (m n : Nat)
+    (v : Prod (Fin n) (Fin m) -> Real) {c : Real}
+    (h : forall p : Prod (Fin n) (Fin m), |v p| <= c) (hc : 0 <= c) :
+    sylvesterVecMaxNorm m n v <= c := by
+  unfold sylvesterVecMaxNorm
+  rw [pi_norm_le_iff_of_nonneg hc]
+  intro p
+  simpa [Real.norm_eq_abs] using h p
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    the practical componentwise budget vector
+    `|P^{-1}| (|vec(Rhat)| + vec(Ru))`.  The matrix `PinvAbs` represents
+    an entrywise nonnegative upper bound for `|P^{-1}|`, and `Ru` is the
+    nonnegative residual-rounding budget. -/
+noncomputable def sylvesterPracticalBudgetVec (m n : Nat)
+    (PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (Rhat Ru : RMatFn m n) : Prod (Fin n) (Fin m) -> Real :=
+  fun p =>
+    Finset.sum Finset.univ fun q : Prod (Fin n) (Fin m) =>
+      PinvAbs p q * (|Matrix.vec Rhat q| + Matrix.vec Ru q)
+
+lemma sylvesterPracticalBudgetVec_nonneg (m n : Nat)
+    (PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (Rhat Ru : RMatFn m n)
+    (hPinvAbs : forall p q, 0 <= PinvAbs p q)
+    (hRu : forall i j, 0 <= Ru i j) :
+    forall p, 0 <= sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru p := by
+  intro p
+  unfold sylvesterPracticalBudgetVec
+  exact Finset.sum_nonneg fun q _ =>
+    mul_nonneg (hPinvAbs p q)
+      (add_nonneg (abs_nonneg _)
+        (by simpa [Matrix.vec] using hRu q.2 q.1))
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), max-entry norm bridge:
+    a nonnegative componentwise budget for `X - Xhat` bounds the relative
+    max-entry forward error in the source norm `||X|| := max_{i,j} |x_ij|`. -/
+theorem sylvester_practical_error_bound_of_componentwise_budget (m n : Nat)
+    (X Xhat : RMatFn m n) (budget : Prod (Fin n) (Fin m) -> Real)
+    (hbudget : forall p, 0 <= budget p)
+    (hcert : forall i j, |X i j - Xhat i j| <= budget (j, i))
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n budget / sylvesterMaxEntryNormRect m n Xhat := by
+  have hnorm :
+      sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) <=
+        sylvesterVecMaxNorm m n budget := by
+    unfold sylvesterMaxEntryNormRect
+    apply sylvesterVecMaxNorm_le_of_abs_le
+    · intro p
+      calc
+        |Matrix.vec (fun i j => X i j - Xhat i j) p|
+            = |X p.2 p.1 - Xhat p.2 p.1| := by
+              simp [Matrix.vec]
+        _ <= budget p := hcert p.2 p.1
+        _ = |budget p| := (abs_of_nonneg (hbudget p)).symm
+        _ <= sylvesterVecMaxNorm m n budget :=
+          abs_le_sylvesterVecMaxNorm m n budget p
+    · exact sylvesterVecMaxNorm_nonneg m n budget
+  exact div_le_div_of_nonneg_right hnorm (le_of_lt hXhat)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), certificate form:
+    if the vectorized error is `P^{-1} r`, the inverse entries are bounded
+    componentwise by `PinvAbs`, and the residual vector satisfies
+    `|r| <= |vec(Rhat)| + vec(Ru)`, then the practical `|P^{-1}|` budget
+    gives the relative max-entry forward-error bound. -/
+theorem sylvester_practical_error_bound_of_inverse_residual_budget (m n : Nat)
+    (X Xhat Rhat Ru : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (r : Prod (Fin n) (Fin m) -> Real)
+    (hErr : Matrix.vec (fun i j => X i j - Xhat i j) =
+      Matrix.mulVec Pinv r)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hr : forall q, |r q| <= |Matrix.vec Rhat q| + Matrix.vec Ru q)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  have hPinvAbs_nonneg : forall p q, 0 <= PinvAbs p q := by
+    intro p q
+    exact (abs_nonneg (Pinv p q)).trans (hPinvAbs p q)
+  apply sylvester_practical_error_bound_of_componentwise_budget
+  · exact sylvesterPracticalBudgetVec_nonneg m n PinvAbs Rhat Ru hPinvAbs_nonneg hRu
+  · intro i j
+    let p : Prod (Fin n) (Fin m) := (j, i)
+    have hp := congrFun hErr p
+    have herr :
+        X i j - Xhat i j = Matrix.mulVec Pinv r p := by
+      simpa [p, Matrix.vec] using hp
+    rw [herr]
+    calc
+      |Matrix.mulVec Pinv r p|
+          = |Finset.sum Finset.univ
+              (fun q : Prod (Fin n) (Fin m) => Pinv p q * r q)| := by
+            simp [Matrix.mulVec, dotProduct]
+      _ <= Finset.sum Finset.univ
+              (fun q : Prod (Fin n) (Fin m) => |Pinv p q * r q|) :=
+            Finset.abs_sum_le_sum_abs _ _
+      _ = Finset.sum Finset.univ
+              (fun q : Prod (Fin n) (Fin m) => |Pinv p q| * |r q|) := by
+            apply Finset.sum_congr rfl
+            intro q _
+            rw [abs_mul]
+      _ <= Finset.sum Finset.univ
+              (fun q : Prod (Fin n) (Fin m) =>
+                PinvAbs p q * (|Matrix.vec Rhat q| + Matrix.vec Ru q)) := by
+            apply Finset.sum_le_sum
+            intro q _
+            exact mul_le_mul (hPinvAbs p q) (hr q)
+              (abs_nonneg (r q)) (hPinvAbs_nonneg p q)
+      _ = sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru p := by
+            rfl
+  · exact hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact residual identity:
+    if `X` solves the Sylvester equation, then the exact residual of `Xhat`
+    is the Sylvester operator applied to the forward error `X - Xhat`. -/
+theorem sylvesterResidualRect_eq_sylvesterOpRect_error (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat : RMatFn m n)
+    (hX : IsSylvesterSolutionRect m n A B C X) :
+    sylvesterResidualRect m n A B C Xhat =
+      sylvesterOpRect m n A B (fun i j => X i j - Xhat i j) := by
+  ext i j
+  have h := hX i j
+  unfold sylvesterResidualRect sylvesterOpRect matMulRect at h ⊢
+  rw [← h]
+  simp only [sub_mul, mul_sub, Finset.sum_sub_distrib]
+  ring
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), inverse-residual bridge:
+    if `Pinv` is a left inverse for the vec/Kronecker Sylvester coefficient,
+    then the vectorized forward error is `Pinv` applied to the exact residual. -/
+theorem sylvester_vec_error_eq_inverse_residual_of_left_inverse (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat : RMatFn m n)
+    (Pinv :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1) :
+    Matrix.vec (fun i j => X i j - Xhat i j) =
+      Matrix.mulVec Pinv (Matrix.vec (sylvesterResidualRect m n A B C Xhat)) := by
+  let P := sylvesterVecCoeff m n A B
+  let E : RMatFn m n := fun i j => X i j - Xhat i j
+  change Matrix.vec E =
+    Matrix.mulVec Pinv (Matrix.vec (sylvesterResidualRect m n A B C Xhat))
+  have hLeftP : Pinv * P = 1 := by
+    simpa [P] using hLeft
+  have hres : Matrix.mulVec P (Matrix.vec E) =
+      Matrix.vec (sylvesterResidualRect m n A B C Xhat) := by
+    rw [show P = sylvesterVecCoeff m n A B by rfl]
+    rw [sylvesterVecCoeff_mulVec_vec]
+    rw [sylvesterResidualRect_eq_sylvesterOpRect_error m n A B C X Xhat hX]
+  calc
+    Matrix.vec E =
+        Matrix.mulVec (1 :
+          Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+          (Matrix.vec E) := by
+            simp
+    _ = Matrix.mulVec (Pinv * P) (Matrix.vec E) := by
+          rw [hLeftP]
+    _ = Matrix.mulVec Pinv (Matrix.mulVec P (Matrix.vec E)) := by
+          rw [Matrix.mulVec_mulVec]
+    _ = Matrix.mulVec Pinv (Matrix.vec (sylvesterResidualRect m n A B C Xhat)) := by
+          rw [hres]
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    if a computed residual `Rhat` differs from the exact residual `R` by
+    the nonnegative componentwise budget `Ru`, then
+    `|vec(R)| <= |vec(Rhat)| + vec(Ru)`. -/
+theorem sylvester_exact_residual_vec_abs_le_computed_residual_budget (m n : Nat)
+    (R Rhat Ru : RMatFn m n)
+    (hRhat : forall i j, |R i j - Rhat i j| <= Ru i j) :
+    forall q : Prod (Fin n) (Fin m),
+      |Matrix.vec R q| <= |Matrix.vec Rhat q| + Matrix.vec Ru q := by
+  intro q
+  calc
+    |Matrix.vec R q| = |R q.2 q.1| := by
+        simp [Matrix.vec]
+    _ = |Rhat q.2 q.1 + (R q.2 q.1 - Rhat q.2 q.1)| := by
+        congr 1
+        ring
+    _ <= |Rhat q.2 q.1| + |R q.2 q.1 - Rhat q.2 q.1| :=
+        abs_add_le _ _
+    _ <= |Rhat q.2 q.1| + Ru q.2 q.1 := by
+        exact add_le_add (le_refl |Rhat q.2 q.1|) (hRhat q.2 q.1)
+    _ = |Matrix.vec Rhat q| + Matrix.vec Ru q := by
+        simp [Matrix.vec]
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), computed-residual
+    budget certificate: `Rhat` approximates the exact residual with
+    nonnegative componentwise error budget `Ru`. -/
+def IsSylvesterComputedResidualBudget (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C Xhat Rhat Ru : RMatFn m n) :
+    Prop :=
+  (forall i j, 0 <= Ru i j) /\
+    forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    an explicit residual error matrix `dR` with
+    `Rhat = R(Xhat) + dR` and `|dR| <= Ru` yields the computed-residual
+    budget certificate used by the practical bound. -/
+theorem sylvesterComputedResidualBudget_of_error_model (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C Xhat Rhat Ru dR : RMatFn m n)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j) :
+    IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru := by
+  constructor
+  · exact hRu
+  · intro i j
+    rw [hRhat i j]
+    have hsub :
+        sylvesterResidualRect m n A B C Xhat i j -
+            (sylvesterResidualRect m n A B C Xhat i j + dR i j) =
+          -dR i j := by
+      ring
+    rw [hsub, abs_neg]
+    exact hdR i j
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), computed-residual
+    certificate form: a left inverse for the vec/Kronecker coefficient,
+    an entrywise inverse bound, and a computed-residual budget instantiate
+    the practical relative max-entry error bound. -/
+theorem sylvester_practical_error_bound_of_computed_residual_budget (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat Rhat Ru : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_inverse_residual_budget m n
+      X Xhat Rhat Ru Pinv PinvAbs
+      (Matrix.vec (sylvesterResidualRect m n A B C Xhat))
+      (sylvester_vec_error_eq_inverse_residual_of_left_inverse
+        m n A B C X Xhat Pinv hX hLeft)
+      hPinvAbs hRu
+      (sylvester_exact_residual_vec_abs_le_computed_residual_budget
+        m n (sylvesterResidualRect m n A B C Xhat) Rhat Ru hRhat)
+      hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), certificate-packaged
+    form of the practical componentwise error bound. -/
+theorem sylvester_practical_error_bound_of_computed_residual_certificate (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat Rhat Ru : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_budget m n
+      A B C X Xhat Rhat Ru Pinv PinvAbs hX hLeft hPinvAbs
+      hBudget.1 hBudget.2 hXhat
+
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
     if `A` and `B` are diagonal in the chosen bases, the vec/Kronecker
     Sylvester coefficient is diagonal with entries `a_i - b_j`.
@@ -298,6 +607,358 @@ theorem sylvesterVecCoeff_diagonal_det_ne_zero_iff (m n : Nat)
     exact Finset.prod_ne_zero_iff.mpr (by
       intro p _hp
       exact h p.2 p.1)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    a common diagonal entry makes the diagonal-basis vec/Kronecker Sylvester
+    coefficient singular. -/
+theorem sylvesterVecCoeff_diagonal_det_eq_zero_of_common_entry (n : Nat)
+    (a b : Fin n -> Real) (i j : Fin n) (hij : a i = b j) :
+    (sylvesterVecCoeff n n (Matrix.diagonal a) (Matrix.diagonal b)).det = 0 := by
+  by_contra hdet
+  have hsep := (sylvesterVecCoeff_diagonal_det_ne_zero_iff n n a b).mp hdet
+  exact hsep i j (by rw [hij, sub_self])
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    explicit inverse for the diagonal-basis vec/Kronecker coefficient with
+    diagonal entries `(a_i - b_j)^{-1}`. -/
+noncomputable def sylvesterDiagonalVecCoeffInv (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real :=
+  Matrix.diagonal
+    (fun p : Prod (Fin n) (Fin m) => Ring.inverse (a p.2 - b p.1))
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal case:
+    entrywise absolute-value bound for the explicit diagonal inverse of the
+    vec/Kronecker Sylvester coefficient. -/
+noncomputable def sylvesterDiagonalVecCoeffInvAbs (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real :=
+  fun p q => |sylvesterDiagonalVecCoeffInv m n a b p q|
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    the explicit diagonal inverse is a left inverse for the separated
+    vec/Kronecker Sylvester coefficient. -/
+theorem sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    sylvesterDiagonalVecCoeffInv m n a b *
+        sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b) = 1 := by
+  rw [sylvesterVecCoeff_diagonal, sylvesterDiagonalVecCoeffInv,
+    Matrix.diagonal_mul_diagonal]
+  ext p q
+  by_cases hpq : p = q
+  case pos =>
+    subst q
+    simp [Matrix.diagonal, hsep p.2 p.1]
+  case neg =>
+    simp [Matrix.diagonal, hpq]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    the separated diagonal-basis vec/Kronecker Sylvester coefficient is also a
+    right inverse for the explicit diagonal inverse. -/
+theorem sylvesterVecCoeff_diagonal_mul_sylvesterDiagonalVecCoeffInv (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b) *
+        sylvesterDiagonalVecCoeffInv m n a b = 1 := by
+  rw [sylvesterVecCoeff_diagonal, sylvesterDiagonalVecCoeffInv,
+    Matrix.diagonal_mul_diagonal]
+  ext p q
+  by_cases hpq : p = q
+  case pos =>
+    subst q
+    simp [Matrix.diagonal, hsep p.2 p.1]
+  case neg =>
+    simp [Matrix.diagonal, hpq]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    in diagonal coordinates, the Sylvester operator acts entrywise as
+    multiplication by `a_i - b_j`. -/
+theorem sylvesterOpRect_diagonal_apply (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (X : RMatFn m n)
+    (i : Fin m) (j : Fin n) :
+    sylvesterOpRect m n (Matrix.diagonal a) (Matrix.diagonal b) X i j =
+      (a i - b j) * X i j := by
+  have h :=
+    congrFun
+      (sylvesterVecCoeff_mulVec_vec m n
+        (Matrix.diagonal a) (Matrix.diagonal b) X) (j, i)
+  rw [sylvesterVecCoeff_diagonal] at h
+  simpa [Matrix.vec, Matrix.mulVec_diagonal] using h.symm
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    the entrywise solution obtained by dividing each right-hand side entry by
+    the separated scalar coefficient `a_i - b_j`. -/
+noncomputable def sylvesterDiagonalSolution (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n) : RMatFn m n :=
+  fun i j => Ring.inverse (a i - b j) * C i j
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    the explicit diagonal solution of the homogeneous equation is zero. -/
+theorem sylvesterDiagonalSolution_zero (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    sylvesterDiagonalSolution m n a b (0 : RMatFn m n) = 0 := by
+  ext i j
+  simp [sylvesterDiagonalSolution]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), diagonal case:
+    vectorizing the explicit diagonal solution is the same as applying the
+    explicit inverse diagonal vec/Kronecker coefficient. -/
+theorem vec_sylvesterDiagonalSolution_eq_mulVec_inv (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n) :
+    Matrix.vec (sylvesterDiagonalSolution m n a b C) =
+      Matrix.mulVec (sylvesterDiagonalVecCoeffInv m n a b) (Matrix.vec C) := by
+  ext p
+  simp [sylvesterDiagonalSolution, sylvesterDiagonalVecCoeffInv, Matrix.vec,
+    Matrix.mulVec_diagonal]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    the explicit entrywise formula solves the vectorized Sylvester system when
+    the diagonal entries are pairwise separated. -/
+theorem sylvesterVecCoeff_mulVec_vec_sylvesterDiagonalSolution (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Matrix.mulVec (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))
+        (Matrix.vec (sylvesterDiagonalSolution m n a b C)) =
+      Matrix.vec C := by
+  rw [vec_sylvesterDiagonalSolution_eq_mulVec_inv, Matrix.mulVec_mulVec,
+    sylvesterVecCoeff_diagonal_mul_sylvesterDiagonalVecCoeffInv m n a b hsep,
+    Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    componentwise form of the exact diagonal solve. -/
+theorem sylvesterOpRect_diagonal_sylvesterDiagonalSolution (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    sylvesterOpRect m n (Matrix.diagonal a) (Matrix.diagonal b)
+        (sylvesterDiagonalSolution m n a b C) =
+      C := by
+  ext i j
+  rw [sylvesterOpRect_diagonal_apply]
+  rw [sylvesterDiagonalSolution, ← mul_assoc]
+  simp [hsep i j]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    the explicit entrywise formula is a Sylvester solution under separation. -/
+theorem isSylvesterSolutionRect_sylvesterDiagonalSolution (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C
+      (sylvesterDiagonalSolution m n a b C) := by
+  exact
+    (sylvester_vec_system_iff_solution m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C
+      (sylvesterDiagonalSolution m n a b C)).mp
+      (sylvesterVecCoeff_mulVec_vec_sylvesterDiagonalSolution m n a b C hsep)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    under separation, any Sylvester solution equals the explicit entrywise
+    diagonal solution. -/
+theorem sylvesterDiagonalSolution_unique (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C X : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C X) :
+    X = sylvesterDiagonalSolution m n a b C := by
+  apply Matrix.vec_inj.mp
+  have hvecX :
+      Matrix.mulVec (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))
+          (Matrix.vec X) =
+        Matrix.vec C :=
+    (sylvester_vec_system_iff_solution m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X).mpr hX
+  rw [vec_sylvesterDiagonalSolution_eq_mulVec_inv, ← hvecX]
+  rw [Matrix.mulVec_mulVec,
+    sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal m n a b hsep,
+    Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    separated diagonal Sylvester equations have exactly one solution, given by
+    the explicit entrywise formula. -/
+theorem existsUnique_isSylvesterSolutionRect_diagonal (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    ExistsUnique
+      (IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C) := by
+  refine ⟨sylvesterDiagonalSolution m n a b C,
+    isSylvesterSolutionRect_sylvesterDiagonalSolution m n a b C hsep, ?_⟩
+  intro X hX
+  exact sylvesterDiagonalSolution_unique m n a b C X hsep hX
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), diagonal case:
+    under separated diagonal entries, the vectorized diagonal Sylvester
+    coefficient has trivial kernel. -/
+theorem sylvesterVecCoeff_diagonal_mulVec_eq_zero_iff (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (X : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Matrix.mulVec (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))
+        (Matrix.vec X) = 0 <->
+      X = 0 := by
+  constructor
+  case mp =>
+    intro h
+    have hpinv :
+        Matrix.mulVec (sylvesterDiagonalVecCoeffInv m n a b)
+            (Matrix.mulVec
+              (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))
+              (Matrix.vec X)) =
+          Matrix.mulVec (sylvesterDiagonalVecCoeffInv m n a b) 0 := by
+      rw [h]
+    rw [Matrix.mulVec_mulVec,
+      sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal m n a b hsep,
+      Matrix.one_mulVec, Matrix.mulVec_zero] at hpinv
+    exact Matrix.vec_eq_zero_iff.mp hpinv
+  case mpr =>
+    intro hX
+    rw [hX]
+    change Matrix.mulVec
+        (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))
+        (0 : Prod (Fin n) (Fin m) -> Real) = 0
+    exact Matrix.mulVec_zero _
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), diagonal case:
+    under separated diagonal entries, the vectorized diagonal Sylvester
+    coefficient acts injectively on vectorized unknowns. -/
+theorem sylvesterVecCoeff_diagonal_mulVec_injective (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Function.Injective
+      (Matrix.mulVec
+        (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))) := by
+  intro x y hxy
+  let Pinv := sylvesterDiagonalVecCoeffInv m n a b
+  let P := sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b)
+  have hx : Matrix.mulVec Pinv (Matrix.mulVec P x) = x := by
+    dsimp [Pinv, P]
+    rw [Matrix.mulVec_mulVec,
+      sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal m n a b hsep,
+      Matrix.one_mulVec]
+  have hy : Matrix.mulVec Pinv (Matrix.mulVec P y) = y := by
+    dsimp [Pinv, P]
+    rw [Matrix.mulVec_mulVec,
+      sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal m n a b hsep,
+      Matrix.one_mulVec]
+  calc
+    x = Matrix.mulVec Pinv (Matrix.mulVec P x) := hx.symm
+    _ = Matrix.mulVec Pinv (Matrix.mulVec P y) := by rw [hxy]
+    _ = y := hy
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), diagonal case:
+    under separated diagonal entries, the vectorized diagonal Sylvester
+    coefficient reaches every right-hand side by the explicit entrywise solve. -/
+theorem sylvesterVecCoeff_diagonal_mulVec_surjective (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Function.Surjective
+      (Matrix.mulVec
+        (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))) := by
+  intro y
+  obtain ⟨C, hC⟩ := Matrix.vec_bijective.surjective y
+  refine ⟨Matrix.vec (sylvesterDiagonalSolution m n a b C), ?_⟩
+  rw [← hC]
+  exact sylvesterVecCoeff_mulVec_vec_sylvesterDiagonalSolution m n a b C hsep
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), diagonal case:
+    separated diagonal entries make the vectorized diagonal Sylvester
+    coefficient a bijection on vectorized unknowns. -/
+theorem sylvesterVecCoeff_diagonal_mulVec_bijective (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Function.Bijective
+      (Matrix.mulVec
+        (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b))) :=
+  ⟨sylvesterVecCoeff_diagonal_mulVec_injective m n a b hsep,
+    sylvesterVecCoeff_diagonal_mulVec_surjective m n a b hsep⟩
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), diagonal case:
+    the separated diagonal vectorized Sylvester linear system has a unique
+    solution for every vectorized right-hand side. -/
+theorem existsUnique_sylvesterVecCoeff_diagonal_mulVec (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ∃! x : Prod (Fin n) (Fin m) -> Real,
+      Matrix.mulVec
+        (sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b)) x = c := by
+  have hinj :=
+    sylvesterVecCoeff_diagonal_mulVec_injective m n a b hsep
+  have hsurj :=
+    sylvesterVecCoeff_diagonal_mulVec_surjective m n a b hsep
+  obtain ⟨x, hx⟩ := hsurj c
+  refine ⟨x, hx, ?_⟩
+  intro y hy
+  exact hinj (by rw [hy, hx])
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal case:
+    the absolute-value matrix exactly bounds the explicit diagonal inverse
+    componentwise. -/
+lemma sylvesterDiagonalVecCoeffInv_abs_le_invAbs (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    forall p q,
+      |sylvesterDiagonalVecCoeffInv m n a b p q| <=
+        sylvesterDiagonalVecCoeffInvAbs m n a b p q := by
+  intro p q
+  rfl
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case:
+    with `A` and `B` diagonal and `a_i != b_j`, the practical componentwise
+    error bound is instantiated with the explicit diagonal inverse of the
+    vec/Kronecker Sylvester coefficient. -/
+theorem sylvester_practical_error_bound_of_diagonal_computed_residual_certificate
+    (m n : Nat) (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hBudget :
+      IsSylvesterComputedResidualBudget m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterDiagonalVecCoeffInvAbs m n a b) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat Rhat Ru
+      (sylvesterDiagonalVecCoeffInv m n a b)
+      (sylvesterDiagonalVecCoeffInvAbs m n a b)
+      hX
+      (sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal
+        m n a b hsep)
+      (sylvesterDiagonalVecCoeffInv_abs_le_invAbs m n a b)
+      hBudget hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case:
+    if the computed residual has an explicit error model
+    `Rhat = R(Xhat) + dR` with `|dR| <= Ru`, then the practical
+    componentwise error bound follows using the explicit diagonal inverse of
+    the vec/Kronecker Sylvester coefficient. -/
+theorem sylvester_practical_error_bound_of_diagonal_computed_residual_error_model
+    (m n : Nat) (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Ru dR : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hRhat : forall i j,
+      Rhat i j =
+        sylvesterResidualRect m n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat i j +
+          dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterDiagonalVecCoeffInvAbs m n a b) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_diagonal_computed_residual_certificate
+      m n a b C X Xhat Rhat Ru hsep hX
+      (sylvesterComputedResidualBudget_of_error_model m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat Rhat Ru dR
+        hRhat hRu hdR)
+      hXhat
 
 -- ============================================================
 -- Exact Schur-coordinate algebra from Chapter 16.1
@@ -531,6 +1192,241 @@ theorem sylvester_schur_transform_solution_iff (m n : Nat)
     intro i j
     exact congrFun (congrFun hsol i) j
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5), diagonal
+    Schur-coordinate case: reconstruct the original-coordinate solution from
+    supplied orthogonal diagonal factors and the explicit diagonal solve. -/
+noncomputable def sylvesterSchurDiagonalSolution (m n : Nat)
+    (U : RMatFn m m) (V : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n) : RMatFn m n :=
+  rectMatMul U
+    (rectMatMul
+      (sylvesterDiagonalSolution m n a b
+        (rectMatMul (matTranspose U) (rectMatMul C V)))
+      (matTranspose V))
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.3)-(16.5), diagonal
+    Schur-coordinate case: the reconstructed solution for zero right-hand side
+    is zero. -/
+theorem sylvesterSchurDiagonalSolution_zero (m n : Nat)
+    (U : RMatFn m m) (V : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    sylvesterSchurDiagonalSolution m n U V a b (0 : RMatFn m n) = 0 := by
+  unfold sylvesterSchurDiagonalSolution
+  have hcoord :
+      rectMatMul (matTranspose U) (rectMatMul (0 : RMatFn m n) V) =
+        (0 : RMatFn m n) := by
+    ext i j
+    simp [rectMatMul]
+  rw [hcoord]
+  rw [sylvesterDiagonalSolution_zero]
+  ext i j
+  simp [rectMatMul]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5), diagonal
+    Schur-coordinate case: if supplied orthogonal factors diagonalize `A` and
+    `B`, the reconstructed explicit diagonal-coordinate solution solves the
+    original Sylvester equation.  This remains an exact-arithmetic conditional
+    wrapper; it does not assert Schur existence or floating-point stability. -/
+theorem isSylvesterSolutionRect_schurDiagonalSolution (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    IsSylvesterSolutionRect m n A B C
+      (sylvesterSchurDiagonalSolution m n U V a b C) := by
+  unfold sylvesterSchurDiagonalSolution
+  exact
+    (sylvester_schur_transform_solution_iff m n
+      U (Matrix.diagonal a) A V (Matrix.diagonal b) B C
+      (sylvesterDiagonalSolution m n a b
+        (rectMatMul (matTranspose U) (rectMatMul C V)))
+      hU hV hA hB).mpr
+      (isSylvesterSolutionRect_sylvesterDiagonalSolution m n a b
+        (rectMatMul (matTranspose U) (rectMatMul C V)) hsep)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.3)-(16.5), diagonal
+    Schur-coordinate case: under supplied orthogonal diagonal factors and
+    separated diagonal entries, every original-coordinate solution is the
+    reconstructed explicit diagonal-coordinate solution. -/
+theorem sylvesterSchurDiagonalSolution_unique (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C X : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X) :
+    X = sylvesterSchurDiagonalSolution m n U V a b C := by
+  let YX : RMatFn m n := rectMatMul (matTranspose U) (rectMatMul X V)
+  have hXrecon :
+      IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul YX (matTranspose V))) := by
+    dsimp [YX]
+    rw [rectMatMul_schur_coords_expand U V X hU hV]
+    exact hX
+  have hYsol :
+      IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b)
+        (rectMatMul (matTranspose U) (rectMatMul C V)) YX :=
+    (sylvester_schur_transform_solution_iff m n
+      U (Matrix.diagonal a) A V (Matrix.diagonal b) B C YX
+      hU hV hA hB).mp hXrecon
+  have hYeq :
+      YX =
+        sylvesterDiagonalSolution m n a b
+          (rectMatMul (matTranspose U) (rectMatMul C V)) :=
+    sylvesterDiagonalSolution_unique m n a b
+      (rectMatMul (matTranspose U) (rectMatMul C V)) YX hsep hYsol
+  calc
+    X = rectMatMul U (rectMatMul YX (matTranspose V)) := by
+        dsimp [YX]
+        exact (rectMatMul_schur_coords_expand U V X hU hV).symm
+    _ = sylvesterSchurDiagonalSolution m n U V a b C := by
+        unfold sylvesterSchurDiagonalSolution
+        rw [hYeq]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.3)-(16.5), diagonal
+    Schur-coordinate case: supplied orthogonal diagonal factors with separated
+    diagonal entries give a unique exact Sylvester solution. -/
+theorem existsUnique_isSylvesterSolutionRect_schurDiagonal (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  refine ⟨sylvesterSchurDiagonalSolution m n U V a b C,
+    isSylvesterSolutionRect_schurDiagonalSolution m n U A V B a b C
+      hU hV hA hB hsep, ?_⟩
+  intro X hX
+  exact sylvesterSchurDiagonalSolution_unique m n U A V B a b C X
+    hU hV hA hB hsep hX
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
+    Schur-coordinate case: supplied orthogonal diagonal factors with separated
+    diagonal entries make the vectorized Sylvester coefficient have trivial
+    kernel. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_eq_zero_iff (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real) (X : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec X) = 0 <->
+      X = 0 := by
+  constructor
+  case mp =>
+    intro h
+    have hsol : IsSylvesterSolutionRect m n A B (0 : RMatFn m n) X :=
+      (sylvester_vec_system_iff_solution m n A B (0 : RMatFn m n) X).mp
+        (by simpa using h)
+    have hX :
+        X = sylvesterSchurDiagonalSolution m n U V a b (0 : RMatFn m n) :=
+      sylvesterSchurDiagonalSolution_unique m n U A V B a b
+        (0 : RMatFn m n) X hU hV hA hB hsep hsol
+    rw [hX, sylvesterSchurDiagonalSolution_zero]
+  case mpr =>
+    intro hX
+    rw [hX]
+    change Matrix.mulVec (sylvesterVecCoeff m n A B)
+        (0 : Prod (Fin n) (Fin m) -> Real) = 0
+    exact Matrix.mulVec_zero _
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
+    Schur-coordinate case: supplied orthogonal diagonal factors with separated
+    diagonal entries make the vectorized Sylvester coefficient injective. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_injective (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  intro x y hxy
+  let P := sylvesterVecCoeff m n A B
+  have hker : Matrix.mulVec P (x - y) = 0 := by
+    dsimp [P]
+    rw [Matrix.mulVec_sub, hxy, sub_self]
+  obtain ⟨X, hXvec⟩ :=
+    Matrix.vec_bijective.surjective (x - y : Prod (Fin n) (Fin m) -> Real)
+  have hkerX :
+      Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec X) = 0 := by
+    dsimp [P] at hker
+    rw [hXvec]
+    exact hker
+  have hXzero : X = 0 :=
+    (sylvesterVecCoeff_schurDiagonal_mulVec_eq_zero_iff
+      m n U A V B a b X hU hV hA hB hsep).mp hkerX
+  have hsub : x - y = 0 := by
+    rw [← hXvec, hXzero]
+    rfl
+  exact sub_eq_zero.mp hsub
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
+    Schur-coordinate case: supplied orthogonal diagonal factors with separated
+    diagonal entries make the vectorized Sylvester coefficient surjective. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_surjective (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  intro y
+  obtain ⟨C, hC⟩ := Matrix.vec_bijective.surjective y
+  refine ⟨Matrix.vec (sylvesterSchurDiagonalSolution m n U V a b C), ?_⟩
+  rw [← hC]
+  exact
+    (sylvester_vec_system_iff_solution m n A B C
+      (sylvesterSchurDiagonalSolution m n U V a b C)).mpr
+      (isSylvesterSolutionRect_schurDiagonalSolution
+        m n U A V B a b C hU hV hA hB hsep)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
+    Schur-coordinate case: supplied orthogonal diagonal factors with separated
+    diagonal entries make the vectorized Sylvester coefficient bijective. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_bijective (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff m n A B)) :=
+  ⟨sylvesterVecCoeff_schurDiagonal_mulVec_injective
+      m n U A V B a b hU hV hA hB hsep,
+    sylvesterVecCoeff_schurDiagonal_mulVec_surjective
+      m n U A V B a b hU hV hA hB hsep⟩
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
+    Schur-coordinate case: the supplied-factor vectorized Sylvester linear
+    system has a unique solution for every vectorized right-hand side. -/
+theorem existsUnique_sylvesterVecCoeff_schurDiagonal_mulVec (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ∃! x : Prod (Fin n) (Fin m) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c := by
+  have hinj :=
+    sylvesterVecCoeff_schurDiagonal_mulVec_injective
+      m n U A V B a b hU hV hA hB hsep
+  have hsurj :=
+    sylvesterVecCoeff_schurDiagonal_mulVec_surjective
+      m n U A V B a b hU hV hA hB hsep
+  obtain ⟨x, hx⟩ := hsurj c
+  refine ⟨x, hx, ?_⟩
+  intro y hy
+  exact hinj (by rw [hy, hx])
+
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
 -- ============================================================
@@ -671,6 +1567,114 @@ theorem sylvesterSepInf_le_ratio (n : Nat) (A B X : Fin n -> Fin n -> Real)
   exact csInf_le (sylvesterSepRatios_bddBelow n A B)
     (Exists.intro X (And.intro hX rfl))
 
+/-- In positive dimension, the feasible ratio set in the infimum model of
+    `sep(A,B)` is nonempty: a single-entry test matrix is a nonzero witness. -/
+theorem sylvesterSepRatios_nonempty_of_pos_dim (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (hn : 0 < n) :
+    (sylvesterSepRatios n A B).Nonempty := by
+  classical
+  let i : Fin n := ⟨0, hn⟩
+  let E : Fin n -> Fin n -> Real :=
+    fun r c => if i = r /\ i = c then (1 : Real) else 0
+  refine ⟨frobNorm (sylvesterOp n A B E) / frobNorm E, ?_⟩
+  refine ⟨E, ?_, rfl⟩
+  have hrect : frobNormSqRect E = (1 : Real) ^ 2 := by
+    simpa [E] using frobNormSqRect_single_left i i (1 : Real)
+  rw [frobNormSqRect_eq_frobNormSq] at hrect
+  norm_num at hrect
+  intro hzero
+  rw [hzero] at hrect
+  norm_num at hrect
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal case:
+    a uniform lower bound on all diagonal differences gives a Frobenius
+    `SepLowerBound` certificate for the diagonal Sylvester operator. -/
+theorem SepLowerBound_diagonal_of_entrywise_abs_ge (n : Nat)
+    (a b : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|) :
+    SepLowerBound n (Matrix.diagonal a) (Matrix.diagonal b) sigma := by
+  refine ⟨hsigma, ?_⟩
+  intro X _hX
+  have hop :
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X =
+        fun i j => (a i - b j) * X i j := by
+    rw [← sylvesterOpRect_square_eq_sylvesterOp]
+    ext i j
+    exact sylvesterOpRect_diagonal_apply n n a b X i j
+  rw [hop]
+  unfold frobNormSq
+  calc
+    sigma ^ 2 * (∑ i : Fin n, ∑ j : Fin n, X i j ^ 2)
+        = ∑ i : Fin n, ∑ j : Fin n, sigma ^ 2 * X i j ^ 2 := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro i _hi
+          rw [Finset.mul_sum]
+    _ <= ∑ i : Fin n, ∑ j : Fin n, ((a i - b j) * X i j) ^ 2 := by
+      apply Finset.sum_le_sum
+      intro i _hi
+      apply Finset.sum_le_sum
+      intro j _hj
+      have hleft : -|a i - b j| <= sigma := by
+        linarith [abs_nonneg (a i - b j), le_of_lt hsigma]
+      have hsq_abs : sigma ^ 2 <= |a i - b j| ^ 2 :=
+        sq_le_sq' hleft (hgap i j)
+      have hsq : sigma ^ 2 <= (a i - b j) ^ 2 := by
+        simpa [sq_abs] using hsq_abs
+      have hterm :=
+        mul_le_mul_of_nonneg_right hsq (sq_nonneg (X i j))
+      simpa [mul_pow] using hterm
+
+/-- Higham, 2nd ed., Chapter 16.1 and equation (16.3), diagonal case:
+    a common diagonal entry gives a nonzero element of the diagonal Sylvester
+    operator kernel. -/
+theorem exists_nonzero_sylvesterOp_diagonal_kernel_of_common_entry (n : Nat)
+    (a b : Fin n -> Real) (i j : Fin n) (hij : a i = b j) :
+    exists X : Fin n -> Fin n -> Real,
+      Not (frobNormSq X = 0) /\
+        sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X = 0 := by
+  classical
+  let E : Fin n -> Fin n -> Real :=
+    fun r c => if i = r /\ j = c then (1 : Real) else 0
+  refine ⟨E, ?_, ?_⟩
+  · have hrect : frobNormSqRect E = (1 : Real) ^ 2 :=
+      frobNormSqRect_single_left i j (1 : Real)
+    rw [frobNormSqRect_eq_frobNormSq] at hrect
+    norm_num at hrect
+    intro hzero
+    rw [hzero] at hrect
+    norm_num at hrect
+  · have hrect :
+        sylvesterOpRect n n (Matrix.diagonal a) (Matrix.diagonal b) E = 0 := by
+      ext r c
+      rw [sylvesterOpRect_diagonal_apply]
+      by_cases hrc : i = r /\ j = c
+      · rcases hrc with ⟨hir, hjc⟩
+        subst r
+        subst c
+        simp [E, hij]
+      · simp [E, hrc]
+    simpa [sylvesterOpRect_square_eq_sylvesterOp] using hrect
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal case:
+    a common diagonal entry forces the exact infimum model of `sep(A,B)` to
+    vanish. -/
+theorem sylvesterSepInf_diagonal_eq_zero_of_common_entry (n : Nat)
+    (a b : Fin n -> Real) (i j : Fin n) (hij : a i = b j) :
+    sylvesterSepInf n (Matrix.diagonal a) (Matrix.diagonal b) = 0 := by
+  obtain ⟨X, hXne, hker⟩ :=
+    exists_nonzero_sylvesterOp_diagonal_kernel_of_common_entry n a b i j hij
+  have hle :=
+    sylvesterSepInf_le_ratio n (Matrix.diagonal a) (Matrix.diagonal b) X hXne
+  have hratio :
+      frobNorm (sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X) /
+          frobNorm X = 0 := by
+    rw [hker]
+    simp [frobNorm]
+  exact le_antisymm (by simpa [hratio] using hle)
+    (sylvesterSepInf_nonneg n (Matrix.diagonal a) (Matrix.diagonal b))
+
 /-- A positive `SepLowerBound` certificate is below the exact infimum model,
     whenever the feasible ratio set is nonempty. -/
 theorem SepLowerBound_le_sylvesterSepInf_of_nonempty (n : Nat)
@@ -713,6 +1717,46 @@ theorem SepLowerBound_le_sylvesterSepInf_of_nonempty (n : Nat)
               field_simp [hXnorm_ne]
             _ <= frobNorm (sylvesterOp n A B X) / frobNorm X := by
               exact div_le_div_of_nonneg_right hnorm_le (le_of_lt hXnorm_pos)
+
+/-- In positive dimension, a positive `SepLowerBound` certificate is below the
+    exact infimum model of `sep(A,B)`. -/
+theorem SepLowerBound_le_sylvesterSepInf_of_pos_dim (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma) (hn : 0 < n) :
+    sigma <= sylvesterSepInf n A B := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_nonempty n A B sigma hSep
+      (sylvesterSepRatios_nonempty_of_pos_dim n A B hn)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal case:
+    a uniform diagonal-difference gap is below the exact infimum model of
+    `sep(A,B)` whenever the feasible ratio set is nonempty. -/
+theorem sylvesterSepInf_diagonal_ge_of_entrywise_abs_ge (n : Nat)
+    (a b : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hne : (sylvesterSepRatios n (Matrix.diagonal a)
+      (Matrix.diagonal b)).Nonempty) :
+    sigma <= sylvesterSepInf n (Matrix.diagonal a) (Matrix.diagonal b) := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_nonempty n
+      (Matrix.diagonal a) (Matrix.diagonal b) sigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hsigma hgap)
+      hne
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal case:
+    in positive dimension, a uniform diagonal-difference gap is below the exact
+    infimum model of `sep(A,B)`. -/
+theorem sylvesterSepInf_diagonal_ge_of_entrywise_abs_ge_of_pos_dim (n : Nat)
+    (a b : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hn : 0 < n) :
+    sigma <= sylvesterSepInf n (Matrix.diagonal a) (Matrix.diagonal b) := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n
+      (Matrix.diagonal a) (Matrix.diagonal b) sigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hsigma hgap) hn
 
 /-- Any positive number below the exact infimum model of `sep(A,B)` is a valid
     `SepLowerBound` certificate for the existing perturbation infrastructure. -/
@@ -770,6 +1814,16 @@ theorem SepLowerBound_iff_pos_le_sylvesterSepInf_of_nonempty (n : Nat)
   · intro h
     exact SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma h.1 h.2
 
+/-- In positive dimension, the existing positive lower-bound predicate is
+    equivalent to being a positive lower bound of the exact infimum model. -/
+theorem SepLowerBound_iff_pos_le_sylvesterSepInf_of_pos_dim (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real) (hn : 0 < n) :
+    SepLowerBound n A B sigma <->
+      0 < sigma /\ sigma <= sylvesterSepInf n A B := by
+  exact
+    SepLowerBound_iff_pos_le_sylvesterSepInf_of_nonempty n A B sigma
+      (sylvesterSepRatios_nonempty_of_pos_dim n A B hn)
+
 -- ============================================================
 -- A posteriori source wrapper from Chapter 16.4
 -- ============================================================
@@ -790,6 +1844,84 @@ theorem sylvester_relative_aposteriori_bound (n : Nat)
   div_le_div_of_nonneg_right
     (sylvester_aposteriori_bound n A B C X Xhat sigma hSigma hSep hExact hE_ne)
     (le_of_lt hX_pos)
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    an exact-infimum lower bound on `sep(A,B)` instantiates the Frobenius
+    a posteriori error-residual bound. -/
+theorem sylvester_aposteriori_bound_of_pos_le_sylvesterSepInf (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) := by
+  exact
+    sylvester_aposteriori_bound n A B C X Xhat sigma hSigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
+      hExact hE_ne
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    the source-shaped relative a posteriori bound follows from an
+    exact-infimum lower bound on `sep(A,B)`. -/
+theorem sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
+    (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound n A B C X Xhat sigma hSigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
+      hExact hE_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
+    diagonal case: a uniform diagonal-difference gap instantiates the
+    Frobenius a posteriori error-residual bound. -/
+theorem sylvester_aposteriori_bound_diagonal_of_entrywise_abs_ge (n : Nat)
+    (a b : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) *
+        frobNorm
+          (sylvesterResidual n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat) := by
+  exact
+    sylvester_aposteriori_bound n (Matrix.diagonal a) (Matrix.diagonal b)
+      C X Xhat sigma hSigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
+      hExact hE_ne
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
+    diagonal case: the source-shaped relative a posteriori bound follows from
+    a uniform lower bound on all diagonal differences. -/
+theorem sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge
+    (n : Nat)
+    (a b : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) *
+          frobNorm
+            (sylvesterResidual n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat sigma hSigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
+      hExact hE_ne hX_pos
 
 -- ============================================================
 -- Generalized equations from Chapter 16.5

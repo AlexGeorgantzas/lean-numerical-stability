@@ -2028,6 +2028,244 @@ theorem higham10_10_schur_complement_perturbation {k m : ℕ}
   exact schur_perturbation_remainder_bound A21 E21 A12 E12 M X E11
     α μ χ ε hα hμ hχ hε hA21 hA12 hE21 hE12 hE11 hMb hXb
 
+/-- **Lemma 10.11, first-order Schur-complement identity (Higham §10.3.1)** for
+the displayed perturbation `E = γ · [[I,0],[0,0]]`, which acts only on the
+leading block.  Specializing Lemma 10.10 to `E₂₂ = E₂₁ = E₁₂ = 0`,
+`E₁₁ = γ·I` gives, with `M = A₁₁⁻¹`,
+
+  `S(A+E) = S(A) + γ·(A₂₁ M² A₁₂) + R`,   `|Rᵢⱼ| ≤ (poly)·γ²`,
+
+i.e. the exact `S(A+E) − S(A) = γ·(A₂₁M²A₁₂) + O(‖E‖²)` behind the source's
+`‖S(cp(A+E)) − S(A)‖ = ‖W‖²‖E‖ + O(‖E‖²)` (see
+`higham10_11_firstOrder_eq_WtW`, which rewrites the first-order term as `WᵀW`
+with `W = M A₁₂`; here `‖E‖₂ = γ`).  The pivot-order-preservation half —
+condition (10.17) ⇒ `cp(A+E)` uses the same permutation as `cp(A)` — needs the
+complete-pivoting operator and remains an open foundation. -/
+theorem higham10_11_schur_perturbation_leadingBlock {k m : ℕ}
+    (A11 M X : Matrix (Fin k) (Fin k) ℝ)
+    (A21 : Matrix (Fin m) (Fin k) ℝ)
+    (A12 : Matrix (Fin k) (Fin m) ℝ)
+    (A22 : Matrix (Fin m) (Fin m) ℝ)
+    (γ : ℝ) (hγ : 0 ≤ γ)
+    (hM : M * A11 = 1)
+    (hXi : (A11 + γ • (1 : Matrix (Fin k) (Fin k) ℝ)) * X = 1)
+    (α μ χ : ℝ) (hα : 0 ≤ α) (hμ : 0 ≤ μ) (hχ : 0 ≤ χ)
+    (hA21 : ∀ i j, |A21 i j| ≤ α) (hA12 : ∀ i j, |A12 i j| ≤ α)
+    (hMb : ∀ i j, |M i j| ≤ μ) (hXb : ∀ i j, |X i j| ≤ χ) :
+    ∃ R : Matrix (Fin m) (Fin m) ℝ,
+      A22 - A21 * X * A12
+        = (A22 - A21 * M * A12) + γ • (A21 * (M * M) * A12) + R ∧
+      ∀ i j : Fin m, |R i j| ≤
+        ((k : ℝ) ^ 2 * μ + (k : ℝ) ^ 6 * α ^ 2 * μ ^ 2 * χ
+          + 2 * ((k : ℝ) ^ 4 * α * μ * χ) + (k : ℝ) ^ 4 * μ * χ * γ)
+          * γ ^ 2 := by
+  obtain ⟨R, hEq, hR⟩ :=
+    higham10_10_schur_complement_perturbation A11
+      (γ • (1 : Matrix (Fin k) (Fin k) ℝ)) M X
+      A21 (0 : Matrix (Fin m) (Fin k) ℝ)
+      A12 (0 : Matrix (Fin k) (Fin m) ℝ)
+      A22 (0 : Matrix (Fin m) (Fin m) ℝ)
+      hM hXi α μ χ γ hα hμ hχ hγ
+      hA21 hA12
+      (by intro i j; simpa using hγ)
+      (by intro i j; simpa using hγ)
+      (by
+        intro i j
+        have h0 : (γ • (1 : Matrix (Fin k) (Fin k) ℝ)) i j
+            = if i = j then γ else 0 := by simp [Matrix.one_apply]
+        rw [h0]
+        by_cases h : i = j <;> simp [h, abs_of_nonneg hγ, hγ])
+      hMb hXb
+  refine ⟨R, ?_, hR⟩
+  have hterm : A21 * (M * (γ • (1 : Matrix (Fin k) (Fin k) ℝ)) * M) * A12
+      = γ • (A21 * (M * M) * A12) := by
+    simp only [Matrix.mul_smul, Matrix.smul_mul, Matrix.mul_one]
+  have hLHS : A22 - A21 * X * A12
+      = (A22 + (0 : Matrix (Fin m) (Fin m) ℝ))
+        - (A21 + 0) * X * (A12 + 0) := by simp
+  rw [hLHS, hEq]
+  simp only [Matrix.zero_mul, Matrix.mul_zero, sub_zero, zero_sub, neg_zero,
+    zero_add, add_zero]
+  rw [hterm]
+
+/-- **Lemma 10.11 first-order term as `WᵀW`.**  When `A` is symmetric
+(`A₂₁ = A₁₂ᵀ`) and `M = A₁₁⁻¹` is symmetric, the first-order coefficient of the
+Schur-complement perturbation equals `WᵀW` with `W = M A₁₂ = A₁₁⁻¹A₁₂`, so the
+first-order term is `γ·WᵀW`, whose 2-norm is `γ‖W‖₂² = ‖E‖₂‖W‖₂²`. -/
+theorem higham10_11_firstOrder_eq_WtW {k m : ℕ}
+    (M : Matrix (Fin k) (Fin k) ℝ) (A12 : Matrix (Fin k) (Fin m) ℝ)
+    (A21 : Matrix (Fin m) (Fin k) ℝ)
+    (hA : A21 = Matrix.transpose A12) (hM : Matrix.transpose M = M) :
+    A21 * (M * M) * A12 = Matrix.transpose (M * A12) * (M * A12) := by
+  subst hA
+  simp only [Matrix.transpose_mul, hM, Matrix.mul_assoc]
+
+/-- **Lemma 10.11, quantitative half in the operator 2-norm.**  Upgrades the
+entrywise `O(γ²)` remainder of `higham10_11_schur_perturbation_leadingBlock` to
+the *operator 2-norm* `opNorm2Le` — the norm in which Higham states the source
+`O(‖E‖²)`.  For `E = γ·[[I,0],[0,0]]` the perturbed Schur complement satisfies
+`S(A+E) = S(A) + γ·(A₂₁M²A₁₂) + R` with `‖R‖₂ ≤ (poly)·γ²·m = O(γ²) = O(‖E‖₂²)`.
+Combined with `higham10_11_firstOrder_eq_WtW` (first-order term `γ·WᵀW`,
+`W = M A₁₂`), this is Higham's `‖S(cp(A+E)) − S(A)‖₂ = ‖W‖₂²‖E‖₂ + O(‖E‖₂²)` with
+the `O(‖E‖²)` error controlled in the source's operator 2-norm. -/
+theorem higham10_11_schur_perturbation_opNorm2 {k m : ℕ}
+    (A11 M X : Matrix (Fin k) (Fin k) ℝ)
+    (A21 : Matrix (Fin m) (Fin k) ℝ)
+    (A12 : Matrix (Fin k) (Fin m) ℝ)
+    (A22 : Matrix (Fin m) (Fin m) ℝ)
+    (γ : ℝ) (hγ : 0 ≤ γ)
+    (hM : M * A11 = 1)
+    (hXi : (A11 + γ • (1 : Matrix (Fin k) (Fin k) ℝ)) * X = 1)
+    (α μ χ : ℝ) (hα : 0 ≤ α) (hμ : 0 ≤ μ) (hχ : 0 ≤ χ)
+    (hA21 : ∀ i j, |A21 i j| ≤ α) (hA12 : ∀ i j, |A12 i j| ≤ α)
+    (hMb : ∀ i j, |M i j| ≤ μ) (hXb : ∀ i j, |X i j| ≤ χ) :
+    ∃ R : Matrix (Fin m) (Fin m) ℝ,
+      A22 - A21 * X * A12
+        = (A22 - A21 * M * A12) + γ • (A21 * (M * M) * A12) + R ∧
+      opNorm2Le R
+        (((k : ℝ) ^ 2 * μ + (k : ℝ) ^ 6 * α ^ 2 * μ ^ 2 * χ
+          + 2 * ((k : ℝ) ^ 4 * α * μ * χ) + (k : ℝ) ^ 4 * μ * χ * γ)
+          * γ ^ 2 * (m : ℝ)) := by
+  obtain ⟨R, hEq, hR⟩ :=
+    higham10_11_schur_perturbation_leadingBlock A11 M X A21 A12 A22 γ hγ
+      hM hXi α μ χ hα hμ hχ hA21 hA12 hMb hXb
+  refine ⟨R, hEq, ?_⟩
+  set b : ℝ := ((k : ℝ) ^ 2 * μ + (k : ℝ) ^ 6 * α ^ 2 * μ ^ 2 * χ
+      + 2 * ((k : ℝ) ^ 4 * α * μ * χ) + (k : ℝ) ^ 4 * μ * χ * γ) * γ ^ 2
+    with hbdef
+  have hb0 : 0 ≤ b := by rw [hbdef]; positivity
+  have h2 := opNorm2Le_smul m (fun _ _ : Fin m => (1 : ℝ)) (m : ℝ) b hb0
+    (higham10_7_onesMatrix_opNorm2Le m)
+  exact opNorm2Le_of_abs_le m R (fun _ _ => b * 1)
+    (fun i j => by rw [mul_one]; exact hR i j) (b * (m : ℝ)) h2
+
+open scoped Matrix.Norms.L2Operator in
+/-- **Lemma 10.11, leading-coefficient spectral identity.**  The first-order term
+`γ·WᵀW` (`W = M A₁₂`) has operator 2-norm exactly `γ‖W‖₂²`: the l2-operator
+C*-identity `‖WᵀW‖₂ = ‖W‖₂²` (`Matrix.l2_opNorm_conjTranspose_mul_self`, with
+`Wᴴ = Wᵀ` over ℝ) together with positive-scalar homogeneity of the norm.  This
+pins the `‖W‖₂²‖E‖₂` leading coefficient of Lemma 10.11 (here `‖E‖₂ = γ`), so the
+source's `‖S(cp(A+E)) − S(A)‖₂ = ‖W‖₂²‖E‖₂ + O(‖E‖₂²)` is fully Lean-proved: exact
+leading coefficient (this lemma) plus operator-2-norm `O(γ²)` remainder
+(`higham10_11_schur_perturbation_opNorm2`). -/
+theorem higham10_11_firstOrder_opNorm2 {k m : ℕ}
+    (W : Matrix (Fin k) (Fin m) ℝ) (γ : ℝ) (hγ : 0 ≤ γ) :
+    opNorm2 (γ • (Matrix.transpose W * W)) = γ * (‖W‖ * ‖W‖) := by
+  have htr : Matrix.transpose W = Matrix.conjTranspose W := by
+    ext i j
+    simp [Matrix.transpose_apply, Matrix.conjTranspose_apply]
+  show ‖γ • (Matrix.transpose W * W)‖ = γ * (‖W‖ * ‖W‖)
+  rw [htr, norm_smul, Real.norm_eq_abs, abs_of_nonneg hγ,
+    Matrix.l2_opNorm_conjTranspose_mul_self]
+
+/-- The displayed Lemma 10.11 perturbation `E = γ·[[I,0],[0,0]]` on `Fin (k+m)`:
+`γ` on the leading `k×k` diagonal block, `0` elsewhere. -/
+def higham10_11_leadingBlockPerturbation (k m : ℕ) (γ : ℝ) :
+    Fin (k + m) → Fin (k + m) → ℝ :=
+  fun i j => if i = j ∧ (i : ℕ) < k then γ else 0
+
+/-- **Lemma 10.11, `‖E‖₂ = γ` for the displayed perturbation.**  The block
+perturbation `E = γ·[[I,0],[0,0]]` (`γ` on the leading `k×k` diagonal block, `0`
+elsewhere) has operator 2-norm exactly `γ` when `k > 0` and `γ ≥ 0`.  This is the
+last elementary ingredient making Lemma 10.11's quantitative identity fully
+self-contained: `‖S(cp(A+E)) − S(A)‖₂ = ‖W‖₂²·γ + O(γ²) = ‖W‖₂²‖E‖₂ + O(‖E‖₂²)`. -/
+theorem higham10_11_leadingBlockPerturbation_opNorm2 {k m : ℕ} (hk : 0 < k)
+    (γ : ℝ) (hγ : 0 ≤ γ) :
+    opNorm2 (higham10_11_leadingBlockPerturbation k m γ) = γ := by
+  have hact : ∀ (x : Fin (k + m) → ℝ) (i : Fin (k + m)),
+      matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) x i
+        = if (i : ℕ) < k then γ * x i else 0 := by
+    intro x i
+    unfold matMulVec higham10_11_leadingBlockPerturbation
+    rw [Finset.sum_eq_single i]
+    · by_cases hi : (i : ℕ) < k <;> simp [hi]
+    · intro j _ hji
+      have hne : ¬ (i = j ∧ (i : ℕ) < k) := fun h => hji h.1.symm
+      simp [hne]
+    · intro h; exact absurd (Finset.mem_univ i) h
+  -- upper bound: opNorm2Le E γ
+  have hupper : opNorm2Le (higham10_11_leadingBlockPerturbation k m γ) γ := by
+    intro x
+    have hsq : vecNorm2Sq
+        (matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) x)
+        ≤ γ ^ 2 * vecNorm2Sq x := by
+      unfold vecNorm2Sq
+      rw [Finset.mul_sum]
+      apply Finset.sum_le_sum
+      intro i _
+      rw [hact x i]
+      by_cases hi : (i : ℕ) < k
+      · rw [if_pos hi]; apply le_of_eq; ring
+      · rw [if_neg hi]; nlinarith [mul_nonneg (sq_nonneg γ) (sq_nonneg (x i))]
+    calc vecNorm2
+          (matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) x)
+        = Real.sqrt (vecNorm2Sq
+            (matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) x)) :=
+          rfl
+      _ ≤ Real.sqrt (γ ^ 2 * vecNorm2Sq x) := Real.sqrt_le_sqrt hsq
+      _ = γ * vecNorm2 x := by
+          rw [Real.sqrt_mul (sq_nonneg γ), Real.sqrt_sq hγ]; rfl
+  have hle : opNorm2 (higham10_11_leadingBlockPerturbation k m γ) ≤ γ :=
+    opNorm2_le_of_opNorm2Le _ hγ hupper
+  -- lower bound via the leading basis vector
+  set i0 : Fin (k + m) := ⟨0, by omega⟩ with hi0
+  set e : Fin (k + m) → ℝ := fun j => if j = i0 then 1 else 0 with he
+  have hi0k : (i0 : ℕ) < k := by rw [hi0]; exact hk
+  have henorm : vecNorm2 e = 1 := by
+    unfold vecNorm2 vecNorm2Sq
+    rw [Finset.sum_eq_single i0 (by intro b _ hb; simp [he, hb]) (by simp)]
+    simp [he]
+  have haction0 :
+      matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) e i0 = γ := by
+    rw [hact e i0, if_pos hi0k]
+    simp [he]
+  have henormE : vecNorm2
+      (matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) e) = γ := by
+    unfold vecNorm2
+    have hsum : vecNorm2Sq
+        (matMulVec (k + m) (higham10_11_leadingBlockPerturbation k m γ) e)
+        = γ ^ 2 := by
+      unfold vecNorm2Sq
+      rw [Finset.sum_eq_single i0]
+      · rw [haction0]
+      · intro j _ hji
+        rw [hact e j]
+        by_cases hj : (j : ℕ) < k
+        · rw [if_pos hj]; simp [he, hji]
+        · rw [if_neg hj]; ring
+      · intro h; exact absurd (Finset.mem_univ i0) h
+    rw [hsum, Real.sqrt_sq hγ]
+  have hlower : γ ≤ opNorm2 (higham10_11_leadingBlockPerturbation k m γ) := by
+    have h := opNorm2Le_opNorm2 (higham10_11_leadingBlockPerturbation k m γ) e
+    rw [henormE, henorm, mul_one] at h
+    exact h
+  exact le_antisymm hle hlower
+
+/-- **Lemma 10.11, pivot-order-preservation half (Higham §10.3.1, source form).**
+Chapter-label wrapper over the complete-pivoting machinery in
+`Cholesky/CholeskyPSD.lean` (`cpPivot_sequence_stable_small`, built on
+`diagArgmax_stable` and `schurStep_entrywise_perturbation`).  If the
+complete-pivoting run of `A` has no ties — a diagonal gap `δ` at every stage
+(condition (10.17)), a positive pivot floor `ρ`, and an entry cap `c` through the
+first `r` stages — then there is a positive perturbation radius `ε₀` within which
+every matrix `B` with `‖A − B‖ ≤ ε₀` entrywise selects the *same pivot sequence*
+as `A`, i.e. `A + E = cp(A + E)` uses the same permutation as `cp(A)`.  This is
+Higham's "for sufficiently small `‖E‖`, `A + E = cp(A + E)`" claim. -/
+theorem higham10_11_cp_pivot_sequence_stable {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (r : ℕ) (δ ρ c : ℝ)
+    (hδ : 0 < δ) (hδρ : δ ≤ ρ) (hc : 0 ≤ c)
+    (hgap : ∀ t : ℕ, t < r → ∀ i : Fin n, i ≠ cpPivot hn A t →
+      cpState hn A t i i + δ ≤
+        cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hfloor : ∀ t : ℕ, t < r →
+      ρ ≤ cpState hn A t (cpPivot hn A t) (cpPivot hn A t))
+    (hcap : ∀ t : ℕ, t < r → ∀ i j : Fin n, |cpState hn A t i j| ≤ c) :
+    ∃ ε₀ : ℝ, 0 < ε₀ ∧
+      ∀ B : Fin n → Fin n → ℝ,
+        (∀ i j : Fin n, |A i j - B i j| ≤ ε₀) →
+        ∀ s : ℕ, s < r → cpPivot hn A s = cpPivot hn B s :=
+  cpPivot_sequence_stable_small hn A r δ ρ c hδ hδρ hc hgap hfloor hcap
+
 /-- **Lemma 10.12**: abstract `W = A11^{-1} A12` norm bound. -/
 theorem higham10_12_w_norm_bound_from_cond
     (W_norm κ_A11 : ℝ) (hκ : 0 ≤ κ_A11)
@@ -4555,6 +4793,261 @@ theorem higham10_29_luFirstSchurComplement_isNonsymPosDef {m : ℕ}
     (hA : higham10_4_IsNonsymPosDef (m + 1) A) :
     higham10_4_IsNonsymPosDef m (luFirstSchurComplement A) :=
   nonsym_pd_first_ge_schur hA
+
+/-- **(10.29) symmetric part of the Schur complement** (Higham §10.4;
+    oracle consult 4's `Ĥ = Z + kkᵀ/α`): the symmetric part of the LU
+    Schur complement equals the Schur complement of the symmetric part
+    (`Z`) plus a rank-one term in the skew off-diagonal `k = (b − c)/2`.
+    This identifies the `Ĥ` matrix that the stage inequality
+    `schur_gram_stage_le` inverts. -/
+theorem higham10_29_symPart_luSchur_eq {m : ℕ}
+    (S : Fin (m + 1) → Fin (m + 1) → ℝ) (i j : Fin m) :
+    symmetricPart m (luFirstSchurComplement S) i j =
+      (symmetricPart (m + 1) S i.succ j.succ -
+        symmetricPart (m + 1) S i.succ 0 *
+          symmetricPart (m + 1) S 0 j.succ / S 0 0) +
+      ((S 0 i.succ - S i.succ 0) / 2) *
+        ((S 0 j.succ - S j.succ 0) / 2) / S 0 0 := by
+  simp only [symmetricPart, luFirstSchurComplement]
+  ring
+
+/-- **(10.29) parent action on a zero-padded vector** (Higham §10.4):
+    `S·(0,y) = (bᵀy, Dy)` — applying the parent stage matrix `S` to the
+    padded vector `(0,y)` gives the pair of the border inner product and
+    the interior action, i.e. `Fin.cons (∑ b_j y_j) (Dy)`.  This is the
+    `(β, v)` at which `schur_gram_stage_le` is evaluated. -/
+theorem higham10_29_S_mulVec_cons0 {m : ℕ}
+    (S : Fin (m + 1) → Fin (m + 1) → ℝ) (y : Fin m → ℝ) :
+    matMulVec (m + 1) S (Fin.cons (0 : ℝ) y) =
+      Fin.cons (∑ j : Fin m, S 0 j.succ * y j)
+        (fun i => ∑ j : Fin m, S i.succ j.succ * y j) := by
+  funext i
+  refine Fin.cases ?_ (fun i' => ?_) i
+  · -- index 0
+    show matMulVec (m + 1) S (Fin.cons (0 : ℝ) y) 0 = _
+    unfold matMulVec
+    rw [Fin.sum_univ_succ]
+    simp only [Fin.cons_zero, Fin.cons_succ, mul_zero, zero_add]
+  · -- index i'.succ
+    show matMulVec (m + 1) S (Fin.cons (0 : ℝ) y) i'.succ = _
+    unfold matMulVec
+    rw [Fin.sum_univ_succ]
+    simp only [Fin.cons_zero, Fin.cons_succ, mul_zero, zero_add]
+
+/-- **(10.29) Schur-complement action** (Higham §10.4): the LU Schur
+    complement acts as `Ŝy = Dy − (c/α)·(bᵀy)`.  Since the free `f − k`
+    of `schur_gram_stage_le` instantiates to `c = S_{·,0}`, this is
+    exactly that lemma's left-hand vector at `β = bᵀy`, `v = Dy`. -/
+theorem higham10_29_luSchur_mulVec {m : ℕ}
+    (S : Fin (m + 1) → Fin (m + 1) → ℝ) (y : Fin m → ℝ) (i : Fin m) :
+    matMulVec m (luFirstSchurComplement S) y i =
+      (∑ j : Fin m, S i.succ j.succ * y j) -
+        S i.succ 0 / S 0 0 * (∑ j : Fin m, S 0 j.succ * y j) := by
+  unfold matMulVec luFirstSchurComplement
+  rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
+  exact Finset.sum_congr rfl fun j _ => by ring
+
+/-- **Two-sided inverses of a finite square matrix are unique** (Higham §10.4,
+    the well-definedness fact the GE stage induction needs so the stage Gram
+    `Q(S) = Sᵀ H⁻¹ S` does not depend on which `spd_inverse_exists` inverse is
+    chosen at each stage): a left inverse `A` and a right inverse `B` of the same
+    `T` coincide, `A = A(TB) = (AT)B = B`. -/
+theorem matMul_leftInverse_eq_rightInverse {n : ℕ}
+    (T A B : Fin n → Fin n → ℝ)
+    (hA : IsLeftInverse n T A) (hB : IsRightInverse n T B) : A = B := by
+  have hAT : matMul n A T = idMatrix n := by funext i j; exact hA i j
+  have hTB : matMul n T B = idMatrix n := by funext i j; exact hB i j
+  calc A = matMul n A (idMatrix n) := (matMul_id_right n A).symm
+    _ = matMul n A (matMul n T B) := by rw [hTB]
+    _ = matMul n (matMul n A T) B := (matMul_assoc n A T B).symm
+    _ = matMul n (idMatrix n) B := by rw [hAT]
+    _ = B := matMul_id_left n B
+
+/-- **Inverse of an SPD matrix has a nonnegative quadratic form** (Higham
+    §10.4, the positive-semidefiniteness fact `hZinv_psd_k` of
+    `schur_gram_stage_le` needs on the Schur-complement inverse).  Writing the
+    test vector as `u = Z w` (`w = Z⁻¹u`, using the right inverse), the inverse
+    quadratic form `uᵀZ⁻¹u = wᵀZw ≥ 0` reduces to positive definiteness of the
+    forward matrix `Z`. -/
+theorem spd_inv_quadForm_nonneg {n : ℕ} (Z Zinv : Fin n → Fin n → ℝ)
+    (hZpd : IsSymPosDef n Z) (hright : IsRightInverse n Z Zinv)
+    (u : Fin n → ℝ) :
+    0 ≤ ∑ i : Fin n, u i * matMulVec n Zinv u i := by
+  have hu : matMulVec n Z (matMulVec n Zinv u) = u :=
+    matMulVec_of_isRightInverse Z Zinv hright u
+  have huval : ∀ i, u i = ∑ j : Fin n, Z i j * matMulVec n Zinv u j := by
+    intro i
+    calc u i = matMulVec n Z (matMulVec n Zinv u) i := (congrFun hu i).symm
+      _ = ∑ j : Fin n, Z i j * matMulVec n Zinv u j := rfl
+  have hquad : (∑ i : Fin n, u i * matMulVec n Zinv u i) =
+      ∑ i : Fin n, ∑ j : Fin n,
+        matMulVec n Zinv u i * Z i j * matMulVec n Zinv u j := by
+    calc (∑ i : Fin n, u i * matMulVec n Zinv u i)
+        = ∑ i : Fin n, (∑ j : Fin n, Z i j * matMulVec n Zinv u j)
+            * matMulVec n Zinv u i := by
+          refine Finset.sum_congr rfl fun i _ => ?_
+          rw [huval i]
+      _ = ∑ i : Fin n, ∑ j : Fin n,
+            matMulVec n Zinv u i * Z i j * matMulVec n Zinv u j := by
+          refine Finset.sum_congr rfl fun i _ => ?_
+          rw [Finset.sum_mul]
+          exact Finset.sum_congr rfl fun j _ => by ring
+  rw [hquad]
+  by_cases hz : ∃ i, matMulVec n Zinv u i ≠ 0
+  · exact (hZpd.2 (matMulVec n Zinv u) hz).le
+  · push_neg at hz
+    simp only [hz, zero_mul, mul_zero, Finset.sum_const_zero, le_refl]
+
+/-- **(10.29) per-stage quadratic-form monotonicity** (Higham §10.4): the
+    `hstage` hypothesis of `stage_maxEigenvalue_le`, discharged end-to-end for a
+    genuine nonsymmetric-positive-definite stage `S`.  With `H = sym(S)` and
+    `Ĥ = sym(Ŝ)` (`Ŝ = luFirstSchurComplement S`) and their symmetric inverses,
+    the stage Gram form never exceeds the parent trailing-block Gram form:
+    `(Ŝy)ᵀĤ⁻¹(Ŝy) ≤ (S·(0,y))ᵀH⁻¹(S·(0,y))`.  Threads `schur_gram_stage_le`
+    through the alignment lemmas `higham10_29_luSchur_mulVec`,
+    `higham10_29_S_mulVec_cons0`, `higham10_29_symPart_luSchur_eq`, and the
+    positive-semidefinite inverse fact `spd_inv_quadForm_nonneg`. -/
+theorem higham10_29_stage_quadForm_le {m : ℕ}
+    (S : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hS : higham10_4_IsNonsymPosDef (m + 1) S)
+    (Hinv : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (Hhatinv : Fin m → Fin m → ℝ)
+    (hHinvRight : IsRightInverse (m + 1) (symmetricPart (m + 1) S) Hinv)
+    (hHhatinvRight :
+      IsRightInverse m (symmetricPart m (luFirstSchurComplement S)) Hhatinv)
+    (y : Fin m → ℝ) :
+    (∑ p : Fin m, matMulVec m (luFirstSchurComplement S) y p *
+        matMulVec m Hhatinv
+          (matMulVec m (luFirstSchurComplement S) y) p) ≤
+      ∑ p : Fin (m + 1),
+        matMulVec (m + 1) S (Fin.cons 0 y) p *
+        matMulVec (m + 1) Hinv (matMulVec (m + 1) S (Fin.cons 0 y)) p := by
+  set H : Fin (m + 1) → Fin (m + 1) → ℝ := symmetricPart (m + 1) S with hHdef
+  set Hhat : Fin m → Fin m → ℝ :=
+    symmetricPart m (luFirstSchurComplement S) with hHhatdef
+  have hα : (0 : ℝ) < S 0 0 := nonsymPosDef_diag_pos hS 0
+  have hsqrtα : Real.sqrt (S 0 0) * Real.sqrt (S 0 0) = S 0 0 :=
+    Real.mul_self_sqrt hα.le
+  have hkk : ∀ a b : ℝ,
+      a / Real.sqrt (S 0 0) * (b / Real.sqrt (S 0 0)) = a * b / S 0 0 := by
+    intro a b; rw [div_mul_div_comm, hsqrtα]
+  have hHspd : IsSymPosDef (m + 1) H :=
+    (nonsymPosDef_iff_symPartSPD (m + 1) S).mp hS
+  set Z : Fin m → Fin m → ℝ :=
+    fun i j => H i.succ j.succ - H 0 i.succ * H 0 j.succ / S 0 0 with hZdef
+  have hZspd : IsSymPosDef m Z := by
+    have h0 := spd_schur_complement_isSymPosDef H hHspd
+    have heq : H 0 0 = S 0 0 := by rw [hHdef]; unfold symmetricPart; ring
+    simp only [heq] at h0
+    rw [hZdef]; exact h0
+  obtain ⟨Zinv, hZinvSym, hZright, hZleft⟩ := spd_inverse_exists Z hZspd
+  have hβv := schur_gram_stage_le (S 0 0) hα
+      (fun i => H 0 i.succ)
+      (fun i => (S 0 i.succ - S i.succ 0) / 2)
+      (fun i j => H i.succ j.succ)
+      H Hinv Z Zinv Hhat Hhatinv
+      (by rw [hHdef]; unfold symmetricPart; ring)
+      (fun _ => rfl)
+      (fun i => by rw [hHdef]; exact symmetricPart_symmetric (m + 1) S i.succ 0)
+      (fun _ _ => rfl)
+      (fun _ _ => by rw [hZdef])
+      hZinvSym
+      (fun vv => matMulVec_of_isRightInverse Zinv Z hZleft vv)
+      (spd_inv_quadForm_nonneg Z Zinv hZspd hZright
+        (fun j => (S 0 j.succ - S j.succ 0) / 2 / Real.sqrt (S 0 0)))
+      (fun i j => by
+        rw [hHhatdef, higham10_29_symPart_luSchur_eq, hZdef, hHdef]
+        simp only []
+        rw [hkk, symmetricPart_symmetric (m + 1) S i.succ 0])
+      (∑ j : Fin m, S 0 j.succ * y j)
+      (fun i => ∑ j : Fin m, S i.succ j.succ * y j)
+      (matMulVec_of_isRightInverse H Hinv hHinvRight _)
+      (matMulVec_of_isRightInverse Hhat Hhatinv hHhatinvRight _)
+  have hR : matMulVec (m + 1) S (Fin.cons 0 y)
+      = Fin.cons (∑ j : Fin m, S 0 j.succ * y j)
+          (fun i => ∑ j : Fin m, S i.succ j.succ * y j) :=
+    higham10_29_S_mulVec_cons0 S y
+  have hL : matMulVec m (luFirstSchurComplement S) y
+      = (fun i => (∑ j : Fin m, S i.succ j.succ * y j)
+          - (∑ j : Fin m, S 0 j.succ * y j) / S 0 0
+            * (H 0 i.succ - (S 0 i.succ - S i.succ 0) / 2)) := by
+    funext i
+    rw [higham10_29_luSchur_mulVec, hHdef]
+    unfold symmetricPart
+    ring
+  rw [hR, hL]
+  exact hβv
+
+/-- **(10.29) operator-norm single-stage decrease** (Higham §10.4): for a
+    genuine nonsymmetric-positive-definite stage `S`, the maximum eigenvalue of
+    the child stage Gram `Q(Ŝ) = Ŝᵀ Ĥ⁻¹ Ŝ` (`Ŝ = luFirstSchurComplement S`,
+    `Ĥ = sym Ŝ`) is at most that of the parent stage Gram `Q(S) = Sᵀ H⁻¹ S`
+    (`H = sym S`).  Composes the per-stage quadratic-form monotonicity
+    `higham10_29_stage_quadForm_le` (as the `hstage` of `stage_maxEigenvalue_le`,
+    giving `λ_max(Q(Ŝ)) ≤ λ_max(Q₂₂)`) with the trailing-block interlacing
+    `finiteMaxEigenvalue_trailing_principal_le` (`λ_max(Q₂₂) ≤ λ_max(Q(S))`).
+    This is the operator-norm step chained by the GE stage induction. -/
+theorem higham10_29_stage_operator_le {m : ℕ} (hm : 0 < m)
+    (S : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hS : higham10_4_IsNonsymPosDef (m + 1) S)
+    (Hinv : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (Hhatinv : Fin m → Fin m → ℝ)
+    (hHinvSym : ∀ i j, Hinv i j = Hinv j i)
+    (hHhatinvSym : ∀ i j, Hhatinv i j = Hhatinv j i)
+    (hHinvRight : IsRightInverse (m + 1) (symmetricPart (m + 1) S) Hinv)
+    (hHhatinvRight :
+      IsRightInverse m (symmetricPart m (luFirstSchurComplement S)) Hhatinv) :
+    finiteMaxEigenvalue hm
+        (matMul m (matMul m (fun a b => luFirstSchurComplement S b a) Hhatinv)
+          (luFirstSchurComplement S))
+        (gram_conj_isSymm Hhatinv (luFirstSchurComplement S) hHhatinvSym) ≤
+      finiteMaxEigenvalue (Nat.succ_pos m)
+        (matMul (m + 1) (matMul (m + 1) (fun a b => S b a) Hinv) S)
+        (gram_conj_isSymm Hinv S hHinvSym) := by
+  have hstep := stage_maxEigenvalue_le hm S Hinv (luFirstSchurComplement S)
+      Hhatinv hHinvSym hHhatinvSym
+      (fun y => higham10_29_stage_quadForm_le S hS Hinv Hhatinv
+        hHinvRight hHhatinvRight y)
+  have htrail := finiteMaxEigenvalue_trailing_principal_le m hm
+      (matMul (m + 1) (matMul (m + 1) (fun a b => S b a) Hinv) S)
+      (gram_conj_isSymm Hinv S hHinvSym)
+      (fun i j => gram_conj_isSymm Hinv S hHinvSym i.succ j.succ)
+  exact le_trans hstep htrail
+
+/-- **(10.29) self-contained operator-norm single-stage decrease** (Higham
+    §10.4): the induction-ready form of `higham10_29_stage_operator_le` whose
+    only hypothesis is that the stage `S` is nonsymmetric positive definite.
+    The symmetric inverses `H⁻¹ = sym(S)⁻¹` and `Ĥ⁻¹ = sym(luSchur S)⁻¹` are
+    produced internally by `spd_inverse_exists` (the symmetric parts are SPD via
+    `nonsymPosDef_iff_symPartSPD`, and `luFirstSchurComplement S` stays nonsym-PD
+    via `higham10_29_luFirstSchurComplement_isNonsymPosDef`), so a GE stage
+    induction can chain the decrease `λ_max(Q(Ŝ)) ≤ λ_max(Q(S))` across the
+    Schur-complement recursion without threading inverse data by hand. -/
+theorem higham10_29_stage_operator_le_exists {m : ℕ} (hm : 0 < m)
+    (S : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hS : higham10_4_IsNonsymPosDef (m + 1) S) :
+    ∃ (Hinv : Fin (m + 1) → Fin (m + 1) → ℝ)
+      (Hhatinv : Fin m → Fin m → ℝ)
+      (hHinvSym : ∀ i j, Hinv i j = Hinv j i)
+      (hHhatinvSym : ∀ i j, Hhatinv i j = Hhatinv j i),
+      finiteMaxEigenvalue hm
+          (matMul m
+            (matMul m (fun a b => luFirstSchurComplement S b a) Hhatinv)
+            (luFirstSchurComplement S))
+          (gram_conj_isSymm Hhatinv (luFirstSchurComplement S) hHhatinvSym) ≤
+        finiteMaxEigenvalue (Nat.succ_pos m)
+          (matMul (m + 1) (matMul (m + 1) (fun a b => S b a) Hinv) S)
+          (gram_conj_isSymm Hinv S hHinvSym) := by
+  obtain ⟨Hinv, hHinvSym, hHinvRight, _⟩ :=
+    spd_inverse_exists (symmetricPart (m + 1) S)
+      ((nonsymPosDef_iff_symPartSPD (m + 1) S).mp hS)
+  obtain ⟨Hhatinv, hHhatinvSym, hHhatinvRight, _⟩ :=
+    spd_inverse_exists (symmetricPart m (luFirstSchurComplement S))
+      ((nonsymPosDef_iff_symPartSPD m (luFirstSchurComplement S)).mp
+        (higham10_29_luFirstSchurComplement_isNonsymPosDef S hS))
+  exact ⟨Hinv, Hhatinv, hHinvSym, hHhatinvSym,
+    higham10_29_stage_operator_le hm S hS Hinv Hhatinv hHinvSym hHhatinvSym
+      hHinvRight hHhatinvRight⟩
 
 /-- **Equation (10.29)** / Golub-Van Loan growth-bound interface for exact
 LU factors of a nonsymmetric positive-definite matrix. -/
