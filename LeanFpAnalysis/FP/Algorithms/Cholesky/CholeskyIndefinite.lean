@@ -629,6 +629,57 @@ theorem bunch_kaufman_solve_backward_error (n : ℕ) (fp : FPModel)
         x_hat j = b (σ i)) :=
   hsolve
 
+/-- **Floating-point backward error of one 1×1 Schur-complement update**
+    (Higham §11.1, floating-point form of the block-LDLᵀ Schur step (11.3)).
+
+    For a 1×1 pivot the diagonal-pivoting method updates a Schur entry by
+    `s = fl(a − fl(fl(c₁/e)·c₂))` (multiplier, product, subtract — three rounded
+    operations).  Under the standard model this computed value equals the exact
+    Schur entry `a − c₁c₂/e` plus a genuine backward error `Δ` bounded by
+    `γ₃·(|a| + |c₁c₂/e|)`.  The error is *derived* from the model laws via
+    `prod_error_bound`, not assumed; it is the floating-point analogue of
+    `oneByOne_schur_growth` and the atomic per-step ingredient of the
+    Theorem 11.3 block-LDLᵀ backward-error bound. -/
+theorem fl_oneByOne_schur_step_error (fp : FPModel) (a e c1 c2 : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 3 * (|a| + |c1 * c2 / e|) ∧
+      fp.fl_sub a (fp.fl_mul (fp.fl_div c1 e) c2) = (a - c1 * c2 / e) + Δ := by
+  obtain ⟨δ1, hδ1, hm⟩ := fp.model_div c1 e he
+  obtain ⟨δ2, hδ2, hp⟩ := fp.model_mul (fp.fl_div c1 e) c2
+  obtain ⟨δ3, hδ3, hs⟩ := fp.model_sub a (fp.fl_mul (fp.fl_div c1 e) c2)
+  obtain ⟨θ, hθ, hprod⟩ :=
+    prod_error_bound fp 3 ![δ1, δ2, δ3]
+      (by intro i; fin_cases i <;> simp_all) hval
+  have hfactor : (1 + δ1) * (1 + δ2) * (1 + δ3) = 1 + θ := by
+    have h := hprod
+    rw [Fin.prod_univ_three] at h
+    simpa using h
+  have hs_eq : fp.fl_sub a (fp.fl_mul (fp.fl_div c1 e) c2)
+      = a * (1 + δ3) - (c1 * c2 / e) * (1 + θ) := by
+    rw [hs, hp, hm, ← hfactor]; ring
+  refine ⟨a * δ3 - (c1 * c2 / e) * θ, ?_, ?_⟩
+  · have hu3 : fp.u ≤ gamma fp 3 := u_le_gamma fp (by norm_num) hval
+    have hγ0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+    have htri : |a * δ3 - (c1 * c2 / e) * θ| ≤ |a * δ3| + |(c1 * c2 / e) * θ| := by
+      have h := abs_add_le (a * δ3) (-((c1 * c2 / e) * θ))
+      rwa [← sub_eq_add_neg, abs_neg] at h
+    have e1 : |a * δ3 - (c1 * c2 / e) * θ|
+        ≤ |a| * fp.u + |c1 * c2 / e| * gamma fp 3 := by
+      calc |a * δ3 - (c1 * c2 / e) * θ|
+          ≤ |a * δ3| + |(c1 * c2 / e) * θ| := htri
+        _ = |a| * |δ3| + |c1 * c2 / e| * |θ| := by rw [abs_mul, abs_mul]
+        _ ≤ |a| * fp.u + |c1 * c2 / e| * gamma fp 3 :=
+            add_le_add (mul_le_mul_of_nonneg_left hδ3 (abs_nonneg _))
+              (mul_le_mul_of_nonneg_left hθ (abs_nonneg _))
+    have e2 : |a| * fp.u + |c1 * c2 / e| * gamma fp 3
+        ≤ gamma fp 3 * (|a| + |c1 * c2 / e|) := by
+      have hle : |a| * fp.u ≤ |a| * gamma fp 3 :=
+        mul_le_mul_of_nonneg_left hu3 (abs_nonneg _)
+      nlinarith [hle, abs_nonneg (c1 * c2 / e), hγ0]
+    exact le_trans e1 e2
+  · rw [hs_eq]; ring
+
 -- ============================================================
 -- Chapter 11.1.4  Tridiagonal symmetric matrices
 -- ============================================================
