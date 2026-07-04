@@ -2539,6 +2539,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_f_le_h`
 - `higham9_20_tridiag_lu_perturbation_model_mono`
 - `higham9_21_tridiag_solve_perturbation_model_mono`
+- `higham9_20_tridiag_lu_perturbation_model_iff_matrix_mul`
+- `higham9_21_tridiag_solve_perturbation_model_iff_matrix_mulVec`
 - `higham9_20_tridiag_lu_perturbation_model_of_LUBackwardError_le`
 - `higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopCertificate`
 - `higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopAbsBudgetCertificate`
@@ -2887,6 +2889,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_23_forward_error_exact_condSkeel_of_backward_error`
 - `higham9_23_forward_error_firstOrder_cond_product_of_backward_error`
 - `higham9_23_firstOrderLe_of_backward_error_coeff`
+- `higham9_23_matrix_forward_error_exact_condSkeel`
+- `higham9_23_matrix_forward_error_firstOrder_cond_product`
+- `higham9_23_matrix_forward_error_exact_condSkeel_of_backward_error`
+- `higham9_23_matrix_forward_error_firstOrder_cond_product_of_backward_error`
 - `higham9_24_scaledMatrix`
 - `higham9_24_scaledRhs`
 - `higham9_24_scaledUnknown`
@@ -2916,6 +2922,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_26_stage_entry_abs_le_two_norm`
 - `higham9_26_stage_entry_abs_le_of_uniform_bounds`
 - `higham9_26_stage_entry_abs_le_of_two_norm_uniform_bounds`
+- `higham9_26_rowPrefix`
+- `higham9_26_colPrefix`
+- `higham9_26_matrix_stage_entry_abs_le`
+- `higham9_26_matrix_stage_entry_abs_le_two_norm`
+- `higham9_26_matrix_stage_entry_abs_le_of_uniform_bounds`
+- `higham9_26_matrix_stage_entry_abs_le_of_two_norm_uniform_bounds`
 - `higham9_15_lu_perturbation_identity`
 - `higham9_15_lu_perturbation_relative_bound`
 - `higham9_15_lu_perturbation_forward_bound`
@@ -2929,6 +2941,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_27_matrix_mul_opNorm2_lt_one_of_product_lt_one`
 - `higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound`
 - `higham9_15_GMatrix_nonnegative_resolvent_nonsingInv_of_row_sum_bound`
+- `higham9_15_matrix_mul_abs_infNormBound_of_row_sum_bound`
+- `higham9_15_matrix_mul_nonnegative_resolvent_nonsingInv_of_row_sum_bound`
 - `higham9_27_GMatrix_ratio_le_product_ratio`
 - `higham9_27_matrix_mul_ratio_le_product_ratio`
 - `higham9_27_GMatrix_frobenius_le_exact_opNorm2_product`
