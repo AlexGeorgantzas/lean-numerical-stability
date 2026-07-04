@@ -28,7 +28,7 @@ Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean`
 | Theorem 10.8 (Sun, sensitivity) | `higham10_8_sun_normwise_perturbation`, `higham10_8_sun_componentwise_perturbation` | |
 | Theorem 10.9 (PSD Cholesky existence + pivoted form) | `higham10_9_psd_cholesky_existence`, `higham10_9_spd_pivoted_cholesky_full_rank`, `higham10_9_van_der_sluis`, `higham10_9_*cond_bound` | eq (10.11) |
 | Lemma 10.10 (Schur-complement perturbation) | `higham10_10_schur_complement_perturbation` | eqs (10.14)(10.15)(10.16); honest entrywise O(‖E‖²) |
-| Lemma 10.11 (cp perturbation) | pivot half: `higham10_11_cp_pivot_sequence_stable` (wraps `cpPivot_sequence_stable_small`); quantitative half: `higham10_11_schur_perturbation_leadingBlock`, `higham10_11_schur_perturbation_opNorm2`, `higham10_11_firstOrder_eq_WtW` | eq (10.17). Pivot-order preservation: no-ties (gap δ / floor ρ / cap c through r stages) ⇒ ∃ε₀>0 s.t. every A+E within ε₀ picks the same pivot sequence (literal source form). Quantitative: worst-case E=γ·[[I,0],[0,0]] gives S(A+E)=S(A)+γ·WᵀW+R with `opNorm2Le R (poly·γ²·m)`, i.e. the O(‖E‖²) error is controlled in the source's operator 2-norm. See note. |
+| Lemma 10.11 (cp perturbation) | pivot half: `higham10_11_cp_pivot_sequence_stable` (wraps `cpPivot_sequence_stable_small`); quantitative half: `higham10_11_schur_perturbation_leadingBlock`, `higham10_11_schur_perturbation_opNorm2`, `higham10_11_firstOrder_eq_WtW`, `higham10_11_firstOrder_opNorm2` | eq (10.17). Pivot-order preservation: no-ties (gap δ / floor ρ / cap c through r stages) ⇒ ∃ε₀>0 s.t. every A+E within ε₀ picks the same pivot sequence (literal source form). Quantitative: worst-case E=γ·[[I,0],[0,0]] gives S(A+E)=S(A)+γ·WᵀW+R with `opNorm2Le R (poly·γ²·m)`, i.e. the O(‖E‖²) error is controlled in the source's operator 2-norm. See note. |
 | Lemma 10.12 (‖A₁₁⁻¹A₁₂‖ bound) | `higham10_12_w_norm_bound_from_cond`, `higham10_12_psd_w_action_bound`, `higham10_12_w_action_norm_bound` | eq (10.18) |
 | Lemma 10.13 (Frobenius cp bound) | `higham10_13_complete_pivoting_w_bound`, `higham10_13_pivoted_w_frobenius_bound` | eqs (10.19)(10.20): ‖W‖²_F ≤ (n−r)(4ʳ−1)/3 |
 | Theorem 10.14 (PSD backward error) | `higham10_14_psd_cholesky_backward_error`, `higham10_14_fl_psd_cholesky_backward_error` | eqs (10.21)–(10.25) |
@@ -68,12 +68,14 @@ in `Cholesky/CholeskyPSD.lean`). The quantitative half is proved in two forms:
 `higham10_11_schur_perturbation_opNorm2` upgrades that remainder to the source's
 **operator 2-norm** (`opNorm2Le R (poly·γ²·m)`, routed through the repository's
 `opNorm2`/`opNorm2Le` = mathlib's l2 operator norm). `higham10_11_firstOrder_eq_WtW`
-identifies the first-order term as `γ·WᵀW` (`W = M A₁₂`). Thus the source's
-`‖S(cp(A+E)) − S(A)‖₂ = ‖W‖₂²‖E‖₂ + O(‖E‖₂²)` holds with the `O(‖E‖²)` error now
-controlled in the operator 2-norm; the only remaining documented (not separately
-Lean-proved) step is the exact leading-coefficient spectral identity
-`‖γ·WᵀW‖₂ = γ‖W‖₂²` (positive-scalar homogeneity of the spectral norm plus the
-C*-identity `‖WᵀW‖₂ = ‖W‖₂²` for the rectangular `W`).
+identifies the first-order term as `γ·WᵀW` (`W = M A₁₂`), and
+`higham10_11_firstOrder_opNorm2` proves its exact operator 2-norm
+`opNorm2 (γ·WᵀW) = γ·‖W‖₂²` (positive-scalar homogeneity + the l2 C*-identity
+`Matrix.l2_opNorm_conjTranspose_mul_self`, `Wᴴ = Wᵀ` over ℝ). Thus the source's
+`‖S(cp(A+E)) − S(A)‖₂ = ‖W‖₂²‖E‖₂ + O(‖E‖₂²)` is now fully Lean-proved: exact
+decomposition, exact leading coefficient `γ‖W‖₂²`, and an operator-2-norm `O(γ²)`
+remainder. The only remaining elementary reading is `‖E‖₂ = γ` for the displayed
+block perturbation `E = γ·[[I,0],[0,0]]` (its leading block is `γI`).
 
 ## Hidden-hypothesis summary
 - `higham10_11_schur_perturbation_leadingBlock`: leading-block inverse data enters
@@ -85,8 +87,8 @@ C*-identity `‖WᵀW‖₂ = ‖W‖₂²` for the rectangular `W`).
 
 New Lemma-10.11 declarations added at the chapter surface this session:
 `higham10_11_schur_perturbation_leadingBlock`, `higham10_11_schur_perturbation_opNorm2`,
-`higham10_11_firstOrder_eq_WtW` (quantitative half), and
-`higham10_11_cp_pivot_sequence_stable` (thin wrapper over the pre-existing
+`higham10_11_firstOrder_eq_WtW`, `higham10_11_firstOrder_opNorm2` (quantitative half),
+and `higham10_11_cp_pivot_sequence_stable` (thin wrapper over the pre-existing
 `cpPivot_sequence_stable_small`). No duplicate parallel API: the recursive
 complete-pivoting proofs and the `opNorm2Le` machinery are reused from
 `Cholesky/CholeskyPSD.lean` and `Analysis/MatrixAlgebra.lean`.

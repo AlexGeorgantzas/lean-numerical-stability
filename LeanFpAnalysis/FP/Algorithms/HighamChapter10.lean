@@ -2139,6 +2139,25 @@ theorem higham10_11_schur_perturbation_opNorm2 {k m : ℕ}
   exact opNorm2Le_of_abs_le m R (fun _ _ => b * 1)
     (fun i j => by rw [mul_one]; exact hR i j) (b * (m : ℝ)) h2
 
+open scoped Matrix.Norms.L2Operator in
+/-- **Lemma 10.11, leading-coefficient spectral identity.**  The first-order term
+`γ·WᵀW` (`W = M A₁₂`) has operator 2-norm exactly `γ‖W‖₂²`: the l2-operator
+C*-identity `‖WᵀW‖₂ = ‖W‖₂²` (`Matrix.l2_opNorm_conjTranspose_mul_self`, with
+`Wᴴ = Wᵀ` over ℝ) together with positive-scalar homogeneity of the norm.  This
+pins the `‖W‖₂²‖E‖₂` leading coefficient of Lemma 10.11 (here `‖E‖₂ = γ`), so the
+source's `‖S(cp(A+E)) − S(A)‖₂ = ‖W‖₂²‖E‖₂ + O(‖E‖₂²)` is fully Lean-proved: exact
+leading coefficient (this lemma) plus operator-2-norm `O(γ²)` remainder
+(`higham10_11_schur_perturbation_opNorm2`). -/
+theorem higham10_11_firstOrder_opNorm2 {k m : ℕ}
+    (W : Matrix (Fin k) (Fin m) ℝ) (γ : ℝ) (hγ : 0 ≤ γ) :
+    opNorm2 (γ • (Matrix.transpose W * W)) = γ * (‖W‖ * ‖W‖) := by
+  have htr : Matrix.transpose W = Matrix.conjTranspose W := by
+    ext i j
+    simp [Matrix.transpose_apply, Matrix.conjTranspose_apply]
+  show ‖γ • (Matrix.transpose W * W)‖ = γ * (‖W‖ * ‖W‖)
+  rw [htr, norm_smul, Real.norm_eq_abs, abs_of_nonneg hγ,
+    Matrix.l2_opNorm_conjTranspose_mul_self]
+
 /-- **Lemma 10.11, pivot-order-preservation half (Higham §10.3.1, source form).**
 Chapter-label wrapper over the complete-pivoting machinery in
 `Cholesky/CholeskyPSD.lean` (`cpPivot_sequence_stable_small`, built on
