@@ -104,7 +104,10 @@ for (17.21), the consistent-system singular telescoping wrappers
 `singular_stationary_iterate_consistent_split` toward (17.26), plus
 `singularErrorSourceTerm` for the (17.28) `S_m` source term and
 `singular_error_split_finite` for the finite algebraic core of the (17.27)
-range/null source split under the explicit fixed-null component hypothesis.
+range/null source split, now with the Drazin-projector wrapper
+`singular_error_split_finite_of_indexOneDrazin_projector` discharging the
+fixed-null component hypothesis from an index-one Drazin certificate for
+`I - G`.
 The scale-independence passage on p.327 now has checked algebraic and
 characteristic-polynomial wrappers through `stationaryRowColumnScale`,
 `stationaryScaledInverse`, `stationaryRowColumnScale_splittingSpec`,
