@@ -11,6 +11,7 @@ import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidtPolar
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
+import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSpec
 
 namespace LeanFpAnalysis.FP
 
@@ -6474,6 +6475,44 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_matrix_range_null_n
     A B Bplus APplus hPenrose1
       (theorem20_8_APplus_range_null_of_constraint_annihilates B APplus hBAPplus)
       hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the first Penrose equation for the source reduced operator `AP` extracted
+    from the repository Moore--Penrose certificate structure. -/
+theorem theorem20_8_penrose1_of_rectMoorePenrosePseudoinverse
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B Bplus) APplus) :
+    rectMatMul (rectMatMul (theorem20_8AP A B Bplus) APplus)
+        (theorem20_8AP A B Bplus) =
+      theorem20_8AP A B Bplus :=
+  hMP.reproduces_matrix
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    a Moore--Penrose certificate for `(AP)^+`, matrix-level annihilation
+    `B*(AP)^+ = 0`, and (20.24)'s null-intersection condition together give
+    the reduced-operator left inverse on `null(B)`. -/
+theorem theorem20_8_AP_left_inverse_on_nullspace_of_MP_matrix_range_null_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B Bplus) APplus)
+    (hBAPplus : rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus) z) = z :=
+  theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_matrix_range_null_nullIntersection
+    A B Bplus APplus
+      (theorem20_8_penrose1_of_rectMoorePenrosePseudoinverse
+        A B Bplus APplus hMP)
+      hBAPplus hnull
 
 /-- Higham, 2nd ed., Chapter 20, equation (20.24): vertical stack
     `[A; B]`, the local representation of `[A^T, B^T]^T`. -/
