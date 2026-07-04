@@ -3731,6 +3731,84 @@ theorem theorem20_8_vecNorm2_BAplus_constraint_defect_difference_le_of_maxRelati
         ((eps * frobNormRect B) * vecNorm2 diff) :=
           mul_le_mul_of_nonneg_left (hDeltaB diff) hop_nonneg
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the reduced data-forcing correction changes from
+    `(AP)^+ * (DeltaA*x - Deltab)` to `(AP)^+ * (DeltaA*y - Deltab)`
+    by an explicit `DeltaA*(y-x)` remainder. -/
+theorem theorem20_8_vecNorm2_APplus_data_forcing_difference_le_of_maxRelativePerturbation
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (y x : Fin n → ℝ) {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps) :
+    vecNorm2
+        (fun j : Fin n =>
+          rectMatMulVec APplus
+              (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+            rectMatMulVec APplus
+              (fun i : Fin m => rectMatMulVec DeltaA x i - Deltab i) j) ≤
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+        ((eps * frobNormRect A) * vecNorm2 (fun j : Fin n => y j - x j)) := by
+  let forcingY : Fin m → ℝ :=
+    fun i => rectMatMulVec DeltaA y i - Deltab i
+  let forcingX : Fin m → ℝ :=
+    fun i => rectMatMulVec DeltaA x i - Deltab i
+  let diff : Fin n → ℝ := fun j => y j - x j
+  have hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps :=
+    theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax
+  have hDeltaA :
+      rectOpNorm2Le DeltaA (eps * frobNormRect A) :=
+    theorem20_8_rectOpNorm2Le_DeltaA_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget
+  have hop_nonneg :
+      0 ≤ complexMatrixOp2 (realRectToCMatrix APplus) :=
+    complexMatrixOp2_nonneg (realRectToCMatrix APplus)
+  have hleft :
+      vecNorm2
+          (fun j : Fin n =>
+            rectMatMulVec APplus forcingY j - rectMatMulVec APplus forcingX j) =
+        vecNorm2
+          (rectMatMulVec APplus (fun i : Fin m => forcingY i - forcingX i)) := by
+    simpa [forcingY, forcingX] using
+      congrArg vecNorm2 (rectMatMulVec_sub APplus forcingY forcingX).symm
+  have hforcing_norm :
+      vecNorm2 (fun i : Fin m => forcingY i - forcingX i) =
+        vecNorm2 (rectMatMulVec DeltaA diff) := by
+    have hforcing :
+        (fun i : Fin m => forcingY i - forcingX i) =
+          rectMatMulVec DeltaA diff := by
+      funext i
+      dsimp [forcingY, forcingX, diff]
+      have hsub := congrFun (rectMatMulVec_sub DeltaA y x) i
+      rw [hsub]
+      ring
+    rw [hforcing]
+  calc
+    vecNorm2
+        (fun j : Fin n =>
+          rectMatMulVec APplus
+              (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+            rectMatMulVec APplus
+              (fun i : Fin m => rectMatMulVec DeltaA x i - Deltab i) j)
+        = vecNorm2 (rectMatMulVec APplus
+            (fun i : Fin m => forcingY i - forcingX i)) := hleft
+    _ ≤ complexMatrixOp2 (realRectToCMatrix APplus) *
+        vecNorm2 (fun i : Fin m => forcingY i - forcingX i) :=
+          rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+            APplus le_rfl (fun i : Fin m => forcingY i - forcingX i)
+    _ = complexMatrixOp2 (realRectToCMatrix APplus) *
+        vecNorm2 (rectMatMulVec DeltaA diff) := by rw [hforcing_norm]
+    _ ≤ complexMatrixOp2 (realRectToCMatrix APplus) *
+        ((eps * frobNormRect A) * vecNorm2 diff) :=
+          mul_le_mul_of_nonneg_left (hDeltaA diff) hop_nonneg
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     triangle-inequality integration of the direct and reduced-data correction
     vectors under the displayed maximum relative perturbation assumption. -/
