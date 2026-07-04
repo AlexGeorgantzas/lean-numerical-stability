@@ -336,6 +336,10 @@ Row-by-row audit of every primary label against the rendered chapter pages (pdft
 | (19.36) | Zha columnwise sensitivity via cond(R^{-1}) | none | absent |
 | (19.37) | norm2(Q - Q-hat) <= c_{m,n}*u*phi(A) | none (also blocked on the missing (19.13)) | absent |
 
+### Wrapper-Gap Progress
+
+CLOSED (module `QR/Higham19Labels.lean`, axiom-clean, on `main`): **Lemma 19.1 Construction 1** (`H19_Lemma19_1_construction1_backward_error` — the eq (19.1) usual-sign construction contract; eq (19.2) alternative sign remains open); **Lemma 19.2** (`H19_Lemma19_2_householder_apply_backward_error` — the `ŷ = (P+ΔP)b` backward error at a single collapsed `γ`-class constant `γ_{23n+46}`, via the reusable constants-collapse lemma `sqrt_u_sq_add_two_gamma_le_gamma`). REMAINING wrapper gaps (Lemma 19.3 sequence wrapper + n=1 `(Q+ΔQ)ᵀ` corollary, Theorem 19.5 columnwise assembly, Lemma 19.7 printed `γ₄`, Lemma 19.8 pair-support sharpening) are closable and queued for the next work cycle.
+
 ### Actionable Small-Wrapper Gaps (from this audit)
 
 - Lemma 19.2 closing wrapper: all mathematics is proved (HouseholderVectorError encodes (19.5) exactly; fl_householderConstructApply_appError gives the printed (P+DeltaP)b/Frobenius conclusion). Missing only: a constants-collapse lemma sqrt(n*u^2) + 2*gamma(11n+23) <= gamma(c*n+c') under standard smallness, plus an H19.Lemma19_2.householder_apply_backward_error wrapper. Also fixes the 1st-edition 'Lemma 18.2' comment drift that makes the row grep-invisible. Honest cap: closes at gamma~_m-class with an explicit larger c, not the printed constant itself.
