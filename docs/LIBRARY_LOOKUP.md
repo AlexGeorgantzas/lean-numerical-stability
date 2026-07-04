@@ -2323,6 +2323,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_10_hessenberg_lu_solve_backward_stable_tight`
 - `higham9_11_bohteBound`
 - `higham9_11_bohteBound_tridiagonal`
+- `higham9_11_bohteBound_bandwidth_one_formula`
 - `higham9_11_bohteBound_pentadiagonal_formula`
 - `higham9_11_bohteBound_bandwidth_two_formula`
 - `higham9_11_bohteBound_bandwidth_three_formula`
@@ -2345,6 +2346,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohte_banded_solve_tight_of_bandwidth_le`
 - `higham9_11_bohte_banded_solve_tight_of_isBanded_common`
 - `higham9_11_bohte_banded_solve_tight_of_isBanded_common_growth_le`
+- `higham9_11_bandwidth_one_bohte_solve_tight`
 - `higham9_11_bandwidth_one_bohte_solve_tight_of_isBanded`
 - `higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal`
 - `higham9_11_tridiagonal_bohte_solve_tight`
