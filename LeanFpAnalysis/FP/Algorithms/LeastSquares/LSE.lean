@@ -4667,6 +4667,39 @@ theorem LSEFullRowRank.theorem20_8_perturbed_feasible_residual_decomp
   _root_.LeanFpAnalysis.FP.theorem20_8_perturbed_feasible_residual_decomp
     A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y hx hy
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-instantiated residual decomposition with the constraint
+    correction split through the printed source quantity `B_A^+`.
+
+    The supplied `APplus` remains explicit because this wrapper only discharges
+    the raw right inverse of `B` from the source condition `rank(B)=p`. -/
+theorem LSEFullRowRank.theorem20_8_perturbed_feasible_residual_decomp_BAplus
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    lsResidual (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i) y =
+      fun i =>
+        lsResidual (theorem20_8AP A B hB.rightInverse)
+            (fun i => b i - rectMatMulVec A x i) (fun j => y j - x j) i +
+          (rectMatMulVec A
+              (rectMatMulVec APplus
+                (rectMatMulVec A
+                  (rectMatMulVec hB.rightInverse
+                    (fun l => Deltad l - rectMatMulVec DeltaB y l)))) i +
+            rectMatMulVec A
+              (rectMatMulVec
+                (theorem20_8BAplus A B hB.rightInverse APplus)
+                (fun l => Deltad l - rectMatMulVec DeltaB y l)) i) +
+          rectMatMulVec DeltaA y i -
+          Deltab i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_perturbed_feasible_residual_decomp_BAplus
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y hx hy
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 rank bridge:
     full row rank of `B` makes the transpose map `Bᵀ` injective.  This is the
     finite-dimensional algebra used by the exact-MGS GQR route to connect the
