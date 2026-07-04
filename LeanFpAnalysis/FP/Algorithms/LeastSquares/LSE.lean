@@ -2932,6 +2932,33 @@ theorem theorem20_8Residual_sourceTerm_scaled_eq {m n p : ℕ}
   field_simp [ne_of_gt hApos, ne_of_gt hxpos,
     mul_ne_zero (ne_of_gt hApos) (ne_of_gt hxpos)]
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    direct comparison between the source residual radius
+    `eps * residualAmplifier * ||r||_2 / ||A||_F` and the full first-order
+    coefficient multiplied by `eps * ||x||_2`. -/
+theorem theorem20_8Residual_sourceRadius_le_firstOrderRHS_scaled {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hBpos : 0 < frobNormRect B)
+    (hxpos : 0 < vecNorm2 x) :
+    eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+        (vecNorm2 r / frobNormRect A) ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
+        vecNorm2 x := by
+  have hscaled :
+      eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+          (vecNorm2 r / (frobNormRect A * vecNorm2 x)) * vecNorm2 x ≤
+        eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
+          vecNorm2 x :=
+    theorem20_8Residual_sourceTerm_scaled_le_firstOrderRHS A b B d x r
+      APplus BAplus heps_nonneg hApos hBpos hxpos
+  simpa [theorem20_8Residual_sourceTerm_scaled_eq A B x r APplus BAplus
+    hApos hxpos] using hscaled
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     first-order source-coefficient bound for the reduced-problem data-forcing
     term `(AP)^+ * (DeltaA*x - Deltab)` under the displayed relative
