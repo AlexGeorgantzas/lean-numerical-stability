@@ -2908,6 +2908,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_25_implicitRowScalingPivotRule_ratio_nonneg`
 - `higham9_25_implicitRowScalingPivotRule_ratio_le_one`
 - `higham9_25_exists_implicitRowScalingPivotRule`
+- `higham9_25_trailingRowInf_ne_zero_of_stage_entry_ne_zero`
+- `higham9_25_exists_implicitRowScalingPivotRule_of_active_column_nonzero`
 - `higham9_26_prefixLpNorm`
 - `higham9_26_holder_prefix_dot_abs_le`
 - `higham9_26_stage_entry_abs_le`
