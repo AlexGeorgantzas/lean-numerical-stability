@@ -7786,6 +7786,102 @@ theorem theorem20_8_penrose1_of_rectMoorePenrosePseudoinverse
   hMP.reproduces_matrix
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if the columns of `APᵀ` lie in the constraint nullspace and `APplus` is a
+    Moore--Penrose pseudoinverse of `AP`, then the columns of `APplus` also lie
+    in the constraint nullspace.  This uses the Penrose domain-projection
+    symmetry to express the range of `APplus` through the row space of `AP`. -/
+theorem theorem20_8_APplus_constraint_annihilates_of_MP_transpose_constraint
+    {m n p : ℕ}
+    (AP : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP : RectMoorePenrosePseudoinverse m n AP APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose AP) =
+        (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0) := by
+  have hBdomain :
+      rectMatMul B (rectMatMul APplus AP) =
+        (fun _i : Fin p => fun _j : Fin n => 0) := by
+    ext i j
+    calc
+      rectMatMul B (rectMatMul APplus AP) i j =
+          ∑ k : Fin n, B i k * rectMatMul APplus AP k j := rfl
+      _ = ∑ k : Fin n, B i k * rectMatMul APplus AP j k := by
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [hMP.domain_projection_symmetric k j]
+      _ = ∑ k : Fin n, B i k *
+            (∑ l : Fin m, APplus j l * AP l k) := rfl
+      _ = ∑ k : Fin n, ∑ l : Fin m,
+            B i k * (APplus j l * AP l k) := by
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [Finset.mul_sum]
+      _ = ∑ l : Fin m, ∑ k : Fin n,
+            B i k * (APplus j l * AP l k) := by
+          rw [Finset.sum_comm]
+      _ = ∑ l : Fin m, APplus j l *
+            (∑ k : Fin n, B i k * AP l k) := by
+          apply Finset.sum_congr rfl
+          intro l _
+          calc
+            (∑ k : Fin n, B i k * (APplus j l * AP l k)) =
+                ∑ k : Fin n, APplus j l * (B i k * AP l k) := by
+                apply Finset.sum_congr rfl
+                intro k _
+                ring
+            _ = APplus j l * (∑ k : Fin n, B i k * AP l k) := by
+                rw [Finset.mul_sum]
+      _ = ∑ l : Fin m, APplus j l *
+            rectMatMul B (finiteTranspose AP) i l := by
+          rfl
+      _ = ∑ l : Fin m, APplus j l * 0 := by
+          apply Finset.sum_congr rfl
+          intro l _
+          have hl := congrFun (congrFun hBAPt i) l
+          rw [hl]
+      _ = 0 := by simp
+  calc
+    rectMatMul B APplus =
+        rectMatMul B (rectMatMul (rectMatMul APplus AP) APplus) := by
+        rw [hMP.reproduces_pseudoinverse]
+    _ = rectMatMul (rectMatMul B (rectMatMul APplus AP)) APplus := by
+        rw [← rectMatMul_assoc]
+    _ = rectMatMul (fun _i : Fin p => fun _j : Fin n => 0) APplus := by
+        rw [hBdomain]
+    _ = (fun _i : Fin p => fun _j : Fin m => 0) := by
+        ext i j
+        unfold rectMatMul
+        simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    a Moore--Penrose certificate for `(AP)^+`, the transpose-range certificate
+    `B*(AP)^T = 0`, and (20.24)'s null-intersection condition together give the
+    reduced-operator left inverse on `null(B)`. -/
+theorem theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B Bplus) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B Bplus)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus) z) = z :=
+  theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_matrix_range_null_nullIntersection
+    A B Bplus APplus
+      (theorem20_8_penrose1_of_rectMoorePenrosePseudoinverse
+        A B Bplus APplus hMP)
+      (theorem20_8_APplus_constraint_annihilates_of_MP_transpose_constraint
+        (theorem20_8AP A B Bplus) B APplus hMP hBAPt)
+      hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a Moore--Penrose certificate for `(AP)^+`, matrix-level annihilation
     `B*(AP)^+ = 0`, and (20.24)'s null-intersection condition together give
     the reduced-operator left inverse on `null(B)`. -/
