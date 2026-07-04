@@ -6834,6 +6834,51 @@ theorem theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constrain
           simp
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if `P = I - B^+B` is symmetric, then the reduced-operator transpose
+    columns lie in the constraint nullspace: `B*(AP)^T = 0`. -/
+theorem theorem20_8_AP_transpose_constraint_annihilates_of_projection_symmetric
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hPsym : IsSymmetricFiniteMatrix (theorem20_8Projection B Bplus)) :
+    rectMatMul B (finiteTranspose (theorem20_8AP A B Bplus)) =
+      (fun _i : Fin p => fun _j : Fin m => 0) := by
+  let P : Fin n → Fin n → ℝ := theorem20_8Projection B Bplus
+  have hBP : rectMatMul B P = (fun _i : Fin p => fun _j : Fin n => 0) :=
+    theorem20_8Projection_constraint_zero B Bplus hright
+  have hPsymP : IsSymmetricFiniteMatrix P := hPsym
+  ext i l
+  change (∑ j : Fin n, B i j * (∑ k : Fin n, A l k * P k j)) = 0
+  calc
+    (∑ j : Fin n, B i j * (∑ k : Fin n, A l k * P k j)) =
+        ∑ j : Fin n, ∑ k : Fin n, B i j * (A l k * P k j) := by
+          apply Finset.sum_congr rfl
+          intro j _
+          rw [Finset.mul_sum]
+    _ = ∑ k : Fin n, ∑ j : Fin n, B i j * (A l k * P k j) := by
+          rw [Finset.sum_comm]
+    _ = ∑ k : Fin n, A l k * (∑ j : Fin n, B i j * P j k) := by
+          apply Finset.sum_congr rfl
+          intro k _
+          calc
+            (∑ j : Fin n, B i j * (A l k * P k j)) =
+                ∑ j : Fin n, A l k * (B i j * P j k) := by
+                  apply Finset.sum_congr rfl
+                  intro j _
+                  rw [hPsymP k j]
+                  ring
+            _ = A l k * (∑ j : Fin n, B i j * P j k) := by
+                  rw [Finset.mul_sum]
+    _ = ∑ k : Fin n, A l k * 0 := by
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [show (∑ j : Fin n, B i j * P j k) = 0 by
+            have hBPik := congrFun (congrFun hBP i) k
+            simpa [rectMatMul] using hBPik]
+    _ = 0 := by simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank specialization of the transpose-range-to-annihilation
     bridge for the concrete Gram table chosen for `(AP)^+`. -/
 theorem
@@ -6850,6 +6895,112 @@ theorem
       (fun _i : Fin p => fun _j : Fin m => 0) :=
   _root_.LeanFpAnalysis.FP.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
     A B hB.rightInverse hBAPt
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank specialization of the symmetric-projector proof of
+    `B*(AP)^T = 0`. -/
+theorem LSEFullRowRank.theorem20_8_AP_transpose_constraint_annihilates_of_projection_symmetric
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (hPsym : IsSymmetricFiniteMatrix (theorem20_8Projection B hB.rightInverse)) :
+    rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+      (fun _i : Fin p => fun _j : Fin m => 0) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_AP_transpose_constraint_annihilates_of_projection_symmetric
+    A B hB.rightInverse hB.rightInverse_spec hPsym
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    `P = I - B^+B` is symmetric whenever the domain projection `B^+B` is
+    symmetric. -/
+theorem theorem20_8Projection_symmetric_of_domain_projection_symmetric
+    {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (hDom : IsSymmetricFiniteMatrix (rectMatMul Bplus B)) :
+    IsSymmetricFiniteMatrix (theorem20_8Projection B Bplus) := by
+  intro i j
+  have hid : idMatrix n i j = idMatrix n j i := by
+    unfold idMatrix
+    by_cases hij : i = j
+    · subst j
+      simp
+    · simp [hij, Ne.symm hij]
+  calc
+    theorem20_8Projection B Bplus i j =
+        idMatrix n i j - rectMatMul Bplus B i j := rfl
+    _ = idMatrix n j i - rectMatMul Bplus B j i := by
+          rw [hid, hDom i j]
+    _ = theorem20_8Projection B Bplus j i := rfl
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the Gram pseudoinverse `B^T(BB^T)^{-1}` gives a symmetric source projector
+    `P = I - B^+B`. -/
+theorem theorem20_8Projection_symmetric_of_gram_pseudoinverse
+    {p n : ℕ}
+    (B : Fin p → Fin n → ℝ) :
+    IsSymmetricFiniteMatrix
+      (theorem20_8Projection B (undetAplusOfGramNonsingInv B)) :=
+  theorem20_8Projection_symmetric_of_domain_projection_symmetric
+    B (undetAplusOfGramNonsingInv B)
+    (undetAplusOfGramNonsingInv_domain_projection_symmetric B)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    determinant-facing Gram-pseudoinverse version of the source-projector proof
+    of `B*(AP)^T = 0`. -/
+theorem theorem20_8_AP_transpose_constraint_annihilates_of_gram_projection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (hdetB : Matrix.det (rectGram B : Matrix (Fin p) (Fin p) ℝ) ≠ 0) :
+    rectMatMul B
+        (finiteTranspose
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) =
+      (fun _i : Fin p => fun _j : Fin m => 0) :=
+  theorem20_8_AP_transpose_constraint_annihilates_of_projection_symmetric
+    A B (undetAplusOfGramNonsingInv B)
+    (higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero B hdetB)
+    (theorem20_8Projection_symmetric_of_gram_pseudoinverse B)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    determinant-facing Gram-pseudoinverse route to the matrix annihilation
+    certificate `B*(AP)^+ = 0`, using the Gram pseudoinverse for `B`. -/
+theorem theorem20_8_gram_APplus_constraint_annihilates_of_gram_projection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (hdetB : Matrix.det (rectGram B : Matrix (Fin p) (Fin p) ℝ) ≠ 0) :
+    rectMatMul B
+        (undetAplusOfGramNonsingInv
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) =
+      (fun _i : Fin p => fun _j : Fin m => 0) :=
+  theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
+    A B (undetAplusOfGramNonsingInv B)
+    (theorem20_8_AP_transpose_constraint_annihilates_of_gram_projection A B hdetB)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    determinant-facing reduced left-inverse route using the Gram pseudoinverse
+    for `B` and the concrete Gram pseudoinverse for `AP`. -/
+theorem theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_gram_projection_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (hdetB : Matrix.det (rectGram B : Matrix (Fin p) (Fin p) ℝ) ≠ 0)
+    (hdetAP :
+      Matrix.det
+        (rectGram (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec
+            (undetAplusOfGramNonsingInv
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)))
+            (rectMatMulVec
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) z) = z :=
+  theorem20_8_AP_left_inverse_on_nullspace_of_MP_matrix_range_null_nullIntersection
+    A B (undetAplusOfGramNonsingInv B)
+    (undetAplusOfGramNonsingInv
+      (theorem20_8AP A B (undetAplusOfGramNonsingInv B)))
+    (higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero
+      (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) hdetAP)
+    (theorem20_8_gram_APplus_constraint_annihilates_of_gram_projection A B hdetB)
+    hnull
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     determinant-facing reduced left-inverse route for the concrete Gram
