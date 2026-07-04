@@ -1070,6 +1070,100 @@ theorem sylvester_schur_transform_solution_iff (m n : Nat)
     intro i j
     exact congrFun (congrFun hsol i) j
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5), diagonal
+    Schur-coordinate case: reconstruct the original-coordinate solution from
+    supplied orthogonal diagonal factors and the explicit diagonal solve. -/
+noncomputable def sylvesterSchurDiagonalSolution (m n : Nat)
+    (U : RMatFn m m) (V : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n) : RMatFn m n :=
+  rectMatMul U
+    (rectMatMul
+      (sylvesterDiagonalSolution m n a b
+        (rectMatMul (matTranspose U) (rectMatMul C V)))
+      (matTranspose V))
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5), diagonal
+    Schur-coordinate case: if supplied orthogonal factors diagonalize `A` and
+    `B`, the reconstructed explicit diagonal-coordinate solution solves the
+    original Sylvester equation.  This remains an exact-arithmetic conditional
+    wrapper; it does not assert Schur existence or floating-point stability. -/
+theorem isSylvesterSolutionRect_schurDiagonalSolution (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    IsSylvesterSolutionRect m n A B C
+      (sylvesterSchurDiagonalSolution m n U V a b C) := by
+  unfold sylvesterSchurDiagonalSolution
+  exact
+    (sylvester_schur_transform_solution_iff m n
+      U (Matrix.diagonal a) A V (Matrix.diagonal b) B C
+      (sylvesterDiagonalSolution m n a b
+        (rectMatMul (matTranspose U) (rectMatMul C V)))
+      hU hV hA hB).mpr
+      (isSylvesterSolutionRect_sylvesterDiagonalSolution m n a b
+        (rectMatMul (matTranspose U) (rectMatMul C V)) hsep)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.3)-(16.5), diagonal
+    Schur-coordinate case: under supplied orthogonal diagonal factors and
+    separated diagonal entries, every original-coordinate solution is the
+    reconstructed explicit diagonal-coordinate solution. -/
+theorem sylvesterSchurDiagonalSolution_unique (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C X : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X) :
+    X = sylvesterSchurDiagonalSolution m n U V a b C := by
+  let YX : RMatFn m n := rectMatMul (matTranspose U) (rectMatMul X V)
+  have hXrecon :
+      IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul YX (matTranspose V))) := by
+    dsimp [YX]
+    rw [rectMatMul_schur_coords_expand U V X hU hV]
+    exact hX
+  have hYsol :
+      IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b)
+        (rectMatMul (matTranspose U) (rectMatMul C V)) YX :=
+    (sylvester_schur_transform_solution_iff m n
+      U (Matrix.diagonal a) A V (Matrix.diagonal b) B C YX
+      hU hV hA hB).mp hXrecon
+  have hYeq :
+      YX =
+        sylvesterDiagonalSolution m n a b
+          (rectMatMul (matTranspose U) (rectMatMul C V)) :=
+    sylvesterDiagonalSolution_unique m n a b
+      (rectMatMul (matTranspose U) (rectMatMul C V)) YX hsep hYsol
+  calc
+    X = rectMatMul U (rectMatMul YX (matTranspose V)) := by
+        dsimp [YX]
+        exact (rectMatMul_schur_coords_expand U V X hU hV).symm
+    _ = sylvesterSchurDiagonalSolution m n U V a b C := by
+        unfold sylvesterSchurDiagonalSolution
+        rw [hYeq]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.3)-(16.5), diagonal
+    Schur-coordinate case: supplied orthogonal diagonal factors with separated
+    diagonal entries give a unique exact Sylvester solution. -/
+theorem existsUnique_isSylvesterSolutionRect_schurDiagonal (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  refine ⟨sylvesterSchurDiagonalSolution m n U V a b C,
+    isSylvesterSolutionRect_schurDiagonalSolution m n U A V B a b C
+      hU hV hA hB hsep, ?_⟩
+  intro X hX
+  exact sylvesterSchurDiagonalSolution_unique m n U A V B a b C X
+    hU hV hA hB hsep hX
+
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
 -- ============================================================
