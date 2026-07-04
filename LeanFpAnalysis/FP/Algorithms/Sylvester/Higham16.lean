@@ -462,6 +462,39 @@ theorem sylvester_exact_residual_vec_abs_le_computed_residual_budget (m n : Nat)
         simp [Matrix.vec]
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), computed-residual
+    budget certificate: `Rhat` approximates the exact residual with
+    nonnegative componentwise error budget `Ru`. -/
+def IsSylvesterComputedResidualBudget (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C Xhat Rhat Ru : RMatFn m n) :
+    Prop :=
+  (forall i j, 0 <= Ru i j) /\
+    forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    an explicit residual error matrix `dR` with
+    `Rhat = R(Xhat) + dR` and `|dR| <= Ru` yields the computed-residual
+    budget certificate used by the practical bound. -/
+theorem sylvesterComputedResidualBudget_of_error_model (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C Xhat Rhat Ru dR : RMatFn m n)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j) :
+    IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru := by
+  constructor
+  · exact hRu
+  · intro i j
+    rw [hRhat i j]
+    have hsub :
+        sylvesterResidualRect m n A B C Xhat i j -
+            (sylvesterResidualRect m n A B C Xhat i j + dR i j) =
+          -dR i j := by
+      ring
+    rw [hsub, abs_neg]
+    exact hdR i j
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), computed-residual
     certificate form: a left inverse for the vec/Kronecker coefficient,
     an entrywise inverse bound, and a computed-residual budget instantiate
     the practical relative max-entry error bound. -/
@@ -491,6 +524,27 @@ theorem sylvester_practical_error_bound_of_computed_residual_budget (m n : Nat)
       (sylvester_exact_residual_vec_abs_le_computed_residual_budget
         m n (sylvesterResidualRect m n A B C Xhat) Rhat Ru hRhat)
       hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), certificate-packaged
+    form of the practical componentwise error bound. -/
+theorem sylvester_practical_error_bound_of_computed_residual_certificate (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat Rhat Ru : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_budget m n
+      A B C X Xhat Rhat Ru Pinv PinvAbs hX hLeft hPinvAbs
+      hBudget.1 hBudget.2 hXhat
 
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
     if `A` and `B` are diagonal in the chosen bases, the vec/Kronecker
