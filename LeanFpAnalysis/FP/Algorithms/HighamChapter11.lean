@@ -55,6 +55,15 @@ theorem higham11_1_bunch_parlett_alpha_root :
       higham11_1_bunchParlettAlpha - 1 = 0 :=
   bunch_parlett_alpha_root
 
+/-- **§11.1.1 α-derivation**: `α = (1+√17)/8` is exactly the value balancing the
+two single-step growth bounds `(1 + 1/α)²` (two 1×1 steps) and `1 + 2/(1−α)`
+(one 2×2 step).  Connects `higham11_1_oneByOne_schur_growth` and
+`higham11_4_twoByTwo_schur_growth`. -/
+theorem higham11_1_growth_balance :
+    (1 + 1 / higham11_1_bunchParlettAlpha) ^ 2 =
+      1 + 2 / (1 - higham11_1_bunchParlettAlpha) :=
+  bunch_parlett_growth_balance
+
 /-- **Equation (11.4)**, the scalar entry of the 2 by 2 Schur complement
 `b_ij - [c_i1 c_i2] E^{-1} [c_j1, c_j2]^T`. -/
 noncomputable def higham11_4_twoByTwoSchurEntry
