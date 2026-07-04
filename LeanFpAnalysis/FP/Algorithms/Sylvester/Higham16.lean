@@ -662,6 +662,21 @@ theorem sylvesterVecCoeff_diagonal_mul_sylvesterDiagonalVecCoeffInv (m n : Nat)
     simp [Matrix.diagonal, hpq]
 
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    in diagonal coordinates, the Sylvester operator acts entrywise as
+    multiplication by `a_i - b_j`. -/
+theorem sylvesterOpRect_diagonal_apply (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (X : RMatFn m n)
+    (i : Fin m) (j : Fin n) :
+    sylvesterOpRect m n (Matrix.diagonal a) (Matrix.diagonal b) X i j =
+      (a i - b j) * X i j := by
+  have h :=
+    congrFun
+      (sylvesterVecCoeff_mulVec_vec m n
+        (Matrix.diagonal a) (Matrix.diagonal b) X) (j, i)
+  rw [sylvesterVecCoeff_diagonal] at h
+  simpa [Matrix.vec, Matrix.mulVec_diagonal] using h.symm
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
     the entrywise solution obtained by dividing each right-hand side entry by
     the separated scalar coefficient `a_i - b_j`. -/
 noncomputable def sylvesterDiagonalSolution (m n : Nat)
@@ -691,6 +706,19 @@ theorem sylvesterVecCoeff_mulVec_vec_sylvesterDiagonalSolution (m n : Nat)
   rw [vec_sylvesterDiagonalSolution_eq_mulVec_inv, Matrix.mulVec_mulVec,
     sylvesterVecCoeff_diagonal_mul_sylvesterDiagonalVecCoeffInv m n a b hsep,
     Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
+    componentwise form of the exact diagonal solve. -/
+theorem sylvesterOpRect_diagonal_sylvesterDiagonalSolution (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    sylvesterOpRect m n (Matrix.diagonal a) (Matrix.diagonal b)
+        (sylvesterDiagonalSolution m n a b C) =
+      C := by
+  ext i j
+  rw [sylvesterOpRect_diagonal_apply]
+  rw [sylvesterDiagonalSolution, ← mul_assoc]
+  simp [hsep i j]
 
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3), diagonal case:
     the explicit entrywise formula is a Sylvester solution under separation. -/
