@@ -647,4 +647,48 @@ theorem infNorm_residualSigmaMatrix_eq_residualSigmaSup (n : ℕ) (hn : 0 < n)
     (infNorm_residualSigmaMatrix_le_residualSigmaSup n hn H q hq0 hq1 hH)
     (residualSigmaSup_le_infNorm_residualSigmaMatrix n hn H q hq0 hq1 hH)
 
+-- ============================================================
+-- Bridges to the `residualSigmaTsum` surface of StationaryIteration.lean
+-- ============================================================
+
+/-- The two independently developed literal sigma objects coincide: this
+    module's `residualSigmaMatrix` and `StationaryIteration.lean`'s
+    `residualSigmaTsumMatrix` are the same entrywise `tsum`, so the scalar
+    `residualSigmaTsum` is definitionally the ∞-norm of
+    `residualSigmaMatrix`. -/
+theorem residualSigmaTsum_eq_infNorm_residualSigmaMatrix (n : ℕ)
+    (H : Fin n → Fin n → ℝ) :
+    residualSigmaTsum n H = infNorm (residualSigmaMatrix n H) := rfl
+
+/-- **Eq (17.20), literal `tsum` sigma equals the supremum envelope**
+    (Higham 2nd ed., §17.3): under a norm certificate `‖H‖∞ ≤ q < 1`, the
+    scalar `residualSigmaTsum` coincides with the supremum of the finite
+    partial norms `residualSigmaSup`. -/
+theorem residualSigmaTsum_eq_residualSigmaSup (n : ℕ) (hn : 0 < n)
+    (H : Fin n → Fin n → ℝ)
+    (q : ℝ) (hq0 : 0 ≤ q) (hq1 : q < 1) (hH : infNorm H ≤ q) :
+    residualSigmaTsum n H = residualSigmaSup n H := by
+  rw [residualSigmaTsum_eq_infNorm_residualSigmaMatrix]
+  exact infNorm_residualSigmaMatrix_eq_residualSigmaSup n hn H q hq0 hq1 hH
+
+/-- **Eq (17.20), literal diagonalizable sigma bound on the `tsum` object**
+    (Higham 2nd ed., §17.3): with real diagonalization data `X⁻¹HX = J`
+    (`|J i i| < 1`) and a norm certificate `‖H‖∞ ≤ q < 1`, the literal
+    series sigma satisfies
+    `residualSigmaTsum ≤ κ∞(X) · diagonalResidualRatioMax`.  Composes the
+    envelope equality with the finite-partial diagonalization bound from
+    `StationaryIteration.lean`. -/
+theorem residualSigmaTsum_le_diagonalizable_max_bound (n : ℕ) (hn : 0 < n)
+    (H X X_inv J : Fin n → Fin n → ℝ)
+    (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
+    (hsim : matMul n X_inv (matMul n H X) = J)
+    (hdiag : ∀ i j, i ≠ j → J i j = 0)
+    (hLam : ∀ i : Fin n, |J i i| < 1)
+    (q : ℝ) (hq0 : 0 ≤ q) (hq1 : q < 1) (hH : infNorm H ≤ q) :
+    residualSigmaTsum n H ≤
+      (infNorm X * infNorm X_inv) * diagonalResidualRatioMax n J hn := by
+  rw [residualSigmaTsum_eq_residualSigmaSup n hn H q hq0 hq1 hH]
+  exact residualSigmaSup_le_diagonalizable_max_bound n hn H X X_inv J
+    hXr hXl hsim hdiag hLam
+
 end LeanFpAnalysis.FP
