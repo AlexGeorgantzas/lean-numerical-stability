@@ -2552,6 +2552,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square_gamma`
 - `higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma_le`
 - `higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma`
+- `higham9_22_matrix_source_f_bound_of_matrix_models`
 - `higham9_14_source_f_bound`
 - `higham9_14_source_h_bound_of_absLUhat_bound`
 - `higham9_14_source_h_bound_of_absLUhat_mul_one_sub_bound`
