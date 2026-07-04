@@ -1615,6 +1615,49 @@ theorem wedinLemma20_12_compressedGram_eq_diff_projection_diff
     _ = rectMatMul (rectMatMul D P) D := by
             rw [← rectMatMul_assoc]
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the difference of two symmetric projections is symmetric. -/
+theorem wedinLemma20_12_projectionDiff_symmetric
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q) :
+    IsSymmetricFiniteMatrix (fun i j => P i j - Q i j) := by
+  intro i j
+  dsimp
+  rw [hP i j, hQ i j]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the normal-form product `(P-Q)P(P-Q)` is symmetric. -/
+theorem wedinLemma20_12_diff_projection_diff_symmetric
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    IsSymmetricFiniteMatrix
+      (rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j) P)
+        (fun i j => P i j - Q i j)) := by
+  have hEq :=
+    wedinLemma20_12_compressedGram_eq_diff_projection_diff P Q hIdemP
+  rw [← hEq]
+  exact wedinLemma20_12_compressedGram_symmetric P Q hP hQ hIdemP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the normal-form product `(P-Q)P(P-Q)` is positive semidefinite. -/
+theorem wedinLemma20_12_diff_projection_diff_finitePSD
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    finitePSD
+      (rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j) P)
+        (fun i j => P i j - Q i j)) := by
+  have hEq :=
+    wedinLemma20_12_compressedGram_eq_diff_projection_diff P Q hIdemP
+  rw [← hEq]
+  exact wedinLemma20_12_compressedGram_finitePSD P Q hP hQ hIdemP
+
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
     source-oriented projection perturbation bound.
 
