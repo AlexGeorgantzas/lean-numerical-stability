@@ -15067,3 +15067,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check H19_Lemma19_1_construction1_backward_error
 #check sqrt_u_sq_add_two_gamma_le_gamma
 #check H19_Lemma19_2_householder_apply_backward_error
+#check H19_Lemma19_3_vector_QplusDeltaQ_form
+#check H19_Lemma19_8_givens_apply_backward_error
+#check H19_Lemma19_7_givens_coeff_error
+#check H19_Theorem19_5_qr_solve_columnwise_backward_error
