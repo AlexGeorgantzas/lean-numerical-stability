@@ -98,6 +98,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidt
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidtPolar
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19
+import LeanFpAnalysis.FP.Algorithms.QR.HouseholderConstruction2
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Labels
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
