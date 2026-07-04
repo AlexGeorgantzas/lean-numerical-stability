@@ -71,6 +71,7 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterSpec
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterBackward
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterPerturbation
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Minimizers
 import LeanFpAnalysis.FP.Algorithms.StationaryIteration
 import LeanFpAnalysis.FP.Algorithms.MatrixPowers
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersJordan
