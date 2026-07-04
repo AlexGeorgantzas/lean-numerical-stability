@@ -256,6 +256,27 @@ theorem bunch_parlett_growth_balance :
     (ne_of_lt bunch_parlett_alpha_lt_one)
     bunch_parlett_alpha_root
 
+/-- **Growth-factor recursion** (Higham §11.1.1).  If the stage-maximum sequence
+    `r` grows by at most the single-step factor `1 + 1/α` at each elimination
+    stage (`r(k+1) ≤ (1 + 1/α)·r k`, the per-step bound proved for both 1×1 and
+    2×2 pivots by `oneByOne_schur_growth` / `twoByTwo_schur_growth`), starting
+    from `r 0 = ρ₀`, then after `n` stages `r n ≤ (1 + 1/α)^n · ρ₀`.  This is the
+    mechanism turning the single-step element-growth bounds into the growth-factor
+    bound `ρₙ ≤ (1 + α⁻¹)^{n−1}` quoted in the text (derived here, not assumed). -/
+theorem geom_growth_iterate (α ρ0 : ℝ) (r : ℕ → ℝ)
+    (hα : 0 < α) (h0 : r 0 = ρ0)
+    (hstep : ∀ k, r (k + 1) ≤ (1 + 1 / α) * r k) :
+    ∀ n, r n ≤ (1 + 1 / α) ^ n * ρ0 := by
+  have hc : (0 : ℝ) ≤ 1 + 1 / α := by positivity
+  intro n
+  induction n with
+  | zero => simp [h0]
+  | succ k ih =>
+      calc r (k + 1) ≤ (1 + 1 / α) * r k := hstep k
+        _ ≤ (1 + 1 / α) * ((1 + 1 / α) ^ k * ρ0) :=
+            mul_le_mul_of_nonneg_left ih hc
+        _ = (1 + 1 / α) ^ (k + 1) * ρ0 := by ring
+
 /-- **Abstract Bunch-Parlett growth-factor interface** (Higham §11.1.1).
 
     The diagonal pivoting method with complete pivoting has
@@ -374,6 +395,55 @@ theorem twoByTwo_completePivot_absdet_lower (e11 e22 e21 μ0 μ1 α : ℝ)
   rw [abs_of_nonpos hneg]
   nlinarith [hdet]
 
+/-- **2×2 inverse-block entrywise bounds** (Higham §11.1.1).  For the
+    complete-pivoting 2×2 block `E = [[e₁₁,e₂₁],[e₂₁,e₂₂]]`
+    (`|e₁₁|,|e₂₂| ≤ μ₁ ≤ αμ₀`, `e₂₁² = μ₀²`, `α ∈ [0,1)`, `μ₀ > 0`), with
+    `d = det E = e₁₁e₂₂ − e₂₁²` and `K = 1/((1−α²)μ₀)`, the entries of
+    `E⁻¹ = d⁻¹[[e₂₂,−e₂₁],[−e₂₁,e₁₁]]` are bounded by
+    `|e₂₂/d|, |e₁₁/d| ≤ αK` and `|e₂₁/d| ≤ K`.  This is the printed
+    `|E⁻¹| ≤ K·[[α,1],[1,α]]`, derived from `twoByTwo_completePivot_absdet_lower`. -/
+theorem twoByTwo_inverse_entry_bounds (e11 e22 e21 μ0 μ1 α K : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1) :
+    |e22 / (e11 * e22 - e21 ^ 2)| ≤ α * K
+      ∧ |e11 / (e11 * e22 - e21 ^ 2)| ≤ α * K
+      ∧ |e21 / (e11 * e22 - e21 ^ 2)| ≤ K := by
+  have hα2 : α ^ 2 < 1 := by nlinarith [hα0, hα1]
+  have hD : 0 < (1 - α ^ 2) * μ0 ^ 2 := mul_pos (by linarith [hα2]) (pow_pos hμ 2)
+  have habs := twoByTwo_completePivot_absdet_lower e11 e22 e21 μ0 μ1 α
+    hμ1 hα0 hα1 he11 he22 he21 hμ1α
+  set d := e11 * e22 - e21 ^ 2 with hd
+  have hdpos : 0 < |d| := lt_of_lt_of_le hD habs
+  have hK0 : 0 ≤ K := by
+    nlinarith [hK, mul_pos (by linarith [hα2] : (0 : ℝ) < 1 - α ^ 2) hμ]
+  have hαK0 : 0 ≤ α * K := mul_nonneg hα0 hK0
+  have hkey1 : α * μ0 ≤ α * K * |d| := by
+    have hval : α * K * ((1 - α ^ 2) * μ0 ^ 2) = α * μ0 := by
+      have h1 : K * ((1 - α ^ 2) * μ0) = 1 := by linarith [hK]
+      nlinarith [h1]
+    nlinarith [mul_le_mul_of_nonneg_left habs hαK0, hval]
+  have hkey2 : μ0 ≤ K * |d| := by
+    have hval : K * ((1 - α ^ 2) * μ0 ^ 2) = μ0 := by
+      have h1 : K * ((1 - α ^ 2) * μ0) = 1 := by linarith [hK]
+      nlinarith [h1]
+    nlinarith [mul_le_mul_of_nonneg_left habs hK0, hval]
+  have h21abs : |e21| = μ0 := by
+    rw [← Real.sqrt_sq_eq_abs, he21, Real.sqrt_sq (le_of_lt hμ)]
+  refine ⟨?_, ?_, ?_⟩
+  · rw [abs_div, div_le_iff₀ hdpos]
+    calc |e22| ≤ μ1 := he22
+      _ ≤ α * μ0 := hμ1α
+      _ ≤ α * K * |d| := hkey1
+  · rw [abs_div, div_le_iff₀ hdpos]
+    calc |e11| ≤ μ1 := he11
+      _ ≤ α * μ0 := hμ1α
+      _ ≤ α * K * |d| := hkey1
+  · rw [abs_div, div_le_iff₀ hdpos]
+    calc |e21| = μ0 := h21abs
+      _ ≤ K * |d| := hkey2
+
 /-- Elementary bound `|x·y·z| ≤ p·q·r` from `|x| ≤ p`, `|y| ≤ q`, `|z| ≤ r`
     with `p, q ≥ 0`.  Used to bound the length-two inner products in the 2×2
     Schur-complement growth estimate. -/
@@ -465,6 +535,35 @@ theorem twoByTwo_schur_growth
   rw [hrhs]
   exact hfinal
 
+/-- **Self-contained 2×2 complete-pivoting element growth** (Higham §11.1.1,
+    eq. (11.4)).  Combining `twoByTwo_inverse_entry_bounds` with
+    `twoByTwo_schur_growth`: the Schur entry formed with the *actual* inverse of
+    the pivot block `E`, namely `E⁻¹ = d⁻¹[[e₂₂,−e₂₁],[−e₂₁,e₁₁]]`, is bounded by
+    `(1 + 2/(1−α))·μ₀` using only the pivot-block data and the entry bound `μ₀` —
+    no inverse-entry bounds are assumed. -/
+theorem twoByTwo_schur_growth_of_block
+    (b ci1 ci2 cj1 cj2 e11 e22 e21 μ0 μ1 α K : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1)
+    (hb : |b| ≤ μ0)
+    (hci1 : |ci1| ≤ μ0) (hci2 : |ci2| ≤ μ0)
+    (hcj1 : |cj1| ≤ μ0) (hcj2 : |cj2| ≤ μ0) :
+    |b - (ci1 * (e22 / (e11 * e22 - e21 ^ 2) * cj1
+            + -(e21 / (e11 * e22 - e21 ^ 2)) * cj2)
+          + ci2 * (-(e21 / (e11 * e22 - e21 ^ 2)) * cj1
+            + e11 / (e11 * e22 - e21 ^ 2) * cj2))|
+      ≤ (1 + 2 / (1 - α)) * μ0 := by
+  obtain ⟨hInv22, hInv11, hInv21⟩ :=
+    twoByTwo_inverse_entry_bounds e11 e22 e21 μ0 μ1 α K
+      hμ1 hα0 hα1 hμ he11 he22 he21 hμ1α hK
+  exact twoByTwo_schur_growth b ci1 ci2 cj1 cj2
+    (e22 / (e11 * e22 - e21 ^ 2)) (-(e21 / (e11 * e22 - e21 ^ 2)))
+    (-(e21 / (e11 * e22 - e21 ^ 2))) (e11 / (e11 * e22 - e21 ^ 2)) μ0 α K
+    hα0 hα1 hμ hK hb hci1 hci2 hcj1 hcj2
+    hInv22 (by rw [abs_neg]; exact hInv21) (by rw [abs_neg]; exact hInv21) hInv11
+
 -- ============================================================
 -- Chapter 11.1.2  Partial pivoting (Bunch-Kaufman)
 -- ============================================================
@@ -530,6 +629,90 @@ theorem bunch_kaufman_solve_backward_error (n : ℕ) (fp : FPModel)
         x_hat j = b (σ i)) :=
   hsolve
 
+/-- **Floating-point backward error of one 1×1 Schur-complement update**
+    (Higham §11.1, floating-point form of the block-LDLᵀ Schur step (11.3)).
+
+    For a 1×1 pivot the diagonal-pivoting method updates a Schur entry by
+    `s = fl(a − fl(fl(c₁/e)·c₂))` (multiplier, product, subtract — three rounded
+    operations).  Under the standard model this computed value equals the exact
+    Schur entry `a − c₁c₂/e` plus a genuine backward error `Δ` bounded by
+    `γ₃·(|a| + |c₁c₂/e|)`.  The error is *derived* from the model laws via
+    `prod_error_bound`, not assumed; it is the floating-point analogue of
+    `oneByOne_schur_growth` and the atomic per-step ingredient of the
+    Theorem 11.3 block-LDLᵀ backward-error bound. -/
+theorem fl_oneByOne_schur_step_error (fp : FPModel) (a e c1 c2 : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 3 * (|a| + |c1 * c2 / e|) ∧
+      fp.fl_sub a (fp.fl_mul (fp.fl_div c1 e) c2) = (a - c1 * c2 / e) + Δ := by
+  obtain ⟨δ1, hδ1, hm⟩ := fp.model_div c1 e he
+  obtain ⟨δ2, hδ2, hp⟩ := fp.model_mul (fp.fl_div c1 e) c2
+  obtain ⟨δ3, hδ3, hs⟩ := fp.model_sub a (fp.fl_mul (fp.fl_div c1 e) c2)
+  obtain ⟨θ, hθ, hprod⟩ :=
+    prod_error_bound fp 3 ![δ1, δ2, δ3]
+      (by intro i; fin_cases i <;> simp_all) hval
+  have hfactor : (1 + δ1) * (1 + δ2) * (1 + δ3) = 1 + θ := by
+    have h := hprod
+    rw [Fin.prod_univ_three] at h
+    simpa using h
+  have hs_eq : fp.fl_sub a (fp.fl_mul (fp.fl_div c1 e) c2)
+      = a * (1 + δ3) - (c1 * c2 / e) * (1 + θ) := by
+    rw [hs, hp, hm, ← hfactor]; ring
+  refine ⟨a * δ3 - (c1 * c2 / e) * θ, ?_, ?_⟩
+  · have hu3 : fp.u ≤ gamma fp 3 := u_le_gamma fp (by norm_num) hval
+    have hγ0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+    have htri : |a * δ3 - (c1 * c2 / e) * θ| ≤ |a * δ3| + |(c1 * c2 / e) * θ| := by
+      have h := abs_add_le (a * δ3) (-((c1 * c2 / e) * θ))
+      rwa [← sub_eq_add_neg, abs_neg] at h
+    have e1 : |a * δ3 - (c1 * c2 / e) * θ|
+        ≤ |a| * fp.u + |c1 * c2 / e| * gamma fp 3 := by
+      calc |a * δ3 - (c1 * c2 / e) * θ|
+          ≤ |a * δ3| + |(c1 * c2 / e) * θ| := htri
+        _ = |a| * |δ3| + |c1 * c2 / e| * |θ| := by rw [abs_mul, abs_mul]
+        _ ≤ |a| * fp.u + |c1 * c2 / e| * gamma fp 3 :=
+            add_le_add (mul_le_mul_of_nonneg_left hδ3 (abs_nonneg _))
+              (mul_le_mul_of_nonneg_left hθ (abs_nonneg _))
+    have e2 : |a| * fp.u + |c1 * c2 / e| * gamma fp 3
+        ≤ gamma fp 3 * (|a| + |c1 * c2 / e|) := by
+      have hle : |a| * fp.u ≤ |a| * gamma fp 3 :=
+        mul_le_mul_of_nonneg_left hu3 (abs_nonneg _)
+      nlinarith [hle, abs_nonneg (c1 * c2 / e), hγ0]
+    exact le_trans e1 e2
+  · rw [hs_eq]; ring
+
+/-- **Floating-point backward error of a 1×1 pivot solve** (Higham §11.1, the
+    `s = 1` case of eq (11.5)).  The computed solution `x̂ = fl(b/e)` of the
+    scalar system `e·x = b` satisfies `(e + Δe)·x̂ = b` with a backward error `Δe`
+    in the pivot bounded by `γ₁·|e|` (constant `c = 1`, no `O(u²)` term).  Derived
+    from the standard division model, not assumed; the 1×1 instance of the
+    Theorem 11.3 solve-perturbation hypothesis (11.5). -/
+theorem fl_oneByOne_solve_backward_error (fp : FPModel) (b e : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 1) :
+    ∃ Δe : ℝ, |Δe| ≤ gamma fp 1 * |e| ∧ (e + Δe) * fp.fl_div b e = b := by
+  obtain ⟨δ, hδ, hd⟩ := fp.model_div b e he
+  have hu1 : fp.u < 1 := by
+    have h := hval; unfold gammaValid at h; simpa using h
+  have hδ1 : |δ| < 1 := lt_of_le_of_lt hδ hu1
+  have hpos : 0 < 1 + δ := by
+    have hlo : -1 < δ := (abs_lt.mp hδ1).1
+    linarith
+  have hg0 : 0 ≤ gamma fp 1 := gamma_nonneg fp hval
+  have h1u : (1 : ℝ) - fp.u ≠ 0 := by linarith
+  have hgeq : gamma fp 1 * (1 - fp.u) = fp.u := by
+    unfold gamma; rw [Nat.cast_one, one_mul]; field_simp
+  refine ⟨-e * δ / (1 + δ), ?_, ?_⟩
+  · rw [abs_div, abs_mul, abs_neg, abs_of_pos hpos, div_le_iff₀ hpos]
+    have key : |δ| ≤ gamma fp 1 * (1 + δ) := by
+      have h1 : gamma fp 1 * (1 - fp.u) ≤ gamma fp 1 * (1 + δ) :=
+        mul_le_mul_of_nonneg_left (by linarith [(abs_le.mp hδ).1]) hg0
+      calc |δ| ≤ fp.u := hδ
+        _ = gamma fp 1 * (1 - fp.u) := hgeq.symm
+        _ ≤ gamma fp 1 * (1 + δ) := h1
+    calc |e| * |δ| ≤ |e| * (gamma fp 1 * (1 + δ)) :=
+          mul_le_mul_of_nonneg_left key (abs_nonneg e)
+      _ = gamma fp 1 * |e| * (1 + δ) := by ring
+  · rw [hd]; field_simp; ring
+
 -- ============================================================
 -- Chapter 11.1.4  Tridiagonal symmetric matrices
 -- ============================================================
@@ -564,5 +747,43 @@ def SkewBunchPivotChoice (firstColumnTailZero : Prop)
     (pivotMagnitude : ℝ) (s : PivotSize) : Prop :=
   (firstColumnTailZero ∧ s = PivotSize.one) ∨
   (¬ firstColumnTailZero ∧ 0 < pivotMagnitude ∧ s = PivotSize.two)
+
+/-- **Skew 2×2 multiplier bound** (Higham §11.3).  For Bunch's skew-symmetric
+    pivoting, the row of `CE⁻¹` has entries `−a_{i2}/a₂₁, a_{i1}/a₂₁`; since the
+    pivot `a₂₁` is the largest-magnitude entry (`|c| ≤ |a₂₁|`), each multiplier —
+    and hence every entry of `L` — is bounded by 1.  Derived, not assumed. -/
+theorem skew_twoByTwo_multiplier_bound (c a : ℝ) (ha : a ≠ 0) (hc : |c| ≤ |a|) :
+    |c / a| ≤ 1 := by
+  rw [abs_div, div_le_one (abs_pos.mpr ha)]
+  exact hc
+
+/-- **Skew 2×2 Schur-complement entry bound** (Higham §11.3).  The Schur entry
+    `s = a_ij − (a_{i2}/a₂₁)·a_{j1} + (a_{i1}/a₂₁)·a_{j2}` for a 2×2 skew pivot,
+    with every active entry bounded by `M` and multipliers bounded by 1
+    (`|a_{i1}|, |a_{i2}| ≤ |a₂₁|`), satisfies the printed bound `|s| ≤ 3·M`. -/
+theorem skew_twoByTwo_schur_entry_bound
+    (aij ai1 ai2 aj1 aj2 a21 M : ℝ)
+    (ha : a21 ≠ 0)
+    (hij : |aij| ≤ M) (hj1 : |aj1| ≤ M) (hj2 : |aj2| ≤ M)
+    (hi1 : |ai1| ≤ |a21|) (hi2 : |ai2| ≤ |a21|) :
+    |aij - (ai2 / a21) * aj1 + (ai1 / a21) * aj2| ≤ 3 * M := by
+  have hm1 : |ai2 / a21| ≤ 1 := skew_twoByTwo_multiplier_bound ai2 a21 ha hi2
+  have hm2 : |ai1 / a21| ≤ 1 := skew_twoByTwo_multiplier_bound ai1 a21 ha hi1
+  have t1 : |ai2 / a21 * aj1| ≤ M := by
+    rw [abs_mul]
+    calc |ai2 / a21| * |aj1| ≤ 1 * M := mul_le_mul hm1 hj1 (abs_nonneg _) (by norm_num)
+      _ = M := by ring
+  have t2 : |ai1 / a21 * aj2| ≤ M := by
+    rw [abs_mul]
+    calc |ai1 / a21| * |aj2| ≤ 1 * M := mul_le_mul hm2 hj2 (abs_nonneg _) (by norm_num)
+      _ = M := by ring
+  have htriA : |aij - ai2 / a21 * aj1| ≤ |aij| + |ai2 / a21 * aj1| := by
+    have h := abs_add_le aij (-(ai2 / a21 * aj1))
+    rwa [← sub_eq_add_neg, abs_neg] at h
+  calc |aij - ai2 / a21 * aj1 + ai1 / a21 * aj2|
+      ≤ |aij - ai2 / a21 * aj1| + |ai1 / a21 * aj2| := abs_add_le _ _
+    _ ≤ (|aij| + |ai2 / a21 * aj1|) + |ai1 / a21 * aj2| := add_le_add htriA (le_refl _)
+    _ ≤ (M + M) + M := add_le_add (add_le_add hij t1) t2
+    _ = 3 * M := by ring
 
 end LeanFpAnalysis.FP

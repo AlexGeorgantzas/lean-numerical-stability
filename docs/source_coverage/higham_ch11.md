@@ -30,8 +30,19 @@ Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
 | §11.1.1 2×2 pivot nonsingularity `|det E| ≥ (1−α²)μ₀²` | `twoByTwo_completePivot_absdet_lower`, `higham11_4_twoByTwo_absdet_lower` | " | **new this session**; α∈[0,1); printed `|det E| ≥ (1−α²)μ₀²` |
 | §11.1.1 2×2 Schur step growth `|ã| ≤ (1+2/(1−α))μ₀` (eq 11.4) | `twoByTwo_schur_growth`, `higham11_4_twoByTwo_schur_growth` (+ helper `abs_triple_mul_le`) | " | **new this session**; inverse-block entries `≤ αK,K`, `K = 1/((1−α²)μ₀)`; with the 1×1 bound this gives both single-step growth bounds of §11.1.1 |
 | §11.1.1 α-derivation: growth balance `(1+1/α)² = 1+2/(1−α)` ⟺ `4α²−α−1=0`; `0<α<1` | `growth_balance_of_root`, `bunch_parlett_growth_balance`, `bunch_parlett_alpha_pos`, `bunch_parlett_alpha_lt_one`, `higham11_1_growth_balance` | " | **new this session**; the printed derivation fixing `α = (1+√17)/8`; ties the two single-step growth bounds together |
+| §11.1.1 growth-factor recursion `r n ≤ (1+1/α)ⁿ·ρ₀` from per-stage ratio `r(k+1) ≤ (1+1/α)·r k` | `geom_growth_iterate`, `higham11_1_growth_factor_recursion` | " | **new this session**; derives the printed `ρₙ ≤ (1+α⁻¹)^{n−1}` from the single-step bounds (induction, not assumed) |
+| §11.1.1 printed inverse bound `|E⁻¹| ≤ K·[[α,1],[1,α]]`, `K=1/((1−α²)μ₀)` | `twoByTwo_inverse_entry_bounds`, `higham11_4_twoByTwo_inverse_entry_bounds` | " | **new this session**; entrywise bounds on `E⁻¹=d⁻¹[[e₂₂,−e₂₁],[−e₂₁,e₁₁]]`, derived from the determinant magnitude bound |
+| §11.1.1 self-contained 2×2 growth (eq 11.4 with actual `E⁻¹`) | `twoByTwo_schur_growth_of_block`, `higham11_4_twoByTwo_schur_growth_of_block` | " | **new this session**; `\|ã\| ≤ (1+2/(1−α))μ₀` from pivot-block data alone — **no inverse-entry bounds assumed** |
+| §11.1 fl backward error of one 1×1 Schur step (toward Thm 11.3) | `fl_oneByOne_schur_step_error`, `higham11_3_fl_oneByOne_schur_step_error` | " | **new this session**; computed `fl(a−fl(fl(c₁/e)·c₂)) = (a−c₁c₂/e)+Δ`, `\|Δ\| ≤ γ₃(\|a\|+\|c₁c₂/e\|)` **derived** via `prod_error_bound` (standard model), not assumed — the atomic per-step ingredient of Thm 11.3 |
+| §11.1 fl backward error of 1×1 pivot solve (Thm 11.3 / eq 11.5, s=1) | `fl_oneByOne_solve_backward_error`, `higham11_3_fl_oneByOne_solve_backward_error` | " | **new this session**; `x̂ = fl(b/e)` satisfies `(e+Δe)x̂ = b`, `\|Δe\| ≤ γ₁\|e\|` — **derived** 1×1 instance of the (11.5) block-solve perturbation hypothesis |
 | Eq (11.6) example factorization A = LDLᵀ (partial pivoting) | `higham11_6_partialPivotExample_factorization` | Ch11 | exact `fin_cases` algebra, ε≠0 |
 | §11.3 skew-symmetric diag zero | `skewSymmetric_diag_zero`, `higham11_16_skew_diag_zero` | " | Aᵀ=−A ⇒ Aᵢᵢ=0 |
+| §11.3 / Alg 11.9 skew 2×2 multiplier bound `|c/a₂₁| ≤ 1` | `skew_twoByTwo_multiplier_bound`, `higham11_9_skew_multiplier_bound` | " | **new this session**; from `|c| ≤ |a₂₁|` (pivot is max) — honest content behind `higham11_9_skew_L_entry_bound_interface` |
+| §11.3 / Alg 11.9 skew Schur entry bound `|s| ≤ 3M` | `skew_twoByTwo_schur_entry_bound`, `higham11_9_skew_schur_entry_bound` | " | **new this session**; `s = a_ij − (a_{i2}/a₂₁)a_{j1} + (a_{i1}/a₂₁)a_{j2}` (printed formula); establishes `higham11_9_skewSchurEntryBound` |
+| §11.2 Aasen recurrence eq (11.12) from `A=LH` | `higham11_12_aasen_diagonal_equation_of_product` | Ch11 | **new this session**; exact-arithmetic: unit-lower-tri `L` ⇒ `A i i = ∑_{j<i} L i j·H j i + H i i` |
+| §11.2 Aasen recurrence eq (11.13) from `A=LH` | `higham11_13_aasen_subdiagonal_equation_of_product` | Ch11 | **new this session**; `k=i+1` ⇒ `A k i = ∑_{j≤i} L k j·H j i + H k i` — the Aasen recurrence structure (exact), toward Thm 11.8 |
+| §11.2 Aasen band structure `H j i = 0` (`j>i+1`), from `H=TLᵀ` | `higham11_10_aasenH_band` | Ch11 | **new this session**; `T` tridiagonal + `L` lower-tri ⇒ `H` banded |
+| §11.2 Aasen recurrence eq (11.14) next-column update from `A=LH` | `higham11_14_aasen_next_column_of_product` | Ch11 | **new this session**; `L k next = (A k i − ∑_{j≤i} L k j·H j i)/H next i` (`next=i+1`, `k≥i+2`, `H next i≠0`) — completes the exact Aasen recurrence trio (11.12)–(11.14) |
 | Problem-support algebra 11.1/11.2/11.4/11.7/11.8/11.9 | `higham11_problem_11_*` (see file) | Ch11 | reusable symmetric/SPD/quasidefinite algebra; not exercise transcriptions |
 
 ## Source predicates / definitions (honest models, no assumed conclusions)
@@ -58,10 +69,10 @@ floating-point backward-error derivation — is the missing foundation.
 
 | Source label | Exact claim | Current Lean status | Missing foundation | Smallest next Lean theorem |
 |---|---|---|---|---|
-| Theorem 11.3 | block LDLᵀ backward error: `P(A+ΔA₁)Pᵀ = L̂D̂L̂ᵀ`, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ p(n)u(|A|+Pᵀ|L̂||D̂||L̂ᵀ|P)+O(u²)` (eq 11.5) | `higham11_3_block_ldlt_backward_error_interface` (assumes the bound) | fl-model recursion for the block factorization + per-2×2 solve error (11.5) | fl error for one block-LDLᵀ step producing the componentwise `|ΔA| ≤ γ·|L̂||D̂||L̂ᵀ|` on a 2×2 pivot |
-| Theorem 11.4 | Bunch–Kaufman normwise stability `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M+O(u²)` via `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36nρₙ‖A‖_M` | `higham11_4_bunch_kaufman_stability` / `..._solve_backward_error_interface` (assume) | the `36nρₙ` product bound [608,1997] + growth-factor recursion from the per-step lemmas now proved | assemble `oneByOne_schur_growth` + 2×2 growth over n stages into ρₙ ≤ (1+α⁻¹)^{n−1} |
+| Theorem 11.3 | block LDLᵀ backward error: `P(A+ΔA₁)Pᵀ = L̂D̂L̂ᵀ`, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ p(n)u(|A|+Pᵀ|L̂||D̂||L̂ᵀ|P)+O(u²)` (eq 11.5) | `higham11_3_block_ldlt_backward_error_interface` (assumes the whole conclusion — should be weakened to assume only (11.5)) | remaining: the fl-model **recursion** over all stages, **assuming (11.5) as the theorem's own stated hypothesis**. NOTE: proving (11.5) itself for 2×2 pivots is **Problem 11.5 — benchmark-reserved**, so it must stay a hypothesis, never a formalized lemma. The atomic per-step 1×1 fl update error and 1×1 solve error are **proved** (`fl_oneByOne_schur_step_error`, `fl_oneByOne_solve_backward_error`); the 2×2 solve error is the (11.5) hypothesis. | a block-factorization data structure whose per-stage errors (1×1 from the proved lemmas; 2×2 from the (11.5) hypothesis) accumulate into the global backward error |
+| Theorem 11.4 | Bunch–Kaufman normwise stability `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M+O(u²)` via `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36nρₙ‖A‖_M` | `higham11_4_bunch_kaufman_stability` / `..._solve_backward_error_interface` (assume) | remaining: the `36nρₙ` product bound [608,1997] + a factorization data structure discharging the per-stage ratio hypothesis for the computed matrices. The single-step growth bounds AND their geometric recursion `geom_growth_iterate` (⇒ `ρₙ ≤ (1+α⁻¹)^{n−1}`) are now proved. | a `cpState`-style recursion whose stage maxima satisfy `oneByOne_schur_growth`/`twoByTwo_schur_growth`, fed into `geom_growth_iterate` |
 | Theorem 11.7 | Bunch tridiagonal normwise stability, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ c·u·‖A‖` | `higham11_7_tridiagonal_backward_error_interface` (assumes) | tridiagonal block-LDLᵀ fl analysis | fl error for one 2×2 tridiagonal pivot step |
-| Theorem 11.8 | Aasen componentwise backward error + `‖ΔA‖_∞ ≤ (n−1)²γ_{15n+25}‖T̂‖_∞` | `higham11_8_aasen_backward_error_interface` (assumes) | fl analysis of the Aasen recurrences (11.12)–(11.14) + solve chain (11.15) | fl error for the Aasen column update (11.14) |
+| Theorem 11.8 | Aasen componentwise backward error + `‖ΔA‖_∞ ≤ (n−1)²γ_{15n+25}‖T̂‖_∞` | `higham11_8_aasen_backward_error_interface` (assumes) | remaining: **fl** analysis of the Aasen recurrences + solve chain (11.15). The **exact-arithmetic** recurrence identities (11.12), (11.13) are now proved (`higham11_12/13_aasen_*_equation_of_product`). | fl error for the Aasen column update (11.14), then the solve-chain error over (11.15) |
 
 Both single-step §11.1.1 element-growth bounds are now proved: the 1×1 step
 `(1+1/α)μ₀` (`oneByOne_schur_growth`) and the 2×2 step `(1+2/(1−α))μ₀`
@@ -86,13 +97,27 @@ carry `higham11_problem_11_*` names; they are general lemmas (e.g. singular-prin
 zero matrix, quasidefinite kernel-trivial), not transcriptions of the exercise tasks, and are
 used only as chapter infrastructure.
 
+**Important scope note (Problem 11.5).** Problem 11.5 asks to prove that condition
+(11.5) — `(E+ΔE)ŷ=f`, `|ΔE| ≤ (cu+O(u²))|E|` — holds for the 2×2 pivots when the
+system is solved by GEPP or the explicit inverse. This is exactly the *hypothesis*
+of Theorem 11.3. Because Problem 11.5 is benchmark-reserved, (11.5) for 2×2 pivots
+must remain a **hypothesis** of any honest Theorem 11.3 formalization and must not be
+proved as chapter work. The 1×1 instance of (11.5) is *not* the reserved problem
+(1×1 pivots "involve no computation" per §11.3) and is proved as
+`fl_oneByOne_solve_backward_error`; the atomic 1×1 Schur-update fl error
+(`fl_oneByOne_schur_step_error`) is likewise general chapter infrastructure, not a
+Problem transcription.
+
 ## Hidden-hypothesis summary
 - New lemmas (`oneByOne_multiplier_bound`, `oneByOne_schur_growth`,
   `twoByTwo_completePivot_det_bound`, `twoByTwo_completePivot_absdet_lower`,
   `twoByTwo_schur_growth`): all hypotheses are on the *data* (entry magnitudes
   `≤ μ₀/μ₁/ω`, pivot-acceptance `α·μ₀ ≤ |e|`, inverse-entry bounds `≤ αK,K` with the
   *equational* scale constraint `(1−α²)μ₀K = 1`, α range), never on the conclusion. The
-  growth/determinant bounds are derived, not assumed.
+  growth/determinant bounds are derived, not assumed. The self-contained corollary
+  `twoByTwo_schur_growth_of_block` additionally *discharges* the inverse-entry
+  hypotheses via `twoByTwo_inverse_entry_bounds`, so the 2×2 growth follows from the
+  pivot-block data alone.
 - Interface theorems (11.3/11.4/11.7/11.8): the analytic bound IS taken as a hypothesis and
   restated — this is exactly why those rows are logged OPEN, not closed.
 

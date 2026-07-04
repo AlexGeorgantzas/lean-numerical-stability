@@ -64,6 +64,16 @@ theorem higham11_1_growth_balance :
       1 + 2 / (1 - higham11_1_bunchParlettAlpha) :=
   bunch_parlett_growth_balance
 
+/-- **§11.1.1 growth-factor recursion**: a stage-maximum sequence `r` obeying the
+single-step ratio bound `r(k+1) ≤ (1 + 1/α)·r k` (supplied for each stage by
+`higham11_1_oneByOne_schur_growth` / `higham11_4_twoByTwo_schur_growth`) satisfies
+`r n ≤ (1 + 1/α)^n · ρ₀`, the derivation of the printed `ρₙ ≤ (1 + α⁻¹)^{n−1}`. -/
+theorem higham11_1_growth_factor_recursion (α ρ0 : ℝ) (r : ℕ → ℝ)
+    (hα : 0 < α) (h0 : r 0 = ρ0)
+    (hstep : ∀ k, r (k + 1) ≤ (1 + 1 / α) * r k) :
+    ∀ n, r n ≤ (1 + 1 / α) ^ n * ρ0 :=
+  geom_growth_iterate α ρ0 r hα h0 hstep
+
 /-- **Equation (11.4)**, the scalar entry of the 2 by 2 Schur complement
 `b_ij - [c_i1 c_i2] E^{-1} [c_j1, c_j2]^T`. -/
 noncomputable def higham11_4_twoByTwoSchurEntry
@@ -153,6 +163,40 @@ theorem higham11_4_twoByTwo_schur_growth
   exact twoByTwo_schur_growth bij ci1 ci2 cj1 cj2 e11 e12 e21 e22 μ0 α K
     hα0 hα1 hμ hK hb hci1 hci2 hcj1 hcj2 he11 he12 he21 he22
 
+/-- **§11.1.1 printed inverse bound** `|E⁻¹| ≤ K·[[α,1],[1,α]]`, `K = 1/((1−α²)μ₀)`:
+the entrywise bounds on `E⁻¹ = d⁻¹[[e₂₂,−e₂₁],[−e₂₁,e₁₁]]` for a complete-pivoting
+2×2 block, derived from the determinant magnitude bound. -/
+theorem higham11_4_twoByTwo_inverse_entry_bounds (e11 e22 e21 μ0 μ1 α K : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1) :
+    |e22 / (e11 * e22 - e21 ^ 2)| ≤ α * K
+      ∧ |e11 / (e11 * e22 - e21 ^ 2)| ≤ α * K
+      ∧ |e21 / (e11 * e22 - e21 ^ 2)| ≤ K :=
+  twoByTwo_inverse_entry_bounds e11 e22 e21 μ0 μ1 α K
+    hμ1 hα0 hα1 hμ he11 he22 he21 hμ1α hK
+
+/-- **§11.1.1 self-contained 2×2 growth**: substituting the actual inverse block
+`E⁻¹` into the eq-(11.4) Schur entry, `|ã| ≤ (1 + 2/(1−α))μ₀` holds using only the
+pivot-block data (no assumed inverse-entry bounds). -/
+theorem higham11_4_twoByTwo_schur_growth_of_block
+    (bij ci1 ci2 cj1 cj2 e11 e22 e21 μ0 μ1 α K : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1)
+    (hb : |bij| ≤ μ0)
+    (hci1 : |ci1| ≤ μ0) (hci2 : |ci2| ≤ μ0)
+    (hcj1 : |cj1| ≤ μ0) (hcj2 : |cj2| ≤ μ0) :
+    |higham11_4_twoByTwoSchurEntry bij ci1 ci2 cj1 cj2
+        (e22 / (e11 * e22 - e21 ^ 2)) (-(e21 / (e11 * e22 - e21 ^ 2)))
+        (-(e21 / (e11 * e22 - e21 ^ 2))) (e11 / (e11 * e22 - e21 ^ 2))|
+      ≤ (1 + 2 / (1 - α)) * μ0 := by
+  unfold higham11_4_twoByTwoSchurEntry
+  exact twoByTwo_schur_growth_of_block bij ci1 ci2 cj1 cj2 e11 e22 e21 μ0 μ1 α K
+    hμ1 hα0 hα1 hμ he11 he22 he21 hμ1α hK hb hci1 hci2 hcj1 hcj2
+
 /-! ## §11.1.2 Partial pivoting -/
 
 /-- **Algorithm 11.2** branch predicate for the Bunch-Kaufman partial
@@ -189,6 +233,30 @@ theorem higham11_3_block_ldlt_backward_error_interface (n : ℕ)
           L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
         A (σ i) (σ j) + ΔA1 i j) :=
   h
+
+/-- **Theorem 11.3 per-step floating-point building block**: the fl backward
+error of one 1×1 Schur-complement update `s = fl(a − fl(fl(c₁/e)·c₂))` equals the
+exact entry `a − c₁c₂/e` plus a derived error `≤ γ₃·(|a| + |c₁c₂/e|)`.  This is a
+genuine (non-assumed) atomic ingredient toward the block-LDLᵀ backward error
+`higham11_3_block_ldlt_backward_error_interface`; the full recursion over all
+stages remains open (see chapter report). -/
+theorem higham11_3_fl_oneByOne_schur_step_error
+    (fp : FPModel) (a e c1 c2 : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 3 * (|a| + |c1 * c2 / e|) ∧
+      fp.fl_sub a (fp.fl_mul (fp.fl_div c1 e) c2) = (a - c1 * c2 / e) + Δ :=
+  fl_oneByOne_schur_step_error fp a e c1 c2 he hval
+
+/-- **Theorem 11.3 / eq (11.5), `s = 1` case**: the computed 1×1 pivot solve
+`x̂ = fl(b/e)` of `e·x = b` satisfies `(e + Δe)·x̂ = b` with `|Δe| ≤ γ₁·|e|` — a
+derived (non-assumed) instance of the block-solve perturbation hypothesis (11.5)
+for 1×1 pivots. -/
+theorem higham11_3_fl_oneByOne_solve_backward_error
+    (fp : FPModel) (b e : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 1) :
+    ∃ Δe : ℝ, |Δe| ≤ gamma fp 1 * |e| ∧ (e + Δe) * fp.fl_div b e = b :=
+  fl_oneByOne_solve_backward_error fp b e he hval
 
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
@@ -369,6 +437,122 @@ def higham11_14_aasenNextColumnEquation (n : ℕ)
       (A k i - ∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0) /
         H next i
 
+/-- **Equation (11.12) derivation**: the Aasen diagonal equation holds for any
+`A = L·H` with `L` unit lower triangular.  Exact-arithmetic identity behind the
+Aasen recurrence (not the fl analysis): `A i i = ∑_{j<i} L i j · H j i + H i i`,
+by unit-lower-triangularity of `L`. -/
+theorem higham11_12_aasen_diagonal_equation_of_product (n : ℕ)
+    (A L H : Fin n → Fin n → ℝ)
+    (hLdiag : ∀ i, L i i = 1)
+    (hLupper : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hprod : ∀ i k : Fin n, (∑ j, L i j * H j k) = A i k) :
+    higham11_12_aasenDiagonalEquation n A L H := by
+  intro i
+  have key : ∀ j : Fin n, L i j * H j i
+      = (if j.val < i.val then L i j * H j i else 0)
+        + (if i.val ≤ j.val then L i j * H j i else 0) := by
+    intro j
+    by_cases h : j.val < i.val
+    · simp [h, Nat.not_le.mpr h]
+    · simp [h, Nat.not_lt.mp h]
+  rw [← hprod i i, Finset.sum_congr rfl (fun j _ => key j), Finset.sum_add_distrib]
+  congr 1
+  rw [Finset.sum_eq_single i]
+  · simp [hLdiag i]
+  · intro j _ hji
+    by_cases h : i.val ≤ j.val
+    · have hlt : i.val < j.val :=
+        lt_of_le_of_ne h (fun e => hji (Fin.ext e.symm))
+      simp [h, hLupper i j hlt]
+    · simp [h]
+  · intro hnm; exact absurd (Finset.mem_univ i) hnm
+
+/-- **Equation (11.13) derivation**: the Aasen subdiagonal equation holds for any
+`A = L·H` with `L` unit lower triangular.  For `k = i+1`,
+`A k i = ∑_{j≤i} L k j · H j i + H k i`. -/
+theorem higham11_13_aasen_subdiagonal_equation_of_product (n : ℕ)
+    (A L H : Fin n → Fin n → ℝ)
+    (hLdiag : ∀ i, L i i = 1)
+    (hLupper : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hprod : ∀ i k : Fin n, (∑ j, L i j * H j k) = A i k) :
+    higham11_13_aasenSubdiagonalEquation n A L H := by
+  intro i k hk
+  have key : ∀ j : Fin n, L k j * H j i
+      = (if j.val ≤ i.val then L k j * H j i else 0)
+        + (if k.val ≤ j.val then L k j * H j i else 0) := by
+    intro j
+    by_cases h : j.val ≤ i.val
+    · have hnk : ¬ k.val ≤ j.val := by omega
+      simp [h, hnk]
+    · have hkj : k.val ≤ j.val := by omega
+      simp [h, hkj]
+  rw [← hprod k i, Finset.sum_congr rfl (fun j _ => key j), Finset.sum_add_distrib]
+  congr 1
+  rw [Finset.sum_eq_single k]
+  · simp [hLdiag k]
+  · intro j _ hjk
+    by_cases h : k.val ≤ j.val
+    · have hlt : k.val < j.val :=
+        lt_of_le_of_ne h (fun e => hjk (Fin.ext e.symm))
+      simp [h, hLupper k j hlt]
+    · simp [h]
+  · intro hnm; exact absurd (Finset.mem_univ k) hnm
+
+/-- **Aasen band structure of `H = T·Lᵀ`** (Higham §11.2): with `T` tridiagonal
+and `L` lower triangular, `H j i = ∑ₖ T j k·L i k = 0` for `j > i+1`.  The
+structural fact that lets the column update (11.14) pick out a single term. -/
+theorem higham11_10_aasenH_band (n : ℕ) (T L : Fin n → Fin n → ℝ)
+    (hT : ∀ a b : Fin n, a.val + 1 < b.val ∨ b.val + 1 < a.val → T a b = 0)
+    (hL : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (i j : Fin n) (hji : i.val + 1 < j.val) :
+    higham11_10_aasenH n T L j i = 0 := by
+  unfold higham11_10_aasenH
+  apply Finset.sum_eq_zero
+  intro k _
+  by_cases h : k.val ≤ i.val
+  · rw [hT j k (Or.inr (by omega)), zero_mul]
+  · rw [hL i k (by omega), mul_zero]
+
+/-- **Equation (11.14) derivation**: for `A = L·H` with `L` unit lower triangular
+and `H` banded (`H j i = 0` for `j > i+1`, e.g. from `higham11_10_aasenH_band`),
+the below-diagonal next-column entries of `L` are
+`L k next = (A k i − ∑_{j≤i} L k j·H j i) / H next i` (`next = i+1`, `k ≥ i+2`),
+provided the pivot `H next i ≠ 0`.  Exact-arithmetic Aasen recurrence, toward Thm 11.8. -/
+theorem higham11_14_aasen_next_column_of_product (n : ℕ)
+    (A L H : Fin n → Fin n → ℝ)
+    (hHband : ∀ i j : Fin n, i.val + 1 < j.val → H j i = 0)
+    (hprod : ∀ k i : Fin n, (∑ j, L k j * H j i) = A k i)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0) :
+    higham11_14_aasenNextColumnEquation n A L H := by
+  intro i next k hnext hk
+  have key : ∀ j : Fin n, L k j * H j i
+      = (if j.val ≤ i.val then L k j * H j i else 0)
+        + (if i.val < j.val then L k j * H j i else 0) := by
+    intro j
+    by_cases h : j.val ≤ i.val
+    · simp [h, Nat.not_lt.mpr h]
+    · simp [h, Nat.lt_of_not_le h]
+  have htail : (∑ j, if i.val < j.val then L k j * H j i else 0)
+      = L k next * H next i := by
+    rw [Finset.sum_eq_single next]
+    · have : i.val < next.val := by omega
+      simp [this]
+    · intro j _ hjn
+      by_cases h : i.val < j.val
+      · have hgt : i.val + 1 < j.val := by
+          rcases lt_or_eq_of_le (Nat.succ_le_of_lt h) with h1 | h1
+          · exact h1
+          · exact absurd (Fin.ext (by omega)) hjn
+        rw [hHband i j hgt]; simp
+      · simp [h]
+    · intro hnm; exact absurd (Finset.mem_univ next) hnm
+  have hsum : A k i
+      = (∑ j, if j.val ≤ i.val then L k j * H j i else 0) + L k next * H next i := by
+    rw [← hprod k i, Finset.sum_congr rfl (fun j _ => key j),
+      Finset.sum_add_distrib, htail]
+  rw [eq_div_iff (hHnz i next hnext)]
+  linarith [hsum]
+
 /-- **Equation (11.15)**, the Aasen solve chain
 `L z = P b`, `T y = z`, `L^T w = y`, `x = P w`. -/
 def higham11_15_aasenSolveChain (n : ℕ)
@@ -451,6 +635,28 @@ theorem higham11_9_skew_L_entry_bound_interface (n : ℕ)
 def higham11_9_skewSchurEntryBound
     (sij Amax : ℝ) : Prop :=
   |sij| ≤ 3 * Amax
+
+/-- **Algorithm 11.9 multiplier bound**, proved: for a skew 2×2 pivot the
+multiplier `c/a₂₁` (an entry of `CE⁻¹`, hence of `L`) satisfies `|c/a₂₁| ≤ 1`
+whenever the pivot `a₂₁` has the largest magnitude (`|c| ≤ |a₂₁|`).  This is the
+honest derivation behind `higham11_9_skew_L_entry_bound_interface`. -/
+theorem higham11_9_skew_multiplier_bound (c a21 : ℝ)
+    (ha : a21 ≠ 0) (hc : |c| ≤ |a21|) :
+    |c / a21| ≤ 1 :=
+  skew_twoByTwo_multiplier_bound c a21 ha hc
+
+/-- **Algorithm 11.9 Schur-entry bound**, proved: the skew 2×2 Schur entry
+`s = a_ij − (a_{i2}/a₂₁)a_{j1} + (a_{i1}/a₂₁)a_{j2}` satisfies the printed
+`higham11_9_skewSchurEntryBound s M`, i.e. `|s| ≤ 3M`, when every active entry is
+`≤ M` and the multipliers are `≤ 1` (`|a_{i1}|,|a_{i2}| ≤ |a₂₁|`). -/
+theorem higham11_9_skew_schur_entry_bound
+    (aij ai1 ai2 aj1 aj2 a21 M : ℝ) (ha : a21 ≠ 0)
+    (hij : |aij| ≤ M) (hj1 : |aj1| ≤ M) (hj2 : |aj2| ≤ M)
+    (hi1 : |ai1| ≤ |a21|) (hi2 : |ai2| ≤ |a21|) :
+    higham11_9_skewSchurEntryBound
+      (aij - (ai2 / a21) * aj1 + (ai1 / a21) * aj2) M :=
+  skew_twoByTwo_schur_entry_bound aij ai1 ai2 aj1 aj2 a21 M
+    ha hij hj1 hj2 hi1 hi2
 
 /-- The printed skew growth-factor bound
 `rho_n <= (sqrt 3)^(n-2)`. -/
