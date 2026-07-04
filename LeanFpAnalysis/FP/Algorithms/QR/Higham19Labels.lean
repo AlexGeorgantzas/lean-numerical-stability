@@ -28,13 +28,13 @@ open scoped BigOperators
     satisfy the exact-tail / relative-error-first-entry / relative-error-beta
     contract `HouseholderConstructionError`.
 
-    Scope: the printed Lemma 19.1 states the bound for BOTH sign
-    conventions (19.1) and (19.2); this wrapper covers Construction 1 only.
-    The alternative-sign kernel (19.2), with its cancellation-avoiding
-    first-entry formula, is not yet formalized, so the full two-construction
-    label remains partial.  The proved constant is the `θ̃`/`γ̃_n`-class
-    bound recorded in `HouseholderConstructionError` (explicit index
-    `4n+8`). -/
+    The printed Lemma 19.1 states the bound for BOTH sign conventions (19.1)
+    and (19.2); this wrapper is Construction 1 (usual sign, eq (19.1)).
+    Construction 2 (the alternative-sign, cancellation-avoiding kernel of
+    eq (19.2)) is now formalized in `HouseholderConstruction2.lean`
+    (`H19_Lemma19_1_construction2_backward_error`), so the two-construction
+    label is complete.  The proved constant is the `θ̃`/`γ̃_n`-class bound
+    recorded in `HouseholderConstructionError` (explicit index `4n+8`). -/
 theorem H19_Lemma19_1_construction1_backward_error (fp : FPModel)
     {n : ℕ} (hn0 : 0 < n) (x : Fin n → ℝ) (hx : x ≠ 0)
     (hn : gammaValid fp (4 * n + 8)) :
