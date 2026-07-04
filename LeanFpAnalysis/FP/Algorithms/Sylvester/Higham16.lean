@@ -608,6 +608,100 @@ theorem sylvesterVecCoeff_diagonal_det_ne_zero_iff (m n : Nat)
       intro p _hp
       exact h p.2 p.1)
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    explicit inverse for the diagonal-basis vec/Kronecker coefficient with
+    diagonal entries `(a_i - b_j)^{-1}`. -/
+noncomputable def sylvesterDiagonalVecCoeffInv (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real :=
+  Matrix.diagonal
+    (fun p : Prod (Fin n) (Fin m) => Ring.inverse (a p.2 - b p.1))
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal case:
+    entrywise absolute-value bound for the explicit diagonal inverse of the
+    vec/Kronecker Sylvester coefficient. -/
+noncomputable def sylvesterDiagonalVecCoeffInvAbs (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real :=
+  fun p q => |sylvesterDiagonalVecCoeffInv m n a b p q|
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    the explicit diagonal inverse is a left inverse for the separated
+    vec/Kronecker Sylvester coefficient. -/
+theorem sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    sylvesterDiagonalVecCoeffInv m n a b *
+        sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b) = 1 := by
+  rw [sylvesterVecCoeff_diagonal, sylvesterDiagonalVecCoeffInv,
+    Matrix.diagonal_mul_diagonal]
+  ext p q
+  by_cases hpq : p = q
+  case pos =>
+    subst q
+    simp [Matrix.diagonal, hsep p.2 p.1]
+  case neg =>
+    simp [Matrix.diagonal, hpq]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    the separated diagonal-basis vec/Kronecker Sylvester coefficient is also a
+    right inverse for the explicit diagonal inverse. -/
+theorem sylvesterVecCoeff_diagonal_mul_sylvesterDiagonalVecCoeffInv (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    sylvesterVecCoeff m n (Matrix.diagonal a) (Matrix.diagonal b) *
+        sylvesterDiagonalVecCoeffInv m n a b = 1 := by
+  rw [sylvesterVecCoeff_diagonal, sylvesterDiagonalVecCoeffInv,
+    Matrix.diagonal_mul_diagonal]
+  ext p q
+  by_cases hpq : p = q
+  case pos =>
+    subst q
+    simp [Matrix.diagonal, hsep p.2 p.1]
+  case neg =>
+    simp [Matrix.diagonal, hpq]
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal case:
+    the absolute-value matrix exactly bounds the explicit diagonal inverse
+    componentwise. -/
+lemma sylvesterDiagonalVecCoeffInv_abs_le_invAbs (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) :
+    forall p q,
+      |sylvesterDiagonalVecCoeffInv m n a b p q| <=
+        sylvesterDiagonalVecCoeffInvAbs m n a b p q := by
+  intro p q
+  rfl
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case:
+    with `A` and `B` diagonal and `a_i != b_j`, the practical componentwise
+    error bound is instantiated with the explicit diagonal inverse of the
+    vec/Kronecker Sylvester coefficient. -/
+theorem sylvester_practical_error_bound_of_diagonal_computed_residual_certificate
+    (m n : Nat) (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hBudget :
+      IsSylvesterComputedResidualBudget m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterDiagonalVecCoeffInvAbs m n a b) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat Rhat Ru
+      (sylvesterDiagonalVecCoeffInv m n a b)
+      (sylvesterDiagonalVecCoeffInvAbs m n a b)
+      hX
+      (sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal
+        m n a b hsep)
+      (sylvesterDiagonalVecCoeffInv_abs_le_invAbs m n a b)
+      hBudget hXhat
+
 -- ============================================================
 -- Exact Schur-coordinate algebra from Chapter 16.1
 -- ============================================================
