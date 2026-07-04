@@ -1289,6 +1289,31 @@ theorem lyapunovSpectralTransform_frobNormSq (n : ℕ)
   unfold lyapunovSpectralTransform
   rw [frobNormSq_orthogonal_right _ _ hU, frobNormSq_orthogonal_left _ _ hU.transpose]
 
+/-- The Lyapunov spectral-coordinate transform commutes with transpose. -/
+theorem lyapunovSpectralTransform_transpose (n : ℕ)
+    (U M : Fin n → Fin n → ℝ) :
+    matTranspose (lyapunovSpectralTransform n U M) =
+      lyapunovSpectralTransform n U (matTranspose M) := by
+  unfold lyapunovSpectralTransform
+  rw [matTranspose_matMul]
+  rw [matTranspose_matMul]
+  rw [matTranspose_involutive]
+  exact (matMul_assoc n (matTranspose U) (matTranspose M) U).symm
+
+/-- Symmetry of the right-hand Lyapunov perturbation is preserved after the
+    spectral-coordinate transform `U^T M U`. -/
+theorem lyapunovSpectralTransform_symmetric (n : ℕ)
+    (U M : Fin n → Fin n → ℝ)
+    (hM : IsSymmetricFiniteMatrix M) :
+    IsSymmetricFiniteMatrix (lyapunovSpectralTransform n U M) := by
+  intro i j
+  have hMt : matTranspose M = M := by
+    ext a b
+    exact hM b a
+  have hT := lyapunovSpectralTransform_transpose n U M
+  rw [hMt] at hT
+  simpa [matTranspose] using congrFun (congrFun hT j) i
+
 /-- Spectral-coordinate transforms distribute over the `M + N - P` matrix
     combination used in the Lyapunov perturbation residual. -/
 theorem lyapunovSpectralTransform_add_sub (n : ℕ)
@@ -1716,6 +1741,32 @@ theorem lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decompositi
       lyapunovBackwardScalarEq_of_spectral_decomposition n U DeltaA DeltaC lam
         alpha gamma hU halpha hgamma
     simpa [hresid] using hscalar
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    the structured certificate-to-scalar bridge with the transformed symmetric
+    right-hand perturbation side condition exposed explicitly. -/
+theorem lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition_symm
+    (n : ℕ)
+    (A C Y U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (alpha gamma eta : ℝ)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U) (halpha : alpha ≠ 0) (hgamma : gamma ≠ 0)
+    (hLyap : IsLyapunovBackwardError n A C Y alpha gamma eta) :
+    ∃ DeltaA DeltaC : Fin n → Fin n → ℝ,
+      IsSymmetricFiniteMatrix (lyapunovSpectralTransform n U DeltaC) ∧
+      frobNormSq (lyapunovSpectralTransform n U DeltaA) ≤ (eta * alpha) ^ 2 ∧
+      frobNormSq (lyapunovSpectralTransform n U DeltaC) ≤ (eta * gamma) ^ 2 ∧
+      lyapunovBackwardScalarEq n lam alpha gamma
+        (lyapunovSpectralTransform n U DeltaA)
+        (lyapunovSpectralTransform n U DeltaC)
+        (lyapunovSpectralTransform n U (lyapunovResidual n A C Y)) := by
+  rcases
+    lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition
+      n A C Y U lam alpha gamma eta hY hU halpha hgamma hLyap with
+    ⟨DeltaA, DeltaC, hDeltaC_sym, hDeltaA, hDeltaC, hscalar⟩
+  exact ⟨DeltaA, DeltaC,
+    lyapunovSpectralTransform_symmetric n U DeltaC hDeltaC_sym,
+    hDeltaA, hDeltaC, hscalar⟩
 
 /-- Equation (16.21) as the diagonal-matrix residual equation
     `DeltaA_tilde * Lambda + Lambda * DeltaA_tilde^T - DeltaC_tilde = R_tilde`. -/
