@@ -694,6 +694,184 @@ theorem theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_nat
         (mul_le_mul_of_nonneg_right hfactor
           (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
 
+/-- Theorem 20.7 bridge for row-sorting bounds with an accumulated relative
+    error coefficient.
+
+This packages the shape exposed by the Chapter 19 row-sorting accumulated-error
+dependency: the printed `sqrt(m) * (1 + sqrt 2)^k` stage factor is allowed an
+additional nonnegative row-relative error `err`, and the finite source ratio is
+bounded by the corresponding horizon coefficient. -/
+theorem theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_with_relative_error_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi err : ℝ)
+    (hphi : 0 ≤ phi) (herr : 0 ≤ err)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤
+      Real.sqrt (m : ℝ) *
+        H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err := by
+  have hsqrt_nonneg : 0 ≤ Real.sqrt (m : ℝ) := Real.sqrt_nonneg _
+  have hG0 : 0 ≤ H19.Theorem19_6.rowwise_step_growth_factor :=
+    H19.Theorem19_6.rowwise_step_growth_factor_nonneg
+  have hG1 : 1 ≤ H19.Theorem19_6.rowwise_step_growth_factor := by
+    dsimp [H19.Theorem19_6.rowwise_step_growth_factor]
+    exact le_add_of_nonneg_right (Real.sqrt_nonneg (2 : ℝ))
+  have hbase :
+      0 ≤ Real.sqrt (m : ℝ) *
+        H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+    mul_nonneg hsqrt_nonneg (pow_nonneg hG0 _)
+  have hC :
+      0 ≤ Real.sqrt (m : ℝ) *
+        H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err :=
+    add_nonneg hbase herr
+  apply theorem20_7_alphaBetaMax_le_of_uniform_entry_growth_nat
+    hm hn Astage A bstage b phi hC hphi hdenA hdenW
+  · intro i k hk j
+    have hk_le : k ≤ n - 1 := Nat.le_sub_one_of_lt hk
+    have hpow :
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k ≤
+          H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+      pow_le_pow_right₀ hG1 hk_le
+    have hfactor :
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k ≤
+          Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+      mul_le_mul_of_nonneg_left hpow hsqrt_nonneg
+    have hfactorErr :
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err ≤
+          Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err :=
+      by
+        simpa [add_comm, add_left_comm, add_assoc] using
+          add_le_add_right hfactor err
+    exact
+      (hA i k hk j).trans
+        (mul_le_mul_of_nonneg_right hfactorErr
+          (theorem20_7_initialRowMax_nonneg hn A i))
+  · intro i k hk
+    have hk_le : k ≤ n - 1 := Nat.le_sub_one_of_lt hk
+    have hpow :
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k ≤
+          H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+      pow_le_pow_right₀ hG1 hk_le
+    have hfactor :
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k ≤
+          Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) :=
+      mul_le_mul_of_nonneg_left hpow hsqrt_nonneg
+    have hfactorErr :
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err ≤
+          Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err :=
+      by
+        simpa [add_comm, add_left_comm, add_assoc] using
+          add_le_add_right hfactor err
+    exact
+      (hb i k hk).trans
+        (mul_le_mul_of_nonneg_right hfactorErr
+          (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
+
+/-- Theorem 20.7 support: consume the Chapter 19 row-sorting accumulated-error
+    entry theorem and repackage its output in the staged `A` entry-growth shape
+    used by the Chapter 20 weighted least-squares ratio bridges.
+
+The two final hypotheses are the exact remaining row-sorting handoffs: the
+source row used by the Chapter 19 bound must be dominated by the source row
+scale used in Theorem 20.7, and the accumulated computed/exact error budget
+must be dominated by a relative coefficient `err`. -/
+theorem theorem20_7_stageAEntry_bound_of_h19_row_sorting_accumulated_error
+    {m n : ℕ} (hn : 0 < n) (k r : Fin m) (j : Fin n)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ)
+    (row0Bound : Fin m → ℝ) (stepBudget : ℕ → ℝ) (err : ℝ)
+    (hr : k.val ≤ r.val)
+    (hsorted :
+      ∀ s : Fin m, k.val ≤ s.val → row0Bound s ≤ row0Bound k)
+    (hinitExact : |Aexact 0 r j| ≤ row0Bound r)
+    (hstepExact :
+      ∀ t : ℕ, t < k.val →
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hstepErr :
+      ∀ t : ℕ, t < k.val →
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            stepBudget t)
+    (hrow0 :
+      row0Bound k ≤
+        Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hacc :
+      H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+          |Ahat 0 r j - Aexact 0 r j| +
+        scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+          stepBudget k.val ≤
+        err * theorem20_7_initialRowMax hn A r) :
+    |Ahat k.val r j| ≤
+      (Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ k.val + err) *
+        theorem20_7_initialRowMax hn A r := by
+  have hH19 :=
+    H19.Theorem19_6.row_sorting_active_entry_bound_with_accumulated_error
+      k r j Ahat Aexact row0Bound stepBudget hr hsorted hinitExact
+      hstepExact hstepErr
+  have hG0 : 0 ≤ H19.Theorem19_6.rowwise_step_growth_factor :=
+    H19.Theorem19_6.rowwise_step_growth_factor_nonneg
+  have hpow0 :
+      0 ≤ H19.Theorem19_6.rowwise_step_growth_factor ^ k.val :=
+    pow_nonneg hG0 _
+  have hfirst :
+      H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+          row0Bound k ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k.val) *
+          theorem20_7_initialRowMax hn A r := by
+    calc
+      H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+            row0Bound k
+          ≤ H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+              (Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r) :=
+            mul_le_mul_of_nonneg_left hrow0 hpow0
+      _ = (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k.val) *
+            theorem20_7_initialRowMax hn A r := by ring
+  have hsum :=
+    add_le_add hfirst hacc
+  calc
+    |Ahat k.val r j| ≤
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+            row0Bound k +
+          (H19.Theorem19_6.rowwise_step_growth_factor ^ k.val *
+              |Ahat 0 r j - Aexact 0 r j| +
+            scalarAffineGrowthBudget
+              H19.Theorem19_6.rowwise_step_growth_factor stepBudget k.val) :=
+        hH19
+    _ ≤ (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k.val) *
+            theorem20_7_initialRowMax hn A r +
+          err * theorem20_7_initialRowMax hn A r :=
+        hsum
+    _ = (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k.val + err) *
+          theorem20_7_initialRowMax hn A r := by ring
+
 /-- Theorem 20.7 bridge specialized to the Chapter 19.6 active-row Cox--Higham
     growth factor. -/
 theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
@@ -1025,6 +1203,146 @@ theorem theorem20_7_deltaBEntry_bound_of_row_sorting_geometric_entry_growth_nat
   hDelta.trans
     (theorem20_7_deltaBEntryBudget_le_of_row_sorting_geometric_entry_growth_nat
       hm hn Astage A bstage b phi gammaTilde i hphi hgamma
+      hdenA hdenW hA hb)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    row-sorting stage bounds with accumulated relative error control each
+    `Delta A` component budget. -/
+theorem theorem20_7_deltaAEntryBudget_le_of_row_sorting_geometric_entry_growth_with_relative_error_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi gammaTilde err : ℝ)
+    (i : Fin m) (j : Fin n)
+    (hphi : 0 ≤ phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_deltaAEntryBudget gammaTilde
+        (theorem20_7_alpha hn Astage A i)
+        (theorem20_7_initialRowMax hn A i) j ≤
+      theorem20_7_deltaAEntryBudget gammaTilde
+        (Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+        (theorem20_7_initialRowMax hn A i) j :=
+  theorem20_7_deltaAEntryBudget_le_of_alphaBetaMax_le
+    hm hn Astage A bstage b phi gammaTilde i j hgamma
+    (theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_with_relative_error_nat
+      hm hn Astage A bstage b phi err hphi herr hdenA hdenW hA hb)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    row-sorting stage bounds with accumulated relative error control each
+    `Delta b` component budget. -/
+theorem theorem20_7_deltaBEntryBudget_le_of_row_sorting_geometric_entry_growth_with_relative_error_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi gammaTilde err : ℝ)
+    (i : Fin m)
+    (hphi : 0 ≤ phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_deltaBEntryBudget n gammaTilde
+        (theorem20_7_beta hn Astage A bstage b phi i)
+        (theorem20_7_initialWeightedRowMax hn A b phi i) ≤
+      theorem20_7_deltaBEntryBudget n gammaTilde
+        (Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+        (theorem20_7_initialWeightedRowMax hn A b phi i) :=
+  theorem20_7_deltaBEntryBudget_le_of_alphaBetaMax_le
+    hm hn Astage A bstage b phi gammaTilde i hphi hgamma
+    (theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_with_relative_error_nat
+      hm hn Astage A bstage b phi err hphi herr hdenA hdenW hA hb)
+
+/-- A `Delta A` entry satisfying the printed row-ratio budget also satisfies the
+    row-sorting accumulated-error uniform budget. -/
+theorem theorem20_7_deltaAEntry_bound_of_row_sorting_geometric_entry_growth_with_relative_error_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi gammaTilde err : ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (i : Fin m) (j : Fin n)
+    (hphi : 0 ≤ phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hDelta :
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (theorem20_7_alpha hn Astage A i)
+          (theorem20_7_initialRowMax hn A i) j) :
+    |DeltaA i j| ≤
+      theorem20_7_deltaAEntryBudget gammaTilde
+        (Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+        (theorem20_7_initialRowMax hn A i) j :=
+  hDelta.trans
+    (theorem20_7_deltaAEntryBudget_le_of_row_sorting_geometric_entry_growth_with_relative_error_nat
+      hm hn Astage A bstage b phi gammaTilde err i j hphi hgamma herr
+      hdenA hdenW hA hb)
+
+/-- A `Delta b` entry satisfying the printed row-ratio budget also satisfies the
+    row-sorting accumulated-error uniform budget. -/
+theorem theorem20_7_deltaBEntry_bound_of_row_sorting_geometric_entry_growth_with_relative_error_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi gammaTilde err : ℝ)
+    (Deltab : Fin m → ℝ) (i : Fin m)
+    (hphi : 0 ≤ phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hDelta :
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (theorem20_7_beta hn Astage A bstage b phi i)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    |Deltab i| ≤
+      theorem20_7_deltaBEntryBudget n gammaTilde
+        (Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+        (theorem20_7_initialWeightedRowMax hn A b phi i) :=
+  hDelta.trans
+    (theorem20_7_deltaBEntryBudget_le_of_row_sorting_geometric_entry_growth_with_relative_error_nat
+      hm hn Astage A bstage b phi gammaTilde err i hphi hgamma herr
       hdenA hdenW hA hb)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
