@@ -609,6 +609,16 @@ theorem sylvesterVecCoeff_diagonal_det_ne_zero_iff (m n : Nat)
       exact h p.2 p.1)
 
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
+    a common diagonal entry makes the diagonal-basis vec/Kronecker Sylvester
+    coefficient singular. -/
+theorem sylvesterVecCoeff_diagonal_det_eq_zero_of_common_entry (n : Nat)
+    (a b : Fin n -> Real) (i j : Fin n) (hij : a i = b j) :
+    (sylvesterVecCoeff n n (Matrix.diagonal a) (Matrix.diagonal b)).det = 0 := by
+  by_contra hdet
+  have hsep := (sylvesterVecCoeff_diagonal_det_ne_zero_iff n n a b).mp hdet
+  exact hsep i j (by rw [hij, sub_self])
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
     explicit inverse for the diagonal-basis vec/Kronecker coefficient with
     diagonal entries `(a_i - b_j)^{-1}`. -/
 noncomputable def sylvesterDiagonalVecCoeffInv (m n : Nat)
@@ -1556,6 +1566,55 @@ theorem sylvesterSepInf_le_ratio (n : Nat) (A B X : Fin n -> Fin n -> Real)
   unfold sylvesterSepInf
   exact csInf_le (sylvesterSepRatios_bddBelow n A B)
     (Exists.intro X (And.intro hX rfl))
+
+/-- Higham, 2nd ed., Chapter 16.1 and equation (16.3), diagonal case:
+    a common diagonal entry gives a nonzero element of the diagonal Sylvester
+    operator kernel. -/
+theorem exists_nonzero_sylvesterOp_diagonal_kernel_of_common_entry (n : Nat)
+    (a b : Fin n -> Real) (i j : Fin n) (hij : a i = b j) :
+    exists X : Fin n -> Fin n -> Real,
+      Not (frobNormSq X = 0) /\
+        sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X = 0 := by
+  classical
+  let E : Fin n -> Fin n -> Real :=
+    fun r c => if i = r /\ j = c then (1 : Real) else 0
+  refine ⟨E, ?_, ?_⟩
+  · have hrect : frobNormSqRect E = (1 : Real) ^ 2 :=
+      frobNormSqRect_single_left i j (1 : Real)
+    rw [frobNormSqRect_eq_frobNormSq] at hrect
+    norm_num at hrect
+    intro hzero
+    rw [hzero] at hrect
+    norm_num at hrect
+  · have hrect :
+        sylvesterOpRect n n (Matrix.diagonal a) (Matrix.diagonal b) E = 0 := by
+      ext r c
+      rw [sylvesterOpRect_diagonal_apply]
+      by_cases hrc : i = r /\ j = c
+      · rcases hrc with ⟨hir, hjc⟩
+        subst r
+        subst c
+        simp [E, hij]
+      · simp [E, hrc]
+    simpa [sylvesterOpRect_square_eq_sylvesterOp] using hrect
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal case:
+    a common diagonal entry forces the exact infimum model of `sep(A,B)` to
+    vanish. -/
+theorem sylvesterSepInf_diagonal_eq_zero_of_common_entry (n : Nat)
+    (a b : Fin n -> Real) (i j : Fin n) (hij : a i = b j) :
+    sylvesterSepInf n (Matrix.diagonal a) (Matrix.diagonal b) = 0 := by
+  obtain ⟨X, hXne, hker⟩ :=
+    exists_nonzero_sylvesterOp_diagonal_kernel_of_common_entry n a b i j hij
+  have hle :=
+    sylvesterSepInf_le_ratio n (Matrix.diagonal a) (Matrix.diagonal b) X hXne
+  have hratio :
+      frobNorm (sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X) /
+          frobNorm X = 0 := by
+    rw [hker]
+    simp [frobNorm]
+  exact le_antisymm (by simpa [hratio] using hle)
+    (sylvesterSepInf_nonneg n (Matrix.diagonal a) (Matrix.diagonal b))
 
 /-- A positive `SepLowerBound` certificate is below the exact infimum model,
     whenever the feasible ratio set is nonempty. -/
