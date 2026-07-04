@@ -1815,6 +1815,144 @@ theorem wedinLemma20_12_finiteTrace_compressedGram_sub_swapped_eq_projectionDiff
     (wedinLemma20_12_compressedGram_sub_swapped_compressedGram_eq_projectionDiff_cube
       P Q hIdemP hIdemQ)
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the trace of `(I-Q)P(I-Q)` is `tr(P) - tr(PQ)` for an algebraic
+    projection `Q`. -/
+theorem wedinLemma20_12_finiteTrace_compressedGram_eq_projection_trace_sub
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+          (fun i j => idMatrix m i j - Q i j)) =
+      finiteTrace P - finiteTrace (rectMatMul P Q) := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hIQIdem : rectMatMul IQ IQ = IQ := by
+    simpa [IQ] using
+      wedinLemma20_12_projectionComplement_idempotent Q hIdemQ
+  have hcycle₁ :
+      finiteTrace (rectMatMul (rectMatMul IQ P) IQ) =
+        finiteTrace (rectMatMul IQ (rectMatMul IQ P)) := by
+    simpa [finiteMatMul, rectMatMul] using
+      finiteTrace_finiteMatMul_comm (rectMatMul IQ P) IQ
+  have hcycle₂ :
+      finiteTrace (rectMatMul IQ P) =
+        finiteTrace (rectMatMul P IQ) := by
+    simpa [finiteMatMul, rectMatMul] using
+      finiteTrace_finiteMatMul_comm IQ P
+  have hright :
+      finiteTrace (rectMatMul P IQ) =
+        finiteTrace P - finiteTrace (rectMatMul P Q) := by
+    have hmul := rectMatMul_sub_right P (idMatrix m) Q
+    calc
+      finiteTrace (rectMatMul P IQ)
+          = finiteTrace
+              (fun i j =>
+                rectMatMul P (idMatrix m) i j - rectMatMul P Q i j) := by
+              simpa [IQ] using congrArg finiteTrace hmul
+      _ = finiteTrace (rectMatMul P (idMatrix m)) -
+            finiteTrace (rectMatMul P Q) := by
+              rw [finiteTrace_sub]
+      _ = finiteTrace P - finiteTrace (rectMatMul P Q) := by
+              rw [rectMatMul_id_right]
+  calc
+    finiteTrace (rectMatMul (rectMatMul IQ P) IQ)
+        = finiteTrace (rectMatMul IQ (rectMatMul IQ P)) := hcycle₁
+    _ = finiteTrace (rectMatMul (rectMatMul IQ IQ) P) := by
+            rw [← rectMatMul_assoc]
+    _ = finiteTrace (rectMatMul IQ P) := by
+            rw [hIQIdem]
+    _ = finiteTrace (rectMatMul P IQ) := hcycle₂
+    _ = finiteTrace P - finiteTrace (rectMatMul P Q) := hright
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    subtracting the two compressed-Gram traces leaves only the difference of
+    the projection traces. -/
+theorem wedinLemma20_12_finiteTrace_compressedGram_sub_swapped_eq_projection_trace_sub
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+          (fun i j => idMatrix m i j - Q i j)) -
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+          (fun i j => idMatrix m i j - P i j)) =
+      finiteTrace P - finiteTrace Q := by
+  have hP :=
+    wedinLemma20_12_finiteTrace_compressedGram_eq_projection_trace_sub
+      P Q hIdemQ
+  have hQ :=
+    wedinLemma20_12_finiteTrace_compressedGram_eq_projection_trace_sub
+      Q P hIdemP
+  have hQP :
+      finiteTrace (rectMatMul Q P) = finiteTrace (rectMatMul P Q) := by
+    simpa [finiteMatMul, rectMatMul] using
+      finiteTrace_finiteMatMul_comm Q P
+  rw [hP, hQ, hQP]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    for algebraic projections, the trace of `(P-Q)^3` is the trace of
+    `P-Q`. -/
+theorem wedinLemma20_12_finiteTrace_projectionDiff_cube_eq_projectionDiff
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j))
+          (fun i j => P i j - Q i j)) =
+      finiteTrace (fun i j => P i j - Q i j) := by
+  have hcube :=
+    wedinLemma20_12_finiteTrace_compressedGram_sub_swapped_eq_projectionDiff_cube
+      P Q hIdemP hIdemQ
+  have hdiff :=
+    wedinLemma20_12_finiteTrace_compressedGram_sub_swapped_eq_projection_trace_sub
+      P Q hIdemP hIdemQ
+  calc
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j))
+          (fun i j => P i j - Q i j))
+        = finiteTrace
+            (rectMatMul
+              (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+              (fun i j => idMatrix m i j - Q i j)) -
+          finiteTrace
+            (rectMatMul
+              (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+              (fun i j => idMatrix m i j - P i j)) := by
+            exact hcube.symm
+    _ = finiteTrace P - finiteTrace Q := hdiff
+    _ = finiteTrace (fun i j => P i j - Q i j) := by
+            rw [finiteTrace_sub]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    equal projection traces imply equality of the two compressed-Gram traces. -/
+theorem wedinLemma20_12_finiteTrace_compressedGram_eq_swapped_of_projection_trace_eq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (hTrace : finiteTrace P = finiteTrace Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P)
+          (fun i j => idMatrix m i j - Q i j)) =
+      finiteTrace
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix m i j - P i j) Q)
+          (fun i j => idMatrix m i j - P i j)) := by
+  have hdiff :=
+    wedinLemma20_12_finiteTrace_compressedGram_sub_swapped_eq_projection_trace_sub
+      P Q hIdemP hIdemQ
+  rw [hTrace] at hdiff
+  linarith
+
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
     source-oriented projection perturbation bound.
 
