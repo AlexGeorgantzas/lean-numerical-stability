@@ -303,6 +303,27 @@ lemma sylvesterPracticalBudgetVec_nonneg (m n : Nat)
       (add_nonneg (abs_nonneg _)
         (by simpa [Matrix.vec] using hRu q.2 q.1))
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    the entrywise absolute-value matrix `|P^{-1}|` for the vec/Kronecker
+    Sylvester coefficient `P = I_n kron A - B^T kron I_m`.  The inverse is
+    Mathlib's nonsingular matrix inverse; source-facing theorems using this
+    definition separately prove the required left-inverse hypothesis. -/
+noncomputable def sylvesterVecCoeffNonsingInvAbs (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) :
+    Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real :=
+  fun p q => |((sylvesterVecCoeff m n A B)⁻¹) p q|
+
+/-- The absolute-value matrix `sylvesterVecCoeffNonsingInvAbs` bounds the
+    nonsingular inverse entries componentwise, exactly as required by the
+    practical error-budget theorem. -/
+lemma sylvesterVecCoeffNonsingInv_abs_le_invAbs (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) :
+    forall p q,
+      |((sylvesterVecCoeff m n A B)⁻¹) p q| <=
+        sylvesterVecCoeffNonsingInvAbs m n A B p q := by
+  intro p q
+  rfl
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), max-entry norm bridge:
     a nonnegative componentwise budget for `X - Xhat` bounds the relative
     max-entry forward error in the source norm `||X|| := max_{i,j} |x_ij|`. -/
