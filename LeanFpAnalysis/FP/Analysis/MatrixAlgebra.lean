@@ -8129,6 +8129,51 @@ theorem rectMatMul_id_right {m n : ℕ} (A : Fin m → Fin n → ℝ) :
   unfold rectMatMul idMatrix
   simp [Finset.mem_univ]
 
+/-- Trace of the square identity matrix in the legacy `idMatrix` API. -/
+theorem finiteTrace_idMatrix (n : ℕ) :
+    finiteTrace (idMatrix n) = (n : ℝ) := by
+  simpa [idMatrix, finiteIdMatrix] using
+    (finiteTrace_finiteIdMatrix (ι := Fin n))
+
+/-- Rectangular cyclic trace identity: for compatible rectangular products,
+    `tr(A*B) = tr(B*A)`. -/
+theorem finiteTrace_rectMatMul_comm {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin m → ℝ) :
+    finiteTrace (rectMatMul A B) = finiteTrace (rectMatMul B A) := by
+  classical
+  unfold finiteTrace rectMatMul
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro j _
+  apply Finset.sum_congr rfl
+  intro i _
+  ring
+
+/-- A rectangular left inverse `Aplus*A = I` makes the range projection
+    `A*Aplus` have trace equal to the column dimension. -/
+theorem finiteTrace_rangeProjection_of_left_inverse {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hleft : rectMatMul Aplus A = idMatrix n) :
+    finiteTrace (rectMatMul A Aplus) = (n : ℝ) := by
+  calc
+    finiteTrace (rectMatMul A Aplus)
+        = finiteTrace (rectMatMul Aplus A) :=
+            finiteTrace_rectMatMul_comm A Aplus
+    _ = finiteTrace (idMatrix n) := by rw [hleft]
+    _ = (n : ℝ) := finiteTrace_idMatrix n
+
+/-- Two rectangular range projections with left inverses of the same column
+    dimension have equal trace. -/
+theorem finiteTrace_rangeProjection_eq_of_left_inverses {m n : ℕ}
+    (A B : Fin m → Fin n → ℝ)
+    (Aplus Bplus : Fin n → Fin m → ℝ)
+    (hleftA : rectMatMul Aplus A = idMatrix n)
+    (hleftB : rectMatMul Bplus B = idMatrix n) :
+    finiteTrace (rectMatMul A Aplus) =
+      finiteTrace (rectMatMul B Bplus) := by
+  rw [finiteTrace_rangeProjection_of_left_inverse A Aplus hleftA,
+    finiteTrace_rangeProjection_of_left_inverse B Bplus hleftB]
+
 /-- Associativity for compatible rectangular products. -/
 theorem rectMatMul_assoc {m n p q : ℕ}
     (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ)
