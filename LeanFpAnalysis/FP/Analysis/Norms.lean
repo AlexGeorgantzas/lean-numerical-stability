@@ -15421,6 +15421,15 @@ theorem realRectToCMatrix_matMul {n : Nat}
   ext i j
   simp [realRectToCMatrix, matMul, complexMatrixMul]
 
+/-- Complexification commutes with the repository's real rectangular matrix
+    multiplication. -/
+theorem realRectToCMatrix_rectMatMul {m n p : Nat}
+    (A : Fin m -> Fin n -> Real) (B : Fin n -> Fin p -> Real) :
+    realRectToCMatrix (rectMatMul A B) =
+      complexMatrixMul (realRectToCMatrix A) (realRectToCMatrix B) := by
+  ext i j
+  simp [realRectToCMatrix, rectMatMul, complexMatrixMul]
+
 /-- Real square Gram matrices satisfy `‖AᵀA‖₂ = ‖A‖₂²` after
     complexification. -/
 theorem complexMatrixOp2_realRectToCMatrix_transpose_mul_self_eq_sq {n : Nat}
@@ -15437,6 +15446,24 @@ theorem complexMatrixOp2_realRectToCMatrix_mul_transpose_self_eq_sq {n : Nat}
     complexMatrixOp2 (realRectToCMatrix (matMul n A (matTranspose A))) =
       complexMatrixOp2 (realRectToCMatrix A) ^ 2 := by
   rw [realRectToCMatrix_matMul, realRectToCMatrix_matTranspose]
+  exact complexMatrixOp2_mul_adjoint_self_eq_sq (realRectToCMatrix A)
+
+/-- Real rectangular Gram matrices satisfy `‖AᵀA‖₂ = ‖A‖₂²` after
+    complexification. -/
+theorem complexMatrixOp2_realRectToCMatrix_finiteTranspose_mul_self_eq_sq {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    complexMatrixOp2 (realRectToCMatrix (rectMatMul (finiteTranspose A) A)) =
+      complexMatrixOp2 (realRectToCMatrix A) ^ 2 := by
+  rw [realRectToCMatrix_rectMatMul, realRectToCMatrix_finiteTranspose]
+  exact complexMatrixOp2_adjoint_mul_self_eq_sq (realRectToCMatrix A)
+
+/-- Real rectangular right-Gram matrices satisfy `‖AAᵀ‖₂ = ‖A‖₂²` after
+    complexification. -/
+theorem complexMatrixOp2_realRectToCMatrix_mul_finiteTranspose_self_eq_sq {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    complexMatrixOp2 (realRectToCMatrix (rectMatMul A (finiteTranspose A))) =
+      complexMatrixOp2 (realRectToCMatrix A) ^ 2 := by
+  rw [realRectToCMatrix_rectMatMul, realRectToCMatrix_finiteTranspose]
   exact complexMatrixOp2_mul_adjoint_self_eq_sq (realRectToCMatrix A)
 
 /-- A nonnegative real number has the same norm after embedding into `Complex`. -/
