@@ -13113,6 +13113,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_11_bohteBound_bandwidth_two_formula
 #check higham9_11_bohteBound_bandwidth_three_formula
 #check higham9_11_bohteBound_bandwidth_four_formula
+#check higham9_11_bohteBound_bandwidth_five_formula
 #check higham9_11_bohteBound_zero
 #check higham9_11_bohteBound_nonneg
 #check higham9_11_bohteBound_ge_two
@@ -13155,6 +13156,10 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_11_bandwidth_four_bohte_solve_tight_of_growth_le
 #check higham9_11_bandwidth_four_bohte_solve_tight_of_isBanded
 #check higham9_11_bandwidth_four_bohte_solve_tight_of_isBanded_growth_le
+#check higham9_11_bandwidth_five_bohte_solve_tight
+#check higham9_11_bandwidth_five_bohte_solve_tight_of_growth_le
+#check higham9_11_bandwidth_five_bohte_solve_tight_of_isBanded
+#check higham9_11_bandwidth_five_bohte_solve_tight_of_isBanded_growth_le
 #check higham9_14_completePivotWilkinsonProduct_ge_one
 #check higham9_14_completePivotWilkinsonProduct_two
 #check higham9_14_completePivotWilkinsonProduct_succ
