@@ -3595,6 +3595,66 @@ theorem theorem20_8_direct_data_residual_relative_self_le_firstOrderRHS_of_maxRe
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     triangle-inequality integration of the direct and reduced-data correction
+    vectors for a norm-dominated perturbed vector under the displayed maximum
+    relative perturbation assumption. -/
+theorem theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_of_maxRelativePerturbation
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (y x : Fin n → ℝ) (r : Fin m → ℝ) {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps) :
+    (vecNorm2
+          (fun j : Fin n =>
+            rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+                (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+              rectMatMulVec APplus
+                (fun i : Fin m => rectMatMulVec DeltaA x i - Deltab i) j) +
+        eps * theorem20_8ResidualAmplifier A B APplus
+          (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) /
+        vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) := by
+  let direct : Fin n → ℝ :=
+    rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+      (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)
+  let data : Fin n → ℝ :=
+    rectMatMulVec APplus
+      (fun i : Fin m => rectMatMulVec DeltaA x i - Deltab i)
+  let residual : ℝ :=
+    eps * theorem20_8ResidualAmplifier A B APplus
+      (theorem20_8BAplus A B Bplus APplus) *
+      (vecNorm2 r / frobNormRect A)
+  have htri :
+      vecNorm2 (fun j : Fin n => direct j + data j) + residual ≤
+        vecNorm2 direct + vecNorm2 data + residual := by
+    simpa [add_comm, add_left_comm, add_assoc] using
+      add_le_add_right (vecNorm2_add_le direct data) residual
+  have hdiv :
+      (vecNorm2 (fun j : Fin n => direct j + data j) + residual) /
+          vecNorm2 x ≤
+        (vecNorm2 direct + vecNorm2 data + residual) / vecNorm2 x :=
+    div_le_div_of_nonneg_right htri (le_of_lt hxpos)
+  have hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps :=
+    theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax
+  have hbase :=
+    theorem20_8_direct_data_residual_relative_le_firstOrderRHS
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r hbudget
+      heps_nonneg hApos hBpos hxpos hyx
+  exact hdiv.trans (by simpa [direct, data, residual] using hbase)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    triangle-inequality integration of the direct and reduced-data correction
     vectors under the displayed maximum relative perturbation assumption. -/
 theorem theorem20_8_direct_data_correction_residual_relative_self_le_firstOrderRHS_of_maxRelativePerturbation
     {m n p : ℕ}
