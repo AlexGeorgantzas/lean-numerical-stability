@@ -954,6 +954,140 @@ theorem matPow_fixed_of_matMulVec_fixed (n : ℕ)
               exact ih j
         _ = v i := hfixed i
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equations (17.22)-(17.25):
+    index-one Drazin inverse certificate for the matrix `A = I - G`.
+
+    The fields record the standard algebraic identities used by the source's
+    semiconvergent singular-system projector route: commutation, the reflexive
+    inverse law `DAD = D`, and the index-one identity `A^2D = A`. -/
+structure IndexOneDrazinInverse (n : ℕ)
+    (A D : Fin n → Fin n → ℝ) : Prop where
+  comm : matMul n A D = matMul n D A
+  reflexive : matMul n D (matMul n A D) = D
+  index_one : matMul n (matMul n A A) D = A
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.27):
+    the Drazin range projector `E = (I - G)(I - G)^D` used to split the
+    singular-system error into range and fixed/null components. -/
+noncomputable def stationaryDrazinRangeProjector (n : ℕ)
+    (G D : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  matMul n (matSub_id n G) D
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equations (17.25)-(17.27):
+    the fixed/null projector `I - E = I - (I - G)(I - G)^D`, corresponding to
+    the limiting fixed-space component in the semiconvergent analysis. -/
+noncomputable def stationaryDrazinFixedProjector (n : ℕ)
+    (G D : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  matSub_id n (stationaryDrazinRangeProjector n G D)
+
+/-- Multiplying two complements expands as
+    `(I - A)(I - E) = I - E - A + AE`. -/
+private theorem matMul_matSub_id_matSub_id (n : ℕ)
+    (A E : Fin n → Fin n → ℝ) :
+    matMul n (matSub_id n A) (matSub_id n E) =
+      fun i j => idMatrix n i j - E i j - A i j + matMul n A E i j := by
+  ext i j
+  unfold matMul matSub_id
+  simp_rw [sub_mul, mul_sub, Finset.sum_sub_distrib]
+  have hII :
+      ∑ k : Fin n, idMatrix n i k * idMatrix n k j = idMatrix n i j := by
+    have h := congrArg (fun T : Fin n → Fin n → ℝ => T i j)
+      (matMul_id_left n (idMatrix n))
+    simpa [matMul] using h
+  have hIE :
+      ∑ k : Fin n, idMatrix n i k * E k j = E i j := by
+    have h := congrArg (fun T : Fin n → Fin n → ℝ => T i j)
+      (matMul_id_left n E)
+    simpa [matMul] using h
+  have hAI :
+      ∑ k : Fin n, A i k * idMatrix n k j = A i j := by
+    have h := congrArg (fun T : Fin n → Fin n → ℝ => T i j)
+      (matMul_id_right n A)
+    simpa [matMul] using h
+  rw [hII, hIE, hAI]
+  ring
+
+/-- The Drazin range projector `E = (I - G)D` is idempotent under the
+    index-one Drazin inverse identities. -/
+theorem stationaryDrazinRangeProjector_idempotent (n : ℕ)
+    (G D : Fin n → Fin n → ℝ)
+    (hD : IndexOneDrazinInverse n (matSub_id n G) D) :
+    matMul n (stationaryDrazinRangeProjector n G D)
+      (stationaryDrazinRangeProjector n G D) =
+    stationaryDrazinRangeProjector n G D := by
+  unfold stationaryDrazinRangeProjector
+  rw [matMul_assoc]
+  exact congrArg (fun T : Fin n → Fin n → ℝ => matMul n (matSub_id n G) T)
+    hD.reflexive
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equations (17.25)-(17.27):
+    the Drazin fixed/null projector `I - (I - G)D` is fixed by the stationary
+    iteration matrix `G`.  This is the algebraic projector fact needed by the
+    finite singular error split. -/
+theorem stationaryDrazinFixedProjector_fixed_by_G (n : ℕ)
+    (G D : Fin n → Fin n → ℝ)
+    (hD : IndexOneDrazinInverse n (matSub_id n G) D) :
+    matMul n G (stationaryDrazinFixedProjector n G D) =
+      stationaryDrazinFixedProjector n G D := by
+  let A := matSub_id n G
+  let E := stationaryDrazinRangeProjector n G D
+  have hG : matSub_id n A = G := by
+    ext i j
+    dsimp [A, matSub_id, idMatrix]
+    by_cases hij : i = j
+    · simp [hij]
+    · simp [hij]
+  have hAE : matMul n A E = A := by
+    dsimp [A, E, stationaryDrazinRangeProjector]
+    rw [← matMul_assoc]
+    exact hD.index_one
+  calc
+    matMul n G (stationaryDrazinFixedProjector n G D)
+        = matMul n G (matSub_id n E) := rfl
+    _ = matMul n (matSub_id n A) (matSub_id n E) := by
+            rw [hG]
+    _ = (fun i j => idMatrix n i j - E i j - A i j + matMul n A E i j) :=
+            matMul_matSub_id_matSub_id n A E
+    _ = matSub_id n E := by
+            ext i j
+            rw [hAE]
+            unfold matSub_id
+            ring
+    _ = stationaryDrazinFixedProjector n G D := rfl
+
+/-- Vector-action form of `stationaryDrazinFixedProjector_fixed_by_G`. -/
+theorem stationaryDrazinFixedProjector_matMulVec_fixed (n : ℕ)
+    (G D : Fin n → Fin n → ℝ)
+    (hD : IndexOneDrazinInverse n (matSub_id n G) D)
+    (v : Fin n → ℝ) :
+    ∀ i, matMulVec n G
+        (matMulVec n (stationaryDrazinFixedProjector n G D) v) i =
+      matMulVec n (stationaryDrazinFixedProjector n G D) v i := by
+  intro i
+  calc
+    matMulVec n G (matMulVec n (stationaryDrazinFixedProjector n G D) v) i
+        = matMulVec n
+            (matMul n G (stationaryDrazinFixedProjector n G D)) v i := by
+            rw [← matMulVec_matMul]
+    _ = matMulVec n (stationaryDrazinFixedProjector n G D) v i := by
+            rw [stationaryDrazinFixedProjector_fixed_by_G n G D hD]
+
+/-- The Drazin range projector supplies the fixed-null hypothesis required by
+    the finite singular error split: `G` fixes `(I - E)M^{-1}xi_t`. -/
+theorem stationaryDrazinRangeProjector_null_component_fixed (n : ℕ)
+    (G D M_inv : Fin n → Fin n → ℝ) (xi : ℕ → Fin n → ℝ)
+    (hD : IndexOneDrazinInverse n (matSub_id n G) D) :
+    ∀ t i,
+      matMulVec n G
+        (matMulVec n (matSub_id n (stationaryDrazinRangeProjector n G D))
+          (matMulVec n M_inv (xi t))) i =
+      matMulVec n (matSub_id n (stationaryDrazinRangeProjector n G D))
+        (matMulVec n M_inv (xi t)) i := by
+  intro t i
+  simpa [stationaryDrazinFixedProjector] using
+    stationaryDrazinFixedProjector_matMulVec_fixed n G D hD
+      (matMulVec n M_inv (xi t)) i
+
 /-- Higham, 2nd ed., Chapter 17, Section 17.4, equation (17.28):
     the finite source term `S_m = sum_{k=0}^m G^k E M⁻¹ ξ_{m-k}` used in
     the singular-system forward-error analysis. -/
@@ -1115,6 +1249,52 @@ theorem singular_error_split_finite (n : ℕ)
             (fun j => ∑ k ∈ Finset.range (m + 1), ξ (m - k) j)) i := by
         rw [hsumC]
         ring
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equations (17.24), (17.27),
+    and (17.28): finite singular-system error split with the source Drazin
+    projector `E = (I - G)(I - G)^D`.
+
+    Compared with `singular_error_split_finite`, this wrapper no longer asks
+    for the fixed-null hypothesis separately: it is supplied by the
+    index-one Drazin inverse certificate for `I - G`.  The limiting
+    semiconvergence and infinite-sum bounds remain separate obligations. -/
+theorem singular_error_split_finite_of_indexOneDrazin_projector (n : ℕ)
+    (A M N M_inv D : Fin n → Fin n → ℝ)
+    (hS : SplittingSpec n A M N M_inv)
+    (hD : IndexOneDrazinInverse n (matSub_id n (iterMatrix n M_inv N)) D)
+    (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (x_hat : ℕ → (Fin n → ℝ)) (xi : ℕ → Fin n → ℝ)
+    (hIter : SourceComputedIteration n M N b x_hat xi)
+    (m : ℕ) :
+    ∀ i, x i - x_hat (m + 1) i =
+      matMulVec n (matPow n (iterMatrix n M_inv N) (m + 1))
+        (fun j => x j - x_hat 0 j) i +
+      singularErrorSourceTerm n (iterMatrix n M_inv N)
+        (stationaryDrazinRangeProjector n (iterMatrix n M_inv N) D)
+        M_inv xi m i +
+      matMulVec n
+        (stationaryDrazinFixedProjector n (iterMatrix n M_inv N) D)
+        (matMulVec n M_inv
+          (fun j => ∑ k ∈ Finset.range (m + 1), xi (m - k) j)) i := by
+  intro i
+  have hNull :
+      ∀ t r,
+        matMulVec n (iterMatrix n M_inv N)
+          (matMulVec n
+            (matSub_id n
+              (stationaryDrazinRangeProjector n (iterMatrix n M_inv N) D))
+            (matMulVec n M_inv (xi t))) r =
+        matMulVec n
+          (matSub_id n
+            (stationaryDrazinRangeProjector n (iterMatrix n M_inv N) D))
+          (matMulVec n M_inv (xi t)) r := by
+    intro t r
+    exact stationaryDrazinRangeProjector_null_component_fixed
+      n (iterMatrix n M_inv N) D M_inv xi hD t r
+  have hsplit := singular_error_split_finite n A M N M_inv
+    (stationaryDrazinRangeProjector n (iterMatrix n M_inv N) D)
+    hS b x hAx x_hat xi hIter hNull m i
+  simpa [stationaryDrazinFixedProjector] using hsplit
 
 /-- The componentwise source vector `( |M| + |N| ) |x|` appearing in Higham,
     2nd ed., Chapter 17, equations (17.10), (17.29), and (17.32). -/
@@ -2263,7 +2443,7 @@ theorem residualSigmaTsum_le_diagonalizable_bound (n : ℕ) (_hn : 0 < n)
 /-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20), literal
     `tsum` maximum form: the entrywise infinite source residual sigma is bounded
     by `kappa_infty(X)` times the displayed maximum eigenvalue ratio. -/
-theorem residualSigmaTsum_le_diagonalizable_max_bound (n : ℕ) (hn : 0 < n)
+theorem residualSigmaTsum_le_diagonalizable_max_bound_direct (n : ℕ) (hn : 0 < n)
     (H X X_inv J : Fin n → Fin n → ℝ)
     (hXr : IsRightInverse n X X_inv) (hXl : IsRightInverse n X_inv X)
     (hsim : matMul n X_inv (matMul n H X) = J)

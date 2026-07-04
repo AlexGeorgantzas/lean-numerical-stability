@@ -92,7 +92,9 @@ finite sigma-form residual estimate `normwise_residual_sigma_finite_bound` for
 `finiteResidualSigma_le_diagonalizable_bound`, the entrywise `tsum` sigma
 surface `residualSigmaTsumMatrix` and scalar wrapper `residualSigmaTsum`, now
 instantiated with the displayed finite maximum by `diagonalResidualRatioMax`
-and `finiteResidualSigma_le_diagonalizable_max_bound`, plus the
+and `finiteResidualSigma_le_diagonalizable_max_bound`, the direct literal
+`tsum` bound `residualSigmaTsum_le_diagonalizable_max_bound_direct`, the
+series bridge `residualSigmaTsum_le_diagonalizable_max_bound`, plus the
 supremum-envelope wrapper `residualSigmaSup_le_diagonalizable_max_bound`, for
 the (17.20) bound,
 the singular exact-iterate identity `singular_stationary_iterate_finite_sum`
