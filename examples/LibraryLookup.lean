@@ -15035,3 +15035,6 @@ small enough to serve as a smoke check for representative public declarations.
 #check sylvesterVecCoeff_singular_of_common_eigenvalue
 #check sylvester_triangular_column_equation
 #check sylvester_triangular_solve_exists_unique
+#check H19_Lemma19_1_construction1_backward_error
+#check sqrt_u_sq_add_two_gamma_le_gamma
+#check H19_Lemma19_2_householder_apply_backward_error
