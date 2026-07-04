@@ -4547,6 +4547,126 @@ theorem LSEFullRowRank.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
   _root_.LeanFpAnalysis.FP.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
     A b B hB.rightInverse d x0 x hB.rightInverse_spec hx0 hx
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-instantiated form of applying `P = I - Bplus*B` to a vector
+    with a known original-constraint residual. -/
+theorem LSEFullRowRank.theorem20_8Projection_apply_of_constraint {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (v : Fin n → ℝ) (e : Fin p → ℝ)
+    (hBv : rectMatMulVec B v = e) :
+    rectMatMulVec (theorem20_8Projection B hB.rightInverse) v =
+      fun j => v j - rectMatMulVec hB.rightInverse e j :=
+  _root_.LeanFpAnalysis.FP.theorem20_8Projection_apply_of_constraint
+    B hB.rightInverse v e hBv
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    projection of an original/perturbed feasible difference, instantiated by
+    the right inverse obtained from source full row rank. -/
+theorem
+    LSEFullRowRank.theorem20_8Projection_apply_perturbed_feasible_difference
+    {n p : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+        (fun j => y j - x j) =
+      fun j =>
+        (y j - x j) -
+          rectMatMulVec hB.rightInverse
+            (fun i => Deltad i - rectMatMulVec DeltaB y i) j :=
+  _root_.LeanFpAnalysis.FP.theorem20_8Projection_apply_perturbed_feasible_difference
+    B DeltaB hB.rightInverse d Deltad x y hx hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the perturbed-feasible difference
+    decomposition. -/
+theorem LSEFullRowRank.theorem20_8_perturbed_feasible_difference_decomp
+    {n p : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    (fun j => y j - x j) =
+      fun j =>
+        rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+            (fun k => y k - x k) j +
+          rectMatMulVec hB.rightInverse
+            (fun i => Deltad i - rectMatMulVec DeltaB y i) j :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_perturbed_feasible_difference_decomp
+    B DeltaB hB.rightInverse d Deltad x y hx hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank form of the perturbed-feasible point decomposition. -/
+theorem LSEFullRowRank.theorem20_8_perturbed_feasible_point_decomp
+    {n p : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    y =
+      fun j =>
+        x j +
+          rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+            (fun k => y k - x k) j +
+          rectMatMulVec hB.rightInverse
+            (fun i => Deltad i - rectMatMulVec DeltaB y i) j :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_perturbed_feasible_point_decomp
+    B DeltaB hB.rightInverse d Deltad x y hx hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    action of `A` on a perturbed feasible point after the full-row-rank
+    right-inverse nullspace decomposition. -/
+theorem LSEFullRowRank.theorem20_8_perturbed_feasible_point_action_decomp
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    rectMatMulVec A y =
+      fun i =>
+        rectMatMulVec A x i +
+          rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+            (fun k => y k - x k) i +
+          rectMatMulVec A
+            (rectMatMulVec hB.rightInverse
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_perturbed_feasible_point_action_decomp
+    A B DeltaB hB.rightInverse d Deltad x y hx hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual decomposition for a point feasible for the perturbed constraint,
+    with the constraint right inverse supplied by source full row rank. -/
+theorem LSEFullRowRank.theorem20_8_perturbed_feasible_residual_decomp
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    lsResidual (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i) y =
+      fun i =>
+        lsResidual (theorem20_8AP A B hB.rightInverse)
+          (fun i => b i - rectMatMulVec A x i) (fun j => y j - x j) i +
+          rectMatMulVec A
+            (rectMatMulVec hB.rightInverse
+              (fun l => Deltad l - rectMatMulVec DeltaB y l)) i +
+          rectMatMulVec DeltaA y i -
+          Deltab i :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_perturbed_feasible_residual_decomp
+    A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y hx hy
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 rank bridge:
     full row rank of `B` makes the transpose map `Bᵀ` injective.  This is the
     finite-dimensional algebra used by the exact-MGS GQR route to connect the
