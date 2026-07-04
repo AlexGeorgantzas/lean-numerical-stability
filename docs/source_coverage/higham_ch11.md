@@ -28,6 +28,7 @@ Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
 | §11.1.1 / §11.1.2 1×1 Schur step growth `|b−c₁c₂/e| ≤ (1+1/α)μ₀` | `oneByOne_schur_growth`, `higham11_1_oneByOne_schur_growth` | " | **new this session**; printed bound `|ã_ij| ≤ μ₀+μ₀²/μ₁ ≤ (1+1/α)μ₀`; mechanism behind ρₙ ≤ (1+α⁻¹)^{n−1} |
 | §11.1.1 2×2 pivot det bound `det E ≤ (α²−1)μ₀²` | `twoByTwo_completePivot_det_bound`, `higham11_4_twoByTwo_det_bound` | " | **new this session**; printed `det(E) ≤ μ₁²−μ₀² ≤ (α²−1)μ₀²` |
 | §11.1.1 2×2 pivot nonsingularity `|det E| ≥ (1−α²)μ₀²` | `twoByTwo_completePivot_absdet_lower`, `higham11_4_twoByTwo_absdet_lower` | " | **new this session**; α∈[0,1); printed `|det E| ≥ (1−α²)μ₀²` |
+| §11.1.1 2×2 Schur step growth `|ã| ≤ (1+2/(1−α))μ₀` (eq 11.4) | `twoByTwo_schur_growth`, `higham11_4_twoByTwo_schur_growth` (+ helper `abs_triple_mul_le`) | " | **new this session**; inverse-block entries `≤ αK,K`, `K = 1/((1−α²)μ₀)`; with the 1×1 bound this gives both single-step growth bounds of §11.1.1 |
 | Eq (11.6) example factorization A = LDLᵀ (partial pivoting) | `higham11_6_partialPivotExample_factorization` | Ch11 | exact `fin_cases` algebra, ε≠0 |
 | §11.3 skew-symmetric diag zero | `skewSymmetric_diag_zero`, `higham11_16_skew_diag_zero` | " | Aᵀ=−A ⇒ Aᵢᵢ=0 |
 | Problem-support algebra 11.1/11.2/11.4/11.7/11.8/11.9 | `higham11_problem_11_*` (see file) | Ch11 | reusable symmetric/SPD/quasidefinite algebra; not exercise transcriptions |
@@ -61,10 +62,14 @@ floating-point backward-error derivation — is the missing foundation.
 | Theorem 11.7 | Bunch tridiagonal normwise stability, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ c·u·‖A‖` | `higham11_7_tridiagonal_backward_error_interface` (assumes) | tridiagonal block-LDLᵀ fl analysis | fl error for one 2×2 tridiagonal pivot step |
 | Theorem 11.8 | Aasen componentwise backward error + `‖ΔA‖_∞ ≤ (n−1)²γ_{15n+25}‖T̂‖_∞` | `higham11_8_aasen_backward_error_interface` (assumes) | fl analysis of the Aasen recurrences (11.12)–(11.14) + solve chain (11.15) | fl error for the Aasen column update (11.14) |
 
-Also open (2×2-step element growth, feasible next): the printed
-`|ã_ij| ≤ (1 + 2/(1−α))μ₀` for a 2×2 complete-pivoting step. The determinant magnitude
-bound it rests on (`twoByTwo_completePivot_absdet_lower`) is now proved; the remaining step
-is the `E⁻¹` entrywise bound and the length-2 inner product `[c_i1 c_i2]E⁻¹[c_j1 c_j2]ᵀ`.
+Both single-step §11.1.1 element-growth bounds are now proved: the 1×1 step
+`(1+1/α)μ₀` (`oneByOne_schur_growth`) and the 2×2 step `(1+2/(1−α))μ₀`
+(`twoByTwo_schur_growth`), the latter resting on the proved determinant magnitude
+bound `twoByTwo_completePivot_absdet_lower` and the length-2 inner product over the
+inverse-block entries. What remains for Theorem 11.4 is the *recursion*: iterating
+these per-stage bounds over the whole factorization to obtain the growth factor
+`ρₙ ≤ (1+α⁻¹)^{n−1}`, plus the `36nρₙ` product bound and the floating-point solve
+error — the foundation tracked in the ledger row above.
 
 ## Skipped items (reason codes)
 | Source location | Summary | Reason |
@@ -82,19 +87,21 @@ used only as chapter infrastructure.
 
 ## Hidden-hypothesis summary
 - New lemmas (`oneByOne_multiplier_bound`, `oneByOne_schur_growth`,
-  `twoByTwo_completePivot_det_bound`, `twoByTwo_completePivot_absdet_lower`): all hypotheses
-  are on the *data* (entry magnitudes `≤ μ₀/μ₁/ω`, pivot-acceptance `α·μ₀ ≤ |e|`, α range),
-  never on the conclusion. The growth/det bounds are derived, not assumed.
+  `twoByTwo_completePivot_det_bound`, `twoByTwo_completePivot_absdet_lower`,
+  `twoByTwo_schur_growth`): all hypotheses are on the *data* (entry magnitudes
+  `≤ μ₀/μ₁/ω`, pivot-acceptance `α·μ₀ ≤ |e|`, inverse-entry bounds `≤ αK,K` with the
+  *equational* scale constraint `(1−α²)μ₀K = 1`, α range), never on the conclusion. The
+  growth/determinant bounds are derived, not assumed.
 - Interface theorems (11.3/11.4/11.7/11.8): the analytic bound IS taken as a hypothesis and
   restated — this is exactly why those rows are logged OPEN, not closed.
 
 ## Verification
 - Commands:
   - `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`.
-  - `#print axioms` on the six new declarations (`oneByOne_multiplier_bound`,
+  - `#print axioms` on the new declarations (`oneByOne_multiplier_bound`,
     `oneByOne_schur_growth`, `twoByTwo_completePivot_det_bound`,
-    `twoByTwo_completePivot_absdet_lower`, `higham11_1_oneByOne_schur_growth`,
-    `higham11_4_twoByTwo_absdet_lower`) → `[propext, Classical.choice, Quot.sound]`
+    `twoByTwo_completePivot_absdet_lower`, `twoByTwo_schur_growth`, `abs_triple_mul_le`,
+    and the `higham11_*` wrappers) → `[propext, Classical.choice, Quot.sound]`
     (no `sorryAx`, no custom axioms).
   - Placeholder scan `grep -nE 'sorry|admit|^\s*axiom |native_decide|unsafe '` over ch11 +
     CholeskyIndefinite → clean.
@@ -104,11 +111,15 @@ used only as chapter infrastructure.
 
 ## Documentation
 - Inventory + report: `docs/source_coverage/higham_ch11.md` (this file).
-- Not-proved ledger: the "Open selected-scope items" table above (4 primary theorems + 1 growth sub-step).
+- Not-proved ledger: the "Open selected-scope items" table above (4 primary theorems: 11.3, 11.4, 11.7, 11.8). The 2×2 growth sub-step listed there last session is now proved (`twoByTwo_schur_growth`).
 
 ## Open issues
 - Gate is FAIL by design: Theorems 11.3/11.4/11.7/11.8 remain conditional-transfer
-  interfaces. This session added the honest per-step growth/multiplier/determinant lemmas
-  (§11.1.1) that are the genuine building blocks of the Theorem 11.4 growth-factor bound;
-  converting the interfaces to end-to-end proofs requires the block-LDLᵀ / Aasen
-  floating-point backward-error foundation (a multi-session effort tracked in the ledger).
+  interfaces. This session added the honest per-step §11.1.1 element-growth,
+  multiplier, and determinant lemmas — **both** single-step growth bounds
+  (`oneByOne_schur_growth` `(1+1/α)μ₀`, `twoByTwo_schur_growth` `(1+2/(1−α))μ₀`) and the
+  2×2 determinant nonsingularity bound — the genuine building blocks of the Theorem 11.4
+  growth-factor bound, all derived from the pivot-acceptance tests. Converting the
+  interfaces to end-to-end proofs requires (i) the per-stage-to-`ρₙ` recursion, (ii) the
+  `36nρₙ` product bound, and (iii) the block-LDLᵀ / Aasen floating-point backward-error
+  foundation — a multi-session effort tracked in the not-proved ledger.
