@@ -224,6 +224,58 @@ theorem stationaryScaledIterMatrix_similarity (n : ℕ)
         (matMul n (matMul n M_inv N) (diagMatrix dRight)) := by
           rw [matMul_assoc]
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.2, p. 327, scale-independence
+    passage: the scaled iteration matrix has the same characteristic polynomial
+    as the original `M^{-1}N`, so the eigenvalue data encoded by the
+    characteristic polynomial is unchanged. -/
+theorem stationaryScaledIterMatrix_charpoly_eq (n : ℕ)
+    (M_inv N : Fin n → Fin n → ℝ)
+    (dLeft dLeftInv dRight dRightInv : Fin n → ℝ)
+    (hdLeft : ∀ i, dLeftInv i * dLeft i = 1)
+    (hdRight : ∀ i, dRightInv i * dRight i = 1) :
+    Matrix.charpoly
+      (iterMatrix n
+        (stationaryScaledInverse n dLeftInv dRightInv M_inv)
+        (stationaryRowColumnScale n dLeft dRight N) :
+        Matrix (Fin n) (Fin n) ℝ) =
+      Matrix.charpoly (iterMatrix n M_inv N : Matrix (Fin n) (Fin n) ℝ) := by
+  let G : Fin n → Fin n → ℝ := iterMatrix n M_inv N
+  let D : Fin n → Fin n → ℝ := diagMatrix dRight
+  let Dinv : Fin n → Fin n → ℝ := diagMatrix dRightInv
+  have hDRight : matMul n D Dinv = idMatrix n :=
+    diagMatrix_mul_diagMatrix_eq_id n dRight dRightInv
+      (fun i => by rw [mul_comm]; exact hdRight i)
+  have hsim :
+      iterMatrix n
+        (stationaryScaledInverse n dLeftInv dRightInv M_inv)
+        (stationaryRowColumnScale n dLeft dRight N) =
+        matMul n Dinv (matMul n G D) := by
+    simpa [G, D, Dinv] using
+      stationaryScaledIterMatrix_similarity n M_inv N dLeft dLeftInv dRight
+        dRightInv hdLeft hdRight
+  have hcomm :
+      Matrix.charpoly (matMul n Dinv (matMul n G D) : Matrix (Fin n) (Fin n) ℝ) =
+        Matrix.charpoly (matMul n (matMul n G D) Dinv :
+          Matrix (Fin n) (Fin n) ℝ) := by
+    simpa [matMul, Matrix.mul_apply] using
+      (Matrix.charpoly_mul_comm
+        (A := (Dinv : Matrix (Fin n) (Fin n) ℝ))
+        (B := (matMul n G D : Matrix (Fin n) (Fin n) ℝ)))
+  have hcollapse : matMul n (matMul n G D) Dinv = G := by
+    rw [matMul_assoc, hDRight, matMul_id_right]
+  calc
+    Matrix.charpoly
+      (iterMatrix n
+        (stationaryScaledInverse n dLeftInv dRightInv M_inv)
+        (stationaryRowColumnScale n dLeft dRight N) :
+        Matrix (Fin n) (Fin n) ℝ)
+        = Matrix.charpoly (matMul n Dinv (matMul n G D) :
+            Matrix (Fin n) (Fin n) ℝ) := by rw [hsim]
+    _ = Matrix.charpoly (matMul n (matMul n G D) Dinv :
+            Matrix (Fin n) (Fin n) ℝ) := hcomm
+    _ = Matrix.charpoly (iterMatrix n M_inv N : Matrix (Fin n) (Fin n) ℝ) := by
+          rw [hcollapse]
+
 -- ============================================================
 -- AG = HA identity
 -- ============================================================
@@ -1763,6 +1815,61 @@ noncomputable def finiteResidualSigmaMatrix (n : ℕ)
 noncomputable def finiteResidualSigma (n : ℕ)
     (H : Fin n → Fin n → ℝ) (m : ℕ) : ℝ :=
   infNorm (finiteResidualSigmaMatrix n H m)
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20):
+    entrywise `tsum` matrix for the source residual sigma
+    `sum_{k >= 0} |H^k(I-H)|`.  Convergence is intentionally not hidden in the
+    definition; use the `HasSum` wrapper below when a concrete convergence
+    certificate is available. -/
+noncomputable def residualSigmaTsumMatrix (n : ℕ)
+    (H : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    ∑' k : ℕ, |matMul n (matPow n H k) (matSub_id n H) i j|
+
+/-- Higham, 2nd ed., Chapter 17, Section 17.3, equation (17.20):
+    scalar infinity-norm version of the entrywise `tsum` residual sigma. -/
+noncomputable def residualSigmaTsum (n : ℕ)
+    (H : Fin n → Fin n → ℝ) : ℝ :=
+  infNorm (residualSigmaTsumMatrix n H)
+
+/-- Entrywise unfolding of the literal `tsum` residual-sigma matrix. -/
+theorem residualSigmaTsumMatrix_apply (n : ℕ)
+    (H : Fin n → Fin n → ℝ) (i j : Fin n) :
+    residualSigmaTsumMatrix n H i j =
+      ∑' k : ℕ, |matMul n (matPow n H k) (matSub_id n H) i j| := by
+  rfl
+
+/-- If each entrywise source residual-sigma series has sum `S i j`, then the
+    `tsum` matrix is exactly `S`. -/
+theorem residualSigmaTsumMatrix_eq_of_hasSum (n : ℕ)
+    (H S : Fin n → Fin n → ℝ)
+    (hsum : ∀ i j,
+      HasSum (fun k : ℕ => |matMul n (matPow n H k) (matSub_id n H) i j|)
+        (S i j)) :
+    residualSigmaTsumMatrix n H = S := by
+  ext i j
+  unfold residualSigmaTsumMatrix
+  exact (hsum i j).tsum_eq
+
+/-- Norm-level form of `residualSigmaTsumMatrix_eq_of_hasSum`. -/
+theorem residualSigmaTsum_eq_infNorm_of_hasSum (n : ℕ)
+    (H S : Fin n → Fin n → ℝ)
+    (hsum : ∀ i j,
+      HasSum (fun k : ℕ => |matMul n (matPow n H k) (matSub_id n H) i j|)
+        (S i j)) :
+    residualSigmaTsum n H = infNorm S := by
+  unfold residualSigmaTsum
+  rw [residualSigmaTsumMatrix_eq_of_hasSum n H S hsum]
+
+/-- A row-sum certificate bounds the literal `tsum` residual sigma. -/
+theorem residualSigmaTsum_le_of_row_sum_le (n : ℕ)
+    (H : Fin n → Fin n → ℝ) {sigma : ℝ}
+    (hrows : ∀ i : Fin n,
+      ∑ j : Fin n, |residualSigmaTsumMatrix n H i j| ≤ sigma)
+    (hsigma : 0 ≤ sigma) :
+    residualSigmaTsum n H ≤ sigma := by
+  unfold residualSigmaTsum
+  exact infNorm_le_of_row_sum_le (residualSigmaTsumMatrix n H) hrows hsigma
 
 /-- Higham, 2nd ed., Chapter 17, Section 17.3:
     candidate finite partial norms for the source residual sigma.  This is the

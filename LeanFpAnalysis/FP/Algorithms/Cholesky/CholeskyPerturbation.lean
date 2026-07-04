@@ -1152,6 +1152,81 @@ theorem block_quadForm_schur_eq {m : ℕ} (α : ℝ) (hα : α ≠ 0)
     rw [hexpand]; field_simp; ring
   rw [hQF, hfinal, hξt_eq]
 
+/-- **Gram-conjugation quadratic form** (Higham §10.4, the tool that
+    presents a stage Gram `GᵀMG` as a matrix so `schur_gram_stage_le`
+    becomes a Loewner statement): `yᵀ(GᵀMG)y = (Gy)ᵀM(Gy)`.  Proved
+    through `matMulVec_matMul` (so only a single sum-swap is needed). -/
+theorem quadForm_gram_conj {n : ℕ} (M G : Fin n → Fin n → ℝ)
+    (y : Fin n → ℝ) :
+    (∑ i : Fin n, y i *
+        matMulVec n (matMul n (matMul n (fun a b => G b a) M) G) y i) =
+      ∑ p : Fin n,
+        matMulVec n G y p * matMulVec n M (matMulVec n G y) p := by
+  have hQy : ∀ i : Fin n,
+      matMulVec n (matMul n (matMul n (fun a b => G b a) M) G) y i =
+      ∑ p : Fin n, G p i * matMulVec n M (matMulVec n G y) p := by
+    intro i
+    rw [matMulVec_matMul n (matMul n (fun a b => G b a) M) G y i,
+      matMulVec_matMul n (fun a b => G b a) M (matMulVec n G y) i]
+    rfl
+  simp_rw [hQy, Finset.mul_sum]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun p _ => ?_
+  rw [show (∑ i : Fin n, y i * (G p i *
+        matMulVec n M (matMulVec n G y) p)) =
+      (∑ i : Fin n, y i * G p i) *
+        matMulVec n M (matMulVec n G y) p from by
+    rw [Finset.sum_mul]
+    exact Finset.sum_congr rfl fun i _ => by ring]
+  congr 1
+  unfold matMulVec
+  exact Finset.sum_congr rfl fun i _ => by ring
+
+/-- **Conjugated Gram is symmetric** (Higham §10.4): for symmetric `M`,
+    the stage Gram `GᵀMG` is symmetric — needed so `finiteMaxEigenvalue`
+    applies to the stage matrices. -/
+theorem gram_conj_isSymm {n : ℕ} (M G : Fin n → Fin n → ℝ)
+    (hM : ∀ i j : Fin n, M i j = M j i) :
+    ∀ i j : Fin n,
+      matMul n (matMul n (fun a b => G b a) M) G i j =
+      matMul n (matMul n (fun a b => G b a) M) G j i := by
+  have hMT : matTranspose M = M := by
+    funext i j; exact (hM j i)
+  have hGT : (fun a b => G b a) = matTranspose G := by funext a b; rfl
+  have hGTT : matTranspose (fun a b : Fin n => G b a) = G := by
+    funext i j; rfl
+  have hkey : matTranspose (matMul n (matMul n (fun a b => G b a) M) G) =
+      matMul n (matMul n (fun a b => G b a) M) G := by
+    rw [matTranspose_matMul, matTranspose_matMul, hGTT, hMT, ← matMul_assoc,
+      ← hGT]
+  intro i j
+  have h := congrFun (congrFun hkey i) j
+  simp only [matTranspose] at h
+  exact h.symm
+
+/-- **Trailing-block quadratic form** (Higham §10.4, ties the (10.29)
+    stage bound's RHS to the trailing block `Q₂₂` of the stage Gram):
+    padding a vector with a leading zero selects the trailing principal
+    block, `(0,y)ᵀ Q (0,y) = yᵀ Q₂₂ y` where `Q₂₂ i j = Q i.succ j.succ`. -/
+theorem trailing_block_quadForm {n : ℕ}
+    (Q : Fin (n + 1) → Fin (n + 1) → ℝ) (y : Fin n → ℝ) :
+    (∑ i : Fin (n + 1), ∑ j : Fin (n + 1),
+        (Fin.cons (0 : ℝ) y : Fin (n + 1) → ℝ) i * Q i j * (Fin.cons (0 : ℝ) y : Fin (n + 1) → ℝ) j) =
+      ∑ i : Fin n, ∑ j : Fin n, y i * Q i.succ j.succ * y j := by
+  rw [Fin.sum_univ_succ]
+  have hrow0 : (∑ j : Fin (n + 1),
+      (Fin.cons (0 : ℝ) y : Fin (n + 1) → ℝ) 0 * Q 0 j * (Fin.cons (0 : ℝ) y : Fin (n + 1) → ℝ) j) = 0 := by
+    simp only [Fin.cons_zero, zero_mul, Finset.sum_const_zero]
+  rw [hrow0, zero_add]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [Fin.sum_univ_succ]
+  have hcol0 : (Fin.cons (0 : ℝ) y : Fin (n + 1) → ℝ) i.succ * Q i.succ 0 *
+      (Fin.cons (0 : ℝ) y : Fin (n + 1) → ℝ) 0 = 0 := by
+    simp only [Fin.cons_zero, mul_zero]
+  rw [hcol0, zero_add]
+  exact Finset.sum_congr rfl fun j _ => by
+    simp only [Fin.cons_succ]
+
 /-- **Stage Loewner monotonicity `Q̂ ⪯ Q₂₂`, quadratic-form level**
     (Higham §10.4, the (10.29) crux, assembled; oracle consult 4).
     For a symmetric PD `(1+m)`-block `H = [[α, fᵀ],[f, G]]` with Schur

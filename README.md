@@ -89,10 +89,12 @@ error recurrence `sourceComputedIteration_error_finite_sum` for (17.5), the
 finite-sum residual recurrence `residual_finite_sum` for (17.18), the
 finite sigma-form residual estimate `normwise_residual_sigma_finite_bound` for
 (17.19), and the finite source-sigma diagonalization certificate
-`finiteResidualSigma_le_diagonalizable_bound`, now instantiated with the
-displayed finite maximum by `diagonalResidualRatioMax` and
-`finiteResidualSigma_le_diagonalizable_max_bound`, plus the supremum-envelope
-wrapper `residualSigmaSup_le_diagonalizable_max_bound`, for the (17.20) bound,
+`finiteResidualSigma_le_diagonalizable_bound`, the entrywise `tsum` sigma
+surface `residualSigmaTsumMatrix` and scalar wrapper `residualSigmaTsum`, now
+instantiated with the displayed finite maximum by `diagonalResidualRatioMax`
+and `finiteResidualSigma_le_diagonalizable_max_bound`, plus the
+supremum-envelope wrapper `residualSigmaSup_le_diagonalizable_max_bound`, for
+the (17.20) bound,
 the singular exact-iterate identity `singular_stationary_iterate_finite_sum`
 for (17.21), the consistent-system singular telescoping wrappers
 `singular_consistent_source_term_eq_I_sub_G`,
@@ -101,6 +103,14 @@ for (17.21), the consistent-system singular telescoping wrappers
 `singularErrorSourceTerm` for the (17.28) `S_m` source term and
 `singular_error_split_finite` for the finite algebraic core of the (17.27)
 range/null source split under the explicit fixed-null component hypothesis.
+The scale-independence passage on p.327 now has checked algebraic and
+characteristic-polynomial wrappers through `stationaryRowColumnScale`,
+`stationaryScaledInverse`, `stationaryRowColumnScale_splittingSpec`,
+`stationaryScaledIterMatrix_similarity`, and
+`stationaryScaledIterMatrix_charpoly_eq`, proving that corresponding diagonal
+row/column scaling preserves the splitting, makes the scaled iteration matrix
+diagonally similar to the original one, and preserves its characteristic
+polynomial.
 It also adds the finite (17.29) `S_m` bound surfaces
 `singularErrorSourceNormSum`, `singularErrorSourceComponentBound`,
 `singularErrorSourceTerm_norm_bound`,
