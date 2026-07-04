@@ -73,6 +73,14 @@ surfaces. It also bridges the original-coordinate perturbation residual
 `lyapunovBackwardScalarEq_of_spectral_decomposition`; the full eta amplification
 theorem and several condition/practical-bound rows remain open in the Chapter 16
 ledger.
+The perturbation section also has a certificate-based (16.23)-(16.24) bridge:
+`sylvesterScaledPerturbationTripleNorm`,
+`sylvesterScaledPerturbationTripleNorm_le_sqrt_three_mul`,
+`SylvesterPsiFirstOrderBound`, and
+`sylvester_relative_first_order_bound_of_psi` prove the printed
+`sqrt 3 * Psi * epsilon` first-order relative bound from a structured Psi
+certificate, while leaving the exact displayed `P^{-1}` operator-norm
+realization open.
 
 Chapter 17 stationary-iteration work is tracked in
 [`docs/source_coverage/higham_ch17.md`](docs/source_coverage/higham_ch17.md).
@@ -112,7 +120,11 @@ fixed-null component hypothesis from an index-one Drazin certificate for
 `stationaryDrazinRangeProjector_mul_fixedProjector_eq_zero`,
 `stationaryDrazinFixedProjector_mul_rangeProjector_eq_zero`, and
 `stationaryDrazinFixedProjector_matPow_fixed` needed on the path to the
-semiconvergent limit projector.
+semiconvergent limit projector.  The range side now also has
+`stationaryDrazinRangeProjector_commutes_with_G`,
+`stationaryDrazinRangeProjector_commutes_with_matPow`, and
+`stationaryDrazinRangeProjector_matPow_sandwich`, supporting the future
+range-series manipulation in (17.30).
 The scale-independence passage on p.327 now has checked algebraic and
 characteristic-polynomial wrappers through `stationaryRowColumnScale`,
 `stationaryScaledInverse`, `stationaryRowColumnScale_splittingSpec`,

@@ -166,6 +166,98 @@ theorem sylvester_relative_first_order_bound_of_psi (n : ℕ)
     _ = (Real.sqrt 3 * Ψ * ε) * frobNorm X := by ring
 
 -- ============================================================
+-- Lyapunov first-order condition-number surface (§16.3, eq 16.27)
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    Euclidean norm of the two normalized Lyapunov data perturbation blocks
+    `(DeltaA / alpha, DeltaC / gamma)`, represented with Frobenius norms for
+    the matrix blocks. -/
+noncomputable def lyapunovScaledPerturbationPairNorm (n : ℕ)
+    (ΔA ΔC : Fin n → Fin n → ℝ) (α γ : ℝ) : ℝ :=
+  Real.sqrt (frobNormSq ΔA / α ^ 2 + frobNormSq ΔC / γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    if each normalized Lyapunov perturbation block has Frobenius norm at most
+    `epsilon`, then the stacked normalized pair has norm at most
+    `sqrt 2 * epsilon`. -/
+theorem lyapunovScaledPerturbationPairNorm_le_sqrt_two_mul (n : ℕ)
+    (ΔA ΔC : Fin n → Fin n → ℝ) (α γ ε : ℝ)
+    (hα : 0 < α) (hγ : 0 < γ) (hε : 0 ≤ ε)
+    (hΔA : frobNorm ΔA ≤ ε * α)
+    (hΔC : frobNorm ΔC ≤ ε * γ) :
+    lyapunovScaledPerturbationPairNorm n ΔA ΔC α γ ≤
+      Real.sqrt 2 * ε := by
+  have hα2 : 0 < α ^ 2 := sq_pos_of_pos hα
+  have hγ2 : 0 < γ ^ 2 := sq_pos_of_pos hγ
+  have hΔA_sq : frobNormSq ΔA ≤ (ε * α) ^ 2 := by
+    rw [← frobNorm_sq ΔA]
+    nlinarith [frobNorm_nonneg ΔA, hΔA, hε, le_of_lt hα]
+  have hΔC_sq : frobNormSq ΔC ≤ (ε * γ) ^ 2 := by
+    rw [← frobNorm_sq ΔC]
+    nlinarith [frobNorm_nonneg ΔC, hΔC, hε, le_of_lt hγ]
+  have hΔA_div : frobNormSq ΔA / α ^ 2 ≤ ε ^ 2 := by
+    rw [div_le_iff₀ hα2]
+    nlinarith
+  have hΔC_div : frobNormSq ΔC / γ ^ 2 ≤ ε ^ 2 := by
+    rw [div_le_iff₀ hγ2]
+    nlinarith
+  have hsum :
+      frobNormSq ΔA / α ^ 2 + frobNormSq ΔC / γ ^ 2 ≤
+        2 * ε ^ 2 := by
+    nlinarith
+  unfold lyapunovScaledPerturbationPairNorm
+  calc
+    Real.sqrt (frobNormSq ΔA / α ^ 2 + frobNormSq ΔC / γ ^ 2)
+        ≤ Real.sqrt (2 * ε ^ 2) := Real.sqrt_le_sqrt hsum
+    _ = Real.sqrt 2 * ε := by
+        rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 2)]
+        rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hε]
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), certificate form:
+    `Psi` bounds the structured inverse first-order Lyapunov perturbation map.
+    This is the theorem-facing predicate corresponding to the printed
+    vec-permutation operator norm; a later exact inverse/operator-norm
+    realization can instantiate this predicate. -/
+def LyapunovConditionFirstOrderBound (n : ℕ)
+    (A X : Fin n → Fin n → ℝ) (α γ Ψ : ℝ) : Prop :=
+  ∀ ΔA ΔC ΔX : Fin n → Fin n → ℝ,
+    (∀ i j, lyapunovOp n A ΔX i j =
+      ΔC i j - matMul n ΔA X i j - matMul n X (matTranspose ΔA) i j) →
+    frobNorm ΔX ≤
+      Ψ * frobNorm X *
+        lyapunovScaledPerturbationPairNorm n ΔA ΔC α γ
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    the Lyapunov first-order relative perturbation estimate follows from the
+    condition-number certificate and the two normwise data budgets. -/
+theorem lyapunov_relative_first_order_bound_of_condition (n : ℕ)
+    (A X ΔA ΔC ΔX : Fin n → Fin n → ℝ)
+    (α γ Ψ ε : ℝ)
+    (hCond : LyapunovConditionFirstOrderBound n A X α γ Ψ)
+    (hX : 0 < frobNorm X)
+    (hΨ : 0 ≤ Ψ)
+    (hα : 0 < α) (hγ : 0 < γ) (hε : 0 ≤ ε)
+    (hΔA : frobNorm ΔA ≤ ε * α)
+    (hΔC : frobNorm ΔC ≤ ε * γ)
+    (hLin : ∀ i j, lyapunovOp n A ΔX i j =
+      ΔC i j - matMul n ΔA X i j - matMul n X (matTranspose ΔA) i j) :
+    frobNorm ΔX / frobNorm X ≤ Real.sqrt 2 * Ψ * ε := by
+  have hpair :=
+    lyapunovScaledPerturbationPairNorm_le_sqrt_two_mul n
+      ΔA ΔC α γ ε hα hγ hε hΔA hΔC
+  have hbase := hCond ΔA ΔC ΔX hLin
+  have hscale_nonneg : 0 ≤ Ψ * frobNorm X :=
+    mul_nonneg hΨ (le_of_lt hX)
+  have hbound :
+      frobNorm ΔX ≤ Ψ * frobNorm X * (Real.sqrt 2 * ε) := by
+    exact hbase.trans (mul_le_mul_of_nonneg_left hpair hscale_nonneg)
+  rw [div_le_iff₀ hX]
+  calc
+    frobNorm ΔX ≤ Ψ * frobNorm X * (Real.sqrt 2 * ε) := hbound
+    _ = (Real.sqrt 2 * Ψ * ε) * frobNorm X := by ring
+
+-- ============================================================
 -- First-order perturbation bound (§15.3, eq 15.25)
 -- ============================================================
 

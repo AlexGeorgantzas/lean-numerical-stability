@@ -975,6 +975,38 @@ theorem matPow_mul_fixed_of_matMul_fixed (n : ℕ)
               rw [ih]
         _ = C := hfixed
 
+/-- If a matrix `E` commutes with `G`, then it commutes with every finite
+    power of `G`. -/
+theorem matPow_comm_of_matMul_comm (n : ℕ)
+    (G E : Fin n → Fin n → ℝ)
+    (hcomm : matMul n G E = matMul n E G) :
+    ∀ k, matMul n (matPow n G k) E = matMul n E (matPow n G k) := by
+  intro k
+  induction k with
+  | zero =>
+      calc
+        matMul n (matPow n G 0) E = E := by
+          rw [matPow_zero, matMul_id_left]
+        _ = matMul n E (matPow n G 0) := by
+          rw [matPow_zero, matMul_id_right]
+  | succ k ih =>
+      calc
+        matMul n (matPow n G (k + 1)) E =
+            matMul n (matMul n G (matPow n G k)) E := by
+              rw [matPow_succ]
+        _ = matMul n G (matMul n (matPow n G k) E) := by
+              rw [matMul_assoc]
+        _ = matMul n G (matMul n E (matPow n G k)) := by
+              rw [ih]
+        _ = matMul n (matMul n G E) (matPow n G k) := by
+              rw [← matMul_assoc]
+        _ = matMul n (matMul n E G) (matPow n G k) := by
+              rw [hcomm]
+        _ = matMul n E (matMul n G (matPow n G k)) := by
+              rw [matMul_assoc]
+        _ = matMul n E (matPow n G (k + 1)) := by
+              rw [matPow_succ]
+
 /-- Higham, 2nd ed., Chapter 17, Section 17.4, equations (17.22)-(17.25):
     index-one Drazin inverse certificate for the matrix `A = I - G`.
 
@@ -1028,6 +1060,36 @@ private theorem matMul_matSub_id_matSub_id (n : ℕ)
   rw [hII, hIE, hAI]
   ring
 
+/-- Left multiplication by a complement expands as `(I-A)B = B - AB`. -/
+private theorem matMul_matSub_id_left (n : ℕ)
+    (A B : Fin n → Fin n → ℝ) :
+    matMul n (matSub_id n A) B =
+      fun i j => B i j - matMul n A B i j := by
+  ext i j
+  unfold matMul matSub_id
+  simp_rw [sub_mul, Finset.sum_sub_distrib]
+  have hIB :
+      ∑ k : Fin n, idMatrix n i k * B k j = B i j := by
+    have h := congrArg (fun T : Fin n → Fin n → ℝ => T i j)
+      (matMul_id_left n B)
+    simpa [matMul] using h
+  rw [hIB]
+
+/-- Right multiplication by a complement expands as `B(I-A) = B - BA`. -/
+private theorem matMul_matSub_id_right (n : ℕ)
+    (A B : Fin n → Fin n → ℝ) :
+    matMul n B (matSub_id n A) =
+      fun i j => B i j - matMul n B A i j := by
+  ext i j
+  unfold matMul matSub_id
+  simp_rw [mul_sub, Finset.sum_sub_distrib]
+  have hBI :
+      ∑ k : Fin n, B i k * idMatrix n k j = B i j := by
+    have h := congrArg (fun T : Fin n → Fin n → ℝ => T i j)
+      (matMul_id_right n B)
+    simpa [matMul] using h
+  rw [hBI]
+
 /-- The Drazin range projector `E = (I - G)D` is idempotent under the
     index-one Drazin inverse identities. -/
 theorem stationaryDrazinRangeProjector_idempotent (n : ℕ)
@@ -1069,6 +1131,81 @@ theorem stationaryDrazinRangeProjector_matSub_id_mul_right (n : ℕ)
     _ = matMul n (matMul n A A) D := by
       rw [← matMul_assoc]
     _ = A := hD.index_one
+
+/-- The Drazin range projector commutes with the stationary iteration matrix
+    `G`. -/
+theorem stationaryDrazinRangeProjector_commutes_with_G (n : ℕ)
+    (G D : Fin n → Fin n → ℝ)
+    (hD : IndexOneDrazinInverse n (matSub_id n G) D) :
+    matMul n G (stationaryDrazinRangeProjector n G D) =
+      matMul n (stationaryDrazinRangeProjector n G D) G := by
+  let A := matSub_id n G
+  let E := stationaryDrazinRangeProjector n G D
+  have hG : matSub_id n A = G := by
+    ext i j
+    dsimp [A, matSub_id, idMatrix]
+    by_cases hij : i = j
+    · simp [hij]
+    · simp [hij]
+  have hAE : matMul n A E = A := by
+    simpa [A, E] using
+      stationaryDrazinRangeProjector_matSub_id_mul_left n G D hD
+  have hEA : matMul n E A = A := by
+    simpa [A, E] using
+      stationaryDrazinRangeProjector_matSub_id_mul_right n G D hD
+  calc
+    matMul n G (stationaryDrazinRangeProjector n G D) =
+      matMul n (matSub_id n A) E := by
+        rw [hG]
+    _ = (fun i j => E i j - matMul n A E i j) :=
+        matMul_matSub_id_left n A E
+    _ = (fun i j => E i j - A i j) := by
+        rw [hAE]
+    _ = (fun i j => E i j - matMul n E A i j) := by
+        rw [hEA]
+    _ = matMul n E (matSub_id n A) := by
+        exact (matMul_matSub_id_right n A E).symm
+    _ = matMul n (stationaryDrazinRangeProjector n G D) G := by
+        rw [hG]
+
+/-- The Drazin range projector commutes with every finite power of `G`. -/
+theorem stationaryDrazinRangeProjector_commutes_with_matPow (n : ℕ)
+    (G D : Fin n → Fin n → ℝ)
+    (hD : IndexOneDrazinInverse n (matSub_id n G) D) :
+    ∀ k, matMul n (matPow n G k) (stationaryDrazinRangeProjector n G D) =
+      matMul n (stationaryDrazinRangeProjector n G D) (matPow n G k) := by
+  exact matPow_comm_of_matMul_comm n G
+    (stationaryDrazinRangeProjector n G D)
+    (stationaryDrazinRangeProjector_commutes_with_G n G D hD)
+
+/-- Sandwiching a powered range component by the Drazin range projector leaves
+    it unchanged: `E G^k E = G^k E`. -/
+theorem stationaryDrazinRangeProjector_matPow_sandwich (n : ℕ)
+    (G D : Fin n → Fin n → ℝ)
+    (hD : IndexOneDrazinInverse n (matSub_id n G) D) :
+    ∀ k,
+      matMul n (stationaryDrazinRangeProjector n G D)
+        (matMul n (matPow n G k) (stationaryDrazinRangeProjector n G D)) =
+      matMul n (matPow n G k) (stationaryDrazinRangeProjector n G D) := by
+  intro k
+  let E := stationaryDrazinRangeProjector n G D
+  have hEid : matMul n E E = E := by
+    simpa [E] using stationaryDrazinRangeProjector_idempotent n G D hD
+  have hcomm :
+      matMul n (matPow n G k) E = matMul n E (matPow n G k) := by
+    simpa [E] using stationaryDrazinRangeProjector_commutes_with_matPow n G D hD k
+  calc
+    matMul n (stationaryDrazinRangeProjector n G D)
+        (matMul n (matPow n G k) (stationaryDrazinRangeProjector n G D)) =
+      matMul n E (matMul n (matPow n G k) E) := rfl
+    _ = matMul n (matMul n E (matPow n G k)) E := by
+        rw [matMul_assoc]
+    _ = matMul n (matMul n (matPow n G k) E) E := by
+        rw [← hcomm]
+    _ = matMul n (matPow n G k) (matMul n E E) := by
+        rw [matMul_assoc]
+    _ = matMul n (matPow n G k) E := by
+        rw [hEid]
 
 /-- The Drazin range and fixed projectors are complementary on the right:
     `E(I-E) = 0`. -/
