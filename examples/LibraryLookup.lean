@@ -15,7 +15,9 @@ import LeanFpAnalysis.FP.Algorithms.MatrixPowersPseudospectral
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersSpectral
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
+import LeanFpAnalysis.FP.Algorithms.StationaryIterationDrazin
 import LeanFpAnalysis.FP.Algorithms.StationaryIterationSeries
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Minimizers
 
 set_option pp.maxSteps 100
 
