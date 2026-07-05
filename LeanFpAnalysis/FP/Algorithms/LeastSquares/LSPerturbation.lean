@@ -2859,6 +2859,52 @@ theorem wedinLemma20_12_projection_mul_swapped_mul_projection_finiteHermitianEig
       a hNonneg
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    on a nonempty ambient dimension, the exact complexified Euclidean operator
+    norm of the PSD companion-square compression `PQP` is one of its locally
+    named top Hermitian eigenvalues. -/
+theorem wedinLemma20_12_exists_topEigenvalue_complexMatrixOp2_projection_mul_swapped_mul_projection_eq
+    {m : ℕ} (hm : 0 < m) (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    ∃ a₀ : Fin m,
+      complexMatrixOp2
+          (realRectToCMatrix (rectMatMul (rectMatMul P Q) P)) =
+        finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+          (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+            P Q hP hQ hIdemQ) a₀ ∧
+      ∀ a : Fin m,
+        finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+            (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+              P Q hP hQ hIdemQ) a ≤
+          finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+            (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+              P Q hP hQ hIdemQ) a₀ := by
+  let MPQ : Fin m → Fin m → ℝ := rectMatMul (rectMatMul P Q) P
+  letI : Nonempty (Fin m) := ⟨⟨0, hm⟩⟩
+  have hSym :=
+    wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+      P Q hP hQ hIdemQ
+  have hPSD :=
+    wedinLemma20_12_projection_mul_swapped_mul_projection_finitePSD
+      P Q hP hQ hIdemQ
+  obtain ⟨a₀, hNonneg, hMax, hFiniteOp⟩ :=
+    exists_top_finiteHermitianEigenvalue_finiteOpNorm2Le_of_finitePSD
+      MPQ hSym hPSD
+  have hUpper :
+      complexMatrixOp2 (realRectToCMatrix MPQ) ≤
+        finiteHermitianEigenvalues MPQ hSym a₀ :=
+    complexMatrixOp2_realRectToCMatrix_le_of_opNorm2Le
+      MPQ hNonneg (opNorm2Le_of_finiteOpNorm2Le MPQ hFiniteOp)
+  have hLower :
+      finiteHermitianEigenvalues MPQ hSym a₀ ≤
+        complexMatrixOp2 (realRectToCMatrix MPQ) := by
+    simpa [MPQ] using
+      wedinLemma20_12_projection_mul_swapped_mul_projection_finiteHermitianEigenvalues_le_complexMatrixOp2
+        P Q hP hQ hIdemQ a₀
+  exact ⟨a₀, le_antisymm hUpper hLower, hMax⟩
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     every finite Hermitian eigenvalue of the swapped companion-square
     compression `QPQ` is nonnegative. -/
 theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_finiteHermitianEigenvalues_nonneg
@@ -2934,6 +2980,52 @@ theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped
       (opNorm2Le_complexMatrixOp2_realRectToCMatrix
         (rectMatMul (rectMatMul Q P) Q))
       a hNonneg
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    on a nonempty ambient dimension, the exact complexified Euclidean operator
+    norm of the swapped PSD companion-square compression `QPQ` is one of its
+    locally named top Hermitian eigenvalues. -/
+theorem wedinLemma20_12_exists_topEigenvalue_complexMatrixOp2_projection_swapped_mul_projection_mul_projection_swapped_eq
+    {m : ℕ} (hm : 0 < m) (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    ∃ a₀ : Fin m,
+      complexMatrixOp2
+          (realRectToCMatrix (rectMatMul (rectMatMul Q P) Q)) =
+        finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+          (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+            P Q hP hQ hIdemP) a₀ ∧
+      ∀ a : Fin m,
+        finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+            (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+              P Q hP hQ hIdemP) a ≤
+          finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+            (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+              P Q hP hQ hIdemP) a₀ := by
+  let MQP : Fin m → Fin m → ℝ := rectMatMul (rectMatMul Q P) Q
+  letI : Nonempty (Fin m) := ⟨⟨0, hm⟩⟩
+  have hSym :=
+    wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+      P Q hP hQ hIdemP
+  have hPSD :=
+    wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_finitePSD
+      P Q hP hQ hIdemP
+  obtain ⟨a₀, hNonneg, hMax, hFiniteOp⟩ :=
+    exists_top_finiteHermitianEigenvalue_finiteOpNorm2Le_of_finitePSD
+      MQP hSym hPSD
+  have hUpper :
+      complexMatrixOp2 (realRectToCMatrix MQP) ≤
+        finiteHermitianEigenvalues MQP hSym a₀ :=
+    complexMatrixOp2_realRectToCMatrix_le_of_opNorm2Le
+      MQP hNonneg (opNorm2Le_of_finiteOpNorm2Le MQP hFiniteOp)
+  have hLower :
+      finiteHermitianEigenvalues MQP hSym a₀ ≤
+        complexMatrixOp2 (realRectToCMatrix MQP) := by
+    simpa [MQP] using
+      wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_finiteHermitianEigenvalues_le_complexMatrixOp2
+        P Q hP hQ hIdemP a₀
+  exact ⟨a₀, le_antisymm hUpper hLower, hMax⟩
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the two companion-square compressions `PQP` and `QPQ` have the same
