@@ -2536,6 +2536,121 @@ theorem H16_eq16_27_lyapunov_condition_spectralDiagonal_of_vecCoeff_entrywise_ab
         U A a sigma hU hA hsigma hgap)
       hDeltaA hDeltaC hLin
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    Frobenius first-order Lyapunov perturbation bound from the concrete
+    diagonal Lyapunov vec/Kronecker coefficient lower-bound certificate. -/
+theorem lyapunov_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+    (n : Nat) (a : Fin n -> Real)
+    (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma)
+    (hX : 0 < frobNorm X)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hLin : forall i j,
+      lyapunovOp n (Matrix.diagonal a) DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX <=
+      lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) *
+        frobNorm X *
+        lyapunovScaledPerturbationPairNorm n DeltaA DeltaC alpha gamma := by
+  exact
+    (lyapunovCond_of_vecCoeff_sigmaMin_isLyapunovConditionFirstOrderBound
+      n (Matrix.diagonal a) X alpha gamma sigma
+      halpha hgamma hsigma hX
+      (lyapunovVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a sigma (le_of_lt hsigma) hgap))
+      DeltaA DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    relative Lyapunov first-order perturbation bound from the concrete
+    diagonal Lyapunov vec/Kronecker coefficient lower-bound certificate. -/
+theorem lyapunov_relative_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+    (n : Nat) (a : Fin n -> Real)
+    (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n (Matrix.diagonal a) DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_27_lyapunov_condition_diagonal_of_vecCoeff_entrywise_abs_ge n
+      a X DeltaA DeltaC DeltaX alpha gamma sigma eps
+      halpha hgamma hsigma heps hX hgap
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case:
+    Frobenius first-order Lyapunov perturbation bound from the concrete
+    spectral-diagonal Lyapunov vec/Kronecker coefficient lower-bound
+    certificate. -/
+theorem lyapunov_first_order_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge
+    (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma)
+    (hX : 0 < frobNorm X)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX <=
+      lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) *
+        frobNorm X *
+        lyapunovScaledPerturbationPairNorm n DeltaA DeltaC alpha gamma := by
+  exact
+    (lyapunovCond_of_vecCoeff_sigmaMin_isLyapunovConditionFirstOrderBound
+      n A X alpha gamma sigma halpha hgamma hsigma hX
+      (lyapunovVecCoeff_spectralDiagonal_sigmaMin_of_entrywise_abs_ge n
+        U A a sigma hU hA hsigma hgap))
+      DeltaA DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case:
+    relative Lyapunov first-order perturbation bound from the concrete
+    spectral-diagonal Lyapunov vec/Kronecker coefficient lower-bound
+    certificate. -/
+theorem lyapunov_relative_first_order_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge
+    (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma eps : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_27_lyapunov_condition_spectralDiagonal_of_vecCoeff_entrywise_abs_ge n
+      U A a X DeltaA DeltaC DeltaX alpha gamma sigma eps
+      hU hA halpha hgamma hsigma heps hX hgap
+      hDeltaA hDeltaC hLin
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
     spectral-coordinate case:
     source-shaped Lyapunov first-order perturbation bound from the
