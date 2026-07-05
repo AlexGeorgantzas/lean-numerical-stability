@@ -628,6 +628,37 @@ theorem sylvesterTwoColumnBlockSystem_columns_eq_of_leftInverse_of_prev_columns_
     m n A T C X Y p q L hLeft hX hY
   exact sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq m n T C X Y p q hprev
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact supplied
+    two-column solve/uniqueness bridge: if a supplied right inverse defines
+    the active columns of `X` from the block right-hand side, and a supplied
+    left inverse gives uniqueness among block-system solutions with the same
+    previous columns, then any other supplied block-system solution `Y` that
+    agrees with `X` on columns `j < p` has the same active columns.  Scope:
+    exact supplied-block algebra only; no Schur existence, structural block
+    nonsingularity, or floating-point stability is asserted. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_rightInverse_leftInverse_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (K L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  have hX : IsSylvesterTwoColumnBlockSystem m n A T C X p q :=
+    sylvesterTwoColumnBlockSystem_of_rightInverse_columns
+      m n A T C X p q K hRight hXp hXq
+  exact sylvesterTwoColumnBlockSystem_columns_eq_of_leftInverse_of_prev_columns_eq
+    m n A T C X Y p q L hLeft hX hY hprev
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
     quasi-triangular `2 x 2` block recurrence: if columns `p,q` form a supplied
     adjacent diagonal block of the Schur factor `T`, then any exact solution of
