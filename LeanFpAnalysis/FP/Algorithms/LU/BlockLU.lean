@@ -1113,6 +1113,15 @@ theorem higham13_block_norm_eq_maxEntryNorm {r : ℕ} (hr : 0 < r)
     have hrow_all : ‖B s‖ ≤ ‖B‖ := norm_le_pi_norm B s
     simpa [Real.norm_eq_abs] using le_trans hentry_row hrow_all
 
+/-- If a Chapter 13 block has zero ambient Pi norm, then every scalar entry of
+    the block is zero. -/
+theorem higham13_block_entries_zero_of_norm_eq_zero {r : ℕ}
+    {B : Fin r → Fin r → ℝ} (hB : ‖B‖ = 0) :
+    ∀ s t : Fin r, B s t = 0 := by
+  have hzero : B = 0 := norm_eq_zero.mp hB
+  intro s t
+  exact congr_fun (congr_fun hzero s) t
+
 /-- r×r block multiplication: (AB)(s,t) = ∑_l A(s,l) · B(l,t). -/
 noncomputable def blockMul {r : ℕ} (A B : Fin r → Fin r → ℝ) :
     Fin r → Fin r → ℝ :=
@@ -7282,6 +7291,61 @@ theorem higham13_blockDiagDomRow_offdiag_zero_of_diagBound_nonpos {m : ℕ}
   have hterm_nonpos : f j ≤ 0 := le_trans hterm_le_sum hsum_nonpos
   have hterm_zero : f j = 0 := le_antisymm hterm_nonpos (hf_nonneg j)
   simpa [f, hij] using hterm_zero
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    column BDD on the actual block Pi-norm table turns a nonpositive active
+    diagonal lower bound into zero scalar entries in every off-diagonal block
+    of that column. -/
+theorem higham13_blockDiagDomCol_offdiag_entries_zero_of_norm_table_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (j : Fin m) (hj : invDiagBound j ≤ 0) :
+    ∀ i : Fin m, i ≠ j → ∀ s t : Fin r, A i j s t = 0 := by
+  classical
+  have hNorm : ∀ i j : Fin m, 0 ≤ ‖A i j‖ := by
+    intro i j
+    exact norm_nonneg (A i j)
+  intro i hij
+  have hzero :
+      ‖A i j‖ = 0 :=
+    higham13_blockDiagDomCol_offdiag_zero_of_diagBound_nonpos
+      (fun i j => ‖A i j‖) invDiagBound hNorm hDom j hj i hij
+  exact higham13_block_entries_zero_of_norm_eq_zero hzero
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    under column BDD, a nonpositive active diagonal lower bound and a singular
+    active diagonal block contradict block nonsingularity. -/
+theorem higham13_not_blockMatrixNonsingular_of_blockDiagDomCol_diagBound_nonpos_diag_det_eq_zero
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (j : Fin m) (hj : invDiagBound j ≤ 0)
+    (hdiagdet : Matrix.det (A j j) = 0) :
+    ¬ BlockMatrixNonsingular A :=
+  higham13_not_blockMatrixNonsingular_of_offdiag_col_zero_of_diag_det_eq_zero
+    A j hdiagdet
+    (higham13_blockDiagDomCol_offdiag_entries_zero_of_norm_table_nonpos
+      A invDiagBound hDom j hj)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    contrapositive form of the preceding contradiction.  In a nonsingular
+    column-BDD block matrix, a nonpositive active diagonal lower bound rules
+    out a singular active diagonal block. -/
+theorem higham13_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hA : BlockMatrixNonsingular A)
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (j : Fin m) (hj : invDiagBound j ≤ 0) :
+    Matrix.det (A j j) ≠ 0 := by
+  intro hdiagdet
+  exact
+    (higham13_not_blockMatrixNonsingular_of_blockDiagDomCol_diagBound_nonpos_diag_det_eq_zero
+      A invDiagBound hDom j hj hdiagdet) hA
 
 /-- Embed the leading `(p+1)` block prefix into the full block index set. -/
 noncomputable def leadingBlockPrefixIndex13_7 {m : ℕ} (p : ℕ) (hp : p < m) :
