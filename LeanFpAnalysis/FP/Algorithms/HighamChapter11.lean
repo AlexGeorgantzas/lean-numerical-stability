@@ -881,6 +881,21 @@ def higham11_8_aasenNormwiseBackwardBound
     (n : ℕ) (ΔA_inf γ15n25 T_inf : ℝ) : Prop :=
   ΔA_inf ≤ ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * T_inf
 
+/-- Uniform componentwise perturbation bounds imply an infinity-norm bound.
+This is the row-sum bridge used when converting componentwise backward-error
+estimates into the normwise shape of Theorem 11.8. -/
+theorem higham11_8_infNorm_le_card_mul_of_uniform_componentwise_bound (n : ℕ)
+    (ΔA : Fin n → Fin n → ℝ) (β : ℝ) (hβ : 0 ≤ β)
+    (hΔ : ∀ i j : Fin n, |ΔA i j| ≤ β) :
+    infNorm ΔA ≤ (n : ℝ) * β := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc (∑ j : Fin n, |ΔA i j|)
+        ≤ ∑ _j : Fin n, β := Finset.sum_le_sum (fun j _ => hΔ i j)
+      _ = (n : ℝ) * β := by
+        simp [Finset.sum_const, nsmul_eq_mul]
+  · exact mul_nonneg (Nat.cast_nonneg n) hβ
+
 /-- Aasen growth factor `rho_n = max_ij |t_ij| / max_ij |a_ij|`. -/
 noncomputable def higham11_8_aasenGrowthFactor
     (Tmax Amax : ℝ) : ℝ :=
