@@ -1072,6 +1072,30 @@ theorem higham11_14_fl_aasen_next_column_update_formed_sum_single_abs_error_of_e
   · rw [hfl]
     ring
 
+/-- **Equation (11.14) formed-sum update**, componentwise absolute-error form.
+This unwraps the single-residual corollary into the direct inequality needed
+when assembling column or row perturbation budgets. -/
+theorem higham11_14_fl_aasen_next_column_update_formed_sum_abs_sub_bound_of_exact_recurrence
+    (n : ℕ) (fp : FPModel) (A L H : Fin n → Fin n → ℝ)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (i next k : Fin n) (hnext : next.val = i.val + 1)
+    (hk : i.val + 2 ≤ k.val) (hvalSum : gammaValid fp n)
+    (hvalUpdate : gammaValid fp 2) :
+    let Bsum : ℝ :=
+      gamma fp n *
+        ∑ j : Fin n, |if j.val ≤ i.val then L k j else 0| * |H j i|
+    |fp.fl_div
+        (fp.fl_sub (A k i) (higham11_14_fl_aasenPrefixDot n fp L H i k))
+        (H next i) - L k next| ≤
+      Bsum / |H next i| +
+        gamma fp 2 * (|L k next| + Bsum / |H next i|) := by
+  obtain ⟨Δ, hΔ, hfl⟩ :=
+    higham11_14_fl_aasen_next_column_update_formed_sum_single_abs_error_of_exact_recurrence
+      n fp A L H hrec hHnz i next k hnext hk hvalSum hvalUpdate
+  rw [hfl]
+  simpa using hΔ
+
 /-- **Equation (11.15)**, the Aasen solve chain
 `L z = P b`, `T y = z`, `L^T w = y`, `x = P w`. -/
 def higham11_15_aasenSolveChain (n : ℕ)
