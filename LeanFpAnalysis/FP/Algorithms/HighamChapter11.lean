@@ -941,6 +941,81 @@ theorem higham11_14_fl_aasen_next_column_update_abs_error_of_exact_recurrence
     exact hΔ
   · rw [hfl, hrec i next k hnext hk]
 
+/-- Source-shaped floating-point dot product for the prefix sum in Aasen's
+next-column recurrence (11.14).  Entries beyond `j ≤ i` are masked to zero so
+the computation can use the library's fixed-length `fl_dotProduct`. -/
+noncomputable def higham11_14_fl_aasenPrefixDot (n : ℕ)
+    (fp : FPModel) (L H : Fin n → Fin n → ℝ) (i k : Fin n) : ℝ :=
+  fl_dotProduct fp n (fun j => if j.val ≤ i.val then L k j else 0) (fun j => H j i)
+
+/-- **Equation (11.14) prefix-sum formation error**.  The rounded masked dot
+product for `∑_{j≤i} L k j H j i` equals the exact masked sum plus an additive
+residual bounded by the standard dot-product `γ_n` radius. -/
+theorem higham11_14_fl_aasen_prefix_dot_abs_error (n : ℕ)
+    (fp : FPModel) (L H : Fin n → Fin n → ℝ) (i k : Fin n)
+    (hval : gammaValid fp n) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp n *
+        ∑ j : Fin n, |if j.val ≤ i.val then L k j else 0| * |H j i| ∧
+      higham11_14_fl_aasenPrefixDot n fp L H i k =
+        (∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0) + Δ := by
+  let x : Fin n → ℝ := fun j => if j.val ≤ i.val then L k j else 0
+  let y : Fin n → ℝ := fun j => H j i
+  have hbound := dotProduct_error_bound fp n x y hval
+  have hsum :
+      (∑ j : Fin n, x j * y j) =
+        ∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0 := by
+    apply Finset.sum_congr rfl
+    intro j _
+    by_cases hj : j.val ≤ i.val
+    · simp only [x, y, hj, if_true]
+    · simp only [x, y, hj, if_false, zero_mul]
+  refine
+    ⟨higham11_14_fl_aasenPrefixDot n fp L H i k -
+        (∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0), ?_, ?_⟩
+  · simpa [higham11_14_fl_aasenPrefixDot, x, y, hsum] using hbound
+  · ring
+
+/-- **Equation (11.14) floating-point next-column update with a formed sum**.
+Combines the rounded prefix dot-product formation error with the subsequent
+rounded subtraction/division update.  Under the exact Aasen recurrence, the
+computed update equals `L k next - Δs / H next i + Δu`, where `Δs` is the
+prefix-dot formation residual and `Δu` is the two-operation update residual. -/
+theorem higham11_14_fl_aasen_next_column_update_formed_sum_abs_error_of_exact_recurrence
+    (n : ℕ) (fp : FPModel) (A L H : Fin n → Fin n → ℝ)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (i next k : Fin n) (hnext : next.val = i.val + 1)
+    (hk : i.val + 2 ≤ k.val) (hvalSum : gammaValid fp n)
+    (hvalUpdate : gammaValid fp 2) :
+    ∃ Δs Δu : ℝ,
+      |Δs| ≤ gamma fp n *
+        ∑ j : Fin n, |if j.val ≤ i.val then L k j else 0| * |H j i| ∧
+      |Δu| ≤ gamma fp 2 * |L k next - Δs / H next i| ∧
+      fp.fl_div
+          (fp.fl_sub (A k i) (higham11_14_fl_aasenPrefixDot n fp L H i k))
+          (H next i)
+        = L k next - Δs / H next i + Δu := by
+  obtain ⟨Δs, hΔs, hsumfl⟩ :=
+    higham11_14_fl_aasen_prefix_dot_abs_error n fp L H i k hvalSum
+  obtain ⟨Δu, hΔu, hfl⟩ :=
+    higham11_14_fl_aasen_next_column_update_abs_error fp (A k i)
+      (higham11_14_fl_aasenPrefixDot n fp L H i k) (H next i)
+      (hHnz i next hnext) hvalUpdate
+  refine ⟨Δs, Δu, hΔs, ?_, ?_⟩
+  · have harg :
+        (A k i - higham11_14_fl_aasenPrefixDot n fp L H i k) / H next i =
+          L k next - Δs / H next i := by
+      rw [hsumfl, hrec i next k hnext hk]
+      ring
+    simpa [harg] using hΔu
+  · have harg :
+        (A k i - higham11_14_fl_aasenPrefixDot n fp L H i k) / H next i =
+          L k next - Δs / H next i := by
+      rw [hsumfl, hrec i next k hnext hk]
+      ring
+    rw [hfl, harg]
+
 /-- **Equation (11.15)**, the Aasen solve chain
 `L z = P b`, `T y = z`, `L^T w = y`, `x = P w`. -/
 def higham11_15_aasenSolveChain (n : ℕ)

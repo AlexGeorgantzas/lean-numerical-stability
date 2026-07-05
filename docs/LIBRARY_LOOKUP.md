@@ -4824,10 +4824,13 @@ Source-facing Chapter 11 wrappers:
 - `higham11_12_aasenDiagonalEquation`
 - `higham11_13_aasenSubdiagonalEquation`
 - `higham11_14_aasenNextColumnEquation`
+- `higham11_14_fl_aasenPrefixDot`
 - `higham11_14_fl_aasen_next_column_update_rel_error`
 - `higham11_14_fl_aasen_next_column_update_abs_error`
 - `higham11_14_fl_aasen_next_column_update_sum_abs_error`
 - `higham11_14_fl_aasen_next_column_update_abs_error_of_exact_recurrence`
+- `higham11_14_fl_aasen_prefix_dot_abs_error`
+- `higham11_14_fl_aasen_next_column_update_formed_sum_abs_error_of_exact_recurrence`
 - `higham11_15_aasenSolveChain`
 - `higham11_8_aasen_backward_error_interface`
 - `higham11_8_aasenNormwiseBackwardBound`
