@@ -584,6 +584,41 @@ theorem H16_eq16_24_structured_condition_of_vecCoeff_sigmaMin (n : Nat)
       (sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B sigma hCoeff)
       hDeltaA hDeltaB hDeltaC hLin
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
+    source-shaped first-order relative perturbation bound from a finite
+    Gram-eigenvalue lower bound for the concrete vectorized Sylvester
+    coefficient. -/
+theorem H16_eq16_24_structured_condition_of_vecCoeff_gram_eigenvalues
+    (n : Nat)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma lam eps : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hlam : 0 < lam) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaB : frobNorm DeltaB <= eps * beta)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 3 *
+        sylvesterPsi_of_inverseOpBound n X alpha beta gamma
+          (1 / Real.sqrt lam) * eps := by
+  exact
+    H16_eq16_24_structured_condition_of_vecCoeff_sigmaMin n
+      A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma
+      (Real.sqrt lam) eps halpha hbeta hgamma
+      (Real.sqrt_pos.mpr hlam) heps hX
+      (sylvesterVecCoeff_sigmaMin_of_gram_eigenvalues n A B
+        (le_of_lt hlam) hEig)
+      hDeltaA hDeltaB hDeltaC hLin
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24),
     diagonal case: source-shaped first-order relative perturbation bound from
     the concrete diagonal vec/Kronecker coefficient lower-bound certificate. -/
@@ -666,6 +701,70 @@ theorem sylvester_relative_perturbation_of_vecCoeff_sigmaMin (n : Nat)
     sylvester_relative_perturbation_of_sigmaMin n
       A B X dA dB dC dX sigma hSigma
       (sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B sigma hCoeff)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hdX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    Frobenius first-order Sylvester perturbation bound from a finite
+    Gram-eigenvalue lower bound for the concrete vectorized Sylvester
+    coefficient. -/
+theorem sylvester_perturbation_bound_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hdX_ne : Not (frobNormSq dX = 0)) :
+    frobNorm dX <=
+      (1 / Real.sqrt lam) *
+        ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_of_vecCoeff_sigmaMin n
+      A B X dA dB dC dX (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (sylvesterVecCoeff_sigmaMin_of_gram_eigenvalues n A B
+        (le_of_lt hLam) hEig)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hdX_ne
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    relative Sylvester perturbation bound from a finite Gram-eigenvalue lower
+    bound for the concrete vectorized Sylvester coefficient. -/
+theorem sylvester_relative_perturbation_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hdX_ne : Not (frobNormSq dX = 0))
+    (hX_ne : Not (frobNorm X = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma (Real.sqrt lam) * eps := by
+  exact
+    sylvester_relative_perturbation_of_vecCoeff_sigmaMin n
+      A B X dA dB dC dX (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (sylvesterVecCoeff_sigmaMin_of_gram_eigenvalues n A B
+        (le_of_lt hLam) hEig)
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hdX_ne hX_ne hX_pos
 
@@ -770,6 +869,53 @@ theorem sylvester_relative_aposteriori_bound_of_vecCoeff_sigmaMin (n : Nat)
       (sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B sigma hCoeff)
       hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    a posteriori error-residual bound from a finite Gram-eigenvalue lower bound
+    for the concrete vectorized Sylvester coefficient. -/
+theorem sylvester_aposteriori_bound_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / Real.sqrt lam) *
+        frobNorm (sylvesterResidual n A B C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_of_vecCoeff_sigmaMin n
+      A B C X Xhat (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (sylvesterVecCoeff_sigmaMin_of_gram_eigenvalues n A B
+        (le_of_lt hLam) hEig)
+      hExact hE_ne
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    relative a posteriori error-residual bound from a finite Gram-eigenvalue
+    lower bound for the concrete vectorized Sylvester coefficient. -/
+theorem sylvester_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A B C X Xhat : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / Real.sqrt lam) *
+        frobNorm (sylvesterResidual n A B C Xhat)) / frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_of_vecCoeff_sigmaMin n
+      A B C X Xhat (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (sylvesterVecCoeff_sigmaMin_of_gram_eigenvalues n A B
+        (le_of_lt hLam) hEig)
+      hExact hE_ne hX_pos
+
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
     diagonal case: a posteriori error-residual bound from the concrete diagonal
     vec/Kronecker coefficient lower-bound certificate. -/
@@ -861,6 +1007,39 @@ theorem H16_eq16_27_lyapunov_condition_of_vecCoeff_sigmaMin (n : Nat)
       A X DeltaA DeltaC DeltaX alpha gamma sigma eps
       halpha hgamma hsigma heps hX
       (lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin n A sigma hCoeff)
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-shaped Lyapunov first-order perturbation bound from a finite
+    Gram-eigenvalue lower bound for the concrete vectorized Lyapunov
+    coefficient. -/
+theorem H16_eq16_27_lyapunov_condition_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma lam eps : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hlam : 0 < lam) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma
+          (1 / Real.sqrt lam) * eps := by
+  exact
+    H16_eq16_27_lyapunov_condition_of_vecCoeff_sigmaMin n
+      A X DeltaA DeltaC DeltaX alpha gamma (Real.sqrt lam) eps
+      halpha hgamma (Real.sqrt_pos.mpr hlam) heps hX
+      (lyapunovVecCoeff_sigmaMin_of_gram_eigenvalues n A
+        (le_of_lt hlam) hEig)
       hDeltaA hDeltaC hLin
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
