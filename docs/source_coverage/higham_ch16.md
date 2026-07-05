@@ -632,6 +632,11 @@ Latest open-row update:
   - `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Minimizers.lean`: no matches after adding the computed-residual certificate adapter group.
   - `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Minimizers.lean`: passed for the computed-residual certificate adapter group, with only the usual CRLF normalization warning before the commit.
   - `lake build LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16`: passed after integrating both parallel-agent Chapter 16 proof groups.
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16VecNorm.lean`: passed after adding direct concrete coefficient sigma-min routes to `SepLowerBound` and exact `sylvesterSepInf` lower bounds for both Sylvester and Lyapunov coefficients.
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: passed after adding strict real-quasi-Schur packaged computed-residual certificate wrappers and scalar/monotone variants.
+  - `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16VecNorm.lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: no matches after the second parallel-agent bridge wave.
+  - `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16VecNorm.lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: passed for the second parallel-agent bridge wave, with only the usual CRLF normalization warning before the commits.
+  - `lake build LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16`: passed after integrating the coefficient sigma-min sep bridges and strict quasi-Schur certificate wrappers.
 
 ## Git and Local-Only Notes
 
