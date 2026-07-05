@@ -5539,6 +5539,102 @@ theorem wedinLemma20_12_top_finiteHermitianEigenvalue_projectionDiff_sq_compress
     simpa [MQ, lambdaQ] using le_antisymm hTop_le_one hOne_le
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    finite-dimensional endpoint-rank bridge for equal-rank symmetric
+    projections.  If the ranges of `P` and `Q` have the same dimension, then
+    the kernels of the restricted maps `Q : ran(P) -> ℝ^m` and
+    `P : ran(Q) -> ℝ^m` have the same dimension.
+
+This is the rank-nullity half of the `lambda = 1` principal-angle endpoint:
+it compares the dimensions of `ran(P) ∩ ker(Q)` and `ran(Q) ∩ ker(P)` once
+those intersections are represented as restricted-map kernels. -/
+theorem wedinLemma20_12_projection_range_kernel_finrank_eq_of_range_finrank_eq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hRangeFinrank :
+      Module.finrank ℝ
+          (LinearMap.range ((Matrix.of P : Matrix (Fin m) (Fin m) ℝ).mulVecLin)) =
+        Module.finrank ℝ
+          (LinearMap.range ((Matrix.of Q : Matrix (Fin m) (Fin m) ℝ).mulVecLin))) :
+    Module.finrank ℝ
+        (LinearMap.ker
+          (((Matrix.of Q : Matrix (Fin m) (Fin m) ℝ).mulVecLin).comp
+            ((LinearMap.range
+              ((Matrix.of P : Matrix (Fin m) (Fin m) ℝ).mulVecLin)).subtype))) =
+      Module.finrank ℝ
+        (LinearMap.ker
+          (((Matrix.of P : Matrix (Fin m) (Fin m) ℝ).mulVecLin).comp
+            ((LinearMap.range
+              ((Matrix.of Q : Matrix (Fin m) (Fin m) ℝ).mulVecLin)).subtype))) := by
+  let PM : Matrix (Fin m) (Fin m) ℝ := Matrix.of P
+  let QM : Matrix (Fin m) (Fin m) ℝ := Matrix.of Q
+  let TP : (Fin m → ℝ) →ₗ[ℝ] (Fin m → ℝ) := PM.mulVecLin
+  let TQ : (Fin m → ℝ) →ₗ[ℝ] (Fin m → ℝ) := QM.mulVecLin
+  let UP : Submodule ℝ (Fin m → ℝ) := LinearMap.range TP
+  let UQ : Submodule ℝ (Fin m → ℝ) := LinearMap.range TQ
+  let qOnP : UP →ₗ[ℝ] (Fin m → ℝ) := TQ.comp UP.subtype
+  let pOnQ : UQ →ₗ[ℝ] (Fin m → ℝ) := TP.comp UQ.subtype
+  have hRangeFinrank' : Module.finrank ℝ UP = Module.finrank ℝ UQ := by
+    simpa [PM, QM, TP, TQ, UP, UQ] using hRangeFinrank
+  have hq_range : LinearMap.range qOnP = LinearMap.range (TQ.comp TP) := by
+    simp [qOnP, UP, LinearMap.range_comp, Submodule.range_subtype]
+  have hp_range : LinearMap.range pOnQ = LinearMap.range (TP.comp TQ) := by
+    simp [pOnQ, UQ, LinearMap.range_comp, Submodule.range_subtype]
+  have hPM_transpose : PM.transpose = PM := by
+    ext i j
+    simp [PM, Matrix.transpose_apply, hP j i]
+  have hQM_transpose : QM.transpose = QM := by
+    ext i j
+    simp [QM, Matrix.transpose_apply, hQ j i]
+  have htranspose_QP : (QM * PM).transpose = PM * QM := by
+    rw [Matrix.transpose_mul, hPM_transpose, hQM_transpose]
+  have hmat_rank : (QM * PM).rank = (PM * QM).rank := by
+    calc
+      (QM * PM).rank = (QM * PM).transpose.rank := (Matrix.rank_transpose (QM * PM)).symm
+      _ = (PM * QM).rank := by rw [htranspose_QP]
+  have hq_rank : Module.finrank ℝ (LinearMap.range qOnP) = (QM * PM).rank := by
+    calc
+      Module.finrank ℝ (LinearMap.range qOnP) =
+          Module.finrank ℝ (LinearMap.range (TQ.comp TP)) := by
+            rw [hq_range]
+      _ = (QM * PM).rank := by
+            have hmul := congrArg
+              (fun f : (Fin m → ℝ) →ₗ[ℝ] (Fin m → ℝ) =>
+                Module.finrank ℝ (LinearMap.range f))
+              (Matrix.mulVecLin_mul QM PM)
+            simpa [Matrix.rank, PM, QM, TP, TQ] using hmul.symm
+  have hp_rank : Module.finrank ℝ (LinearMap.range pOnQ) = (PM * QM).rank := by
+    calc
+      Module.finrank ℝ (LinearMap.range pOnQ) =
+          Module.finrank ℝ (LinearMap.range (TP.comp TQ)) := by
+            rw [hp_range]
+      _ = (PM * QM).rank := by
+            have hmul := congrArg
+              (fun f : (Fin m → ℝ) →ₗ[ℝ] (Fin m → ℝ) =>
+                Module.finrank ℝ (LinearMap.range f))
+              (Matrix.mulVecLin_mul PM QM)
+            simpa [Matrix.rank, PM, QM, TP, TQ] using hmul.symm
+  have hRankRanges :
+      Module.finrank ℝ (LinearMap.range qOnP) =
+        Module.finrank ℝ (LinearMap.range pOnQ) := by
+    rw [hq_rank, hp_rank, hmat_rank]
+  have hRNq :
+      Module.finrank ℝ (LinearMap.range qOnP) +
+          Module.finrank ℝ (LinearMap.ker qOnP) =
+        Module.finrank ℝ UP :=
+    LinearMap.finrank_range_add_finrank_ker qOnP
+  have hRNp :
+      Module.finrank ℝ (LinearMap.range pOnQ) +
+          Module.finrank ℝ (LinearMap.ker pOnQ) =
+        Module.finrank ℝ UQ :=
+    LinearMap.finrank_range_add_finrank_ker pOnQ
+  have hker_eq :
+      Module.finrank ℝ (LinearMap.ker qOnP) =
+        Module.finrank ℝ (LinearMap.ker pOnQ) := by
+    omega
+  simpa [PM, QM, TP, TQ, UP, UQ, qOnP, pOnQ] using hker_eq
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     if the selected top Hermitian eigenvalues of the two `D^2` compressions
     are away from the endpoint cases `0` and `1`, then the top eigenvalues
     are equal.
