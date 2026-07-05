@@ -303,6 +303,63 @@ theorem sylvesterPsi_of_inverseOpBound_isPsiFirstOrderBound (n : ℕ)
   rw [hpsi]
   exact hchain
 
+/-- Higham, 2nd ed., §16.3, eq (16.24) (p. 313):
+    a positive `SepLowerBound` certificate instantiates the structured
+    condition-number predicate with the safe inverse-operator constant
+    `M = 1 / sigma`. This is a source-facing sep-based realization of `Psi`;
+    it is not the exact displayed operator norm when that norm is sharper. -/
+theorem sylvesterPsi_of_sepLowerBound_isPsiFirstOrderBound (n : ℕ)
+    (A B X : Fin n → Fin n → ℝ) (α β γ sigma : ℝ)
+    (hα : 0 < α) (hβ : 0 < β) (hγ : 0 < γ) (hsigma : 0 < sigma)
+    (hX : 0 < frobNorm X)
+    (hSep : SepLowerBound n A B sigma) :
+    SylvesterPsiFirstOrderBound n A B X α β γ
+      (sylvesterPsi_of_inverseOpBound n X α β γ (1 / sigma)) := by
+  have hInv := sylvesterInverseOpBound_of_sepLowerBound n A B sigma hsigma hSep
+  have hMnn : (0 : ℝ) ≤ 1 / sigma := by positivity
+  exact sylvesterPsi_of_inverseOpBound_isPsiFirstOrderBound n A B X α β γ
+    (1 / sigma) hα hβ hγ hMnn hX hInv
+
+/-- Higham, 2nd ed., §16.3, eqs. (16.23)-(16.24) (p. 313):
+    sep-based structured first-order perturbation bound. If
+    `SepLowerBound A B sigma` holds, then the printed relative bound follows
+    with the safe condition-number value
+    `sylvesterPsi_of_inverseOpBound ... (1 / sigma)`.
+
+    Scope: this is an exact-arithmetic theorem from a supplied sep lower-bound
+    certificate. It does not compute the sharper nondiagonal operator norm
+    `||P^{-1}[...]||`. -/
+theorem H16_eq16_24_structured_condition_of_sepLowerBound (n : ℕ)
+    (A B X ΔA ΔB ΔC ΔX : Fin n → Fin n → ℝ)
+    (α β γ sigma ε : ℝ)
+    (hα : 0 < α) (hβ : 0 < β) (hγ : 0 < γ)
+    (hsigma : 0 < sigma) (hε : 0 ≤ ε)
+    (hX : 0 < frobNorm X)
+    (hSep : SepLowerBound n A B sigma)
+    (hΔA : frobNorm ΔA ≤ ε * α)
+    (hΔB : frobNorm ΔB ≤ ε * β)
+    (hΔC : frobNorm ΔC ≤ ε * γ)
+    (hLin : ∀ i j,
+      sylvesterOp n A B ΔX i j =
+        ΔC i j - matMul n ΔA X i j + matMul n X ΔB i j) :
+    frobNorm ΔX / frobNorm X ≤
+      Real.sqrt 3 *
+        sylvesterPsi_of_inverseOpBound n X α β γ (1 / sigma) * ε := by
+  have hPsi :=
+    sylvesterPsi_of_sepLowerBound_isPsiFirstOrderBound n A B X α β γ sigma
+      hα hβ hγ hsigma hX hSep
+  have hΨnn : 0 ≤ sylvesterPsi_of_inverseOpBound n X α β γ (1 / sigma) := by
+    unfold sylvesterPsi_of_inverseOpBound
+    have hMnn : (0 : ℝ) ≤ 1 / sigma := by positivity
+    have hnum : 0 ≤ (α + β) * frobNorm X + γ := by
+      have hXnn : 0 ≤ frobNorm X := le_of_lt hX
+      nlinarith [le_of_lt hα, le_of_lt hβ, le_of_lt hγ, hXnn]
+    positivity
+  exact sylvester_relative_first_order_bound_of_psi n
+    A B X ΔA ΔB ΔC ΔX α β γ
+    (sylvesterPsi_of_inverseOpBound n X α β γ (1 / sigma)) ε
+    hPsi hX hΨnn hα hβ hγ hε hΔA hΔB hΔC hLin
+
 -- ============================================================
 -- Diagonal-case Psi realization (eq (16.24), diagonal / distinct-eigenvalue)
 -- ============================================================
