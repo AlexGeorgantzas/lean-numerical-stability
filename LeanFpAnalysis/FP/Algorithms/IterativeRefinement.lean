@@ -1734,4 +1734,28 @@ theorem forward_error_step_bound (n : ℕ)
     rw [heq]; exact h
   linarith [htri, hΔAd, hAΔx]
 
+-- ============================================================
+-- §12.2  Norm-to-componentwise correction bound (σ/cond step for Thm 12.4)
+-- ============================================================
+
+/-- **Norm-to-componentwise correction bound** (scalar form of the σ/cond step
+    discharging the correction hypothesis of Theorem 12.4).
+
+    If the nonnegative correction-magnitude vector `dvec` has `‖dvec‖∞ ≤ ρ₀`, the
+    target vector `t` is bounded below by `m > 0`, and `ρ₀ ≤ ρ·m`, then
+    `dvec_i ≤ ρ · t_i` for every `i`.  Here `m` is a positive lower bound on the
+    scaled data `|A||ŷ| + |b|`; `ρ = ρ₀/m` is the explicit correction constant —
+    the exact, non-asymptotic content of Higham's `cond(A⁻¹)σ(A,ŷ)` condition. -/
+theorem correction_componentwise_of_infNorm {n : ℕ}
+    (dvec t : Fin n → ℝ) (rho0 ρ m : ℝ)
+    (hnorm : infNormVec dvec ≤ rho0)
+    (hm_pos : 0 < m) (ht_lb : ∀ i, m ≤ t i)
+    (hρ_nn : 0 ≤ ρ) (hcond : rho0 ≤ ρ * m) :
+    ∀ i, dvec i ≤ ρ * t i := by
+  intro i
+  have hdi : dvec i ≤ rho0 :=
+    le_trans (le_trans (le_abs_self _) (abs_le_infNormVec dvec i)) hnorm
+  have h2 : ρ * m ≤ ρ * t i := mul_le_mul_of_nonneg_left (ht_lb i) hρ_nn
+  linarith [hdi, hcond, h2]
+
 end LeanFpAnalysis.FP

@@ -382,6 +382,55 @@ theorem higham12_4_conditional_two_gamma_bound (n : ℕ) (fp : FPModel)
     b r hr hres hsolve hDeltaA y hy hmu_nonneg hnu_nonneg homega_nonneg
     (2 * gamma fp (n + 1)) hdom
 
+/-- **Theorem 12.4, explicit-condition form** (Higham §12.2, GE with `μ = γ(3n)`).
+
+A fully-derived Theorem 12.4: from the solver/residual/update models, a norm
+bound `‖ |A||d̂| ‖∞ ≤ ρ₀` on the correction magnitude (supplied by the Neumann
+step `higham12_21_correction_infNorm_bound`), an explicit positive lower bound
+`m` on the scaled data `|A||ŷ| + |b|`, and the explicit scalar conditions
+`ρ₀ ≤ ρ·m` and `hρ_cond`, one step of iterative refinement gives
+`|b − Aŷ|_i ≤ 2γ_{n+1}(|A||ŷ| + |b|)_i`.
+
+Unlike `higham12_4_conditional_two_gamma_bound`, this assumes **no** componentwise
+dominance: the dominance is *derived* via `correction_componentwise_of_infNorm`
+and fed to `lu_refinement_thm_11_4`.  All hypotheses are precise (no `≈`); the
+`(m, ρ)` pair is the explicit, non-asymptotic replacement for the source's
+approximate function `f(t₁,t₂)` and its `cond(A⁻¹)σ(A,ŷ)` sufficient condition. -/
+theorem higham12_4_explicit_condition (n : ℕ) (fp : FPModel)
+    (A : Fin n → Fin n → ℝ)
+    (x₀ d_hat r_hat b r : Fin n → ℝ)
+    (f₂ y : Fin n → ℝ)
+    (DeltaA_solve : Fin n → Fin n → ℝ)
+    (hr : ∀ i : Fin n, r i = b i - ∑ j : Fin n, A i j * x₀ j)
+    (hy : ∀ i : Fin n, y i = x₀ i + d_hat i + f₂ i)
+    (hsolve : ∀ i : Fin n,
+      ∑ j : Fin n, (A i j + DeltaA_solve i j) * d_hat j = r_hat i)
+    (hDeltaA : ∀ i j : Fin n, |DeltaA_solve i j| ≤ gamma fp (3 * n) * |A i j|)
+    (hres : ∀ i : Fin n, |r_hat i - r i| ≤
+      gamma fp (n + 1) * (|b i| + ∑ j : Fin n, |A i j| * |x₀ j|))
+    (hf₂ : ∀ j : Fin n, |f₂ j| ≤ fp.u * (|x₀ j| + |d_hat j|))
+    (hn1 : gammaValid fp (n + 1)) (hn3 : gammaValid fp (3 * n)) (hu_lt : fp.u < 1)
+    (rho0 m ρ : ℝ)
+    (hnorm : infNormVec (fun i => ∑ j : Fin n, |A i j| * |d_hat j|) ≤ rho0)
+    (hm_pos : 0 < m)
+    (ht_lb : ∀ i : Fin n, m ≤ ∑ j : Fin n, |A i j| * |y j| + |b i|)
+    (hρ_nn : 0 ≤ ρ) (hcond : rho0 ≤ ρ * m)
+    (hρ_cond : (gamma fp (n + 1) + fp.u) +
+        ((gamma fp (n + 1) + fp.u) * (1 + fp.u) +
+         (1 - fp.u) * (gamma fp (3 * n) + fp.u)) * ρ ≤
+        (1 - fp.u) * (2 * gamma fp (n + 1))) :
+    ∀ i : Fin n,
+      |b i - ∑ j : Fin n, A i j * y j| ≤
+        2 * gamma fp (n + 1) * (∑ j : Fin n, |A i j| * |y j| + |b i|) := by
+  have hcorr : ∀ i : Fin n, ∑ j : Fin n, |A i j| * |d_hat j| ≤
+      ρ * (∑ j : Fin n, |A i j| * |y j| + |b i|) :=
+    correction_componentwise_of_infNorm
+      (fun i => ∑ j : Fin n, |A i j| * |d_hat j|)
+      (fun i => ∑ j : Fin n, |A i j| * |y j| + |b i|)
+      rho0 ρ m hnorm hm_pos ht_lb hρ_nn hcond
+  exact lu_refinement_thm_11_4 n fp A x₀ d_hat b r r_hat f₂ y DeltaA_solve
+    hr hy hsolve hDeltaA hres hf₂ hn1 hn3 hu_lt ρ hρ_nn hcorr hρ_cond
+
 /-- **Equations (12.20)-(12.21)**, the Neumann-inversion step of Higham §12.2.
 
 Genuine replacement for the previously-assumed
