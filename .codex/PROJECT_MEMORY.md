@@ -20,6 +20,37 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-05 sync/checkpoint: local `main` fast-forwarded to `origin/main`
+  commit `183253e3`; direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` passed with no
+  output after the sync.  For Theorem 13.6, the exact cited [326] paper has
+  been identified as J. W. Demmel, N. J. Higham, and R. S. Schreiber,
+  "Stability of block LU factorization", *Numerical Linear Algebra with
+  Applications* 2 (1995), pp. 173--190, doi:10.1002/nla.1680020208.  The later
+  Lindquist--Luszczek--Dongarra arXiv:2509.07305 paper gives an advisory
+  Section 2.2 route split into factorization, triangular-solve, and combined
+  solve backward-error theorems.  This supports the existing
+  `DemmelHighamSchreiber13_6Estimates` target design but does not close the
+  theorem; the [326]-level implementation estimates remain open.
+- 2026-07-05 matrix-`∞` source-norm positive-dimension endpoint: added
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv_of_pos_dim`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  It packages the canonical
+  active-pivot source-norm upper/history pair from the source-shaped assumptions
+  plus `0 < r`, discharging the artificial finite unit-sphere witness.  Direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` passed before
+  lookup refresh; import-materializing
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU` passed (`2982/2982`,
+  290s), and ignored scratch
+  `scratch/chapter13/ScratchCh13PosDimAxioms.lean` confirmed the theorem and
+  reported only standard Lean/Mathlib axioms `propext`, `Classical.choice`, and
+  `Quot.sound`.  A redirected full `examples/LibraryLookup.lean` rerun printed
+  the new Ch13 declaration successfully, but the file as a whole now fails at
+  unrelated non-Ch13 `#check`s beginning around line 13063 and continuing
+  through later Split-3B placeholder/foundation entries around lines
+  15306--15337; the new Ch13 check is covered by the focused scratch check.
+  This remains a matrix-`∞` dependency endpoint; it does not close the
+  source-strength entrywise Eq.13.21, Eq.13.23 `rho <= 2`, Problem 13.4
+  all-tail comparison, or Theorem 13.6 cited-estimate rows.
 - 2026-07-04 plain inverse-comparison canonical active-pivot wrappers: added
   `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivotInv_eq_nonsingInv`,
   `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivotInv_eq_nonsingInv`,
@@ -10917,8 +10948,8 @@ These compile, but should not be treated as fully derived stability results:
   source table data, all-tail source comparisons, and Theorem 13.6 cited
   implementation estimates remain open.
 
-- 2026-07-04 Algorithm 13.3 matrix-infinity source-norm paired endpoints:
-  added six wrappers in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+- 2026-07-04/05 Algorithm 13.3 matrix-infinity source-norm paired endpoints:
+  added seven wrappers in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
   pairing the assembled matrix-stage upper-factor `blockInfNorm` bound with the
   finite matrix-stage history `blockInfNorm` bound:
   `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table`,
@@ -10927,7 +10958,10 @@ These compile, but should not be treated as fully derived stability results:
   `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_reciprocal_diag_right_inverse_of_pivot_right_inverse`,
   `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivot_right_inverse`,
   and
-  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv`.
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv`;
+  the positive-block-size canonical active-pivot wrapper
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv_of_pos_dim`
+  removes the finite unit-sphere witness from that paired source-norm route.
   Direct `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
   passed before documentation/lookup refresh.  These are source-norm
   dependency packages only; the source-strength entrywise max-entry BDD/product

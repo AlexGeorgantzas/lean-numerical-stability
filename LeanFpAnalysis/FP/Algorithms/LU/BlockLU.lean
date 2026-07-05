@@ -23137,6 +23137,39 @@ theorem
     higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv
       hm hunit A pivotInv hDiagDet hDom hPivotDet hPivotInv⟩
 
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equations (13.21),(13.23):
+    positive-block-size form of the paired matrix-`∞` endpoint with canonical
+    initial diagonal inverses and canonical active pivot inverses.
+
+    This removes the artificial finite unit-sphere witness from the source-norm
+    dependency route.  The theorem remains a matrix-`∞` endpoint; it is not the
+    printed dimension-free max-entry growth theorem. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hDiagDet : ∀ j : Fin m, Matrix.det (A j j) ≠ 0)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j))
+      (fun j : Fin m => (infNorm (nonsingInv r (A j j)))⁻¹))
+    (hPivotDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv k =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)) :
+    blockInfNorm hm (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * blockInfNorm hm A ∧
+      higham13_algorithm13_3_matrixStageHistoryInfBound hm A pivotInv ≤
+        2 * blockInfNorm hm A := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv
+      hm (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv hDiagDet hDom
+      hPivotDet hPivotInv
+
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
     dimension-aware max-entry package with canonical initial diagonal inverses
     and canonical active pivot inverses. -/
