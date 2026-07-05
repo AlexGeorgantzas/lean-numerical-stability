@@ -368,6 +368,35 @@ theorem H16_eq16_27_lyapunov_condition_of_sepLowerBound (n : ℕ)
     (lyapunovCond_of_inverseOpBound n X α γ (1 / sigma)) ε
     hCond hX hΨnn hα hγ hε hΔA hΔC hLin
 
+/-- Higham, 2nd ed., §16.3-§16.4, equations (16.26)-(16.27):
+    Lyapunov first-order perturbation bound from a positive lower bound on the
+    exact infimum model of `sep(A,-A^T)`.  This is the same safe condition
+    value as the `SepLowerBound` route, but exposes the printed infimum/minimum
+    surface directly. -/
+theorem H16_eq16_27_lyapunov_condition_of_pos_le_sylvesterSepInf (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_27_lyapunov_condition_of_sepLowerBound n
+      A X DeltaA DeltaC DeltaX alpha gamma sigma eps
+      halpha hgamma hsigma heps hX
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      hDeltaA hDeltaC hLin
+
 -- ============================================================
 -- Diagonal-case condition-number realization
 -- (eq (16.27), diagonal / distinct-eigenvalue)
