@@ -1143,6 +1143,94 @@ theorem sylvesterTwoColumnBlockSystem_columns_eq_of_leftInverse_of_prev_columns_
     m n A T C X Y p q L hLeft hX hY
   exact sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq m n T C X Y p q hprev
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    uniqueness wrapper for the supplied two-column block system: a nonzero
+    determinant of the supplied block coefficient replaces the separate
+    left-inverse certificate when two block systems have the same right-hand
+    side.  Scope: exact supplied-block algebra only; this does not prove the
+    determinant hypothesis from real-Schur spectral separation. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_det_ne_zero (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (hX : IsSylvesterTwoColumnBlockSystem m n A T C X p q)
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hRhs :
+      sylvesterTwoColumnBlockRhs m n T C X p q =
+        sylvesterTwoColumnBlockRhs m n T C Y p q) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  exact sylvesterTwoColumnBlockSystem_activeColumns_eq_of_leftInverse
+    m n A T C X Y p q
+    (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+    (sylvesterTwoColumnBlockCoeff_nonsingInv_mul m n A T p q hdet)
+    hX hY hRhs
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), component form
+    of the determinant uniqueness wrapper for supplied two-column block systems
+    with the same block right-hand side. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_det_ne_zero (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (hX : IsSylvesterTwoColumnBlockSystem m n A T C X p q)
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hRhs :
+      sylvesterTwoColumnBlockRhs m n T C X p q =
+        sylvesterTwoColumnBlockRhs m n T C Y p q) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  have hvec := sylvesterTwoColumnBlockSystem_activeColumns_eq_of_det_ne_zero
+    m n A T C X Y p q hdet hX hY hRhs
+  constructor
+  · intro i
+    simpa using congrFun hvec (Sum.inl i)
+  · intro i
+    simpa using congrFun hvec (Sum.inr i)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    two-column recurrence uniqueness bridge: if two block-system solutions
+    agree on all previously solved columns `j < p`, then a nonzero determinant
+    of the supplied block coefficient forces their active columns to agree. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_det_ne_zero_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (hX : IsSylvesterTwoColumnBlockSystem m n A T C X p q)
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  apply sylvesterTwoColumnBlockSystem_columns_eq_of_det_ne_zero
+    m n A T C X Y p q hdet hX hY
+  exact sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq m n T C X Y p q hprev
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), vector form of
+    the determinant previous-column uniqueness bridge for supplied adjacent
+    two-column block systems. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_det_ne_zero_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (hX : IsSylvesterTwoColumnBlockSystem m n A T C X p q)
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  have hcols :=
+    sylvesterTwoColumnBlockSystem_columns_eq_of_det_ne_zero_of_prev_columns_eq
+      m n A T C X Y p q hdet hX hY hprev
+  funext r
+  cases r with
+  | inl i => simpa using hcols.1 i
+  | inr i => simpa using hcols.2 i
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact supplied
     two-column solve/uniqueness bridge: if a supplied right inverse defines
     the active columns of `X` from the block right-hand side, and a supplied
