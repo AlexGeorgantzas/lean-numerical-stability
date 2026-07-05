@@ -2545,6 +2545,83 @@ theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped
       Q P hIdemQ
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the `P`-range companion-square compression `PQP` is a rectangular
+    Gram product. -/
+theorem wedinLemma20_12_projection_mul_swapped_mul_projection_eq_transpose_self
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul (finiteTranspose (rectMatMul Q P)) (rectMatMul Q P) =
+      rectMatMul (rectMatMul P Q) P := by
+  have htranspose :
+      finiteTranspose (rectMatMul Q P) = rectMatMul P Q :=
+    wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric Q P hQ hP
+  rw [htranspose]
+  calc
+    rectMatMul (rectMatMul P Q) (rectMatMul Q P)
+        = rectMatMul P (rectMatMul Q (rectMatMul Q P)) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul P (rectMatMul (rectMatMul Q Q) P) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul P (rectMatMul Q P) := by
+            rw [hIdemQ]
+    _ = rectMatMul (rectMatMul P Q) P := by
+            rw [← rectMatMul_assoc]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion-square compression `PQP` is symmetric. -/
+theorem wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    IsSymmetricFiniteMatrix (rectMatMul (rectMatMul P Q) P) := by
+  have hEq :=
+    wedinLemma20_12_projection_mul_swapped_mul_projection_eq_transpose_self
+      P Q hP hQ hIdemQ
+  exact
+    IsSymmetricFiniteMatrix_of_eq_rectMatMul_transpose_self
+      (rectMatMul Q P) hEq.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion-square compression `PQP` is positive semidefinite. -/
+theorem wedinLemma20_12_projection_mul_swapped_mul_projection_finitePSD
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finitePSD (rectMatMul (rectMatMul P Q) P) := by
+  have hEq :=
+    wedinLemma20_12_projection_mul_swapped_mul_projection_eq_transpose_self
+      P Q hP hQ hIdemQ
+  exact
+    finitePSD_of_eq_rectMatMul_transpose_self
+      (rectMatMul Q P) hEq.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the swapped companion-square compression `QPQ` is symmetric. -/
+theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    IsSymmetricFiniteMatrix (rectMatMul (rectMatMul Q P) Q) :=
+  wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+    Q P hQ hP hIdemP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the swapped companion-square compression `QPQ` is positive semidefinite. -/
+theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_finitePSD
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P) :
+    finitePSD (rectMatMul (rectMatMul Q P) Q) :=
+  wedinLemma20_12_projection_mul_swapped_mul_projection_finitePSD
+    Q P hQ hP hIdemP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm
     of the range-side compression `P(P-Q)^2P`.
 
