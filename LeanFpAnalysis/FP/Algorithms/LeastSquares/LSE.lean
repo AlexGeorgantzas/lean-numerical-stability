@@ -12750,6 +12750,22 @@ theorem rectOpNorm2Le_lseStackedMatrix_of_frobNormRect_bounds {m n p : ℕ}
           frobNormRect_lseStackedMatrix_le_add A B
     _ ≤ cA + cB := add_le_add hA hB
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    the relative perturbation budget bounds the operator-2 size of the stacked
+    perturbation `[DeltaA; DeltaB]`. -/
+theorem theorem20_8_rectOpNorm2Le_lseStackedMatrix_delta_of_relativePerturbationBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    rectOpNorm2Le (lseStackedMatrix DeltaA DeltaB)
+      (eps * frobNormRect A + eps * frobNormRect B) :=
+  rectOpNorm2Le_lseStackedMatrix_of_frobNormRect_bounds
+    hbudget.1 hbudget.2.2.1
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), perturbation rank bridge:
     if the source stack `[A; B]` has a vector-action lower bound `mu`, and the
     stacked perturbation has operator-2 size at most `eta < mu`, then the
@@ -12775,6 +12791,59 @@ theorem LSEStackedFullColumnRank.of_lower_bound_and_rectOpNorm2Le_lt
       (Delta := lseStackedMatrix DeltaA DeltaB)
       hlower hDelta heta
   simpa [LSEStackedFullColumnRank, lseStackedMatrix_add] using hinj
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source stacked full-column rank is preserved by a relative perturbation
+    budget whose induced stacked Frobenius radius is strictly below the source
+    lower-bound margin. -/
+theorem LSEStackedFullColumnRank.of_relativePerturbationBudget_lt_lowerMargin
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {eps : ℝ}
+    (hAB : LSEStackedFullColumnRank A B)
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hsmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hAB.vecNorm2LowerMargin) :
+    LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j) :=
+  LSEStackedFullColumnRank.of_lower_bound_and_rectOpNorm2Le_lt
+    (A := A) (DeltaA := DeltaA) (B := B) (DeltaB := DeltaB)
+    hAB.vecNorm2LowerMargin_lower_bound
+    (theorem20_8_rectOpNorm2Le_lseStackedMatrix_delta_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source stacked full-column rank is preserved under the displayed maximum
+    relative perturbation condition when the induced stacked radius is strictly
+    below the source lower-bound margin. -/
+theorem LSEStackedFullColumnRank.of_maxRelativePerturbation_lt_lowerMargin
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {eps : ℝ}
+    (hAB : LSEStackedFullColumnRank A B)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hsmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hAB.vecNorm2LowerMargin) :
+    LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j) :=
+  LSEStackedFullColumnRank.of_relativePerturbationBudget_lt_lowerMargin hAB
+    (theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad
+      hApos hbpos hBpos hdpos hmax)
+    hsmall
 
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), prose after the display:
     the null-intersection condition
