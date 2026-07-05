@@ -1663,6 +1663,153 @@ theorem wedinLemma20_12_compressedGram_eq_diff_projection_diff
             rw [← rectMatMul_assoc]
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the range-side cross Gram product `P(I-Q)P` is the compression
+    `P(P-Q)^2P` of the squared projection difference.
+
+This is the algebraic shape used by principal-angle proofs of the
+Stewart--Sun cross-projection norm equality. -/
+theorem wedinLemma20_12_projection_projectionDiff_sq_projection_eq_crossGram
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul
+        (rectMatMul P
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)))
+        P =
+      rectMatMul
+        (rectMatMul P (fun i j => idMatrix m i j - Q i j))
+        P := by
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hPD : rectMatMul P D = rectMatMul P IQ := by
+    symm
+    simpa [D, IQ] using
+      wedinLemma20_12_projection_mul_projectionComplement_eq_projection_mul_diff
+        P Q hIdemP
+  have hDP : rectMatMul D P = rectMatMul IQ P := by
+    symm
+    simpa [D, IQ] using
+      wedinLemma20_12_projectionComplement_mul_projection_eq_diff_mul_projection
+        P Q hIdemP
+  have hIQIdem : rectMatMul IQ IQ = IQ := by
+    simpa [IQ] using
+      wedinLemma20_12_projectionComplement_idempotent Q hIdemQ
+  calc
+    rectMatMul (rectMatMul P (rectMatMul D D)) P
+        = rectMatMul (rectMatMul (rectMatMul P D) D) P := by
+            rw [← rectMatMul_assoc]
+    _ = rectMatMul (rectMatMul P D) (rectMatMul D P) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul (rectMatMul P IQ) (rectMatMul IQ P) := by
+            rw [hPD, hDP]
+    _ = rectMatMul (rectMatMul (rectMatMul P IQ) IQ) P := by
+            exact (rectMatMul_assoc (rectMatMul P IQ) IQ P).symm
+    _ = rectMatMul (rectMatMul P (rectMatMul IQ IQ)) P := by
+            exact congrArg (fun X => rectMatMul X P)
+              (rectMatMul_assoc P IQ IQ)
+    _ = rectMatMul (rectMatMul P IQ) P := by
+            rw [hIQIdem]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped range-side cross Gram product `Q(I-P)Q` as the compression
+    `Q(P-Q)^2Q` of the same squared projection difference. -/
+theorem wedinLemma20_12_projection_projectionDiff_sq_projection_eq_crossGram_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul
+        (rectMatMul Q
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)))
+        Q =
+      rectMatMul
+        (rectMatMul Q (fun i j => idMatrix m i j - P i j))
+        Q := by
+  have hbase :=
+    wedinLemma20_12_projection_projectionDiff_sq_projection_eq_crossGram
+      Q P hIdemQ hIdemP
+  have hsq :
+      rectMatMul (fun i j => Q i j - P i j)
+          (fun i j => Q i j - P i j) =
+        rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j) := by
+    ext i j
+    unfold rectMatMul
+    apply Finset.sum_congr rfl
+    intro k _
+    ring
+  rw [hsq] at hbase
+  simpa using hbase
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm
+    of the range-side compression `P(P-Q)^2P`.
+
+This complements the existing `(I-Q)P(I-Q)` compressed-Gram bridge and records
+the second standard Gram form used in principal-angle proofs. -/
+theorem wedinLemma20_12_complexMatrixOp2_projectionDiff_sq_compression_eq_crossProjection_sq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul
+            (rectMatMul P
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            P)) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j))) ^ 2 := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  have hIQ : IsSymmetricFiniteMatrix IQ :=
+    wedinLemma20_12_projectionComplement_symmetric Q hQ
+  have htranspose :
+      finiteTranspose (rectMatMul P IQ) = rectMatMul IQ P :=
+    wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric P IQ hP hIQ
+  have hcrossGram :
+      rectMatMul (rectMatMul P IQ) P =
+        rectMatMul (rectMatMul P IQ) (finiteTranspose (rectMatMul P IQ)) := by
+    rw [htranspose]
+    symm
+    calc
+      rectMatMul (rectMatMul P IQ) (rectMatMul IQ P)
+          = rectMatMul (rectMatMul (rectMatMul P IQ) IQ) P := by
+              exact (rectMatMul_assoc (rectMatMul P IQ) IQ P).symm
+      _ = rectMatMul (rectMatMul P (rectMatMul IQ IQ)) P := by
+              exact congrArg (fun X => rectMatMul X P)
+                (rectMatMul_assoc P IQ IQ)
+      _ = rectMatMul (rectMatMul P IQ) P := by
+              have hIQIdem : rectMatMul IQ IQ = IQ := by
+                simpa [IQ] using
+                  wedinLemma20_12_projectionComplement_idempotent Q hIdemQ
+              rw [hIQIdem]
+  have hcompress :
+      rectMatMul (rectMatMul P (rectMatMul D D)) P =
+        rectMatMul (rectMatMul P IQ) P := by
+    simpa [D, IQ] using
+      wedinLemma20_12_projection_projectionDiff_sq_projection_eq_crossGram
+        P Q hIdemP hIdemQ
+  calc
+    complexMatrixOp2
+        (realRectToCMatrix (rectMatMul (rectMatMul P (rectMatMul D D)) P))
+        = complexMatrixOp2
+            (realRectToCMatrix (rectMatMul (rectMatMul P IQ) P)) := by
+            rw [hcompress]
+    _ = complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul (rectMatMul P IQ)
+              (finiteTranspose (rectMatMul P IQ)))) := by
+            rw [hcrossGram]
+    _ = complexMatrixOp2 (realRectToCMatrix (rectMatMul P IQ)) ^ 2 :=
+            complexMatrixOp2_realRectToCMatrix_mul_finiteTranspose_self_eq_sq
+              (rectMatMul P IQ)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the difference of two symmetric projections is symmetric. -/
 theorem wedinLemma20_12_projectionDiff_symmetric
     {m : ℕ} (P Q : Fin m → Fin m → ℝ)
