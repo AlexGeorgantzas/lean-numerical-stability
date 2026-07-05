@@ -1145,4 +1145,34 @@ theorem sylvester_practical_error_bound_fl (fp : FPModel) (m n : ℕ)
       (Matrix.diagonal a) (Matrix.diagonal b) C Xhat hm hn)
     hXhat
 
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), scalar-capped floating-point residual instantiation: if a
+    scalar `eta` bounds the max norm of the floating-point practical budget,
+    the practical relative max-entry forward-error bound has source-shaped
+    right-hand side `eta / ||Xhat||`. -/
+theorem sylvester_practical_error_bound_fl_scalar (fp : FPModel) (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C X Xhat : RMatFn m n)
+    (eta : Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (heta :
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterDiagonalVecCoeffInvAbs m n a b)
+          (flSylvesterResidualRect fp m n
+            (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+          (flSylvesterResidualBudget fp m n
+            (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)) <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  have hbase :=
+    sylvester_practical_error_bound_fl fp m n a b C X Xhat
+      hsep hX hm hn hXhat
+  exact hbase.trans
+    (div_le_div_of_nonneg_right heta (le_of_lt hXhat))
+
 end LeanFpAnalysis.FP
