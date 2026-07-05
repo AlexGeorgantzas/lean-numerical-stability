@@ -10987,3 +10987,21 @@ These compile, but should not be treated as fully derived stability results:
   dependency packages only; the source-strength entrywise max-entry BDD/product
   update route, Problem 13.4 all-tail source comparisons, and Theorem 13.6
   cited implementation estimates remain open.
+
+- 2026-07-05 Algorithm 13.3 arbitrary-norm active lower table: added
+  `higham13_algorithm13_3_source_lowerNorm_table_of_active_schur_pivots` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  The theorem names the
+  source lower-norm table for the actual continuous-linear Algorithm 13.3 Schur
+  stages: `continuousLinearMapLowerNorm` of each active Schur diagonal satisfies
+  the Eq.13.18 active diagonal-update predicate, and two-sided active pivot
+  inverse identities give the active reciprocal table.  The existing downstream
+  CLM diagonal-certificate theorem
+  `higham13_algorithm13_3_clm_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table`
+  now consumes this named table instead of reconstructing it inline.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  passed after the edit.  This closes the listed lower-norm-table dependency in
+  the BDD bottleneck ledger, but not the whole BDD row: deriving active
+  reciprocal/pivot data from the printed BDD hypotheses, choosing or connecting
+  the source-norm versus entrywise max-norm downstream surface, Problem 13.4
+  all-tail source comparisons, and Theorem 13.6 cited implementation estimates
+  remain open.

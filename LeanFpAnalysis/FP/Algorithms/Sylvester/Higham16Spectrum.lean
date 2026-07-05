@@ -81,6 +81,89 @@ theorem sylvester_realQuasiSchur_factors (m n : Nat)
   · intro i j hij
     exact hBzero i j hij
 
+/-- Adapter from Mathlib's orthogonal-group predicate to the repository's
+    function-matrix orthogonality predicate. -/
+theorem IsOrthogonal.of_mem_orthogonalGroup {n : Nat}
+    (Q : Matrix (Fin n) (Fin n) Real)
+    (hQ : Q ∈ Matrix.orthogonalGroup (Fin n) Real) :
+    IsOrthogonal n (fun i j => Q i j) := by
+  apply IsOrthogonal.of_col_orthonormal
+  intro i j
+  rw [Matrix.mem_orthogonalGroup_iff'] at hQ
+  have hentry := congrFun (congrFun hQ i) j
+  simpa [Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply] using hentry
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.5), real
+    quasi-Schur existence combined with the exact Schur-coordinate Sylvester
+    equivalence.  The theorem chooses real quasi-Schur factors for `A` and `B`,
+    repackages them in the legacy function-matrix interface, and immediately
+    exposes the exact equivalence between the original equation and the
+    Schur-coordinate equation.
+
+    Scope: this is only the exact coordinate-transform bridge.  It does not
+    assert structural nonsingularity of the quasi-triangular block systems, a
+    Hessenberg-Schur reduction, a full Bartels-Stewart solve, or any
+    floating-point stability bound. -/
+theorem sylvester_realQuasiSchur_transform_solution_iff (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C Y : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      (IsSylvesterSolutionRect m n A B C
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <->
+        IsSylvesterSolutionRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) := by
+  obtain ⟨Umat, pA, hUmat, hpAmono, hpAcard, hAzero⟩ :=
+    real_quasi_schur_blocks (Matrix.of A)
+  obtain ⟨Vmat, pB, hVmat, hpBmono, hpBcard, hBzero⟩ :=
+    real_quasi_schur_blocks (Matrix.of B)
+  let U : RMatFn m m := fun i j => Umat i j
+  let V : RMatFn n n := fun i j => Vmat i j
+  let R : RMatFn m m := rectMatMul (matTranspose U) (rectMatMul A U)
+  let S : RMatFn n n := rectMatMul (matTranspose V) (rectMatMul B V)
+  have hU : IsOrthogonal m U :=
+    IsOrthogonal.of_mem_orthogonalGroup Umat hUmat
+  have hV : IsOrthogonal n V :=
+    IsOrthogonal.of_mem_orthogonalGroup Vmat hVmat
+  have hA : A = rectMatMul U (rectMatMul R (matTranspose U)) :=
+    (rectMatMul_schur_coords_expand U U A hU hU).symm
+  have hB : B = rectMatMul V (rectMatMul S (matTranspose V)) :=
+    (rectMatMul_schur_coords_expand V V B hV hV).symm
+  have hRzero : ∀ i j : Fin m, pA j < pA i -> R i j = 0 := by
+    intro i j hij
+    have hleft :
+        rectMatMul (rectMatMul (matTranspose U) A) U i j = 0 := by
+      simpa [U, rectMatMul, matTranspose, Matrix.mul_apply,
+        Matrix.transpose_apply, Matrix.of_apply] using hAzero i j hij
+    have hassoc := rectMatMul_assoc (matTranspose U) A U
+    have hentry := congrFun (congrFun hassoc i) j
+    change (rectMatMul (matTranspose U) (rectMatMul A U)) i j = 0
+    rw [← hentry]
+    exact hleft
+  have hSzero : ∀ i j : Fin n, pB j < pB i -> S i j = 0 := by
+    intro i j hij
+    have hleft :
+        rectMatMul (rectMatMul (matTranspose V) B) V i j = 0 := by
+      simpa [V, rectMatMul, matTranspose, Matrix.mul_apply,
+        Matrix.transpose_apply, Matrix.of_apply] using hBzero i j hij
+    have hassoc := rectMatMul_assoc (matTranspose V) B V
+    have hentry := congrFun (congrFun hassoc i) j
+    change (rectMatMul (matTranspose V) (rectMatMul B V)) i j = 0
+    rw [← hentry]
+    exact hleft
+  refine ⟨U, R, V, S, pA, pB, hU, hV, hA, hB,
+    hpAmono, hpAcard, hRzero, hpBmono, hpBcard, hSzero, ?_⟩
+  exact sylvester_schur_transform_solution_iff m n U R A V S B C Y hU hV hA hB
+
 -- ============================================================
 -- (16.3): constructive spectral directions
 -- ============================================================
@@ -238,6 +321,18 @@ theorem sylvesterVecCoeff_singular_of_common_eigenvalue (m n : Nat)
     (16.4)-(16.5); it agrees with Mathlib's `Matrix.BlockTriangular T id`. -/
 def IsUpperTriangularFn (n : Nat) (T : RMatFn n n) : Prop :=
   forall i j : Fin n, j < i -> T i j = 0
+
+/-- A real quasi-Schur zero pattern becomes an ordinary upper-triangular
+    pattern when the supplied block map has no repeated adjacent block labels.
+    This is only a structural adapter; it does not assert that real Schur
+    factors are triangular in general. -/
+theorem IsUpperTriangularFn.of_quasiSchur_strictBlockMap (n : Nat)
+    (T : RMatFn n n) (p : Fin n -> Nat)
+    (hzero : ∀ i j : Fin n, p j < p i -> T i j = 0)
+    (hp : ∀ i j : Fin n, j < i -> p j < p i) :
+    IsUpperTriangularFn n T := by
+  intro i j hij
+  exact hzero i j (hp i j hij)
 
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
     the shifted column coefficient `A - t I` appearing in the
@@ -1452,6 +1547,49 @@ theorem existsUnique_isSylvesterSolutionRect_schurTriangular (m n : Nat)
       X = rectMatMul U (rectMatMul YX (matTranspose V)) := hXexpand.symm
       _ = rectMatMul U (rectMatMul Y (matTranspose V)) := by rw [hYeq]
 
+/-- Real quasi-Schur-to-triangular uniqueness bridge.  The theorem returns the
+    exact real quasi-Schur factors for `A` and `B`; if the returned `B`-side
+    block map is supplied to be strictly increasing down the matrix order, so
+    the selected Schur factor is effectively upper triangular, and each
+    shifted triangular column coefficient is nonsingular, then the original
+    Sylvester equation has a unique exact solution.
+
+    Scope: exact arithmetic and the triangular subcase only.  This deliberately
+    does not claim full quasi-triangular block nonsingularity, Hessenberg-Schur
+    execution, or floating-point stability. -/
+theorem existsUnique_isSylvesterSolutionRect_realQuasiSchur_of_strictBlockMap
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      ((∀ i j : Fin n, j < i -> pB j < pB i) ->
+        (∀ k : Fin n,
+          Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) ->
+        ExistsUnique (IsSylvesterSolutionRect m n A B C)) := by
+  obtain ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero,
+    hpBmono, hpBcard, hSzero, _hiff⟩ :=
+    sylvester_realQuasiSchur_transform_solution_iff
+      m n A B C (0 : RMatFn m n)
+  refine ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero,
+    hpBmono, hpBcard, hSzero, ?_⟩
+  intro hpBstrict hshift
+  have hS : IsUpperTriangularFn n S :=
+    IsUpperTriangularFn.of_quasiSchur_strictBlockMap n S pB hSzero hpBstrict
+  exact
+    existsUnique_isSylvesterSolutionRect_schurTriangular
+      m n U R A V S B C hU hV hA hB hS hshift
+
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6),
     supplied triangular Schur-coordinate case: supplied orthogonal factors,
     an upper-triangular transformed `S`, and nonsingular shifted column
@@ -1727,6 +1865,62 @@ theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_bud
     sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate
       m n U R A V S B C X Xhat Rhat Ru hU hV hA hB hS hshift hX
       ⟨hRu, hRhat⟩ hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), real quasi-Schur
+    triangular subcase: return exact real quasi-Schur factors for `A` and `B`;
+    if the returned `B`-side block labels are strictly increasing below the
+    diagonal and the shifted triangular column coefficients are nonsingular,
+    then the raw computed-residual practical bound follows for the original
+    `A` and `B`.
+
+    Scope: this is only the strict-block-map triangular subcase, reusing the
+    supplied Schur-triangular endpoint above.  It does not assert full
+    quasi-triangular block nonsingularity, Hessenberg-Schur execution, rounded
+    residual arithmetic, or floating-point stability. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      ((∀ i j : Fin n, j < i -> pB j < pB i) ->
+        (∀ k : Fin n,
+          Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) ->
+        IsSylvesterSolutionRect m n A B C X ->
+        (∀ i j, 0 <= Ru i j) ->
+        (∀ i j,
+          |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j) ->
+        0 < sylvesterMaxEntryNormRect m n Xhat ->
+        sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+            sylvesterMaxEntryNormRect m n Xhat <=
+          sylvesterVecMaxNorm m n
+            (sylvesterPracticalBudgetVec m n
+              (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+            sylvesterMaxEntryNormRect m n Xhat) := by
+  obtain ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero,
+    hpBmono, hpBcard, hSzero, _hiff⟩ :=
+    sylvester_realQuasiSchur_transform_solution_iff
+      m n A B C (0 : RMatFn m n)
+  refine ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero,
+    hpBmono, hpBcard, hSzero, ?_⟩
+  intro hpBstrict hshift hX hRu hRhat hXhat
+  have hS : IsUpperTriangularFn n S :=
+    IsUpperTriangularFn.of_quasiSchur_strictBlockMap n S pB hSzero hpBstrict
+  exact
+    sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget
+      m n U R A V S B C X Xhat Rhat Ru hU hV hA hB hS hshift hX
+      hRu hRhat hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
     Schur-coordinate case with raw computed-residual budget assumptions and

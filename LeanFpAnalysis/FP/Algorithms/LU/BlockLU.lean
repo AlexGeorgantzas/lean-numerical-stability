@@ -783,6 +783,9 @@
     SchurStageActivePivotInvReciprocal13_7.of_active_mul_eq_one,
     SchurStageActiveDiagLowerUpdate13_7,
     SchurStageActiveDiagLowerUpdate13_7.of_eq,
+    SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_schur_composition,
+    SchurStageActivePivotInvReciprocal13_7.of_continuousLinearMap_inverse,
+    higham13_algorithm13_3_source_lowerNorm_table_of_active_schur_pivots,
     higham13_algorithm13_3_pivot_right_inverse_not_imply_diagLowerCert_pivot_bound,
     higham13_theorem13_7_pivot_inverse_bound_of_reciprocal,
     higham13_theorem13_7_pivot_inverse_bound_of_diag_lower,
@@ -13539,6 +13542,76 @@ theorem
       invDiagBound A pivotInv stageInvDiagBound hInit hDiagUpdate hRecip
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
+    source lower-norm table for the actual continuous-linear Schur-stage
+    pivots.
+
+    The table is
+    `mu_kj = min_{‖x‖ = 1} ‖A_jj^(k) x‖`, represented by
+    `continuousLinearMapLowerNorm`.  For the Algorithm 13.3 Schur recurrence
+    on continuous linear maps, this table satisfies the active diagonal-update
+    inequality used in (13.18); if the supplied active pivot maps are two-sided
+    inverses, the active table entries are the reciprocal pivot-inverse norms.
+    This is the named arbitrary-subordinate-norm source table behind the BDD
+    Theorems 13.7--13.8 route. -/
+theorem higham13_algorithm13_3_source_lowerNorm_table_of_active_schur_pivots
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (A : Fin m → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInv k
+        (higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩
+        (pivotInv k y) = y) :
+    SchurStageActiveDiagLowerUpdate13_7
+        (higham13_algorithm13_3_schurStageNorm A pivotInv)
+        (fun k j =>
+          continuousLinearMapLowerNorm
+            (higham13_algorithm13_3_schurStageBlock A pivotInv k j j)
+            hunit)
+        (fun k => ‖pivotInv k‖) ∧
+      SchurStageActivePivotInvReciprocal13_7
+        (fun k j =>
+          continuousLinearMapLowerNorm
+            (higham13_algorithm13_3_schurStageBlock A pivotInv k j j)
+            hunit)
+        (fun k => ‖pivotInv k‖) := by
+  have hSchur : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        higham13_algorithm13_3_schurStageBlock A pivotInv (k + 1) j j x =
+          higham13_algorithm13_3_schurStageBlock A pivotInv k j j x -
+            higham13_algorithm13_3_schurStageBlock A pivotInv k j ⟨k, hk⟩
+              (pivotInv k
+                (higham13_algorithm13_3_schurStageBlock A pivotInv k ⟨k, hk⟩ j x)) := by
+    intro k hk j hj x
+    let p : Fin m := ⟨k, hk⟩
+    have hUpdate :=
+      (higham13_algorithm13_3_schurStageBlock_exact_update A pivotInv)
+        k hk j j hj hj
+    have hUpdate' :
+        higham13_algorithm13_3_schurStageBlock A pivotInv (k + 1) j j =
+          higham13_algorithm13_3_schurStageBlock A pivotInv k j j -
+            higham13_algorithm13_3_schurStageBlock A pivotInv k j p *
+              pivotInv k *
+              higham13_algorithm13_3_schurStageBlock A pivotInv k p j := by
+      simpa [p] using hUpdate
+    rw [hUpdate']
+    rfl
+  refine ⟨?_, ?_⟩
+  · simpa [higham13_algorithm13_3_schurStageNorm] using
+      (SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_schur_composition
+        hunit (higham13_algorithm13_3_schurStageBlock A pivotInv) pivotInv hSchur)
+  · simpa using
+      (SchurStageActivePivotInvReciprocal13_7.of_continuousLinearMap_inverse
+        hunit
+        (fun k j => higham13_algorithm13_3_schurStageBlock A pivotInv k j j)
+        pivotInv hLeft hRight)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
     actual continuous-linear-map Schur stages give the one-sided active pivot
     certificate for `diagLowerCertGeneric`.
 
@@ -13570,42 +13643,18 @@ theorem
     SchurStageActivePivotInvDiagLower13_7
       (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
       (fun k => ‖pivotInv k‖) := by
-  have hStageNorm : ∀ k : ℕ, ∀ i j : Fin m,
-      ‖higham13_algorithm13_3_schurStageBlock A pivotInv k i j‖ =
-        higham13_algorithm13_3_schurStageNorm A pivotInv k i j := by
-    intro k i j
-    rfl
-  have hPivotNorm : ∀ k : ℕ,
-      ‖pivotInv k‖ = higham13_algorithm13_3_pivotInvNorm pivotInv k := by
-    intro k
-    rfl
-  have hSchur : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
-      k + 1 ≤ j.val → ∀ x : E,
-        higham13_algorithm13_3_schurStageBlock A pivotInv (k + 1) j j x =
-          higham13_algorithm13_3_schurStageBlock A pivotInv k j j x -
-            higham13_algorithm13_3_schurStageBlock A pivotInv k j ⟨k, hk⟩
-              (pivotInv k
-                (higham13_algorithm13_3_schurStageBlock A pivotInv k ⟨k, hk⟩ j x)) := by
-    intro k hk j hj x
-    let p : Fin m := ⟨k, hk⟩
-    have hUpdate :=
-      (higham13_algorithm13_3_schurStageBlock_exact_update A pivotInv)
-        k hk j j hj hj
-    have hUpdate' :
-        higham13_algorithm13_3_schurStageBlock A pivotInv (k + 1) j j =
-          higham13_algorithm13_3_schurStageBlock A pivotInv k j j -
-            higham13_algorithm13_3_schurStageBlock A pivotInv k j p *
-              pivotInv k *
-              higham13_algorithm13_3_schurStageBlock A pivotInv k p j := by
-      simpa [p] using hUpdate
-    rw [hUpdate']
-    rfl
-  have hDiagLower :=
-    higham13_algorithm13_3_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table
-      hunit invDiagBound A pivotInv
-      (higham13_algorithm13_3_schurStageBlock A pivotInv)
-      pivotInv hInit hStageNorm hPivotNorm hSchur hLeft hRight
-  simpa [higham13_algorithm13_3_pivotInvNorm] using hDiagLower
+  rcases
+    higham13_algorithm13_3_source_lowerNorm_table_of_active_schur_pivots
+      hunit A pivotInv hLeft hRight with
+    ⟨hDiagUpdate, hRecip⟩
+  simpa [higham13_algorithm13_3_pivotInvNorm] using
+    (higham13_algorithm13_3_diagLowerCertGeneric_diag_lower_of_source_table_reciprocal
+      invDiagBound A pivotInv
+      (fun k j =>
+        continuousLinearMapLowerNorm
+          (higham13_algorithm13_3_schurStageBlock A pivotInv k j j)
+          hunit)
+      hInit hDiagUpdate hRecip)
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
     actual CLM Schur-stage source-table data gives the direct active pivot
