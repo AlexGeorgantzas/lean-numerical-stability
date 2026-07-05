@@ -360,6 +360,37 @@ theorem H16_eq16_24_structured_condition_of_sepLowerBound (n : ℕ)
     (sylvesterPsi_of_inverseOpBound n X α β γ (1 / sigma)) ε
     hPsi hX hΨnn hα hβ hγ hε hΔA hΔB hΔC hLin
 
+/-- Higham, 2nd ed., Section 16.3-16.4, equations (16.23)-(16.24):
+    structured first-order perturbation bound from a positive lower bound on
+    the exact infimum model of `sep(A,B)`.  This is the same safe Psi value as
+    the `SepLowerBound` route, exposed directly through `sylvesterSepInf`.
+
+    Scope: this is an exact-arithmetic lower-bound certificate route. It does
+    not assert the sharper displayed nondiagonal operator norm when that norm is
+    smaller than the reciprocal sep bound. -/
+theorem H16_eq16_24_structured_condition_of_pos_le_sylvesterSepInf (n : Nat)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaB : frobNorm DeltaB <= eps * beta)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 3 *
+        sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_24_structured_condition_of_sepLowerBound n
+      A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma sigma eps
+      halpha hbeta hgamma hsigma heps hX
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
+      hDeltaA hDeltaB hDeltaC hLin
+
 -- ============================================================
 -- Diagonal-case Psi realization (eq (16.24), diagonal / distinct-eigenvalue)
 -- ============================================================
