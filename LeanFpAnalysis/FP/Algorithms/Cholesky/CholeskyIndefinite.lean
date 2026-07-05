@@ -933,6 +933,41 @@ theorem fl_blockLDLT_pivot_row_bound (n : ℕ) (fp : FPModel)
     rw [hrw, abs_mul]
     exact (mul_le_mul_of_nonneg_left hδ (abs_nonneg _)).trans_eq (by rw [mul_comm])
 
+/-- **Pivot-column floating-point backward error of one 1×1-pivot stage.**
+    `(L̂D̂L̂ᵀ)_{i+1,0} = l̂_i·A00 = A_{i+1,0}(1+δ)`, so
+    `|(L̂D̂L̂ᵀ)_{i+1,0} − A_{i+1,0}| ≤ u·|A_{i+1,0}|` — the pivot-column companion of
+    `fl_blockLDLT_pivot_row_bound`, completing all four index cases of the
+    single 1×1-pivot floating-point assemble step. -/
+theorem fl_blockLDLT_pivot_col_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) (he : A 0 0 ≠ 0)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hD00 : D 0 0 = A 0 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0) :
+    ∀ i : Fin n,
+      |(∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L 0 k₂) - A i.succ 0|
+        ≤ fp.u * |A i.succ 0| := by
+  intro i
+  have colred : (∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L 0 k₂)
+      = ∑ k₁, L i.succ k₁ * D k₁ 0 := by
+    apply Finset.sum_congr rfl; intro k₁ _
+    rw [Fin.sum_univ_succ, hL00, mul_one]
+    have : (∑ k₂ : Fin n, L i.succ k₁ * D k₁ k₂.succ * L 0 k₂.succ) = 0 :=
+      Finset.sum_eq_zero fun k _ => by rw [hL0s k, mul_zero]
+    rw [this, add_zero]
+  rw [colred, Fin.sum_univ_succ, hD00]
+  have : (∑ k₁ : Fin n, L i.succ k₁.succ * D k₁.succ 0) = 0 :=
+    Finset.sum_eq_zero fun k _ => by rw [hDs0 k, mul_zero]
+  rw [this, add_zero, hLcol i]
+  obtain ⟨δ, hδ, hd⟩ := fp.model_div (A i.succ 0) (A 0 0) he
+  rw [hd]
+  have hrw : A i.succ 0 / A 0 0 * (1 + δ) * A 0 0 - A i.succ 0 = A i.succ 0 * δ := by
+    field_simp; ring
+  rw [hrw, abs_mul]
+  exact (mul_le_mul_of_nonneg_left hδ (abs_nonneg _)).trans_eq (by rw [mul_comm])
+
 -- ============================================================
 -- Chapter 11.1.4  Tridiagonal symmetric matrices
 -- ============================================================
