@@ -4760,6 +4760,9 @@ Core symmetric-indefinite and skew-symmetric module:
 - `flStoredSymSchurCompl_first_row_col`
 - `flStoredSymSchurDefect`
 - `fl_blockLDLT_oneByOne_stage_bound_of_stored_schur`
+- `FlStoredAllOnePivots`
+- `flBlockLDLTStoredAllOneByOneBound`
+- `fl_blockLDLT_stored_all_oneByOne_bound`
 - `FlAllOneSymmetricPivots`
 - `flBlockLDLTOneByOneStageBound`
 - `fl_blockLDLT_oneByOne_stage_bound`
@@ -4791,6 +4794,9 @@ Source-facing Chapter 11 wrappers:
 - `higham11_3_fl_storedSymSchurCompl_first_row_col`
 - `higham11_3_fl_storedSymSchurDefect`
 - `higham11_3_fl_blockLDLT_oneByOne_stage_bound_of_stored_schur`
+- `higham11_3_FlStoredAllOnePivots`
+- `higham11_3_fl_storedAllOneByOneBound`
+- `higham11_3_fl_blockLDLT_stored_all_oneByOne_bound`
 - `higham11_3_FlAllOneSymmetricPivots`
 - `higham11_3_fl_oneByOneStageBound`
 - `higham11_3_fl_blockLDLT_oneByOne_stage_bound`

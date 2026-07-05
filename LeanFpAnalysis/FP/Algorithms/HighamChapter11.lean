@@ -489,6 +489,32 @@ theorem higham11_3_fl_blockLDLT_oneByOne_stage_bound_of_stored_schur
   fl_blockLDLT_oneByOne_stage_bound_of_stored_schur n fp A he hsym1 hval
     L_S D_S B hIH L D hL00 hLcol hL0s hLtr hD00 hD0s hDs0 hDtr
 
+/-- Recursive nonzero-pivot condition for the stored-symmetric all-1×1
+floating block-LDLᵀ path. -/
+noncomputable abbrev higham11_3_FlStoredAllOnePivots (fp : FPModel)
+    (n : ℕ) (A : Fin n → Fin n → ℝ) : Prop :=
+  FlStoredAllOnePivots fp n A
+
+/-- Recursive entrywise envelope for the stored-symmetric all-1×1 floating
+block-LDLᵀ path. -/
+noncomputable abbrev higham11_3_fl_storedAllOneByOneBound (fp : FPModel)
+    (n : ℕ) (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  flBlockLDLTStoredAllOneByOneBound fp n A
+
+/-- **Theorem 11.3 stored-symmetric all-1×1 recursive fl bound**: for a symmetric
+input whose stored-symmetric rounded Schur path has nonzero pivots, there exist
+computed-style factors `L̂,D̂` whose product approximates `A` entrywise within
+`higham11_3_fl_storedAllOneByOneBound`. -/
+theorem higham11_3_fl_blockLDLT_stored_all_oneByOne_bound (fp : FPModel)
+    (hval : gammaValid fp 3) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j, A i j = A j i)
+    (hp : higham11_3_FlStoredAllOnePivots fp n A) :
+    ∃ L D : Fin n → Fin n → ℝ,
+      ∀ I J,
+        |(∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) - A I J|
+          ≤ higham11_3_fl_storedAllOneByOneBound fp n A I J :=
+  fl_blockLDLT_stored_all_oneByOne_bound fp hval n A hsym hp
+
 /-- Recursive rounded-pivot side condition for Theorem 11.3's all-1×1 path. -/
 noncomputable abbrev higham11_3_FlAllOneSymmetricPivots (fp : FPModel)
     (n : ℕ) (A : Fin n → Fin n → ℝ) : Prop :=

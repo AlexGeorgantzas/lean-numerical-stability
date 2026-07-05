@@ -1142,6 +1142,73 @@ theorem fl_blockLDLT_oneByOne_stage_bound_of_stored_schur (n : ℕ) (fp : FPMode
   · exact hDs0
   · exact hDtr
 
+/-- Recursive nonzero-pivot condition for the stored-symmetric all-1×1
+    floating block-LDLᵀ path.  Each recursive trailing matrix is the
+    stored-symmetric rounded Schur complement. -/
+noncomputable def FlStoredAllOnePivots (fp : FPModel) :
+    (n : ℕ) → (Fin n → Fin n → ℝ) → Prop
+  | 0, _ => True
+  | n + 1, A =>
+      A 0 0 ≠ 0 ∧ FlStoredAllOnePivots fp n (flStoredSymSchurCompl n fp A)
+
+/-- Recursive entrywise envelope for the stored-symmetric all-1×1 floating
+    block-LDLᵀ path.  The trailing envelope is the recursive stored envelope plus
+    the explicit stored-vs-raw Schur defect for the current stage. -/
+noncomputable def flBlockLDLTStoredAllOneByOneBound (fp : FPModel) :
+    (n : ℕ) → (Fin n → Fin n → ℝ) → Fin n → Fin n → ℝ
+  | 0, _ => fun I _ => Fin.elim0 I
+  | n + 1, A =>
+      flBlockLDLTOneByOneStageBound n fp A
+        (fun i j =>
+          flBlockLDLTStoredAllOneByOneBound fp n
+              (flStoredSymSchurCompl n fp A) i j
+            + flStoredSymSchurDefect n fp A i j)
+
+/-- **Recursive stored-symmetric all-1×1 floating block-LDLᵀ bound**.  For a
+    symmetric input whose stored-symmetric rounded Schur path has nonzero
+    successive pivots, recursively constructed factors `L̂,D̂` approximate `A`
+    entrywise within `flBlockLDLTStoredAllOneByOneBound`.  This discharges the
+    per-stage symmetry side condition by storing each Schur complement
+    symmetrically, while accounting for the stored-vs-raw Schur defect. -/
+theorem fl_blockLDLT_stored_all_oneByOne_bound (fp : FPModel)
+    (hval : gammaValid fp 3) :
+    ∀ (n : ℕ) (A : Fin n → Fin n → ℝ),
+      (∀ i j, A i j = A j i) →
+      FlStoredAllOnePivots fp n A →
+      ∃ L D : Fin n → Fin n → ℝ,
+        ∀ I J,
+          |(∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) - A I J|
+            ≤ flBlockLDLTStoredAllOneByOneBound fp n A I J := by
+  intro n
+  induction n with
+  | zero =>
+      intro A _hsym _hp
+      refine ⟨A, A, ?_⟩
+      intro I
+      exact Fin.elim0 I
+  | succ n ih =>
+      intro A hsym hp
+      obtain ⟨ha, hpS⟩ := hp
+      obtain ⟨L_S, D_S, hprodS⟩ :=
+        ih (flStoredSymSchurCompl n fp A) (flStoredSymSchurCompl_symm n fp A) hpS
+      refine ⟨fun I J => Fin.cases (Fin.cases 1 (fun _ => 0) J)
+                (fun i => Fin.cases (fp.fl_div (A i.succ 0) (A 0 0))
+                  (fun j => L_S i j) J) I,
+              fun I J => Fin.cases (Fin.cases (A 0 0) (fun _ => 0) J)
+                (fun i => Fin.cases 0 (fun j => D_S i j) J) I, ?_⟩
+      apply fl_blockLDLT_oneByOne_stage_bound_of_stored_schur n fp A ha
+        (fun i => hsym 0 i.succ) hval L_S D_S
+        (flBlockLDLTStoredAllOneByOneBound fp n (flStoredSymSchurCompl n fp A))
+      · exact hprodS
+      · simp
+      · intro i; simp
+      · intro j; simp
+      · intro i j; simp
+      · simp
+      · intro j; simp
+      · intro i; simp
+      · intro i j; simp
+
 /-- Recursive rounded-pivot side condition for the all-1×1 floating block-LDLᵀ
     path.  At each rounded Schur-complement stage the pivot is nonzero and the
     active first row agrees with the active first column, which is exactly the
