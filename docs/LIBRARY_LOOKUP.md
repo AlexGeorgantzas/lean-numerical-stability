@@ -4826,6 +4826,7 @@ Source-facing Chapter 11 wrappers:
 - `higham11_14_aasenNextColumnEquation`
 - `higham11_14_fl_aasen_next_column_update_rel_error`
 - `higham11_14_fl_aasen_next_column_update_abs_error`
+- `higham11_14_fl_aasen_next_column_update_sum_abs_error`
 - `higham11_15_aasenSolveChain`
 - `higham11_8_aasen_backward_error_interface`
 - `higham11_8_aasenNormwiseBackwardBound`

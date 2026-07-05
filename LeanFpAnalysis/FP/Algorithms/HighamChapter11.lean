@@ -891,6 +891,31 @@ theorem higham11_14_fl_aasen_next_column_update_abs_error
   · rw [hrel]
     ring
 
+/-- **Equation (11.14) floating-point next-column update**, finite-sum
+specialization.  For the actual Aasen numerator
+`A k i - ∑_{j≤i} L k j H j i`, the rounded scalar update has the additive
+`γ₂` error supplied by `higham11_14_fl_aasen_next_column_update_abs_error`. -/
+theorem higham11_14_fl_aasen_next_column_update_sum_abs_error (n : ℕ)
+    (fp : FPModel) (A L H : Fin n → Fin n → ℝ)
+    (i next k : Fin n)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hnext : next.val = i.val + 1) (hval : gammaValid fp 2) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 2 *
+        |(A k i - ∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0) /
+          H next i| ∧
+      fp.fl_div
+          (fp.fl_sub (A k i)
+            (∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0))
+          (H next i)
+        =
+          (A k i - ∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0) /
+              H next i
+            + Δ :=
+  higham11_14_fl_aasen_next_column_update_abs_error fp (A k i)
+    (∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0) (H next i)
+    (hHnz i next hnext) hval
+
 /-- **Equation (11.15)**, the Aasen solve chain
 `L z = P b`, `T y = z`, `L^T w = y`, `x = P w`. -/
 def higham11_15_aasenSolveChain (n : ℕ)
