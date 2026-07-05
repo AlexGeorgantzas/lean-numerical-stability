@@ -4882,6 +4882,7 @@ Source-facing Chapter 12 wrappers:
 - `higham12_19_combined_coefficients`
 - `higham12_20_correction_via_resolver`
 - `higham12_21_correction_product_bound`
+- `higham12_21_correction_infNorm_bound`
 - `higham12_4_conditional_two_gamma_bound`
 - `higham12_vectorAbsSkew`
 - `higham12_vectorAbsSkew_nonneg`
