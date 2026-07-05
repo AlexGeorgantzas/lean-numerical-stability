@@ -2987,6 +2987,85 @@ theorem blockMatrixNonsingular_of_det_ne_zero_flat {m r : ℕ}
     BlockMatrixNonsingular A :=
   blockMatrixNonsingular_of_isUnit_det_flat A (isUnit_iff_ne_zero.mpr hdet)
 
+/-- A block matrix with an explicit two-sided block inverse has nonzero
+    determinant after flattening.  This is the converse determinant bridge to
+    `blockMatrixNonsingular_of_det_ne_zero_flat`. -/
+theorem blockMatrixFlat_det_ne_zero_of_blockMatrixNonsingular {m r : ℕ}
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (hA : BlockMatrixNonsingular A) :
+    Matrix.det (blockMatrixFlat A) ≠ 0 := by
+  classical
+  rcases hA with ⟨Ainv, _hLeft, hRight⟩
+  let AinvFlat : Matrix (Fin m × Fin r) (Fin m × Fin r) ℝ :=
+    fun p q => Ainv p.1 q.1 p.2 q.2
+  have hRightFlat : blockMatrixFlat A * AinvFlat = 1 := by
+    ext p q
+    rcases p with ⟨i, s⟩
+    rcases q with ⟨j, t⟩
+    have h := hRight i j s t
+    have hId :
+        blockMatrixIdentity m r i j s t =
+          if (i, s) = (j, t) then 1 else 0 := by
+      by_cases hij : i = j <;> by_cases hst : s = t <;>
+        simp [blockMatrixIdentity, idBlock, zeroBlock, hij, hst, Prod.ext_iff]
+    simpa [AinvFlat, blockMatrixFlat, Matrix.mul_apply, Fintype.sum_prod_type,
+      Matrix.one_apply, hId] using h
+  exact Matrix.det_ne_zero_of_right_inverse hRightFlat
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    if one block column has zero off-diagonal blocks and the diagonal block has
+    a nonzero right-kernel vector, then the flattened block matrix is singular.
+
+    This formalizes the vector-kernel part of the source sentence following
+    (13.18): after BDD forces the off-diagonal column norms to vanish, a
+    singular active diagonal block makes the whole Schur complement singular. -/
+theorem higham13_blockMatrixFlat_det_eq_zero_of_offdiag_col_zero_of_diag_kernel
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (j : Fin m) (x : Fin r → ℝ) (s0 : Fin r) (hx : x s0 ≠ 0)
+    (hdiag : ∀ s : Fin r, ∑ t : Fin r, A j j s t * x t = 0)
+    (hoff : ∀ i : Fin m, i ≠ j → ∀ s t : Fin r, A i j s t = 0) :
+    Matrix.det (blockMatrixFlat A) = 0 := by
+  classical
+  let v : Fin m × Fin r → ℝ := fun q => if q.1 = j then x q.2 else 0
+  have hmul : (blockMatrixFlat A).mulVec v = 0 := by
+    ext p
+    rcases p with ⟨i, s⟩
+    have hsum_eq :
+        (∑ q : Fin m × Fin r, A i q.1 s q.2 * v q) =
+          ∑ t : Fin r, A i j s t * x t := by
+      rw [Fintype.sum_prod_type]
+      simp [v]
+    rw [Matrix.mulVec, dotProduct]
+    change (∑ q : Fin m × Fin r, A i q.1 s q.2 * v q) = 0
+    rw [hsum_eq]
+    by_cases hij : i = j
+    · subst i
+      exact hdiag s
+    · simp [hoff i hij]
+  have hvne : v ≠ 0 := by
+    intro hv
+    have hvcoord := congr_fun hv (j, s0)
+    simp [v] at hvcoord
+    exact hx hvcoord
+  exact (Matrix.exists_mulVec_eq_zero_iff).mp ⟨v, hvne, hmul⟩
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    the zero-off-column/right-kernel situation contradicts the chapter's
+    explicit block-nonsingularity predicate. -/
+theorem higham13_not_blockMatrixNonsingular_of_offdiag_col_zero_of_diag_kernel
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (j : Fin m) (x : Fin r → ℝ) (s0 : Fin r) (hx : x s0 ≠ 0)
+    (hdiag : ∀ s : Fin r, ∑ t : Fin r, A j j s t * x t = 0)
+    (hoff : ∀ i : Fin m, i ≠ j → ∀ s t : Fin r, A i j s t = 0) :
+    ¬ BlockMatrixNonsingular A := by
+  intro hA
+  exact
+    (blockMatrixFlat_det_ne_zero_of_blockMatrixNonsingular A hA)
+      (higham13_blockMatrixFlat_det_eq_zero_of_offdiag_col_zero_of_diag_kernel
+        A j x s0 hx hdiag hoff)
+
 /-- Higham, 2nd ed., Chapter 13, §13.3.2:
     positive definiteness of the flattened block matrix gives block-matrix
     nonsingularity.  This is the determinant bridge needed on the route from
