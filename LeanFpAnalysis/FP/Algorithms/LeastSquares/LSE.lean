@@ -28689,6 +28689,40 @@ theorem theorem20_10_householder_componentSourceRankBudget_nonneg
     (mul_nonneg hgammaB_nonneg (frobNormRect_nonneg B))
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    the printed Householder source-rank budget is dominated by the conservative
+    component budget that uses the rounded-RHS `A` coefficient. -/
+theorem theorem20_10_householder_sourceRankBudget_le_componentSourceRankBudget
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) :
+    theorem20_10_householder_sourceRankBudget fp A B ≤
+      theorem20_10_householder_componentSourceRankBudget fp A B := by
+  dsimp [theorem20_10_householder_sourceRankBudget,
+    theorem20_10_householder_componentSourceRankBudget]
+  exact add_le_add
+    (mul_le_mul_of_nonneg_right (le_max_left _ _) (frobNormRect_nonneg A))
+    le_rfl
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    the conservative component budget is a sufficient rank-radius smallness
+    condition for the printed Householder source-rank budget. -/
+theorem theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_componentSourceRankBudget_lt
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      theorem20_10_householder_componentSourceRankBudget fp A B <
+        theorem20_10_householder_sourceRankRadius hB hStack) :
+    theorem20_10_householder_sourceRankBudget fp A B <
+      theorem20_10_householder_sourceRankRadius hB hStack := by
+  exact lt_of_le_of_lt
+    (theorem20_10_householder_sourceRankBudget_le_componentSourceRankBudget
+      fp A B)
+    hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     compact sufficient smallness condition for the conservative concrete
     Householder component rank budget. -/
 theorem theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
@@ -28922,6 +28956,225 @@ theorem theorem20_10_householder_componentSourceRankMargins_of_max_gamma_lt_sour
         fp A B hB hStack hvalidA hvalidB hsmall)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    dimension-only linear unit-roundoff coefficient that dominates the
+    conservative Householder component max-gamma coefficient under the usual
+    `gamma <= 2*n*u` half-radius guards.
+
+    The three branches correspond to the printed `A` Householder coefficient,
+    the verified conservative RHS coefficient, and the `Bᵀ` Householder
+    coefficient. -/
+noncomputable def theorem20_10_householder_componentUnitRoundoffCoefficient
+    (r p q : ℕ) : ℝ :=
+  max
+    (max
+      ((2 : ℝ) *
+        (((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ))
+      ((4 : ℝ) * Real.sqrt (r + q : ℝ) *
+        (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
+        ((q * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ)))
+    ((2 : ℝ) *
+      (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ)))
+
+/-- Nonnegativity of the dimension-only coefficient used by the
+    Theorem 20.10(b) conservative unit-roundoff threshold wrapper. -/
+theorem theorem20_10_householder_componentUnitRoundoffCoefficient_nonneg
+    (r p q : ℕ) :
+    0 ≤ theorem20_10_householder_componentUnitRoundoffCoefficient r p q := by
+  dsimp [theorem20_10_householder_componentUnitRoundoffCoefficient]
+  positivity
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    linear unit-roundoff cap for the printed `A` Householder coefficient under
+    the standard half-radius smallness condition. -/
+theorem theorem20_10_householder_gammaA_le_linear_unit_roundoff_of_small
+    {r p q : ℕ} (fp : FPModel)
+    (hsmallA :
+      ((((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    theorem20_10_householder_gammaA fp r p q ≤
+      (2 * (((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ)) *
+        fp.u := by
+  simpa [theorem20_10_householder_gammaA] using
+    H19.Theorem19_4.gamma_tilde_le_two_index_mul_unit_roundoff_of_small
+      fp (r + q) (p + q) hsmallA
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    linear unit-roundoff cap for the `Bᵀ` Householder coefficient under the
+    standard half-radius smallness condition. -/
+theorem theorem20_10_householder_gammaB_le_linear_unit_roundoff_of_small
+    {r p q : ℕ} (fp : FPModel)
+    (hsmallB :
+      ((((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ) *
+        fp.u) ≤ 1 / 2)) :
+    theorem20_10_householder_gammaB fp r p q ≤
+      (2 * (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ)) *
+        fp.u) := by
+  simpa [theorem20_10_householder_gammaB] using
+    H19.Theorem19_4.gamma_tilde_le_two_index_mul_unit_roundoff_of_small
+      fp (p + q) p hsmallB
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    linear unit-roundoff cap for the verified conservative RHS coefficient
+    used by the rounded Householder `A Q₂` path. -/
+theorem theorem20_10_householder_rhs_conservative_gamma_le_linear_unit_roundoff_of_small
+    {r p q : ℕ} (fp : FPModel)
+    (hm : 0 < r + q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    theorem20_10_householder_rhs_conservative_gamma fp r p q ≤
+      ((4 : ℝ) * Real.sqrt (r + q : ℝ) *
+        (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
+        ((q * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ)) *
+        fp.u := by
+  let idx : ℕ := householderQRRhsPanelGammaClosedGrowthIndex (r + q) q
+  let K : ℕ := householderConstructApplyGammaIndex (r + q)
+  let F : ℝ :=
+    (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ)
+  have hprinted_le_idx : q * K ≤ idx := by
+    change q * householderConstructApplyGammaIndex (r + q) ≤
+      householderQRRhsPanelGammaClosedGrowthIndex (r + q) q
+    rw [householderQRRhsPanelGammaClosedGrowthIndex_eq_factor_mul_printedIndex]
+    exact Nat.le_mul_of_pos_left _
+      (householderQRRhsPanelGammaClosedGrowthFactor_pos
+        (m := r + q) (p := q) hm)
+  have hqK_le_idx_real :
+      (((q * K : ℕ) : ℝ) * fp.u) ≤ (idx : ℝ) * fp.u := by
+    have hidx : (((q * K : ℕ) : ℝ)) ≤ (idx : ℝ) := by
+      exact_mod_cast hprinted_le_idx
+    exact mul_le_mul_of_nonneg_right hidx fp.u_nonneg
+  have hqK_half :
+      (((q * K : ℕ) : ℝ) * fp.u) ≤ 1 / 2 := by
+    exact le_trans hqK_le_idx_real (by simpa [idx] using hhalf)
+  have hgamma :
+      gamma fp (q * K) ≤ 2 * (((q * K : ℕ) : ℝ) * fp.u) :=
+    gamma_le_two_mul_n_u_of_nu_le_half fp (q * K) hqK_half
+  have hscale_nonneg :
+      0 ≤ Real.sqrt (r + q : ℝ) * ((2 : ℝ) * F) := by
+    positivity
+  calc
+    theorem20_10_householder_rhs_conservative_gamma fp r p q
+        = (Real.sqrt (r + q : ℝ) * ((2 : ℝ) * F)) *
+            gamma fp (q * K) := by
+            simp [theorem20_10_householder_rhs_conservative_gamma, K, F,
+              mul_left_comm, mul_comm]
+    _ ≤ (Real.sqrt (r + q : ℝ) * ((2 : ℝ) * F)) *
+          (2 * (((q * K : ℕ) : ℝ) * fp.u)) :=
+        mul_le_mul_of_nonneg_left hgamma hscale_nonneg
+    _ = ((4 : ℝ) * Real.sqrt (r + q : ℝ) * F *
+          ((q * K : ℕ) : ℝ)) * fp.u := by ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    the conservative component max-gamma coefficient is bounded by the
+    dimension-only unit-roundoff coefficient under explicit half-radius guards
+    for the three accumulated gamma terms. -/
+theorem theorem20_10_householder_component_max_gamma_le_componentUnitRoundoffCoefficient_mul_u_of_small
+    {r p q : ℕ} (fp : FPModel)
+    (hm : 0 < r + q)
+    (hsmallA :
+      ((((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hsmallB :
+      ((((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ) *
+        fp.u) ≤ 1 / 2))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+        (theorem20_10_householder_gammaB fp r p q) ≤
+      theorem20_10_householder_componentUnitRoundoffCoefficient r p q * fp.u := by
+  let capA : ℝ :=
+    (2 : ℝ) *
+      (((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ)
+  let capRhs : ℝ :=
+    (4 : ℝ) * Real.sqrt (r + q : ℝ) *
+      (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
+      ((q * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ)
+  let capB : ℝ :=
+    (2 : ℝ) *
+      (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ))
+  let cap : ℝ :=
+    theorem20_10_householder_componentUnitRoundoffCoefficient r p q
+  have hcapA_le : capA ≤ cap := by
+    dsimp [cap, capA, capRhs, capB,
+      theorem20_10_householder_componentUnitRoundoffCoefficient]
+    exact le_trans (le_max_left _ _) (le_max_left _ _)
+  have hcapRhs_le : capRhs ≤ cap := by
+    dsimp [cap, capA, capRhs, capB,
+      theorem20_10_householder_componentUnitRoundoffCoefficient]
+    exact le_trans (le_max_right _ _) (le_max_left _ _)
+  have hcapB_le : capB ≤ cap := by
+    dsimp [cap, capA, capRhs, capB,
+      theorem20_10_householder_componentUnitRoundoffCoefficient]
+    exact le_max_right _ _
+  have hAraw :
+      theorem20_10_householder_gammaA fp r p q ≤ capA * fp.u := by
+    simpa [capA] using
+      (theorem20_10_householder_gammaA_le_linear_unit_roundoff_of_small
+        fp hsmallA)
+  have hRhsraw :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q ≤
+        capRhs * fp.u := by
+    simpa [capRhs] using
+      (theorem20_10_householder_rhs_conservative_gamma_le_linear_unit_roundoff_of_small
+        fp hm hhalf)
+  have hBraw :
+      theorem20_10_householder_gammaB fp r p q ≤ capB * fp.u := by
+    simpa [capB] using
+      (theorem20_10_householder_gammaB_le_linear_unit_roundoff_of_small
+        fp hsmallB)
+  have hA :
+      theorem20_10_householder_gammaA fp r p q ≤ cap * fp.u := by
+    exact le_trans hAraw
+      (mul_le_mul_of_nonneg_right hcapA_le fp.u_nonneg)
+  have hRhs :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q ≤
+        cap * fp.u := by
+    exact le_trans hRhsraw
+      (mul_le_mul_of_nonneg_right hcapRhs_le fp.u_nonneg)
+  have hB :
+      theorem20_10_householder_gammaB fp r p q ≤ cap * fp.u := by
+    exact le_trans hBraw
+      (mul_le_mul_of_nonneg_right hcapB_le fp.u_nonneg)
+  have hAcons :
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q ≤
+        cap * fp.u := by
+    dsimp [theorem20_10_householder_gammaA_conservativeRhs]
+    exact max_le hA hRhs
+  exact max_le hAcons hB
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    explicit linear unit-roundoff threshold implies the conservative component
+    gamma-threshold condition used by the source-rank branch. -/
+theorem theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold_of_unit_roundoff_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hm : 0 < r + q)
+    (hsmallA :
+      ((((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hsmallB :
+      ((((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ) *
+        fp.u) ≤ 1 / 2))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hunit :
+      theorem20_10_householder_componentUnitRoundoffCoefficient r p q *
+          fp.u <
+        theorem20_10_householder_sourceRankGammaThreshold hB hStack) :
+    max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+        (theorem20_10_householder_gammaB fp r p q) <
+      theorem20_10_householder_sourceRankGammaThreshold hB hStack := by
+  exact lt_of_le_of_lt
+    (theorem20_10_householder_component_max_gamma_le_componentUnitRoundoffCoefficient_mul_u_of_small
+      fp hm hsmallA hsmallB hhalf)
+    hunit
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank margin-radius wrapper for the constructed rounded Householder
     GQR Part B returned-vector theorem.
 
@@ -29038,6 +29291,271 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
     theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_source_ranks_frobenius_margins_composed_conservative_gamma
       fp A B b d hp hq hvalidA hvalidB hhalf hB hStack hBMargin
       hStackMargin
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    conservative component-budget wrapper for the constructed rounded
+    Householder GQR Part B returned-vector theorem.
+
+    The constructed returned-vector branch uses the printed `A` matrix budget.
+    This wrapper lets callers supply the stronger conservative component budget
+    that also dominates the rounded-RHS `A` coefficient. -/
+theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_source_ranks_component_rank_budget_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      theorem20_10_householder_componentSourceRankBudget fp A B <
+        theorem20_10_householder_sourceRankRadius hB hStack) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    let beta : Fin q → ℝ :=
+      theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+    ∃ DeltaA0 : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB0 : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab0 : Fin (r + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB0 i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA0 ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB0 ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab0 ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA0 i j)
+          (fun i j => B i j + DeltaB0 i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        (∀ j : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun k => b k + Deltab0 k) (Fin.natAdd r j) =
+            beta j) ∧
+        let xhat : Fin (p + q) → ℝ :=
+          theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d
+        let gammaA : ℝ :=
+          theorem20_10_householder_composed_partA_gammaA fp r p q
+        let gammaB : ℝ :=
+          theorem20_10_householder_composed_partA_gammaB fp r p q
+        ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+        ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+        ∃ Deltab : Fin (r + q) → ℝ,
+        ∃ Deltad : Fin p → ℝ,
+          Deltad = (0 : Fin p → ℝ) ∧
+          frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+          frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+          vecNorm2 Deltab ≤
+            gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+          vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) xhat ∧
+          (∃! x : Fin (p + q) → ℝ,
+            IsLSEMinimizer
+              (fun i j => A i j + DeltaA i j)
+              (fun i => b i + Deltab i)
+              (fun i j => B i j + DeltaB i j)
+              (fun i => d i + Deltad i) x) := by
+  exact
+    theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_source_ranks_rank_radius_composed_conservative_gamma
+      fp A B b d hp hq hvalidA hvalidB hhalf hB hStack
+      (theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_componentSourceRankBudget_lt
+        fp A B hB hStack hsmall)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    conservative max-gamma wrapper for the constructed rounded Householder GQR
+    Part B returned-vector theorem.
+
+    This is the conservative returned-vector branch under the compact condition
+    `max(conservativeGammaA, gammaB) * (||A||_F + ||B||_F) < sourceRankRadius`. -/
+theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_source_ranks_component_max_gamma_sum_bound_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) *
+          (frobNormRect A + frobNormRect B) <
+        theorem20_10_householder_sourceRankRadius hB hStack) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    let beta : Fin q → ℝ :=
+      theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+    ∃ DeltaA0 : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB0 : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab0 : Fin (r + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB0 i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA0 ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB0 ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab0 ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA0 i j)
+          (fun i j => B i j + DeltaB0 i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        (∀ j : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun k => b k + Deltab0 k) (Fin.natAdd r j) =
+            beta j) ∧
+        let xhat : Fin (p + q) → ℝ :=
+          theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d
+        let gammaA : ℝ :=
+          theorem20_10_householder_composed_partA_gammaA fp r p q
+        let gammaB : ℝ :=
+          theorem20_10_householder_composed_partA_gammaB fp r p q
+        ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+        ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+        ∃ Deltab : Fin (r + q) → ℝ,
+        ∃ Deltad : Fin p → ℝ,
+          Deltad = (0 : Fin p → ℝ) ∧
+          frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+          frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+          vecNorm2 Deltab ≤
+            gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+          vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) xhat ∧
+          (∃! x : Fin (p + q) → ℝ,
+            IsLSEMinimizer
+              (fun i j => A i j + DeltaA i j)
+              (fun i => b i + Deltab i)
+              (fun i j => B i j + DeltaB i j)
+              (fun i => d i + Deltad i) x) := by
+  exact
+    theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_source_ranks_component_rank_budget_composed_conservative_gamma
+      fp A B b d hp hq hvalidA hvalidB hhalf hB hStack
+      (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
+        fp A B hB hStack hsmall)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    conservative gamma-threshold wrapper for the constructed rounded
+    Householder GQR Part B returned-vector theorem.
+
+    The positive threshold is stated for the larger of the conservative
+    rounded-RHS-aware `A` coefficient and the Householder `B` coefficient. -/
+theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_source_ranks_component_gamma_threshold_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) <
+        theorem20_10_householder_sourceRankGammaThreshold hB hStack) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    let beta : Fin q → ℝ :=
+      theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+    ∃ DeltaA0 : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB0 : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab0 : Fin (r + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB0 i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA0 ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB0 ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab0 ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA0 i j)
+          (fun i j => B i j + DeltaB0 i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        (∀ j : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun k => b k + Deltab0 k) (Fin.natAdd r j) =
+            beta j) ∧
+        let xhat : Fin (p + q) → ℝ :=
+          theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d
+        let gammaA : ℝ :=
+          theorem20_10_householder_composed_partA_gammaA fp r p q
+        let gammaB : ℝ :=
+          theorem20_10_householder_composed_partA_gammaB fp r p q
+        ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+        ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+        ∃ Deltab : Fin (r + q) → ℝ,
+        ∃ Deltad : Fin p → ℝ,
+          Deltad = (0 : Fin p → ℝ) ∧
+          frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+          frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+          vecNorm2 Deltab ≤
+            gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+          vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) xhat ∧
+          (∃! x : Fin (p + q) → ℝ,
+            IsLSEMinimizer
+              (fun i j => A i j + DeltaA i j)
+              (fun i => b i + Deltab i)
+              (fun i j => B i j + DeltaB i j)
+              (fun i => d i + Deltad i) x) := by
+  exact
+    theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_source_ranks_component_rank_budget_composed_conservative_gamma
+      fp A B b d hp hq hvalidA hvalidB hhalf hB hStack
+      (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
+        fp A B hB hStack hvalidA hvalidB hsmall)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     compact source-rank smallness wrapper for the constructed rounded
@@ -30088,6 +30606,182 @@ theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks
     theorem20_10_partB_backward_error_of_householder_components_source_ranks_conservative_gamma
       fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
       hBMargin hStackMargin
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
+    component package from a compact max-gamma source-rank radius condition.
+
+    This is the same conservative component route as
+    `theorem20_10_partB_backward_error_of_householder_components_source_ranks_rank_radius_conservative_gamma`,
+    but the caller supplies the readable sufficient condition
+    `max(gammaA, gammaB) * (||A||_F + ||B||_F) < sourceRankRadius` directly. -/
+theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks_max_gamma_sum_bound_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) *
+          (frobNormRect A + frobNormRect B) <
+        theorem20_10_householder_sourceRankRadius hBsrc hStack) :
+    let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+      (DeltaB : Fin p → Fin (p + q) → ℝ)
+      (Deltab : Fin (r + q) → ℝ)
+      (Deltad : Fin p → ℝ),
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  exact
+    theorem20_10_partB_backward_error_of_householder_components_source_ranks_rank_radius_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
+      (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
+        fp A B hBsrc hStack hsmall)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
+    component package from the conservative source-rank gamma threshold.
+
+    This wrapper exposes the compact positive threshold condition on the larger
+    of the conservative `A` and `B` coefficients.  The threshold expands to the
+    source-rank radius divided by `max(1, ||A||_F + ||B||_F)`, so the resulting
+    theorem retains the same perturbation and minimizer conclusion as the
+    rank-radius package. -/
+theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks_gamma_threshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) <
+        theorem20_10_householder_sourceRankGammaThreshold hBsrc hStack) :
+    let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+      (DeltaB : Fin p → Fin (p + q) → ℝ)
+      (Deltab : Fin (r + q) → ℝ)
+      (Deltad : Fin p → ℝ),
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  exact
+    theorem20_10_partB_backward_error_of_householder_components_source_ranks_rank_radius_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
+      (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
+        fp A B hBsrc hStack hvalidA hvalidB hsmall)
 
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
