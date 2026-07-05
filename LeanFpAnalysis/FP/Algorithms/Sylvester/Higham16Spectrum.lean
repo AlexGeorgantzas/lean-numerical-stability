@@ -554,6 +554,69 @@ theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_leftInverse (m n : Nat)
     hLeft, Matrix.one_mulVec, Matrix.one_mulVec] at h
   exact h
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact supplied
+    active-block linear solve: if `K` is a supplied right inverse and `L` is a
+    supplied left inverse of the same two-column block coefficient, then the
+    active block right-hand side has a unique solution vector.  The witness is
+    `K` applied to the supplied block right-hand side; uniqueness uses only the
+    supplied left-inverse injectivity certificate.  Scope: exact supplied-block
+    algebra only; no Schur existence, structural block nonsingularity, or
+    floating-point stability is asserted. -/
+theorem existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_rightInverse_leftInverse
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (K L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1) :
+    ExistsUnique fun z : Sum (Fin m) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q := by
+  refine ⟨Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q), ?_, ?_⟩
+  · exact sylvesterTwoColumnBlockCoeff_mulVec_rightInverse_rhs
+      m n A T C X p q K hRight
+  · intro z hz
+    apply sylvesterTwoColumnBlockCoeff_mulVec_injective_of_leftInverse
+      m n A T p q L hLeft
+    calc
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+          sylvesterTwoColumnBlockRhs m n T C X p q := hz
+      _ =
+          Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+            (Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q)) := by
+            symm
+            exact sylvesterTwoColumnBlockCoeff_mulVec_rightInverse_rhs
+              m n A T C X p q K hRight
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact supplied
+    active-block solution identification: with matching supplied right- and
+    left-inverse certificates, every solution of the active block linear system
+    is the vector obtained by applying `K` to the supplied block right-hand
+    side.  Scope: exact supplied-block algebra only. -/
+theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_rightInverse_rhs_of_rightInverse_leftInverse
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (K L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1)
+    {z : Sum (Fin m) (Fin m) -> Real}
+    (hz :
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q) :
+    z = Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+  apply sylvesterTwoColumnBlockCoeff_mulVec_injective_of_leftInverse
+    m n A T p q L hLeft
+  calc
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q := hz
+    _ =
+        Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+          (Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q)) := by
+          symm
+          exact sylvesterTwoColumnBlockCoeff_mulVec_rightInverse_rhs
+            m n A T C X p q K hRight
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
     two-column block inverse consistency: any supplied left inverse and right
     inverse of the same block coefficient coincide.  Scope: exact supplied-block
