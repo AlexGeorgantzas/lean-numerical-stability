@@ -538,6 +538,65 @@ theorem sylvesterVecCoeff_schurDiagonal_gram_eigenvalues_ge_of_entrywise_abs_ge
       (sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
         U A V B a b sigma hU hV hA hB hsigma hgap)
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), supplied orthogonal
+    diagonal Schur-coordinate case:
+    a uniform Schur-coordinate gap gives a `SepLowerBound` certificate for
+    the original Sylvester operator. -/
+theorem SepLowerBound_schurDiagonal_of_entrywise_abs_ge (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|) :
+    SepLowerBound n A B sigma := by
+  exact
+    sepLowerBound_of_sylvesterOp_sigmaMin n A B sigma hsigma
+      (sylvesterOp_sigmaMin_schurDiagonal_of_entrywise_abs_ge n
+        U A V B a b sigma hU hV hA hB hsigma hgap)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), supplied orthogonal
+    diagonal Schur-coordinate case:
+    a uniform Schur-coordinate gap is below the exact infimum model of
+    `sep(A,B)` whenever the feasible ratio set is nonempty. -/
+theorem sylvesterSepInf_schurDiagonal_ge_of_entrywise_abs_ge (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hne : (sylvesterSepRatios n A B).Nonempty) :
+    sigma <= sylvesterSepInf n A B := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_nonempty n A B sigma
+      (SepLowerBound_schurDiagonal_of_entrywise_abs_ge n
+        U A V B a b sigma hU hV hA hB hsigma hgap)
+      hne
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), supplied orthogonal
+    diagonal Schur-coordinate case:
+    in positive dimension, a uniform Schur-coordinate gap is below the exact
+    infimum model of `sep(A,B)`. -/
+theorem sylvesterSepInf_schurDiagonal_ge_of_entrywise_abs_ge_of_pos_dim
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hn : 0 < n) :
+    sigma <= sylvesterSepInf n A B := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n A B sigma
+      (SepLowerBound_schurDiagonal_of_entrywise_abs_ge n
+        U A V B a b sigma hU hV hA hB hsigma hgap)
+      hn
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     a positive lower bound for the concrete vectorized Lyapunov coefficient
     gives the Lyapunov operator lower bound consumed by the sigma-min
