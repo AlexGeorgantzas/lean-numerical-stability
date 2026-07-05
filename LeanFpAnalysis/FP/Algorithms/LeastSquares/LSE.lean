@@ -10610,6 +10610,72 @@ theorem LSEFullRowRank.transposeVecNorm2LowerMargin_lower_bound {p n : ℕ}
           (rectMatMulVec (fun j : Fin n => fun i : Fin p => B i j) y) :=
   (Classical.choose_spec hB.exists_transpose_vecNorm2_lower_bound).2
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    the relative perturbation budget bounds the operator-2 size of the
+    transposed constraint perturbation `DeltaBᵀ`. -/
+theorem theorem20_8_rectOpNorm2Le_DeltaB_transpose_of_relativePerturbationBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    rectOpNorm2Le (fun j : Fin n => fun i : Fin p => DeltaB i j)
+      (eps * frobNormRect B) := by
+  apply rectOpNorm2Le_of_frobNormRect_le
+  have htranspose :
+      frobNormRect (finiteTranspose DeltaB) ≤ eps * frobNormRect B := by
+    simpa [frobNormRect_finiteTranspose] using hbudget.2.2.1
+  simpa [finiteTranspose] using htranspose
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source full row rank of `B` is preserved by a relative perturbation budget
+    whose induced `DeltaBᵀ` radius is strictly below the source transpose
+    lower-bound margin. -/
+theorem LSEFullRowRank.of_relativePerturbationBudget_lt_transposeLowerMargin
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {eps : ℝ}
+    (hBsrc : LSEFullRowRank B)
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hsmall :
+      eps * frobNormRect B < hBsrc.transposeVecNorm2LowerMargin) :
+    LSEFullRowRank (fun i j => B i j + DeltaB i j) :=
+  LSEFullRowRank.of_transpose_lower_bound_and_rectOpNorm2Le_lt
+    (B := B) (DeltaB := DeltaB)
+    hBsrc.transposeVecNorm2LowerMargin_lower_bound
+    (theorem20_8_rectOpNorm2Le_DeltaB_transpose_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source full row rank of `B` is preserved under the displayed maximum
+    relative perturbation condition when the induced `DeltaBᵀ` radius is
+    strictly below the source transpose lower-bound margin. -/
+theorem LSEFullRowRank.of_maxRelativePerturbation_lt_transposeLowerMargin
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {eps : ℝ}
+    (hBsrc : LSEFullRowRank B)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hsmall :
+      eps * frobNormRect B < hBsrc.transposeVecNorm2LowerMargin) :
+    LSEFullRowRank (fun i j => B i j + DeltaB i j) :=
+  LSEFullRowRank.of_relativePerturbationBudget_lt_transposeLowerMargin hBsrc
+    (theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad
+      hApos hbpos hBpos hdpos hmax)
+    hsmall
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS rank bridge:
     full row rank of `B` supplies the stage-0 nonbreakdown fact for MGS applied
     to `Bᵀ`.  This is the first pivot in the rank-to-all-MGS-stages route. -/
@@ -12844,6 +12910,65 @@ theorem LSEStackedFullColumnRank.of_maxRelativePerturbation_lt_lowerMargin
       A DeltaA b Deltab B DeltaB d Deltad
       hApos hbpos hBpos hdpos hmax)
     hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    the source rank conditions in (20.24) are preserved by a relative
+    perturbation budget whose induced `DeltaBᵀ` and stacked perturbation radii
+    are strictly below their source lower-bound margins. -/
+theorem theorem20_8_conditions20_24_of_relativePerturbationBudget_lt_margins
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {eps : ℝ}
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hBsmall :
+      eps * frobNormRect B < hBsrc.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+      LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) :=
+  ⟨LSEFullRowRank.of_relativePerturbationBudget_lt_transposeLowerMargin
+      hBsrc hbudget hBsmall,
+    LSEStackedFullColumnRank.of_relativePerturbationBudget_lt_lowerMargin
+      hStack hbudget hStackSmall⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    the displayed maximum relative perturbation condition preserves both source
+    rank conditions in (20.24) under strict source-margin smallness. -/
+theorem theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {eps : ℝ}
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hBsrc.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+      LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) :=
+  theorem20_8_conditions20_24_of_relativePerturbationBudget_lt_margins
+    hBsrc hStack
+    (theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad
+      hApos hbpos hBpos hdpos hmax)
+    hBsmall hStackSmall
 
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), prose after the display:
     the null-intersection condition
