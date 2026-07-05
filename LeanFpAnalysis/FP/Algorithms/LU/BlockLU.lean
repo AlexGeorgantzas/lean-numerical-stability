@@ -861,6 +861,9 @@
     higham13_algorithm13_3_normedStageHistoryBound_contains_upperFromNormedStages,
     higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_diag_lower,
     higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_source_table_reciprocal,
+    higham13_algorithm13_3_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_column_bdd_diag_lower,
+    higham13_algorithm13_3_clm_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_continuousLinearMap_source_table,
+    higham13_algorithm13_3_clm_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_initial_diag_inverse_of_pivot_inverse,
     higham13_algorithm13_3_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_column_bdd_source_table_reciprocal:
     source-norm finite stage-history endpoint for Theorem 13.8, paired with
     the source-norm assembled upper-factor bound
@@ -16205,6 +16208,138 @@ theorem
       stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)
       hReciprocal)
     hDiagUpdate
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.21) and Theorem 13.8:
+    paired source-norm package from the one-sided active diagonal lower
+    certificate.
+
+    This is the source-lower-certificate version of the clean subordinate-norm
+    endpoint.  It packages the assembled upper-factor bound and the finite
+    Schur-stage history bound without requiring a reciprocal table on the
+    theorem surface. -/
+theorem
+    higham13_algorithm13_3_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_column_bdd_diag_lower
+    {m : ℕ} {α : Type*} [SeminormedRing α]
+    (hm : 0 < m)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => ‖A i j‖) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ ‖A j j‖)
+    (hInitInv : ∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j)
+    (hDiagLower : SchurStageActivePivotInvDiagLower13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv))
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    higham13_blockNormSup hm
+        (higham13_algorithm13_3_upperFromNormedStages A pivotInv) ≤
+        2 * higham13_blockNormSup hm A ∧
+      higham13_algorithm13_3_normedStageHistoryBound hm A pivotInv ≤
+        2 * higham13_blockNormSup hm A :=
+  ⟨higham13_algorithm13_3_upperFromNormedStages_blockNormSup_bound_of_column_bdd_diag_lower
+      hm A pivotInv invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+      hDiagLower hDiagUpdate,
+    higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_diag_lower
+      hm A pivotInv invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+      hDiagLower hDiagUpdate⟩
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.8:
+    actual continuous-linear-map source-table data gives the paired
+    subordinate-norm upper-factor and finite Schur-stage history bounds.
+
+    This threads the CLM lower-norm source-table certificate through the
+    generic source-norm endpoint.  It remains conditional on the source initial
+    lower table, initial diagonal comparison, and two-sided active pivot
+    inverse identities. -/
+theorem
+    higham13_algorithm13_3_clm_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_continuousLinearMap_source_table
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hm : 0 < m)
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => ‖A i j‖) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ ‖A j j‖)
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (higham13_algorithm13_3_schurStageBlock A pivotInv 0 j j)
+          hunit)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInv k
+        (higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩
+        (pivotInv k y) = y) :
+    higham13_blockNormSup hm
+        (higham13_algorithm13_3_upperFromNormedStages A pivotInv) ≤
+        2 * higham13_blockNormSup hm A ∧
+      higham13_algorithm13_3_normedStageHistoryBound hm A pivotInv ≤
+        2 * higham13_blockNormSup hm A := by
+  have hDiagLower :
+      SchurStageActivePivotInvDiagLower13_7
+        (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+        (higham13_algorithm13_3_pivotInvNorm pivotInv) := by
+    simpa [higham13_algorithm13_3_pivotInvNorm] using
+      higham13_algorithm13_3_clm_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table
+        hunit invDiagBound A pivotInv hInit hLeft hRight
+  exact
+    higham13_algorithm13_3_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_column_bdd_diag_lower
+      hm A pivotInv invDiagBound
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      hDom hDiagBound
+      (higham13_algorithm13_3_diagLowerCertGeneric_zero invDiagBound A pivotInv)
+      hDiagLower
+      (higham13_algorithm13_3_diagLowerCertGeneric_update invDiagBound A pivotInv)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.8:
+    diagonal inverse data plus active pivot inverse identities give the paired
+    CLM subordinate-norm upper-factor and finite stage-history bounds.
+
+    This is the source-table endpoint with the stage-zero lower table and
+    initial diagonal comparison discharged from two-sided diagonal inverses and
+    reciprocal diagonal budgets. -/
+theorem
+    higham13_algorithm13_3_clm_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_initial_diag_inverse_of_pivot_inverse
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hm : 0 < m)
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (diagInv : Fin m → E →L[ℝ] E)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => ‖A i j‖) invDiagBound)
+    (hInvBound : ∀ j : Fin m, invDiagBound j ≤ (‖diagInv j‖)⁻¹)
+    (hLeftDiag : ∀ j : Fin m, ∀ x : E, diagInv j (A j j x) = x)
+    (hRightDiag : ∀ j : Fin m, ∀ y : E, A j j (diagInv j y) = y)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInv k
+        (higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩
+        (pivotInv k y) = y) :
+    higham13_blockNormSup hm
+        (higham13_algorithm13_3_upperFromNormedStages A pivotInv) ≤
+        2 * higham13_blockNormSup hm A ∧
+      higham13_algorithm13_3_normedStageHistoryBound hm A pivotInv ≤
+        2 * higham13_blockNormSup hm A :=
+  higham13_algorithm13_3_clm_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_continuousLinearMap_source_table
+    hm hunit invDiagBound A pivotInv hDom
+    (higham13_algorithm13_3_clm_initial_diag_bound_of_diag_inverse
+      hunit invDiagBound A diagInv hInvBound hLeftDiag hRightDiag)
+    (higham13_algorithm13_3_clm_initial_lower_table_of_diag_inverse
+      hunit invDiagBound A pivotInv diagInv hInvBound hLeftDiag hRightDiag)
+    hLeft hRight
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.21) and Theorem 13.8:
     paired source-norm package for the assembled upper factor and the finite
