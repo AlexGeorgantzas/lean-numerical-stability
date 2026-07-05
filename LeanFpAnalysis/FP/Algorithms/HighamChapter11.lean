@@ -1350,6 +1350,64 @@ theorem higham11_15_fl_aasen_middle_tridiagonal_solve_backward_error
       DeltaT_LU DeltaL DeltaU h20 h21
   exact ⟨DeltaL, DeltaU, DeltaT, h21, hDeltaT_bound, hDeltaT_eq⟩
 
+/-- **Equation (11.15) rounded solve-chain component package**.  This composes
+the two Chapter-8 triangular-solve backward-error results for the outer Aasen
+solves with the Chapter-9 tridiagonal middle-solve bridge.  The conclusion
+exposes the three perturbed equations for the computed chain
+`L z_hat = P b`, `T y_hat = z_hat`, `L^T w_hat = y_hat`, together with
+`x_hat = P w_hat`. -/
+theorem higham11_15_fl_aasen_solve_chain_backward_error_components
+    (fp : FPModel) (n : ℕ)
+    (Pmat L T L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hL_lower : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let x_hat : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * w_hat j
+    ∃ DeltaL_outer DeltaU_outer DeltaL_mid DeltaU_mid DeltaT :
+        Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaL_outer i j| ≤ gamma fp n * |L i j|) ∧
+      (∀ i j : Fin n, |DeltaU_outer i j| ≤ gamma fp n * |U_outer i j|) ∧
+      (∀ i : Fin n,
+        ∑ j : Fin n, (L i j + DeltaL_outer i j) * z_hat j = rhs i) ∧
+      higham9_21_tridiag_solve_perturbation_model n L_T_hat U_T_hat
+        q_hat y_hat z_hat DeltaL_mid DeltaU_mid (gamma fp n) ∧
+      (∀ i j : Fin n, |DeltaT i j| ≤
+        higham9_14_f (gamma fp n) *
+          ∑ k : Fin n, |L_T_hat i k| * |U_T_hat k j|) ∧
+      (∀ i : Fin n,
+        ∑ j : Fin n, (T i j + DeltaT i j) * y_hat j = z_hat i) ∧
+      (∀ i : Fin n,
+        ∑ j : Fin n, (U_outer i j + DeltaU_outer i j) * w_hat j = y_hat i) ∧
+      (∀ i : Fin n, x_hat i = ∑ j : Fin n, Pmat i j * w_hat j) := by
+  intro rhs z_hat q_hat y_hat U_outer w_hat x_hat
+  obtain ⟨DeltaL_outer, DeltaU_outer,
+      hDeltaL_outer, hDeltaU_outer, hForward_outer, hBack_outer⟩ :=
+    higham11_15_fl_aasen_outer_triangular_solves_backward_error
+      fp n Pmat L b y_hat hL_diag hL_lower hn
+  obtain ⟨DeltaL_mid, DeltaU_mid, DeltaT,
+      hMiddle_model, hDeltaT_bound, hMiddle_backward⟩ :=
+    higham11_15_fl_aasen_middle_tridiagonal_solve_backward_error
+      fp n T L_T_hat U_T_hat z_hat DeltaT_LU h20
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn
+  refine ⟨DeltaL_outer, DeltaU_outer, DeltaL_mid, DeltaU_mid, DeltaT,
+    hDeltaL_outer, hDeltaU_outer, hForward_outer, hMiddle_model,
+    hDeltaT_bound, hMiddle_backward, hBack_outer, ?_⟩
+  intro i
+  rfl
+
 /-- **Equation (11.15) exact solve-chain bridge**, unpermuted case.  If the
 exact Aasen product is `A = L T Lᵀ` and the three exact solves in the chain are
 satisfied with identity permutation, then the resulting `x` solves `A x = b`.
