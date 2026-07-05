@@ -57,12 +57,22 @@
   GAP(2)/GAP(4) closed incl. the 2×2-block ∞-norm contraction
   (`SemiconvergentExistenceFull.exists_diag_infNorm_conj_lt_one_of_quasiUpperTriangular`),
   and the downstream block-form assembly given a real quasi-triangular complement is
-  proved (`semiconvergent_block_form_exists_of_quasiTriangular_complement`). Full [106]
-  from convergence of Gᵐ now reduces to exactly TWO concrete lemmas: (3a) the
-  coordinate real primary/Fitting decomposition (Mathlib HAS the abstract splitting
-  `LinearMap.isCompl_iSup_ker_pow_iInf_range_pow`; needs the Submodule↔matMul bridge)
-  and (3b) the explicit per-2×2-block ∞-norm similarity reduction. The fully-real-
-  spectrum case is already end-to-end modulo (3a). (Wave-8 finishes (3a)+(3b).) The
+  proved (`semiconvergent_block_form_exists_of_quasiTriangular_complement`).
+  **Wave-8 (`Analysis/SemiconvergentExistenceComplete.lean`, axiom-clean) closed
+  (3a) and resolved (3b) as a SHARP fact:** (3a) `exists_real_primary_splitting_of_forall_orbit_tendsto`
+  builds the eigenvalue-1-first real invariant splitting `ℝⁿ = ker(G−I) ⊕ range(G−I)ⁿ`
+  from convergence alone (GAP1 + Mathlib `isCompl_iSup_ker_pow_iInf_range_pow`) with
+  the FULL Submodule↔matMul coordinate bridge (invertible basis matrix, both column
+  conditions, adapted basis) — the "manufacture the basis from convergence" bottleneck
+  is REMOVED. (3b) `twoByTwo_max_rowSum_ge_of_trace_det` proves the sharp fact that the
+  ∞-norm infimum over real similarities of a 2×2 block with eigenvalues α±βi is
+  `|α|+|β|`, NOT ρ=√(α²+β²): so the repository's ∞-norm contraction form `‖Γ‖∞ ≤ q<1`
+  is achievable EXACTLY when `|Re λ|+|Im λ|<1` for every non-1 eigenvalue, and is
+  genuinely IMPOSSIBLE in the ∞-norm otherwise (a real mathematical fact, not a
+  Mathlib gap — the book's printed (17.22) uses the weaker ρ(Γ)<1 / 2-norm object).
+  Net: the semiconvergent block-form existence is CLOSED from convergence for the
+  fully-real-spectrum case (modulo a ~80-line mechanical `basisActionMatrix↔toMatrix`
+  reindex bridge), and reduced to the honest ∞-norm-vs-2-norm distinction otherwise. The
   `hne`/certificate hypotheses documented per-row (each
   mirrors an implicit assumption of the printed text); and the
   benchmark-reserved Problem 17.1 / Appendix A 17.1 rows.
