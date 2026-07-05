@@ -4041,6 +4041,102 @@ theorem wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_eq_swa
             (finiteTrace_rectMatMul_comm (rectMatMul Q P) Q).symm
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the finite trace of the `P`-range `D^2` compression is the projection
+    trace minus the companion-square trace. -/
+theorem wedinLemma20_12_finiteTrace_projectionDiff_sq_compression_eq_projection_sub_companion
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul P
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          P) =
+      finiteTrace P - finiteTrace (rectMatMul (rectMatMul P Q) P) := by
+  let MP : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul P
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      P
+  let CP : Fin m → Fin m → ℝ := rectMatMul (rectMatMul P Q) P
+  have hAdd :
+      (fun i j => MP i j + CP i j) = P := by
+    simpa [MP, CP] using
+      wedinLemma20_12_projectionDiff_sq_compression_add_companion_sq_eq_projection
+        P Q hIdemP hIdemQ
+  have hTraceAdd :
+      finiteTrace MP + finiteTrace CP = finiteTrace P := by
+    have h := congrArg finiteTrace hAdd
+    simpa [finiteTrace_add] using h
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped finite-trace version for the `Q`-range `D^2` compression. -/
+theorem wedinLemma20_12_finiteTrace_projectionDiff_sq_compression_swapped_eq_projection_sub_companion
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul Q
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          Q) =
+      finiteTrace Q - finiteTrace (rectMatMul (rectMatMul Q P) Q) := by
+  let MQ : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul Q
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      Q
+  let CQ : Fin m → Fin m → ℝ := rectMatMul (rectMatMul Q P) Q
+  have hAdd :
+      (fun i j => MQ i j + CQ i j) = Q := by
+    simpa [MQ, CQ] using
+      wedinLemma20_12_projectionDiff_sq_compression_swapped_add_companion_sq_swapped_eq_projection_swapped
+        P Q hIdemP hIdemQ
+  have hTraceAdd :
+      finiteTrace MQ + finiteTrace CQ = finiteTrace Q := by
+    have h := congrArg finiteTrace hAdd
+    simpa [finiteTrace_add] using h
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    equal projection traces imply equal finite traces for the two `D^2`
+    range-compressions `P(P-Q)^2P` and `Q(P-Q)^2Q`. -/
+theorem wedinLemma20_12_finiteTrace_projectionDiff_sq_compression_eq_swapped_of_projection_trace_eq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (hTrace : finiteTrace P = finiteTrace Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul P
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          P) =
+      finiteTrace
+        (rectMatMul
+          (rectMatMul Q
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          Q) := by
+  have hPTrace :=
+    wedinLemma20_12_finiteTrace_projectionDiff_sq_compression_eq_projection_sub_companion
+      P Q hIdemP hIdemQ
+  have hQTrace :=
+    wedinLemma20_12_finiteTrace_projectionDiff_sq_compression_swapped_eq_projection_sub_companion
+      P Q hIdemP hIdemQ
+  have hComp :
+      finiteTrace (rectMatMul (rectMatMul P Q) P) =
+        finiteTrace (rectMatMul (rectMatMul Q P) Q) :=
+    wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_eq_swapped
+      P Q hIdemP hIdemQ
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the two companion-square compressions `PQP` and `QPQ` have the same
     second trace moment. -/
 theorem wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_sq_eq_swapped
@@ -4720,6 +4816,117 @@ theorem wedinLemma20_12_projectionDiff_sq_compression_swapped_finitePSD
   simpa using hbase
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the `P`-range `D^2` compression is Loewner-bounded above by the projection
+    `P`. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_loewnerLe_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe
+      (rectMatMul
+        (rectMatMul P
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)))
+        P) P := by
+  let MP : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul P
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      P
+  let CP : Fin m → Fin m → ℝ := rectMatMul (rectMatMul P Q) P
+  have hPSDcomp : finitePSD CP := by
+    simpa [CP] using
+      wedinLemma20_12_projection_mul_swapped_mul_projection_finitePSD
+        P Q hP hQ hIdemQ
+  have hdiff :
+      (fun i j => P i j - MP i j) = CP := by
+    have hsum :=
+      wedinLemma20_12_projectionDiff_sq_compression_add_companion_sq_eq_projection
+        P Q hIdemP hIdemQ
+    ext i j
+    have hij := congrFun (congrFun hsum i) j
+    dsimp [MP, CP] at hij ⊢
+    linarith
+  have hPSDdiff : finitePSD (fun i j => P i j - MP i j) := by
+    rw [hdiff]
+    exact hPSDcomp
+  exact
+    (finiteLoewnerLe_iff_sub_finitePSD MP P).mpr hPSDdiff
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped Loewner upper bound for the `Q`-range `D^2` compression. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_swapped_loewnerLe_projection_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe
+      (rectMatMul
+        (rectMatMul Q
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)))
+        Q) Q := by
+  have hbase :=
+    wedinLemma20_12_projectionDiff_sq_compression_loewnerLe_projection
+      Q P hQ hP hIdemQ hIdemP
+  have hsq :
+      rectMatMul (fun i j => Q i j - P i j)
+          (fun i j => Q i j - P i j) =
+        rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j) := by
+    ext i j
+    unfold rectMatMul
+    apply Finset.sum_congr rfl
+    intro k _
+    ring
+  rw [hsq] at hbase
+  simpa using hbase
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the `P`-range `D^2` compression is Loewner-bounded above by the identity. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_loewnerLe_id
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe
+      (rectMatMul
+        (rectMatMul P
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)))
+        P)
+      (fun i j : Fin m => finiteIdMatrix i j) :=
+  finiteLoewnerLe_trans
+    (wedinLemma20_12_projectionDiff_sq_compression_loewnerLe_projection
+      P Q hP hQ hIdemP hIdemQ)
+    (wedinLemma20_12_projection_loewnerLe_id P hP hIdemP)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped identity upper bound for the `Q`-range `D^2` compression. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_swapped_loewnerLe_id
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe
+      (rectMatMul
+        (rectMatMul Q
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)))
+        Q)
+      (fun i j : Fin m => finiteIdMatrix i j) :=
+  finiteLoewnerLe_trans
+    (wedinLemma20_12_projectionDiff_sq_compression_swapped_loewnerLe_projection_swapped
+      P Q hP hQ hIdemP hIdemQ)
+    (wedinLemma20_12_projection_loewnerLe_id Q hQ hIdemQ)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     every finite Hermitian eigenvalue of `P(P-Q)^2P` is nonnegative. -/
 theorem wedinLemma20_12_projectionDiff_sq_compression_finiteHermitianEigenvalues_nonneg
     {m : ℕ} (P Q : Fin m → Fin m → ℝ)
@@ -4750,6 +4957,43 @@ theorem wedinLemma20_12_projectionDiff_sq_compression_finiteHermitianEigenvalues
           (rectMatMul (fun i j => P i j - Q i j)
             (fun i j => P i j - Q i j)))
         P) hSym).mp hPSD a
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of `P(P-Q)^2P` is at most one. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_finiteHermitianEigenvalues_le_one
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (a : Fin m) :
+    finiteHermitianEigenvalues
+        (rectMatMul
+          (rectMatMul P
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          P)
+        (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+          P Q hP hQ hIdemP hIdemQ) a ≤ 1 := by
+  let MP : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul P
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      P
+  have hSym : IsSymmetricFiniteMatrix MP := by
+    simpa [MP] using
+      wedinLemma20_12_projectionDiff_sq_compression_symmetric
+        P Q hP hQ hIdemP hIdemQ
+  have hLe :
+      finiteLoewnerLe MP
+        (fun i j : Fin m => (1 : ℝ) * finiteIdMatrix i j) := by
+    simpa [MP] using
+      wedinLemma20_12_projectionDiff_sq_compression_loewnerLe_id
+        P Q hP hQ hIdemP hIdemQ
+  simpa [MP] using
+    finiteHermitianEigenvalues_le_of_finiteLoewnerLe_smul_id
+      MP hSym hLe a
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     every finite Hermitian eigenvalue of `P(P-Q)^2P` is bounded above by its
@@ -4899,6 +5143,43 @@ theorem wedinLemma20_12_projectionDiff_sq_compression_swapped_finiteHermitianEig
           (rectMatMul (fun i j => P i j - Q i j)
             (fun i j => P i j - Q i j)))
         Q) hSym).mp hPSD a
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of `Q(P-Q)^2Q` is at most one. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_swapped_finiteHermitianEigenvalues_le_one
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (a : Fin m) :
+    finiteHermitianEigenvalues
+        (rectMatMul
+          (rectMatMul Q
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          Q)
+        (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+          P Q hP hQ hIdemP hIdemQ) a ≤ 1 := by
+  let MQ : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul Q
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      Q
+  have hSym : IsSymmetricFiniteMatrix MQ := by
+    simpa [MQ] using
+      wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+        P Q hP hQ hIdemP hIdemQ
+  have hLe :
+      finiteLoewnerLe MQ
+        (fun i j : Fin m => (1 : ℝ) * finiteIdMatrix i j) := by
+    simpa [MQ] using
+      wedinLemma20_12_projectionDiff_sq_compression_swapped_loewnerLe_id
+        P Q hP hQ hIdemP hIdemQ
+  simpa [MQ] using
+    finiteHermitianEigenvalues_le_of_finiteLoewnerLe_smul_id
+      MQ hSym hLe a
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     every finite Hermitian eigenvalue of `Q(P-Q)^2Q` is bounded above by its
