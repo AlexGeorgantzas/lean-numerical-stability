@@ -326,6 +326,34 @@ theorem higham11_3_fl_stage_trailing_error (fp : FPModel) (e ci cj b : ℝ)
         + fp.fl_sub b (fp.fl_mul (fp.fl_div ci e) cj) = b + Δ :=
   fl_oneByOne_stage_trailing_error fp e ci cj b he hval
 
+/-- **Theorem 11.3 inductive step (trailing-block fl backward error)**, Higham
+[608,1997] §4.2: with computed 1×1 multipliers and a recursive factorization
+`L_S,D_S` approximating the computed Schur complement within `Bs`, the assembled
+factors satisfy `|(L̂D̂L̂ᵀ)_{i+1,j+1} − A_{i+1,j+1}| ≤ 2γ₃(|A_{i+1,j+1}| +
+|A_{i+1,0}A_{0,j+1}/A00|) + Bs i j` on the trailing block. -/
+theorem higham11_3_fl_blockLDLT_trailing_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (he : A 0 0 ≠ 0) (hsym1 : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (hval : gammaValid fp 3)
+    (L_S D_S : Fin n → Fin n → ℝ) (Bs : Fin n → Fin n → ℝ)
+    (hIH : ∀ i j : Fin n,
+      |(∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂)
+        - fp.fl_sub (A i.succ j.succ)
+            (fp.fl_mul (fp.fl_div (A i.succ 0) (A 0 0)) (A 0 j.succ))| ≤ Bs i j)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hLtr : ∀ i j : Fin n, L i.succ j.succ = L_S i j)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin n, D i.succ j.succ = D_S i j) :
+    ∀ i j : Fin n,
+      |(∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L j.succ k₂) - A i.succ j.succ|
+        ≤ 2 * gamma fp 3 * (|A i.succ j.succ|
+            + |A i.succ 0 * A 0 j.succ / A 0 0|) + Bs i j :=
+  fl_blockLDLT_trailing_bound n fp A he hsym1 hval L_S D_S Bs hIH L D
+    hLcol hLtr hD00 hD0s hDs0 hDtr
+
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
     (ε : ℝ) : Fin 3 → Fin 3 → ℝ :=
