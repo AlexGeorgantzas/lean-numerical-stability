@@ -906,4 +906,73 @@ theorem oneByOne_step_factorization (m : ℕ) (A : Fin (m + 1) → Fin (m + 1) �
       · intro h; exact absurd (Finset.mem_univ i0) h
     rw [hrsum, hLcol i0, hLcol j0, hsym j0]; field_simp; ring
 
+/-- **Inductive step of the exact block-LDLᵀ recursion** (1×1 pivot), Higham
+    eq (11.1)/(11.3).  Generalises `oneByOne_step_factorization`: the trailing
+    block of `L`/`D` is a *recursively computed* factorization
+    `L_S·D_S·L_Sᵀ = S` of the Schur complement `S` (the induction hypothesis
+    `hIH`), not the identity.  With first-stage multipliers `A i0/A00` and Schur
+    complement `S i j = A i.succ j.succ − A i.succ 0·A 0 j.succ / A00`, the
+    assembled factors reproduce `A` exactly.  Iterating this is the exact
+    `PAPᵀ = LDLᵀ` recursion underlying Theorem 11.3. -/
+theorem blockLDLT_assemble_step (n : ℕ) (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (ha : A 0 0 ≠ 0) (hsym : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (S L_S D_S : Fin n → Fin n → ℝ)
+    (hS : ∀ i j : Fin n, S i j = A i.succ j.succ - A i.succ 0 * A 0 j.succ / A 0 0)
+    (hIH : ∀ i j : Fin n, (∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) = S i j)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL0 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = A i.succ 0 / A 0 0)
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hLtr : ∀ i j : Fin n, L i.succ j.succ = L_S i j)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin n, D i.succ j.succ = D_S i j) :
+    ∀ I J : Fin (n + 1),
+      (∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = A I J := by
+  have inner : ∀ (I k₁ J : Fin (n + 1)),
+      (∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = L I k₁ * (∑ k₂, D k₁ k₂ * L J k₂) := by
+    intro I k₁ J; rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro k _; ring
+  have cdl0 : ∀ J : Fin (n + 1), (∑ k₂, D 0 k₂ * L J k₂) = A 0 0 * L J 0 := by
+    intro J; rw [Fin.sum_univ_succ, hD00]
+    have : (∑ k₂ : Fin n, D 0 k₂.succ * L J k₂.succ) = 0 :=
+      Finset.sum_eq_zero fun k _ => by rw [hD0s k, zero_mul]
+    rw [this, add_zero]
+  have cdls : ∀ (i : Fin n) (J : Fin (n + 1)),
+      (∑ k₂, D i.succ k₂ * L J k₂)
+        = ∑ k₂' : Fin n, D_S i k₂' * L J k₂'.succ := by
+    intro i J; rw [Fin.sum_univ_succ, hDs0 i, zero_mul, zero_add]
+    apply Finset.sum_congr rfl; intro k _; rw [hDtr i k]
+  intro I J
+  rw [Fin.sum_univ_succ, inner I 0 J, cdl0 J]
+  have hrest : (∑ i : Fin n, ∑ k₂, L I i.succ * D i.succ k₂ * L J k₂)
+      = ∑ i : Fin n, L I i.succ * (∑ k₂' : Fin n, D_S i k₂' * L J k₂'.succ) := by
+    apply Finset.sum_congr rfl; intro i _; rw [inner I i.succ J, cdls i J]
+  rw [hrest]
+  rcases Fin.eq_zero_or_eq_succ I with hI | ⟨i0, hI⟩ <;>
+    rcases Fin.eq_zero_or_eq_succ J with hJ | ⟨j0, hJ⟩ <;> subst hI <;> subst hJ
+  · have : (∑ i : Fin n, L 0 i.succ *
+        (∑ k₂' : Fin n, D_S i k₂' * L 0 k₂'.succ)) = 0 :=
+      Finset.sum_eq_zero fun i _ => by rw [hL0s i, zero_mul]
+    rw [this, hL0, add_zero]; ring
+  · have : (∑ i : Fin n, L 0 i.succ *
+        (∑ k₂' : Fin n, D_S i k₂' * L j0.succ k₂'.succ)) = 0 :=
+      Finset.sum_eq_zero fun i _ => by rw [hL0s i, zero_mul]
+    rw [this, hL0, add_zero, hLcol j0, hsym j0]; field_simp
+  · have hz : (∑ i : Fin n, L i0.succ i.succ *
+        (∑ k₂' : Fin n, D_S i k₂' * L 0 k₂'.succ)) = 0 :=
+      Finset.sum_eq_zero fun i _ => by
+        rw [show (∑ k₂' : Fin n, D_S i k₂' * L 0 k₂'.succ) = 0 from
+          Finset.sum_eq_zero fun k _ => by rw [hL0s k, mul_zero], mul_zero]
+    rw [hz, add_zero, hLcol i0, hL0]; field_simp
+  · have htrail : (∑ i : Fin n, L i0.succ i.succ *
+        (∑ k₂' : Fin n, D_S i k₂' * L j0.succ k₂'.succ)) = S i0 j0 := by
+      rw [← hIH i0 j0]
+      apply Finset.sum_congr rfl; intro i _
+      rw [hLtr i0 i, Finset.mul_sum]
+      apply Finset.sum_congr rfl; intro k _
+      rw [hLtr j0 k]; ring
+    rw [htrail, hLcol i0, hLcol j0, hS i0 j0, hsym j0]
+    field_simp; ring
+
 end LeanFpAnalysis.FP
