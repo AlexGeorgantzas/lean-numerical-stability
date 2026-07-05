@@ -817,6 +817,78 @@ theorem fl_oneByOne_stage_trailing_error (fp : FPModel) (e ci cj b : ℝ)
       rw [e1, e2, hfa, hfb]; ring
     rw [hss, hpp, hli, hlj]; exact key
 
+/-- **Trailing-block floating-point backward error of one 1×1-pivot stage**
+    (Higham [608,1997] §4.2, the inductive step of Theorem 11.3).  With computed
+    multipliers `l̂_i = fl(A i.succ 0 / A00)`, computed Schur entries
+    `Ŝ i j = fl(A i.succ j.succ − fl(l̂_i · A 0 j.succ))`, and a recursive
+    factorization `L_S,D_S` approximating `Ŝ` entrywise within `Bs` (`hIH`), the
+    assembled `L̂,D̂` satisfy on the trailing block
+    `|(L̂D̂L̂ᵀ)_{i+1,j+1} − A_{i+1,j+1}| ≤ 2γ₃(|A_{i+1,j+1}| + |A_{i+1,0}·A_{0,j+1}/A00|) + Bs i j`.
+    Combines `fl_oneByOne_stage_trailing_error` with the recursion hypothesis. -/
+theorem fl_blockLDLT_trailing_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (he : A 0 0 ≠ 0) (hsym1 : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (hval : gammaValid fp 3)
+    (L_S D_S : Fin n → Fin n → ℝ) (Bs : Fin n → Fin n → ℝ)
+    (hIH : ∀ i j : Fin n,
+      |(∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂)
+        - fp.fl_sub (A i.succ j.succ)
+            (fp.fl_mul (fp.fl_div (A i.succ 0) (A 0 0)) (A 0 j.succ))| ≤ Bs i j)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hLtr : ∀ i j : Fin n, L i.succ j.succ = L_S i j)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin n, D i.succ j.succ = D_S i j) :
+    ∀ i j : Fin n,
+      |(∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L j.succ k₂) - A i.succ j.succ|
+        ≤ 2 * gamma fp 3 * (|A i.succ j.succ|
+            + |A i.succ 0 * A 0 j.succ / A 0 0|) + Bs i j := by
+  intro i j
+  have hreduce : (∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L j.succ k₂)
+      = L i.succ 0 * (A 0 0) * L j.succ 0
+        + (∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) := by
+    have inner : ∀ k₁ : Fin (n + 1),
+        (∑ k₂, L i.succ k₁ * D k₁ k₂ * L j.succ k₂)
+          = L i.succ k₁ * (∑ k₂, D k₁ k₂ * L j.succ k₂) := by
+      intro k₁; rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro k _; ring
+    rw [Fin.sum_univ_succ, inner 0]
+    have c0 : (∑ k₂, D 0 k₂ * L j.succ k₂) = A 0 0 * L j.succ 0 := by
+      rw [Fin.sum_univ_succ, hD00]
+      have : (∑ k₂ : Fin n, D 0 k₂.succ * L j.succ k₂.succ) = 0 :=
+        Finset.sum_eq_zero fun k _ => by rw [hD0s k, zero_mul]
+      rw [this, add_zero]
+    rw [c0]
+    have csucc : (∑ k₁ : Fin n, ∑ k₂, L i.succ k₁.succ * D k₁.succ k₂ * L j.succ k₂)
+        = ∑ k₁ : Fin n, ∑ k₂ : Fin n, L_S i k₁ * D_S k₁ k₂ * L_S j k₂ := by
+      apply Finset.sum_congr rfl; intro k₁ _
+      rw [inner k₁.succ, Fin.sum_univ_succ, hDs0 k₁, zero_mul, zero_add]
+      rw [hLtr i k₁, Finset.mul_sum]
+      apply Finset.sum_congr rfl; intro k₂ _
+      rw [hDtr k₁ k₂, hLtr j k₂]; ring
+    rw [csucc, hLcol i, hLcol j]; ring
+  obtain ⟨Δ, hΔ, hstage⟩ :=
+    fl_oneByOne_stage_trailing_error fp (A 0 0) (A i.succ 0) (A 0 j.succ)
+      (A i.succ j.succ) he hval
+  have hljeq : L j.succ 0 = fp.fl_div (A 0 j.succ) (A 0 0) := by
+    rw [hLcol j, hsym1 j]
+  set Ŝ := fp.fl_sub (A i.succ j.succ)
+      (fp.fl_mul (fp.fl_div (A i.succ 0) (A 0 0)) (A 0 j.succ)) with hŜ
+  have hval2 : (∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L j.succ k₂)
+      = (fp.fl_div (A i.succ 0) (A 0 0) * A 0 0 * fp.fl_div (A 0 j.succ) (A 0 0) + Ŝ)
+        + ((∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) - Ŝ) := by
+    rw [hreduce, hLcol i, hljeq]; ring
+  rw [hval2, hstage]
+  have hcancel : (A i.succ j.succ + Δ)
+      + ((∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) - Ŝ) - A i.succ j.succ
+      = Δ + ((∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) - Ŝ) := by ring
+  rw [hcancel]
+  calc |Δ + ((∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) - Ŝ)|
+      ≤ |Δ| + |(∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) - Ŝ| := abs_add_le _ _
+    _ ≤ 2 * gamma fp 3 * (|A i.succ j.succ| + |A i.succ 0 * A 0 j.succ / A 0 0|)
+          + Bs i j := add_le_add hΔ (hIH i j)
+
 -- ============================================================
 -- Chapter 11.1.4  Tridiagonal symmetric matrices
 -- ============================================================
