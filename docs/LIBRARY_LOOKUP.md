@@ -2889,6 +2889,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_matrix_sign_equiv_source_h_bound_of_IsSignEquiv_models`
 - `higham9_14_matrix_sign_equiv_source_h_bound_of_IsSignEquiv_models_gamma`
 - `higham9_14_totalNonnegative_exists_source_h_bound_of_models_gamma`
+- `higham9_14_matrix_totalNonnegative_exists_source_h_bound_of_models`
+- `higham9_14_matrix_totalNonnegative_exists_source_h_bound_of_models_gamma`
 - `higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_models`
 - `higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_models_gamma`
 - `higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_recurrence`
@@ -2909,6 +2911,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_matrix_sign_equiv_source_f_bound_of_IsSignEquiv_models_gamma`
 - `higham9_14_totalNonnegative_exists_source_f_bound_of_models`
 - `higham9_14_totalNonnegative_exists_source_f_bound_of_models_gamma`
+- `higham9_14_matrix_totalNonnegative_exists_source_f_bound_of_models`
+- `higham9_14_matrix_totalNonnegative_exists_source_f_bound_of_models_gamma`
 - `higham9_14_spd_tridiag_positive_DLT_source_f_bound_actual_triangular_solves`
 - `higham9_14_spd_tridiag_positive_DLT_source_f_bound_actual_triangular_solves_of_spd`
 - `higham9_14_spd_tridiag_positive_DLT_source_f_bound_actual_triangular_solves_of_recurrence`
