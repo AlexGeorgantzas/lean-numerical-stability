@@ -5541,8 +5541,16 @@ closure is
 using the exact `opNorm2`/`kappa2` surface and canonical inverses.
 For Theorem 13.7, the leading-prefix API above proves row/column BDD is
 inherited by every leading block prefix under nonnegative block norms.  The
-prefix-inheritance dependency is closed, but the full source nonsingularity
-and concrete active pivot-product/equality route remains open.
+prefix-inheritance dependency is closed.  The BDD diagonal-inverse wrappers
+`higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`,
+`higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos`,
+`higham13_diag_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`,
+and
+`higham13_diag_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+package the determinant-nonzero contradiction into canonical `nonsingInv`
+two-sided and right-inverse certificates for prefix/original diagonal blocks
+when the relevant BDD lower bound is nonpositive.  The full source
+nonsingularity and concrete active pivot-product/equality route remains open.
 For the column-BDD Eq.13.21 route and the concrete Algorithm 13.3 active-stage
 wrappers, the active-product adapters remove the separate nonzero pivot-inverse
 norm premise, the right-inverse/reciprocal route derives the active product
