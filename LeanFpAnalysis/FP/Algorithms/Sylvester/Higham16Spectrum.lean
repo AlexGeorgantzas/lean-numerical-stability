@@ -2222,6 +2222,175 @@ theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_compute
       m n U R A V S B C X Xhat Rhat Ru hU hV hA hB hS hshift hX
       hRu hRhat hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with raw computed-residual budget
+    assumptions and a scalar cap on the practical budget. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  have _hU := hU
+  have _hV := hV
+  have _hA := hA
+  have _hB := hB
+  have _hpAmono := hpAmono
+  have _hpAcard := hpAcard
+  have _hRstrict := hRstrict
+  have _hpBmono := hpBmono
+  have _hpBcard := hpBcard
+  have _hSstrict := hSstrict
+  exact
+    sylvester_practical_error_bound_of_computed_residual_budget_scalar m n
+      A B C X Xhat Rhat Ru
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      eta hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hRu hRhat heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with raw computed-residual budget
+    assumptions and componentwise larger practical-budget inputs. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  have _hU := hU
+  have _hV := hV
+  have _hA := hA
+  have _hB := hB
+  have _hpAmono := hpAmono
+  have _hpAcard := hpAcard
+  have _hRstrict := hRstrict
+  have _hpBmono := hpBmono
+  have _hpBcard := hpBcard
+  have _hSstrict := hSstrict
+  exact
+    sylvester_practical_error_bound_of_computed_residual_budget_mono m n
+      A B C X Xhat Rhat Rhat' Ru Ru'
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      PinvAbs' hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hPinvAbs_le hRu hRhat hRhat_le hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with raw computed-residual budget
+    assumptions, monotone supplied estimates, and a scalar cap. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  have _hU := hU
+  have _hV := hV
+  have _hA := hA
+  have _hB := hB
+  have _hpAmono := hpAmono
+  have _hpAcard := hpAcard
+  have _hRstrict := hRstrict
+  have _hpBmono := hpBmono
+  have _hpBcard := hpBcard
+  have _hSstrict := hSstrict
+  exact
+    sylvester_practical_error_bound_of_computed_residual_budget_mono_scalar m n
+      A B C X Xhat Rhat Rhat' Ru Ru'
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      PinvAbs' eta hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hPinvAbs_le hRu hRhat hRhat_le hRu_le heta hcomponent hXhat
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
     Schur-coordinate case with raw computed-residual budget assumptions and
     componentwise larger practical-budget inputs. -/
