@@ -1094,6 +1094,80 @@ private theorem mulVec_surjective_of_det_ne_zero {m : Nat}
     Matrix.mul_nonsing_inv M (isUnit_iff_ne_zero.mpr hdet),
     Matrix.one_mulVec]
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), active column block:
+    a nonsingular shifted coefficient `A - t I` has Mathlib's nonsingular
+    inverse as a left inverse.  This is the exact-arithmetic certificate used
+    by the Bartels-Stewart column solve, not a Schur-existence statement. -/
+theorem sylvesterTriangularShiftedCoeff_nonsingInv_mul (m : Nat)
+    (A : RMatFn m m) (t : Real)
+    (hdet : Not (Matrix.det (sylvesterTriangularShiftedCoeff m A t) = 0)) :
+    (sylvesterTriangularShiftedCoeff m A t)⁻¹ *
+        sylvesterTriangularShiftedCoeff m A t =
+      1 := by
+  exact Matrix.nonsing_inv_mul (sylvesterTriangularShiftedCoeff m A t)
+    (isUnit_iff_ne_zero.mpr hdet)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), active column block:
+    a nonsingular shifted coefficient `A - t I` has Mathlib's nonsingular
+    inverse as a right inverse. -/
+theorem sylvesterTriangularShiftedCoeff_mul_nonsingInv (m : Nat)
+    (A : RMatFn m m) (t : Real)
+    (hdet : Not (Matrix.det (sylvesterTriangularShiftedCoeff m A t) = 0)) :
+    sylvesterTriangularShiftedCoeff m A t *
+        (sylvesterTriangularShiftedCoeff m A t)⁻¹ =
+      1 := by
+  exact Matrix.mul_nonsing_inv (sylvesterTriangularShiftedCoeff m A t)
+    (isUnit_iff_ne_zero.mpr hdet)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), active column block:
+    nonsingularity of `A - t I` makes the map
+    `x |-> (A - t I) x` injective. -/
+theorem sylvesterTriangularShiftedCoeff_mulVec_injective (m : Nat)
+    (A : RMatFn m m) (t : Real)
+    (hdet : Not (Matrix.det (sylvesterTriangularShiftedCoeff m A t) = 0)) :
+    Function.Injective
+      (Matrix.mulVec (sylvesterTriangularShiftedCoeff m A t)) := by
+  intro x y hxy
+  exact mulVec_injective_of_det_ne_zero hdet hxy
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), active column block:
+    nonsingularity of `A - t I` makes the map
+    `x |-> (A - t I) x` surjective, so every active column right-hand side is
+    reachable in exact arithmetic. -/
+theorem sylvesterTriangularShiftedCoeff_mulVec_surjective (m : Nat)
+    (A : RMatFn m m) (t : Real)
+    (hdet : Not (Matrix.det (sylvesterTriangularShiftedCoeff m A t) = 0)) :
+    Function.Surjective
+      (Matrix.mulVec (sylvesterTriangularShiftedCoeff m A t)) := by
+  intro c
+  exact mulVec_surjective_of_det_ne_zero hdet c
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), active column block:
+    nonsingularity of `A - t I` makes the active column solve a bijection. -/
+theorem sylvesterTriangularShiftedCoeff_mulVec_bijective (m : Nat)
+    (A : RMatFn m m) (t : Real)
+    (hdet : Not (Matrix.det (sylvesterTriangularShiftedCoeff m A t) = 0)) :
+    Function.Bijective
+      (Matrix.mulVec (sylvesterTriangularShiftedCoeff m A t)) :=
+  ⟨sylvesterTriangularShiftedCoeff_mulVec_injective m A t hdet,
+    sylvesterTriangularShiftedCoeff_mulVec_surjective m A t hdet⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), active column block:
+    for every active column right-hand side, the shifted system
+    `(A - t I) x = c` has exactly one solution. -/
+theorem existsUnique_sylvesterTriangularShiftedCoeff_mulVec (m : Nat)
+    (A : RMatFn m m) (t : Real)
+    (hdet : Not (Matrix.det (sylvesterTriangularShiftedCoeff m A t) = 0))
+    (c : Fin m -> Real) :
+    ∃! x : Fin m -> Real,
+      Matrix.mulVec (sylvesterTriangularShiftedCoeff m A t) x = c := by
+  have hinj := sylvesterTriangularShiftedCoeff_mulVec_injective m A t hdet
+  have hsurj := sylvesterTriangularShiftedCoeff_mulVec_surjective m A t hdet
+  obtain ⟨x, hx⟩ := hsurj c
+  refine ⟨x, hx, ?_⟩
+  intro y hy
+  exact hinj (by rw [hy, hx])
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
     `A - t_kk I` nonsingular, two solutions of `AX - XT = C` coincide, by
