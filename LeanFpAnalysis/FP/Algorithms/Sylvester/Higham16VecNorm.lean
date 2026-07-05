@@ -159,6 +159,66 @@ theorem finiteMatrixGram_sigmaMin_mul_finiteVecNorm2_le_mulVec
     exact hray
   exact le_of_sq_le_sq_of_nonneg (finiteVecNorm2_nonneg _) hsq
 
+/-- A scalar-identity Loewner lower bound controls every locally named
+    Hermitian eigenvalue from below.  This is the lower-side companion to
+    `finiteHermitianEigenvalues_le_of_finiteLoewnerLe_smul_id`. -/
+theorem le_finiteHermitianEigenvalues_of_finiteLoewnerLe_smul_id
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : ι -> ι -> Real) (hM : IsSymmetricFiniteMatrix M) {c : Real}
+    (hLe : finiteLoewnerLe (fun i j => c * finiteIdMatrix i j) M) (a : ι) :
+    c <= finiteHermitianEigenvalues M hM a := by
+  let v : ι -> Real :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM).eigenvectorBasis a)
+  have hq := hLe v
+  have heig :=
+    finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+      M hM a
+  have hnorm :=
+    finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one M hM a
+  change finiteQuadraticForm (fun i j => c * finiteIdMatrix i j) v <=
+    finiteQuadraticForm M v at hq
+  rw [finiteQuadraticForm_smul_finiteIdMatrix, heig, hnorm] at hq
+  simpa using hq
+
+/-- A concrete sigma-min norm lower bound for `P` implies the corresponding
+    lower bound on every eigenvalue of its finite Gram matrix `P^T P`. -/
+theorem finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (P : Matrix ι ι Real) {sigma : Real} (hsigma : 0 <= sigma)
+    (hCoeff : forall x : ι -> Real,
+      sigma * finiteVecNorm2 x <= finiteVecNorm2 (Matrix.mulVec P x)) :
+    forall a : ι,
+      sigma ^ 2 <= finiteHermitianEigenvalues (finiteMatrixGram P)
+        (isSymmetricFiniteMatrix_finiteMatrixGram P) a := by
+  intro a
+  refine
+    le_finiteHermitianEigenvalues_of_finiteLoewnerLe_smul_id
+      (finiteMatrixGram P) (isSymmetricFiniteMatrix_finiteMatrixGram P) ?_ a
+  intro x
+  have hcoeff := hCoeff x
+  have hleft_nonneg : 0 <= sigma * finiteVecNorm2 x :=
+    mul_nonneg hsigma (finiteVecNorm2_nonneg x)
+  have hright_nonneg : 0 <= finiteVecNorm2 (Matrix.mulVec P x) :=
+    finiteVecNorm2_nonneg _
+  have habs :
+      |sigma * finiteVecNorm2 x| <=
+        |finiteVecNorm2 (Matrix.mulVec P x)| := by
+    simpa [abs_of_nonneg hleft_nonneg, abs_of_nonneg hright_nonneg] using hcoeff
+  have hsq :
+      (sigma * finiteVecNorm2 x) ^ 2 <=
+        finiteVecNorm2 (Matrix.mulVec P x) ^ 2 :=
+    (sq_le_sq).mpr habs
+  have hsq_bound :
+      sigma ^ 2 * finiteVecNorm2Sq x <=
+        finiteVecNorm2Sq (Matrix.mulVec P x) := by
+    simpa [mul_pow, finiteVecNorm2_sq] using hsq
+  change finiteQuadraticForm
+      (fun i j : ι => sigma ^ 2 * finiteIdMatrix i j) x <=
+    finiteQuadraticForm (finiteMatrixGram P) x
+  rw [finiteQuadraticForm_smul_finiteIdMatrix,
+    finiteQuadraticForm_finiteMatrixGram_eq_finiteVecNorm2Sq_mulVec]
+  exact hsq_bound
+
 /-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
     a Gram-eigenvalue lower bound for the concrete vectorized Sylvester
     coefficient gives the coefficient lower bound used by the Chapter 16
@@ -297,6 +357,26 @@ theorem sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge (n : Nat)
   have habs := (sq_le_sq).mp hsq
   simpa [abs_of_nonneg hleft_nonneg, abs_of_nonneg hright_nonneg] using habs
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3),
+    diagonal case: a uniform lower bound on `|a_i - b_j|` gives a finite
+    Gram-eigenvalue lower bound for the concrete vectorized Sylvester
+    coefficient. -/
+theorem sylvesterVecCoeff_diagonal_gram_eigenvalues_ge_of_entrywise_abs_ge
+    (n : Nat) (a b : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 <= sigma)
+    (hgap : forall i j, sigma <= |a i - b j|) :
+    forall p : Prod (Fin n) (Fin n),
+      sigma ^ 2 <= finiteHermitianEigenvalues
+        (finiteMatrixGram
+          (sylvesterVecCoeff n n (Matrix.diagonal a) (Matrix.diagonal b)))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n (Matrix.diagonal a) (Matrix.diagonal b))) p := by
+  exact
+    finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound
+      (sylvesterVecCoeff n n (Matrix.diagonal a) (Matrix.diagonal b)) hsigma
+      (sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a b sigma hsigma hgap)
+
 /-- Higham, 2nd ed., Chapter 16.1 and equation (16.26), diagonal case:
     the concrete diagonal vec/Kronecker lower bound transfers to the
     Frobenius lower bound for the Sylvester operator. -/
@@ -425,6 +505,24 @@ theorem lyapunovVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge (n : Nat)
     finiteVecNorm2_nonneg _
   have habs := (sq_le_sq).mp hsq
   simpa [abs_of_nonneg hleft_nonneg, abs_of_nonneg hright_nonneg] using habs
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    a uniform lower bound on `|a_i + a_j|` gives a finite Gram-eigenvalue
+    lower bound for the concrete vectorized Lyapunov coefficient. -/
+theorem lyapunovVecCoeff_diagonal_gram_eigenvalues_ge_of_entrywise_abs_ge
+    (n : Nat) (a : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 <= sigma)
+    (hgap : forall i j, sigma <= |a i + a j|) :
+    forall p : Prod (Fin n) (Fin n),
+      sigma ^ 2 <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n (Matrix.diagonal a)))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n (Matrix.diagonal a))) p := by
+  exact
+    finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound
+      (lyapunovVecCoeff n (Matrix.diagonal a)) hsigma
+      (lyapunovVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a sigma hsigma hgap)
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
     the concrete diagonal Lyapunov vec/Kronecker lower bound transfers to the
