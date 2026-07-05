@@ -875,6 +875,22 @@ theorem higham11_14_fl_aasen_next_column_update_rel_error
   rw [hd, hs, ← hfactor]
   field_simp [hh]
 
+/-- **Equation (11.14) floating-point scalar update**, additive-error form.
+The same two-operation Aasen update can be written as the exact scalar update
+plus `Δ`, with `|Δ| ≤ γ₂ |(a-s)/h|`. -/
+theorem higham11_14_fl_aasen_next_column_update_abs_error
+    (fp : FPModel) (a s h : ℝ) (hh : h ≠ 0) (hval : gammaValid fp 2) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 2 * |(a - s) / h| ∧
+      fp.fl_div (fp.fl_sub a s) h = (a - s) / h + Δ := by
+  obtain ⟨θ, hθ, hrel⟩ :=
+    higham11_14_fl_aasen_next_column_update_rel_error fp a s h hh hval
+  refine ⟨((a - s) / h) * θ, ?_, ?_⟩
+  · rw [abs_mul, mul_comm (gamma fp 2)]
+    exact mul_le_mul_of_nonneg_left hθ (abs_nonneg _)
+  · rw [hrel]
+    ring
+
 /-- **Equation (11.15)**, the Aasen solve chain
 `L z = P b`, `T y = z`, `L^T w = y`, `x = P w`. -/
 def higham11_15_aasenSolveChain (n : ℕ)
