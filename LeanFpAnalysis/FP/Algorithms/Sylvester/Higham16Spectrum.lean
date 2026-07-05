@@ -554,6 +554,71 @@ theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_leftInverse (m n : Nat)
     hLeft, Matrix.one_mulVec, Matrix.one_mulVec] at h
   exact h
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
+    two-column block inverse consistency: any supplied left inverse and right
+    inverse of the same block coefficient coincide.  Scope: exact supplied-block
+    algebra only; no Schur existence, structural block nonsingularity, or
+    floating-point stability is asserted. -/
+theorem sylvesterTwoColumnBlockCoeff_leftInverse_eq_rightInverse (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (K L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1) :
+    L = K := by
+  calc
+    L = L * 1 := by rw [mul_one]
+    _ = L * (sylvesterTwoColumnBlockCoeff m n A T p q * K) := by rw [hRight]
+    _ = (L * sylvesterTwoColumnBlockCoeff m n A T p q) * K := by rw [mul_assoc]
+    _ = 1 * K := by rw [hLeft]
+    _ = K := by rw [one_mul]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
+    two-column block solve-vector consistency: applying a supplied left inverse
+    or a supplied right inverse to the same active block right-hand side gives
+    the same vector.  Scope: exact supplied-block algebra only. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_leftInverse_rhs_eq_rightInverse_rhs
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (K L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1) :
+    Matrix.mulVec L (sylvesterTwoColumnBlockRhs m n T C X p q) =
+      Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+  have hLK := sylvesterTwoColumnBlockCoeff_leftInverse_eq_rightInverse
+    m n A T p q K L hRight hLeft
+  simp [hLK]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
+    left-inverse/right-inverse column wrapper: if columns `p` and `q` of `X`
+    are defined by a supplied left inverse, and matching right/left inverse
+    certificates are supplied, then `X` satisfies the same two-column block
+    system as in the right-inverse wrapper.  Scope: exact supplied-block algebra
+    only; no Schur existence, structural block nonsingularity, or floating-point
+    stability is asserted. -/
+theorem sylvesterTwoColumnBlockSystem_of_leftInverse_rightInverse_columns
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (K L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec L (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec L (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i)) :
+    IsSylvesterTwoColumnBlockSystem m n A T C X p q := by
+  have hLK := sylvesterTwoColumnBlockCoeff_leftInverse_eq_rightInverse
+    m n A T p q K L hRight hLeft
+  refine sylvesterTwoColumnBlockSystem_of_rightInverse_columns
+    m n A T C X p q K hRight ?_ ?_
+  · intro i
+    simpa [hLK] using hXp i
+  · intro i
+    simpa [hLK] using hXq i
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
     right-inverse/left-inverse bridge for the supplied adjacent two-column
     block system: if `K` is a supplied right inverse of the block coefficient,

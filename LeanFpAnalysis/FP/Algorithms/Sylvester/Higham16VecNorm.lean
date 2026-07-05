@@ -1291,6 +1291,30 @@ theorem sylvesterPsi_of_vecCoeff_sigmaMin_isPsiFirstOrderBound (n : Nat)
       (sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B sigma hCoeff)
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
+    a finite Gram-eigenvalue lower bound for the printed Sylvester
+    vec/Kronecker coefficient instantiates the structured `Psi` certificate
+    with inverse-operator constant `1 / sqrt(lam)`. -/
+theorem sylvesterPsi_of_vecCoeff_gram_eigenvalues_isPsiFirstOrderBound
+    (n : Nat)
+    (A B X : Fin n -> Fin n -> Real) (alpha beta gamma lam : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hlam : 0 < lam) (hX : 0 < frobNorm X)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p) :
+    SylvesterPsiFirstOrderBound n A B X alpha beta gamma
+      (sylvesterPsi_of_inverseOpBound n X alpha beta gamma
+        (1 / Real.sqrt lam)) := by
+  exact
+    sylvesterPsi_of_vecCoeff_sigmaMin_isPsiFirstOrderBound n
+      A B X alpha beta gamma (Real.sqrt lam)
+      halpha hbeta hgamma (Real.sqrt_pos.mpr hlam) hX
+      (sylvesterVecCoeff_sigmaMin_of_gram_eigenvalues n A B
+        (le_of_lt hlam) hEig)
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
     a concrete left inverse and operator-2 radius for the printed Sylvester
     vec/Kronecker coefficient instantiates the structured `Psi` certificate
     directly, without first postulating a sigma-min lower bound. -/
