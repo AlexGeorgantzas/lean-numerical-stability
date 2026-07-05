@@ -1743,6 +1743,194 @@ theorem wedinLemma20_12_projection_projectionDiff_sq_projection_eq_crossGram_swa
   simpa using hbase
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    multiplying the projection difference `P-Q` by the complement `I-Q` on
+    the right removes the `Q` part.
+
+This is an invariant-subspace algebra step for the direct
+Stewart--Sun/principal-angle route. -/
+theorem wedinLemma20_12_projectionDiff_mul_projectionComplement_eq_projection_mul_projectionComplement
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul (fun i j => P i j - Q i j)
+        (fun i j => idMatrix m i j - Q i j) =
+      rectMatMul P (fun i j => idMatrix m i j - Q i j) := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hQIQ : rectMatMul Q IQ = fun _ _ => 0 := by
+    simpa [IQ] using
+      wedinLemma20_12_rangeProjection_mul_projectionComplement_eq_zero
+        Q hIdemQ
+  calc
+    rectMatMul (fun i j => P i j - Q i j) IQ
+        = (fun i j => rectMatMul P IQ i j - rectMatMul Q IQ i j) := by
+            rw [rectMatMul_sub_left]
+    _ = rectMatMul P IQ := by
+            rw [hQIQ]
+            ext i j
+            simp
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    multiplying the complement `I-Q` by the projection difference `P-Q` on
+    the right removes the `Q` part. -/
+theorem wedinLemma20_12_projectionComplement_mul_projectionDiff_eq_projectionComplement_mul_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul (fun i j => idMatrix m i j - Q i j)
+        (fun i j => P i j - Q i j) =
+      rectMatMul (fun i j => idMatrix m i j - Q i j) P := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hIQQ : rectMatMul IQ Q = fun _ _ => 0 := by
+    simpa [IQ] using
+      wedinLemma20_12_projectionComplement_mul_rangeProjection_eq_zero
+        Q hIdemQ
+  calc
+    rectMatMul IQ (fun i j => P i j - Q i j)
+        = (fun i j => rectMatMul IQ P i j - rectMatMul IQ Q i j) := by
+            rw [rectMatMul_sub_right]
+    _ = rectMatMul IQ P := by
+            rw [hIQQ]
+            ext i j
+            simp
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the squared projection difference, applied on the right to `P`, is the
+    range-side cross Gram product `P(I-Q)P`.
+
+This exposes that `range(P)` is invariant under `(P-Q)^2`, a key structural
+fact for the remaining principal-angle proof. -/
+theorem wedinLemma20_12_projectionDiff_sq_mul_projection_eq_crossGram
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j))
+        P =
+      rectMatMul
+        (rectMatMul P (fun i j => idMatrix m i j - Q i j))
+        P := by
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hDP : rectMatMul D P = rectMatMul IQ P := by
+    symm
+    simpa [D, IQ] using
+      wedinLemma20_12_projectionComplement_mul_projection_eq_diff_mul_projection
+        P Q hIdemP
+  have hDIQ : rectMatMul D IQ = rectMatMul P IQ := by
+    simpa [D, IQ] using
+      wedinLemma20_12_projectionDiff_mul_projectionComplement_eq_projection_mul_projectionComplement
+        P Q hIdemQ
+  calc
+    rectMatMul (rectMatMul D D) P
+        = rectMatMul D (rectMatMul D P) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul D (rectMatMul IQ P) := by
+            rw [hDP]
+    _ = rectMatMul (rectMatMul D IQ) P := by
+            rw [← rectMatMul_assoc]
+    _ = rectMatMul (rectMatMul P IQ) P := by
+            rw [hDIQ]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the squared projection difference, applied on the left by `P`, is the same
+    range-side cross Gram product `P(I-Q)P`. -/
+theorem wedinLemma20_12_projection_mul_projectionDiff_sq_eq_crossGram
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul P
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)) =
+      rectMatMul
+        (rectMatMul P (fun i j => idMatrix m i j - Q i j))
+        P := by
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hPD : rectMatMul P D = rectMatMul P IQ := by
+    symm
+    simpa [D, IQ] using
+      wedinLemma20_12_projection_mul_projectionComplement_eq_projection_mul_diff
+        P Q hIdemP
+  have hIQD : rectMatMul IQ D = rectMatMul IQ P := by
+    simpa [D, IQ] using
+      wedinLemma20_12_projectionComplement_mul_projectionDiff_eq_projectionComplement_mul_projection
+        P Q hIdemQ
+  calc
+    rectMatMul P (rectMatMul D D)
+        = rectMatMul (rectMatMul P D) D := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul (rectMatMul P IQ) D := by
+            rw [hPD]
+    _ = rectMatMul P (rectMatMul IQ D) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul P (rectMatMul IQ P) := by
+            rw [hIQD]
+    _ = rectMatMul (rectMatMul P IQ) P := by
+            rw [← rectMatMul_assoc]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the squared projection difference `(P-Q)^2` commutes with `P`.
+
+This is the finite-dimensional invariant-subspace bridge needed before the
+remaining equality can be attacked by diagonalizing the restrictions of
+`(P-Q)^2` to the two equal-dimensional projection ranges. -/
+theorem wedinLemma20_12_projectionDiff_sq_commutes_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j))
+        P =
+      rectMatMul P
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)) := by
+  calc
+    rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j))
+        P
+        = rectMatMul
+            (rectMatMul P (fun i j => idMatrix m i j - Q i j))
+            P :=
+            wedinLemma20_12_projectionDiff_sq_mul_projection_eq_crossGram
+              P Q hIdemP hIdemQ
+    _ = rectMatMul P
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)) := by
+            exact
+              (wedinLemma20_12_projection_mul_projectionDiff_sq_eq_crossGram
+                P Q hIdemP hIdemQ).symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the same squared projection difference `(P-Q)^2` also commutes with `Q`. -/
+theorem wedinLemma20_12_projectionDiff_sq_commutes_projection_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j))
+        Q =
+      rectMatMul Q
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)) := by
+  have hbase :=
+    wedinLemma20_12_projectionDiff_sq_commutes_projection
+      Q P hIdemQ hIdemP
+  have hsq :
+      rectMatMul (fun i j => Q i j - P i j)
+          (fun i j => Q i j - P i j) =
+        rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j) := by
+    ext i j
+    unfold rectMatMul
+    apply Finset.sum_congr rfl
+    intro k _
+    ring
+  rw [hsq] at hbase
+  simpa using hbase
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm
     of the range-side compression `P(P-Q)^2P`.
 

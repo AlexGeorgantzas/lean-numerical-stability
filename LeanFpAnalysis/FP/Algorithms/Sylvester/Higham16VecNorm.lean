@@ -220,6 +220,50 @@ theorem finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound
     finiteQuadraticForm_finiteMatrixGram_eq_finiteVecNorm2Sq_mulVec]
   exact hsq_bound
 
+/-- A positive finite Euclidean lower-bound certificate for a square matrix
+    rules out a nonzero kernel vector, hence gives determinant nonsingularity.
+    This is the generic finite-index bridge used by the Chapter 16 vec/Kronecker
+    coefficient wrappers. -/
+theorem finiteMatrix_det_ne_zero_of_sigmaMin_lower_bound
+    {idx : Type*} [Fintype idx] [DecidableEq idx]
+    (P : Matrix idx idx Real) {sigma : Real} (hsigma : 0 < sigma)
+    (hCoeff : forall x : idx -> Real,
+      sigma * finiteVecNorm2 x <= finiteVecNorm2 (Matrix.mulVec P x)) :
+    P.det ≠ 0 := by
+  intro hdet
+  obtain ⟨x, hxne, hxzero⟩ :=
+    Matrix.exists_mulVec_eq_zero_iff.mpr hdet
+  have hnorm_ne : finiteVecNorm2 x ≠ 0 := by
+    intro hnorm
+    apply hxne
+    funext i
+    exact (finiteVecNorm2_eq_zero_iff x).mp hnorm i
+  have hnorm_pos : 0 < finiteVecNorm2 x :=
+    lt_of_le_of_ne (finiteVecNorm2_nonneg x) (Ne.symm hnorm_ne)
+  have hprod_pos : 0 < sigma * finiteVecNorm2 x :=
+    mul_pos hsigma hnorm_pos
+  have hmul_zero : finiteVecNorm2 (Matrix.mulVec P x) = 0 := by
+    rw [hxzero]
+    exact finiteVecNorm2_zero
+  have hzero : sigma * finiteVecNorm2 x <= 0 := by
+    simpa [hmul_zero] using hCoeff x
+  exact (not_le_of_gt hprod_pos) hzero
+
+/-- A positive lower bound on every finite-Gram eigenvalue gives determinant
+    nonsingularity of the original square matrix. -/
+theorem finiteMatrix_det_ne_zero_of_gram_eigenvalues
+    {idx : Type*} [Fintype idx] [DecidableEq idx]
+    (P : Matrix idx idx Real) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall a : idx,
+      lam <= finiteHermitianEigenvalues (finiteMatrixGram P)
+        (isSymmetricFiniteMatrix_finiteMatrixGram P) a) :
+    P.det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_sigmaMin_lower_bound P
+      (Real.sqrt_pos.mpr hlam)
+      (finiteMatrixGram_sigmaMin_mul_finiteVecNorm2_le_mulVec
+        P (le_of_lt hlam) hEig)
+
 /-- A concrete left inverse with a finite operator-2 bound gives the inverse
     action bound on the original product-index matrix.  This is a reusable
     bridge from exact inverse certificates to the `P`-coefficient route, without
@@ -290,6 +334,69 @@ theorem finiteMatrixGram_eigenvalues_ge_of_left_inverse_finiteOpNorm2Le
       (by positivity)
       (finiteMatrix_sigmaMin_of_left_inverse_finiteOpNorm2Le
         P Pinv hM hLeft hPinv)
+
+/-- A concrete left inverse with operator-2 radius `M` gives determinant
+    nonsingularity of the original finite matrix through the same lower-bound
+    certificate used by the Chapter 16 vec/Kronecker estimates. -/
+theorem finiteMatrix_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (P Pinv : Matrix ι ι Real) {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * P = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    P.det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_sigmaMin_lower_bound P
+      (one_div_pos.mpr hM)
+      (finiteMatrix_sigmaMin_of_left_inverse_finiteOpNorm2Le
+        P Pinv hM hLeft hPinv)
+
+/-- A determinant nonsingularity certificate for a finite square matrix makes
+    its `mulVec` action injective.  This is the exact linear-algebra bridge used
+    below for Chapter 16 vectorized coefficient systems. -/
+theorem finiteMatrix_mulVec_injective_of_det_ne_zero
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (P : Matrix ι ι Real) (hdet : P.det ≠ 0) :
+    Function.Injective (Matrix.mulVec P) := by
+  intro x y hxy
+  have h := congrArg (Matrix.mulVec P⁻¹) hxy
+  rw [Matrix.mulVec_mulVec, Matrix.mulVec_mulVec,
+    Matrix.nonsing_inv_mul P (isUnit_iff_ne_zero.mpr hdet),
+    Matrix.one_mulVec, Matrix.one_mulVec] at h
+  exact h
+
+/-- A determinant nonsingularity certificate for a finite square matrix makes
+    its `mulVec` action surjective, using Mathlib's nonsingular inverse. -/
+theorem finiteMatrix_mulVec_surjective_of_det_ne_zero
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (P : Matrix ι ι Real) (hdet : P.det ≠ 0) :
+    Function.Surjective (Matrix.mulVec P) := by
+  intro c
+  refine ⟨Matrix.mulVec P⁻¹ c, ?_⟩
+  rw [Matrix.mulVec_mulVec,
+    Matrix.mul_nonsing_inv P (isUnit_iff_ne_zero.mpr hdet),
+    Matrix.one_mulVec]
+
+/-- A determinant nonsingularity certificate for a finite square matrix makes
+    its `mulVec` action bijective. -/
+theorem finiteMatrix_mulVec_bijective_of_det_ne_zero
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (P : Matrix ι ι Real) (hdet : P.det ≠ 0) :
+    Function.Bijective (Matrix.mulVec P) :=
+  ⟨finiteMatrix_mulVec_injective_of_det_ne_zero P hdet,
+    finiteMatrix_mulVec_surjective_of_det_ne_zero P hdet⟩
+
+/-- A determinant nonsingularity certificate for a finite square matrix gives
+    existence and uniqueness for every exact vector right-hand side. -/
+theorem existsUnique_finiteMatrix_mulVec_of_det_ne_zero
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (P : Matrix ι ι Real) (hdet : P.det ≠ 0) (c : ι -> Real) :
+    ∃! x : ι -> Real, Matrix.mulVec P x = c := by
+  have hinj := finiteMatrix_mulVec_injective_of_det_ne_zero P hdet
+  have hsurj := finiteMatrix_mulVec_surjective_of_det_ne_zero P hdet
+  obtain ⟨x, hx⟩ := hsurj c
+  refine ⟨x, hx, ?_⟩
+  intro y hy
+  exact hinj (by rw [hy, hx])
 
 /-- A concrete left inverse and operator-2 radius for the printed Sylvester
     vec/Kronecker coefficient gives its sigma-min lower-bound route directly,
@@ -396,6 +503,227 @@ theorem lyapunovVecCoeff_sigmaMin_of_gram_eigenvalues (n : Nat)
   exact
     finiteMatrixGram_sigmaMin_mul_finiteVecNorm2_le_mulVec
       (lyapunovVecCoeff n A) hlam hEig x
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5):
+    a positive sigma-min lower-bound certificate for the vec/Kronecker
+    Sylvester coefficient implies determinant nonsingularity. -/
+theorem sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) {sigma : Real} (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x)) :
+    (sylvesterVecCoeff n n A B).det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_sigmaMin_lower_bound
+      (sylvesterVecCoeff n n A B) hsigma hCoeff
+
+/-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
+    a positive finite-Gram eigenvalue lower bound for the concrete vectorized
+    Sylvester coefficient implies determinant nonsingularity. -/
+theorem sylvesterVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A B : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p) :
+    (sylvesterVecCoeff n n A B).det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_gram_eigenvalues
+      (sylvesterVecCoeff n n A B) hlam hEig
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5):
+    a concrete left inverse with finite operator-2 radius for the vec/Kronecker
+    Sylvester coefficient implies determinant nonsingularity. -/
+theorem sylvesterVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A B : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    (sylvesterVecCoeff n n A B).det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+      (sylvesterVecCoeff n n A B) Pinv hM hLeft hPinv
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a positive sigma-min lower-bound certificate for the vec/Kronecker
+    Lyapunov coefficient implies determinant nonsingularity. -/
+theorem lyapunovVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) {sigma : Real} (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x)) :
+    (lyapunovVecCoeff n A).det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_sigmaMin_lower_bound
+      (lyapunovVecCoeff n A) hsigma hCoeff
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a positive finite-Gram eigenvalue lower bound for the concrete vectorized
+    Lyapunov coefficient implies determinant nonsingularity. -/
+theorem lyapunovVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p) :
+    (lyapunovVecCoeff n A).det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_gram_eigenvalues
+      (lyapunovVecCoeff n A) hlam hEig
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a concrete left inverse with finite operator-2 radius for the vec/Kronecker
+    Lyapunov coefficient implies determinant nonsingularity. -/
+theorem lyapunovVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    (lyapunovVecCoeff n A).det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+      (lyapunovVecCoeff n A) Pinv hM hLeft hPinv
+
+/-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
+    a positive sigma-min certificate makes the exact vectorized Sylvester
+    coefficient solve bijective.  This is a coefficient-matrix consequence of
+    the supplied certificate, not a nondiagonal Kronecker spectral theorem. -/
+theorem sylvesterVecCoeff_mulVec_bijective_of_vecCoeff_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) {sigma : Real} (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x)) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff n n A B)) := by
+  exact
+    finiteMatrix_mulVec_bijective_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n A B hsigma hCoeff)
+
+/-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
+    a positive sigma-min certificate gives a unique exact vectorized Sylvester
+    coefficient solution for every vectorized right-hand side. -/
+theorem existsUnique_sylvesterVecCoeff_mulVec_of_vecCoeff_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) {sigma : Real} (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (c : Prod (Fin n) (Fin n) -> Real) :
+    ∃! x : Prod (Fin n) (Fin n) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff n n A B) x = c := by
+  exact
+    existsUnique_finiteMatrix_mulVec_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n A B hsigma hCoeff)
+      c
+
+/-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
+    a positive finite-Gram eigenvalue certificate makes the exact vectorized
+    Sylvester coefficient solve bijective. -/
+theorem sylvesterVecCoeff_mulVec_bijective_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A B : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff n n A B)) := by
+  exact
+    finiteMatrix_mulVec_bijective_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues
+        n A B hlam hEig)
+
+/-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
+    a positive finite-Gram eigenvalue certificate gives a unique exact
+    vectorized Sylvester coefficient solution for every right-hand side. -/
+theorem existsUnique_sylvesterVecCoeff_mulVec_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A B : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (c : Prod (Fin n) (Fin n) -> Real) :
+    ∃! x : Prod (Fin n) (Fin n) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff n n A B) x = c := by
+  exact
+    existsUnique_finiteMatrix_mulVec_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues
+        n A B hlam hEig)
+      c
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a positive sigma-min certificate makes the exact vectorized Lyapunov
+    coefficient solve bijective. -/
+theorem lyapunovVecCoeff_mulVec_bijective_of_vecCoeff_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) {sigma : Real} (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x)) :
+    Function.Bijective (Matrix.mulVec (lyapunovVecCoeff n A)) := by
+  exact
+    finiteMatrix_mulVec_bijective_of_det_ne_zero
+      (lyapunovVecCoeff n A)
+      (lyapunovVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n A hsigma hCoeff)
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a positive sigma-min certificate gives a unique exact vectorized Lyapunov
+    coefficient solution for every right-hand side. -/
+theorem existsUnique_lyapunovVecCoeff_mulVec_of_vecCoeff_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) {sigma : Real} (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x))
+    (c : Prod (Fin n) (Fin n) -> Real) :
+    ∃! x : Prod (Fin n) (Fin n) -> Real,
+      Matrix.mulVec (lyapunovVecCoeff n A) x = c := by
+  exact
+    existsUnique_finiteMatrix_mulVec_of_det_ne_zero
+      (lyapunovVecCoeff n A)
+      (lyapunovVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n A hsigma hCoeff)
+      c
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a positive finite-Gram eigenvalue certificate makes the exact vectorized
+    Lyapunov coefficient solve bijective. -/
+theorem lyapunovVecCoeff_mulVec_bijective_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p) :
+    Function.Bijective (Matrix.mulVec (lyapunovVecCoeff n A)) := by
+  exact
+    finiteMatrix_mulVec_bijective_of_det_ne_zero
+      (lyapunovVecCoeff n A)
+      (lyapunovVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues
+        n A hlam hEig)
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a positive finite-Gram eigenvalue certificate gives a unique exact
+    vectorized Lyapunov coefficient solution for every right-hand side. -/
+theorem existsUnique_lyapunovVecCoeff_mulVec_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (c : Prod (Fin n) (Fin n) -> Real) :
+    ∃! x : Prod (Fin n) (Fin n) -> Real,
+      Matrix.mulVec (lyapunovVecCoeff n A) x = c := by
+  exact
+    existsUnique_finiteMatrix_mulVec_of_det_ne_zero
+      (lyapunovVecCoeff n A)
+      (lyapunovVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues
+        n A hlam hEig)
+      c
 
 /-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
     a positive lower bound for the concrete vectorized Sylvester coefficient
@@ -607,6 +935,20 @@ theorem sylvesterVecCoeff_diagonal_gram_eigenvalues_ge_of_entrywise_abs_ge
       (sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
         a b sigma hsigma hgap)
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3),
+    diagonal case: a positive uniform gap `|a_i - b_j| >= sigma` makes the
+    square vec/Kronecker Sylvester coefficient nonsingular. -/
+theorem sylvesterVecCoeff_diagonal_det_ne_zero_of_entrywise_abs_ge
+    (n : Nat) (a b : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|) :
+    (sylvesterVecCoeff n n (Matrix.diagonal a) (Matrix.diagonal b)).det ≠ 0 := by
+  exact
+    sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n
+      (Matrix.diagonal a) (Matrix.diagonal b) hsigma
+      (sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a b sigma (le_of_lt hsigma) hgap)
+
 /-- Higham, 2nd ed., Chapter 16.1 and equation (16.26), diagonal case:
     the concrete diagonal vec/Kronecker lower bound transfers to the
     Frobenius lower bound for the Sylvester operator. -/
@@ -764,6 +1106,25 @@ theorem sylvesterVecCoeff_schurDiagonal_gram_eigenvalues_ge_of_entrywise_abs_ge
   exact
     finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound
       (sylvesterVecCoeff n n A B) (le_of_lt hsigma)
+      (sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
+        U A V B a b sigma hU hV hA hB hsigma hgap)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case: a positive coordinate gap makes
+    the original square vec/Kronecker Sylvester coefficient nonsingular. -/
+theorem sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_abs_ge
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|) :
+    (sylvesterVecCoeff n n A B).det ≠ 0 := by
+  exact
+    sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n
+      A B hsigma
       (sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
         U A V B a b sigma hU hV hA hB hsigma hgap)
 
@@ -1164,6 +1525,20 @@ theorem lyapunovVecCoeff_diagonal_gram_eigenvalues_ge_of_entrywise_abs_ge
         a sigma hsigma hgap)
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    a positive uniform gap `|a_i + a_j| >= sigma` makes the square Lyapunov
+    vec/Kronecker coefficient nonsingular. -/
+theorem lyapunovVecCoeff_diagonal_det_ne_zero_of_entrywise_abs_ge
+    (n : Nat) (a : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|) :
+    (lyapunovVecCoeff n (Matrix.diagonal a)).det ≠ 0 := by
+  exact
+    lyapunovVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n
+      (Matrix.diagonal a) hsigma
+      (lyapunovVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a sigma (le_of_lt hsigma) hgap)
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
     the concrete diagonal Lyapunov vec/Kronecker lower bound transfers to the
     Frobenius lower bound for the Lyapunov operator. -/
 theorem lyapunovOp_sigmaMin_diagonal_of_entrywise_abs_ge (n : Nat)
@@ -1270,6 +1645,24 @@ theorem lyapunovVecCoeff_spectralDiagonal_gram_eigenvalues_ge_of_entrywise_abs_g
   exact
     finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound
       (lyapunovVecCoeff n A) (le_of_lt hsigma)
+      (lyapunovVecCoeff_spectralDiagonal_sigmaMin_of_entrywise_abs_ge n
+        U A a sigma hU hA hsigma hgap)
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case: a positive spectral-coordinate sum gap makes the
+    original square Lyapunov vec/Kronecker coefficient nonsingular. -/
+theorem lyapunovVecCoeff_spectralDiagonal_det_ne_zero_of_entrywise_abs_ge
+    (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|) :
+    (lyapunovVecCoeff n A).det ≠ 0 := by
+  exact
+    lyapunovVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n
+      A hsigma
       (lyapunovVecCoeff_spectralDiagonal_sigmaMin_of_entrywise_abs_ge n
         U A a sigma hU hA hsigma hgap)
 
@@ -2534,6 +2927,121 @@ theorem H16_eq16_27_lyapunov_condition_spectralDiagonal_of_vecCoeff_entrywise_ab
       halpha hgamma hsigma heps hX
       (lyapunovVecCoeff_spectralDiagonal_sigmaMin_of_entrywise_abs_ge n
         U A a sigma hU hA hsigma hgap)
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    Frobenius first-order Lyapunov perturbation bound from the concrete
+    diagonal Lyapunov vec/Kronecker coefficient lower-bound certificate. -/
+theorem lyapunov_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+    (n : Nat) (a : Fin n -> Real)
+    (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma)
+    (hX : 0 < frobNorm X)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hLin : forall i j,
+      lyapunovOp n (Matrix.diagonal a) DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX <=
+      lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) *
+        frobNorm X *
+        lyapunovScaledPerturbationPairNorm n DeltaA DeltaC alpha gamma := by
+  exact
+    (lyapunovCond_of_vecCoeff_sigmaMin_isLyapunovConditionFirstOrderBound
+      n (Matrix.diagonal a) X alpha gamma sigma
+      halpha hgamma hsigma hX
+      (lyapunovVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a sigma (le_of_lt hsigma) hgap))
+      DeltaA DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    relative Lyapunov first-order perturbation bound from the concrete
+    diagonal Lyapunov vec/Kronecker coefficient lower-bound certificate. -/
+theorem lyapunov_relative_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+    (n : Nat) (a : Fin n -> Real)
+    (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n (Matrix.diagonal a) DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_27_lyapunov_condition_diagonal_of_vecCoeff_entrywise_abs_ge n
+      a X DeltaA DeltaC DeltaX alpha gamma sigma eps
+      halpha hgamma hsigma heps hX hgap
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case:
+    Frobenius first-order Lyapunov perturbation bound from the concrete
+    spectral-diagonal Lyapunov vec/Kronecker coefficient lower-bound
+    certificate. -/
+theorem lyapunov_first_order_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge
+    (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma)
+    (hX : 0 < frobNorm X)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX <=
+      lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) *
+        frobNorm X *
+        lyapunovScaledPerturbationPairNorm n DeltaA DeltaC alpha gamma := by
+  exact
+    (lyapunovCond_of_vecCoeff_sigmaMin_isLyapunovConditionFirstOrderBound
+      n A X alpha gamma sigma halpha hgamma hsigma hX
+      (lyapunovVecCoeff_spectralDiagonal_sigmaMin_of_entrywise_abs_ge n
+        U A a sigma hU hA hsigma hgap))
+      DeltaA DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case:
+    relative Lyapunov first-order perturbation bound from the concrete
+    spectral-diagonal Lyapunov vec/Kronecker coefficient lower-bound
+    certificate. -/
+theorem lyapunov_relative_first_order_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge
+    (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma eps : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_27_lyapunov_condition_spectralDiagonal_of_vecCoeff_entrywise_abs_ge n
+      U A a X DeltaA DeltaC DeltaX alpha gamma sigma eps
+      hU hA halpha hgamma hsigma heps hX hgap
       hDeltaA hDeltaC hLin
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal

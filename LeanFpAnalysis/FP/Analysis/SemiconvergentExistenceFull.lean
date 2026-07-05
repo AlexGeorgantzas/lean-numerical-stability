@@ -486,15 +486,23 @@ theorem matPow_G_tendsto_oneEigenProjector_of_quasiTriangular_complement (n r : 
 --          is `1.2 > 1` although `a²+b² = 0.72 < 1`).  The block-contractivity
 --          hypothesis `hCblock` (`|a|+|b| ≤ ρ < 1`) therefore requires a further
 --          per-block real similarity bringing each `2×2` block's ∞-norm below `1`.
---          Such a similarity EXISTS (the ∞-norm of any real matrix with
---          spectral radius `< 1` can be pushed below `1` by a similarity — an
---          instance of "spectral radius = inf of operator norms over
---          similarities"), but Mathlib v4.29 has no explicit constructive form of
---          it for the `2×2` complex-eigenvalue block, and it is not proved here.
---          NOTE: whenever the complement spectrum is REAL (all `1×1` blocks), (3b)
---          is vacuous and (3a) alone completes the full existence — this module's
---          `..._of_quasiTriangular_complement` theorems already discharge that
---          fully-real case end to end.
+--          CORRECTION (proved in `SemiconvergentExistenceComplete.lean`,
+--          `twoByTwo_max_rowSum_ge_of_trace_det`): such a similarity does NOT
+--          always exist. For the ∞-norm the infimum over real similarities of a
+--          `2×2` block with eigenvalues `α ± βi` equals `|α| + |β|`, NOT the
+--          spectral radius `√(α²+β²)`.  (The "spectral radius = inf of operator
+--          norms over similarities" identity holds for the 2-norm, not the ∞-norm.)
+--          Hence `hCblock` in the repository's `‖Γ‖∞ ≤ q < 1` form is achievable
+--          EXACTLY under the sharp threshold `|Re λ| + |Im λ| < 1` for every non-`1`
+--          eigenvalue, and is genuinely IMPOSSIBLE otherwise (witness `0.6 ± 0.6i`:
+--          `ρ = 0.849 < 1` but every similar block has ∞-row-sum `≥ 1.2`).  This is
+--          a real mathematical fact, not a Mathlib gap.  NOTE: whenever the
+--          complement spectrum is REAL (all `1×1` blocks) the threshold is
+--          automatic and (3a) alone completes the full existence — this module's
+--          `..._of_quasiTriangular_complement` theorems discharge that fully-real
+--          case end to end.  (The general non-threshold case needs the 2-norm
+--          contraction form of (17.22), which the book's `ρ(Γ) < 1` statement uses;
+--          the repository's ∞-norm strengthening is the stricter object.)
 --
 -- Thus the FULL `[106, Lem 6.9]` from convergence of `Gᵐ` reduces, after this
 -- module, to exactly (3a) + (3b): everything spectral (GAP (1), (2)) and every

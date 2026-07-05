@@ -15384,3 +15384,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check exists_diag_infNorm_conj_lt_one_of_quasiUpperTriangular
 #check semiconvergent_block_form_exists_of_quasiTriangular_complement
 #check matPow_G_tendsto_oneEigenProjector_of_quasiTriangular_complement
+-- Split-3B Wave-8: [106] coordinate real Fitting decomposition (3a) + sharp 2x2 infinity-norm obstruction (3b)
+#check exists_real_primary_splitting_of_forall_orbit_tendsto
+#check semiconvergent_block_form_exists_of_adapted_basis
+#check semiconvergent_block_form_exists_of_convergence_and_complement_normal_form
+#check twoByTwo_max_rowSum_ge_of_trace_det
