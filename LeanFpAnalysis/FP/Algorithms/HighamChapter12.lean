@@ -116,6 +116,59 @@ theorem higham12_forward_error_steady_state (a : ℕ → ℝ) (eta tau : ℝ)
   linear_contraction_steady_state a eta tau
     heta_nonneg heta_lt htau_nonneg hstep ha0
 
+/-- **Equations (12.4)-(12.5)** exact forward-error identity of one refinement
+step.  With computed residual `rc = (b - A x_i) + Δr`, correction `d` solving
+`(A + ΔA) d = rc`, and rounded update `y = x_i + d + Δx`, the corrected forward
+error satisfies exactly `A (y - x) = Δr - ΔA·d + A·Δx`.  This is the exact,
+inverse-free core of the recurrence (12.5) (before the source's asymptotic
+`F_i`, `G_i`, `O(u^2)` estimates). -/
+theorem higham12_5_forward_error_identity (n : ℕ)
+    (A DeltaA : Fin n → Fin n → ℝ)
+    (x x_i d DeltaR DeltaX rc y b : Fin n → ℝ)
+    (hAx : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hrc : ∀ i : Fin n,
+      rc i = (b i - ∑ j : Fin n, A i j * x_i j) + DeltaR i)
+    (hsolve : ∀ i : Fin n,
+      ∑ j : Fin n, (A i j + DeltaA i j) * d j = rc i)
+    (hy : ∀ i : Fin n, y i = x_i i + d i + DeltaX i) :
+    ∀ i : Fin n,
+      ∑ j : Fin n, A i j * (y j - x j) =
+        DeltaR i - (∑ j : Fin n, DeltaA i j * d j)
+          + (∑ j : Fin n, A i j * DeltaX j) :=
+  forward_error_step_identity n A DeltaA x x_i d DeltaR DeltaX rc y b
+    hAx hrc hsolve hy
+
+/-- **Equation (12.5)** componentwise forward-error bound of one refinement step.
+Applying a nonnegative `|A^{-1}|` resolver to the exact identity gives
+`|y - x|_i ≤ ∑_j Ainv_ij (|Δr|_j + (|ΔA||d|)_j + (|A||Δx|)_j)`.  The three
+sources are: residual computation `Δr` (eq. 12.2, carrying the contracting
+`|A||x - x_i|` term), solver backward error `ΔA ≤ uW` (eq. 12.1), and update
+rounding `Δx` (eq. 12.13).  This is the exact three-source form of Higham's
+`G_i|x - x_i| + g_i` recurrence; the "reduces by factor ≈ η" summary of
+Theorems 12.1/12.2 is the qualitative reading of this bound iterated via
+`higham12_forward_error_linear_contraction`. -/
+theorem higham12_5_forward_error_bound (n : ℕ)
+    (A DeltaA : Fin n → Fin n → ℝ)
+    (x x_i d DeltaR DeltaX rc y b : Fin n → ℝ)
+    (hAx : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hrc : ∀ i : Fin n,
+      rc i = (b i - ∑ j : Fin n, A i j * x_i j) + DeltaR i)
+    (hsolve : ∀ i : Fin n,
+      ∑ j : Fin n, (A i j + DeltaA i j) * d j = rc i)
+    (hy : ∀ i : Fin n, y i = x_i i + d i + DeltaX i)
+    (Ainv : Fin n → Fin n → ℝ)
+    (hAinv_nn : ∀ i j : Fin n, 0 ≤ Ainv i j)
+    (hAinv : ∀ (v w : Fin n → ℝ),
+      (∀ i : Fin n, ∑ j : Fin n, A i j * v j = w i) →
+      ∀ i : Fin n, |v i| ≤ ∑ j : Fin n, Ainv i j * |w j|) :
+    ∀ i : Fin n,
+      |y i - x i| ≤
+        ∑ j : Fin n, Ainv i j *
+          (|DeltaR j| + (∑ k : Fin n, |DeltaA j k| * |d k|)
+            + (∑ k : Fin n, |A j k| * |DeltaX k|)) :=
+  forward_error_step_bound n A DeltaA x x_i d DeltaR DeltaX rc y b
+    hAx hrc hsolve hy Ainv hAinv_nn hAinv
+
 /-! ## §12.2 Iterative Refinement Implies Stability -/
 
 /-- **Equation (12.7)** source model for the initial computed solution:

@@ -4870,6 +4870,8 @@ Source-facing Chapter 12 wrappers:
 - `higham12_2_residual_delta_bound`
 - `higham12_forward_error_linear_contraction`
 - `higham12_forward_error_steady_state`
+- `higham12_5_forward_error_identity`
+- `higham12_5_forward_error_bound`
 - `higham12_7_initialResidualBound`
 - `higham12_8_residualComputationBound`
 - `higham12_9_conventional_residual_error`
