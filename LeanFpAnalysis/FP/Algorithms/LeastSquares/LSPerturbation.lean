@@ -2932,6 +2932,56 @@ theorem wedinLemma20_12_rectMatMulVec_projectionDiff_sq_eq_self_of_projection_sw
             ring
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    on the range of `P`, the eigenvalue-`1` vectors of `D^2`, `D = P-Q`,
+    are exactly the vectors killed by the swapped projection `Q`. -/
+theorem wedinLemma20_12_projection_range_projectionDiff_sq_eq_self_iff_projection_swapped_zero
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (x : Fin m → ℝ)
+    (hxP : rectMatMulVec P x = x) :
+    rectMatMulVec
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)) x = x ↔
+      rectMatMulVec Q x = 0 := by
+  constructor
+  · intro hxEig
+    exact
+      wedinLemma20_12_rectMatMulVec_projection_swapped_eq_zero_of_projectionDiff_sq_eigenvalue_one_projection_range
+        P Q hP hQ hIdemP hIdemQ x hxP hxEig
+  · intro hxQ
+    exact
+      wedinLemma20_12_rectMatMulVec_projectionDiff_sq_eq_self_of_projection_range_projection_swapped_zero
+        P Q x hxP hxQ
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped version: on the range of `Q`, the eigenvalue-`1` vectors of
+    `D^2`, `D = P-Q`, are exactly the vectors killed by `P`. -/
+theorem wedinLemma20_12_projection_swapped_range_projectionDiff_sq_eq_self_iff_projection_zero
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (x : Fin m → ℝ)
+    (hxQ : rectMatMulVec Q x = x) :
+    rectMatMulVec
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)) x = x ↔
+      rectMatMulVec P x = 0 := by
+  constructor
+  · intro hxEig
+    exact
+      wedinLemma20_12_rectMatMulVec_projection_eq_zero_of_projectionDiff_sq_eigenvalue_one_projection_swapped_range
+        P Q hP hQ hIdemP hIdemQ x hxQ hxEig
+  · intro hxP
+    exact
+      wedinLemma20_12_rectMatMulVec_projectionDiff_sq_eq_self_of_projection_swapped_range_projection_zero
+        P Q x hxQ hxP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     left-compressing the companion square `S^2` to the `Q` range gives
     `Q*P*Q`. -/
 theorem wedinLemma20_12_projection_swapped_mul_projectionSumSubId_sq_eq_projection_swapped_mul_projection_mul_projection_swapped
