@@ -1281,6 +1281,56 @@ def higham11_15_aasenSolveChain (n : ℕ)
   (∀ i : Fin n, ∑ j : Fin n, L j i * w j = y i) ∧
   (∀ i : Fin n, x i = ∑ j : Fin n, Pmat i j * w j)
 
+/-- **Equation (11.15) exact solve-chain bridge**, unpermuted case.  If the
+exact Aasen product is `A = L T Lᵀ` and the three exact solves in the chain are
+satisfied with identity permutation, then the resulting `x` solves `A x = b`.
+This is the algebraic base that the later rounded solve-chain perturbation must
+approximate. -/
+theorem higham11_15_aasenSolveChain_identity_solve_of_product (n : ℕ)
+    (A L T : Fin n → Fin n → ℝ) (b z y w x : Fin n → ℝ)
+    (hprod : ∀ i j : Fin n,
+      (∑ k₁ : Fin n, ∑ k₂ : Fin n, L i k₁ * T k₁ k₂ * L j k₂) = A i j)
+    (hchain : higham11_15_aasenSolveChain n (fun i j => if i = j then 1 else 0)
+      L T b z y w x) :
+    ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i := by
+  rcases hchain with ⟨hLz, hTy, hLtw, hx⟩
+  have hLz' : ∀ i : Fin n, ∑ j : Fin n, L i j * z j = b i := by
+    intro i
+    simpa using hLz i
+  have hx' : ∀ i : Fin n, x i = w i := by
+    intro i
+    simpa using hx i
+  intro i
+  calc
+    ∑ j : Fin n, A i j * x j
+        = ∑ j : Fin n,
+            (∑ k₁ : Fin n, ∑ k₂ : Fin n, L i k₁ * T k₁ k₂ * L j k₂) * w j := by
+          apply Finset.sum_congr rfl
+          intro j _
+          rw [← hprod i j, hx' j]
+    _ = ∑ k₁ : Fin n,
+          L i k₁ * (∑ k₂ : Fin n, T k₁ k₂ * (∑ j : Fin n, L j k₂ * w j)) := by
+          simp_rw [Finset.sum_mul, Finset.mul_sum]
+          rw [Finset.sum_comm]
+          apply Finset.sum_congr rfl
+          intro k₁ _
+          rw [Finset.sum_comm]
+          apply Finset.sum_congr rfl
+          intro k₂ _
+          ring_nf
+    _ = ∑ k₁ : Fin n, L i k₁ * (∑ k₂ : Fin n, T k₁ k₂ * y k₂) := by
+          apply Finset.sum_congr rfl
+          intro k₁ _
+          congr 1
+          apply Finset.sum_congr rfl
+          intro k₂ _
+          rw [hLtw k₂]
+    _ = ∑ k₁ : Fin n, L i k₁ * z k₁ := by
+          apply Finset.sum_congr rfl
+          intro k₁ _
+          rw [hTy k₁]
+    _ = b i := hLz' i
+
 /-- **Theorem 11.8** componentwise Aasen backward-error target shape. -/
 theorem higham11_8_aasen_backward_error_interface (n : ℕ)
     (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)

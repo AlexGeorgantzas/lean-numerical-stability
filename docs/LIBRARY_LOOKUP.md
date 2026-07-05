@@ -4838,6 +4838,7 @@ Source-facing Chapter 11 wrappers:
 - `higham11_14_fl_aasen_next_column_update_source_prefix_abs_sub_bound_of_exact_recurrence`
 - `higham11_14_fl_aasen_next_column_update_source_prefix_column_component_bound_of_exact_recurrence`
 - `higham11_15_aasenSolveChain`
+- `higham11_15_aasenSolveChain_identity_solve_of_product`
 - `higham11_8_aasen_backward_error_interface`
 - `higham11_8_aasenNormwiseBackwardBound`
 - `higham11_8_infNorm_le_card_mul_of_uniform_componentwise_bound`
