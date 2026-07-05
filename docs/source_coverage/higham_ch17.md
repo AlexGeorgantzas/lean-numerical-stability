@@ -41,10 +41,19 @@
   `eigenvalue_norm_le_one_of_orbit_tendsto` (convergence of `Gᵐ` ⟹ every
   eigenvalue `‖μ‖ ≤ 1`), the semisimple collapse `maxGenEigenspace 1 =
   eigenspace 1` (given `IsFinitelySemisimple`), and the ℂ primary-decomposition
-  internal direct sum — with the four remaining obstructions to full [106]
-  existence itemized in-file (semisimple-at-1 FROM convergence; strict `|μ|<1`;
-  ℂ→ℝ descent; the `ρ(Γ)<1 ⟹ ‖D⁻¹ΓD‖∞<1` contraction), each naming the exact
-  missing Mathlib v4.29 lemma. Full [106] existence remains allowed-BLOCKED; the
+  internal direct sum. **Three of the four gaps subsequently CLOSED
+  (`Analysis/SemiconvergentExistenceGaps.lean`, import-only, axiom-clean):**
+  gap (2) strict `|μ|<1` — `scalar_pow_tendsto_dichotomy` (μᵐ converges ⟹ μ=1 ∨
+  ‖μ‖<1) + `eigenvalue_dichotomy_of_orbit_tendsto`, upgrading the closed-disk
+  bound to eq (17.22)'s printed condition; gap (4) the ∞-norm contraction —
+  `exists_diag_infNorm_conj_lt_one_of_upperTriangular` (Householder δ-scaling:
+  upper-triangular T with |diag|≤ρ<1 ⟹ ∃ diagonal D, ‖D⁻¹TD‖∞<1); gap (1)
+  reverse block-growth — `genEigenvector_one_rank_two_orbit_norm_tendsto_atTop`
+  (a rank-2 Jordan chain at 1 makes ‖Gᵐx‖→∞, so a bounded orbit has none). The
+  LONE remaining bridge to full [106] is gap (3) the ℂ→ℝ descent (evidenced
+  obstruction: Mathlib v4.29 has no real-Jordan/real-invariant-basis API; the
+  general gap (4) reduces to it). Full [106] existence remains allowed-BLOCKED on
+  gap (3) only; the
   `hne`/certificate hypotheses documented per-row (each
   mirrors an implicit assumption of the printed text); and the
   benchmark-reserved Problem 17.1 / Appendix A 17.1 rows.

@@ -100,6 +100,13 @@ import LeanFpAnalysis.FP.Analysis.MatrixPowersHenriciNormal
 import LeanFpAnalysis.FP.Analysis.SylvesterSchurExistence
 import LeanFpAnalysis.FP.Analysis.MatrixPowersBinomialBound
 import LeanFpAnalysis.FP.Analysis.SemiconvergentSpectral
+import LeanFpAnalysis.FP.Analysis.RealSchurTriangulation
+import LeanFpAnalysis.FP.Analysis.SemiconvergentExistenceGaps
+import LeanFpAnalysis.FP.Analysis.JordanNormalForm
+import LeanFpAnalysis.FP.Analysis.BergerInequality
+import LeanFpAnalysis.FP.Analysis.PseudospectralResolvent
+import LeanFpAnalysis.FP.Analysis.HenriciExtremal
+import LeanFpAnalysis.FP.Analysis.ConditionEstimatorLowerBound
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderReflector
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderApply
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderOneStep
@@ -116,6 +123,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderConstruction2
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19FormedQ
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19StoredLoop
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Labels
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
