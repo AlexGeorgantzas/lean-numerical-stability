@@ -50,14 +50,19 @@
   upper-triangular T with |diag|≤ρ<1 ⟹ ∃ diagonal D, ‖D⁻¹TD‖∞<1); gap (1)
   reverse block-growth — `genEigenvector_one_rank_two_orbit_norm_tendsto_atTop`
   (a rank-2 Jordan chain at 1 makes ‖Gᵐx‖→∞, so a bounded orbit has none). The
-  gap (3) ℂ→ℝ descent core is now ALSO built (`Analysis/RealInvariantSubspace.lean`,
-  axiom-clean): `exists_real_invariant_subspace_dim_le_two` + `real_peel_one_or_two`
-  supply the real dim-≤2 invariant subspace / conjugate-pair recombination that
-  gap (3) named as absent. So all four analytic gaps are now closed; the sole
-  residual to assembling the full printed (17.22) block form is the deflation
-  INDUCTION that iterates the peel-1-or-2 primitive into the global real basis
-  (engineering, mirroring the general-(16.4) real-Schur residual) — no missing
-  mathematics. Full [106] block-form assembly is thus reduced to that induction; the
+  gap (3) ℂ→ℝ descent core is built (`Analysis/RealInvariantSubspace.lean`) and the
+  deflation INDUCTION is now DONE — full real quasi-Schur (16.4) is proved
+  (`Analysis/RealQuasiSchur.lean`, `real_quasi_schur`). GAP(1) semisimplicity-from-
+  convergence is closed (`SemiconvergentBlockFormExists.maxGenEigenspace_one_eq_eigenspace_of_forall_orbit_tendsto`),
+  GAP(2)/GAP(4) closed incl. the 2×2-block ∞-norm contraction
+  (`SemiconvergentExistenceFull.exists_diag_infNorm_conj_lt_one_of_quasiUpperTriangular`),
+  and the downstream block-form assembly given a real quasi-triangular complement is
+  proved (`semiconvergent_block_form_exists_of_quasiTriangular_complement`). Full [106]
+  from convergence of Gᵐ now reduces to exactly TWO concrete lemmas: (3a) the
+  coordinate real primary/Fitting decomposition (Mathlib HAS the abstract splitting
+  `LinearMap.isCompl_iSup_ker_pow_iInf_range_pow`; needs the Submodule↔matMul bridge)
+  and (3b) the explicit per-2×2-block ∞-norm similarity reduction. The fully-real-
+  spectrum case is already end-to-end modulo (3a). (Wave-8 finishes (3a)+(3b).) The
   `hne`/certificate hypotheses documented per-row (each
   mirrors an implicit assumption of the printed text); and the
   benchmark-reserved Problem 17.1 / Appendix A 17.1 rows.
