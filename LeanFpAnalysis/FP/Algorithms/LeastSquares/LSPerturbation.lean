@@ -2904,6 +2904,108 @@ theorem wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_eq_swa
             (finiteTrace_rectMatMul_comm (rectMatMul Q P) Q).symm
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the two companion-square compressions `PQP` and `QPQ` have the same
+    second trace moment. -/
+theorem wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_sq_eq_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul (rectMatMul (rectMatMul P Q) P)
+          (rectMatMul (rectMatMul P Q) P)) =
+      finiteTrace
+        (rectMatMul (rectMatMul (rectMatMul Q P) Q)
+          (rectMatMul (rectMatMul Q P) Q)) := by
+  let A : Fin m → Fin m → ℝ := rectMatMul (rectMatMul P Q) P
+  let B : Fin m → Fin m → ℝ := rectMatMul (rectMatMul Q P) Q
+  have hPA : rectMatMul P A = A := by
+    dsimp [A]
+    calc
+      rectMatMul P (rectMatMul (rectMatMul P Q) P)
+          = rectMatMul (rectMatMul P (rectMatMul P Q)) P := by
+              rw [← rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul (rectMatMul P P) Q) P := by
+              rw [← rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul P Q) P := by
+              rw [hIdemP]
+  have hAP : rectMatMul A P = A := by
+    dsimp [A]
+    calc
+      rectMatMul (rectMatMul (rectMatMul P Q) P) P
+          = rectMatMul (rectMatMul P Q) (rectMatMul P P) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul P Q) P := by
+              rw [hIdemP]
+  have hQB : rectMatMul Q B = B := by
+    dsimp [B]
+    calc
+      rectMatMul Q (rectMatMul (rectMatMul Q P) Q)
+          = rectMatMul (rectMatMul Q (rectMatMul Q P)) Q := by
+              rw [← rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul (rectMatMul Q Q) P) Q := by
+              rw [← rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul Q P) Q := by
+              rw [hIdemQ]
+  have hBQ : rectMatMul B Q = B := by
+    dsimp [B]
+    calc
+      rectMatMul (rectMatMul (rectMatMul Q P) Q) Q
+          = rectMatMul (rectMatMul Q P) (rectMatMul Q Q) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul Q P) Q := by
+              rw [hIdemQ]
+  have hTraceA : finiteTrace (rectMatMul A A) =
+      finiteTrace (rectMatMul A Q) := by
+    calc
+      finiteTrace (rectMatMul A A)
+          = finiteTrace (rectMatMul (rectMatMul A (rectMatMul P Q)) P) := by
+              dsimp [A]
+              rw [← rectMatMul_assoc]
+      _ = finiteTrace (rectMatMul P (rectMatMul A (rectMatMul P Q))) :=
+              finiteTrace_rectMatMul_comm (rectMatMul A (rectMatMul P Q)) P
+      _ = finiteTrace (rectMatMul (rectMatMul P A) (rectMatMul P Q)) := by
+              rw [← rectMatMul_assoc]
+      _ = finiteTrace (rectMatMul A (rectMatMul P Q)) := by
+              rw [hPA]
+      _ = finiteTrace (rectMatMul (rectMatMul A P) Q) := by
+              rw [← rectMatMul_assoc]
+      _ = finiteTrace (rectMatMul A Q) := by
+              rw [hAP]
+  have hTraceB : finiteTrace (rectMatMul B B) =
+      finiteTrace (rectMatMul B P) := by
+    calc
+      finiteTrace (rectMatMul B B)
+          = finiteTrace (rectMatMul (rectMatMul B (rectMatMul Q P)) Q) := by
+              dsimp [B]
+              rw [← rectMatMul_assoc]
+      _ = finiteTrace (rectMatMul Q (rectMatMul B (rectMatMul Q P))) :=
+              finiteTrace_rectMatMul_comm (rectMatMul B (rectMatMul Q P)) Q
+      _ = finiteTrace (rectMatMul (rectMatMul Q B) (rectMatMul Q P)) := by
+              rw [← rectMatMul_assoc]
+      _ = finiteTrace (rectMatMul B (rectMatMul Q P)) := by
+              rw [hQB]
+      _ = finiteTrace (rectMatMul (rectMatMul B Q) P) := by
+              rw [← rectMatMul_assoc]
+      _ = finiteTrace (rectMatMul B P) := by
+              rw [hBQ]
+  have hQA : rectMatMul Q A = rectMatMul B P := by
+    dsimp [A, B]
+    calc
+      rectMatMul Q (rectMatMul (rectMatMul P Q) P)
+          = rectMatMul (rectMatMul Q (rectMatMul P Q)) P := by
+              rw [← rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul (rectMatMul Q P) Q) P := by
+              rw [← rectMatMul_assoc]
+  calc
+    finiteTrace (rectMatMul A A)
+        = finiteTrace (rectMatMul A Q) := hTraceA
+    _ = finiteTrace (rectMatMul Q A) :=
+            finiteTrace_rectMatMul_comm A Q
+    _ = finiteTrace (rectMatMul B P) := by
+            rw [hQA]
+    _ = finiteTrace (rectMatMul B B) := hTraceB.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the locally named finite Hermitian eigenvalues of the two
     companion-square compressions have equal sums. -/
 theorem wedinLemma20_12_sum_finiteHermitianEigenvalues_projection_mul_swapped_mul_projection_eq_swapped
