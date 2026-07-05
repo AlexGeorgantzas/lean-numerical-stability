@@ -889,6 +889,85 @@ theorem fl_blockLDLT_trailing_bound (n : ℕ) (fp : FPModel)
     _ ≤ 2 * gamma fp 3 * (|A i.succ j.succ| + |A i.succ 0 * A 0 j.succ / A 0 0|)
           + Bs i j := add_le_add hΔ (hIH i j)
 
+/-- **Pivot row/column floating-point backward error of one 1×1-pivot stage.**
+    The pivot entry is reproduced exactly, `(L̂D̂L̂ᵀ)_{0,0} = A 0 0`, and each
+    pivot-row entry has a tiny backward error `(L̂D̂L̂ᵀ)_{0,j+1} = A 0 j.succ + Δ`
+    with `|Δ| ≤ u·|A 0 j.succ|`.  Together with `fl_blockLDLT_trailing_bound` this
+    is the complete 1×1-stage assemble step of Theorem 11.3's backward error. -/
+theorem fl_blockLDLT_pivot_row_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (he : A 0 0 ≠ 0) (hsym1 : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0) :
+    (∑ k₁, ∑ k₂, L 0 k₁ * D k₁ k₂ * L 0 k₂) = A 0 0
+    ∧ ∀ j : Fin n,
+        |(∑ k₁, ∑ k₂, L 0 k₁ * D k₁ k₂ * L j.succ k₂) - A 0 j.succ|
+          ≤ fp.u * |A 0 j.succ| := by
+  have row0 : ∀ (X : Fin (n + 1)),
+      (∑ k₁, ∑ k₂, L 0 k₁ * D k₁ k₂ * L X k₂) = ∑ k₂, D 0 k₂ * L X k₂ := by
+    intro X
+    rw [Fin.sum_univ_succ]
+    have hz : (∑ k₁ : Fin n, ∑ k₂, L 0 k₁.succ * D k₁.succ k₂ * L X k₂) = 0 :=
+      Finset.sum_eq_zero fun k _ => by
+        simp only [hL0s k]
+        exact Finset.sum_eq_zero fun k₂ _ => by ring
+    rw [hz, add_zero, hL00]
+    apply Finset.sum_congr rfl; intro k₂ _; ring
+  have colpick : ∀ (X : Fin (n + 1)), (∑ k₂, D 0 k₂ * L X k₂) = A 0 0 * L X 0 := by
+    intro X; rw [Fin.sum_univ_succ, hD00]
+    have : (∑ k₂ : Fin n, D 0 k₂.succ * L X k₂.succ) = 0 :=
+      Finset.sum_eq_zero fun k _ => by rw [hD0s k, zero_mul]
+    rw [this, add_zero]
+  constructor
+  · rw [row0 0, colpick 0, hL00, mul_one]
+  · intro j
+    rw [row0 j.succ, colpick j.succ, hLcol j, hsym1 j]
+    obtain ⟨δ, hδ, hd⟩ := fp.model_div (A j.succ 0) (A 0 0) he
+    rw [hd]
+    have hrw : A 0 0 * (A j.succ 0 / A 0 0 * (1 + δ)) - A j.succ 0
+        = A j.succ 0 * δ := by field_simp; ring
+    rw [hrw, abs_mul]
+    exact (mul_le_mul_of_nonneg_left hδ (abs_nonneg _)).trans_eq (by rw [mul_comm])
+
+/-- **Pivot-column floating-point backward error of one 1×1-pivot stage.**
+    `(L̂D̂L̂ᵀ)_{i+1,0} = l̂_i·A00 = A_{i+1,0}(1+δ)`, so
+    `|(L̂D̂L̂ᵀ)_{i+1,0} − A_{i+1,0}| ≤ u·|A_{i+1,0}|` — the pivot-column companion of
+    `fl_blockLDLT_pivot_row_bound`, completing all four index cases of the
+    single 1×1-pivot floating-point assemble step. -/
+theorem fl_blockLDLT_pivot_col_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) (he : A 0 0 ≠ 0)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hD00 : D 0 0 = A 0 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0) :
+    ∀ i : Fin n,
+      |(∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L 0 k₂) - A i.succ 0|
+        ≤ fp.u * |A i.succ 0| := by
+  intro i
+  have colred : (∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L 0 k₂)
+      = ∑ k₁, L i.succ k₁ * D k₁ 0 := by
+    apply Finset.sum_congr rfl; intro k₁ _
+    rw [Fin.sum_univ_succ, hL00, mul_one]
+    have : (∑ k₂ : Fin n, L i.succ k₁ * D k₁ k₂.succ * L 0 k₂.succ) = 0 :=
+      Finset.sum_eq_zero fun k _ => by rw [hL0s k, mul_zero]
+    rw [this, add_zero]
+  rw [colred, Fin.sum_univ_succ, hD00]
+  have : (∑ k₁ : Fin n, L i.succ k₁.succ * D k₁.succ 0) = 0 :=
+    Finset.sum_eq_zero fun k _ => by rw [hDs0 k, mul_zero]
+  rw [this, add_zero, hLcol i]
+  obtain ⟨δ, hδ, hd⟩ := fp.model_div (A i.succ 0) (A 0 0) he
+  rw [hd]
+  have hrw : A i.succ 0 / A 0 0 * (1 + δ) * A 0 0 - A i.succ 0 = A i.succ 0 * δ := by
+    field_simp; ring
+  rw [hrw, abs_mul]
+  exact (mul_le_mul_of_nonneg_left hδ (abs_nonneg _)).trans_eq (by rw [mul_comm])
+
 -- ============================================================
 -- Chapter 11.1.4  Tridiagonal symmetric matrices
 -- ============================================================
