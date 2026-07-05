@@ -368,6 +368,58 @@ theorem finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one
   unfold finiteVecNorm2Sq
   simpa [v, sq_abs] using hsq
 
+/-- The locally named Hermitian eigenvector is an eigenvector for the
+    repository-native finite matrix-vector product. -/
+theorem finiteMatVec_finiteHermitianEigenvector_eq
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : ι → ι → ℝ) (hM : IsSymmetricFiniteMatrix M) (a : ι) :
+    finiteMatVec M
+        (⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM).eigenvectorBasis a)) =
+      fun i : ι =>
+        finiteHermitianEigenvalues M hM a *
+          (⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM).eigenvectorBasis a)) i := by
+  let hherm : Matrix.IsHermitian (M : Matrix ι ι ℝ) :=
+    IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM
+  have hmul := hherm.mulVec_eigenvectorBasis a
+  ext i
+  simpa [finiteMatVec, finiteHermitianEigenvalues, hherm] using
+    congrFun hmul i
+
+/-- Any finite operator-2 certificate dominates the absolute value of every
+    locally named Hermitian eigenvalue. -/
+theorem abs_finiteHermitianEigenvalues_le_of_finiteOpNorm2Le
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : ι → ι → ℝ) (hM : IsSymmetricFiniteMatrix M) {c : ℝ}
+    (hOp : finiteOpNorm2Le M c) (a : ι) :
+    |finiteHermitianEigenvalues M hM a| ≤ c := by
+  let v : ι → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM).eigenvectorBasis a)
+  have hv : v ≠ 0 := by
+    intro hv0
+    have hnorm :=
+      finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one M hM a
+    change finiteVecNorm2Sq v = 1 at hnorm
+    rw [hv0] at hnorm
+    simp [finiteVecNorm2Sq] at hnorm
+  have heig :
+      finiteMatVec M v =
+        fun i : ι => finiteHermitianEigenvalues M hM a * v i := by
+    simpa [v] using finiteMatVec_finiteHermitianEigenvector_eq M hM a
+  exact finiteOpNorm2Le_abs_eigenvalue_le hOp hv heig
+
+/-- For a nonnegative locally named Hermitian eigenvalue, any finite
+    operator-2 certificate gives the corresponding upper bound without the
+    absolute value. -/
+theorem finiteHermitianEigenvalues_le_of_nonneg_of_finiteOpNorm2Le
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : ι → ι → ℝ) (hM : IsSymmetricFiniteMatrix M) {c : ℝ}
+    (hOp : finiteOpNorm2Le M c) (a : ι)
+    (hNonneg : 0 ≤ finiteHermitianEigenvalues M hM a) :
+    finiteHermitianEigenvalues M hM a ≤ c := by
+  have habs :=
+    abs_finiteHermitianEigenvalues_le_of_finiteOpNorm2Le M hM hOp a
+  simpa [abs_of_nonneg hNonneg] using habs
+
 /-- A scalar-identity Loewner upper bound controls every locally named
     Hermitian eigenvalue. -/
 theorem finiteHermitianEigenvalues_le_of_finiteLoewnerLe_smul_id
