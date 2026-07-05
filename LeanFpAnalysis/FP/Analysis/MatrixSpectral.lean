@@ -740,6 +740,29 @@ theorem finitePSD_iff_finiteHermitianEigenvalues_nonneg
     exact hherm.posSemidef_iff_eigenvalues_nonneg.mpr
       (by simpa [finiteHermitianEigenvalues] using heigs)
 
+/-- A nonempty finite symmetric PSD matrix has a locally named largest
+    Hermitian eigenvalue, and that largest nonnegative eigenvalue is an
+    admissible finite operator-2 bound. -/
+theorem exists_top_finiteHermitianEigenvalue_finiteOpNorm2Le_of_finitePSD
+    {ι : Type*} [Fintype ι] [DecidableEq ι] [Nonempty ι]
+    (M : ι → ι → ℝ) (hM : IsSymmetricFiniteMatrix M)
+    (hPSD : finitePSD M) :
+    ∃ a₀ : ι,
+      0 ≤ finiteHermitianEigenvalues M hM a₀ ∧
+      (∀ a : ι,
+        finiteHermitianEigenvalues M hM a ≤
+          finiteHermitianEigenvalues M hM a₀) ∧
+      finiteOpNorm2Le M (finiteHermitianEigenvalues M hM a₀) := by
+  obtain ⟨a₀, hmax⟩ :=
+    Finite.exists_max (fun a : ι => finiteHermitianEigenvalues M hM a)
+  have hNonnegAll :
+      ∀ a : ι, 0 ≤ finiteHermitianEigenvalues M hM a :=
+    (finitePSD_iff_finiteHermitianEigenvalues_nonneg M hM).mp hPSD
+  refine ⟨a₀, hNonnegAll a₀, hmax, ?_⟩
+  exact
+    finiteOpNorm2Le_of_finitePSD_of_finiteHermitianEigenvalues_le
+      M (hNonnegAll a₀) hM hPSD hmax
+
 /-- A local finite Loewner inequality is equivalent to nonnegativity of the
     Hermitian eigenvalues of the difference matrix `N - M`. -/
 theorem finiteLoewnerLe_iff_sub_finiteHermitianEigenvalues_nonneg

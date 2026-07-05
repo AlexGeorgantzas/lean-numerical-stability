@@ -879,6 +879,95 @@ theorem sylvesterTwoColumnBlockCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
     Matrix.one_mulVec]
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based active-block injectivity: a nonzero determinant of the
+    supplied two-column block coefficient makes its `mulVec` action injective.
+    Scope: exact supplied-block algebra only. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0)) :
+    Function.Injective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  intro x y hxy
+  calc
+    x =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) x) := by
+        symm
+        exact
+          sylvesterTwoColumnBlockCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+            m n A T p q hdet x
+    _ =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) y) := by
+        rw [hxy]
+    _ = y := by
+        exact
+          sylvesterTwoColumnBlockCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+            m n A T p q hdet y
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based active-block surjectivity: a nonzero determinant of the
+    supplied two-column block coefficient makes its `mulVec` action
+    surjective. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0)) :
+    Function.Surjective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  intro rhs
+  refine
+    ⟨Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        rhs, ?_⟩
+  exact sylvesterTwoColumnBlockCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
+    m n A T p q hdet rhs
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based active-block bijectivity wrapper. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0)) :
+    Function.Bijective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) :=
+  ⟨sylvesterTwoColumnBlockCoeff_mulVec_injective_of_det_ne_zero
+      m n A T p q hdet,
+    sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_det_ne_zero
+      m n A T p q hdet⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based trivial-kernel wrapper for the supplied two-column block
+    coefficient. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (z : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0 <->
+      z = 0 := by
+  constructor
+  · intro hz
+    calc
+      z =
+          Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+            (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z) := by
+          symm
+          exact
+            sylvesterTwoColumnBlockCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+              m n A T p q hdet z
+      _ = 0 := by
+          rw [hz]
+          exact Matrix.mulVec_zero _
+  · intro hz
+    rw [hz]
+    exact Matrix.mulVec_zero _
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
     determinant-based active-block linear solve: if the supplied two-column
     block coefficient has nonzero determinant, then the block right-hand side
     has a unique exact solution vector.  The witness is Mathlib's nonsingular

@@ -329,6 +329,24 @@ theorem lyapunovCond_of_sepLowerBound_isLyapunovConditionFirstOrderBound (n : �
   exact lyapunovCond_of_inverseOpBound_isLyapunovConditionFirstOrderBound n
     A X α γ (1 / sigma) hα hγ hMnn hX hInv
 
+/-- Higham, 2nd ed., Section 16.3-16.4, equations (16.26)-(16.27):
+    a positive lower bound on the exact infimum model of `sep(A,-A^T)`
+    instantiates the Lyapunov structured first-order condition certificate
+    through the safe reciprocal condition value `1 / sigma`. -/
+theorem lyapunovCond_of_pos_le_sylvesterSepInf_isLyapunovConditionFirstOrderBound
+    (n : Nat)
+    (A X : Fin n -> Fin n -> Real) (alpha gamma sigma : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma) (hsigma : 0 < sigma)
+    (hX : 0 < frobNorm X)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j)) :
+    LyapunovConditionFirstOrderBound n A X alpha gamma
+      (lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma)) := by
+  exact
+    lyapunovCond_of_sepLowerBound_isLyapunovConditionFirstOrderBound n
+      A X alpha gamma sigma halpha hgamma hsigma hX
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+
 /-- Higham, 2nd ed., §16.3, eq (16.27) (p. 317):
     sep-based Lyapunov first-order perturbation bound. If
     `SepLowerBound A (-A^T) sigma` holds, then the printed relative bound
