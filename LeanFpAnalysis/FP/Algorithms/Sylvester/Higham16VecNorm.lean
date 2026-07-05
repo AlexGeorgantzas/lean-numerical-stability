@@ -364,6 +364,21 @@ theorem finiteMatrix_mulVec_injective_of_det_ne_zero
     Matrix.one_mulVec, Matrix.one_mulVec] at h
   exact h
 
+/-- A determinant nonsingularity certificate gives the exact trivial-kernel
+    statement for the finite matrix `mulVec` action. -/
+theorem finiteMatrix_mulVec_eq_zero_iff_of_det_ne_zero
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (P : Matrix ι ι Real) (hdet : P.det ≠ 0) (x : ι -> Real) :
+    Matrix.mulVec P x = 0 ↔ x = 0 := by
+  constructor
+  · intro hx
+    have hzero :
+        Matrix.mulVec P x = Matrix.mulVec P (0 : ι -> Real) := by
+      simpa using hx
+    exact (finiteMatrix_mulVec_injective_of_det_ne_zero P hdet) hzero
+  · intro hx
+    simp [hx]
+
 /-- A determinant nonsingularity certificate for a finite square matrix makes
     its `mulVec` action surjective, using Mathlib's nonsingular inverse. -/
 theorem finiteMatrix_mulVec_surjective_of_det_ne_zero
@@ -650,6 +665,130 @@ theorem lyapunovVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
   exact
     finiteMatrix_det_ne_zero_of_left_inverse_finiteOpNorm2Le
       (lyapunovVecCoeff n A) Pinv hM hLeft hPinv
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5):
+    determinant nonsingularity gives the exact trivial-kernel statement for the
+    vectorized Sylvester coefficient. -/
+theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero
+    (n : Nat) (A B : Fin n -> Fin n -> Real)
+    (hdet : (sylvesterVecCoeff n n A B).det ≠ 0)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B) x = 0 ↔ x = 0 := by
+  exact
+    finiteMatrix_mulVec_eq_zero_iff_of_det_ne_zero
+      (sylvesterVecCoeff n n A B) hdet x
+
+/-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
+    a positive sigma-min certificate gives the exact trivial-kernel statement
+    for the vectorized Sylvester coefficient. -/
+theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_vecCoeff_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) {sigma : Real} (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B) x = 0 ↔ x = 0 := by
+  exact
+    sylvesterVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero n A B
+      (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n A B hsigma hCoeff)
+      x
+
+/-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
+    a positive finite-Gram eigenvalue certificate gives the exact
+    trivial-kernel statement for the vectorized Sylvester coefficient. -/
+theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A B : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B) x = 0 ↔ x = 0 := by
+  exact
+    sylvesterVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero n A B
+      (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues
+        n A B hlam hEig)
+      x
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5):
+    a concrete left inverse with finite operator-2 radius gives the exact
+    trivial-kernel statement for the vectorized Sylvester coefficient. -/
+theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A B : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B) x = 0 ↔ x = 0 := by
+  exact
+    sylvesterVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero n A B
+      (sylvesterVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+        n A B Pinv hM hLeft hPinv)
+      x
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    determinant nonsingularity gives the exact trivial-kernel statement for the
+    vectorized Lyapunov coefficient. -/
+theorem lyapunovVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero
+    (n : Nat) (A : Fin n -> Fin n -> Real)
+    (hdet : (lyapunovVecCoeff n A).det ≠ 0)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A) x = 0 ↔ x = 0 := by
+  exact
+    finiteMatrix_mulVec_eq_zero_iff_of_det_ne_zero
+      (lyapunovVecCoeff n A) hdet x
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a positive sigma-min certificate gives the exact trivial-kernel statement
+    for the vectorized Lyapunov coefficient. -/
+theorem lyapunovVecCoeff_mulVec_eq_zero_iff_of_vecCoeff_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) {sigma : Real} (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x))
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A) x = 0 ↔ x = 0 := by
+  exact
+    lyapunovVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero n A
+      (lyapunovVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n A hsigma hCoeff)
+      x
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a positive finite-Gram eigenvalue certificate gives the exact
+    trivial-kernel statement for the vectorized Lyapunov coefficient. -/
+theorem lyapunovVecCoeff_mulVec_eq_zero_iff_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A) x = 0 ↔ x = 0 := by
+  exact
+    lyapunovVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero n A
+      (lyapunovVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues
+        n A hlam hEig)
+      x
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a concrete left inverse with finite operator-2 radius gives the exact
+    trivial-kernel statement for the vectorized Lyapunov coefficient. -/
+theorem lyapunovVecCoeff_mulVec_eq_zero_iff_of_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A) x = 0 ↔ x = 0 := by
+  exact
+    lyapunovVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero n A
+      (lyapunovVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+        n A Pinv hM hLeft hPinv)
+      x
 
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5):
     a concrete left inverse with finite operator-2 radius makes the exact
@@ -949,6 +1088,34 @@ theorem lyapunovVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf (n : Nat)
     lyapunovVecCoeff_det_ne_zero_of_sepLowerBound n A sigma
       (SepLowerBound_of_pos_le_sylvesterSepInf n A
         (fun i j => -matTranspose A i j) sigma hsigma hle)
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a supplied `SepLowerBound` certificate for `sep(A,-A^T)` gives the exact
+    trivial-kernel statement for the vectorized Lyapunov coefficient. -/
+theorem lyapunovVecCoeff_mulVec_eq_zero_iff_of_sepLowerBound (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A) x = 0 ↔ x = 0 := by
+  exact
+    lyapunovVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero n A
+      (lyapunovVecCoeff_det_ne_zero_of_sepLowerBound n A sigma hSep) x
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a positive exact-`sylvesterSepInf` lower bound for `sep(A,-A^T)` gives the
+    exact trivial-kernel statement for the vectorized Lyapunov coefficient. -/
+theorem lyapunovVecCoeff_mulVec_eq_zero_iff_of_pos_le_sylvesterSepInf
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A
+      (fun i j => -matTranspose A i j))
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A) x = 0 ↔ x = 0 := by
+  exact
+    lyapunovVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero n A
+      (lyapunovVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A sigma hsigma hle)
+      x
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
     a supplied `SepLowerBound` certificate for `sep(A,-A^T)` makes the exact
@@ -1881,6 +2048,34 @@ theorem sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf (n : Nat)
   exact
     sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
+    a supplied `SepLowerBound` certificate gives the exact trivial-kernel
+    statement for the vectorized Sylvester coefficient. -/
+theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_sepLowerBound (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B) x = 0 ↔ x = 0 := by
+  exact
+    sylvesterVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero n A B
+      (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep) x
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
+    a positive lower bound on the exact infimum model `sylvesterSepInf` gives
+    the exact trivial-kernel statement for the vectorized Sylvester
+    coefficient. -/
+theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_pos_le_sylvesterSepInf
+    (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B) x = 0 ↔ x = 0 := by
+  exact
+    sylvesterVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero n A B
+      (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A B sigma hsigma hle)
+      x
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
     a supplied `SepLowerBound` certificate makes the exact vectorized
