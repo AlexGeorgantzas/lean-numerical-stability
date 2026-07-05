@@ -16,6 +16,7 @@
 
 import Mathlib.Data.Real.Basic
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
+import LeanFpAnalysis.FP.Analysis.MatrixSpectral
 import LeanFpAnalysis.FP.Analysis.Norms
 import LeanFpAnalysis.FP.Analysis.HighamChapter7
 
@@ -2714,6 +2715,380 @@ theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped
     finiteLoewnerLe (rectMatMul (rectMatMul Q P) Q) Q :=
   wedinLemma20_12_projection_mul_swapped_mul_projection_loewnerLe_projection
     Q P hQ hP hIdemQ hIdemP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the complement of a symmetric idempotent projection is positive
+    semidefinite. -/
+theorem wedinLemma20_12_projectionComplement_finitePSD
+    {m : ℕ} (P : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hIdemP : rectMatMul P P = P) :
+    finitePSD (fun i j => idMatrix m i j - P i j) := by
+  have hPSD :
+      finitePSD
+        (rectMatMul
+          (rectMatMul (idMatrix m)
+            (fun i j => idMatrix m i j - P i j))
+          (idMatrix m)) :=
+    wedinLemma20_12_projection_mul_projectionComplement_mul_projection_finitePSD
+      (idMatrix m) P (ch7_idMatrix_symmetric m) hP hIdemP
+  simpa [rectMatMul_id_left, rectMatMul_id_right] using hPSD
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    a symmetric idempotent projection is Loewner-bounded by the identity. -/
+theorem wedinLemma20_12_projection_loewnerLe_id
+    {m : ℕ} (P : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hIdemP : rectMatMul P P = P) :
+    finiteLoewnerLe P (fun i j : Fin m => finiteIdMatrix i j) := by
+  have hPSD :
+      finitePSD (fun i j => idMatrix m i j - P i j) :=
+    wedinLemma20_12_projectionComplement_finitePSD P hP hIdemP
+  have hLe : finiteLoewnerLe P (idMatrix m) :=
+    (finiteLoewnerLe_iff_sub_finitePSD P (idMatrix m)).mpr hPSD
+  simpa [idMatrix, finiteIdMatrix] using hLe
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion-square compression `PQP` is Loewner-bounded by the identity. -/
+theorem wedinLemma20_12_projection_mul_swapped_mul_projection_loewnerLe_id
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe (rectMatMul (rectMatMul P Q) P)
+      (fun i j : Fin m => finiteIdMatrix i j) :=
+  finiteLoewnerLe_trans
+    (wedinLemma20_12_projection_mul_swapped_mul_projection_loewnerLe_projection
+      P Q hP hQ hIdemP hIdemQ)
+    (wedinLemma20_12_projection_loewnerLe_id P hP hIdemP)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the swapped companion-square compression `QPQ` is Loewner-bounded by the
+    identity. -/
+theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_loewnerLe_id
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe (rectMatMul (rectMatMul Q P) Q)
+      (fun i j : Fin m => finiteIdMatrix i j) :=
+  finiteLoewnerLe_trans
+    (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_loewnerLe_projection_swapped
+      P Q hP hQ hIdemP hIdemQ)
+    (wedinLemma20_12_projection_loewnerLe_id Q hQ hIdemQ)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of the companion-square compression
+    `PQP` is nonnegative. -/
+theorem wedinLemma20_12_projection_mul_swapped_mul_projection_finiteHermitianEigenvalues_nonneg
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (a : Fin m) :
+    0 ≤
+      finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+        (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+          P Q hP hQ hIdemQ) a := by
+  have hSym :=
+    wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+      P Q hP hQ hIdemQ
+  have hPSD :=
+    wedinLemma20_12_projection_mul_swapped_mul_projection_finitePSD
+      P Q hP hQ hIdemQ
+  exact
+    (finitePSD_iff_finiteHermitianEigenvalues_nonneg
+      (rectMatMul (rectMatMul P Q) P) hSym).mp hPSD a
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of the companion-square compression
+    `PQP` is at most one. -/
+theorem wedinLemma20_12_projection_mul_swapped_mul_projection_finiteHermitianEigenvalues_le_one
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (a : Fin m) :
+    finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+        (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+          P Q hP hQ hIdemQ) a ≤ 1 := by
+  have hSym :=
+    wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+      P Q hP hQ hIdemQ
+  have hLe :
+      finiteLoewnerLe (rectMatMul (rectMatMul P Q) P)
+        (fun i j : Fin m => (1 : ℝ) * finiteIdMatrix i j) := by
+    simpa using
+      wedinLemma20_12_projection_mul_swapped_mul_projection_loewnerLe_id
+        P Q hP hQ hIdemP hIdemQ
+  exact
+    finiteHermitianEigenvalues_le_of_finiteLoewnerLe_smul_id
+      (rectMatMul (rectMatMul P Q) P) hSym hLe a
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of the swapped companion-square
+    compression `QPQ` is nonnegative. -/
+theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_finiteHermitianEigenvalues_nonneg
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (a : Fin m) :
+    0 ≤
+      finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+        (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+          P Q hP hQ hIdemP) a := by
+  have hSym :=
+    wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+      P Q hP hQ hIdemP
+  have hPSD :=
+    wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_finitePSD
+      P Q hP hQ hIdemP
+  exact
+    (finitePSD_iff_finiteHermitianEigenvalues_nonneg
+      (rectMatMul (rectMatMul Q P) Q) hSym).mp hPSD a
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of the swapped companion-square
+    compression `QPQ` is at most one. -/
+theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_finiteHermitianEigenvalues_le_one
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (a : Fin m) :
+    finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+        (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+          P Q hP hQ hIdemP) a ≤ 1 := by
+  have hSym :=
+    wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+      P Q hP hQ hIdemP
+  have hLe :
+      finiteLoewnerLe (rectMatMul (rectMatMul Q P) Q)
+        (fun i j : Fin m => (1 : ℝ) * finiteIdMatrix i j) := by
+    simpa using
+      wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_loewnerLe_id
+        P Q hP hQ hIdemP hIdemQ
+  exact
+    finiteHermitianEigenvalues_le_of_finiteLoewnerLe_smul_id
+      (rectMatMul (rectMatMul Q P) Q) hSym hLe a
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the two companion-square compressions `PQP` and `QPQ` have the same
+    finite trace. -/
+theorem wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_eq_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace (rectMatMul (rectMatMul P Q) P) =
+      finiteTrace (rectMatMul (rectMatMul Q P) Q) := by
+  calc
+    finiteTrace (rectMatMul (rectMatMul P Q) P)
+        = finiteTrace (rectMatMul P (rectMatMul P Q)) :=
+            finiteTrace_rectMatMul_comm (rectMatMul P Q) P
+    _ = finiteTrace (rectMatMul (rectMatMul P P) Q) := by
+            rw [rectMatMul_assoc]
+    _ = finiteTrace (rectMatMul P Q) := by
+            rw [hIdemP]
+    _ = finiteTrace (rectMatMul Q P) :=
+            finiteTrace_rectMatMul_comm P Q
+    _ = finiteTrace (rectMatMul (rectMatMul Q Q) P) := by
+            rw [hIdemQ]
+    _ = finiteTrace (rectMatMul Q (rectMatMul Q P)) := by
+            rw [rectMatMul_assoc]
+    _ = finiteTrace (rectMatMul (rectMatMul Q P) Q) :=
+            (finiteTrace_rectMatMul_comm (rectMatMul Q P) Q).symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the two companion-square compressions `PQP` and `QPQ` have the same
+    second trace moment. -/
+theorem wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_sq_eq_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul (rectMatMul (rectMatMul P Q) P)
+          (rectMatMul (rectMatMul P Q) P)) =
+      finiteTrace
+        (rectMatMul (rectMatMul (rectMatMul Q P) Q)
+          (rectMatMul (rectMatMul Q P) Q)) := by
+  let A : Fin m → Fin m → ℝ := rectMatMul (rectMatMul P Q) P
+  let B : Fin m → Fin m → ℝ := rectMatMul (rectMatMul Q P) Q
+  have hPA : rectMatMul P A = A := by
+    dsimp [A]
+    calc
+      rectMatMul P (rectMatMul (rectMatMul P Q) P)
+          = rectMatMul (rectMatMul P (rectMatMul P Q)) P := by
+              rw [← rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul (rectMatMul P P) Q) P := by
+              rw [← rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul P Q) P := by
+              rw [hIdemP]
+  have hAP : rectMatMul A P = A := by
+    dsimp [A]
+    calc
+      rectMatMul (rectMatMul (rectMatMul P Q) P) P
+          = rectMatMul (rectMatMul P Q) (rectMatMul P P) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul P Q) P := by
+              rw [hIdemP]
+  have hQB : rectMatMul Q B = B := by
+    dsimp [B]
+    calc
+      rectMatMul Q (rectMatMul (rectMatMul Q P) Q)
+          = rectMatMul (rectMatMul Q (rectMatMul Q P)) Q := by
+              rw [← rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul (rectMatMul Q Q) P) Q := by
+              rw [← rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul Q P) Q := by
+              rw [hIdemQ]
+  have hBQ : rectMatMul B Q = B := by
+    dsimp [B]
+    calc
+      rectMatMul (rectMatMul (rectMatMul Q P) Q) Q
+          = rectMatMul (rectMatMul Q P) (rectMatMul Q Q) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul Q P) Q := by
+              rw [hIdemQ]
+  have hTraceA : finiteTrace (rectMatMul A A) =
+      finiteTrace (rectMatMul A Q) := by
+    calc
+      finiteTrace (rectMatMul A A)
+          = finiteTrace (rectMatMul (rectMatMul A (rectMatMul P Q)) P) := by
+              dsimp [A]
+              rw [← rectMatMul_assoc]
+      _ = finiteTrace (rectMatMul P (rectMatMul A (rectMatMul P Q))) :=
+              finiteTrace_rectMatMul_comm (rectMatMul A (rectMatMul P Q)) P
+      _ = finiteTrace (rectMatMul (rectMatMul P A) (rectMatMul P Q)) := by
+              rw [← rectMatMul_assoc]
+      _ = finiteTrace (rectMatMul A (rectMatMul P Q)) := by
+              rw [hPA]
+      _ = finiteTrace (rectMatMul (rectMatMul A P) Q) := by
+              rw [← rectMatMul_assoc]
+      _ = finiteTrace (rectMatMul A Q) := by
+              rw [hAP]
+  have hTraceB : finiteTrace (rectMatMul B B) =
+      finiteTrace (rectMatMul B P) := by
+    calc
+      finiteTrace (rectMatMul B B)
+          = finiteTrace (rectMatMul (rectMatMul B (rectMatMul Q P)) Q) := by
+              dsimp [B]
+              rw [← rectMatMul_assoc]
+      _ = finiteTrace (rectMatMul Q (rectMatMul B (rectMatMul Q P))) :=
+              finiteTrace_rectMatMul_comm (rectMatMul B (rectMatMul Q P)) Q
+      _ = finiteTrace (rectMatMul (rectMatMul Q B) (rectMatMul Q P)) := by
+              rw [← rectMatMul_assoc]
+      _ = finiteTrace (rectMatMul B (rectMatMul Q P)) := by
+              rw [hQB]
+      _ = finiteTrace (rectMatMul (rectMatMul B Q) P) := by
+              rw [← rectMatMul_assoc]
+      _ = finiteTrace (rectMatMul B P) := by
+              rw [hBQ]
+  have hQA : rectMatMul Q A = rectMatMul B P := by
+    dsimp [A, B]
+    calc
+      rectMatMul Q (rectMatMul (rectMatMul P Q) P)
+          = rectMatMul (rectMatMul Q (rectMatMul P Q)) P := by
+              rw [← rectMatMul_assoc]
+      _ = rectMatMul (rectMatMul (rectMatMul Q P) Q) P := by
+              rw [← rectMatMul_assoc]
+  calc
+    finiteTrace (rectMatMul A A)
+        = finiteTrace (rectMatMul A Q) := hTraceA
+    _ = finiteTrace (rectMatMul Q A) :=
+            finiteTrace_rectMatMul_comm A Q
+    _ = finiteTrace (rectMatMul B P) := by
+            rw [hQA]
+    _ = finiteTrace (rectMatMul B B) := hTraceB.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the locally named finite Hermitian eigenvalues of the two
+    companion-square compressions have equal sums. -/
+theorem wedinLemma20_12_sum_finiteHermitianEigenvalues_projection_mul_swapped_mul_projection_eq_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    (∑ a : Fin m,
+      finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+        (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+          P Q hP hQ hIdemQ) a) =
+      ∑ a : Fin m,
+        finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+          (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+            P Q hP hQ hIdemP) a := by
+  let MPQ : Fin m → Fin m → ℝ := rectMatMul (rectMatMul P Q) P
+  let MQP : Fin m → Fin m → ℝ := rectMatMul (rectMatMul Q P) Q
+  have hSymPQ :
+      IsSymmetricFiniteMatrix MPQ := by
+    simpa [MPQ] using
+      wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+        P Q hP hQ hIdemQ
+  have hSymQP :
+      IsSymmetricFiniteMatrix MQP := by
+    simpa [MQP] using
+      wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+        P Q hP hQ hIdemP
+  have hTrace : finiteTrace MPQ = finiteTrace MQP := by
+    simpa [MPQ, MQP] using
+      wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_eq_swapped
+        P Q hIdemP hIdemQ
+  calc
+    (∑ a : Fin m, finiteHermitianEigenvalues MPQ hSymPQ a)
+        = finiteTrace MPQ :=
+            (finiteTrace_eq_sum_finiteHermitianEigenvalues MPQ hSymPQ).symm
+    _ = finiteTrace MQP := hTrace
+    _ = ∑ a : Fin m, finiteHermitianEigenvalues MQP hSymQP a :=
+            finiteTrace_eq_sum_finiteHermitianEigenvalues MQP hSymQP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the locally named finite Hermitian eigenvalues of the two
+    companion-square compressions have equal sums of squares. -/
+theorem wedinLemma20_12_sum_sq_finiteHermitianEigenvalues_projection_mul_swapped_mul_projection_eq_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    (∑ a : Fin m,
+      finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+        (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+          P Q hP hQ hIdemQ) a ^ 2) =
+      ∑ a : Fin m,
+        finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+          (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+            P Q hP hQ hIdemP) a ^ 2 := by
+  let MPQ : Fin m → Fin m → ℝ := rectMatMul (rectMatMul P Q) P
+  let MQP : Fin m → Fin m → ℝ := rectMatMul (rectMatMul Q P) Q
+  have hSymPQ :
+      IsSymmetricFiniteMatrix MPQ := by
+    simpa [MPQ] using
+      wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+        P Q hP hQ hIdemQ
+  have hSymQP :
+      IsSymmetricFiniteMatrix MQP := by
+    simpa [MQP] using
+      wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+        P Q hP hQ hIdemP
+  have hTraceSq : finiteTrace (rectMatMul MPQ MPQ) =
+      finiteTrace (rectMatMul MQP MQP) := by
+    simpa [MPQ, MQP] using
+      wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_sq_eq_swapped
+        P Q hIdemP hIdemQ
+  calc
+    (∑ a : Fin m, finiteHermitianEigenvalues MPQ hSymPQ a ^ 2)
+        = finiteTrace (rectMatMul MPQ MPQ) :=
+            (finiteTrace_rectMatMul_self_eq_sum_sq_finiteHermitianEigenvalues
+              MPQ hSymPQ).symm
+    _ = finiteTrace (rectMatMul MQP MQP) := hTraceSq
+    _ = ∑ a : Fin m, finiteHermitianEigenvalues MQP hSymQP a ^ 2 :=
+            finiteTrace_rectMatMul_self_eq_sum_sq_finiteHermitianEigenvalues
+              MQP hSymQP
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm

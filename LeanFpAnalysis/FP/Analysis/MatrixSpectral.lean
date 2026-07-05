@@ -42,6 +42,79 @@ theorem finiteTrace_eq_sum_finiteHermitianEigenvalues
     (IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM)
   simpa [finiteTrace, finiteHermitianEigenvalues, Matrix.trace] using htrace
 
+/-- For a finite real symmetric square matrix, the trace of `M*M` is the sum
+    of the squares of the locally named Hermitian eigenvalues. -/
+theorem finiteTrace_rectMatMul_self_eq_sum_sq_finiteHermitianEigenvalues
+    {m : ℕ} (M : Fin m → Fin m → ℝ) (hM : IsSymmetricFiniteMatrix M) :
+    finiteTrace (rectMatMul M M) =
+      ∑ i : Fin m, finiteHermitianEigenvalues M hM i ^ 2 := by
+  let Mmat : Matrix (Fin m) (Fin m) ℝ := M
+  let hherm : Matrix.IsHermitian Mmat :=
+    IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM
+  let Uu := hherm.eigenvectorUnitary
+  let U : (Matrix (Fin m) (Fin m) ℝ)ˣ := Unitary.toUnits Uu
+  let D : Matrix (Fin m) (Fin m) ℝ :=
+    Matrix.diagonal (fun i : Fin m => hherm.eigenvalues i)
+  let Uinv : Matrix (Fin m) (Fin m) ℝ :=
+    ((U⁻¹ : (Matrix (Fin m) (Fin m) ℝ)ˣ) : Matrix (Fin m) (Fin m) ℝ)
+  have hstar : star (Uu : Matrix (Fin m) (Fin m) ℝ) = Uinv := by
+    change star (Uu : Matrix (Fin m) (Fin m) ℝ) =
+      ↑(Uu⁻¹ : Matrix.unitaryGroup (Fin m) ℝ)
+    rw [← Unitary.coe_star, Unitary.star_eq_inv]
+  have hspectral :
+      Mmat = (↑U : Matrix (Fin m) (Fin m) ℝ) * D * Uinv := by
+    rw [hherm.spectral_theorem]
+    rw [Unitary.conjStarAlgAut_apply]
+    rw [hstar]
+    rfl
+  have hentry :
+      ((rectMatMul M M : Fin m → Fin m → ℝ) :
+          Matrix (Fin m) (Fin m) ℝ) =
+        Mmat * Mmat := by
+    ext i j
+    simp [rectMatMul, Matrix.mul_apply, Mmat]
+  have hUinvU : Uinv * (↑U : Matrix (Fin m) (Fin m) ℝ) = 1 := by
+    dsimp [Uinv]
+    simp
+  have hprod :
+      ((↑U : Matrix (Fin m) (Fin m) ℝ) * D * Uinv) *
+          ((↑U : Matrix (Fin m) (Fin m) ℝ) * D * Uinv) =
+        (↑U : Matrix (Fin m) (Fin m) ℝ) * (D * D) * Uinv := by
+    calc
+      ((↑U : Matrix (Fin m) (Fin m) ℝ) * D * Uinv) *
+          ((↑U : Matrix (Fin m) (Fin m) ℝ) * D * Uinv)
+          =
+        (↑U : Matrix (Fin m) (Fin m) ℝ) * D *
+          (Uinv * (↑U : Matrix (Fin m) (Fin m) ℝ)) * D * Uinv := by
+              noncomm_ring
+      _ = (↑U : Matrix (Fin m) (Fin m) ℝ) * D * 1 * D * Uinv := by
+              rw [hUinvU]
+      _ = (↑U : Matrix (Fin m) (Fin m) ℝ) * (D * D) * Uinv := by
+              noncomm_ring
+  have htrace_conj :
+      Matrix.trace
+          ((↑U : Matrix (Fin m) (Fin m) ℝ) * (D * D) * Uinv) =
+        Matrix.trace (D * D) := by
+    have hcycle :=
+      Matrix.trace_mul_cycle (↑U : Matrix (Fin m) (Fin m) ℝ) (D * D) Uinv
+    calc
+      Matrix.trace ((↑U : Matrix (Fin m) (Fin m) ℝ) * (D * D) * Uinv)
+          =
+        Matrix.trace (Uinv * (↑U : Matrix (Fin m) (Fin m) ℝ) * (D * D)) :=
+          hcycle
+      _ = Matrix.trace (D * D) := by
+          rw [hUinvU]
+          simp
+  change Matrix.trace
+      (((rectMatMul M M : Fin m → Fin m → ℝ) :
+          Matrix (Fin m) (Fin m) ℝ)) =
+    ∑ i : Fin m, finiteHermitianEigenvalues M hM i ^ 2
+  rw [hentry, hspectral, hprod, htrace_conj]
+  rw [Matrix.diagonal_mul_diagonal, Matrix.trace_diagonal]
+  apply Finset.sum_congr rfl
+  intro i _
+  simp [finiteHermitianEigenvalues, Mmat, pow_two]
+
 /-- Matrix exponential of a repository-native finite real matrix, routed through
     mathlib's matrix exponential.  This is the common interface for future
     trace-MGF / matrix concentration proofs. -/
