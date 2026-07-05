@@ -30089,6 +30089,182 @@ theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks
       fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
       hBMargin hStackMargin
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
+    component package from a compact max-gamma source-rank radius condition.
+
+    This is the same conservative component route as
+    `theorem20_10_partB_backward_error_of_householder_components_source_ranks_rank_radius_conservative_gamma`,
+    but the caller supplies the readable sufficient condition
+    `max(gammaA, gammaB) * (||A||_F + ||B||_F) < sourceRankRadius` directly. -/
+theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks_max_gamma_sum_bound_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) *
+          (frobNormRect A + frobNormRect B) <
+        theorem20_10_householder_sourceRankRadius hBsrc hStack) :
+    let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+      (DeltaB : Fin p → Fin (p + q) → ℝ)
+      (Deltab : Fin (r + q) → ℝ)
+      (Deltad : Fin p → ℝ),
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  exact
+    theorem20_10_partB_backward_error_of_householder_components_source_ranks_rank_radius_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
+      (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
+        fp A B hBsrc hStack hsmall)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
+    component package from the conservative source-rank gamma threshold.
+
+    This wrapper exposes the compact positive threshold condition on the larger
+    of the conservative `A` and `B` coefficients.  The threshold expands to the
+    source-rank radius divided by `max(1, ||A||_F + ||B||_F)`, so the resulting
+    theorem retains the same perturbation and minimizer conclusion as the
+    rank-radius package. -/
+theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks_gamma_threshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) <
+        theorem20_10_householder_sourceRankGammaThreshold hBsrc hStack) :
+    let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+      (DeltaB : Fin p → Fin (p + q) → ℝ)
+      (Deltab : Fin (r + q) → ℝ)
+      (Deltad : Fin p → ℝ),
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  exact
+    theorem20_10_partB_backward_error_of_householder_components_source_ranks_rank_radius_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
+      (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
+        fp A B hBsrc hStack hvalidA hvalidB hsmall)
+
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
 theorem theorem20_10_partA_mixed_stability_of_householder_gamma_certificate
