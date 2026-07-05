@@ -3047,6 +3047,50 @@ theorem wedinLemma20_12_sum_finiteHermitianEigenvalues_projection_mul_swapped_mu
             finiteTrace_eq_sum_finiteHermitianEigenvalues MQP hSymQP
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the locally named finite Hermitian eigenvalues of the two
+    companion-square compressions have equal sums of squares. -/
+theorem wedinLemma20_12_sum_sq_finiteHermitianEigenvalues_projection_mul_swapped_mul_projection_eq_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    (∑ a : Fin m,
+      finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+        (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+          P Q hP hQ hIdemQ) a ^ 2) =
+      ∑ a : Fin m,
+        finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+          (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+            P Q hP hQ hIdemP) a ^ 2 := by
+  let MPQ : Fin m → Fin m → ℝ := rectMatMul (rectMatMul P Q) P
+  let MQP : Fin m → Fin m → ℝ := rectMatMul (rectMatMul Q P) Q
+  have hSymPQ :
+      IsSymmetricFiniteMatrix MPQ := by
+    simpa [MPQ] using
+      wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+        P Q hP hQ hIdemQ
+  have hSymQP :
+      IsSymmetricFiniteMatrix MQP := by
+    simpa [MQP] using
+      wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+        P Q hP hQ hIdemP
+  have hTraceSq : finiteTrace (rectMatMul MPQ MPQ) =
+      finiteTrace (rectMatMul MQP MQP) := by
+    simpa [MPQ, MQP] using
+      wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_sq_eq_swapped
+        P Q hIdemP hIdemQ
+  calc
+    (∑ a : Fin m, finiteHermitianEigenvalues MPQ hSymPQ a ^ 2)
+        = finiteTrace (rectMatMul MPQ MPQ) :=
+            (finiteTrace_rectMatMul_self_eq_sum_sq_finiteHermitianEigenvalues
+              MPQ hSymPQ).symm
+    _ = finiteTrace (rectMatMul MQP MQP) := hTraceSq
+    _ = ∑ a : Fin m, finiteHermitianEigenvalues MQP hSymQP a ^ 2 :=
+            finiteTrace_rectMatMul_self_eq_sum_sq_finiteHermitianEigenvalues
+              MQP hSymQP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm
     of the range-side compression `P(P-Q)^2P`.
 
