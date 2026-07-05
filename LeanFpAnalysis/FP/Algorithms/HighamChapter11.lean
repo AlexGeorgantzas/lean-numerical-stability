@@ -1046,6 +1046,82 @@ theorem higham11_14_fl_aasen_source_prefix_dot_abs_error (n : ℕ)
   · simpa [higham11_14_fl_aasenSourcePrefixDot, x, y, hsum] using hbound
   · ring
 
+/-- **Equation (11.14) source-prefix formed update**, direct componentwise
+absolute-error form.  This is the source-length analogue of
+`higham11_14_fl_aasen_next_column_update_formed_sum_abs_sub_bound_of_exact_recurrence`,
+using the `γ_{next.val}` prefix-dot budget when `next = i+1`. -/
+theorem higham11_14_fl_aasen_next_column_update_source_prefix_abs_sub_bound_of_exact_recurrence
+    (n : ℕ) (fp : FPModel) (A L H : Fin n → Fin n → ℝ)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (i next k : Fin n) (hnext : next.val = i.val + 1)
+    (hk : i.val + 2 ≤ k.val) (hvalSum : gammaValid fp next.val)
+    (hvalUpdate : gammaValid fp 2) :
+    let Bsum : ℝ :=
+      gamma fp next.val *
+        ∑ j : Fin next.val,
+          |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+            |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+    |fp.fl_div
+        (fp.fl_sub (A k i) (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+        (H next i) - L k next| ≤
+      Bsum / |H next i| +
+        gamma fp 2 * (|L k next| + Bsum / |H next i|) := by
+  let Bsum : ℝ :=
+    gamma fp next.val *
+      ∑ j : Fin next.val,
+        |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+          |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+  obtain ⟨Δs, hΔs, hsumfl⟩ :=
+    higham11_14_fl_aasen_source_prefix_dot_abs_error n fp L H i next k hnext hvalSum
+  obtain ⟨Δu, hΔu, hfl⟩ :=
+    higham11_14_fl_aasen_next_column_update_abs_error fp (A k i)
+      (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k) (H next i)
+      (hHnz i next hnext) hvalUpdate
+  have harg :
+      (A k i - higham11_14_fl_aasenSourcePrefixDot n fp L H i next k) /
+          H next i =
+        L k next - Δs / H next i := by
+    rw [hsumfl, hrec i next k hnext hk]
+    ring
+  have hΔu' : |Δu| ≤ gamma fp 2 * |L k next - Δs / H next i| := by
+    simpa [harg] using hΔu
+  have hΔs_div : |Δs / H next i| ≤ Bsum / |H next i| := by
+    simpa [Bsum, abs_div] using
+      div_le_div_of_nonneg_right hΔs (abs_nonneg (H next i))
+  have hinner :
+      |L k next - Δs / H next i| ≤
+        |L k next| + Bsum / |H next i| := by
+    calc
+      |L k next - Δs / H next i|
+          ≤ |L k next| + |-(Δs / H next i)| := by
+            simpa [sub_eq_add_neg] using abs_add_le (L k next) (-(Δs / H next i))
+      _ = |L k next| + |Δs / H next i| := by rw [abs_neg]
+      _ ≤ |L k next| + Bsum / |H next i| :=
+        add_le_add (le_refl _) hΔs_div
+  have hγ2 : 0 ≤ gamma fp 2 := gamma_nonneg fp hvalUpdate
+  have hmain :
+      |-Δs / H next i + Δu| ≤
+        Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|) := by
+    calc
+      |-Δs / H next i + Δu|
+          ≤ |-Δs / H next i| + |Δu| := abs_add_le _ _
+      _ = |Δs / H next i| + |Δu| := by
+        have hneg : -Δs / H next i = -(Δs / H next i) := by ring
+        rw [hneg, abs_neg]
+      _ ≤ Bsum / |H next i| + gamma fp 2 * |L k next - Δs / H next i| :=
+        add_le_add hΔs_div hΔu'
+      _ ≤ Bsum / |H next i| +
+            gamma fp 2 * (|L k next| + Bsum / |H next i|) :=
+        add_le_add (le_refl _) (mul_le_mul_of_nonneg_left hinner hγ2)
+  rw [hfl, harg]
+  have hdiff : L k next - Δs / H next i + Δu - L k next =
+      -Δs / H next i + Δu := by
+    ring
+  rw [hdiff]
+  exact hmain
+
 /-- **Equation (11.14) floating-point next-column update with a formed sum**.
 Combines the rounded prefix dot-product formation error with the subsequent
 rounded subtraction/division update.  Under the exact Aasen recurrence, the
