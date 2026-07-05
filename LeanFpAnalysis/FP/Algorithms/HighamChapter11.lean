@@ -1483,6 +1483,61 @@ theorem higham11_15_aasen_chain_source_backward_error_of_components
           rw [hTy p]
     _ = rhs i := hLz i
 
+/-- **Equation (11.15) rounded source backward-error wrapper**.  This
+instantiates the rounded solve-chain component package and the algebraic
+collapse theorem.  The only remaining hypothesis is the componentwise budget
+for the collapsed chain perturbation `higham11_15_aasenChainDeltaA`; proving
+that budget is the next scalar-error aggregation step toward Theorem 11.8. -/
+theorem higham11_15_fl_aasen_solve_chain_source_backward_error_of_delta_bound
+    (fp : FPModel) (n : ℕ)
+    (A Pmat L T L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU bound : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hL_lower : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hbound : ∀ DeltaL_outer DeltaU_outer DeltaT : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaL_outer i j| ≤ gamma fp n * |L i j|) →
+      (∀ i j : Fin n, |DeltaU_outer i j| ≤ gamma fp n * |L j i|) →
+      (∀ i j : Fin n, |DeltaT i j| ≤
+        higham9_14_f (gamma fp n) *
+          ∑ k : Fin n, |L_T_hat i k| * |U_T_hat k j|) →
+      ∀ i j : Fin n,
+        |higham11_15_aasenChainDeltaA n L T (fun r c => L c r)
+            DeltaL_outer DeltaT DeltaU_outer i j| ≤ bound i j) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ bound i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) := by
+  intro rhs z_hat q_hat y_hat U_outer w_hat
+  obtain ⟨DeltaL_outer, DeltaU_outer, _DeltaL_mid, _DeltaU_mid, DeltaT,
+      hDeltaL_outer, hDeltaU_outer, hForward_outer, _hMiddle_model,
+      hDeltaT_bound, hMiddle_backward, hBack_outer, _hx⟩ :=
+    higham11_15_fl_aasen_solve_chain_backward_error_components
+      fp n Pmat L T L_T_hat U_T_hat b DeltaT_LU h20
+      hL_diag hL_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn
+  exact higham11_15_aasen_chain_source_backward_error_of_components
+    n A L T U_outer DeltaL_outer DeltaT DeltaU_outer
+    rhs z_hat y_hat w_hat bound
+    (by
+      intro i j
+      simpa [U_outer] using hprod i j)
+    hForward_outer hMiddle_backward hBack_outer
+    (hbound DeltaL_outer DeltaU_outer DeltaT
+      hDeltaL_outer (by simpa [U_outer] using hDeltaU_outer) hDeltaT_bound)
+
 /-- **Equation (11.15) exact solve-chain bridge**, unpermuted case.  If the
 exact Aasen product is `A = L T Lᵀ` and the three exact solves in the chain are
 satisfied with identity permutation, then the resulting `x` solves `A x = b`.
