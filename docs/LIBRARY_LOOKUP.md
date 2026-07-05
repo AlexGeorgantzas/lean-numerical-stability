@@ -4836,6 +4836,7 @@ Source-facing Chapter 11 wrappers:
 - `higham11_14_fl_aasen_next_column_update_formed_sum_single_abs_error_of_exact_recurrence`
 - `higham11_14_fl_aasen_next_column_update_formed_sum_abs_sub_bound_of_exact_recurrence`
 - `higham11_14_fl_aasen_next_column_update_source_prefix_abs_sub_bound_of_exact_recurrence`
+- `higham11_14_fl_aasen_next_column_update_source_prefix_column_component_bound_of_exact_recurrence`
 - `higham11_15_aasenSolveChain`
 - `higham11_8_aasen_backward_error_interface`
 - `higham11_8_aasenNormwiseBackwardBound`

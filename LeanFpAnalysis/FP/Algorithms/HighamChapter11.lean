@@ -1122,6 +1122,35 @@ theorem higham11_14_fl_aasen_next_column_update_source_prefix_abs_sub_bound_of_e
   rw [hdiff]
   exact hmain
 
+/-- **Equation (11.14) source-prefix update**, column componentwise lift.  If a
+chosen per-entry budget dominates the scalar source-prefix bound for each
+updated row `k ≥ i+2`, then the rounded Aasen next-column update satisfies that
+componentwise budget throughout the column. -/
+theorem higham11_14_fl_aasen_next_column_update_source_prefix_column_component_bound_of_exact_recurrence
+    (n : ℕ) (fp : FPModel) (A L H : Fin n → Fin n → ℝ)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (i next : Fin n) (hnext : next.val = i.val + 1)
+    (hvalSum : gammaValid fp next.val) (hvalUpdate : gammaValid fp 2)
+    (β : Fin n → ℝ)
+    (hβ : ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|) ≤ β k) :
+    ∀ k : Fin n, i.val + 2 ≤ k.val →
+      |fp.fl_div
+          (fp.fl_sub (A k i) (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i) - L k next| ≤ β k := by
+  intro k hk
+  exact
+    (higham11_14_fl_aasen_next_column_update_source_prefix_abs_sub_bound_of_exact_recurrence
+      n fp A L H hrec hHnz i next k hnext hk hvalSum hvalUpdate).trans
+      (hβ k hk)
+
 /-- **Equation (11.14) floating-point next-column update with a formed sum**.
 Combines the rounded prefix dot-product formation error with the subsequent
 rounded subtraction/division update.  Under the exact Aasen recurrence, the
