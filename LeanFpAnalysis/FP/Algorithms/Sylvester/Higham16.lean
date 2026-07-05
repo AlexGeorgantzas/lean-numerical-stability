@@ -374,6 +374,29 @@ lemma sylvesterPracticalBudgetVec_maxNorm_mono (m n : Nat)
       hRhat hRu hRu_le
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    scalar cap form of the practical budget vector.  If every component of
+    the practical `|P^{-1}| (|vec(Rhat)| + vec(Ru))` budget is bounded by
+    `eta`, then its source max-entry norm is bounded by `eta`. -/
+lemma sylvesterPracticalBudgetVec_maxNorm_le_of_componentwise_le (m n : Nat)
+    (PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (Rhat Ru : RMatFn m n) {eta : Real}
+    (hPinvAbs : forall p q, 0 <= PinvAbs p q)
+    (hRu : forall i j, 0 <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru p <= eta) :
+    sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) <= eta := by
+  apply sylvesterVecMaxNorm_le_of_abs_le
+  · intro p
+    rw [abs_of_nonneg
+      (sylvesterPracticalBudgetVec_nonneg m n PinvAbs Rhat Ru
+        hPinvAbs hRu p)]
+    exact hcomponent p
+  · exact heta
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
     the entrywise absolute-value matrix `|P^{-1}|` for the vec/Kronecker
     Sylvester coefficient `P = I_n kron A - B^T kron I_m`.  The inverse is
     Mathlib's nonsingular matrix inverse; source-facing theorems using this
@@ -678,6 +701,88 @@ theorem sylvester_practical_error_bound_of_computed_residual_certificate_mono
     sylvesterPracticalBudgetVec_maxNorm_mono m n
       PinvAbs PinvAbs' Rhat Rhat' Ru Ru'
       hPinvAbs_nonneg hPinvAbs'_nonneg hPinvAbs_le hRhat hBudget.1 hRu_le
+  exact hbase.trans
+    (div_le_div_of_nonneg_right hnorm (le_of_lt hXhat))
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), scalar estimator-ready
+    form: a scalar cap on every practical-budget component gives the same
+    relative max-entry forward-error bound with right-hand side
+    `eta / ||Xhat||`. -/
+theorem sylvester_practical_error_bound_of_computed_residual_certificate_scalar
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  have hbase :=
+    sylvester_practical_error_bound_of_computed_residual_certificate m n
+      A B C X Xhat Rhat Ru Pinv PinvAbs hX hLeft hPinvAbs hBudget hXhat
+  have hPinvAbs_nonneg : forall p q, 0 <= PinvAbs p q := by
+    intro p q
+    exact (abs_nonneg (Pinv p q)).trans (hPinvAbs p q)
+  have hnorm :
+      sylvesterVecMaxNorm m n
+          (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) <= eta :=
+    sylvesterPracticalBudgetVec_maxNorm_le_of_componentwise_le m n
+      PinvAbs Rhat Ru hPinvAbs_nonneg hBudget.1 heta hcomponent
+  exact hbase.trans
+    (div_le_div_of_nonneg_right hnorm (le_of_lt hXhat))
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), monotone scalar
+    estimator-ready form: after replacing the inverse and residual budgets by
+    componentwise larger estimated quantities, a scalar cap on the estimated
+    practical budget gives the final relative max-entry error bound. -/
+theorem sylvester_practical_error_bound_of_computed_residual_certificate_mono_scalar
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (Pinv PinvAbs PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hPinvAbs_le : forall p q, PinvAbs p q <= PinvAbs' p q)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  have hbase :=
+    sylvester_practical_error_bound_of_computed_residual_certificate_mono m n
+      A B C X Xhat Rhat Rhat' Ru Ru' Pinv PinvAbs PinvAbs'
+      hX hLeft hPinvAbs hPinvAbs_le hBudget hRhat hRu_le hXhat
+  have hPinvAbs_nonneg : forall p q, 0 <= PinvAbs p q := by
+    intro p q
+    exact (abs_nonneg (Pinv p q)).trans (hPinvAbs p q)
+  have hPinvAbs'_nonneg : forall p q, 0 <= PinvAbs' p q := by
+    intro p q
+    exact (hPinvAbs_nonneg p q).trans (hPinvAbs_le p q)
+  have hRu'_nonneg : forall i j, 0 <= Ru' i j := by
+    intro i j
+    exact (hBudget.1 i j).trans (hRu_le i j)
+  have hnorm :
+      sylvesterVecMaxNorm m n
+          (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') <= eta :=
+    sylvesterPracticalBudgetVec_maxNorm_le_of_componentwise_le m n
+      PinvAbs' Rhat' Ru' hPinvAbs'_nonneg hRu'_nonneg heta hcomponent
   exact hbase.trans
     (div_le_div_of_nonneg_right hnorm (le_of_lt hXhat))
 
