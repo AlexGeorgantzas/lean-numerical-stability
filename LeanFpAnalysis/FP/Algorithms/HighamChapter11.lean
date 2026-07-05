@@ -427,6 +427,36 @@ theorem higham11_3_fl_blockLDLT_oneByOne_stage_bound (n : ℕ) (fp : FPModel)
   fl_blockLDLT_oneByOne_stage_bound n fp A he hsym1 hval L_S D_S Bs hIH L D
     hL00 hLcol hL0s hLtr hD00 hD0s hDs0 hDtr
 
+/-- **Theorem 11.3 rounded Schur complement** for the all-1×1-pivot path:
+`fl(Aᵢⱼ - fl(fl(Aᵢ₀/A₀₀) A₀ⱼ))`. -/
+noncomputable abbrev higham11_3_fl_schurCompl (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) : Fin n → Fin n → ℝ :=
+  flSchurCompl n fp A
+
+/-- Recursive rounded-pivot side condition for Theorem 11.3's all-1×1 path. -/
+noncomputable abbrev higham11_3_FlAllOneSymmetricPivots (fp : FPModel)
+    (n : ℕ) (A : Fin n → Fin n → ℝ) : Prop :=
+  FlAllOneSymmetricPivots fp n A
+
+/-- Recursive entrywise envelope obtained by iterating the one-stage floating
+block-LDLᵀ bound along the rounded all-1×1-pivot path. -/
+noncomputable abbrev higham11_3_fl_allOneByOneBound (fp : FPModel)
+    (n : ℕ) (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  flBlockLDLTAllOneByOneBound fp n A
+
+/-- **Theorem 11.3 all-1×1-pivot recursive fl bound**: under the rounded
+all-1×1 pivot/symmetry side condition, there exist computed-style factors
+`L̂,D̂` whose product approximates `A` entrywise within
+`higham11_3_fl_allOneByOneBound`. -/
+theorem higham11_3_fl_blockLDLT_all_oneByOne_bound (fp : FPModel)
+    (hval : gammaValid fp 3) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hp : higham11_3_FlAllOneSymmetricPivots fp n A) :
+    ∃ L D : Fin n → Fin n → ℝ,
+      ∀ I J,
+        |(∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) - A I J|
+          ≤ higham11_3_fl_allOneByOneBound fp n A I J :=
+  fl_blockLDLT_all_oneByOne_bound fp hval n A hp
+
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
     (ε : ℝ) : Fin 3 → Fin 3 → ℝ :=

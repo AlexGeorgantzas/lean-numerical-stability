@@ -4754,8 +4754,12 @@ Core symmetric-indefinite and skew-symmetric module:
 - `bunch_parlett_L_bound`
 - `bunch_kaufman_stability`
 - `bunch_kaufman_solve_backward_error`
+- `flSchurCompl`
+- `FlAllOneSymmetricPivots`
 - `flBlockLDLTOneByOneStageBound`
 - `fl_blockLDLT_oneByOne_stage_bound`
+- `flBlockLDLTAllOneByOneBound`
+- `fl_blockLDLT_all_oneByOne_bound`
 - `bunchTridiagonalAlpha`
 - `bunch_tridiagonal_alpha_root`
 - `BunchTridiagonalPivotChoice`
@@ -4776,8 +4780,12 @@ Source-facing Chapter 11 wrappers:
 - `higham11_2_BunchKaufmanPartialPivotCase`
 - `higham11_5_twoByTwoPivotSolveStable`
 - `higham11_3_block_ldlt_backward_error_interface`
+- `higham11_3_fl_schurCompl`
+- `higham11_3_FlAllOneSymmetricPivots`
 - `higham11_3_fl_oneByOneStageBound`
 - `higham11_3_fl_blockLDLT_oneByOne_stage_bound`
+- `higham11_3_fl_allOneByOneBound`
+- `higham11_3_fl_blockLDLT_all_oneByOne_bound`
 - `higham11_6_partialPivotExampleA`
 - `higham11_6_partialPivotExampleL`
 - `higham11_6_partialPivotExampleD`

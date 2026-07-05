@@ -1039,6 +1039,78 @@ theorem fl_blockLDLT_oneByOne_stage_bound (n : ℕ) (fp : FPModel)
     · subst J
       simpa [flBlockLDLTOneByOneStageBound] using htrail i j
 
+/-- Rounded Schur complement produced by one computed 1×1-pivot block-LDLᵀ
+    elimination step.  This is the recursive matrix consumed by the floating
+    all-1×1 path of Theorem 11.3. -/
+noncomputable def flSchurCompl (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    fp.fl_sub (A i.succ j.succ)
+      (fp.fl_mul (fp.fl_div (A i.succ 0) (A 0 0)) (A 0 j.succ))
+
+/-- Recursive rounded-pivot side condition for the all-1×1 floating block-LDLᵀ
+    path.  At each rounded Schur-complement stage the pivot is nonzero and the
+    active first row agrees with the active first column, which is exactly the
+    symmetry side condition required by the one-stage floating assemble bound. -/
+noncomputable def FlAllOneSymmetricPivots (fp : FPModel) :
+    (n : ℕ) → (Fin n → Fin n → ℝ) → Prop
+  | 0, _ => True
+  | n + 1, A =>
+      A 0 0 ≠ 0 ∧
+      (∀ i : Fin n, A 0 i.succ = A i.succ 0) ∧
+      FlAllOneSymmetricPivots fp n (flSchurCompl n fp A)
+
+/-- Recursive entrywise backward-error envelope for the rounded all-1×1-pivot
+    block-LDLᵀ path.  Each stage wraps the recursive trailing envelope in
+    `flBlockLDLTOneByOneStageBound`. -/
+noncomputable def flBlockLDLTAllOneByOneBound (fp : FPModel) :
+    (n : ℕ) → (Fin n → Fin n → ℝ) → Fin n → Fin n → ℝ
+  | 0, _ => fun I _ => Fin.elim0 I
+  | n + 1, A =>
+      flBlockLDLTOneByOneStageBound n fp A
+        (flBlockLDLTAllOneByOneBound fp n (flSchurCompl n fp A))
+
+/-- **Recursive all-1×1-pivot floating-point block-LDLᵀ bound** for Theorem
+    11.3's `s = 1` path.  If every rounded Schur-complement stage has a nonzero
+    pivot and satisfies the first-row/first-column symmetry needed by the local
+    assemble theorem, then recursively constructed factors `L̂,D̂` satisfy the
+    entrywise envelope `flBlockLDLTAllOneByOneBound`. -/
+theorem fl_blockLDLT_all_oneByOne_bound (fp : FPModel) (hval : gammaValid fp 3) :
+    ∀ (n : ℕ) (A : Fin n → Fin n → ℝ),
+      FlAllOneSymmetricPivots fp n A →
+      ∃ L D : Fin n → Fin n → ℝ,
+        ∀ I J,
+          |(∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) - A I J|
+            ≤ flBlockLDLTAllOneByOneBound fp n A I J := by
+  intro n
+  induction n with
+  | zero =>
+      intro A _hp
+      refine ⟨A, A, ?_⟩
+      intro I
+      exact Fin.elim0 I
+  | succ n ih =>
+      intro A hp
+      obtain ⟨ha, hsym1, hpS⟩ := hp
+      obtain ⟨L_S, D_S, hprodS⟩ := ih (flSchurCompl n fp A) hpS
+      refine ⟨fun I J => Fin.cases (Fin.cases 1 (fun _ => 0) J)
+                (fun i => Fin.cases (fp.fl_div (A i.succ 0) (A 0 0))
+                  (fun j => L_S i j) J) I,
+              fun I J => Fin.cases (Fin.cases (A 0 0) (fun _ => 0) J)
+                (fun i => Fin.cases 0 (fun j => D_S i j) J) I, ?_⟩
+      apply fl_blockLDLT_oneByOne_stage_bound n fp A ha hsym1 hval L_S D_S
+        (flBlockLDLTAllOneByOneBound fp n (flSchurCompl n fp A))
+      · intro i j
+        simpa [flSchurCompl] using hprodS i j
+      · simp
+      · intro i; simp
+      · intro j; simp
+      · intro i j; simp
+      · simp
+      · intro j; simp
+      · intro i; simp
+      · intro i j; simp
+
 -- ============================================================
 -- Chapter 11.1.4  Tridiagonal symmetric matrices
 -- ============================================================
