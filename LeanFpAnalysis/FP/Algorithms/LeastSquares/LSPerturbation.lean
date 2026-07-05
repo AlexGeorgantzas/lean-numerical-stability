@@ -2546,6 +2546,60 @@ theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped
       Q P hIdemQ
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the `P`-range compression of `D^2`, with `D = P-Q`, is the complement of
+    the companion-square compression `PQP` inside the projection `P`. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_add_companion_sq_eq_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    (fun i j =>
+      rectMatMul
+          (rectMatMul P
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          P i j +
+        rectMatMul (rectMatMul P Q) P i j) =
+      P := by
+  have hD :=
+    wedinLemma20_12_projection_projectionDiff_sq_projection_eq_crossGram
+      P Q hIdemP hIdemQ
+  have hAdd :=
+    wedinLemma20_12_projection_mul_swapped_mul_projection_add_crossGram_eq_projection
+      P Q hIdemP
+  ext i j
+  have hDij := congrFun (congrFun hD i) j
+  have hAddij := congrFun (congrFun hAdd i) j
+  rw [hDij]
+  simpa [add_comm] using hAddij
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the swapped `Q`-range compression of `D^2`, with `D = P-Q`, is the
+    complement of the companion-square compression `QPQ` inside `Q`. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_swapped_add_companion_sq_swapped_eq_projection_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    (fun i j =>
+      rectMatMul
+          (rectMatMul Q
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          Q i j +
+        rectMatMul (rectMatMul Q P) Q i j) =
+      Q := by
+  have hD :=
+    wedinLemma20_12_projection_projectionDiff_sq_projection_eq_crossGram_swapped
+      P Q hIdemP hIdemQ
+  have hAdd :=
+    wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_add_crossGram_swapped_eq_projection_swapped
+      P Q hIdemQ
+  ext i j
+  have hDij := congrFun (congrFun hD i) j
+  have hAddij := congrFun (congrFun hAdd i) j
+  rw [hDij]
+  simpa [add_comm] using hAddij
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the `P`-range companion-square compression `PQP` is a rectangular
     Gram product. -/
 theorem wedinLemma20_12_projection_mul_swapped_mul_projection_eq_transpose_self
