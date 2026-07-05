@@ -3091,6 +3091,77 @@ theorem wedinLemma20_12_sum_sq_finiteHermitianEigenvalues_projection_mul_swapped
               MQP hSymQP
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion-square compressions `PQP` and `QPQ` have the same
+    complexified spectral radius.
+
+This is a direct spectral-radius bridge for the principal-angle route.  It uses
+only projection idempotence and the finite-dimensional fact `rho(AB)=rho(BA)`;
+it does not yet identify this radius with the exact operator-2 norm of the PSD
+compressions. -/
+theorem wedinLemma20_12_toLin_spectralRadius_projection_mul_swapped_mul_projection_eq_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin m) (Fin m) ℂ from
+            realRectToCMatrix (rectMatMul (rectMatMul P Q) P))) =
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin m) (Fin m) ℂ from
+            realRectToCMatrix (rectMatMul (rectMatMul Q P) Q))) := by
+  let Pc : Matrix (Fin m) (Fin m) ℂ := realRectToCMatrix P
+  let Qc : Matrix (Fin m) (Fin m) ℂ := realRectToCMatrix Q
+  have hPidemC : Pc * Pc = Pc := by
+    have hbase :
+        realRectToCMatrix (rectMatMul P P) =
+          realRectToCMatrix P := by
+      rw [hIdemP]
+    simpa [Pc, realRectToCMatrix_rectMatMul] using hbase
+  have hQidemC : Qc * Qc = Qc := by
+    have hbase :
+        realRectToCMatrix (rectMatMul Q Q) =
+          realRectToCMatrix Q := by
+      rw [hIdemQ]
+    simpa [Qc, realRectToCMatrix_rectMatMul] using hbase
+  have hPQP :
+      (show Matrix (Fin m) (Fin m) ℂ from
+        realRectToCMatrix (rectMatMul (rectMatMul P Q) P)) =
+        (Pc * Qc) * Pc := by
+    ext i j
+    simp [Pc, Qc, realRectToCMatrix_rectMatMul, complexMatrixMul,
+      Matrix.mul_apply]
+  have hQPQ :
+      (show Matrix (Fin m) (Fin m) ℂ from
+        realRectToCMatrix (rectMatMul (rectMatMul Q P) Q)) =
+        (Qc * Pc) * Qc := by
+    ext i j
+    simp [Pc, Qc, realRectToCMatrix_rectMatMul, complexMatrixMul,
+      Matrix.mul_apply]
+  calc
+    spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin m) (Fin m) ℂ from
+            realRectToCMatrix (rectMatMul (rectMatMul P Q) P)))
+        = spectralRadius ℂ (Matrix.toLin' (Pc * (Qc * Pc))) := by
+            rw [hPQP, Matrix.mul_assoc]
+    _ = spectralRadius ℂ (Matrix.toLin' ((Qc * Pc) * Pc)) :=
+            ch7_toLin_spectralRadius_mul_comm_eq Pc (Qc * Pc)
+    _ = spectralRadius ℂ (Matrix.toLin' (Qc * Pc)) := by
+            rw [Matrix.mul_assoc, hPidemC]
+    _ = spectralRadius ℂ (Matrix.toLin' (Pc * Qc)) :=
+            ch7_toLin_spectralRadius_mul_comm_eq Qc Pc
+    _ = spectralRadius ℂ (Matrix.toLin' ((Pc * Qc) * Qc)) := by
+            rw [Matrix.mul_assoc, hQidemC]
+    _ = spectralRadius ℂ (Matrix.toLin' (Qc * (Pc * Qc))) :=
+            (ch7_toLin_spectralRadius_mul_comm_eq Qc (Pc * Qc)).symm
+    _ = spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin m) (Fin m) ℂ from
+            realRectToCMatrix (rectMatMul (rectMatMul Q P) Q))) := by
+            rw [hQPQ, Matrix.mul_assoc]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm
     of the range-side compression `P(P-Q)^2P`.
 
