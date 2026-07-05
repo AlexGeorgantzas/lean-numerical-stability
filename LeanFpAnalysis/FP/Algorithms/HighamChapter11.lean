@@ -81,6 +81,16 @@ theorem higham11_3_blockLDLT_assemble_step (n : ℕ)
   blockLDLT_assemble_step n A ha hsym S L_S D_S hS hIH L D
     hL0 hLcol hL0s hLtr hD00 hD0s hDs0 hDtr
 
+/-- **Eq (11.1)/(11.2) exact factorization existence** (no-2×2-pivot case): a
+symmetric `A` all of whose successive Schur-complement pivots are nonzero
+(`AllOnePivots`) has an exact `LDLᵀ` factorization `∑ L·D·Lᵀ = A`.  The exact
+`PAPᵀ = LDLᵀ` recursion (P = I) underlying Theorem 11.3. -/
+theorem higham11_1_exact_blockLDLT_all_oneByOne (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j, A i j = A j i) (hp : AllOnePivots n A) :
+    ∃ L D : Fin n → Fin n → ℝ,
+      ∀ I J, (∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = A I J :=
+  exact_blockLDLT_all_oneByOne n A hsym hp
+
 /-! ## §11.1.1 Complete pivoting -/
 
 /-- **Algorithm 11.1** pivoting parameter

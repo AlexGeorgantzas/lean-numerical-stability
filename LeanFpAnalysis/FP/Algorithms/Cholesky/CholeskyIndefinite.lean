@@ -975,4 +975,56 @@ theorem blockLDLT_assemble_step (n : ℕ) (A : Fin (n + 1) → Fin (n + 1) → �
     rw [htrail, hLcol i0, hLcol j0, hS i0 j0, hsym j0]
     field_simp; ring
 
+/-- Schur complement of the leading 1×1 pivot,
+`S i j = A i.succ j.succ − A i.succ 0 · A 0 j.succ / A 0 0`. -/
+noncomputable def schurCompl (n : ℕ) (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j => A i.succ j.succ - A i.succ 0 * A 0 j.succ / A 0 0
+
+/-- Symmetry is inherited by the Schur complement. -/
+theorem schurCompl_symm (n : ℕ) (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hsym : ∀ i j, A i j = A j i) :
+    ∀ i j : Fin n, schurCompl n A i j = schurCompl n A j i := by
+  intro i j
+  simp only [schurCompl]
+  rw [hsym i.succ j.succ, hsym i.succ 0, hsym 0 j.succ]; ring
+
+/-- The successive leading 1×1 pivots of the diagonal-pivoting recursion are all
+nonzero (the "no 2×2 pivot needed / leading principal minors nonzero" case). -/
+def AllOnePivots : (n : ℕ) → (Fin n → Fin n → ℝ) → Prop
+  | 0, _ => True
+  | (n + 1), A => A 0 0 ≠ 0 ∧ AllOnePivots n (schurCompl n A)
+
+/-- **Exact all-1×1 block-LDLᵀ factorization existence** (Higham eqs (11.1)/(11.2),
+the no-2×2-pivot / root-free `LDLᵀ` case).  If `A` is symmetric and every
+successive Schur-complement pivot is nonzero (`AllOnePivots`), there exist factors
+`L, D` with `∑ L·D·Lᵀ = A` — the exact `PAPᵀ = LDLᵀ` recursion (with `P = I`)
+underlying Theorem 11.3, obtained by iterating `blockLDLT_assemble_step`. -/
+theorem exact_blockLDLT_all_oneByOne :
+    ∀ (n : ℕ) (A : Fin n → Fin n → ℝ),
+      (∀ i j, A i j = A j i) → AllOnePivots n A →
+      ∃ L D : Fin n → Fin n → ℝ,
+        ∀ I J, (∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = A I J := by
+  intro n
+  induction n with
+  | zero => intro A _ _; exact ⟨A, A, fun I => I.elim0⟩
+  | succ n ih =>
+    intro A hsym hp
+    obtain ⟨ha, hpS⟩ := hp
+    obtain ⟨L_S, D_S, hprodS⟩ := ih (schurCompl n A) (schurCompl_symm n A hsym) hpS
+    refine ⟨fun I J => Fin.cases (Fin.cases 1 (fun _ => 0) J)
+              (fun i => Fin.cases (A i.succ 0 / A 0 0) (fun j => L_S i j) J) I,
+            fun I J => Fin.cases (Fin.cases (A 0 0) (fun _ => 0) J)
+              (fun i => Fin.cases 0 (fun j => D_S i j) J) I, ?_⟩
+    apply blockLDLT_assemble_step n A ha (fun i => hsym 0 i.succ)
+      (schurCompl n A) L_S D_S (fun i j => rfl) hprodS
+    · simp
+    · intro i; simp
+    · intro j; simp
+    · intro i j; simp
+    · simp
+    · intro j; simp
+    · intro i; simp
+    · intro i j; simp
+
 end LeanFpAnalysis.FP
