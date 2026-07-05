@@ -433,6 +433,27 @@ noncomputable abbrev higham11_3_fl_schurCompl (n : ℕ) (fp : FPModel)
     (A : Fin (n + 1) → Fin (n + 1) → ℝ) : Fin n → Fin n → ℝ :=
   flSchurCompl n fp A
 
+/-- Stored-symmetric rounded Schur complement for Theorem 11.3's all-1×1 path:
+compute one triangle and copy it across the diagonal. -/
+noncomputable abbrev higham11_3_fl_storedSymSchurCompl (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) : Fin n → Fin n → ℝ :=
+  flStoredSymSchurCompl n fp A
+
+/-- The stored-symmetric rounded Schur complement is symmetric by construction. -/
+theorem higham11_3_fl_storedSymSchurCompl_symm (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    ∀ i j : Fin n, higham11_3_fl_storedSymSchurCompl n fp A i j =
+      higham11_3_fl_storedSymSchurCompl n fp A j i :=
+  flStoredSymSchurCompl_symm n fp A
+
+/-- The stored-symmetric rounded Schur complement supplies the first-row /
+first-column equality used by the one-stage floating assemble theorem. -/
+theorem higham11_3_fl_storedSymSchurCompl_first_row_col (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 2) → Fin (n + 2) → ℝ) :
+    ∀ i : Fin n, higham11_3_fl_storedSymSchurCompl (n + 1) fp A 0 i.succ =
+      higham11_3_fl_storedSymSchurCompl (n + 1) fp A i.succ 0 :=
+  flStoredSymSchurCompl_first_row_col n fp A
+
 /-- Recursive rounded-pivot side condition for Theorem 11.3's all-1×1 path. -/
 noncomputable abbrev higham11_3_FlAllOneSymmetricPivots (fp : FPModel)
     (n : ℕ) (A : Fin n → Fin n → ℝ) : Prop :=

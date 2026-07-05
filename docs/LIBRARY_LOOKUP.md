@@ -4755,6 +4755,9 @@ Core symmetric-indefinite and skew-symmetric module:
 - `bunch_kaufman_stability`
 - `bunch_kaufman_solve_backward_error`
 - `flSchurCompl`
+- `flStoredSymSchurCompl`
+- `flStoredSymSchurCompl_symm`
+- `flStoredSymSchurCompl_first_row_col`
 - `FlAllOneSymmetricPivots`
 - `flBlockLDLTOneByOneStageBound`
 - `fl_blockLDLT_oneByOne_stage_bound`
@@ -4781,6 +4784,9 @@ Source-facing Chapter 11 wrappers:
 - `higham11_5_twoByTwoPivotSolveStable`
 - `higham11_3_block_ldlt_backward_error_interface`
 - `higham11_3_fl_schurCompl`
+- `higham11_3_fl_storedSymSchurCompl`
+- `higham11_3_fl_storedSymSchurCompl_symm`
+- `higham11_3_fl_storedSymSchurCompl_first_row_col`
 - `higham11_3_FlAllOneSymmetricPivots`
 - `higham11_3_fl_oneByOneStageBound`
 - `higham11_3_fl_blockLDLT_oneByOne_stage_bound`

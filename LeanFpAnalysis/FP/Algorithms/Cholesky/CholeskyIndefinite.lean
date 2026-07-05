@@ -1048,6 +1048,42 @@ noncomputable def flSchurCompl (n : ℕ) (fp : FPModel)
     fp.fl_sub (A i.succ j.succ)
       (fp.fl_mul (fp.fl_div (A i.succ 0) (A 0 0)) (A 0 j.succ))
 
+/-- Stored-symmetric rounded Schur complement for the 1×1-pivot path.  The
+    upper triangle is computed by `flSchurCompl`; lower-triangular entries are
+    copied from the opposite upper-triangular entry, matching the usual
+    symmetric-storage implementation convention. -/
+noncomputable def flStoredSymSchurCompl (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    if i.val ≤ j.val then flSchurCompl n fp A i j else flSchurCompl n fp A j i
+
+/-- The stored-symmetric rounded Schur complement is symmetric by construction. -/
+theorem flStoredSymSchurCompl_symm (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    ∀ i j : Fin n, flStoredSymSchurCompl n fp A i j =
+      flStoredSymSchurCompl n fp A j i := by
+  intro i j
+  classical
+  unfold flStoredSymSchurCompl
+  by_cases hij : i.val ≤ j.val
+  · by_cases hji : j.val ≤ i.val
+    · have hval : i.val = j.val := Nat.le_antisymm hij hji
+      have hfin : i = j := Fin.ext hval
+      subst j
+      simp
+    · simp [hij, hji]
+  · have hji : j.val ≤ i.val := (Nat.le_total j.val i.val).resolve_right hij
+    simp [hij, hji]
+
+/-- First-row/first-column equality supplied by the stored-symmetric rounded
+    Schur complement when the stored trailing matrix is nonempty. -/
+theorem flStoredSymSchurCompl_first_row_col (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 2) → Fin (n + 2) → ℝ) :
+    ∀ i : Fin n, flStoredSymSchurCompl (n + 1) fp A 0 i.succ =
+      flStoredSymSchurCompl (n + 1) fp A i.succ 0 := by
+  intro i
+  exact flStoredSymSchurCompl_symm (n + 1) fp A 0 i.succ
+
 /-- Recursive rounded-pivot side condition for the all-1×1 floating block-LDLᵀ
     path.  At each rounded Schur-complement stage the pivot is nonzero and the
     active first row agrees with the active first column, which is exactly the
