@@ -28983,6 +28983,245 @@ theorem theorem20_10_householder_componentUnitRoundoffCoefficient_nonneg
   dsimp [theorem20_10_householder_componentUnitRoundoffCoefficient]
   positivity
 
+/-- Positivity of the dimension-only unit-roundoff coefficient in the
+    Theorem 20.10(b) component source-rank branch.  The `Bᵀ` Householder
+    component is already positive when the constraint block has at least one
+    row. -/
+theorem theorem20_10_householder_componentUnitRoundoffCoefficient_pos
+    {r p q : ℕ} (hp : 0 < p) :
+    0 < theorem20_10_householder_componentUnitRoundoffCoefficient r p q := by
+  have hK_pos : 0 < householderConstructApplyGammaIndex (p + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hidx_nat :
+      0 < p * householderConstructApplyGammaIndex (p + q) :=
+    Nat.mul_pos hp hK_pos
+  have hidx :
+      0 < (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ)) := by
+    exact_mod_cast hidx_nat
+  have hcapB :
+      0 < (2 : ℝ) *
+        (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ)) :=
+    mul_pos (by norm_num) hidx
+  dsimp [theorem20_10_householder_componentUnitRoundoffCoefficient]
+  exact lt_of_lt_of_le hcapB (le_max_right _ _)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    one source-rank-dependent unit-roundoff cap that implies the three
+    half-radius gamma guards and the conservative source-rank gamma threshold.
+
+    This packages the current fully verified smallness assumptions into a
+    single positive scalar depending only on dimensions and the induced
+    source-rank margins. -/
+noncomputable def theorem20_10_householder_componentUnitRoundoffSmallnessThreshold
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B) : ℝ :=
+  min
+    (((1 : ℝ) / 2) /
+      (((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ))
+    (min
+      (((1 : ℝ) / 2) /
+        (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ)))
+      (min
+        (((1 : ℝ) / 2) /
+          ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℕ) : ℝ))
+        (theorem20_10_householder_sourceRankGammaThreshold hB hStack /
+          theorem20_10_householder_componentUnitRoundoffCoefficient r p q)))
+
+/-- Positivity of the combined unit-roundoff smallness threshold used by the
+    Theorem 20.10(b) source-rank wrappers. -/
+theorem theorem20_10_householder_componentUnitRoundoffSmallnessThreshold_pos
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hp : 0 < p) (hq : 0 < q) :
+    0 <
+      theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack := by
+  have hpq_pos : 0 < p + q := by omega
+  have hrq_pos : 0 < r + q := by omega
+  have hKA_pos : 0 < householderConstructApplyGammaIndex (r + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKB_pos : 0 < householderConstructApplyGammaIndex (p + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hidxA_nat :
+      0 < (p + q) * householderConstructApplyGammaIndex (r + q) :=
+    Nat.mul_pos hpq_pos hKA_pos
+  have hidxB_nat :
+      0 < p * householderConstructApplyGammaIndex (p + q) :=
+    Nat.mul_pos hp hKB_pos
+  have hfactor_pos :
+      0 < householderQRRhsPanelGammaClosedGrowthFactor (r + q) q :=
+    householderQRRhsPanelGammaClosedGrowthFactor_pos hrq_pos
+  have hidxRhs_nat :
+      0 < householderQRRhsPanelGammaClosedGrowthIndex (r + q) q := by
+    rw [householderQRRhsPanelGammaClosedGrowthIndex_eq_factor_mul_printedIndex]
+    exact Nat.mul_pos hfactor_pos (Nat.mul_pos hq hKA_pos)
+  have hidxA :
+      0 <
+        (((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ) := by
+    exact_mod_cast hidxA_nat
+  have hidxB :
+      0 <
+        (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ)) := by
+    exact_mod_cast hidxB_nat
+  have hidxRhs :
+      0 <
+        ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℕ) : ℝ) := by
+    exact_mod_cast hidxRhs_nat
+  have hcapA :
+      0 <
+        (((1 : ℝ) / 2) /
+          (((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ)) :=
+    div_pos (by norm_num) hidxA
+  have hcapB :
+      0 <
+        (((1 : ℝ) / 2) /
+          (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ))) :=
+    div_pos (by norm_num) hidxB
+  have hcapRhs :
+      0 <
+        (((1 : ℝ) / 2) /
+          ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℕ) : ℝ)) :=
+    div_pos (by norm_num) hidxRhs
+  have hGammaThreshold :
+      0 < theorem20_10_householder_sourceRankGammaThreshold hB hStack :=
+    theorem20_10_householder_sourceRankGammaThreshold_pos hB hStack
+  have hCoeff :
+      0 < theorem20_10_householder_componentUnitRoundoffCoefficient r p q :=
+    theorem20_10_householder_componentUnitRoundoffCoefficient_pos hp
+  have hSourceCap :
+      0 <
+        theorem20_10_householder_sourceRankGammaThreshold hB hStack /
+          theorem20_10_householder_componentUnitRoundoffCoefficient r p q :=
+    div_pos hGammaThreshold hCoeff
+  dsimp [theorem20_10_householder_componentUnitRoundoffSmallnessThreshold]
+  exact lt_min hcapA (lt_min hcapB (lt_min hcapRhs hSourceCap))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    the combined unit-roundoff threshold implies the half-radius guards and
+    the linear source-rank gamma threshold used by the conservative component
+    route. -/
+theorem theorem20_10_householder_component_unit_roundoff_conditions_of_lt_smallnessThreshold
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hp : 0 < p) (hq : 0 < q)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    ((((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ) *
+          fp.u ≤ 1 / 2) ∧
+      ((((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ) *
+          fp.u) ≤ 1 / 2) ∧
+      (((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+          fp.u) ≤ 1 / 2) ∧
+      theorem20_10_householder_componentUnitRoundoffCoefficient r p q *
+          fp.u <
+        theorem20_10_householder_sourceRankGammaThreshold hB hStack := by
+  have hpq_pos : 0 < p + q := by omega
+  have hrq_pos : 0 < r + q := by omega
+  have hKA_pos : 0 < householderConstructApplyGammaIndex (r + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKB_pos : 0 < householderConstructApplyGammaIndex (p + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hidxA_nat :
+      0 < (p + q) * householderConstructApplyGammaIndex (r + q) :=
+    Nat.mul_pos hpq_pos hKA_pos
+  have hidxB_nat :
+      0 < p * householderConstructApplyGammaIndex (p + q) :=
+    Nat.mul_pos hp hKB_pos
+  have hfactor_pos :
+      0 < householderQRRhsPanelGammaClosedGrowthFactor (r + q) q :=
+    householderQRRhsPanelGammaClosedGrowthFactor_pos hrq_pos
+  have hidxRhs_nat :
+      0 < householderQRRhsPanelGammaClosedGrowthIndex (r + q) q := by
+    rw [householderQRRhsPanelGammaClosedGrowthIndex_eq_factor_mul_printedIndex]
+    exact Nat.mul_pos hfactor_pos (Nat.mul_pos hq hKA_pos)
+  have hidxA :
+      0 <
+        (((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ) := by
+    exact_mod_cast hidxA_nat
+  have hidxB :
+      0 <
+        (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ)) := by
+    exact_mod_cast hidxB_nat
+  have hidxRhs :
+      0 <
+        ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℕ) : ℝ) := by
+    exact_mod_cast hidxRhs_nat
+  have hCoeff :
+      0 < theorem20_10_householder_componentUnitRoundoffCoefficient r p q :=
+    theorem20_10_householder_componentUnitRoundoffCoefficient_pos hp
+  have huA :
+      fp.u <
+        (((1 : ℝ) / 2) /
+          (((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ)) := by
+    exact lt_of_lt_of_le hu
+      (by
+        dsimp [theorem20_10_householder_componentUnitRoundoffSmallnessThreshold]
+        exact min_le_left _ _)
+  have huB :
+      fp.u <
+        (((1 : ℝ) / 2) /
+          (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ))) := by
+    exact lt_of_lt_of_le hu
+      (by
+        dsimp [theorem20_10_householder_componentUnitRoundoffSmallnessThreshold]
+        exact le_trans (min_le_right _ _) (min_le_left _ _))
+  have huRhs :
+      fp.u <
+        (((1 : ℝ) / 2) /
+          ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℕ) : ℝ)) := by
+    exact lt_of_lt_of_le hu
+      (by
+        dsimp [theorem20_10_householder_componentUnitRoundoffSmallnessThreshold]
+        exact le_trans (min_le_right _ _)
+          (le_trans (min_le_right _ _) (min_le_left _ _)))
+  have huSource :
+      fp.u <
+        theorem20_10_householder_sourceRankGammaThreshold hB hStack /
+          theorem20_10_householder_componentUnitRoundoffCoefficient r p q := by
+    exact lt_of_lt_of_le hu
+      (by
+        dsimp [theorem20_10_householder_componentUnitRoundoffSmallnessThreshold]
+        exact le_trans (min_le_right _ _)
+          (le_trans (min_le_right _ _) (min_le_right _ _)))
+  have hA_lt :
+      fp.u *
+          (((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ) <
+        1 / 2 :=
+    (lt_div_iff₀ hidxA).mp huA
+  have hB_lt :
+      fp.u *
+          (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ)) <
+        1 / 2 :=
+    (lt_div_iff₀ hidxB).mp huB
+  have hRhs_lt :
+      fp.u *
+          ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℕ) : ℝ) <
+        1 / 2 :=
+    (lt_div_iff₀ hidxRhs).mp huRhs
+  have hSource_lt :
+      fp.u * theorem20_10_householder_componentUnitRoundoffCoefficient r p q <
+        theorem20_10_householder_sourceRankGammaThreshold hB hStack :=
+    (lt_div_iff₀ hCoeff).mp huSource
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · nlinarith [hA_lt]
+  · nlinarith [hB_lt]
+  · nlinarith [hRhs_lt]
+  · nlinarith [hSource_lt]
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     linear unit-roundoff cap for the printed `A` Householder coefficient under
     the standard half-radius smallness condition. -/
@@ -29173,6 +29412,30 @@ theorem theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold
     (theorem20_10_householder_component_max_gamma_le_componentUnitRoundoffCoefficient_mul_u_of_small
       fp hm hsmallA hsmallB hhalf)
     hunit
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    the single combined unit-roundoff smallness threshold implies the
+    conservative component max-gamma source-rank threshold. -/
+theorem theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold_of_unit_roundoff_smallnessThreshold
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hp : 0 < p) (hq : 0 < q)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+        (theorem20_10_householder_gammaB fp r p q) <
+      theorem20_10_householder_sourceRankGammaThreshold hB hStack := by
+  rcases
+    theorem20_10_householder_component_unit_roundoff_conditions_of_lt_smallnessThreshold
+      fp hB hStack hp hq hu with
+    ⟨hsmallA, hsmallB, hhalf, hunit⟩
+  exact
+    theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold_of_unit_roundoff_bound
+      fp hB hStack (by omega) hsmallA hsmallB hhalf hunit
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank margin-radius wrapper for the constructed rounded Householder
