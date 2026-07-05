@@ -116,6 +116,8 @@ import LeanFpAnalysis.FP.Analysis.DunfordResidue
 import LeanFpAnalysis.FP.Analysis.SemiconvergentBlockFormExists
 import LeanFpAnalysis.FP.Analysis.SemiconvergentExistenceFull
 import LeanFpAnalysis.FP.Analysis.SemiconvergentExistenceComplete
+import LeanFpAnalysis.FP.Analysis.SemiconvergentRealSpectrumComplete
+import LeanFpAnalysis.FP.Analysis.HenriciSharpConstant
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderReflector
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderApply
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderOneStep
@@ -133,6 +135,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.Higham19
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderConstruction2
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19FormedQ
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19StoredLoop
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19StoredLoopStrongModel
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Labels
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
