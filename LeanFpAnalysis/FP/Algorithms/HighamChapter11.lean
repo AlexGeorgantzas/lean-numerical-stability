@@ -1281,6 +1281,39 @@ def higham11_15_aasenSolveChain (n : ℕ)
   (∀ i : Fin n, ∑ j : Fin n, L j i * w j = y i) ∧
   (∀ i : Fin n, x i = ∑ j : Fin n, Pmat i j * w j)
 
+/-- **Equation (11.15) outer triangular solves**, floating-point backward-error
+wrapper.  The first and third solves in Aasen's solve chain are ordinary
+forward/back substitution with `L` and `Lᵀ`; this packages the existing Chapter
+8 substitution theorems in the notation of Chapter 11.  The middle tridiagonal
+`T y = z` solve remains a separate obligation. -/
+theorem higham11_15_fl_aasen_outer_triangular_solves_backward_error
+    (fp : FPModel) (n : ℕ) (Pmat L : Fin n → Fin n → ℝ)
+    (b y : Fin n → ℝ)
+    (hLdiag : ∀ i : Fin n, L i i ≠ 0)
+    (hLlower : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hval : gammaValid fp n) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let U : Fin n → Fin n → ℝ := fun i j => L j i
+    ∃ ΔL ΔU : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔL i j| ≤ gamma fp n * |L i j|) ∧
+      (∀ i j : Fin n, |ΔU i j| ≤ gamma fp n * |U i j|) ∧
+      (∀ i : Fin n,
+        ∑ j : Fin n, (L i j + ΔL i j) * fl_forwardSub fp n L rhs j = rhs i) ∧
+      (∀ i : Fin n,
+        ∑ j : Fin n, (U i j + ΔU i j) * fl_backSub fp n U y j = y i) := by
+  intro rhs U
+  obtain ⟨ΔL, hΔL, hforward⟩ :=
+    forwardSub_backward_error fp n L rhs hLdiag hLlower hval
+  have hUdiag : ∀ i : Fin n, U i i ≠ 0 := by
+    intro i
+    exact hLdiag i
+  have hUupper : ∀ i j : Fin n, j.val < i.val → U i j = 0 := by
+    intro i j hji
+    exact hLlower j i hji
+  obtain ⟨ΔU, hΔU, hback⟩ :=
+    backSub_backward_error fp n U y hUdiag hUupper hval
+  exact ⟨ΔL, ΔU, hΔL, hΔU, hforward, hback⟩
+
 /-- **Equation (11.15) exact solve-chain bridge**, unpermuted case.  If the
 exact Aasen product is `A = L T Lᵀ` and the three exact solves in the chain are
 satisfied with identity permutation, then the resulting `x` solves `A x = b`.
