@@ -8187,6 +8187,88 @@ theorem theorem20_8FirstOrderRHS_nonneg {m n p : ℕ}
     mul_nonneg hres_amp hres_ratio
   exact add_nonneg (add_nonneg hfirst hsecond) hthird
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    corrected same-residual relative solution-difference bound with the
+    explicit `eps^2` coefficient used for the source `O(eps^2)` remainder.
+    This packages the already proved first-order same-residual subcase in the
+    final displayed shape; the general Eldén--Cox--Higham residual-gap
+    estimate remains separate. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_same_higham_residual_vecNorm2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B Bplus) =
+        theorem20_8Projection B Bplus)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hsame : r = rHigh) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  let BAplus := theorem20_8BAplus A B Bplus APplus
+  have hbase :=
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_same_higham_residual_vecNorm2_le
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hmax hAPleft hx hy
+      hr hres hsame
+  have hquad_nonneg :
+      0 ≤
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
+          (complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+    have hfirst :
+        0 ≤ theorem20_8FirstOrderRHS A b B d x r APplus BAplus :=
+      theorem20_8FirstOrderRHS_nonneg A b B d x r APplus BAplus
+        hApos hBpos hxpos
+    have hcoef :
+        0 ≤ complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
+          complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A := by
+      exact add_nonneg
+        (mul_nonneg (complexMatrixOp2_nonneg (realRectToCMatrix BAplus))
+          (frobNormRect_nonneg B))
+        (mul_nonneg (complexMatrixOp2_nonneg (realRectToCMatrix APplus))
+          (frobNormRect_nonneg A))
+    exact mul_nonneg (mul_nonneg (sq_nonneg eps) hfirst) hcoef
+  have htail :
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) ≤
+        eps * theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B Bplus APplus) +
+          eps ^ 2 *
+            theorem20_8FirstOrderRHS A b B d x r APplus
+              (theorem20_8BAplus A B Bplus APplus) *
+            (complexMatrixOp2
+                (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+                frobNormRect B +
+              complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+    exact le_add_of_nonneg_right (by simpa [BAplus] using hquad_nonneg)
+  exact hbase.trans htail
+
 /-- In the zero-residual case, Theorem 20.8's first-order coefficient drops
     its residual-amplification term. -/
 theorem theorem20_8FirstOrderRHS_of_zero_residual {m n p : ℕ}
@@ -9392,6 +9474,53 @@ theorem
           (theorem20_8BAplus A B hB.rightInverse APplus) *
         vecNorm2 x :=
   _root_.LeanFpAnalysis.FP.theorem20_8_vecNorm2_solution_difference_same_source_residual_le_firstOrderRHS_scaled_of_vecNorm2_le
+    A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
+    heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hmax hAPleft hx hy
+    hr hres hsame
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank corrected same-residual relative bound in the
+    source-shaped first-order plus explicit `eps^2`-coefficient form.  This is
+    the same-residual subcase; the general residual-gap/Wedin transfer remains
+    open. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_same_higham_residual_vecNorm2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPleft :
+      rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+        theorem20_8Projection B hB.rightInverse)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hsame : r = rHigh) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_same_higham_residual_vecNorm2_le
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
     heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hmax hAPleft hx hy
     hr hres hsame
