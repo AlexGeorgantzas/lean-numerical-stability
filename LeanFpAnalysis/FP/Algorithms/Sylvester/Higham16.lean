@@ -1200,6 +1200,45 @@ theorem sylvester_practical_error_bound_of_diagonal_computed_residual_certificat
       hBudget heta hcomponent hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case:
+    after replacing the explicit diagonal inverse and computed-residual budget
+    by componentwise larger supplied estimates, a scalar cap on the estimated
+    practical budget gives the relative max-entry error bound.  This is an
+    exact diagonal-inverse specialization; it does not prove any estimator such
+    as a LAPACK condition estimator. -/
+theorem sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono_scalar
+    (m n : Nat) (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hBudget :
+      IsSylvesterComputedResidualBudget m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterDiagonalVecCoeffInvAbs m n a b p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_mono_scalar
+      m n (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat Rhat Rhat' Ru Ru'
+      (sylvesterDiagonalVecCoeffInv m n a b)
+      (sylvesterDiagonalVecCoeffInvAbs m n a b)
+      PinvAbs' eta hX
+      (sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal
+        m n a b hsep)
+      (sylvesterDiagonalVecCoeffInv_abs_le_invAbs m n a b)
+      hPinvAbs_le hBudget hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case:
     if the computed residual has an explicit error model
     `Rhat = R(Xhat) + dR` with `|dR| <= Ru`, then the practical
     componentwise error bound follows using the explicit diagonal inverse of
