@@ -35,6 +35,28 @@ noncomputable def higham11_3_symmetricSchurComplement (m s : ℕ)
     (E_inv : Fin s → Fin s → ℝ) : Fin m → Fin m → ℝ :=
   fun i j => B i j - ∑ p : Fin s, ∑ q : Fin s, C i p * E_inv p q * C j q
 
+/-- **Equation (11.3), `s = 1` exact factorization step**: with pivot `A 0 0 ≠ 0`,
+the 1×1-pivot unit-lower-triangular `L` and block-diagonal `D` (pivot + trailing
+Schur complement) reproduce `A` exactly, `∑ L·D·Lᵀ = A`.  The exact base of the
+diagonal-pivoting recursion behind Theorem 11.3. -/
+theorem higham11_3_oneByOne_step_factorization (m : ℕ)
+    (A : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (ha : A 0 0 ≠ 0) (hsym : ∀ i : Fin m, A 0 i.succ = A i.succ 0)
+    (L D : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hL0 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin m, L i.succ 0 = A i.succ 0 / A 0 0)
+    (hL0s : ∀ j : Fin m, L 0 j.succ = 0)
+    (hLtr : ∀ i j : Fin m, L i.succ j.succ = if i = j then 1 else 0)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin m, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin m, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin m, D i.succ j.succ
+      = A i.succ j.succ - A i.succ 0 * A 0 j.succ / A 0 0) :
+    ∀ I J : Fin (m + 1),
+      (∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = A I J :=
+  oneByOne_step_factorization m A ha hsym L D hL0 hLcol hL0s hLtr
+    hD00 hD0s hDs0 hDtr
+
 /-! ## §11.1.1 Complete pivoting -/
 
 /-- **Algorithm 11.1** pivoting parameter

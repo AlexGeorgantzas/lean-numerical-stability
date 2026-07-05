@@ -786,4 +786,77 @@ theorem skew_twoByTwo_schur_entry_bound
     _ ≤ (M + M) + M := add_le_add (add_le_add hij t1) t2
     _ = 3 * M := by ring
 
+-- ============================================================
+-- Chapter 11.1  Exact block-LDL^T factorization step (eq (11.3), s = 1)
+-- ============================================================
+
+/-- **Equation (11.3), `s = 1` case** — one 1×1-pivot block-LDLᵀ elimination step
+    is an exact factorization (exact arithmetic).  For a symmetric
+    `A : Fin (m+1) → Fin (m+1) → ℝ` with nonzero pivot `A 0 0`, the unit lower
+    triangular `L` (first column `A i0 / A00` below the pivot, identity in the
+    trailing block) and the block-diagonal `D` (pivot `A00`, trailing Schur
+    complement `A i j − A i0·A 0j / A00`) satisfy
+    `∑_{k₁,k₂} L I k₁·D k₁ k₂·L J k₂ = A I J`.  This is the exact base of the
+    diagonal-pivoting recursion underlying Theorem 11.3 (the floating-point
+    version adds the rounding error `fl_oneByOne_schur_step_error`). -/
+theorem oneByOne_step_factorization (m : ℕ) (A : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (ha : A 0 0 ≠ 0) (hsym : ∀ i : Fin m, A 0 i.succ = A i.succ 0)
+    (L D : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hL0 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin m, L i.succ 0 = A i.succ 0 / A 0 0)
+    (hL0s : ∀ j : Fin m, L 0 j.succ = 0)
+    (hLtr : ∀ i j : Fin m, L i.succ j.succ = if i = j then 1 else 0)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin m, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin m, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin m, D i.succ j.succ
+      = A i.succ j.succ - A i.succ 0 * A 0 j.succ / A 0 0) :
+    ∀ I J : Fin (m + 1),
+      (∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = A I J := by
+  have inner : ∀ (I k₁ J : Fin (m + 1)),
+      (∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = L I k₁ * (∑ k₂, D k₁ k₂ * L J k₂) := by
+    intro I k₁ J; rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro k _; ring
+  have cdl0 : ∀ J : Fin (m + 1), (∑ k₂, D 0 k₂ * L J k₂) = A 0 0 * L J 0 := by
+    intro J; rw [Fin.sum_univ_succ, hD00]
+    have : (∑ k₂ : Fin m, D 0 k₂.succ * L J k₂.succ) = 0 :=
+      Finset.sum_eq_zero fun k _ => by rw [hD0s k, zero_mul]
+    rw [this, add_zero]
+  have cdls : ∀ (i : Fin m) (J : Fin (m + 1)),
+      (∑ k₂, D i.succ k₂ * L J k₂)
+        = ∑ k₂' : Fin m, D i.succ k₂'.succ * L J k₂'.succ := by
+    intro i J; rw [Fin.sum_univ_succ, hDs0 i, zero_mul, zero_add]
+  intro I J
+  rw [Fin.sum_univ_succ, inner I 0 J, cdl0 J]
+  have hrest : (∑ i : Fin m, ∑ k₂, L I i.succ * D i.succ k₂ * L J k₂)
+      = ∑ i : Fin m, L I i.succ * (∑ k₂' : Fin m, D i.succ k₂'.succ * L J k₂'.succ) := by
+    apply Finset.sum_congr rfl; intro i _; rw [inner I i.succ J, cdls i J]
+  rw [hrest]
+  rcases Fin.eq_zero_or_eq_succ I with hI | ⟨i0, hI⟩ <;>
+    rcases Fin.eq_zero_or_eq_succ J with hJ | ⟨j0, hJ⟩ <;> subst hI <;> subst hJ
+  · have : (∑ i : Fin m, L 0 i.succ *
+        (∑ k₂' : Fin m, D i.succ k₂'.succ * L 0 k₂'.succ)) = 0 :=
+      Finset.sum_eq_zero fun i _ => by rw [hL0s i, zero_mul]
+    rw [this, hL0, add_zero]; ring
+  · have : (∑ i : Fin m, L 0 i.succ *
+        (∑ k₂' : Fin m, D i.succ k₂'.succ * L j0.succ k₂'.succ)) = 0 :=
+      Finset.sum_eq_zero fun i _ => by rw [hL0s i, zero_mul]
+    rw [this, hL0, add_zero, hLcol j0, hsym j0]; field_simp
+  · have hz : (∑ i : Fin m, L i0.succ i.succ *
+        (∑ k₂' : Fin m, D i.succ k₂'.succ * L 0 k₂'.succ)) = 0 :=
+      Finset.sum_eq_zero fun i _ => by
+        rw [show (∑ k₂' : Fin m, D i.succ k₂'.succ * L 0 k₂'.succ) = 0 from
+          Finset.sum_eq_zero fun k _ => by rw [hL0s k, mul_zero], mul_zero]
+    rw [hz, add_zero, hLcol i0, hL0]; field_simp
+  · have hrsum : (∑ i : Fin m, L i0.succ i.succ *
+        (∑ k₂' : Fin m, D i.succ k₂'.succ * L j0.succ k₂'.succ))
+        = A i0.succ j0.succ - A i0.succ 0 * A 0 j0.succ / A 0 0 := by
+      rw [Finset.sum_eq_single i0]
+      · rw [hLtr i0 i0, if_pos rfl, one_mul, Finset.sum_eq_single j0]
+        · rw [hDtr i0 j0, hLtr j0 j0, if_pos rfl, mul_one]
+        · intro k _ hk; rw [hLtr j0 k, if_neg (Ne.symm hk), mul_zero]
+        · intro h; exact absurd (Finset.mem_univ j0) h
+      · intro i _ hi; rw [hLtr i0 i, if_neg (Ne.symm hi), zero_mul]
+      · intro h; exact absurd (Finset.mem_univ i0) h
+    rw [hrsum, hLcol i0, hLcol j0, hsym j0]; field_simp; ring
+
 end LeanFpAnalysis.FP
