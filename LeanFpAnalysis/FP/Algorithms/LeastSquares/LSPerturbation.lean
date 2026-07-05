@@ -2622,6 +2622,93 @@ theorem wedinLemma20_12_projectionSumSubId_sq_mul_projection_swapped_eq_projecti
               P Q hIdemP]
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    if a `D^2` eigenvector in the `P` range has eigenvalue `1`, then the
+    companion-square compression `PQP` kills it. -/
+theorem wedinLemma20_12_rectMatMulVec_projection_mul_swapped_mul_projection_eq_zero_of_projectionDiff_sq_eigenvalue_one_projection_range
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (x : Fin m → ℝ)
+    (hxP : rectMatMulVec P x = x)
+    (hxEig :
+      rectMatMulVec
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)) x = x) :
+    rectMatMulVec (rectMatMul (rectMatMul P Q) P) x = 0 := by
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  have hxEig_one :
+      rectMatMulVec
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)) x =
+        fun i => (1 : ℝ) * x i := by
+    simpa using hxEig
+  have hSsqP :
+      rectMatMul (rectMatMul S S) P = rectMatMul (rectMatMul P Q) P := by
+    simpa [S] using
+      wedinLemma20_12_projectionSumSubId_sq_mul_projection_eq_projection_mul_swapped_mul_projection
+        P Q hIdemP hIdemQ
+  have hSsqx :
+      rectMatMulVec S (rectMatMulVec S x) = 0 := by
+    have h :=
+      wedinLemma20_12_rectMatMulVec_projectionSumSubId_sq_apply_projectionDiff_sq_eigenvector
+        P Q hIdemP hIdemQ (1 : ℝ) x hxEig_one
+    simpa [S] using h
+  calc
+    rectMatMulVec (rectMatMul (rectMatMul P Q) P) x
+        = rectMatMulVec (rectMatMul (rectMatMul S S) P) x := by
+            rw [← hSsqP]
+    _ = rectMatMulVec (rectMatMul S S) (rectMatMulVec P x) := by
+            rw [rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec (rectMatMul S S) x := by
+            rw [hxP]
+    _ = rectMatMulVec S (rectMatMulVec S x) := by
+            rw [rectMatMulVec_rectMatMul]
+    _ = 0 := hSsqx
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped version of the eigenvalue-`1` compression-kernel fact. -/
+theorem wedinLemma20_12_rectMatMulVec_projection_swapped_mul_projection_mul_projection_swapped_eq_zero_of_projectionDiff_sq_eigenvalue_one_projection_swapped_range
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (x : Fin m → ℝ)
+    (hxQ : rectMatMulVec Q x = x)
+    (hxEig :
+      rectMatMulVec
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)) x = x) :
+    rectMatMulVec (rectMatMul (rectMatMul Q P) Q) x = 0 := by
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  have hxEig_one :
+      rectMatMulVec
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)) x =
+        fun i => (1 : ℝ) * x i := by
+    simpa using hxEig
+  have hSsqQ :
+      rectMatMul (rectMatMul S S) Q = rectMatMul (rectMatMul Q P) Q := by
+    simpa [S] using
+      wedinLemma20_12_projectionSumSubId_sq_mul_projection_swapped_eq_projection_swapped_mul_projection_mul_projection_swapped
+        P Q hIdemP hIdemQ
+  have hSsqx :
+      rectMatMulVec S (rectMatMulVec S x) = 0 := by
+    have h :=
+      wedinLemma20_12_rectMatMulVec_projectionSumSubId_sq_apply_projectionDiff_sq_eigenvector
+        P Q hIdemP hIdemQ (1 : ℝ) x hxEig_one
+    simpa [S] using h
+  calc
+    rectMatMulVec (rectMatMul (rectMatMul Q P) Q) x
+        = rectMatMulVec (rectMatMul (rectMatMul S S) Q) x := by
+            rw [← hSsqQ]
+    _ = rectMatMulVec (rectMatMul S S) (rectMatMulVec Q x) := by
+            rw [rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec (rectMatMul S S) x := by
+            rw [hxQ]
+    _ = rectMatMulVec S (rectMatMulVec S x) := by
+            rw [rectMatMulVec_rectMatMul]
+    _ = 0 := hSsqx
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     left-compressing the companion square `S^2` to the `Q` range gives
     `Q*P*Q`. -/
 theorem wedinLemma20_12_projection_swapped_mul_projectionSumSubId_sq_eq_projection_swapped_mul_projection_mul_projection_swapped
