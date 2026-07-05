@@ -4138,6 +4138,52 @@ theorem sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_resid
 -- ============================================================
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
+    a supplied exact `SepLowerBound` certificate instantiates the Frobenius
+    first-order Sylvester perturbation bound. -/
+theorem sylvester_perturbation_bound_of_sepLowerBound (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSep : SepLowerBound n A B sigma)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hdX_ne : Not (frobNormSq dX = 0)) :
+    frobNorm dX <=
+      (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound n A B X dA dB dC dX sigma hSep.1 hSep
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hdX_ne
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
+    the relative Sylvester perturbation bound follows from a supplied exact
+    `SepLowerBound` certificate. -/
+theorem sylvester_relative_perturbation_of_sepLowerBound (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSep : SepLowerBound n A B sigma)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hdX_ne : Not (frobNormSq dX = 0))
+    (hX_ne : Not (frobNorm X = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma sigma * eps := by
+  exact
+    sylvester_relative_perturbation n A B X dA dB dC dX sigma hSep.1 hSep
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hdX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
     an exact-infimum lower bound on `sep(A,B)` instantiates the Frobenius
     first-order Sylvester perturbation bound. -/
 theorem sylvester_perturbation_bound_of_pos_le_sylvesterSepInf (n : Nat)
@@ -4156,7 +4202,7 @@ theorem sylvester_perturbation_bound_of_pos_le_sylvesterSepInf (n : Nat)
     frobNorm dX <=
       (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
   exact
-    sylvester_perturbation_bound n A B X dA dB dC dX sigma hSigma
+    sylvester_perturbation_bound_of_sepLowerBound n A B X dA dB dC dX sigma
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hdX_ne
@@ -4183,7 +4229,7 @@ theorem sylvester_relative_perturbation_of_pos_le_sylvesterSepInf
     frobNorm dX / frobNorm X <=
       condSylvester n A B X alpha beta gamma sigma * eps := by
   exact
-    sylvester_relative_perturbation n A B X dA dB dC dX sigma hSigma
+    sylvester_relative_perturbation_of_sepLowerBound n A B X dA dB dC dX sigma
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hdX_ne hX_ne hX_pos
@@ -4266,6 +4312,35 @@ theorem sylvester_relative_aposteriori_bound (n : Nat)
     (le_of_lt hX_pos)
 
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    a supplied exact `SepLowerBound` certificate instantiates the Frobenius
+    a posteriori error-residual bound. -/
+theorem sylvester_aposteriori_bound_of_sepLowerBound (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSep : SepLowerBound n A B sigma)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) := by
+  exact
+    sylvester_aposteriori_bound n A B C X Xhat sigma hSep.1 hSep hExact hE_ne
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    the source-shaped relative a posteriori bound follows from a supplied
+    exact `SepLowerBound` certificate. -/
+theorem sylvester_relative_aposteriori_bound_of_sepLowerBound (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSep : SepLowerBound n A B sigma)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound n A B C X Xhat sigma hSep.1 hSep
+      hExact hE_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
     an exact-infimum lower bound on `sep(A,B)` instantiates the Frobenius
     a posteriori error-residual bound. -/
 theorem sylvester_aposteriori_bound_of_pos_le_sylvesterSepInf (n : Nat)
@@ -4277,7 +4352,7 @@ theorem sylvester_aposteriori_bound_of_pos_le_sylvesterSepInf (n : Nat)
     frobNorm (fun i j => X i j - Xhat i j) <=
       (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) := by
   exact
-    sylvester_aposteriori_bound n A B C X Xhat sigma hSigma
+    sylvester_aposteriori_bound_of_sepLowerBound n A B C X Xhat sigma
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
       hExact hE_ne
 
@@ -4296,7 +4371,7 @@ theorem sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
       ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
         frobNorm X := by
   exact
-    sylvester_relative_aposteriori_bound n A B C X Xhat sigma hSigma
+    sylvester_relative_aposteriori_bound_of_sepLowerBound n A B C X Xhat sigma
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
       hExact hE_ne hX_pos
 
