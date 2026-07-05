@@ -15346,3 +15346,18 @@ small enough to serve as a smoke check for representative public declarations.
 #check eigenvalue_norm_le_one_of_orbit_tendsto
 #check maxGenEigenspace_one_eq_eigenspace_of_isFinitelySemisimple
 #check isInternal_maxGenEigenspace
+-- Split-3B Wave-4: genuine attempts at all remaining blocked items
+#check real_schur_triangulation_of_splits
+#check scalar_pow_tendsto_dichotomy
+#check eigenvalue_dichotomy_of_orbit_tendsto
+#check exists_diag_infNorm_conj_lt_one_of_upperTriangular
+#check exists_primary_blockDiagonal_similar
+#check jnf_isInternal_maxGenEigenspace
+#check numericalRadius_pow_le_of_isHermitian
+#check norm_pow_le_two_mul_numericalRadius_pow_of_isHermitian
+#check spectrum_one_le_dist_mul_norm_resolvent
+#check henrici_departure_le_of_schur
+#check H19_Theorem19_13_storedPanelStep_eq_applyMatrixRect_add_perturbation
+#check H19_Theorem19_13_storedLoopPerturbation_frobNorm_le
+#check lapack_condEstimate_le_kappaOne
+#check condOneNumber_ge_scaled_estimator
