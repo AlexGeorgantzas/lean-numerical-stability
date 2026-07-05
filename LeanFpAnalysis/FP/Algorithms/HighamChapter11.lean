@@ -354,6 +354,24 @@ theorem higham11_3_fl_blockLDLT_trailing_bound (n : ℕ) (fp : FPModel)
   fl_blockLDLT_trailing_bound n fp A he hsym1 hval L_S D_S Bs hIH L D
     hLcol hLtr hD00 hD0s hDs0 hDtr
 
+/-- **Theorem 11.3 pivot-row/col fl backward error**: `(L̂D̂L̂ᵀ)_{0,0} = A00`
+exactly, and `|(L̂D̂L̂ᵀ)_{0,j+1} − A_{0,j+1}| ≤ u·|A_{0,j+1}|` — the pivot-row half
+of the 1×1-stage assemble step (trailing half is `higham11_3_fl_blockLDLT_trailing_bound`). -/
+theorem higham11_3_fl_blockLDLT_pivot_row_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (he : A 0 0 ≠ 0) (hsym1 : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0) :
+    (∑ k₁, ∑ k₂, L 0 k₁ * D k₁ k₂ * L 0 k₂) = A 0 0
+    ∧ ∀ j : Fin n,
+        |(∑ k₁, ∑ k₂, L 0 k₁ * D k₁ k₂ * L j.succ k₂) - A 0 j.succ|
+          ≤ fp.u * |A 0 j.succ| :=
+  fl_blockLDLT_pivot_row_bound n fp A he hsym1 L D hL00 hLcol hL0s hD00 hD0s
+
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
     (ε : ℝ) : Fin 3 → Fin 3 → ℝ :=
