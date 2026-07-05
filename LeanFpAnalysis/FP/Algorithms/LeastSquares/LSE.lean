@@ -13050,6 +13050,105 @@ theorem LSENullIntersectionTrivial.iff_lseStackedFullColumnRank {m n p : ℕ}
     exact hfull hzero_action
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source stacked-full-column-rank form of the rank-tolerant Gram-`B`
+    Moore--Penrose left-inverse route.  The printed rank condition for
+    `[A^T, B^T]^T` supplies the null-intersection hypothesis. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_gram_projection_lseStackedFullColumnRank
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec
+            (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) z) = z :=
+  LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_gram_projection_nullIntersection
+    A hB APplus hMP
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source stacked-full-column-rank projected-difference handoff using the
+    Gram pseudoinverse for `B` and an abstract rank-tolerant `(AP)^+`. -/
+theorem
+    LSEFullRowRank.theorem20_8_projected_difference_eq_APplus_of_MP_gram_projection_lseStackedFullColumnRank_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (Deltad : Fin p → ℝ) (y x : Fin n → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec (undetAplusOfGramNonsingInv B)
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    rectMatMulVec (theorem20_8Projection B (undetAplusOfGramNonsingInv B))
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+          rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec (undetAplusOfGramNonsingInv B)
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j :=
+  LSEFullRowRank.theorem20_8_projected_difference_eq_APplus_of_MP_gram_projection_nullIntersection_reduced_difference_eq
+    A DeltaA Deltab hB DeltaB APplus Deltad y x hMP
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+    hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source stacked-full-column-rank exact correction-vector identity using
+    the Gram pseudoinverse for `B` and an abstract rank-tolerant `(AP)^+`. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_MP_gram_projection_lseStackedFullColumnRank_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y x : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec (undetAplusOfGramNonsingInv B)
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j :=
+  LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_MP_gram_projection_nullIntersection_reduced_difference_eq
+    A DeltaA b Deltab hB DeltaB APplus d Deltad y x hx hy hMP
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+    hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank form of the strongest current
     rank-tolerant Gram-`B` Moore--Penrose transfer.  This replaces the local
     null-intersection predicate by the printed full-column-rank condition for
