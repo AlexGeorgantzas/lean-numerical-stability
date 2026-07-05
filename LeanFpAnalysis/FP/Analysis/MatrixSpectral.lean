@@ -8,6 +8,8 @@ import Mathlib.Analysis.Matrix.PosDef
 import Mathlib.Analysis.Matrix.Spectrum
 import Mathlib.Analysis.Matrix.HermitianFunctionalCalculus
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+import Mathlib.LinearAlgebra.Charpoly.ToMatrix
+import Mathlib.LinearAlgebra.Eigenspace.Charpoly
 import Mathlib.Analysis.SpecialFunctions.Exponential
 import Mathlib.Topology.Instances.Matrix
 
@@ -31,6 +33,28 @@ theorem finiteHermitianEigenvalues_mem_spectrum_real
   simpa [finiteHermitianEigenvalues] using
     Matrix.IsHermitian.eigenvalues_mem_spectrum_real
       (IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM) i
+
+/-- Finite real square products have the same `toLin'` spectrum after
+    commuting the two factors. -/
+theorem real_toLin_spectrum_mul_comm_iff
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (A B : Matrix ι ι ℝ) (lam : ℝ) :
+    lam ∈ spectrum ℝ (Matrix.toLin' (A * B)) ↔
+      lam ∈ spectrum ℝ (Matrix.toLin' (B * A)) := by
+  rw [← Module.End.hasEigenvalue_iff_mem_spectrum,
+    ← Module.End.hasEigenvalue_iff_mem_spectrum]
+  rw [Module.End.hasEigenvalue_iff_isRoot_charpoly,
+    Module.End.hasEigenvalue_iff_isRoot_charpoly]
+  rw [Matrix.charpoly_toLin', Matrix.charpoly_toLin', Matrix.charpoly_mul_comm]
+
+/-- Finite real square products have the same matrix spectrum after commuting
+    the two factors. -/
+theorem real_matrix_spectrum_mul_comm_iff
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (A B : Matrix ι ι ℝ) (lam : ℝ) :
+    lam ∈ spectrum ℝ (A * B) ↔ lam ∈ spectrum ℝ (B * A) := by
+  rw [← Matrix.spectrum_toLin' (A * B), ← Matrix.spectrum_toLin' (B * A)]
+  exact real_toLin_spectrum_mul_comm_iff A B lam
 
 /-- Trace equals the sum of the locally named Hermitian eigenvalues. -/
 theorem finiteTrace_eq_sum_finiteHermitianEigenvalues

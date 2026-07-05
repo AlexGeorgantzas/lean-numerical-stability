@@ -3312,6 +3312,202 @@ theorem wedinLemma20_12_toLin_spectralRadius_projection_mul_swapped_mul_projecti
             rw [hQPQ, Matrix.mul_assoc]
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion-square compressions `PQP` and `QPQ` have the same real
+    matrix spectrum.
+
+This is the spectrum-level counterpart of the existing spectral-radius bridge.
+It uses only projection idempotence and the finite-dimensional fact that
+products `AB` and `BA` have the same spectrum. -/
+theorem wedinLemma20_12_spectrum_projection_mul_swapped_mul_projection_iff_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (lam : ℝ) :
+    lam ∈ spectrum ℝ
+        (show Matrix (Fin m) (Fin m) ℝ from
+          (rectMatMul (rectMatMul P Q) P : Fin m → Fin m → ℝ)) ↔
+      lam ∈ spectrum ℝ
+        (show Matrix (Fin m) (Fin m) ℝ from
+          (rectMatMul (rectMatMul Q P) Q : Fin m → Fin m → ℝ)) := by
+  let Pr : Matrix (Fin m) (Fin m) ℝ := P
+  let Qr : Matrix (Fin m) (Fin m) ℝ := Q
+  have hPidemR : Pr * Pr = Pr := by
+    ext i j
+    have hij := congrFun (congrFun hIdemP i) j
+    simpa [Pr, rectMatMul, Matrix.mul_apply] using hij
+  have hQidemR : Qr * Qr = Qr := by
+    ext i j
+    have hij := congrFun (congrFun hIdemQ i) j
+    simpa [Qr, rectMatMul, Matrix.mul_apply] using hij
+  have hPQP :
+      (show Matrix (Fin m) (Fin m) ℝ from
+        (rectMatMul (rectMatMul P Q) P : Fin m → Fin m → ℝ)) =
+        (Pr * Qr) * Pr := by
+    ext i j
+    simp [Pr, Qr, rectMatMul, Matrix.mul_apply]
+  have hQPQ :
+      (show Matrix (Fin m) (Fin m) ℝ from
+        (rectMatMul (rectMatMul Q P) Q : Fin m → Fin m → ℝ)) =
+        (Qr * Pr) * Qr := by
+    ext i j
+    simp [Pr, Qr, rectMatMul, Matrix.mul_apply]
+  rw [hPQP, hQPQ]
+  calc
+    lam ∈ spectrum ℝ ((Pr * Qr) * Pr)
+        ↔ lam ∈ spectrum ℝ (Pr * (Qr * Pr)) := by
+            rw [Matrix.mul_assoc]
+    _ ↔ lam ∈ spectrum ℝ ((Qr * Pr) * Pr) :=
+            real_matrix_spectrum_mul_comm_iff Pr (Qr * Pr) lam
+    _ ↔ lam ∈ spectrum ℝ (Qr * Pr) := by
+            rw [Matrix.mul_assoc, hPidemR]
+    _ ↔ lam ∈ spectrum ℝ (Pr * Qr) :=
+            real_matrix_spectrum_mul_comm_iff Qr Pr lam
+    _ ↔ lam ∈ spectrum ℝ ((Pr * Qr) * Qr) := by
+            rw [Matrix.mul_assoc, hQidemR]
+    _ ↔ lam ∈ spectrum ℝ (Qr * (Pr * Qr)) :=
+            (real_matrix_spectrum_mul_comm_iff Qr (Pr * Qr) lam).symm
+    _ ↔ lam ∈ spectrum ℝ ((Qr * Pr) * Qr) := by
+            rw [Matrix.mul_assoc]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    any top locally named Hermitian eigenvalue of `PQP` equals any top locally
+    named Hermitian eigenvalue of `QPQ`. -/
+theorem wedinLemma20_12_top_finiteHermitianEigenvalue_projection_mul_swapped_mul_projection_eq_swapped_of_top
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    {aP aQ : Fin m}
+    (hTopP : ∀ a : Fin m,
+      finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+          (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+            P Q hP hQ hIdemQ) a ≤
+        finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+          (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+            P Q hP hQ hIdemQ) aP)
+    (hTopQ : ∀ a : Fin m,
+      finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+          (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+            P Q hP hQ hIdemP) a ≤
+        finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+          (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+            P Q hP hQ hIdemP) aQ) :
+    finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+        (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+          P Q hP hQ hIdemQ) aP =
+      finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+        (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+          P Q hP hQ hIdemP) aQ := by
+  let MPQ : Fin m → Fin m → ℝ := rectMatMul (rectMatMul P Q) P
+  let MQP : Fin m → Fin m → ℝ := rectMatMul (rectMatMul Q P) Q
+  have hSymPQ : IsSymmetricFiniteMatrix MPQ := by
+    simpa [MPQ] using
+      wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+        P Q hP hQ hIdemQ
+  have hSymQP : IsSymmetricFiniteMatrix MQP := by
+    simpa [MQP] using
+      wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+        P Q hP hQ hIdemP
+  have hTopP' :
+      ∀ a : Fin m,
+        finiteHermitianEigenvalues MPQ hSymPQ a ≤
+          finiteHermitianEigenvalues MPQ hSymPQ aP := by
+    intro a
+    simpa [MPQ] using hTopP a
+  have hTopQ' :
+      ∀ a : Fin m,
+        finiteHermitianEigenvalues MQP hSymQP a ≤
+          finiteHermitianEigenvalues MQP hSymQP aQ := by
+    intro a
+    simpa [MQP] using hTopQ a
+  have hSpecP :
+      finiteHermitianEigenvalues MPQ hSymPQ aP ∈
+        spectrum ℝ (show Matrix (Fin m) (Fin m) ℝ from MPQ) := by
+    simpa [MPQ] using
+      finiteHermitianEigenvalues_mem_spectrum_real MPQ hSymPQ aP
+  have hSpecP_as_Q :
+      finiteHermitianEigenvalues MPQ hSymPQ aP ∈
+        spectrum ℝ (show Matrix (Fin m) (Fin m) ℝ from MQP) := by
+    have htransfer :=
+      (wedinLemma20_12_spectrum_projection_mul_swapped_mul_projection_iff_swapped
+        P Q hIdemP hIdemQ
+        (finiteHermitianEigenvalues MPQ hSymPQ aP)).mp
+    exact htransfer (by simpa [MPQ] using hSpecP)
+  have hRangeQ :
+      finiteHermitianEigenvalues MPQ hSymPQ aP ∈
+        Set.range (fun a : Fin m => finiteHermitianEigenvalues MQP hSymQP a) := by
+    have hspec := hSpecP_as_Q
+    rw [(IsSymmetricFiniteMatrix.to_matrix_isHermitian MQP hSymQP).spectrum_real_eq_range_eigenvalues] at hspec
+    simpa [finiteHermitianEigenvalues] using hspec
+  rcases hRangeQ with ⟨bQ, hbQ⟩
+  have hP_le_Q :
+      finiteHermitianEigenvalues MPQ hSymPQ aP ≤
+        finiteHermitianEigenvalues MQP hSymQP aQ := by
+    rw [← hbQ]
+    exact hTopQ' bQ
+  have hSpecQ :
+      finiteHermitianEigenvalues MQP hSymQP aQ ∈
+        spectrum ℝ (show Matrix (Fin m) (Fin m) ℝ from MQP) := by
+    simpa [MQP] using
+      finiteHermitianEigenvalues_mem_spectrum_real MQP hSymQP aQ
+  have hSpecQ_as_P :
+      finiteHermitianEigenvalues MQP hSymQP aQ ∈
+        spectrum ℝ (show Matrix (Fin m) (Fin m) ℝ from MPQ) := by
+    have htransfer :=
+      (wedinLemma20_12_spectrum_projection_mul_swapped_mul_projection_iff_swapped
+        P Q hIdemP hIdemQ
+        (finiteHermitianEigenvalues MQP hSymQP aQ)).mpr
+    exact htransfer (by simpa [MQP] using hSpecQ)
+  have hRangeP :
+      finiteHermitianEigenvalues MQP hSymQP aQ ∈
+        Set.range (fun a : Fin m => finiteHermitianEigenvalues MPQ hSymPQ a) := by
+    have hspec := hSpecQ_as_P
+    rw [(IsSymmetricFiniteMatrix.to_matrix_isHermitian MPQ hSymPQ).spectrum_real_eq_range_eigenvalues] at hspec
+    simpa [finiteHermitianEigenvalues] using hspec
+  rcases hRangeP with ⟨bP, hbP⟩
+  have hQ_le_P :
+      finiteHermitianEigenvalues MQP hSymQP aQ ≤
+        finiteHermitianEigenvalues MPQ hSymPQ aP := by
+    rw [← hbP]
+    exact hTopP' bP
+  simpa [MPQ, MQP] using le_antisymm hP_le_Q hQ_le_P
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the exact complexified Euclidean operator norms of the companion-square
+    compressions `PQP` and `QPQ` are equal. -/
+theorem wedinLemma20_12_complexMatrixOp2_projection_mul_swapped_mul_projection_eq_swapped
+    {m : ℕ} (hm : 0 < m) (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    complexMatrixOp2
+        (realRectToCMatrix (rectMatMul (rectMatMul P Q) P)) =
+      complexMatrixOp2
+        (realRectToCMatrix (rectMatMul (rectMatMul Q P) Q)) := by
+  obtain ⟨aP, hOpP, hTopP⟩ :=
+    wedinLemma20_12_exists_topEigenvalue_complexMatrixOp2_projection_mul_swapped_mul_projection_eq
+      hm P Q hP hQ hIdemQ
+  obtain ⟨aQ, hOpQ, hTopQ⟩ :=
+    wedinLemma20_12_exists_topEigenvalue_complexMatrixOp2_projection_swapped_mul_projection_mul_projection_swapped_eq
+      hm P Q hP hQ hIdemP
+  have hTopEq :=
+    wedinLemma20_12_top_finiteHermitianEigenvalue_projection_mul_swapped_mul_projection_eq_swapped_of_top
+      P Q hP hQ hIdemP hIdemQ hTopP hTopQ
+  calc
+    complexMatrixOp2
+        (realRectToCMatrix (rectMatMul (rectMatMul P Q) P))
+        = finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+            (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+              P Q hP hQ hIdemQ) aP := hOpP
+    _ = finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+            (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+              P Q hP hQ hIdemP) aQ := hTopEq
+    _ = complexMatrixOp2
+        (realRectToCMatrix (rectMatMul (rectMatMul Q P) Q)) := hOpQ.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm
     of the range-side compression `P(P-Q)^2P`.
 
