@@ -1810,6 +1810,103 @@ theorem wedinLemma20_12_complexMatrixOp2_projectionDiff_sq_compression_eq_crossP
               (rectMatMul P IQ)
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped version of the squared-norm compression bridge, using the same
+    squared projection difference `(P-Q)^2`. -/
+theorem wedinLemma20_12_complexMatrixOp2_projectionDiff_sq_compression_eq_crossProjection_sq_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul
+            (rectMatMul Q
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            Q)) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul Q (fun i j => idMatrix m i j - P i j))) ^ 2 := by
+  have hbase :=
+    wedinLemma20_12_complexMatrixOp2_projectionDiff_sq_compression_eq_crossProjection_sq
+      Q P hQ hP hIdemQ hIdemP
+  have hsq :
+      rectMatMul (fun i j => Q i j - P i j)
+          (fun i j => Q i j - P i j) =
+        rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j) := by
+    ext i j
+    unfold rectMatMul
+    apply Finset.sum_congr rfl
+    intro k _
+    ring
+  rw [hsq] at hbase
+  simpa using hbase
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    equality of the two `D^2` range-compression operator norms implies the
+    missing Stewart--Sun cross-projection norm equality.
+
+The remaining principal-angle proof can therefore target the symmetric
+compression equality
+`||P(P-Q)^2P||_2 = ||Q(P-Q)^2Q||_2`, instead of working directly with
+rectangular cross projections. -/
+theorem wedinLemma20_12_complexMatrixOp2_crossProjection_eq_of_projectionDiff_sq_compression_eq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul P
+                (rectMatMul (fun i j => P i j - Q i j)
+                  (fun i j => P i j - Q i j)))
+              P)) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul Q
+                (rectMatMul (fun i j => P i j - Q i j)
+                  (fun i j => P i j - Q i j)))
+              Q))) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j))) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul Q (fun i j => idMatrix m i j - P i j))) := by
+  let IP : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - P i j
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  have hP_sq :=
+    wedinLemma20_12_complexMatrixOp2_projectionDiff_sq_compression_eq_crossProjection_sq
+      P Q hP hQ hIdemP hIdemQ
+  have hQ_sq :=
+    wedinLemma20_12_complexMatrixOp2_projectionDiff_sq_compression_eq_crossProjection_sq_swapped
+      P Q hP hQ hIdemP hIdemQ
+  have hsquares :
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul P IQ)) ^ 2 =
+        complexMatrixOp2 (realRectToCMatrix (rectMatMul Q IP)) ^ 2 := by
+    calc
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul P IQ)) ^ 2
+          = complexMatrixOp2
+              (realRectToCMatrix (rectMatMul (rectMatMul P (rectMatMul D D)) P)) :=
+              hP_sq.symm
+      _ = complexMatrixOp2
+              (realRectToCMatrix (rectMatMul (rectMatMul Q (rectMatMul D D)) Q)) := by
+              simpa [D] using hEq
+      _ = complexMatrixOp2 (realRectToCMatrix (rectMatMul Q IP)) ^ 2 := by
+              simpa [IP, D] using hQ_sq
+  exact (sq_eq_sq₀
+    (complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul P IQ)))
+    (complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul Q IP)))).mp
+    hsquares
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the difference of two symmetric projections is symmetric. -/
 theorem wedinLemma20_12_projectionDiff_symmetric
     {m : ℕ} (P Q : Fin m → Fin m → ℝ)
