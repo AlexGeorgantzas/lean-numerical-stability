@@ -15169,6 +15169,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham11_3_fl_blockLDLT_oneByOne_stage_bound
 #check higham11_3_fl_blockLDLT_all_oneByOne_bound
 #check higham11_3_fl_storedSymSchurCompl_symm
+#check higham11_3_fl_blockLDLT_oneByOne_stage_bound_of_stored_schur
 #check higham11_6_partialPivotExample_factorization
 #check higham11_problem_11_2_twoByTwoPivot_scaledInverse_spec
 #check higham11_problem_11_8_rookCompleteExample_factorization

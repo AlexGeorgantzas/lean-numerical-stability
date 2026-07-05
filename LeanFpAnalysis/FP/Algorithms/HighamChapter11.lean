@@ -454,6 +454,41 @@ theorem higham11_3_fl_storedSymSchurCompl_first_row_col (n : ℕ) (fp : FPModel)
       higham11_3_fl_storedSymSchurCompl (n + 1) fp A i.succ 0 :=
   flStoredSymSchurCompl_first_row_col n fp A
 
+/-- Entrywise discrepancy between stored-symmetric and raw rounded Schur
+complements. -/
+noncomputable abbrev higham11_3_fl_storedSymSchurDefect (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) : Fin n → Fin n → ℝ :=
+  flStoredSymSchurDefect n fp A
+
+/-- **Theorem 11.3 stored-Schur one-stage bridge**: if the recursive trailing
+factors approximate the stored-symmetric rounded Schur complement, the existing
+one-stage LDLᵀ bound applies with the stored trailing envelope plus the explicit
+stored-vs-raw Schur defect. -/
+theorem higham11_3_fl_blockLDLT_oneByOne_stage_bound_of_stored_schur
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (he : A 0 0 ≠ 0) (hsym1 : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (hval : gammaValid fp 3)
+    (L_S D_S B : Fin n → Fin n → ℝ)
+    (hIH : ∀ i j : Fin n,
+      |(∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂)
+        - higham11_3_fl_storedSymSchurCompl n fp A i j| ≤ B i j)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hLtr : ∀ i j : Fin n, L i.succ j.succ = L_S i j)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin n, D i.succ j.succ = D_S i j) :
+    ∀ I J : Fin (n + 1),
+      |(∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) - A I J|
+        ≤ higham11_3_fl_oneByOneStageBound n fp A
+          (fun i j => B i j + higham11_3_fl_storedSymSchurDefect n fp A i j) I J :=
+  fl_blockLDLT_oneByOne_stage_bound_of_stored_schur n fp A he hsym1 hval
+    L_S D_S B hIH L D hL00 hLcol hL0s hLtr hD00 hD0s hDs0 hDtr
+
 /-- Recursive rounded-pivot side condition for Theorem 11.3's all-1×1 path. -/
 noncomputable abbrev higham11_3_FlAllOneSymmetricPivots (fp : FPModel)
     (n : ℕ) (A : Fin n → Fin n → ℝ) : Prop :=

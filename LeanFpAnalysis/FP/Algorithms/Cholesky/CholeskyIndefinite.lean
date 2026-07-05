@@ -1084,6 +1084,64 @@ theorem flStoredSymSchurCompl_first_row_col (n : ℕ) (fp : FPModel)
   intro i
   exact flStoredSymSchurCompl_symm (n + 1) fp A 0 i.succ
 
+/-- Entrywise difference between the stored-symmetric rounded Schur complement
+    and the raw rounded Schur update.  This is zero on the computed triangle and
+    records the explicit storage-copy discrepancy on the opposite triangle. -/
+noncomputable def flStoredSymSchurDefect (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => |flStoredSymSchurCompl n fp A i j - flSchurCompl n fp A i j|
+
+/-- One-stage floating block-LDLᵀ bound when the recursive trailing factors
+    approximate the stored-symmetric Schur complement.  The existing raw-Schur
+    one-stage theorem applies with the stored trailing envelope plus the explicit
+    storage defect `flStoredSymSchurDefect`. -/
+theorem fl_blockLDLT_oneByOne_stage_bound_of_stored_schur (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (he : A 0 0 ≠ 0) (hsym1 : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (hval : gammaValid fp 3)
+    (L_S D_S B : Fin n → Fin n → ℝ)
+    (hIH : ∀ i j : Fin n,
+      |(∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂)
+        - flStoredSymSchurCompl n fp A i j| ≤ B i j)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hLtr : ∀ i j : Fin n, L i.succ j.succ = L_S i j)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin n, D i.succ j.succ = D_S i j) :
+    ∀ I J : Fin (n + 1),
+      |(∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) - A I J|
+        ≤ flBlockLDLTOneByOneStageBound n fp A
+          (fun i j => B i j + flStoredSymSchurDefect n fp A i j) I J := by
+  apply fl_blockLDLT_oneByOne_stage_bound n fp A he hsym1 hval L_S D_S
+    (fun i j => B i j + flStoredSymSchurDefect n fp A i j)
+  · intro i j
+    set P := (∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂)
+    set S := flStoredSymSchurCompl n fp A i j
+    set R := flSchurCompl n fp A i j
+    have htri : |P - R| ≤ |P - S| + |S - R| := by
+      have hdecomp : P - R = (P - S) + (S - R) := by ring
+      rw [hdecomp]
+      exact abs_add_le _ _
+    have hbound : |P - R| ≤ B i j + flStoredSymSchurDefect n fp A i j := by
+      calc |P - R| ≤ |P - S| + |S - R| := htri
+        _ ≤ B i j + flStoredSymSchurDefect n fp A i j := by
+          apply add_le_add
+          · simpa [P, S] using hIH i j
+          · simp [flStoredSymSchurDefect, S, R]
+    simpa [P, R, flSchurCompl] using hbound
+  · exact hL00
+  · exact hLcol
+  · exact hL0s
+  · exact hLtr
+  · exact hD00
+  · exact hD0s
+  · exact hDs0
+  · exact hDtr
+
 /-- Recursive rounded-pivot side condition for the all-1×1 floating block-LDLᵀ
     path.  At each rounded Schur-complement stage the pivot is nonzero and the
     active first row agrees with the active first column, which is exactly the
