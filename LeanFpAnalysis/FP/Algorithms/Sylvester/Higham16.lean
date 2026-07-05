@@ -1425,6 +1425,30 @@ theorem sylvesterVecCoeff_schurDiagonal_mulVec_bijective (m n : Nat)
       m n U A V B a b hU hV hA hB hsep⟩
 
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
+    Schur-coordinate case: supplied orthogonal diagonal factors with separated
+    diagonal entries make the vec/Kronecker Sylvester coefficient
+    nonsingular. This is the determinant form of the vectorized solve theorem;
+    it is a supplied-factor result, not a proof of Schur existence. -/
+theorem sylvesterVecCoeff_schurDiagonal_det_ne_zero (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Not (Matrix.det (sylvesterVecCoeff m n A B) = 0) := by
+  intro hdet
+  obtain ⟨x, hxne, hxzero⟩ :=
+    Matrix.exists_mulVec_eq_zero_iff.mpr hdet
+  have hinj :=
+    sylvesterVecCoeff_schurDiagonal_mulVec_injective
+      m n U A V B a b hU hV hA hB hsep
+  have hxzero' : x = 0 := by
+    apply hinj
+    rw [hxzero, Matrix.mulVec_zero]
+  exact hxne hxzero'
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
     Schur-coordinate case: the supplied-factor vectorized Sylvester linear
     system has a unique solution for every vectorized right-hand side. -/
 theorem existsUnique_sylvesterVecCoeff_schurDiagonal_mulVec (m n : Nat)
