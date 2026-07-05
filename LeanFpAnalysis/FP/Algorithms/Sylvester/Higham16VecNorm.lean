@@ -299,6 +299,35 @@ theorem H16_eq16_24_structured_condition_of_vecCoeff_sigmaMin (n : Nat)
       (sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B sigma hCoeff)
       hDeltaA hDeltaB hDeltaC hLin
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24),
+    diagonal case: source-shaped first-order relative perturbation bound from
+    the concrete diagonal vec/Kronecker coefficient lower-bound certificate. -/
+theorem H16_eq16_24_structured_condition_diagonal_of_vecCoeff_entrywise_abs_ge
+    (n : Nat) (a b : Fin n -> Real)
+    (X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaB : frobNorm DeltaB <= eps * beta)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 3 *
+        sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_24_structured_condition_of_vecCoeff_sigmaMin n
+      (Matrix.diagonal a) (Matrix.diagonal b)
+      X DeltaA DeltaB DeltaC DeltaX alpha beta gamma sigma eps
+      halpha hbeta hgamma hsigma heps hX
+      (sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a b sigma (le_of_lt hsigma) hgap)
+      hDeltaA hDeltaB hDeltaC hLin
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     Frobenius first-order Sylvester perturbation bound from a positive lower
     bound on the concrete Kronecker/vectorized Sylvester coefficient. -/
@@ -438,6 +467,34 @@ theorem H16_eq16_27_lyapunov_condition_of_vecCoeff_sigmaMin (n : Nat)
       A X DeltaA DeltaC DeltaX alpha gamma sigma eps
       halpha hgamma hsigma heps hX
       (lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin n A sigma hCoeff)
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    source-shaped Lyapunov first-order perturbation bound from the concrete
+    diagonal Lyapunov vec/Kronecker coefficient lower-bound certificate. -/
+theorem H16_eq16_27_lyapunov_condition_diagonal_of_vecCoeff_entrywise_abs_ge
+    (n : Nat) (a : Fin n -> Real)
+    (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n (Matrix.diagonal a) DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_27_lyapunov_condition_of_vecCoeff_sigmaMin n
+      (Matrix.diagonal a) X DeltaA DeltaC DeltaX alpha gamma sigma eps
+      halpha hgamma hsigma heps hX
+      (lyapunovVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a sigma (le_of_lt hsigma) hgap)
       hDeltaA hDeltaC hLin
 
 end LeanFpAnalysis.FP
