@@ -63,6 +63,17 @@ theorem theorem20_7_initialRowMax_nonneg {m n : ℕ} (hn : 0 < n)
     (abs_nonneg (A i j)).trans
       (theorem20_7_initialRowMax_entry_le hn A i j)
 
+/-- A nonzero source row has a positive row maximum in the Theorem 20.7
+    normalizer. -/
+theorem theorem20_7_initialRowMax_pos_of_exists_entry_ne_zero {m n : ℕ}
+    (hn : 0 < n) (A : Fin m → Fin n → ℝ) (i : Fin m)
+    (hrow : ∃ j : Fin n, A i j ≠ 0) :
+    0 < theorem20_7_initialRowMax hn A i := by
+  rcases hrow with ⟨j, hj⟩
+  exact
+    (abs_pos.mpr hj).trans_le
+      (theorem20_7_initialRowMax_entry_le hn A i j)
+
 /-- Each staged row entry is bounded by the staged row maximum used in
     Theorem 20.7. -/
 theorem theorem20_7_stageRowMax_entry_le {m n : ℕ} (hn : 0 < n)
@@ -154,6 +165,44 @@ theorem theorem20_7_initialWeightedRowMax_nonneg {m n : ℕ} (hn : 0 < n)
   exact
     (mul_nonneg hphi (theorem20_7_initialRowMax_nonneg hn A i)).trans
       (le_max_left _ _)
+
+/-- A positive source weight and a nonzero source row give a positive weighted
+    row normalizer in Theorem 20.7. -/
+theorem theorem20_7_initialWeightedRowMax_pos_of_exists_entry_ne_zero
+    {m n : ℕ} (hn : 0 < n) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    {phi : ℝ} (hphi : 0 < phi) (i : Fin m)
+    (hrow : ∃ j : Fin n, A i j ≠ 0) :
+    0 < theorem20_7_initialWeightedRowMax hn A b phi i := by
+  dsimp [theorem20_7_initialWeightedRowMax]
+  exact
+    (mul_pos hphi
+        (theorem20_7_initialRowMax_pos_of_exists_entry_ne_zero hn A i hrow)).trans_le
+      (le_max_left _ _)
+
+/-- A nonzero source right-hand-side entry gives a positive weighted row
+    normalizer in Theorem 20.7. -/
+theorem theorem20_7_initialWeightedRowMax_pos_of_b_ne_zero {m n : ℕ}
+    (hn : 0 < n) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (phi : ℝ) (i : Fin m) (hb : b i ≠ 0) :
+    0 < theorem20_7_initialWeightedRowMax hn A b phi i := by
+  dsimp [theorem20_7_initialWeightedRowMax]
+  exact (abs_pos.mpr hb).trans_le (le_max_right _ _)
+
+/-- Source-shaped nonzero-row hypotheses discharge both denominator
+    positivity side conditions used by the Theorem 20.7 row-growth bridges. -/
+theorem theorem20_7_denominators_pos_of_rows_nonzero {m n : ℕ}
+    (hn : 0 < n) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    {phi : ℝ} (hphi : 0 < phi)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0) :
+    (∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i) ∧
+      (∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i) := by
+  constructor
+  · intro i
+    exact theorem20_7_initialRowMax_pos_of_exists_entry_ne_zero hn A i (hrows i)
+  · intro i
+    exact
+      theorem20_7_initialWeightedRowMax_pos_of_exists_entry_ne_zero
+        hn A b hphi i (hrows i)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     finite maximum over staged right-hand-side entries. -/
