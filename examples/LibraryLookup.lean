@@ -11585,6 +11585,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check isBlockDiagDomRow_iff_gamma_nonneg
 #check isBlockDiagDomRow_iff_col_transpose
 #check blockDiagDomRowGamma_eq_colTranspose_gamma
+#check higham13_blockDiagDomCol_offdiag_zero_of_diagBound_nonpos
+#check higham13_blockDiagDomRow_offdiag_zero_of_diagBound_nonpos
 #check leadingBlockPrefixIndex13_7
 #check leadingBlockPrefixNorm13_7
 #check leadingBlockPrefixInvDiagBound13_7
