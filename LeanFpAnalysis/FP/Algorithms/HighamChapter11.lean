@@ -1501,6 +1501,36 @@ theorem higham11_8_aasenNormwiseBackwardBound_of_uniform_componentwise_bound
   (higham11_8_infNorm_le_card_mul_of_uniform_componentwise_bound n ΔA β hβ hΔ).trans
     hbudget
 
+/-- Relative componentwise perturbation bounds against the computed Aasen
+tridiagonal factor imply the corresponding infinity-norm relative bound. -/
+theorem higham11_8_infNorm_le_mul_of_componentwise_T_bound (n : ℕ)
+    (ΔA T_hat : Fin n → Fin n → ℝ) (η : ℝ) (hη : 0 ≤ η)
+    (hΔ : ∀ i j : Fin n, |ΔA i j| ≤ η * |T_hat i j|) :
+    infNorm ΔA ≤ η * infNorm T_hat :=
+  by
+    apply infNorm_le_of_row_sum_le
+    · intro i
+      calc ∑ j : Fin n, |ΔA i j|
+          ≤ ∑ j : Fin n, η * |T_hat i j| :=
+            Finset.sum_le_sum (fun j _ => hΔ i j)
+        _ = η * ∑ j : Fin n, |T_hat i j| := (Finset.mul_sum ..).symm
+        _ ≤ η * infNorm T_hat :=
+            mul_le_mul_of_nonneg_left (row_sum_le_infNorm T_hat i) hη
+    · exact mul_nonneg hη (infNorm_nonneg T_hat)
+
+/-- Direct bridge from a relative componentwise `T_hat` perturbation budget to
+the printed Theorem 11.8 normwise predicate. -/
+theorem higham11_8_aasenNormwiseBackwardBound_of_componentwise_T_bound
+    (n : ℕ) (ΔA T_hat : Fin n → Fin n → ℝ) (η γ15n25 : ℝ)
+    (hη : 0 ≤ η)
+    (hΔ : ∀ i j : Fin n, |ΔA i j| ≤ η * |T_hat i j|)
+    (hbudget : η * infNorm T_hat ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat) :
+    higham11_8_aasenNormwiseBackwardBound n (infNorm ΔA) γ15n25
+      (infNorm T_hat) :=
+  (higham11_8_infNorm_le_mul_of_componentwise_T_bound n ΔA T_hat η hη hΔ).trans
+    hbudget
+
 /-- Aasen growth factor `rho_n = max_ij |t_ij| / max_ij |a_ij|`. -/
 noncomputable def higham11_8_aasenGrowthFactor
     (Tmax Amax : ℝ) : ℝ :=

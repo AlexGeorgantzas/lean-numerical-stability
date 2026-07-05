@@ -64,7 +64,7 @@ Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
 | §11.2 Aasen solve chain eq (11.15), middle tridiagonal solve | `higham11_15_fl_aasen_middle_tridiagonal_solve_backward_error` | Ch11 | **new this session**; consumes the Chapter 9 equation-(9.20) tridiagonal LU perturbation model for `T`, uses the actual rounded triangular solves, and returns `(T+ΔT)ŷ=z` with the equation-(9.22) `f(γ_n)|L̂||Û|` componentwise bound |
 | §11.2 Aasen solve chain eq (11.15), rounded component package | `higham11_15_fl_aasen_solve_chain_backward_error_components` | Ch11 | **new this session**; composes the outer triangular-solve and middle tridiagonal-solve bridges into a single computed chain `ẑ,q̂,ŷ,ŵ,x̂` exposing all three perturbed equations |
 | §11.2 Aasen solve chain eq (11.15), exact unpermuted algebra | `higham11_15_aasenSolveChain_identity_solve_of_product` | Ch11 | **new this session**; if `A = L T Lᵀ` and the exact chain `Lz=b`, `Ty=z`, `Lᵀw=y`, `x=w` holds (identity permutation), then `A x = b`; this is the algebraic base for later rounded solve-chain perturbation |
-| Thm 11.8 norm bridge: uniform componentwise perturbation ⇒ `∞`-norm bound | `higham11_8_infNorm_le_card_mul_of_uniform_componentwise_bound`, `higham11_8_aasenNormwiseBackwardBound_of_uniform_componentwise_bound` | Ch11 | **new this session**; if `|ΔAᵢⱼ| ≤ β`, then `‖ΔA‖∞ ≤ nβ`, by row-sum definition of `infNorm`; the second theorem plugs this into the printed `(n−1)^2γ_{15n+25}‖T̂‖∞` target once the scalar row-sum budget is available |
+| Thm 11.8 norm bridge: componentwise perturbation ⇒ `∞`-norm bound | `higham11_8_infNorm_le_card_mul_of_uniform_componentwise_bound`, `higham11_8_aasenNormwiseBackwardBound_of_uniform_componentwise_bound`, `higham11_8_infNorm_le_mul_of_componentwise_T_bound`, `higham11_8_aasenNormwiseBackwardBound_of_componentwise_T_bound` | Ch11 | **new this session**; if `|ΔAᵢⱼ| ≤ β`, then `‖ΔA‖∞ ≤ nβ`; if `|ΔAᵢⱼ| ≤ η|T̂ᵢⱼ|`, then `‖ΔA‖∞ ≤ η‖T̂‖∞`; both bridge into the printed `(n−1)^2γ_{15n+25}‖T̂‖∞` target once the scalar budget is available |
 | Problem-support algebra 11.1/11.2/11.4/11.7/11.8/11.9 | `higham11_problem_11_*` (see file) | Ch11 | reusable symmetric/SPD/quasidefinite algebra; not exercise transcriptions |
 
 ## Source predicates / definitions (honest models, no assumed conclusions)
@@ -162,6 +162,8 @@ Problem transcription.
   - Focused lookup check of `higham11_3_fl_blockLDLT_stored_all_oneByOne_bound` → elaborates.
   - Focused lookup check of `higham11_8_infNorm_le_card_mul_of_uniform_componentwise_bound` → elaborates.
   - Focused lookup check of `higham11_8_aasenNormwiseBackwardBound_of_uniform_componentwise_bound` → elaborates.
+  - Focused lookup check of `higham11_8_infNorm_le_mul_of_componentwise_T_bound` → elaborates.
+  - Focused lookup check of `higham11_8_aasenNormwiseBackwardBound_of_componentwise_T_bound` → elaborates.
   - Focused lookup check of `higham11_14_fl_aasen_next_column_update_rel_error` → elaborates.
   - Focused lookup check of `higham11_14_fl_aasen_next_column_update_abs_error` → elaborates.
   - Focused lookup check of `higham11_14_fl_aasen_next_column_update_sum_abs_error` → elaborates.

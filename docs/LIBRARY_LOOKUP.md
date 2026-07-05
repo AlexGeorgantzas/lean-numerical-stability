@@ -4846,6 +4846,8 @@ Source-facing Chapter 11 wrappers:
 - `higham11_8_aasenNormwiseBackwardBound`
 - `higham11_8_infNorm_le_card_mul_of_uniform_componentwise_bound`
 - `higham11_8_aasenNormwiseBackwardBound_of_uniform_componentwise_bound`
+- `higham11_8_infNorm_le_mul_of_componentwise_T_bound`
+- `higham11_8_aasenNormwiseBackwardBound_of_componentwise_T_bound`
 - `higham11_8_aasenGrowthFactor`
 - `higham11_8_aasenGrowthBound`
 - `higham11_16_IsSkewSymmetric`
