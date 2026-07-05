@@ -6441,6 +6441,78 @@ theorem wedinLemma20_12_top_finiteHermitianEigenvalue_projectionDiff_sq_compress
   simpa [MP, MQ, lambdaP, lambdaQ] using le_antisymm hP_le_Q hQ_le_P
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    equality of the exact complexified Euclidean operator norms of the two
+    `D^2` projection compressions.
+
+This packages the selected-top eigenvalue equality through the existing PSD
+top-eigenvalue/operator-norm wrappers for `P(P-Q)^2P` and `Q(P-Q)^2Q`. -/
+theorem wedinLemma20_12_complexMatrixOp2_projectionDiff_sq_compression_eq_swapped_of_range_finrank_eq
+    {m : ℕ} (hm : 0 < m) (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (hRangeFinrank :
+      Module.finrank ℝ
+          (LinearMap.range ((Matrix.of P : Matrix (Fin m) (Fin m) ℝ).mulVecLin)) =
+        Module.finrank ℝ
+          (LinearMap.range ((Matrix.of Q : Matrix (Fin m) (Fin m) ℝ).mulVecLin))) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul
+            (rectMatMul P
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            P)) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul
+            (rectMatMul Q
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            Q)) := by
+  obtain ⟨aP, hOpP, hTopP⟩ :=
+    wedinLemma20_12_exists_topEigenvalue_complexMatrixOp2_projectionDiff_sq_compression_eq
+      hm P Q hP hQ hIdemP hIdemQ
+  obtain ⟨aQ, hOpQ, hTopQ⟩ :=
+    wedinLemma20_12_exists_topEigenvalue_complexMatrixOp2_projectionDiff_sq_compression_swapped_eq
+      hm P Q hP hQ hIdemP hIdemQ
+  have hEigEq :=
+    wedinLemma20_12_top_finiteHermitianEigenvalue_projectionDiff_sq_compression_eq_swapped_of_top_of_range_finrank_eq
+      P Q hP hQ hIdemP hIdemQ hTopP hTopQ hRangeFinrank
+  calc
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul
+            (rectMatMul P
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            P))
+        = finiteHermitianEigenvalues
+            (rectMatMul
+              (rectMatMul P
+                (rectMatMul (fun i j => P i j - Q i j)
+                  (fun i j => P i j - Q i j)))
+              P)
+            (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+              P Q hP hQ hIdemP hIdemQ) aP := hOpP
+    _ = finiteHermitianEigenvalues
+            (rectMatMul
+              (rectMatMul Q
+                (rectMatMul (fun i j => P i j - Q i j)
+                  (fun i j => P i j - Q i j)))
+              Q)
+            (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+              P Q hP hQ hIdemP hIdemQ) aQ := hEigEq
+    _ = complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul
+            (rectMatMul Q
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            Q)) := hOpQ.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     equality of the two `D^2` range-compression operator norms implies the
     missing Stewart--Sun cross-projection norm equality.
 
@@ -6501,6 +6573,50 @@ theorem wedinLemma20_12_complexMatrixOp2_crossProjection_eq_of_projectionDiff_sq
     (complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul P IQ)))
     (complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul Q IP)))).mp
     hsquares
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
+    Stewart--Sun cross-projection norm equality for finite symmetric
+    idempotent projections with equal projection-range dimension.
+
+This is the abstract principal-angle equality used to remove the conditional
+`complexMatrixOp2` hypothesis from the source Lemma 20.12 `min` bound. -/
+theorem wedinLemma20_12_complexMatrixOp2_crossProjection_eq_of_range_finrank_eq
+    {m : ℕ} (hm : 0 < m) (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (hRangeFinrank :
+      Module.finrank ℝ
+          (LinearMap.range ((Matrix.of P : Matrix (Fin m) (Fin m) ℝ).mulVecLin)) =
+        Module.finrank ℝ
+          (LinearMap.range ((Matrix.of Q : Matrix (Fin m) (Fin m) ℝ).mulVecLin))) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul P (fun i j => idMatrix m i j - Q i j))) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul Q (fun i j => idMatrix m i j - P i j))) := by
+  have hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul P
+                (rectMatMul (fun i j => P i j - Q i j)
+                  (fun i j => P i j - Q i j)))
+              P)) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul Q
+                (rectMatMul (fun i j => P i j - Q i j)
+                  (fun i j => P i j - Q i j)))
+              Q)) :=
+    wedinLemma20_12_complexMatrixOp2_projectionDiff_sq_compression_eq_swapped_of_range_finrank_eq
+      hm P Q hP hQ hIdemP hIdemQ hRangeFinrank
+  exact
+    wedinLemma20_12_complexMatrixOp2_crossProjection_eq_of_projectionDiff_sq_compression_eq
+      P Q hP hQ hIdemP hIdemQ hEq
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the difference of two symmetric projections is symmetric. -/
