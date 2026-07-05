@@ -3713,7 +3713,7 @@ noncomputable def theorem20_8FirstOrderRHS {m n p : ℕ}
     (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ) : ℝ :=
   theorem20_8KappaA B BAplus *
       (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) +
-    (1 + theorem20_8KappaB A APplus) *
+    theorem20_8KappaB A APplus *
       (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) +
     theorem20_8ResidualAmplifier A B APplus BAplus *
       (vecNorm2 r / (frobNormRect A * vecNorm2 x))
@@ -4205,7 +4205,7 @@ theorem theorem20_8KappaA_sourceTerm_le_firstOrderRHS {m n p : ℕ}
       theorem20_8FirstOrderRHS A b B d x r APplus BAplus := by
   let termA : ℝ := theorem20_8KappaA B BAplus *
     (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1)
-  let termB : ℝ := (1 + theorem20_8KappaB A APplus) *
+  let termB : ℝ := theorem20_8KappaB A APplus *
     (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1)
   let termR : ℝ := theorem20_8ResidualAmplifier A B APplus BAplus *
     (vecNorm2 r / (frobNormRect A * vecNorm2 x))
@@ -4259,7 +4259,7 @@ theorem theorem20_8KappaB_dataSourceTerm_le_firstOrderRHS {m n p : ℕ}
   let termA : ℝ := theorem20_8KappaA B BAplus *
     (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1)
   let baseB : ℝ := vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1
-  let termB : ℝ := (1 + theorem20_8KappaB A APplus) * baseB
+  let termB : ℝ := theorem20_8KappaB A APplus * baseB
   let termR : ℝ := theorem20_8ResidualAmplifier A B APplus BAplus *
     (vecNorm2 r / (frobNormRect A * vecNorm2 x))
   have hbaseB_nonneg : 0 ≤ baseB := by
@@ -4284,11 +4284,7 @@ theorem theorem20_8KappaB_dataSourceTerm_le_firstOrderRHS {m n p : ℕ}
         (le_of_lt (mul_pos hApos hxpos)))
   have hsecond :
       theorem20_8KappaB A APplus * baseB ≤ termB := by
-    dsimp [termB]
-    have hfactor :
-        theorem20_8KappaB A APplus ≤ 1 + theorem20_8KappaB A APplus := by
-      linarith
-    exact mul_le_mul_of_nonneg_right hfactor hbaseB_nonneg
+    rfl
   change theorem20_8KappaB A APplus * baseB ≤
     theorem20_8FirstOrderRHS A b B d x r APplus BAplus
   unfold theorem20_8FirstOrderRHS
@@ -4310,7 +4306,7 @@ theorem theorem20_8Residual_sourceTerm_le_firstOrderRHS {m n p : ℕ}
       theorem20_8FirstOrderRHS A b B d x r APplus BAplus := by
   let termA : ℝ := theorem20_8KappaA B BAplus *
     (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1)
-  let termB : ℝ := (1 + theorem20_8KappaB A APplus) *
+  let termB : ℝ := theorem20_8KappaB A APplus *
     (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1)
   let termR : ℝ := theorem20_8ResidualAmplifier A B APplus BAplus *
     (vecNorm2 r / (frobNormRect A * vecNorm2 x))
@@ -4424,7 +4420,7 @@ theorem theorem20_8SourceCoefficientSum_le_firstOrderRHS {m n p : ℕ}
     (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1)
   let baseB : ℝ := vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1
   let termBsource : ℝ := theorem20_8KappaB A APplus * baseB
-  let termBfull : ℝ := (1 + theorem20_8KappaB A APplus) * baseB
+  let termBfull : ℝ := theorem20_8KappaB A APplus * baseB
   let termR : ℝ := theorem20_8ResidualAmplifier A B APplus BAplus *
     (vecNorm2 r / (frobNormRect A * vecNorm2 x))
   have hbaseB_nonneg : 0 ≤ baseB := by
@@ -4434,11 +4430,7 @@ theorem theorem20_8SourceCoefficientSum_le_firstOrderRHS {m n p : ℕ}
         (le_of_lt (mul_pos hApos hxpos))
     linarith
   have hBsource_le_full : termBsource ≤ termBfull := by
-    dsimp [termBsource, termBfull]
-    have hfactor :
-        theorem20_8KappaB A APplus ≤ 1 + theorem20_8KappaB A APplus := by
-      linarith
-    exact mul_le_mul_of_nonneg_right hfactor hbaseB_nonneg
+    rfl
   change termA + termBsource + termR ≤
     theorem20_8FirstOrderRHS A b B d x r APplus BAplus
   unfold theorem20_8FirstOrderRHS
@@ -8176,11 +8168,9 @@ theorem theorem20_8FirstOrderRHS_nonneg {m n p : ℕ}
           (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) :=
     mul_nonneg hkA hd_term
   have hsecond :
-      0 ≤ (1 + theorem20_8KappaB A APplus) *
+      0 ≤ theorem20_8KappaB A APplus *
           (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) := by
-    have hone_plus : 0 ≤ 1 + theorem20_8KappaB A APplus := by
-      linarith
-    exact mul_nonneg hone_plus hb_term
+    exact mul_nonneg hkB hb_term
   have hthird :
       0 ≤ theorem20_8ResidualAmplifier A B APplus BAplus *
           (vecNorm2 r / (frobNormRect A * vecNorm2 x)) :=
@@ -8517,7 +8507,7 @@ theorem theorem20_8FirstOrderRHS_of_zero_residual {m n p : ℕ}
     theorem20_8FirstOrderRHS A b B d x (fun _i : Fin m => 0) APplus BAplus =
       theorem20_8KappaA B BAplus *
           (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) +
-        (1 + theorem20_8KappaB A APplus) *
+        theorem20_8KappaB A APplus *
           (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) := by
   simp [theorem20_8FirstOrderRHS, vecNorm2_zero]
 
@@ -8590,6 +8580,83 @@ theorem theorem20_8FirstOrderRHS_zero_residual_le {m n p : ℕ}
   apply theorem20_8FirstOrderRHS_le_of_residual_norm_le
       A b B d x (fun _i : Fin m => 0) r APplus BAplus hApos hxpos
   simpa [vecNorm2_zero] using vecNorm2_nonneg r
+
+/-- Higham, 2nd ed., Chapter 20, Problem 20.11 support:
+    with no equality constraints, the first-order coefficient in (20.25)
+    reduces to the unconstrained least-squares data and residual terms. -/
+theorem problem20_11_unconstrained_firstOrderRHS_eq {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin 0 → Fin n → ℝ) (d : Fin 0 → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (Aplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin 0 → ℝ) :
+    theorem20_8FirstOrderRHS A b B d x r Aplus BAplus =
+      theorem20_8KappaB A Aplus *
+          (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) +
+        theorem20_8KappaB A Aplus ^ 2 *
+          (vecNorm2 r / (frobNormRect A * vecNorm2 x)) := by
+  have hkA0 : theorem20_8KappaA B BAplus = 0 := by
+    simp [theorem20_8KappaA, frobNormRect, frobNormSqRect]
+  have hresamp :
+      theorem20_8ResidualAmplifier A B Aplus BAplus =
+        theorem20_8KappaB A Aplus ^ 2 := by
+    simp [theorem20_8ResidualAmplifier, frobNormRect, frobNormSqRect]
+  unfold theorem20_8FirstOrderRHS
+  rw [hkA0, hresamp]
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Problem 20.11:
+    after setting `B = 0` and `d = 0`, the first-order part of (20.25)
+    is bounded by the Wedin-style first-order coefficient, provided the
+    unconstrained residual relation gives
+    `||b|| <= ||A||_F ||x|| + ||r||`. -/
+theorem problem20_11_unconstrained_firstOrderRHS_le_wedin_first_order
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin 0 → Fin n → ℝ) (d : Fin 0 → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (Aplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin 0 → ℝ)
+    (hApos : 0 < frobNormRect A) (hxpos : 0 < vecNorm2 x)
+    (hb : vecNorm2 b ≤ frobNormRect A * vecNorm2 x + vecNorm2 r) :
+    theorem20_8FirstOrderRHS A b B d x r Aplus BAplus ≤
+      theorem20_8KappaB A Aplus *
+        (2 + (theorem20_8KappaB A Aplus + 1) *
+          (vecNorm2 r / (frobNormRect A * vecNorm2 x))) := by
+  let kappa := theorem20_8KappaB A Aplus
+  let rho := vecNorm2 r / (frobNormRect A * vecNorm2 x)
+  let base := vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1
+  have hkappa : 0 ≤ kappa := by
+    dsimp [kappa]
+    exact theorem20_8KappaB_nonneg A Aplus
+  have hden_pos : 0 < frobNormRect A * vecNorm2 x := mul_pos hApos hxpos
+  have hbdiv :
+      vecNorm2 b / (frobNormRect A * vecNorm2 x) ≤ 1 + rho := by
+    have hdiv := div_le_div_of_nonneg_right hb (le_of_lt hden_pos)
+    have hrewrite :
+        (frobNormRect A * vecNorm2 x + vecNorm2 r) /
+            (frobNormRect A * vecNorm2 x) = 1 + rho := by
+      dsimp [rho]
+      field_simp [ne_of_gt hden_pos]
+    simpa [hrewrite] using hdiv
+  have hbase : base ≤ 2 + rho := by
+    dsimp [base]
+    linarith
+  have hfirst : kappa * base ≤ kappa * (2 + rho) :=
+    mul_le_mul_of_nonneg_left hbase hkappa
+  have hsimp :
+      theorem20_8FirstOrderRHS A b B d x r Aplus BAplus =
+        kappa * base + kappa ^ 2 * rho := by
+    rw [problem20_11_unconstrained_firstOrderRHS_eq A b B d x r Aplus BAplus]
+  calc
+    theorem20_8FirstOrderRHS A b B d x r Aplus BAplus
+        = kappa * base + kappa ^ 2 * rho := hsimp
+    _ ≤ kappa * (2 + rho) + kappa ^ 2 * rho := by
+      simpa [add_comm, add_left_comm, add_assoc] using
+        add_le_add_right hfirst (kappa ^ 2 * rho)
+    _ = theorem20_8KappaB A Aplus *
+        (2 + (theorem20_8KappaB A Aplus + 1) *
+          (vecNorm2 r / (frobNormRect A * vecNorm2 x))) := by
+      dsimp [kappa, rho]
+      ring
 
 /-- The linear constraint map `x ↦ B x` used in the equality-constrained
     least-squares problem (20.23). -/
