@@ -322,6 +322,18 @@ theorem sylvesterVecCoeff_singular_of_common_eigenvalue (m n : Nat)
 def IsUpperTriangularFn (n : Nat) (T : RMatFn n n) : Prop :=
   forall i j : Fin n, j < i -> T i j = 0
 
+/-- A real quasi-Schur zero pattern becomes an ordinary upper-triangular
+    pattern when the supplied block map has no repeated adjacent block labels.
+    This is only a structural adapter; it does not assert that real Schur
+    factors are triangular in general. -/
+theorem IsUpperTriangularFn.of_quasiSchur_strictBlockMap (n : Nat)
+    (T : RMatFn n n) (p : Fin n -> Nat)
+    (hzero : ∀ i j : Fin n, p j < p i -> T i j = 0)
+    (hp : ∀ i j : Fin n, j < i -> p j < p i) :
+    IsUpperTriangularFn n T := by
+  intro i j hij
+  exact hzero i j (hp i j hij)
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
     the shifted column coefficient `A - t I` appearing in the
     Bartels-Stewart column solve `(A - t_kk I) x_k = ...`. -/
@@ -804,6 +816,246 @@ theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_rightInverse_rhs_of_right
           exact sylvesterTwoColumnBlockCoeff_mulVec_rightInverse_rhs
             m n A T C X p q K hRight
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    route for the supplied adjacent two-column block coefficient: a nonzero
+    determinant gives Mathlib's nonsingular inverse as a left inverse.  Scope:
+    exact supplied-block algebra only; this does not prove real-Schur block
+    nonsingularity from spectral separation. -/
+theorem sylvesterTwoColumnBlockCoeff_nonsingInv_mul (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0)) :
+    Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q) *
+        sylvesterTwoColumnBlockCoeff m n A T p q =
+      1 := by
+  exact Matrix.nonsing_inv_mul (sylvesterTwoColumnBlockCoeff m n A T p q)
+    (isUnit_iff_ne_zero.mpr hdet)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    route for the supplied adjacent two-column block coefficient: a nonzero
+    determinant gives Mathlib's nonsingular inverse as a right inverse. -/
+theorem sylvesterTwoColumnBlockCoeff_mul_nonsingInv (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0)) :
+    sylvesterTwoColumnBlockCoeff m n A T p q *
+        Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q) =
+      1 := by
+  exact Matrix.mul_nonsing_inv (sylvesterTwoColumnBlockCoeff m n A T p q)
+    (isUnit_iff_ne_zero.mpr hdet)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based left action: applying the nonsingular inverse after the
+    supplied two-column block coefficient recovers the input vector. -/
+theorem sylvesterTwoColumnBlockCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (z : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z) =
+      z := by
+  rw [Matrix.mulVec_mulVec,
+    sylvesterTwoColumnBlockCoeff_nonsingInv_mul m n A T p q hdet,
+    Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based right action: the supplied two-column block coefficient
+    maps the nonsingular-inverse solution of any block right-hand side back to
+    that right-hand side. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (rhs : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+        (Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          rhs) =
+      rhs := by
+  rw [Matrix.mulVec_mulVec,
+    sylvesterTwoColumnBlockCoeff_mul_nonsingInv m n A T p q hdet,
+    Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based active-block injectivity: a nonzero determinant of the
+    supplied two-column block coefficient makes its `mulVec` action injective.
+    Scope: exact supplied-block algebra only. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0)) :
+    Function.Injective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  intro x y hxy
+  calc
+    x =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) x) := by
+        symm
+        exact
+          sylvesterTwoColumnBlockCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+            m n A T p q hdet x
+    _ =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) y) := by
+        rw [hxy]
+    _ = y := by
+        exact
+          sylvesterTwoColumnBlockCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+            m n A T p q hdet y
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based active-block surjectivity: a nonzero determinant of the
+    supplied two-column block coefficient makes its `mulVec` action
+    surjective. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0)) :
+    Function.Surjective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  intro rhs
+  refine
+    ⟨Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        rhs, ?_⟩
+  exact sylvesterTwoColumnBlockCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
+    m n A T p q hdet rhs
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based active-block bijectivity wrapper. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0)) :
+    Function.Bijective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) :=
+  ⟨sylvesterTwoColumnBlockCoeff_mulVec_injective_of_det_ne_zero
+      m n A T p q hdet,
+    sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_det_ne_zero
+      m n A T p q hdet⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based trivial-kernel wrapper for the supplied two-column block
+    coefficient. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (z : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0 <->
+      z = 0 := by
+  constructor
+  · intro hz
+    calc
+      z =
+          Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+            (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z) := by
+          symm
+          exact
+            sylvesterTwoColumnBlockCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+              m n A T p q hdet z
+      _ = 0 := by
+          rw [hz]
+          exact Matrix.mulVec_zero _
+  · intro hz
+    rw [hz]
+    exact Matrix.mulVec_zero _
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based active-block linear solve: if the supplied two-column
+    block coefficient has nonzero determinant, then the block right-hand side
+    has a unique exact solution vector.  The witness is Mathlib's nonsingular
+    inverse applied to the supplied block right-hand side. -/
+theorem existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0)) :
+    ExistsUnique fun z : Sum (Fin m) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q := by
+  refine
+    ⟨Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        (sylvesterTwoColumnBlockRhs m n T C X p q), ?_, ?_⟩
+  · exact
+      sylvesterTwoColumnBlockCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
+        m n A T p q hdet (sylvesterTwoColumnBlockRhs m n T C X p q)
+  · intro z hz
+    calc
+      z =
+          Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+            (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z) := by
+          symm
+          exact
+            sylvesterTwoColumnBlockCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+              m n A T p q hdet z
+      _ =
+          Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+            (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+          rw [hz]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based active-block solution identification: every vector
+    solving the supplied two-column block system equals the nonsingular inverse
+    applied to the block right-hand side. -/
+theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    {z : Sum (Fin m) (Fin m) -> Real}
+    (hz :
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q) :
+    z =
+      Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+  calc
+    z =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z) := by
+        symm
+        exact
+          sylvesterTwoColumnBlockCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+            m n A T p q hdet z
+    _ =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+        rw [hz]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant-based
+    column wrapper for the supplied adjacent two-column block solve: assigning
+    columns `p` and `q` from the nonsingular-inverse block solution makes `X`
+    satisfy the supplied two-column block recurrence. -/
+theorem sylvesterTwoColumnBlockSystem_of_nonsingInv_columns (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i)) :
+    IsSylvesterTwoColumnBlockSystem m n A T C X p q := by
+  refine sylvesterTwoColumnBlockSystem_of_blockCoeff_solutionVector
+    m n A T C X p q
+    (Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+      (sylvesterTwoColumnBlockRhs m n T C X p q)) ?_ hXp hXq
+  exact sylvesterTwoColumnBlockCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
+    m n A T p q hdet (sylvesterTwoColumnBlockRhs m n T C X p q)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
     two-column block inverse consistency: any supplied left inverse and right
     inverse of the same block coefficient coincide.  Scope: exact supplied-block
@@ -979,6 +1231,155 @@ theorem sylvesterTwoColumnBlockSystem_columns_eq_of_leftInverse_of_prev_columns_
   apply sylvesterTwoColumnBlockSystem_columns_eq_of_leftInverse
     m n A T C X Y p q L hLeft hX hY
   exact sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq m n T C X Y p q hprev
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    uniqueness wrapper for the supplied two-column block system: a nonzero
+    determinant of the supplied block coefficient replaces the separate
+    left-inverse certificate when two block systems have the same right-hand
+    side.  Scope: exact supplied-block algebra only; this does not prove the
+    determinant hypothesis from real-Schur spectral separation. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_det_ne_zero (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (hX : IsSylvesterTwoColumnBlockSystem m n A T C X p q)
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hRhs :
+      sylvesterTwoColumnBlockRhs m n T C X p q =
+        sylvesterTwoColumnBlockRhs m n T C Y p q) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  exact sylvesterTwoColumnBlockSystem_activeColumns_eq_of_leftInverse
+    m n A T C X Y p q
+    (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+    (sylvesterTwoColumnBlockCoeff_nonsingInv_mul m n A T p q hdet)
+    hX hY hRhs
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), component form
+    of the determinant uniqueness wrapper for supplied two-column block systems
+    with the same block right-hand side. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_det_ne_zero (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (hX : IsSylvesterTwoColumnBlockSystem m n A T C X p q)
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hRhs :
+      sylvesterTwoColumnBlockRhs m n T C X p q =
+        sylvesterTwoColumnBlockRhs m n T C Y p q) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  have hvec := sylvesterTwoColumnBlockSystem_activeColumns_eq_of_det_ne_zero
+    m n A T C X Y p q hdet hX hY hRhs
+  constructor
+  · intro i
+    simpa using congrFun hvec (Sum.inl i)
+  · intro i
+    simpa using congrFun hvec (Sum.inr i)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    two-column recurrence uniqueness bridge: if two block-system solutions
+    agree on all previously solved columns `j < p`, then a nonzero determinant
+    of the supplied block coefficient forces their active columns to agree. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_det_ne_zero_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (hX : IsSylvesterTwoColumnBlockSystem m n A T C X p q)
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  apply sylvesterTwoColumnBlockSystem_columns_eq_of_det_ne_zero
+    m n A T C X Y p q hdet hX hY
+  exact sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq m n T C X Y p q hprev
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), vector form of
+    the determinant previous-column uniqueness bridge for supplied adjacent
+    two-column block systems. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_det_ne_zero_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (hX : IsSylvesterTwoColumnBlockSystem m n A T C X p q)
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  have hcols :=
+    sylvesterTwoColumnBlockSystem_columns_eq_of_det_ne_zero_of_prev_columns_eq
+      m n A T C X Y p q hdet hX hY hprev
+  funext r
+  cases r with
+  | inl i => simpa using hcols.1 i
+  | inr i => simpa using hcols.2 i
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    nonsingular-inverse solve/uniqueness bridge: if the supplied two-column
+    block coefficient has nonzero determinant, columns `p` and `q` of `X` are
+    defined by Mathlib's nonsingular inverse applied to the supplied
+    `X`-based block right-hand side, and a supplied block-system solution `Y`
+    agrees with `X` on the previous columns `j < p`, then the active columns
+    agree.  Scope: exact supplied-block algebra only; this does not prove the
+    determinant hypothesis from real-Schur spectral separation. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_det_ne_zero_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  have hX : IsSylvesterTwoColumnBlockSystem m n A T C X p q :=
+    sylvesterTwoColumnBlockSystem_of_nonsingInv_columns
+      m n A T C X p q hdet hXp hXq
+  exact sylvesterTwoColumnBlockSystem_columns_eq_of_det_ne_zero_of_prev_columns_eq
+    m n A T C X Y p q hdet hX hY hprev
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), vector form of
+    the determinant nonsingular-inverse solve/uniqueness bridge for supplied
+    adjacent two-column block systems. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_nonsingInv_columns_of_det_ne_zero_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  have hcols :=
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_det_ne_zero_of_prev_columns_eq
+      m n A T C X Y p q hdet hXp hXq hY hprev
+  funext r
+  cases r with
+  | inl i => simpa using hcols.1 i
+  | inr i => simpa using hcols.2 i
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact supplied
     two-column solve/uniqueness bridge: if a supplied right inverse defines
@@ -1535,6 +1936,49 @@ theorem existsUnique_isSylvesterSolutionRect_schurTriangular (m n : Nat)
       X = rectMatMul U (rectMatMul YX (matTranspose V)) := hXexpand.symm
       _ = rectMatMul U (rectMatMul Y (matTranspose V)) := by rw [hYeq]
 
+/-- Real quasi-Schur-to-triangular uniqueness bridge.  The theorem returns the
+    exact real quasi-Schur factors for `A` and `B`; if the returned `B`-side
+    block map is supplied to be strictly increasing down the matrix order, so
+    the selected Schur factor is effectively upper triangular, and each
+    shifted triangular column coefficient is nonsingular, then the original
+    Sylvester equation has a unique exact solution.
+
+    Scope: exact arithmetic and the triangular subcase only.  This deliberately
+    does not claim full quasi-triangular block nonsingularity, Hessenberg-Schur
+    execution, or floating-point stability. -/
+theorem existsUnique_isSylvesterSolutionRect_realQuasiSchur_of_strictBlockMap
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      ((∀ i j : Fin n, j < i -> pB j < pB i) ->
+        (∀ k : Fin n,
+          Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) ->
+        ExistsUnique (IsSylvesterSolutionRect m n A B C)) := by
+  obtain ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero,
+    hpBmono, hpBcard, hSzero, _hiff⟩ :=
+    sylvester_realQuasiSchur_transform_solution_iff
+      m n A B C (0 : RMatFn m n)
+  refine ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero,
+    hpBmono, hpBcard, hSzero, ?_⟩
+  intro hpBstrict hshift
+  have hS : IsUpperTriangularFn n S :=
+    IsUpperTriangularFn.of_quasiSchur_strictBlockMap n S pB hSzero hpBstrict
+  exact
+    existsUnique_isSylvesterSolutionRect_schurTriangular
+      m n U R A V S B C hU hV hA hB hS hshift
+
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6),
     supplied triangular Schur-coordinate case: supplied orthogonal factors,
     an upper-triangular transformed `S`, and nonsingular shifted column
@@ -1810,6 +2254,623 @@ theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_bud
     sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate
       m n U R A V S B C X Xhat Rhat Ru hU hV hA hB hS hshift hX
       ⟨hRu, hRhat⟩ hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), real quasi-Schur
+    triangular subcase: return exact real quasi-Schur factors for `A` and `B`;
+    if the returned `B`-side block labels are strictly increasing below the
+    diagonal and the shifted triangular column coefficients are nonsingular,
+    then the raw computed-residual practical bound follows for the original
+    `A` and `B`.
+
+    Scope: this is only the strict-block-map triangular subcase, reusing the
+    supplied Schur-triangular endpoint above.  It does not assert full
+    quasi-triangular block nonsingularity, Hessenberg-Schur execution, rounded
+    residual arithmetic, or floating-point stability. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      ((∀ i j : Fin n, j < i -> pB j < pB i) ->
+        (∀ k : Fin n,
+          Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) ->
+        IsSylvesterSolutionRect m n A B C X ->
+        (∀ i j, 0 <= Ru i j) ->
+        (∀ i j,
+          |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j) ->
+        0 < sylvesterMaxEntryNormRect m n Xhat ->
+        sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+            sylvesterMaxEntryNormRect m n Xhat <=
+          sylvesterVecMaxNorm m n
+            (sylvesterPracticalBudgetVec m n
+              (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+            sylvesterMaxEntryNormRect m n Xhat) := by
+  obtain ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero,
+    hpBmono, hpBcard, hSzero, _hiff⟩ :=
+    sylvester_realQuasiSchur_transform_solution_iff
+      m n A B C (0 : RMatFn m n)
+  refine ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero,
+    hpBmono, hpBcard, hSzero, ?_⟩
+  intro hpBstrict hshift hX hRu hRhat hXhat
+  have hS : IsUpperTriangularFn n S :=
+    IsUpperTriangularFn.of_quasiSchur_strictBlockMap n S pB hSzero hpBstrict
+  exact
+    sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget
+      m n U R A V S B C X Xhat Rhat Ru hU hV hA hB hS hshift hX
+      hRu hRhat hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with a packaged computed-residual budget
+    certificate. The strict block-map hypotheses are supplied factors, while
+    vec/Kronecker nonsingularity remains an explicit determinant certificate. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  have _hU := hU
+  have _hV := hV
+  have _hA := hA
+  have _hB := hB
+  have _hpAmono := hpAmono
+  have _hpAcard := hpAcard
+  have _hRstrict := hRstrict
+  have _hpBmono := hpBmono
+  have _hpBcard := hpBcard
+  have _hSstrict := hSstrict
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate m n
+      A B C X Xhat Rhat Ru
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hBudget hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with a packaged computed-residual budget
+    certificate and a scalar cap on the practical budget. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  have _hU := hU
+  have _hV := hV
+  have _hA := hA
+  have _hB := hB
+  have _hpAmono := hpAmono
+  have _hpAcard := hpAcard
+  have _hRstrict := hRstrict
+  have _hpBmono := hpBmono
+  have _hpBcard := hpBcard
+  have _hSstrict := hSstrict
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_scalar m n
+      A B C X Xhat Rhat Ru
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      eta hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hBudget heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with a packaged computed-residual budget
+    certificate and componentwise larger practical-budget inputs. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  have _hU := hU
+  have _hV := hV
+  have _hA := hA
+  have _hB := hB
+  have _hpAmono := hpAmono
+  have _hpAcard := hpAcard
+  have _hRstrict := hRstrict
+  have _hpBmono := hpBmono
+  have _hpBcard := hpBcard
+  have _hSstrict := hSstrict
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_mono
+      m n A B C X Xhat Rhat Rhat' Ru Ru'
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      PinvAbs' hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hPinvAbs_le hBudget hRhat_le hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with a packaged computed-residual budget
+    certificate, monotone supplied estimates, and a scalar cap. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  have _hU := hU
+  have _hV := hV
+  have _hA := hA
+  have _hB := hB
+  have _hpAmono := hpAmono
+  have _hpAcard := hpAcard
+  have _hRstrict := hRstrict
+  have _hpBmono := hpBmono
+  have _hpBcard := hpBcard
+  have _hSstrict := hSstrict
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_mono_scalar
+      m n A B C X Xhat Rhat Rhat' Ru Ru'
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      PinvAbs' eta hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hPinvAbs_le hBudget hRhat_le hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with an explicit residual error model:
+    package `Rhat = R(Xhat) + dR` and `|dR| <= Ru` as a computed-residual
+    certificate, then use the supplied strict-block certificate. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_error_model
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru dR : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate
+      m n U R A V S B pA pB C X Xhat Rhat Ru
+      hU hV hA hB hpAmono hpAcard hRstrict hpBmono hpBcard hSstrict
+      hdet hX
+      (sylvesterComputedResidualBudget_of_error_model m n A B C Xhat Rhat Ru dR
+        hRhat hRu hdR)
+      hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with an explicit residual error model
+    and a scalar cap on the practical budget. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_error_model_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru dR : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate_scalar
+      m n U R A V S B pA pB C X Xhat Rhat Ru eta
+      hU hV hA hB hpAmono hpAcard hRstrict hpBmono hpBcard hSstrict
+      hdet hX
+      (sylvesterComputedResidualBudget_of_error_model m n A B C Xhat Rhat Ru dR
+        hRhat hRu hdR)
+      heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with an explicit residual error model and
+    componentwise larger practical-budget inputs. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_error_model_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat_model : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate_mono
+      m n U R A V S B pA pB C X Xhat Rhat Rhat' Ru Ru' PinvAbs'
+      hU hV hA hB hpAmono hpAcard hRstrict hpBmono hpBcard hSstrict
+      hdet hX
+      (sylvesterComputedResidualBudget_of_error_model m n A B C Xhat Rhat Ru dR
+        hRhat_model hRu hdR)
+      hPinvAbs_le hRhat hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with an explicit residual error model and
+    a monotone scalar cap on an estimated practical budget. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_error_model_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat_model : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate_mono_scalar
+      m n U R A V S B pA pB C X Xhat Rhat Rhat' Ru Ru' PinvAbs' eta
+      hU hV hA hB hpAmono hpAcard hRstrict hpBmono hpBcard hSstrict
+      hdet hX
+      (sylvesterComputedResidualBudget_of_error_model m n A B C Xhat Rhat Ru dR
+        hRhat_model hRu hdR)
+      hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with raw computed-residual budget
+    assumptions and a scalar cap on the practical budget. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  have _hU := hU
+  have _hV := hV
+  have _hA := hA
+  have _hB := hB
+  have _hpAmono := hpAmono
+  have _hpAcard := hpAcard
+  have _hRstrict := hRstrict
+  have _hpBmono := hpBmono
+  have _hpBcard := hpBcard
+  have _hSstrict := hSstrict
+  exact
+    sylvester_practical_error_bound_of_computed_residual_budget_scalar m n
+      A B C X Xhat Rhat Ru
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      eta hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hRu hRhat heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with raw computed-residual budget
+    assumptions and componentwise larger practical-budget inputs. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  have _hU := hU
+  have _hV := hV
+  have _hA := hA
+  have _hB := hB
+  have _hpAmono := hpAmono
+  have _hpAcard := hpAcard
+  have _hRstrict := hRstrict
+  have _hpBmono := hpBmono
+  have _hpBcard := hpBcard
+  have _hSstrict := hSstrict
+  exact
+    sylvester_practical_error_bound_of_computed_residual_budget_mono m n
+      A B C X Xhat Rhat Rhat' Ru Ru'
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      PinvAbs' hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hPinvAbs_le hRu hRhat hRhat_le hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied real
+    quasi-Schur strict-block-map case with raw computed-residual budget
+    assumptions, monotone supplied estimates, and a scalar cap. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  have _hU := hU
+  have _hV := hV
+  have _hA := hA
+  have _hB := hB
+  have _hpAmono := hpAmono
+  have _hpAcard := hpAcard
+  have _hRstrict := hRstrict
+  have _hpBmono := hpBmono
+  have _hpBcard := hpBcard
+  have _hSstrict := hSstrict
+  exact
+    sylvester_practical_error_bound_of_computed_residual_budget_mono_scalar m n
+      A B C X Xhat Rhat Rhat' Ru Ru'
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      PinvAbs' eta hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hPinvAbs_le hRu hRhat hRhat_le hRu_le heta hcomponent hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
     Schur-coordinate case with raw computed-residual budget assumptions and
