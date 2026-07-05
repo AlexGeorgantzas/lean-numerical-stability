@@ -1215,4 +1215,60 @@ theorem sylvester_practical_error_bound_fl_componentwise_scalar
         (Matrix.diagonal a) (Matrix.diagonal b) C Xhat hm hn)
       heta hcomponent hXhat
 
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), monotone scalar-capped floating-point residual instantiation:
+    after replacing the separated diagonal inverse, computed residual, and
+    residual-rounding budgets by componentwise larger estimates, a scalar cap on
+    the estimated practical budget gives the source-shaped relative max-entry
+    bound.  This only models the separated-diagonal residual computation in
+    floating point; it is not a Schur/Bartels-Stewart or LAPACK estimator
+    analysis. -/
+theorem sylvester_practical_error_bound_fl_mono_scalar
+    (fp : FPModel) (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat' Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hPinvAbs_le : forall p q,
+      sylvesterDiagonalVecCoeffInvAbs m n a b p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      |flSylvesterResidualRect fp m n
+          (Matrix.diagonal a) (Matrix.diagonal b) C Xhat i j| <=
+        |Rhat' i j|)
+    (hRu_le : forall i j,
+      flSylvesterResidualBudget fp m n
+          (Matrix.diagonal a) (Matrix.diagonal b) C Xhat i j <=
+        Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_mono_scalar
+      m n (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat
+      (flSylvesterResidualRect fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+      Rhat'
+      (flSylvesterResidualBudget fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+      Ru'
+      (sylvesterDiagonalVecCoeffInv m n a b)
+      (sylvesterDiagonalVecCoeffInvAbs m n a b)
+      PinvAbs' eta hX
+      (sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal
+        m n a b hsep)
+      (sylvesterDiagonalVecCoeffInv_abs_le_invAbs m n a b)
+      hPinvAbs_le
+      (isSylvesterComputedResidualBudget_fl fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat hm hn)
+      hRhat hRu_le heta hcomponent hXhat
+
 end LeanFpAnalysis.FP
