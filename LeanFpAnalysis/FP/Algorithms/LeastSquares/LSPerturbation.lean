@@ -5803,6 +5803,90 @@ theorem wedinLemma20_12_exists_projection_range_projection_swapped_zero_iff_exis
         P Q hIdemP).mpr hraw
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    endpoint selected-top transfer for the `lambda = 1` case.  Under equal
+    projection range dimension, the selected top eigenvalue of `P(P-Q)^2P` is
+    `1` iff the selected top eigenvalue of `Q(P-Q)^2Q` is `1`.
+
+This combines the endpoint range/kernel characterizations with the
+rank-nullity nonzero-transfer bridge. -/
+theorem wedinLemma20_12_top_finiteHermitianEigenvalue_projectionDiff_sq_compression_eq_one_iff_swapped_eq_one_of_range_finrank_eq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    {aP aQ : Fin m}
+    (hTopP : ∀ a : Fin m,
+      finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul P
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            P)
+          (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+            P Q hP hQ hIdemP hIdemQ) a ≤
+        finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul P
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            P)
+          (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+            P Q hP hQ hIdemP hIdemQ) aP)
+    (hTopQ : ∀ a : Fin m,
+      finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul Q
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            Q)
+          (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+            P Q hP hQ hIdemP hIdemQ) a ≤
+        finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul Q
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            Q)
+          (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+            P Q hP hQ hIdemP hIdemQ) aQ)
+    (hRangeFinrank :
+      Module.finrank ℝ
+          (LinearMap.range ((Matrix.of P : Matrix (Fin m) (Fin m) ℝ).mulVecLin)) =
+        Module.finrank ℝ
+          (LinearMap.range ((Matrix.of Q : Matrix (Fin m) (Fin m) ℝ).mulVecLin))) :
+    finiteHermitianEigenvalues
+        (rectMatMul
+          (rectMatMul P
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          P)
+        (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+          P Q hP hQ hIdemP hIdemQ) aP = 1 ↔
+      finiteHermitianEigenvalues
+        (rectMatMul
+          (rectMatMul Q
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          Q)
+        (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+          P Q hP hQ hIdemP hIdemQ) aQ = 1 := by
+  have hEndpointP :=
+    wedinLemma20_12_top_finiteHermitianEigenvalue_projectionDiff_sq_compression_eq_one_iff_exists_projection_range_projection_swapped_zero
+      P Q hP hQ hIdemP hIdemQ hTopP
+  have hEndpointQ :=
+    wedinLemma20_12_top_finiteHermitianEigenvalue_projectionDiff_sq_compression_swapped_eq_one_iff_exists_projection_swapped_range_projection_zero
+      P Q hP hQ hIdemP hIdemQ hTopQ
+  have hTransfer :=
+    wedinLemma20_12_exists_projection_range_projection_swapped_zero_iff_exists_projection_swapped_range_projection_zero_of_range_finrank_eq
+      P Q hP hQ hIdemP hIdemQ hRangeFinrank
+  constructor
+  · intro hP_one
+    exact hEndpointQ.mpr (hTransfer.mp (hEndpointP.mp hP_one))
+  · intro hQ_one
+    exact hEndpointP.mpr (hTransfer.mpr (hEndpointQ.mp hQ_one))
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     if the selected top Hermitian eigenvalues of the two `D^2` compressions
     are away from the endpoint cases `0` and `1`, then the top eigenvalues
     are equal.
