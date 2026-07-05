@@ -502,4 +502,46 @@ theorem higham12_problem_12_1_square {n : ℕ} (hn : 0 < n)
     _ = higham12_vectorAbsSkew hn x * infNorm A * |x i| := by
           ring
 
+/-- **Equation (12.22) σ-bridge**: for an entrywise nonnegative matrix `M` and a
+componentwise-positive vector `v`, each component of `M v` is controlled by the
+∞-norm of `M` and the ill-scaling `σ(v) = max_i v_i / min_i v_i`:
+  `(M v)_i ≤ ‖M‖∞ · σ(v) · v_i`.
+
+This is the mechanism behind Higham's step (12.22)
+`(γ_{n+1} I + M₅)|A||ŷ| ≤ (γ_{n+1} + ‖M₅‖∞ σ(A,ŷ)) |A||ŷ|`: applied with
+`v = |A||ŷ|` it converts a norm bound on the residual coefficient matrix into the
+componentwise dominance that yields the `2γ_{n+1}|A||ŷ|` backward-error bound of
+Theorem 12.4.  Combined with `higham12_21_correction_infNorm_bound` (the Neumann
+step) it turns a norm correction bound into the componentwise correction bound
+consumed by `refinement_two_gamma_bound` / `higham12_4_conditional_two_gamma_bound`. -/
+theorem higham12_22_infNorm_skew_apply {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (v : Fin n → ℝ)
+    (hM : ∀ i j : Fin n, 0 ≤ M i j)
+    (hv : ∀ i : Fin n, 0 < v i) :
+    ∀ i : Fin n,
+      (∑ j : Fin n, M i j * v j) ≤
+        infNorm M * higham12_vectorAbsSkew hn v * v i := by
+  intro i
+  have hσ_nn : 0 ≤ higham12_vectorAbsSkew hn v :=
+    higham12_vectorAbsSkew_nonneg hn v (fun k => abs_pos.mpr (ne_of_gt (hv k)))
+  have hentry : ∀ j : Fin n, v j ≤ higham12_vectorAbsSkew hn v * v i := by
+    intro j
+    have h := higham12_vectorAbsSkew_entry_bound hn v
+      (fun k => abs_pos.mpr (ne_of_gt (hv k))) i j
+    rwa [abs_of_pos (hv j), abs_of_pos (hv i)] at h
+  have hσvi_nn : 0 ≤ higham12_vectorAbsSkew hn v * v i :=
+    mul_nonneg hσ_nn (le_of_lt (hv i))
+  calc ∑ j : Fin n, M i j * v j
+      ≤ ∑ j : Fin n, M i j * (higham12_vectorAbsSkew hn v * v i) :=
+        Finset.sum_le_sum (fun j _ =>
+          mul_le_mul_of_nonneg_left (hentry j) (hM i j))
+    _ = (∑ j : Fin n, M i j) * (higham12_vectorAbsSkew hn v * v i) := by
+        rw [Finset.sum_mul]
+    _ ≤ infNorm M * (higham12_vectorAbsSkew hn v * v i) := by
+        apply mul_le_mul_of_nonneg_right _ hσvi_nn
+        have hpos : ∑ j : Fin n, M i j = ∑ j : Fin n, |M i j| := by
+          apply Finset.sum_congr rfl; intro j _; rw [abs_of_nonneg (hM i j)]
+        rw [hpos]; exact row_sum_le_infNorm M i
+    _ = infNorm M * higham12_vectorAbsSkew hn v * v i := by ring
+
 end LeanFpAnalysis.FP

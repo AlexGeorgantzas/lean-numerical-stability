@@ -7583,6 +7583,47 @@ theorem higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_leadingPrincipa
     A invDiagBound hDom p (Nat.lt_trans (Nat.lt_succ_self p) hpLead)
     (hLead p hpLead) j hj
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    if every leading prefix is nonsingular, column BDD supplies the canonical
+    two-sided inverse table for all original diagonal blocks whose BDD lower
+    bounds are nonpositive. -/
+theorem higham13_diag_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (j : Fin m) :
+    IsInverse r (A j j) (nonsingInv r (A j j)) := by
+  let jPrefix : Fin (j.val + 1) := ⟨j.val, by omega⟩
+  have hidx : leadingBlockPrefixIndex13_7 j.val j.isLt jPrefix = j := by
+    ext
+    simp [leadingBlockPrefixIndex13_7, jPrefix]
+  have hmain :=
+    higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+      A invDiagBound hDom j.val j.isLt (hPrefix j.val j.isLt) jPrefix
+      (by simpa [hidx] using hBound j)
+  simpa [hidx] using hmain
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    right-inverse projection of
+    `higham13_diag_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`,
+    ready for downstream Algorithm 13.3 pivot-certificate APIs. -/
+theorem higham13_diag_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (j : Fin m) :
+    IsRightInverse r (A j j) (nonsingInv r (A j j)) :=
+  (higham13_diag_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    A invDiagBound hPrefix hDom hBound j).2
+
 -- ============================================================
 -- §13.3.1  Equation 13.18 proof-chain pieces
 -- ============================================================
