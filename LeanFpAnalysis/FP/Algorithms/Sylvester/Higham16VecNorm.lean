@@ -166,6 +166,94 @@ theorem lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin (n : Nat)
   rwa [finiteVecNorm2_vec_eq_frobNorm n n Y, hLY,
     finiteVecNorm2_vec_eq_frobNorm n n (lyapunovOp n A Y)] at h
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    a uniform lower bound on the diagonal Lyapunov coefficient magnitudes
+    `|a_i + a_j|` gives the concrete vectorized coefficient lower bound. -/
+theorem lyapunovVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge (n : Nat)
+    (a : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 <= sigma)
+    (hgap : forall i j, sigma <= |a i + a j|) :
+    forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2
+          (Matrix.mulVec (lyapunovVecCoeff n (Matrix.diagonal a)) x) := by
+  classical
+  intro x
+  let d : Prod (Fin n) (Fin n) -> Real := fun p => a p.2 + a p.1
+  let Y : Matrix (Fin n) (Fin n) Real := fun i j => x (j, i)
+  have hvecY : Matrix.vec Y = x := by
+    ext p
+    rfl
+  have hLY :
+      Matrix.diagonal a * Y + Y * Matrix.transpose (Matrix.diagonal a) =
+        fun i j => (a i + a j) * x (j, i) := by
+    ext i j
+    simp [Y, Matrix.mul_apply, Matrix.diagonal]
+    ring
+  have hmul :
+      Matrix.mulVec (lyapunovVecCoeff n (Matrix.diagonal a)) x =
+        fun p => d p * x p := by
+    have h := lyapunovVecCoeff_mulVec_vec n (Matrix.diagonal a) Y
+    rw [hvecY, hLY] at h
+    ext p
+    simpa [d, Matrix.vec] using congrFun h p
+  have hsquares :
+      sigma ^ 2 * finiteVecNorm2Sq x <=
+        finiteVecNorm2Sq (fun p : Prod (Fin n) (Fin n) => d p * x p) := by
+    unfold finiteVecNorm2Sq
+    rw [Finset.mul_sum]
+    apply Finset.sum_le_sum
+    intro p _hp
+    have hleft : -|d p| <= sigma := by
+      linarith [abs_nonneg (d p), hsigma]
+    have hsq_abs : sigma ^ 2 <= |d p| ^ 2 := by
+      exact sq_le_sq' hleft (by simpa [d] using hgap p.2 p.1)
+    calc
+      sigma ^ 2 * x p ^ 2 <= |d p| ^ 2 * x p ^ 2 :=
+        mul_le_mul_of_nonneg_right hsq_abs (sq_nonneg (x p))
+      _ = (d p * x p) ^ 2 := by
+        rw [sq_abs]
+        ring
+  have hleft_sq :
+      (sigma * finiteVecNorm2 x) ^ 2 =
+        sigma ^ 2 * finiteVecNorm2Sq x := by
+    rw [show (sigma * finiteVecNorm2 x) ^ 2 =
+        sigma ^ 2 * finiteVecNorm2 x ^ 2 by ring,
+      finiteVecNorm2_sq]
+  have hright_sq :
+      finiteVecNorm2
+          (Matrix.mulVec (lyapunovVecCoeff n (Matrix.diagonal a)) x) ^ 2 =
+        finiteVecNorm2Sq (fun p : Prod (Fin n) (Fin n) => d p * x p) := by
+    rw [hmul, finiteVecNorm2_sq]
+  have hsq :
+      (sigma * finiteVecNorm2 x) ^ 2 <=
+        finiteVecNorm2
+          (Matrix.mulVec (lyapunovVecCoeff n (Matrix.diagonal a)) x) ^ 2 := by
+    simpa [hleft_sq, hright_sq] using hsquares
+  have hleft_nonneg : 0 <= sigma * finiteVecNorm2 x :=
+    mul_nonneg hsigma (finiteVecNorm2_nonneg x)
+  have hright_nonneg :
+      0 <= finiteVecNorm2
+        (Matrix.mulVec (lyapunovVecCoeff n (Matrix.diagonal a)) x) :=
+    finiteVecNorm2_nonneg _
+  have habs := (sq_le_sq).mp hsq
+  simpa [abs_of_nonneg hleft_nonneg, abs_of_nonneg hright_nonneg] using habs
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    the concrete diagonal Lyapunov vec/Kronecker lower bound transfers to the
+    Frobenius lower bound for the Lyapunov operator. -/
+theorem lyapunovOp_sigmaMin_diagonal_of_entrywise_abs_ge (n : Nat)
+    (a : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|) :
+    forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <=
+        frobNorm (lyapunovOp n (Matrix.diagonal a) Y) := by
+  exact
+    lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin n (Matrix.diagonal a) sigma
+      (lyapunovVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a sigma (le_of_lt hsigma) hgap)
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
     the structured `Psi` certificate follows from a positive lower bound on the
     printed Kronecker/vectorized Sylvester coefficient. -/
