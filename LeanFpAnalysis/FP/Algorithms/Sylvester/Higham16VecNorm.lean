@@ -1404,6 +1404,108 @@ theorem lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_det_ne_zero
     finiteMatrix_eq_nonsingInv_mulVec_of_mulVec_eq_of_det_ne_zero
       (lyapunovVecCoeff n A) hdet hx
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a supplied `SepLowerBound` certificate for `sep(A,-A^T)` instantiates the
+    determinant-based left nonsingular-inverse action for the Lyapunov
+    coefficient. -/
+theorem lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_sepLowerBound
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (z : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A)⁻¹
+        (Matrix.mulVec (lyapunovVecCoeff n A) z) =
+      z := by
+  exact
+    lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+      n A (lyapunovVecCoeff_det_ne_zero_of_sepLowerBound n A sigma hSep) z
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a supplied `SepLowerBound` certificate for `sep(A,-A^T)` instantiates the
+    determinant-based right nonsingular-inverse action for the Lyapunov
+    coefficient. -/
+theorem lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_sepLowerBound
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (rhs : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A)
+        (Matrix.mulVec (lyapunovVecCoeff n A)⁻¹ rhs) =
+      rhs := by
+  exact
+    lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
+      n A (lyapunovVecCoeff_det_ne_zero_of_sepLowerBound n A sigma hSep) rhs
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a supplied `SepLowerBound` certificate for `sep(A,-A^T)` identifies any
+    exact Lyapunov coefficient solution with the nonsingular-inverse vector. -/
+theorem lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    {z rhs : Prod (Fin n) (Fin n) -> Real}
+    (hz : Matrix.mulVec (lyapunovVecCoeff n A) z = rhs) :
+    z =
+      Matrix.mulVec (lyapunovVecCoeff n A)⁻¹ rhs := by
+  exact
+    lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_det_ne_zero
+      n A (lyapunovVecCoeff_det_ne_zero_of_sepLowerBound n A sigma hSep) hz
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a positive exact-`sylvesterSepInf` lower bound for `sep(A,-A^T)`
+    instantiates the determinant-based left nonsingular-inverse action. -/
+theorem lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_pos_le_sylvesterSepInf
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A
+      (fun i j => -matTranspose A i j))
+    (z : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A)⁻¹
+        (Matrix.mulVec (lyapunovVecCoeff n A) z) =
+      z := by
+  exact
+    lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+      n A
+      (lyapunovVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A sigma hsigma hle)
+      z
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a positive exact-`sylvesterSepInf` lower bound for `sep(A,-A^T)`
+    instantiates the determinant-based right nonsingular-inverse action. -/
+theorem lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_pos_le_sylvesterSepInf
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A
+      (fun i j => -matTranspose A i j))
+    (rhs : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A)
+        (Matrix.mulVec (lyapunovVecCoeff n A)⁻¹ rhs) =
+      rhs := by
+  exact
+    lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
+      n A
+      (lyapunovVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A sigma hsigma hle)
+      rhs
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a positive exact-`sylvesterSepInf` lower bound for `sep(A,-A^T)` identifies
+    any exact Lyapunov coefficient solution with the nonsingular-inverse
+    vector. -/
+theorem lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterSepInf
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A
+      (fun i j => -matTranspose A i j))
+    {z rhs : Prod (Fin n) (Fin n) -> Real}
+    (hz : Matrix.mulVec (lyapunovVecCoeff n A) z = rhs) :
+    z =
+      Matrix.mulVec (lyapunovVecCoeff n A)⁻¹ rhs := by
+  exact
+    lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_det_ne_zero
+      n A
+      (lyapunovVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A sigma hsigma hle)
+      hz
+
 /-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
     a positive sigma-min certificate identifies any exact vectorized Sylvester
     coefficient solution with the nonsingular-inverse solution. -/
@@ -1836,6 +1938,102 @@ theorem existsUnique_sylvesterVecCoeff_mulVec_of_pos_le_sylvesterSepInf
     existsUnique_sylvesterVecCoeff_mulVec_of_sepLowerBound n A B sigma
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
       c
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
+    a supplied `SepLowerBound` certificate instantiates the determinant-based
+    left nonsingular-inverse action for the vectorized Sylvester coefficient. -/
+theorem sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_sepLowerBound
+    (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma)
+    (z : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹
+        (Matrix.mulVec (sylvesterVecCoeff n n A B) z) =
+      z := by
+  exact
+    sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+      n A B (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep) z
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
+    a supplied `SepLowerBound` certificate instantiates the determinant-based
+    right nonsingular-inverse action for the vectorized Sylvester coefficient. -/
+theorem sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_sepLowerBound
+    (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma)
+    (rhs : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B)
+        (Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹ rhs) =
+      rhs := by
+  exact
+    sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
+      n A B (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep) rhs
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
+    a supplied `SepLowerBound` certificate identifies any exact Sylvester
+    coefficient solution with the nonsingular-inverse vector. -/
+theorem sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound
+    (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma)
+    {z rhs : Prod (Fin n) (Fin n) -> Real}
+    (hz : Matrix.mulVec (sylvesterVecCoeff n n A B) z = rhs) :
+    z =
+      Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹ rhs := by
+  exact
+    sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_det_ne_zero
+      n A B (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep) hz
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
+    a positive exact-`sylvesterSepInf` lower bound instantiates the
+    determinant-based left nonsingular-inverse action. -/
+theorem sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_pos_le_sylvesterSepInf
+    (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (z : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹
+        (Matrix.mulVec (sylvesterVecCoeff n n A B) z) =
+      z := by
+  exact
+    sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+      n A B
+      (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A B sigma hsigma hle)
+      z
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
+    a positive exact-`sylvesterSepInf` lower bound instantiates the
+    determinant-based right nonsingular-inverse action. -/
+theorem sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_pos_le_sylvesterSepInf
+    (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (rhs : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B)
+        (Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹ rhs) =
+      rhs := by
+  exact
+    sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
+      n A B
+      (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A B sigma hsigma hle)
+      rhs
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
+    a positive exact-`sylvesterSepInf` lower bound identifies any exact
+    Sylvester coefficient solution with the nonsingular-inverse vector. -/
+theorem sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterSepInf
+    (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    {z rhs : Prod (Fin n) (Fin n) -> Real}
+    (hz : Matrix.mulVec (sylvesterVecCoeff n n A B) z = rhs) :
+    z =
+      Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹ rhs := by
+  exact
+    sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_det_ne_zero
+      n A B
+      (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A B sigma hsigma hle)
+      hz
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
     with a supplied `SepLowerBound` certificate, Mathlib's nonsingular inverse
