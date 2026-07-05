@@ -27,8 +27,10 @@
 --   over the reals, so only real eigenpairs are covered; complex-conjugate
 --   eigenvalue pairs of real matrices are outside the statements below.
 -- * The quasi-triangular (2x2 diagonal block, real-Schur) Bartels-Stewart
---   variant behind equations (16.7)-(16.8) is not implemented; only the
---   strictly (upper-)triangular column solve is formalized.
+--   route behind equations (16.7)-(16.8) is represented only by a supplied
+--   adjacent two-column exact block-equation lemma; the full block solver,
+--   real-Schur existence theorem, and floating-point error propagation remain
+--   open.
 -- * No Schur existence, no floating-point rounding analysis: all triangular
 --   and eigenpair data are supplied hypotheses, exactly as in the
 --   supplied-factor diagonal case of `Higham16.lean`.
@@ -253,6 +255,153 @@ private theorem triangular_column_sum_split (m n : Nat) (T : RMatFn n n)
   apply Finset.sum_congr rfl
   intro j _
   ring
+
+/-- Supplied adjacent `2 x 2` diagonal block shape for the function-shaped
+    quasi-upper-triangular factors used in the real Bartels-Stewart route:
+    columns `p` and `q` are adjacent, and entries below row `q` vanish in
+    those two columns.  The in-block subdiagonal entry `T q p` may be nonzero. -/
+def IsAdjacentQuasiTriangularBlockFn (n : Nat) (T : RMatFn n n)
+    (p q : Fin n) : Prop :=
+  q.val = p.val + 1 ∧
+    (∀ j : Fin n, q < j → T j p = 0) ∧
+    (∀ j : Fin n, q < j → T j q = 0)
+
+private theorem two_column_block_sum_split (m n : Nat) (T : RMatFn n n)
+    (X : RMatFn m n) (i : Fin m) (p q k : Fin n)
+    (hpq : q.val = p.val + 1)
+    (hbelow : ∀ j : Fin n, q < j → T j k = 0) :
+    (Finset.sum Finset.univ fun j : Fin n => X i j * T j k) =
+      T p k * X i p + T q k * X i q +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => T j k * X i j) := by
+  have hpq_lt : p < q := Fin.lt_def.mpr (by omega)
+  have hsub : Finset.sum (Finset.filter (fun j => j <= q) Finset.univ)
+        (fun j => X i j * T j k) =
+      Finset.sum Finset.univ fun j : Fin n => X i j * T j k := by
+    apply Finset.sum_subset (Finset.filter_subset _ _)
+    intro j _ hjnot
+    have hnot : Not (j <= q) := by
+      intro hle
+      exact hjnot (Finset.mem_filter.mpr ⟨Finset.mem_univ j, hle⟩)
+    have hqj : q < j := not_le.mp hnot
+    rw [hbelow j hqj, mul_zero]
+  rw [← hsub]
+  have hset : Finset.filter (fun j => j <= q) Finset.univ =
+      insert q (insert p (Finset.filter (fun j => j < p) Finset.univ)) := by
+    ext j
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_insert]
+    constructor
+    · intro hjle
+      by_cases hjq : j = q
+      · exact Or.inl hjq
+      · right
+        by_cases hjp : j = p
+        · exact Or.inl hjp
+        · right
+          apply Fin.lt_def.mpr
+          have hjleNat : j.val <= q.val := Fin.le_def.mp hjle
+          have hjqNat : j.val ≠ q.val := by
+            intro hval
+            exact hjq (Fin.ext hval)
+          have hjpNat : j.val ≠ p.val := by
+            intro hval
+            exact hjp (Fin.ext hval)
+          omega
+    · intro h
+      rcases h with heq | heq | hlt
+      · exact le_of_eq heq
+      · rw [heq]
+        exact le_of_lt hpq_lt
+      · exact le_trans (le_of_lt hlt) (le_of_lt hpq_lt)
+  have hpnotmem : p ∉ Finset.filter (fun j => j < p) Finset.univ := by
+    intro hmem
+    exact absurd (Finset.mem_filter.mp hmem).2 (lt_irrefl p)
+  have hqnotmem :
+      q ∉ insert p (Finset.filter (fun j => j < p) Finset.univ) := by
+    intro hmem
+    simp only [Finset.mem_insert, Finset.mem_filter, Finset.mem_univ, true_and] at hmem
+    rcases hmem with hqp | hqprev
+    · exact (ne_of_gt hpq_lt) hqp
+    · exact (not_lt_of_ge (le_of_lt hpq_lt)) hqprev
+  rw [hset, Finset.sum_insert hqnotmem, Finset.sum_insert hpnotmem]
+  have hprev : Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+        (fun j => X i j * T j k) =
+      Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+        (fun j => T j k * X i j) := by
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  rw [hprev]
+  ring
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
+    adjacent `2 x 2` quasi-triangular block system: the two active columns
+    are kept on the left-hand side, while only previously solved columns
+    `j < p` appear in the right-hand side. -/
+def IsSylvesterTwoColumnBlockSystem (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n) : Prop :=
+  (fun i =>
+      Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T p p))
+          (fun i' => X i' p) i - T q p * X i q) =
+    (fun i =>
+      C i p +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => T j p * X i j)) ∧
+  (fun i =>
+      Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T q q))
+          (fun i' => X i' q) i - T p q * X i p) =
+    (fun i =>
+      C i q +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => T j q * X i j))
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
+    quasi-triangular `2 x 2` block recurrence: if columns `p,q` form a supplied
+    adjacent diagonal block of the Schur factor `T`, then any exact solution of
+    `AX - XT = C` satisfies the simultaneous two-column block system used by
+    the real Bartels-Stewart method.  Scope: exact supplied block algebra only;
+    this does not assert a real Schur decomposition, block nonsingularity,
+    a full Hessenberg-Schur solver, or any floating-point error bound. -/
+theorem sylvester_quasiTriangular_two_column_block_system_of_solution
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (hblock : IsAdjacentQuasiTriangularBlockFn n T p q)
+    (hX : IsSylvesterSolutionRect m n A T C X) :
+    IsSylvesterTwoColumnBlockSystem m n A T C X p q := by
+  rcases hblock with ⟨hpq, hbelowp, hbelowq⟩
+  constructor
+  · funext i
+    rw [sylvesterTriangularShiftedCoeff_mulVec_apply]
+    have hop : sylvesterOpRect m n A T X i p =
+        (Finset.sum Finset.univ fun l : Fin m => A i l * X l p) -
+          (Finset.sum Finset.univ fun j : Fin n => X i j * T j p) := rfl
+    have hsum := two_column_block_sum_split m n T X i p q p hpq hbelowp
+    have hsol := hX i p
+    rw [hop, hsum] at hsol
+    show ((Finset.sum Finset.univ fun l : Fin m => A i l * X l p) -
+        T p p * X i p) - T q p * X i q =
+      C i p +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => T j p * X i j)
+    rw [← hsol]
+    ring
+  · funext i
+    rw [sylvesterTriangularShiftedCoeff_mulVec_apply]
+    have hop : sylvesterOpRect m n A T X i q =
+        (Finset.sum Finset.univ fun l : Fin m => A i l * X l q) -
+          (Finset.sum Finset.univ fun j : Fin n => X i j * T j q) := rfl
+    have hsum := two_column_block_sum_split m n T X i p q q hpq hbelowq
+    have hsol := hX i q
+    rw [hop, hsum] at hsol
+    show ((Finset.sum Finset.univ fun l : Fin m => A i l * X l q) -
+        T q q * X i q) - T p q * X i p =
+      C i q +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => T j q * X i j)
+    rw [← hsol]
+    ring
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), pure algebra:
     for upper-triangular `T`, applying the shifted column coefficient to
