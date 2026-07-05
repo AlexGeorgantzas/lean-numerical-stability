@@ -1445,6 +1445,22 @@ theorem lyapunovResidual_decomposition (n : Nat)
   simp only [add_mul, mul_add, Finset.sum_add_distrib] at h
   linarith
 
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    a Lyapunov perturbation residual equality gives the perturbed Lyapunov
+    backward-error equation. -/
+theorem lyapunovBackwardError_equation_of_backwardResidual_eq (n : Nat)
+    (A C Y DA DC : Fin n -> Fin n -> Real)
+    (hResidual : lyapunovBackwardResidual n DA DC Y = lyapunovResidual n A C Y) :
+    ∀ i j : Fin n,
+      lyapunovOp n (fun i' j' => A i' j' + DA i' j') Y i j =
+        C i j + DC i j := by
+  intro i j
+  have h := congrFun (congrFun hResidual i) j
+  unfold lyapunovBackwardResidual lyapunovResidual lyapunovOp matMul matTranspose at h
+  unfold lyapunovOp matMul matTranspose
+  simp only [add_mul, mul_add, Finset.sum_add_distrib] at h ⊢
+  linarith
+
 /-- A Lyapunov perturbation residual is the Sylvester perturbation residual
     with the tied choice `DeltaB = -DeltaA^T`. -/
 theorem lyapunovBackwardResidual_eq_sylvesterBackwardResidual_tied (n : Nat)
@@ -1684,6 +1700,70 @@ theorem lyapunovSpectralTransform_backwardResidual (n : ℕ)
   rw [lyapunovSpectralTransform_spectral_left_transpose n U DA lam hU]
   rw [lyapunovSpectralBackwardResidual_eq_diagMatrix n
     (lyapunovSpectralTransform n U DA) (lyapunovSpectralTransform n U DC) lam]
+
+/-- Symmetry of the transformed Lyapunov right-hand perturbation is preserved
+    by the original-coordinate lift `U * DeltaC_tilde * U^T`. -/
+theorem lyapunovLiftDeltaC_symmetric (n : ℕ)
+    (U DC_tilde : Fin n → Fin n → ℝ)
+    (hDC : IsSymmetricFiniteMatrix DC_tilde) :
+    IsSymmetricFiniteMatrix (svdLiftDeltaC n U U DC_tilde) := by
+  have h := lyapunovSpectralTransform_symmetric n (matTranspose U) DC_tilde hDC
+  simpa [lyapunovSpectralTransform, svdLiftDeltaC, matTranspose_involutive,
+    matMul_assoc] using h
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    if lifted spectral-coordinate perturbations satisfy the transformed
+    Lyapunov residual equation, then their original-coordinate Lyapunov
+    backward residual is the supplied original residual. -/
+theorem lyapunovLift_backwardResidual_eq (n : ℕ)
+    (Y R U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (DA_tilde DC_tilde : Fin n → Fin n → ℝ)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U)
+    (hEq : ∀ i j : Fin n,
+      DA_tilde i j * lam j + lam i * DA_tilde j i - DC_tilde i j =
+        lyapunovSpectralTransform n U R i j) :
+    lyapunovBackwardResidual n
+        (svdLiftDeltaA n U DA_tilde)
+        (svdLiftDeltaC n U U DC_tilde) Y = R := by
+  subst Y
+  let DA : Fin n → Fin n → ℝ := svdLiftDeltaA n U DA_tilde
+  let DC : Fin n → Fin n → ℝ := svdLiftDeltaC n U U DC_tilde
+  have hcoords :
+      lyapunovSpectralTransform n U
+          (lyapunovBackwardResidual n DA DC
+            (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))) =
+        lyapunovSpectralTransform n U R := by
+    rw [lyapunovSpectralTransform_backwardResidual n U DA DC lam hU]
+    have hDAcoords : lyapunovSpectralTransform n U DA = DA_tilde := by
+      dsimp [DA]
+      simpa [lyapunovSpectralTransform] using
+        svdLiftDeltaA_svd_coordinates n U DA_tilde hU
+    have hDCcoords : lyapunovSpectralTransform n U DC = DC_tilde := by
+      dsimp [DC]
+      simpa [lyapunovSpectralTransform, svdResidual] using
+        svdResidual_svdLiftDeltaC n U U DC_tilde hU hU
+    rw [hDAcoords, hDCcoords]
+    ext i j
+    simpa [lyapunovSpectralBackwardResidual] using hEq i j
+  calc
+    lyapunovBackwardResidual n DA DC
+        (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+        = matMul n U (matMul n
+            (lyapunovSpectralTransform n U
+              (lyapunovBackwardResidual n DA DC
+                (matMul n U (matMul n (diagMatrix lam) (matTranspose U)))))
+            (matTranspose U)) := by
+            simpa [lyapunovSpectralTransform, svdResidual] using
+              (svdResidual_inverse n U U
+                (lyapunovBackwardResidual n DA DC
+                  (matMul n U (matMul n (diagMatrix lam) (matTranspose U))))
+                hU hU).symm
+    _ = matMul n U (matMul n (lyapunovSpectralTransform n U R) (matTranspose U)) := by
+            rw [hcoords]
+    _ = R := by
+            simpa [lyapunovSpectralTransform, svdResidual] using
+              svdResidual_inverse n U U R hU hU
 
 /-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
     the printed scaled scalar equation in Lyapunov spectral coordinates. -/
@@ -2009,6 +2089,154 @@ theorem exists_lyapunovOptimalPerturbations (n : ℕ)
   · exact lyapunovOptimalPerturbations_scalar_eq n R_tilde lam α γ hR hpos
   · exact lyapunovOptimalDeltaA_frobNormSq_le_xiSq n R_tilde lam α γ hpos
   · exact lyapunovOptimalDeltaC_frobNormSq_le_xiSq n R_tilde lam α γ hpos
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21), upper direction:
+    the coordinatewise Lyapunov optimizer in spectral coordinates lifts to an
+    original-coordinate structured Lyapunov backward-error certificate with
+    cost `sqrt (xi^2)`. -/
+theorem isLyapunovBackwardError_sqrt_lyapunovXiSq_of_spectral_optimalPerturbations
+    (n : ℕ)
+    (A C Y U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (alpha gamma : ℝ)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U)
+    (hR : IsSymmetricFiniteMatrix
+      (lyapunovSpectralTransform n U (lyapunovResidual n A C Y)))
+    (hpos : ∀ i j : Fin n,
+      0 < 2 * alpha ^ 2 * (lam i ^ 2 + lam j ^ 2) + gamma ^ 2) :
+    IsLyapunovBackwardError n A C Y alpha gamma
+      (Real.sqrt
+        (lyapunovXiSq n
+          (lyapunovSpectralTransform n U (lyapunovResidual n A C Y))
+          lam alpha gamma)) := by
+  let R_tilde : Fin n → Fin n → ℝ :=
+    lyapunovSpectralTransform n U (lyapunovResidual n A C Y)
+  let eta : ℝ := Real.sqrt (lyapunovXiSq n R_tilde lam alpha gamma)
+  change IsLyapunovBackwardError n A C Y alpha gamma eta
+  let DA_tilde : Fin n → Fin n → ℝ :=
+    lyapunovOptimalDeltaA n R_tilde lam alpha gamma
+  let DC_tilde : Fin n → Fin n → ℝ :=
+    lyapunovOptimalDeltaC n R_tilde lam alpha gamma
+  refine ⟨svdLiftDeltaA n U DA_tilde, svdLiftDeltaC n U U DC_tilde, ?_, ?_, ?_, ?_⟩
+  · have hDCtilde_sym : IsSymmetricFiniteMatrix DC_tilde := by
+      simpa [DC_tilde, R_tilde] using
+        lyapunovOptimalDeltaC_symmetric n R_tilde lam alpha gamma
+          (by simpa [R_tilde] using hR)
+    exact lyapunovLiftDeltaC_symmetric n U DC_tilde hDCtilde_sym
+  · have hscalar :
+        ∀ i j : Fin n,
+          DA_tilde i j * lam j + lam i * DA_tilde j i - DC_tilde i j =
+            R_tilde i j := by
+      simpa [DA_tilde, DC_tilde, R_tilde] using
+        lyapunovOptimalPerturbations_scalar_eq n R_tilde lam alpha gamma
+          (by simpa [R_tilde] using hR) hpos
+    have hResidual :
+        lyapunovBackwardResidual n
+            (svdLiftDeltaA n U DA_tilde)
+            (svdLiftDeltaC n U U DC_tilde) Y =
+          lyapunovResidual n A C Y := by
+      exact lyapunovLift_backwardResidual_eq n Y (lyapunovResidual n A C Y)
+        U lam DA_tilde DC_tilde hY hU
+        (by
+          intro i j
+          simpa [R_tilde] using hscalar i j)
+    exact lyapunovBackwardError_equation_of_backwardResidual_eq n A C Y
+      (svdLiftDeltaA n U DA_tilde)
+      (svdLiftDeltaC n U U DC_tilde) hResidual
+  · have hxi : 0 ≤ lyapunovXiSq n R_tilde lam alpha gamma :=
+      lyapunovXiSq_nonneg n R_tilde lam alpha gamma hpos
+    have hDA := lyapunovOptimalDeltaA_frobNormSq_le_xiSq n R_tilde lam alpha gamma hpos
+    rw [svdLiftDeltaA_frobNormSq n U DA_tilde hU]
+    calc
+      frobNormSq DA_tilde ≤
+          alpha ^ 2 * lyapunovXiSq n R_tilde lam alpha gamma := by
+          simpa [DA_tilde] using hDA
+      _ = (eta * alpha) ^ 2 := by
+          unfold eta
+          rw [mul_pow, Real.sq_sqrt hxi]
+          ring
+  · have hxi : 0 ≤ lyapunovXiSq n R_tilde lam alpha gamma :=
+      lyapunovXiSq_nonneg n R_tilde lam alpha gamma hpos
+    have hDC := lyapunovOptimalDeltaC_frobNormSq_le_xiSq n R_tilde lam alpha gamma hpos
+    rw [svdLiftDeltaC_frobNormSq n U U DC_tilde hU hU]
+    calc
+      frobNormSq DC_tilde ≤
+          gamma ^ 2 * lyapunovXiSq n R_tilde lam alpha gamma := by
+          simpa [DC_tilde] using hDC
+      _ = (eta * gamma) ^ 2 := by
+          unfold eta
+          rw [mul_pow, Real.sq_sqrt hxi]
+          ring
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    for symmetric Lyapunov data with an orthogonal spectral decomposition of
+    `Y`, the spectral Lyapunov optimizer gives an original-coordinate
+    structured backward-error certificate with cost `sqrt (xi^2)`. -/
+theorem isLyapunovBackwardError_sqrt_lyapunovXiSq_of_symmetric_spectral
+    (n : ℕ)
+    (A C Y U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (alpha gamma : ℝ)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U)
+    (hC : IsSymmetricFiniteMatrix C) (hYsym : IsSymmetricFiniteMatrix Y)
+    (hpos : ∀ i j : Fin n,
+      0 < 2 * alpha ^ 2 * (lam i ^ 2 + lam j ^ 2) + gamma ^ 2) :
+    IsLyapunovBackwardError n A C Y alpha gamma
+      (Real.sqrt
+        (lyapunovXiSq n
+          (lyapunovSpectralTransform n U (lyapunovResidual n A C Y))
+          lam alpha gamma)) := by
+  exact
+    isLyapunovBackwardError_sqrt_lyapunovXiSq_of_spectral_optimalPerturbations
+      n A C Y U lam alpha gamma hY hU
+      (lyapunovSpectralTransform_residual_symmetric_of_symmetric n A C Y U hC hYsym)
+      hpos
+
+/-- The lifted Lyapunov spectral optimizer supplies a nonempty feasible set for
+    the infimum model of the structured Lyapunov backward error. -/
+theorem lyapunovBackwardErrorValues_nonempty_of_symmetric_spectral
+    (n : ℕ)
+    (A C Y U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (alpha gamma : ℝ)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U)
+    (hC : IsSymmetricFiniteMatrix C) (hYsym : IsSymmetricFiniteMatrix Y)
+    (hpos : ∀ i j : Fin n,
+      0 < 2 * alpha ^ 2 * (lam i ^ 2 + lam j ^ 2) + gamma ^ 2) :
+    (lyapunovBackwardErrorValues n A C Y alpha gamma).Nonempty := by
+  refine ⟨Real.sqrt
+      (lyapunovXiSq n
+        (lyapunovSpectralTransform n U (lyapunovResidual n A C Y))
+        lam alpha gamma), ?_⟩
+  exact ⟨Real.sqrt_nonneg _,
+    isLyapunovBackwardError_sqrt_lyapunovXiSq_of_symmetric_spectral
+      n A C Y U lam alpha gamma hY hU hC hYsym hpos⟩
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21), upper infimum direction:
+    the structured Lyapunov eta infimum is bounded above by the spectral
+    optimizer value `sqrt (xi^2)`. -/
+theorem lyapunovBackwardErrorInf_le_sqrt_lyapunovXiSq_of_symmetric_spectral
+    (n : ℕ)
+    (A C Y U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (alpha gamma : ℝ)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U)
+    (hC : IsSymmetricFiniteMatrix C) (hYsym : IsSymmetricFiniteMatrix Y)
+    (hpos : ∀ i j : Fin n,
+      0 < 2 * alpha ^ 2 * (lam i ^ 2 + lam j ^ 2) + gamma ^ 2) :
+    lyapunovBackwardErrorInf n A C Y alpha gamma ≤
+      Real.sqrt
+        (lyapunovXiSq n
+          (lyapunovSpectralTransform n U (lyapunovResidual n A C Y))
+          lam alpha gamma) :=
+  lyapunovBackwardErrorInf_le_of_backwardError n A C Y alpha gamma
+    (Real.sqrt
+      (lyapunovXiSq n
+        (lyapunovSpectralTransform n U (lyapunovResidual n A C Y))
+        lam alpha gamma))
+    (Real.sqrt_nonneg _)
+    (isLyapunovBackwardError_sqrt_lyapunovXiSq_of_symmetric_spectral
+      n A C Y U lam alpha gamma hY hU hC hYsym hpos)
 
 /-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
     for a symmetric transformed Lyapunov residual, the asymmetric printed
