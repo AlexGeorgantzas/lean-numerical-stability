@@ -329,6 +329,25 @@ def higham11_4_bunchKaufmanMaxEntryProductBound
     (n : ℕ) (productMax ρ_n Amax : ℝ) : Prop :=
   productMax ≤ 36 * (n : ℝ) * ρ_n * Amax
 
+/-- **Theorem 11.4 constant (Higham [608, 1997], eq (4.13))**: the `36` in the
+bound `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36 n ρₙ ‖A‖_M` comes from
+`(3+α²)(3+α)/(1−α²)² ≤ 36` at `α = (1+√17)/8`. -/
+theorem higham11_4_bound_const_le_36 :
+    (3 + higham11_1_bunchParlettAlpha ^ 2) * (3 + higham11_1_bunchParlettAlpha)
+      / (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2 ≤ 36 :=
+  bunch_kaufman_bound_const_le_36
+
+/-- **Theorem 11.4 constant (Higham [608, 1997], appendix (A.3))**:
+`(3+α²)/(1−α²) ≤ 6`, bounding `|E||E⁻¹||E| ≤ 6|E|` for a 2×2 pivot. -/
+theorem higham11_4_pivot_norm_const_le_six :
+    (3 + higham11_1_bunchParlettAlpha ^ 2) / (1 - higham11_1_bunchParlettAlpha ^ 2) ≤ 6 :=
+  bunch_kaufman_pivot_norm_const_le_six
+
+/-- **§11.1.2 1×1-pivot growth constant (Higham [608, 1997])**: `1/α < 2`, giving
+the 1×1-pivot entry bound `g_ij ≤ α⁻¹·max < 2·max`. -/
+theorem higham11_4_recip_alpha_lt_two : 1 / higham11_1_bunchParlettAlpha < 2 :=
+  bunch_kaufman_recip_alpha_lt_two
+
 /-- **Theorem 11.4** normwise Bunch-Kaufman stability interface. -/
 theorem higham11_4_bunch_kaufman_stability (n : ℕ)
     (A L_hat D_hat : Fin n → Fin n → ℝ)

@@ -256,6 +256,53 @@ theorem bunch_parlett_growth_balance :
     (ne_of_lt bunch_parlett_alpha_lt_one)
     bunch_parlett_alpha_root
 
+/-- `α > 1/2` (since `√17 > 3`). -/
+theorem bunch_parlett_alpha_gt_half : (1 : ℝ) / 2 < bunchParlettAlpha := by
+  unfold bunchParlettAlpha
+  have h : (3 : ℝ) < Real.sqrt 17 :=
+    (Real.lt_sqrt (by norm_num : (0 : ℝ) ≤ 3)).mpr (by norm_num)
+  linarith
+
+/-- `α ≤ 5/7` (since `√17 ≤ 33/7`). -/
+theorem bunch_parlett_alpha_le_5_7 : bunchParlettAlpha ≤ 5 / 7 := by
+  unfold bunchParlettAlpha
+  have h : Real.sqrt 17 ≤ 33 / 7 := by
+    rw [show (33 : ℝ) / 7 = Real.sqrt ((33 / 7) ^ 2) from (Real.sqrt_sq (by norm_num)).symm]
+    exact Real.sqrt_le_sqrt (by norm_num)
+  linarith
+
+/-- From the root `4α²−α−1=0`: `α² = (α+1)/4`. -/
+theorem bunch_parlett_alpha_sq :
+    bunchParlettAlpha ^ 2 = (bunchParlettAlpha + 1) / 4 := by
+  nlinarith [bunch_parlett_alpha_root]
+
+/-- The 1×1-pivot multiplier constant `1/α < 2` (Higham [608, 1997], the bound
+    `g_ij ≤ α⁻¹·max ≤ 2·max` for 1×1 pivots). -/
+theorem bunch_kaufman_recip_alpha_lt_two : 1 / bunchParlettAlpha < 2 := by
+  rw [div_lt_iff₀ bunch_parlett_alpha_pos]; nlinarith [bunch_parlett_alpha_gt_half]
+
+/-- **Higham [608, 1997], appendix (A.3)**: `|E||E⁻¹||E| ≤ ((3+α²)/(1−α²))|E| ≤ 6|E|`
+    — the scalar constant `(3+α²)/(1−α²) ≤ 6` for the Bunch–Kaufman `α`. -/
+theorem bunch_kaufman_pivot_norm_const_le_six :
+    (3 + bunchParlettAlpha ^ 2) / (1 - bunchParlettAlpha ^ 2) ≤ 6 := by
+  have hlt : bunchParlettAlpha ^ 2 < 1 := by
+    nlinarith [bunch_parlett_alpha_pos, bunch_parlett_alpha_lt_one]
+  rw [div_le_iff₀ (by linarith)]
+  nlinarith [bunch_parlett_alpha_sq, bunch_parlett_alpha_le_5_7, bunch_parlett_alpha_pos]
+
+/-- **Higham [608, 1997], eq (4.13)** — the constant behind the Theorem 11.4
+    bound `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36 n ρₙ ‖A‖_M`: for a 2×2 pivot,
+    `(3+α²)(3+α)/(1−α²)² ≤ 36`. -/
+theorem bunch_kaufman_bound_const_le_36 :
+    (3 + bunchParlettAlpha ^ 2) * (3 + bunchParlettAlpha)
+      / (1 - bunchParlettAlpha ^ 2) ^ 2 ≤ 36 := by
+  have hlt : bunchParlettAlpha ^ 2 < 1 := by
+    nlinarith [bunch_parlett_alpha_pos, bunch_parlett_alpha_lt_one]
+  have hden : 0 < (1 - bunchParlettAlpha ^ 2) ^ 2 := pow_pos (by linarith) 2
+  rw [div_le_iff₀ hden]
+  nlinarith [bunch_parlett_alpha_sq, bunch_parlett_alpha_le_5_7,
+    bunch_parlett_alpha_pos, bunch_parlett_alpha_lt_one]
+
 /-- **Growth-factor recursion** (Higham §11.1.1).  If the stage-maximum sequence
     `r` grows by at most the single-step factor `1 + 1/α` at each elimination
     stage (`r(k+1) ≤ (1 + 1/α)·r k`, the per-step bound proved for both 1×1 and

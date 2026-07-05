@@ -36,6 +36,10 @@ Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
 | §11.1 fl backward error of one 1×1 Schur step (toward Thm 11.3) | `fl_oneByOne_schur_step_error`, `higham11_3_fl_oneByOne_schur_step_error` | " | **new this session**; computed `fl(a−fl(fl(c₁/e)·c₂)) = (a−c₁c₂/e)+Δ`, `\|Δ\| ≤ γ₃(\|a\|+\|c₁c₂/e\|)` **derived** via `prod_error_bound` (standard model), not assumed — the atomic per-step ingredient of Thm 11.3 |
 | §11.1 fl backward error of 1×1 pivot solve (Thm 11.3 / eq 11.5, s=1) | `fl_oneByOne_solve_backward_error`, `higham11_3_fl_oneByOne_solve_backward_error` | " | **new this session**; `x̂ = fl(b/e)` satisfies `(e+Δe)x̂ = b`, `\|Δe\| ≤ γ₁\|e\|` — **derived** 1×1 instance of the (11.5) block-solve perturbation hypothesis |
 | §11.1 exact block-LDLᵀ step, eq (11.3) `s=1`: `∑ L·D·Lᵀ = A` | `oneByOne_step_factorization`, `higham11_3_oneByOne_step_factorization` | " | **new this session**; exact 1×1-pivot factorization identity (unit-lower-tri `L`, block-diag `D` with Schur complement) — the **exact base of Theorem 11.3's diagonal-pivoting recursion** (fl version adds `fl_oneByOne_schur_step_error`) |
+| Thm 11.4 constant, Higham [608,1997] eq (4.13): `(3+α²)(3+α)/(1−α²)² ≤ 36` | `bunch_kaufman_bound_const_le_36`, `higham11_4_bound_const_le_36` | " | **new this session**; the `36` in `‖\|L̂\|\|D̂\|\|L̂ᵀ\|‖_M ≤ 36nρₙ‖A‖_M` (α=(1+√17)/8) |
+| Thm 11.4 constant, Higham [608,1997] (A.3): `(3+α²)/(1−α²) ≤ 6` (`\|E\|\|E⁻¹\|\|E\| ≤ 6\|E\|`) | `bunch_kaufman_pivot_norm_const_le_six`, `higham11_4_pivot_norm_const_le_six` | " | **new this session** |
+| §11.1.2 1×1-pivot growth constant `1/α < 2` (Higham [608,1997]) | `bunch_kaufman_recip_alpha_lt_two`, `higham11_4_recip_alpha_lt_two` | " | **new this session**; `g_ij ≤ α⁻¹·max < 2·max` |
+| α bounds `1/2 < α ≤ 5/7`, `α² = (α+1)/4` | `bunch_parlett_alpha_gt_half`, `bunch_parlett_alpha_le_5_7`, `bunch_parlett_alpha_sq` | " | **new this session**; supporting the Thm 11.4 constants |
 | Eq (11.6) example factorization A = LDLᵀ (partial pivoting) | `higham11_6_partialPivotExample_factorization` | Ch11 | exact `fin_cases` algebra, ε≠0 |
 | §11.3 skew-symmetric diag zero | `skewSymmetric_diag_zero`, `higham11_16_skew_diag_zero` | " | Aᵀ=−A ⇒ Aᵢᵢ=0 |
 | §11.3 / Alg 11.9 skew 2×2 multiplier bound `|c/a₂₁| ≤ 1` | `skew_twoByTwo_multiplier_bound`, `higham11_9_skew_multiplier_bound` | " | **new this session**; from `|c| ≤ |a₂₁|` (pivot is max) — honest content behind `higham11_9_skew_L_entry_bound_interface` |
@@ -65,13 +69,16 @@ Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
 
 ## Open selected-scope items (not-proved ledger)
 These are the rows that keep the gate FAIL. Each is currently a conditional-transfer
-interface (`hypothesis ⊢ same statement`); the *analysis* — full block-LDLᵀ / Bunch–Kaufman
-floating-point backward-error derivation — is the missing foundation.
+interface (`hypothesis ⊢ same statement`). **Update (2026-07-05):** the proofs are no
+longer citation-blocked — Higham [608,1997] was obtained (see *External proof sources*
+below), giving the full proof of Theorems 11.3/11.4. What remains is *formalizing* the
+block-matrix backward-error **induction** (a large but now-unblocked, tractable effort);
+this session proved the exact base case and the key constants.
 
 | Source label | Exact claim | Current Lean status | Missing foundation | Smallest next Lean theorem |
 |---|---|---|---|---|
 | Theorem 11.3 | block LDLᵀ backward error: `P(A+ΔA₁)Pᵀ = L̂D̂L̂ᵀ`, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ p(n)u(|A|+Pᵀ|L̂||D̂||L̂ᵀ|P)+O(u²)` (eq 11.5) | `higham11_3_block_ldlt_backward_error_interface` (assumes the whole conclusion — should be weakened to assume only (11.5)) | remaining: the fl-model **recursion** over all stages, **assuming (11.5) as the theorem's own stated hypothesis**. NOTE: proving (11.5) itself for 2×2 pivots is **Problem 11.5 — benchmark-reserved**, so it must stay a hypothesis, never a formalized lemma. Now proved: the **exact** 1×1 factorization step `oneByOne_step_factorization` (eq 11.3 base case), the per-step 1×1 **fl** update error `fl_oneByOne_schur_step_error`, and the 1×1 solve error `fl_oneByOne_solve_backward_error`. | a block-factorization data structure that iterates `oneByOne_step_factorization` (+ its fl error) over stages; 2×2 stages supplied by the (11.5) hypothesis |
-| Theorem 11.4 | Bunch–Kaufman normwise stability `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M+O(u²)` via `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36nρₙ‖A‖_M` | `higham11_4_bunch_kaufman_stability` / `..._solve_backward_error_interface` (assume) | remaining: the `36nρₙ` product bound [608,1997] + a factorization data structure discharging the per-stage ratio hypothesis for the computed matrices. The single-step growth bounds AND their geometric recursion `geom_growth_iterate` (⇒ `ρₙ ≤ (1+α⁻¹)^{n−1}`) are now proved. | a `cpState`-style recursion whose stage maxima satisfy `oneByOne_schur_growth`/`twoByTwo_schur_growth`, fed into `geom_growth_iterate` |
+| Theorem 11.4 | Bunch–Kaufman normwise stability `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M+O(u²)` via `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36nρₙ‖A‖_M` | `higham11_4_bunch_kaufman_stability` / `..._solve_backward_error_interface` (assume) | proof now available (Higham [608,1997] §4.3, eqs 4.11–4.14, appendix A). The **constants** are proved (`bunch_kaufman_bound_const_le_36` = eq 4.13's `36`, `..._pivot_norm_const_le_six` = A.3, `..._recip_alpha_lt_two`). Remaining: the entrywise `|L||D||Lᵀ|` block bound (4.11)–(4.12) + recursion into (4.14) via `geom_growth_iterate`. | assemble the per-pivot `\|E\|\|E⁻¹\|\|E\|`/`CE⁻¹` entry bounds (constants proved) over the `‖S‖_M ≤ ρₙ‖A‖_M` recursion into eq (4.14) |
 | Theorem 11.7 | Bunch tridiagonal normwise stability, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ c·u·‖A‖` | `higham11_7_tridiagonal_backward_error_interface` (assumes) | tridiagonal block-LDLᵀ fl analysis | fl error for one 2×2 tridiagonal pivot step |
 | Theorem 11.8 | Aasen componentwise backward error + `‖ΔA‖_∞ ≤ (n−1)²γ_{15n+25}‖T̂‖_∞` | `higham11_8_aasen_backward_error_interface` (assumes) | remaining: **fl** analysis of the Aasen recurrences + solve chain (11.15). The **exact-arithmetic** recurrence identities (11.12), (11.13) are now proved (`higham11_12/13_aasen_*_equation_of_product`). | fl error for the Aasen column update (11.14), then the solve-chain error over (11.15) |
 
@@ -83,6 +90,13 @@ inverse-block entries. What remains for Theorem 11.4 is the *recursion*: iterati
 these per-stage bounds over the whole factorization to obtain the growth factor
 `ρₙ ≤ (1+α⁻¹)^{n−1}`, plus the `36nρₙ` product bound and the floating-point solve
 error — the foundation tracked in the ledger row above.
+
+## External proof sources
+| Selected claim | Source and exact location | Role | Local Lean closure | Status |
+|---|---|---|---|---|
+| Theorems 11.3, 11.4 (proofs not in book ch.11) | N. J. Higham, *Stability of the diagonal pivoting method with partial pivoting*, SIAM J. Matrix Anal. Appl. 18(1) (1997) 52–65 = book ref **[608]**. Free: `nhigham.com/wp-content/uploads/2022/11/high97d.pdf`, MIMS EPrints 344. Obtained 2026-07-05 (Max authorized web pull). | full proof: paper Thm 4.1 = book 11.3 (componentwise induction §4.2, eqs 4.6–4.10), paper Thm 4.2 = book 11.4 (norm bound §4.3, eqs 4.11–4.14, appendix A.1–A.3) | constants formalized (`bunch_kaufman_bound_const_le_36` eq 4.13, `..._pivot_norm_const_le_six` A.3, `..._recip_alpha_lt_two`); exact base `oneByOne_step_factorization`; per-step fl `fl_oneByOne_schur_step_error`/`_solve_backward_error` | **partially formalized**; block-matrix induction remains (unblocked, large). Paper's (4.5) 2×2-solve backward error = book **Problem 11.5 (benchmark-reserved)** → stays a hypothesis. |
+| Theorem 11.7 | Higham [613, 1999] (not yet obtained) | tridiagonal stability proof | — | to obtain |
+| Theorem 11.8 | Higham [612, 1999] (not yet obtained) | Aasen backward-error proof | exact recurrences (11.12)–(11.14) proved | to obtain |
 
 ## Skipped items (reason codes)
 | Source location | Summary | Reason |
