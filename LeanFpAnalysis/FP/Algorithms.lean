@@ -91,6 +91,7 @@ import LeanFpAnalysis.FP.Algorithms.StationaryIterationDrazin
 import LeanFpAnalysis.FP.Analysis.InverseOpNorm2
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16LyapunovSigmaMin
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16PsiSigmaMin
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16PerturbationSigmaMin
 import LeanFpAnalysis.FP.Analysis.NumericalRadius
 import LeanFpAnalysis.FP.Analysis.SchurTriangulation
 import LeanFpAnalysis.FP.Analysis.MatrixPowersHenrici
