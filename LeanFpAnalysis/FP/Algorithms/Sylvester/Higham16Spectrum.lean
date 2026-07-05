@@ -1472,6 +1472,71 @@ theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_cer
       hPinvAbs_le hBudget hRhat hRu_le hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
+    Schur-coordinate case with raw computed-residual budget assumptions:
+    nonnegative componentwise residual tolerances and an entrywise computed
+    residual error bound supply the practical componentwise error bound. -/
+theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate
+      m n U R A V S B C X Xhat Rhat Ru hU hV hA hB hS hshift hX
+      ⟨hRu, hRhat⟩ hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
+    Schur-coordinate case with raw computed-residual budget assumptions and
+    componentwise larger practical-budget inputs. -/
+theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate_mono
+      m n U R A V S B C X Xhat Rhat Rhat' Ru Ru' PinvAbs'
+      hU hV hA hB hS hshift hX ⟨hRu, hRhat⟩
+      hPinvAbs_le hRhat_le hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
     Schur-coordinate case with an explicit residual error model:
     if `Rhat = R(Xhat) + dR` and `|dR| <= Ru`, then the practical
     componentwise error bound follows using the nonsingular inverse of the
@@ -1624,6 +1689,73 @@ theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_cer
             m n U R A V S B hU hV hA hB hS hshift)))
       (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
       hPinvAbs_le hBudget hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
+    Schur-coordinate case with raw computed-residual budget assumptions and a
+    scalar cap on the nonsingular-inverse practical budget. -/
+theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate_scalar
+      m n U R A V S B C X Xhat Rhat Ru eta hU hV hA hB hS hshift hX
+      ⟨hRu, hRhat⟩ heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
+    Schur-coordinate case with raw computed-residual budget assumptions,
+    monotone supplied estimates, and a scalar cap. -/
+theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate_mono_scalar
+      m n U R A V S B C X Xhat Rhat Rhat' Ru Ru' PinvAbs' eta
+      hU hV hA hB hS hshift hX ⟨hRu, hRhat⟩
+      hPinvAbs_le hRhat_le hRu_le heta hcomponent hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
     Schur-coordinate case with an explicit residual error model and a scalar

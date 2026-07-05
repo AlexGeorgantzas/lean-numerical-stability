@@ -1487,6 +1487,116 @@ theorem sylvester_practical_error_bound_of_diagonal_computed_residual_certificat
       hPinvAbs_le hBudget hRhat hRu_le heta hcomponent hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case:
+    raw computed-residual budget form of the practical componentwise error
+    bound using the explicit diagonal inverse of the vec/Kronecker Sylvester
+    coefficient. -/
+theorem sylvester_practical_error_bound_of_diagonal_computed_residual_budget
+    (m n : Nat) (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat i j -
+          Rhat i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterDiagonalVecCoeffInvAbs m n a b) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_diagonal_computed_residual_certificate
+      m n a b C X Xhat Rhat Ru hsep hX
+      (And.intro hRu hRhat) hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case:
+    raw computed-residual budget form with componentwise larger supplied
+    inverse and residual estimates. -/
+theorem sylvester_practical_error_bound_of_diagonal_computed_residual_budget_mono
+    (m n : Nat) (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat i j -
+          Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterDiagonalVecCoeffInvAbs m n a b p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono
+      m n a b C X Xhat Rhat Rhat' Ru Ru' PinvAbs' hsep hX
+      (And.intro hRu hRhat) hPinvAbs_le hRhat_le hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case:
+    raw computed-residual budget form with a scalar cap on the practical
+    budget. -/
+theorem sylvester_practical_error_bound_of_diagonal_computed_residual_budget_scalar
+    (m n : Nat) (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat i j -
+          Rhat i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterDiagonalVecCoeffInvAbs m n a b) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_scalar
+      m n a b C X Xhat Rhat Ru eta hsep hX
+      (And.intro hRu hRhat) heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case:
+    raw computed-residual budget form with monotone supplied estimates and a
+    scalar cap on the estimated practical budget. -/
+theorem sylvester_practical_error_bound_of_diagonal_computed_residual_budget_mono_scalar
+    (m n : Nat) (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat i j -
+          Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterDiagonalVecCoeffInvAbs m n a b p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono_scalar
+      m n a b C X Xhat Rhat Rhat' Ru Ru' PinvAbs' eta hsep hX
+      (And.intro hRu hRhat) hPinvAbs_le hRhat_le hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case:
     if the computed residual has an explicit error model
     `Rhat = R(Xhat) + dR` with `|dR| <= Ru`, then the practical
     componentwise error bound follows using the explicit diagonal inverse of
@@ -2271,6 +2381,134 @@ theorem sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certi
             m n U A V B a b hU hV hA hB hsep)))
       (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
       hPinvAbs_le hBudget hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied diagonal
+    Schur-coordinate case: raw computed-residual budget form of the practical
+    componentwise error bound.  Scope: exact supplied factors only; this does
+    not assert Schur existence or a floating-point residual computation. -/
+theorem sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget
+    (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate
+      m n U A V B a b C X Xhat Rhat Ru hU hV hA hB hsep hX
+      (And.intro hRu hRhat) hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied diagonal
+    Schur-coordinate case: raw computed-residual budget form with a monotone
+    estimated practical budget. -/
+theorem sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_mono
+    (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_mono
+      m n U A V B a b C X Xhat Rhat Rhat' Ru Ru' PinvAbs'
+      hU hV hA hB hsep hX (And.intro hRu hRhat)
+      hPinvAbs_le hRhat_le hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied diagonal
+    Schur-coordinate case: raw computed-residual budget form with a scalar cap
+    on the practical budget. -/
+theorem sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_scalar
+    (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_scalar
+      m n U A V B a b C X Xhat Rhat Ru eta hU hV hA hB hsep hX
+      (And.intro hRu hRhat) heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied diagonal
+    Schur-coordinate case: raw computed-residual budget form with monotone
+    supplied estimates and a scalar cap on the estimated practical budget. -/
+theorem sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_mono_scalar
+    (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_mono_scalar
+      m n U A V B a b C X Xhat Rhat Rhat' Ru Ru' PinvAbs' eta
+      hU hV hA hB hsep hX (And.intro hRu hRhat)
+      hPinvAbs_le hRhat_le hRu_le heta hcomponent hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied diagonal
     Schur-coordinate case with an explicit residual error model:
