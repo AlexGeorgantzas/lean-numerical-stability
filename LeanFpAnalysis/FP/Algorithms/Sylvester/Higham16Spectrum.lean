@@ -81,6 +81,89 @@ theorem sylvester_realQuasiSchur_factors (m n : Nat)
   · intro i j hij
     exact hBzero i j hij
 
+/-- Adapter from Mathlib's orthogonal-group predicate to the repository's
+    function-matrix orthogonality predicate. -/
+theorem IsOrthogonal.of_mem_orthogonalGroup {n : Nat}
+    (Q : Matrix (Fin n) (Fin n) Real)
+    (hQ : Q ∈ Matrix.orthogonalGroup (Fin n) Real) :
+    IsOrthogonal n (fun i j => Q i j) := by
+  apply IsOrthogonal.of_col_orthonormal
+  intro i j
+  rw [Matrix.mem_orthogonalGroup_iff'] at hQ
+  have hentry := congrFun (congrFun hQ i) j
+  simpa [Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply] using hentry
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.5), real
+    quasi-Schur existence combined with the exact Schur-coordinate Sylvester
+    equivalence.  The theorem chooses real quasi-Schur factors for `A` and `B`,
+    repackages them in the legacy function-matrix interface, and immediately
+    exposes the exact equivalence between the original equation and the
+    Schur-coordinate equation.
+
+    Scope: this is only the exact coordinate-transform bridge.  It does not
+    assert structural nonsingularity of the quasi-triangular block systems, a
+    Hessenberg-Schur reduction, a full Bartels-Stewart solve, or any
+    floating-point stability bound. -/
+theorem sylvester_realQuasiSchur_transform_solution_iff (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C Y : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      (IsSylvesterSolutionRect m n A B C
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <->
+        IsSylvesterSolutionRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) := by
+  obtain ⟨Umat, pA, hUmat, hpAmono, hpAcard, hAzero⟩ :=
+    real_quasi_schur_blocks (Matrix.of A)
+  obtain ⟨Vmat, pB, hVmat, hpBmono, hpBcard, hBzero⟩ :=
+    real_quasi_schur_blocks (Matrix.of B)
+  let U : RMatFn m m := fun i j => Umat i j
+  let V : RMatFn n n := fun i j => Vmat i j
+  let R : RMatFn m m := rectMatMul (matTranspose U) (rectMatMul A U)
+  let S : RMatFn n n := rectMatMul (matTranspose V) (rectMatMul B V)
+  have hU : IsOrthogonal m U :=
+    IsOrthogonal.of_mem_orthogonalGroup Umat hUmat
+  have hV : IsOrthogonal n V :=
+    IsOrthogonal.of_mem_orthogonalGroup Vmat hVmat
+  have hA : A = rectMatMul U (rectMatMul R (matTranspose U)) :=
+    (rectMatMul_schur_coords_expand U U A hU hU).symm
+  have hB : B = rectMatMul V (rectMatMul S (matTranspose V)) :=
+    (rectMatMul_schur_coords_expand V V B hV hV).symm
+  have hRzero : ∀ i j : Fin m, pA j < pA i -> R i j = 0 := by
+    intro i j hij
+    have hleft :
+        rectMatMul (rectMatMul (matTranspose U) A) U i j = 0 := by
+      simpa [U, rectMatMul, matTranspose, Matrix.mul_apply,
+        Matrix.transpose_apply, Matrix.of_apply] using hAzero i j hij
+    have hassoc := rectMatMul_assoc (matTranspose U) A U
+    have hentry := congrFun (congrFun hassoc i) j
+    change (rectMatMul (matTranspose U) (rectMatMul A U)) i j = 0
+    rw [← hentry]
+    exact hleft
+  have hSzero : ∀ i j : Fin n, pB j < pB i -> S i j = 0 := by
+    intro i j hij
+    have hleft :
+        rectMatMul (rectMatMul (matTranspose V) B) V i j = 0 := by
+      simpa [V, rectMatMul, matTranspose, Matrix.mul_apply,
+        Matrix.transpose_apply, Matrix.of_apply] using hBzero i j hij
+    have hassoc := rectMatMul_assoc (matTranspose V) B V
+    have hentry := congrFun (congrFun hassoc i) j
+    change (rectMatMul (matTranspose V) (rectMatMul B V)) i j = 0
+    rw [← hentry]
+    exact hleft
+  refine ⟨U, R, V, S, pA, pB, hU, hV, hA, hB,
+    hpAmono, hpAcard, hRzero, hpBmono, hpBcard, hSzero, ?_⟩
+  exact sylvester_schur_transform_solution_iff m n U R A V S B C Y hU hV hA hB
+
 -- ============================================================
 -- (16.3): constructive spectral directions
 -- ============================================================
