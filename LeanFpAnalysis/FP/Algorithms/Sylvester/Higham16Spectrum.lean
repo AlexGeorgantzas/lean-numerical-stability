@@ -1168,6 +1168,29 @@ theorem existsUnique_sylvesterTriangularShiftedCoeff_mulVec (m : Nat)
   intro y hy
   exact hinj (by rw [hy, hx])
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), active column step:
+    for supplied upper-triangular `T`, determinant nonsingularity of the shifted
+    coefficient `A - t_kk I` gives existence and uniqueness for the exact
+    single-column recurrence
+    `(A - t_kk I) x_k = c_k + sum_{j<k} t_jk x_j`.
+    This is only the supplied-shift column solve certificate; it does not assert
+    Schur construction, quasi-triangular block assembly, or floating-point
+    stability. -/
+theorem existsUnique_sylvester_triangular_column_step_of_shifted_det (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (hT : IsUpperTriangularFn n T) (k : Fin n)
+    (hdet : Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T k k)) = 0)) :
+    ∃! x : Fin m -> Real,
+      Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T k k)) x =
+        fun i => C i k +
+          Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+            (fun j => T j k * X i j) := by
+  have _ : IsUpperTriangularFn n T := hT
+  exact existsUnique_sylvesterTriangularShiftedCoeff_mulVec m A (T k k) hdet
+    (fun i => C i k +
+      Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+        (fun j => T j k * X i j))
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
     `A - t_kk I` nonsingular, two solutions of `AX - XT = C` coincide, by
