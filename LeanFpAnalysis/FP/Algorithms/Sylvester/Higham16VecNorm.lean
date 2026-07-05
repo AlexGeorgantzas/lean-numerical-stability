@@ -42,6 +42,161 @@ theorem finiteVecNorm2_vec_eq_frobNorm (m n : Nat)
   rw [finiteVecNorm2Sq_vec_eq_frobNormSq m n A,
     frobNorm_eq_sqrt_frobNormSq]
 
+/-- Finite Gram matrix `P^T P` for an arbitrary finite index type.  This local
+    Chapter 16 helper keeps the printed product-index vec coefficient without
+    reindexing it through `Fin (n*n)`. -/
+noncomputable def finiteMatrixGram {ι : Type*} [Fintype ι]
+    (P : Matrix ι ι Real) : ι -> ι -> Real :=
+  fun i j => Finset.sum Finset.univ fun k : ι => P k i * P k j
+
+/-- The finite Gram matrix `P^T P` is symmetric. -/
+theorem isSymmetricFiniteMatrix_finiteMatrixGram
+    {ι : Type*} [Fintype ι] (P : Matrix ι ι Real) :
+    IsSymmetricFiniteMatrix (finiteMatrixGram P) := by
+  intro i j
+  unfold finiteMatrixGram
+  exact Finset.sum_congr rfl (fun k _ => by ring)
+
+/-- Gram quadratic-form identity over an arbitrary finite index type:
+    `x^T P^T P x = ||P x||_2^2`. -/
+theorem finiteQuadraticForm_finiteMatrixGram_eq_finiteVecNorm2Sq_mulVec
+    {ι : Type*} [Fintype ι] (P : Matrix ι ι Real) (x : ι -> Real) :
+    finiteQuadraticForm (finiteMatrixGram P) x =
+      finiteVecNorm2Sq (Matrix.mulVec P x) := by
+  have hmv : forall i : ι,
+      finiteMatVec (finiteMatrixGram P) x i =
+        Finset.sum Finset.univ
+          (fun k : ι => P k i * Matrix.mulVec P x k) := by
+    intro i
+    unfold finiteMatVec finiteMatrixGram Matrix.mulVec dotProduct
+    calc
+      (Finset.univ.sum fun j : ι =>
+          (Finset.univ.sum fun k : ι => P k i * P k j) * x j)
+          = Finset.univ.sum fun j : ι =>
+              Finset.univ.sum fun k : ι => (P k i * P k j) * x j := by
+              apply Finset.sum_congr rfl
+              intro j _
+              rw [Finset.sum_mul]
+      _ = Finset.univ.sum fun k : ι =>
+              Finset.univ.sum fun j : ι => (P k i * P k j) * x j := by
+              rw [Finset.sum_comm]
+      _ = Finset.univ.sum fun k : ι =>
+              P k i * Finset.univ.sum fun j : ι => P k j * x j := by
+              apply Finset.sum_congr rfl
+              intro k _
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro j _
+              ring
+  unfold finiteQuadraticForm finiteVecNorm2Sq
+  calc
+    (Finset.univ.sum fun i : ι => x i * finiteMatVec (finiteMatrixGram P) x i)
+        = Finset.univ.sum fun i : ι =>
+            x i *
+              Finset.univ.sum
+                (fun k : ι => P k i * Matrix.mulVec P x k) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [hmv i]
+    _ = Finset.univ.sum fun i : ι =>
+          Finset.univ.sum fun k : ι =>
+            x i * (P k i * Matrix.mulVec P x k) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+    _ = Finset.univ.sum fun k : ι =>
+          Finset.univ.sum fun i : ι =>
+            x i * (P k i * Matrix.mulVec P x k) := by
+            rw [Finset.sum_comm]
+    _ = Finset.univ.sum fun k : ι =>
+          Matrix.mulVec P x k *
+            Finset.univ.sum fun i : ι => P k i * x i := by
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+    _ = Finset.univ.sum fun k : ι =>
+          Matrix.mulVec P x k * Matrix.mulVec P x k := by
+            apply Finset.sum_congr rfl
+            intro k _
+            unfold Matrix.mulVec dotProduct
+            rw [mul_comm]
+    _ = Finset.univ.sum fun k : ι => Matrix.mulVec P x k ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+
+/-- Singular-value lower-bound certificate for an arbitrary finite-index real
+    matrix, stated with the repository's generic finite Euclidean norm. -/
+theorem finiteMatrixGram_sigmaMin_mul_finiteVecNorm2_le_mulVec
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (P : Matrix ι ι Real) {lam : Real} (hlam : 0 <= lam)
+    (hEig : forall a : ι,
+      lam <= finiteHermitianEigenvalues (finiteMatrixGram P)
+        (isSymmetricFiniteMatrix_finiteMatrixGram P) a)
+    (x : ι -> Real) :
+    Real.sqrt lam * finiteVecNorm2 x <=
+      finiteVecNorm2 (Matrix.mulVec P x) := by
+  have hray :=
+    rayleigh_lower_bound_of_le_finiteHermitianEigenvalues
+      (finiteMatrixGram P) (isSymmetricFiniteMatrix_finiteMatrixGram P)
+      hEig x
+  have hleft_sq :
+      (Real.sqrt lam * finiteVecNorm2 x) ^ 2 =
+        lam * finiteVecNorm2Sq x := by
+    rw [mul_pow, Real.sq_sqrt hlam, finiteVecNorm2_sq]
+  have hright_sq :
+      finiteVecNorm2 (Matrix.mulVec P x) ^ 2 =
+        finiteVecNorm2Sq (Matrix.mulVec P x) :=
+    finiteVecNorm2_sq _
+  have hsq :
+      (Real.sqrt lam * finiteVecNorm2 x) ^ 2 <=
+        finiteVecNorm2 (Matrix.mulVec P x) ^ 2 := by
+    rw [hleft_sq, hright_sq,
+      <- finiteQuadraticForm_finiteMatrixGram_eq_finiteVecNorm2Sq_mulVec P x]
+    exact hray
+  exact le_of_sq_le_sq_of_nonneg (finiteVecNorm2_nonneg _) hsq
+
+/-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
+    a Gram-eigenvalue lower bound for the concrete vectorized Sylvester
+    coefficient gives the coefficient lower bound used by the Chapter 16
+    sigma-min wrappers. -/
+theorem sylvesterVecCoeff_sigmaMin_of_gram_eigenvalues (n : Nat)
+    (A B : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 <= lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p) :
+    forall x : Prod (Fin n) (Fin n) -> Real,
+      Real.sqrt lam * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x) := by
+  intro x
+  exact
+    finiteMatrixGram_sigmaMin_mul_finiteVecNorm2_le_mulVec
+      (sylvesterVecCoeff n n A B) hlam hEig x
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    a Gram-eigenvalue lower bound for the concrete vectorized Lyapunov
+    coefficient gives the coefficient lower bound used by the Chapter 16
+    Lyapunov sigma-min wrappers. -/
+theorem lyapunovVecCoeff_sigmaMin_of_gram_eigenvalues (n : Nat)
+    (A : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 <= lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p) :
+    forall x : Prod (Fin n) (Fin n) -> Real,
+      Real.sqrt lam * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x) := by
+  intro x
+  exact
+    finiteMatrixGram_sigmaMin_mul_finiteVecNorm2_le_mulVec
+      (lyapunovVecCoeff n A) hlam hEig x
+
 /-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
     a positive lower bound for the concrete vectorized Sylvester coefficient
     gives the operator lower bound consumed by the sigma-min Chapter 16
@@ -59,6 +214,22 @@ theorem sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin (n : Nat)
   rwa [finiteVecNorm2_vec_eq_frobNorm n n Y,
     sylvesterOpRect_square_eq_sylvesterOp n A B Y,
     finiteVecNorm2_vec_eq_frobNorm n n (sylvesterOp n A B Y)] at h
+
+/-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
+    a Gram-eigenvalue lower bound for the concrete vectorized Sylvester
+    coefficient gives the Frobenius lower bound for the Sylvester operator. -/
+theorem sylvesterOp_sigmaMin_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A B : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 <= lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p) :
+    forall Y : Fin n -> Fin n -> Real,
+      Real.sqrt lam * frobNorm Y <= frobNorm (sylvesterOp n A B Y) := by
+  exact
+    sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B (Real.sqrt lam)
+      (sylvesterVecCoeff_sigmaMin_of_gram_eigenvalues n A B hlam hEig)
 
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
     in the diagonal case, a uniform lower bound on the coefficient magnitudes
@@ -165,6 +336,22 @@ theorem lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin (n : Nat)
     simp [Amat, Ymat, lyapunovOp, matMul, matTranspose, Matrix.mul_apply]
   rwa [finiteVecNorm2_vec_eq_frobNorm n n Y, hLY,
     finiteVecNorm2_vec_eq_frobNorm n n (lyapunovOp n A Y)] at h
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    a Gram-eigenvalue lower bound for the concrete vectorized Lyapunov
+    coefficient gives the Frobenius lower bound for the Lyapunov operator. -/
+theorem lyapunovOp_sigmaMin_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 <= lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p) :
+    forall Y : Fin n -> Fin n -> Real,
+      Real.sqrt lam * frobNorm Y <= frobNorm (lyapunovOp n A Y) := by
+  exact
+    lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin n A (Real.sqrt lam)
+      (lyapunovVecCoeff_sigmaMin_of_gram_eigenvalues n A hlam hEig)
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
     a uniform lower bound on the diagonal Lyapunov coefficient magnitudes
