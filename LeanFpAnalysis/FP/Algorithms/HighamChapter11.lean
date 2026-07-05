@@ -1314,6 +1314,42 @@ theorem higham11_15_fl_aasen_outer_triangular_solves_backward_error
     backSub_backward_error fp n U y hUdiag hUupper hval
   exact ⟨ΔL, ΔU, hΔL, hΔU, hforward, hback⟩
 
+/-- **Equation (11.15) middle tridiagonal solve**, floating-point backward-error
+bridge.  Once the tridiagonal factorization of `T` is expressed by the Chapter
+9 equation-(9.20) model, the actual rounded triangular solves used for
+`T y = z` give a source perturbation `(T + ΔT) y_hat = z` with the
+equation-(9.22) `f(γ_n)|L_hat||U_hat|` componentwise bound. -/
+theorem higham11_15_fl_aasen_middle_tridiagonal_solve_backward_error
+    (fp : FPModel) (n : ℕ)
+    (T L_hat U_hat : Fin n → Fin n → ℝ) (z : Fin n → ℝ)
+    (DeltaT_LU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T L_hat U_hat
+      DeltaT_LU (gamma fp n))
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hn : gammaValid fp n) :
+    let q_hat := fl_forwardSub fp n L_hat z
+    let y_hat := fl_backSub fp n U_hat q_hat
+    ∃ DeltaL DeltaU DeltaT : Fin n → Fin n → ℝ,
+      higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+        q_hat y_hat z DeltaL DeltaU (gamma fp n) ∧
+      (∀ i j : Fin n, |DeltaT i j| ≤
+        higham9_14_f (gamma fp n) *
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j|) ∧
+      (∀ i : Fin n,
+        ∑ j : Fin n, (T i j + DeltaT i j) * y_hat j = z i) := by
+  intro q_hat y_hat
+  obtain ⟨DeltaL, DeltaU, h21⟩ :=
+    higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma
+      fp n L_hat U_hat z hL_diag hU_diag hLT hUT hn
+  obtain ⟨DeltaT, hDeltaT_bound, hDeltaT_eq⟩ :=
+    higham9_22_source_f_bound_of_9_20_9_21_models n T L_hat U_hat
+      q_hat y_hat z (gamma fp n) (gamma_nonneg fp hn)
+      DeltaT_LU DeltaL DeltaU h20 h21
+  exact ⟨DeltaL, DeltaU, DeltaT, h21, hDeltaT_bound, hDeltaT_eq⟩
+
 /-- **Equation (11.15) exact solve-chain bridge**, unpermuted case.  If the
 exact Aasen product is `A = L T Lᵀ` and the three exact solves in the chain are
 satisfied with identity permutation, then the resulting `x` solves `A x = b`.
