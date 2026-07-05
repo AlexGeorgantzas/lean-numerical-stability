@@ -1844,6 +1844,173 @@ noncomputable def lyapunovXiSqSimpleBound (n : ℕ)
       (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2)
 
 /-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    coordinatewise Lyapunov optimizer for the transformed `DeltaA` slot. -/
+noncomputable def lyapunovOptimalDeltaA (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    (2 * α ^ 2 * lam j * R_tilde i j) /
+      (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    coordinatewise Lyapunov optimizer for the transformed symmetric `DeltaC`
+    slot. -/
+noncomputable def lyapunovOptimalDeltaC (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    -(γ ^ 2 * R_tilde i j) /
+      (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2)
+
+/-- The Lyapunov `xi^2` functional is nonnegative when the displayed
+    denominators in (16.21) are positive. -/
+theorem lyapunovXiSq_nonneg (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ)
+    (hpos : ∀ i j : Fin n,
+      0 < 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2) :
+    0 ≤ lyapunovXiSq n R_tilde lam α γ := by
+  unfold lyapunovXiSq
+  apply Finset.sum_nonneg
+  intro i _
+  apply Finset.sum_nonneg
+  intro j _
+  exact div_nonneg (by positivity) (le_of_lt (sq_pos_of_pos (hpos i j)))
+
+/-- For symmetric transformed residuals, the coordinatewise Lyapunov optimizer
+    solves the unscaled residual equation underlying (16.21). -/
+theorem lyapunovOptimalPerturbations_scalar_eq (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ)
+    (hR : IsSymmetricFiniteMatrix R_tilde)
+    (hpos : ∀ i j : Fin n,
+      0 < 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2) :
+    ∀ i j : Fin n,
+      lyapunovOptimalDeltaA n R_tilde lam α γ i j * lam j +
+        lam i * lyapunovOptimalDeltaA n R_tilde lam α γ j i -
+          lyapunovOptimalDeltaC n R_tilde lam α γ i j =
+        R_tilde i j := by
+  intro i j
+  let D : ℝ := 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2
+  have hDen_ne : 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2 ≠ 0 :=
+    ne_of_gt (hpos i j)
+  have hDsym :
+      2 * α ^ 2 * (lam j ^ 2 + lam i ^ 2) + γ ^ 2 = D := by
+    dsimp [D]
+    ring
+  have hRji : R_tilde j i = R_tilde i j := hR j i
+  unfold lyapunovOptimalDeltaA lyapunovOptimalDeltaC
+  rw [hRji, hDsym]
+  dsimp [D]
+  field_simp [hDen_ne]
+  ring
+
+/-- For symmetric transformed residuals, the coordinatewise optimal right-hand
+    perturbation in (16.21) is symmetric. -/
+theorem lyapunovOptimalDeltaC_symmetric (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ)
+    (hR : IsSymmetricFiniteMatrix R_tilde) :
+    IsSymmetricFiniteMatrix (lyapunovOptimalDeltaC n R_tilde lam α γ) := by
+  intro i j
+  unfold lyapunovOptimalDeltaC
+  rw [hR i j]
+  ring
+
+/-- The transformed `DeltaA` component of the Lyapunov coordinatewise optimizer
+    has squared Frobenius norm bounded by `alpha^2 * xi^2`. -/
+theorem lyapunovOptimalDeltaA_frobNormSq_le_xiSq (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ)
+    (hpos : ∀ i j : Fin n,
+      0 < 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2) :
+    frobNormSq (lyapunovOptimalDeltaA n R_tilde lam α γ) ≤
+      α ^ 2 * lyapunovXiSq n R_tilde lam α γ := by
+  unfold frobNormSq lyapunovXiSq lyapunovOptimalDeltaA
+  rw [Finset.mul_sum]
+  apply Finset.sum_le_sum
+  intro i _
+  rw [Finset.mul_sum]
+  apply Finset.sum_le_sum
+  intro j _
+  let D : ℝ := 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2
+  have hD_pos : 0 < D := by
+    dsimp [D]
+    exact hpos i j
+  have hD_sq_nonneg : 0 ≤ D ^ 2 := sq_nonneg D
+  have hkey :
+      (2 * α ^ 2 * lam j * R_tilde i j) ^ 2 ≤
+        α ^ 2 * ((4 * α ^ 2 * lam j ^ 2 + γ ^ 2) * R_tilde i j ^ 2) := by
+    nlinarith [sq_nonneg (α * γ * R_tilde i j)]
+  calc
+    ((2 * α ^ 2 * lam j * R_tilde i j) / D) ^ 2
+        = (2 * α ^ 2 * lam j * R_tilde i j) ^ 2 / D ^ 2 := by
+          rw [div_pow]
+    _ ≤ (α ^ 2 * ((4 * α ^ 2 * lam j ^ 2 + γ ^ 2) *
+          R_tilde i j ^ 2)) / D ^ 2 := by
+          exact div_le_div_of_nonneg_right hkey hD_sq_nonneg
+    _ = α ^ 2 *
+          (((4 * α ^ 2 * lam j ^ 2 + γ ^ 2) *
+            R_tilde i j ^ 2) / D ^ 2) := by
+          ring
+
+/-- The transformed symmetric `DeltaC` component of the Lyapunov coordinatewise
+    optimizer has squared Frobenius norm bounded by `gamma^2 * xi^2`. -/
+theorem lyapunovOptimalDeltaC_frobNormSq_le_xiSq (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ)
+    (hpos : ∀ i j : Fin n,
+      0 < 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2) :
+    frobNormSq (lyapunovOptimalDeltaC n R_tilde lam α γ) ≤
+      γ ^ 2 * lyapunovXiSq n R_tilde lam α γ := by
+  unfold frobNormSq lyapunovXiSq lyapunovOptimalDeltaC
+  rw [Finset.mul_sum]
+  apply Finset.sum_le_sum
+  intro i _
+  rw [Finset.mul_sum]
+  apply Finset.sum_le_sum
+  intro j _
+  let D : ℝ := 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2
+  have hD_pos : 0 < D := by
+    dsimp [D]
+    exact hpos i j
+  have hD_sq_nonneg : 0 ≤ D ^ 2 := sq_nonneg D
+  have hkey :
+      (γ ^ 2 * R_tilde i j) ^ 2 ≤
+        γ ^ 2 * ((4 * α ^ 2 * lam j ^ 2 + γ ^ 2) * R_tilde i j ^ 2) := by
+    nlinarith [sq_nonneg (2 * α * γ * lam j * R_tilde i j)]
+  calc
+    (-(γ ^ 2 * R_tilde i j) / D) ^ 2
+        = (γ ^ 2 * R_tilde i j / D) ^ 2 := by
+          ring
+    _ = (γ ^ 2 * R_tilde i j) ^ 2 / D ^ 2 := by
+          rw [div_pow]
+    _ ≤ (γ ^ 2 * ((4 * α ^ 2 * lam j ^ 2 + γ ^ 2) *
+          R_tilde i j ^ 2)) / D ^ 2 := by
+          exact div_le_div_of_nonneg_right hkey hD_sq_nonneg
+    _ = γ ^ 2 *
+          (((4 * α ^ 2 * lam j ^ 2 + γ ^ 2) *
+            R_tilde i j ^ 2) / D ^ 2) := by
+          ring
+
+/-- Existence form of the Lyapunov coordinatewise optimizer in spectral
+    coordinates: for a symmetric transformed residual, there are transformed
+    perturbations solving (16.21), with symmetric `DeltaC` and component
+    squared-Frobenius bounds controlled by `xi^2`. -/
+theorem exists_lyapunovOptimalPerturbations (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ)
+    (hR : IsSymmetricFiniteMatrix R_tilde)
+    (hpos : ∀ i j : Fin n,
+      0 < 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2) :
+    ∃ DA DC : Fin n → Fin n → ℝ,
+      IsSymmetricFiniteMatrix DC ∧
+      (∀ i j : Fin n, DA i j * lam j + lam i * DA j i - DC i j =
+        R_tilde i j) ∧
+      frobNormSq DA ≤ α ^ 2 * lyapunovXiSq n R_tilde lam α γ ∧
+      frobNormSq DC ≤ γ ^ 2 * lyapunovXiSq n R_tilde lam α γ := by
+  refine ⟨lyapunovOptimalDeltaA n R_tilde lam α γ,
+    lyapunovOptimalDeltaC n R_tilde lam α γ, ?_, ?_, ?_, ?_⟩
+  · exact lyapunovOptimalDeltaC_symmetric n R_tilde lam α γ hR
+  · exact lyapunovOptimalPerturbations_scalar_eq n R_tilde lam α γ hR hpos
+  · exact lyapunovOptimalDeltaA_frobNormSq_le_xiSq n R_tilde lam α γ hpos
+  · exact lyapunovOptimalDeltaC_frobNormSq_le_xiSq n R_tilde lam α γ hpos
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
     for a symmetric transformed Lyapunov residual, the asymmetric printed
     `xi^2` summation is exactly half of the subsequent simple residual-weighted
     summation. -/
