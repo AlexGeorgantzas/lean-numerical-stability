@@ -1408,6 +1408,81 @@ theorem higham11_15_fl_aasen_solve_chain_backward_error_components
   intro i
   rfl
 
+/-- Perturbation matrix obtained by collapsing the rounded Aasen solve-chain
+product `(L+ΔL)(T+ΔT)(U+ΔU)` against the exact product `LTU`. -/
+noncomputable def higham11_15_aasenChainDeltaA (n : ℕ)
+    (L T U DeltaL DeltaT DeltaU : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    (∑ p : Fin n, ∑ q : Fin n,
+      (L i p + DeltaL i p) * (T p q + DeltaT p q) *
+        (U q j + DeltaU q j)) -
+    (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * U q j)
+
+/-- **Equation (11.15) source backward-error algebra**.  If the three rounded
+solve-chain components satisfy perturbed equations and the unperturbed product
+is `A = L T U`, then the collapsed product perturbation gives a single source
+equation `(A+ΔA)w = rhs`.  The componentwise bound is kept explicit so later
+work can plug in the detailed Aasen scalar budget. -/
+theorem higham11_15_aasen_chain_source_backward_error_of_components
+    (n : ℕ) (A L T U DeltaL DeltaT DeltaU : Fin n → Fin n → ℝ)
+    (rhs z y w : Fin n → ℝ) (bound : Fin n → Fin n → ℝ)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * U q j) = A i j)
+    (hLz : ∀ i : Fin n,
+      ∑ j : Fin n, (L i j + DeltaL i j) * z j = rhs i)
+    (hTy : ∀ i : Fin n,
+      ∑ j : Fin n, (T i j + DeltaT i j) * y j = z i)
+    (hUw : ∀ i : Fin n,
+      ∑ j : Fin n, (U i j + DeltaU i j) * w j = y i)
+    (hbound : ∀ i j : Fin n,
+      |higham11_15_aasenChainDeltaA n L T U DeltaL DeltaT DeltaU i j| ≤
+        bound i j) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ bound i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w j = rhs i) := by
+  let DeltaA := higham11_15_aasenChainDeltaA n L T U DeltaL DeltaT DeltaU
+  refine ⟨DeltaA, hbound, ?_⟩
+  intro i
+  calc
+    ∑ j : Fin n, (A i j + DeltaA i j) * w j
+        = ∑ j : Fin n,
+            (∑ p : Fin n, ∑ q : Fin n,
+              (L i p + DeltaL i p) * (T p q + DeltaT p q) *
+                (U q j + DeltaU q j)) * w j := by
+          apply Finset.sum_congr rfl
+          intro j _
+          congr 1
+          unfold DeltaA higham11_15_aasenChainDeltaA
+          rw [← hprod i j]
+          ring
+    _ = ∑ p : Fin n,
+          (L i p + DeltaL i p) *
+            (∑ q : Fin n, (T p q + DeltaT p q) *
+              (∑ j : Fin n, (U q j + DeltaU q j) * w j)) := by
+          simp_rw [Finset.sum_mul, Finset.mul_sum]
+          rw [Finset.sum_comm]
+          apply Finset.sum_congr rfl
+          intro p _
+          rw [Finset.sum_comm]
+          apply Finset.sum_congr rfl
+          intro q _
+          ring_nf
+    _ = ∑ p : Fin n,
+          (L i p + DeltaL i p) *
+            (∑ q : Fin n, (T p q + DeltaT p q) * y q) := by
+          apply Finset.sum_congr rfl
+          intro p _
+          congr 1
+          apply Finset.sum_congr rfl
+          intro q _
+          rw [hUw q]
+    _ = ∑ p : Fin n, (L i p + DeltaL i p) * z p := by
+          apply Finset.sum_congr rfl
+          intro p _
+          rw [hTy p]
+    _ = rhs i := hLz i
+
 /-- **Equation (11.15) exact solve-chain bridge**, unpermuted case.  If the
 exact Aasen product is `A = L T Lᵀ` and the three exact solves in the chain are
 satisfied with identity permutation, then the resulting `x` solves `A x = b`.
