@@ -2038,6 +2038,29 @@ theorem lyapunovCond_of_vecCoeff_sigmaMin_isLyapunovConditionFirstOrderBound
       (lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin n A sigma hCoeff)
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    a finite Gram-eigenvalue lower bound for the printed Lyapunov vec/Kronecker
+    coefficient instantiates the Lyapunov condition certificate with
+    inverse-operator constant `1 / sqrt(lam)`. -/
+theorem lyapunovCond_of_vecCoeff_gram_eigenvalues_isLyapunovConditionFirstOrderBound
+    (n : Nat) (A X : Fin n -> Fin n -> Real) (alpha gamma lam : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma) (hlam : 0 < lam)
+    (hX : 0 < frobNorm X)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p) :
+    LyapunovConditionFirstOrderBound n A X alpha gamma
+      (lyapunovCond_of_inverseOpBound n X alpha gamma
+        (1 / Real.sqrt lam)) := by
+  exact
+    lyapunovCond_of_vecCoeff_sigmaMin_isLyapunovConditionFirstOrderBound
+      n A X alpha gamma (Real.sqrt lam)
+      halpha hgamma (Real.sqrt_pos.mpr hlam) hX
+      (lyapunovVecCoeff_sigmaMin_of_gram_eigenvalues n A
+        (le_of_lt hlam) hEig)
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     a concrete left inverse and operator-2 radius for the printed Lyapunov
     vec/Kronecker coefficient instantiates the Lyapunov condition certificate
     directly, without first postulating a sigma-min lower bound. -/
