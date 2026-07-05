@@ -3066,6 +3066,67 @@ theorem higham13_not_blockMatrixNonsingular_of_offdiag_col_zero_of_diag_kernel
       (higham13_blockMatrixFlat_det_eq_zero_of_offdiag_col_zero_of_diag_kernel
         A j x s0 hx hdiag hoff)
 
+/-- A nonzero finite vector has a nonzero coordinate.  This small adapter keeps
+    the Theorem 13.7 diagonal-kernel extraction explicit. -/
+theorem higham13_exists_nonzero_coord_of_vec_ne_zero {r : ℕ} {x : Fin r → ℝ}
+    (hx : x ≠ 0) :
+    ∃ s0 : Fin r, x s0 ≠ 0 := by
+  classical
+  by_contra h
+  apply hx
+  funext s
+  by_contra hs
+  exact h ⟨s, hs⟩
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof dependency:
+    a singular diagonal block has a nonzero right-kernel vector with an
+    explicitly nonzero coordinate. -/
+theorem higham13_exists_diag_kernel_coord_of_det_eq_zero {r : ℕ}
+    (B : Fin r → Fin r → ℝ)
+    (hdet : Matrix.det B = 0) :
+    ∃ (x : Fin r → ℝ) (s0 : Fin r),
+      x s0 ≠ 0 ∧ ∀ s : Fin r, ∑ t : Fin r, B s t * x t = 0 := by
+  classical
+  obtain ⟨x, hxne, hmul⟩ :=
+    (Matrix.exists_mulVec_eq_zero_iff (M := B)).mpr hdet
+  obtain ⟨s0, hs0⟩ := higham13_exists_nonzero_coord_of_vec_ne_zero hxne
+  refine ⟨x, s0, hs0, ?_⟩
+  intro s
+  have hs := congr_fun hmul s
+  simpa [Matrix.mulVec, dotProduct] using hs
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    if one block column has zero off-diagonal blocks and the diagonal block is
+    singular, then the flattened block matrix is singular. -/
+theorem higham13_blockMatrixFlat_det_eq_zero_of_offdiag_col_zero_of_diag_det_eq_zero
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (j : Fin m)
+    (hdiagdet : Matrix.det (A j j) = 0)
+    (hoff : ∀ i : Fin m, i ≠ j → ∀ s t : Fin r, A i j s t = 0) :
+    Matrix.det (blockMatrixFlat A) = 0 := by
+  obtain ⟨x, s0, hx, hdiag⟩ :=
+    higham13_exists_diag_kernel_coord_of_det_eq_zero (A j j) hdiagdet
+  exact
+    higham13_blockMatrixFlat_det_eq_zero_of_offdiag_col_zero_of_diag_kernel
+      A j x s0 hx hdiag hoff
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    the zero-off-column/singular-diagonal-block situation contradicts the
+    chapter's explicit block-nonsingularity predicate. -/
+theorem higham13_not_blockMatrixNonsingular_of_offdiag_col_zero_of_diag_det_eq_zero
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (j : Fin m)
+    (hdiagdet : Matrix.det (A j j) = 0)
+    (hoff : ∀ i : Fin m, i ≠ j → ∀ s t : Fin r, A i j s t = 0) :
+    ¬ BlockMatrixNonsingular A := by
+  intro hA
+  exact
+    (blockMatrixFlat_det_ne_zero_of_blockMatrixNonsingular A hA)
+      (higham13_blockMatrixFlat_det_eq_zero_of_offdiag_col_zero_of_diag_det_eq_zero
+        A j hdiagdet hoff)
+
 /-- Higham, 2nd ed., Chapter 13, §13.3.2:
     positive definiteness of the flattened block matrix gives block-matrix
     nonsingularity.  This is the determinant bridge needed on the route from
