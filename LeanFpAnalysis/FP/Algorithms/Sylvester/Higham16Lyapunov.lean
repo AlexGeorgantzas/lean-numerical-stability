@@ -590,6 +590,106 @@ theorem H16_eq16_27_lyapunov_condition_of_pos_le_sylvesterSepInf (n : Nat)
       hDeltaA hDeltaC hLin
 
 -- ============================================================
+-- A posteriori source wrappers from Chapter 16.4
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    a supplied exact `SepLowerBound` certificate for `sep(A,-A^T)`
+    instantiates the Lyapunov a posteriori error-residual bound.
+
+    Scope: exact arithmetic and certificate transfer. The residual in the
+    conclusion is the Lyapunov residual `C - (A Xhat + Xhat A^T)`. -/
+theorem lyapunov_aposteriori_bound_of_sepLowerBound (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  have hExactSylv :
+      forall i j,
+        sylvesterOp n A (fun i j => -matTranspose A i j) X i j = C i j := by
+    intro i j
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hExact i j
+  have h :=
+    sylvester_aposteriori_bound_of_sepLowerBound n A
+      (fun i j => -matTranspose A i j) C X Xhat sigma hSep hExactSylv hE_ne
+  simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    the source-shaped relative Lyapunov a posteriori bound follows from a
+    supplied exact `SepLowerBound` certificate for `sep(A,-A^T)`.
+
+    Scope: exact arithmetic and certificate transfer, divided by the norm of
+    the exact Lyapunov solution. -/
+theorem lyapunov_relative_aposteriori_bound_of_sepLowerBound (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  have hExactSylv :
+      forall i j,
+        sylvesterOp n A (fun i j => -matTranspose A i j) X i j = C i j := by
+    intro i j
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hExact i j
+  have h :=
+    sylvester_relative_aposteriori_bound_of_sepLowerBound n A
+      (fun i j => -matTranspose A i j) C X Xhat sigma hSep hExactSylv hE_ne
+      hX_pos
+  simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    a positive lower bound on the exact infimum model of `sep(A,-A^T)`
+    instantiates the Lyapunov a posteriori error-residual bound.
+
+    Scope: exact arithmetic and certificate transfer from the exact-infimum
+    separation model. -/
+theorem lyapunov_aposteriori_bound_of_pos_le_sylvesterSepInf (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_of_sepLowerBound n A C X Xhat sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      hExact hE_ne
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    the source-shaped relative Lyapunov a posteriori bound follows from a
+    positive lower bound on the exact infimum model of `sep(A,-A^T)`.
+
+    Scope: exact arithmetic and certificate transfer, divided by the norm of
+    the exact Lyapunov solution. -/
+theorem lyapunov_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
+    (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  exact
+    lyapunov_relative_aposteriori_bound_of_sepLowerBound n A C X Xhat sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      hExact hE_ne hX_pos
+
+-- ============================================================
 -- Diagonal-case condition-number realization
 -- (eq (16.27), diagonal / distinct-eigenvalue)
 -- ============================================================
