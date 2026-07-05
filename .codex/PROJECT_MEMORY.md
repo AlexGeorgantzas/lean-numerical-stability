@@ -30,6 +30,19 @@ end-to-end stability rebuild is tagged as
   the plain inverse-comparison route.  This is dependency cleanup only: the
   Schur-tail inverse comparison, source-strength Eq.13.23 BDD `rho <= 2` data,
   all-tail source comparisons, and Theorem 13.6 cited estimates remain open.
+- 2026-07-04 BDD generic source-norm CLM paired endpoints: added
+  `higham13_algorithm13_3_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_column_bdd_diag_lower`,
+  `higham13_algorithm13_3_clm_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_continuousLinearMap_source_table`,
+  and
+  `higham13_algorithm13_3_clm_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_initial_diag_inverse_of_pivot_inverse`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These package the
+  one-sided diagonal-lower certificate into the paired source-norm upper-factor
+  and finite Schur-stage history endpoint, then instantiate it for actual CLM
+  Algorithm 13.3 stages and for diagonal-inverse/active-pivot inverse data.
+  This is source-norm Theorem 13.8/Eq.13.21 dependency progress only: it does
+  not close the scalar entrywise `rho <= 2` route, the concrete BDD
+  source-table construction, Problem 13.4 all-tail comparisons, or Theorem 13.6
+  implementation estimates.
 - 2026-07-02 Problem 13.4 raw canonical-parent determinant product packaging:
   added
   `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_canonical_parent_inverse_entry_of_det_ne_zero`
