@@ -35,6 +35,62 @@ noncomputable def higham11_3_symmetricSchurComplement (m s : ℕ)
     (E_inv : Fin s → Fin s → ℝ) : Fin m → Fin m → ℝ :=
   fun i j => B i j - ∑ p : Fin s, ∑ q : Fin s, C i p * E_inv p q * C j q
 
+/-- **Equation (11.3), `s = 1` exact factorization step**: with pivot `A 0 0 ≠ 0`,
+the 1×1-pivot unit-lower-triangular `L` and block-diagonal `D` (pivot + trailing
+Schur complement) reproduce `A` exactly, `∑ L·D·Lᵀ = A`.  The exact base of the
+diagonal-pivoting recursion behind Theorem 11.3. -/
+theorem higham11_3_oneByOne_step_factorization (m : ℕ)
+    (A : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (ha : A 0 0 ≠ 0) (hsym : ∀ i : Fin m, A 0 i.succ = A i.succ 0)
+    (L D : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hL0 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin m, L i.succ 0 = A i.succ 0 / A 0 0)
+    (hL0s : ∀ j : Fin m, L 0 j.succ = 0)
+    (hLtr : ∀ i j : Fin m, L i.succ j.succ = if i = j then 1 else 0)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin m, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin m, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin m, D i.succ j.succ
+      = A i.succ j.succ - A i.succ 0 * A 0 j.succ / A 0 0) :
+    ∀ I J : Fin (m + 1),
+      (∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = A I J :=
+  oneByOne_step_factorization m A ha hsym L D hL0 hLcol hL0s hLtr
+    hD00 hD0s hDs0 hDtr
+
+/-- **Eq (11.1)/(11.3) inductive step** for the exact block-LDLᵀ recursion: with
+the trailing block factorized recursively (`hIH : L_S·D_S·L_Sᵀ = S`, the Schur
+complement) and first-stage 1×1-pivot multipliers, the assembled `L,D` reproduce
+`A` exactly.  Iterating gives the exact `PAPᵀ = LDLᵀ` behind Theorem 11.3. -/
+theorem higham11_3_blockLDLT_assemble_step (n : ℕ)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (ha : A 0 0 ≠ 0) (hsym : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (S L_S D_S : Fin n → Fin n → ℝ)
+    (hS : ∀ i j : Fin n, S i j = A i.succ j.succ - A i.succ 0 * A 0 j.succ / A 0 0)
+    (hIH : ∀ i j : Fin n, (∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) = S i j)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL0 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = A i.succ 0 / A 0 0)
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hLtr : ∀ i j : Fin n, L i.succ j.succ = L_S i j)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin n, D i.succ j.succ = D_S i j) :
+    ∀ I J : Fin (n + 1),
+      (∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = A I J :=
+  blockLDLT_assemble_step n A ha hsym S L_S D_S hS hIH L D
+    hL0 hLcol hL0s hLtr hD00 hD0s hDs0 hDtr
+
+/-- **Eq (11.1)/(11.2) exact factorization existence** (no-2×2-pivot case): a
+symmetric `A` all of whose successive Schur-complement pivots are nonzero
+(`AllOnePivots`) has an exact `LDLᵀ` factorization `∑ L·D·Lᵀ = A`.  The exact
+`PAPᵀ = LDLᵀ` recursion (P = I) underlying Theorem 11.3. -/
+theorem higham11_1_exact_blockLDLT_all_oneByOne (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j, A i j = A j i) (hp : AllOnePivots n A) :
+    ∃ L D : Fin n → Fin n → ℝ,
+      ∀ I J, (∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = A I J :=
+  exact_blockLDLT_all_oneByOne n A hsym hp
+
 /-! ## §11.1.1 Complete pivoting -/
 
 /-- **Algorithm 11.1** pivoting parameter
@@ -258,6 +314,80 @@ theorem higham11_3_fl_oneByOne_solve_backward_error
     ∃ Δe : ℝ, |Δe| ≤ gamma fp 1 * |e| ∧ (e + Δe) * fp.fl_div b e = b :=
   fl_oneByOne_solve_backward_error fp b e he hval
 
+/-- **Theorem 11.3 per-stage trailing fl backward error** (Higham [608,1997]
+§4.2): the computed `L̂D̂L̂ᵀ` trailing entry `l̂_i·e·l̂_j` plus the computed Schur
+entry `Ŝ = fl(b − fl(l̂_i·c_j))` equals `b + Δ` with
+`|Δ| ≤ 2γ₃(|b| + |c_i c_j/e|)` — the atomic `(i,j)` step of Theorem 11.3's
+componentwise backward-error induction. -/
+theorem higham11_3_fl_stage_trailing_error (fp : FPModel) (e ci cj b : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ, |Δ| ≤ 2 * gamma fp 3 * (|b| + |ci * cj / e|) ∧
+      fp.fl_div ci e * e * fp.fl_div cj e
+        + fp.fl_sub b (fp.fl_mul (fp.fl_div ci e) cj) = b + Δ :=
+  fl_oneByOne_stage_trailing_error fp e ci cj b he hval
+
+/-- **Theorem 11.3 inductive step (trailing-block fl backward error)**, Higham
+[608,1997] §4.2: with computed 1×1 multipliers and a recursive factorization
+`L_S,D_S` approximating the computed Schur complement within `Bs`, the assembled
+factors satisfy `|(L̂D̂L̂ᵀ)_{i+1,j+1} − A_{i+1,j+1}| ≤ 2γ₃(|A_{i+1,j+1}| +
+|A_{i+1,0}A_{0,j+1}/A00|) + Bs i j` on the trailing block. -/
+theorem higham11_3_fl_blockLDLT_trailing_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (he : A 0 0 ≠ 0) (hsym1 : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (hval : gammaValid fp 3)
+    (L_S D_S : Fin n → Fin n → ℝ) (Bs : Fin n → Fin n → ℝ)
+    (hIH : ∀ i j : Fin n,
+      |(∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂)
+        - fp.fl_sub (A i.succ j.succ)
+            (fp.fl_mul (fp.fl_div (A i.succ 0) (A 0 0)) (A 0 j.succ))| ≤ Bs i j)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hLtr : ∀ i j : Fin n, L i.succ j.succ = L_S i j)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin n, D i.succ j.succ = D_S i j) :
+    ∀ i j : Fin n,
+      |(∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L j.succ k₂) - A i.succ j.succ|
+        ≤ 2 * gamma fp 3 * (|A i.succ j.succ|
+            + |A i.succ 0 * A 0 j.succ / A 0 0|) + Bs i j :=
+  fl_blockLDLT_trailing_bound n fp A he hsym1 hval L_S D_S Bs hIH L D
+    hLcol hLtr hD00 hD0s hDs0 hDtr
+
+/-- **Theorem 11.3 pivot-row/col fl backward error**: `(L̂D̂L̂ᵀ)_{0,0} = A00`
+exactly, and `|(L̂D̂L̂ᵀ)_{0,j+1} − A_{0,j+1}| ≤ u·|A_{0,j+1}|` — the pivot-row half
+of the 1×1-stage assemble step (trailing half is `higham11_3_fl_blockLDLT_trailing_bound`). -/
+theorem higham11_3_fl_blockLDLT_pivot_row_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (he : A 0 0 ≠ 0) (hsym1 : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0) :
+    (∑ k₁, ∑ k₂, L 0 k₁ * D k₁ k₂ * L 0 k₂) = A 0 0
+    ∧ ∀ j : Fin n,
+        |(∑ k₁, ∑ k₂, L 0 k₁ * D k₁ k₂ * L j.succ k₂) - A 0 j.succ|
+          ≤ fp.u * |A 0 j.succ| :=
+  fl_blockLDLT_pivot_row_bound n fp A he hsym1 L D hL00 hLcol hL0s hD00 hD0s
+
+/-- **Theorem 11.3 pivot-column fl backward error**:
+`|(L̂D̂L̂ᵀ)_{i+1,0} − A_{i+1,0}| ≤ u·|A_{i+1,0}|` — the pivot-column case,
+completing all four index cases of the single 1×1-pivot fl assemble step. -/
+theorem higham11_3_fl_blockLDLT_pivot_col_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) (he : A 0 0 ≠ 0)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hD00 : D 0 0 = A 0 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0) :
+    ∀ i : Fin n,
+      |(∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L 0 k₂) - A i.succ 0|
+        ≤ fp.u * |A i.succ 0| :=
+  fl_blockLDLT_pivot_col_bound n fp A he L D hL00 hLcol hL0s hD00 hDs0
+
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
     (ε : ℝ) : Fin 3 → Fin 3 → ℝ :=
@@ -306,6 +436,25 @@ theorem higham11_6_partialPivotExample_factorization
 def higham11_4_bunchKaufmanMaxEntryProductBound
     (n : ℕ) (productMax ρ_n Amax : ℝ) : Prop :=
   productMax ≤ 36 * (n : ℝ) * ρ_n * Amax
+
+/-- **Theorem 11.4 constant (Higham [608, 1997], eq (4.13))**: the `36` in the
+bound `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36 n ρₙ ‖A‖_M` comes from
+`(3+α²)(3+α)/(1−α²)² ≤ 36` at `α = (1+√17)/8`. -/
+theorem higham11_4_bound_const_le_36 :
+    (3 + higham11_1_bunchParlettAlpha ^ 2) * (3 + higham11_1_bunchParlettAlpha)
+      / (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2 ≤ 36 :=
+  bunch_kaufman_bound_const_le_36
+
+/-- **Theorem 11.4 constant (Higham [608, 1997], appendix (A.3))**:
+`(3+α²)/(1−α²) ≤ 6`, bounding `|E||E⁻¹||E| ≤ 6|E|` for a 2×2 pivot. -/
+theorem higham11_4_pivot_norm_const_le_six :
+    (3 + higham11_1_bunchParlettAlpha ^ 2) / (1 - higham11_1_bunchParlettAlpha ^ 2) ≤ 6 :=
+  bunch_kaufman_pivot_norm_const_le_six
+
+/-- **§11.1.2 1×1-pivot growth constant (Higham [608, 1997])**: `1/α < 2`, giving
+the 1×1-pivot entry bound `g_ij ≤ α⁻¹·max < 2·max`. -/
+theorem higham11_4_recip_alpha_lt_two : 1 / higham11_1_bunchParlettAlpha < 2 :=
+  bunch_kaufman_recip_alpha_lt_two
 
 /-- **Theorem 11.4** normwise Bunch-Kaufman stability interface. -/
 theorem higham11_4_bunch_kaufman_stability (n : ℕ)

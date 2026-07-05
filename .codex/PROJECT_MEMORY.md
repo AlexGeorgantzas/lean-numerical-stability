@@ -11005,3 +11005,24 @@ These compile, but should not be treated as fully derived stability results:
   the source-norm versus entrywise max-norm downstream surface, Problem 13.4
   all-tail source comparisons, and Theorem 13.6 cited implementation estimates
   remain open.
+
+- 2026-07-05 Theorem 13.7 BDD zero-offdiagonal scalar step: added
+  `higham13_blockDiagDomCol_offdiag_zero_of_diagBound_nonpos` and
+  `higham13_blockDiagDomRow_offdiag_zero_of_diagBound_nonpos` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These prove that a
+  nonpositive active diagonal lower bound in a nonnegative column/row BDD norm
+  table forces all off-diagonal block norms in that column/row to vanish,
+  matching the source proof sentence after (13.18).  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  passed after the edit; focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`,
+  touched Lean placeholder scan, and ignored scratch axiom audit passed.  The
+  axiom audit reported only standard Mathlib axioms `propext`,
+  `Classical.choice`, and `Quot.sound`.  Redirected public lookup printed both
+  new Chapter 13 declarations successfully and failed only on unrelated
+  pre-existing non-Ch13 lookup rows.  This closes only the scalar
+  zero-off-column/row piece of the Schur-diagonal-singularity contradiction;
+  the vector-kernel/flat singularity contradiction, BDD-derived active pivot
+  inverses, source-norm versus entrywise max-growth integration, Problem 13.4
+  all-tail source comparisons, and Theorem 13.6 cited implementation estimates
+  remain open.

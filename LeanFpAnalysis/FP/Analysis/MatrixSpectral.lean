@@ -8,6 +8,8 @@ import Mathlib.Analysis.Matrix.PosDef
 import Mathlib.Analysis.Matrix.Spectrum
 import Mathlib.Analysis.Matrix.HermitianFunctionalCalculus
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+import Mathlib.LinearAlgebra.Charpoly.ToMatrix
+import Mathlib.LinearAlgebra.Eigenspace.Charpoly
 import Mathlib.Analysis.SpecialFunctions.Exponential
 import Mathlib.Topology.Instances.Matrix
 
@@ -31,6 +33,28 @@ theorem finiteHermitianEigenvalues_mem_spectrum_real
   simpa [finiteHermitianEigenvalues] using
     Matrix.IsHermitian.eigenvalues_mem_spectrum_real
       (IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM) i
+
+/-- Finite real square products have the same `toLin'` spectrum after
+    commuting the two factors. -/
+theorem real_toLin_spectrum_mul_comm_iff
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (A B : Matrix ι ι ℝ) (lam : ℝ) :
+    lam ∈ spectrum ℝ (Matrix.toLin' (A * B)) ↔
+      lam ∈ spectrum ℝ (Matrix.toLin' (B * A)) := by
+  rw [← Module.End.hasEigenvalue_iff_mem_spectrum,
+    ← Module.End.hasEigenvalue_iff_mem_spectrum]
+  rw [Module.End.hasEigenvalue_iff_isRoot_charpoly,
+    Module.End.hasEigenvalue_iff_isRoot_charpoly]
+  rw [Matrix.charpoly_toLin', Matrix.charpoly_toLin', Matrix.charpoly_mul_comm]
+
+/-- Finite real square products have the same matrix spectrum after commuting
+    the two factors. -/
+theorem real_matrix_spectrum_mul_comm_iff
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (A B : Matrix ι ι ℝ) (lam : ℝ) :
+    lam ∈ spectrum ℝ (A * B) ↔ lam ∈ spectrum ℝ (B * A) := by
+  rw [← Matrix.spectrum_toLin' (A * B), ← Matrix.spectrum_toLin' (B * A)]
+  exact real_toLin_spectrum_mul_comm_iff A B lam
 
 /-- Trace equals the sum of the locally named Hermitian eigenvalues. -/
 theorem finiteTrace_eq_sum_finiteHermitianEigenvalues
@@ -384,6 +408,36 @@ theorem finiteMatVec_finiteHermitianEigenvector_eq
   ext i
   simpa [finiteMatVec, finiteHermitianEigenvalues, hherm] using
     congrFun hmul i
+
+/-- Any nonzero repository-native eigenvector of a finite real symmetric
+    matrix has an eigenvalue in the locally named Hermitian eigenvalue list. -/
+theorem finiteHermitianEigenvalues_mem_range_of_finiteMatVec_eigenvector
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : ι → ι → ℝ) (hM : IsSymmetricFiniteMatrix M)
+    {lambda : ℝ} {x : ι → ℝ}
+    (hx_ne : x ≠ 0)
+    (hxEig : finiteMatVec M x = fun i => lambda * x i) :
+    lambda ∈ Set.range (finiteHermitianEigenvalues M hM) := by
+  let Mmat : Matrix ι ι ℝ := M
+  let hherm : Matrix.IsHermitian Mmat :=
+    IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM
+  have hxEigLin :
+      Module.End.HasEigenvector (Matrix.toLin' Mmat) lambda x := by
+    rw [Module.End.hasEigenvector_iff]
+    constructor
+    · rw [Module.End.mem_eigenspace_iff]
+      ext i
+      rw [Matrix.toLin'_apply]
+      simpa [Mmat, finiteMatVec, Matrix.mulVec] using congrFun hxEig i
+    · exact hx_ne
+  have hspec :
+      lambda ∈ spectrum ℝ Mmat := by
+    have hspecLin :=
+      (Module.End.hasEigenvalue_of_hasEigenvector hxEigLin).mem_spectrum
+    simpa [Matrix.spectrum_toLin' Mmat] using hspecLin
+  have hrange := hspec
+  rw [hherm.spectrum_real_eq_range_eigenvalues] at hrange
+  simpa [finiteHermitianEigenvalues, Mmat, hherm] using hrange
 
 /-- Any finite operator-2 certificate dominates the absolute value of every
     locally named Hermitian eigenvalue. -/

@@ -7087,6 +7087,62 @@ theorem blockDiagDomRowGamma_eq_colTranspose_gamma (m : ℕ)
       blockDiagDomGamma m (fun j i => blockNorm i j) invDiagBound i := by
   simp [blockDiagDomRowGamma, blockDiagDomGamma, eq_comm]
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    in a column block diagonally dominant table, if the diagonal lower bound
+    for a column is nonpositive, then every off-diagonal block norm in that
+    column is zero.
+
+    This is the scalar part of the source sentence following (13.18): when an
+    active Schur diagonal block is singular, its lower norm is zero, so column
+    dominance forces the whole off-diagonal column of the Schur complement to
+    vanish. -/
+theorem higham13_blockDiagDomCol_offdiag_zero_of_diagBound_nonpos {m : ℕ}
+    (blockNorm : Fin m → Fin m → ℝ) (invDiagBound : Fin m → ℝ)
+    (hNorm : ∀ i j : Fin m, 0 ≤ blockNorm i j)
+    (hDom : IsBlockDiagDomCol m blockNorm invDiagBound)
+    (j : Fin m) (hj : invDiagBound j ≤ 0) :
+    ∀ i : Fin m, i ≠ j → blockNorm i j = 0 := by
+  classical
+  intro i hij
+  let f : Fin m → ℝ := fun a => if a = j then 0 else blockNorm a j
+  have hf_nonneg : ∀ a : Fin m, 0 ≤ f a := by
+    intro a
+    by_cases haj : a = j
+    · simp [f, haj]
+    · simpa [f, haj] using hNorm a j
+  have hterm_le_sum : f i ≤ ∑ a : Fin m, f a :=
+    Finset.single_le_sum (fun a _ha => hf_nonneg a) (Finset.mem_univ i)
+  have hsum_nonpos : (∑ a : Fin m, f a) ≤ 0 := by
+    simpa [f] using le_trans (hDom j) hj
+  have hterm_nonpos : f i ≤ 0 := le_trans hterm_le_sum hsum_nonpos
+  have hterm_zero : f i = 0 := le_antisymm hterm_nonpos (hf_nonneg i)
+  simpa [f, hij] using hterm_zero
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    row analogue of
+    `higham13_blockDiagDomCol_offdiag_zero_of_diagBound_nonpos`. -/
+theorem higham13_blockDiagDomRow_offdiag_zero_of_diagBound_nonpos {m : ℕ}
+    (blockNorm : Fin m → Fin m → ℝ) (invDiagBound : Fin m → ℝ)
+    (hNorm : ∀ i j : Fin m, 0 ≤ blockNorm i j)
+    (hDom : IsBlockDiagDomRow m blockNorm invDiagBound)
+    (i : Fin m) (hi : invDiagBound i ≤ 0) :
+    ∀ j : Fin m, i ≠ j → blockNorm i j = 0 := by
+  classical
+  intro j hij
+  let f : Fin m → ℝ := fun b => if i = b then 0 else blockNorm i b
+  have hf_nonneg : ∀ b : Fin m, 0 ≤ f b := by
+    intro b
+    by_cases hib : i = b
+    · simp [f, hib]
+    · simpa [f, hib] using hNorm i b
+  have hterm_le_sum : f j ≤ ∑ b : Fin m, f b :=
+    Finset.single_le_sum (fun b _hb => hf_nonneg b) (Finset.mem_univ j)
+  have hsum_nonpos : (∑ b : Fin m, f b) ≤ 0 := by
+    simpa [f] using le_trans (hDom i) hi
+  have hterm_nonpos : f j ≤ 0 := le_trans hterm_le_sum hsum_nonpos
+  have hterm_zero : f j = 0 := le_antisymm hterm_nonpos (hf_nonneg j)
+  simpa [f, hij] using hterm_zero
+
 /-- Embed the leading `(p+1)` block prefix into the full block index set. -/
 noncomputable def leadingBlockPrefixIndex13_7 {m : ℕ} (p : ℕ) (hp : p < m) :
     Fin (p + 1) → Fin m :=
