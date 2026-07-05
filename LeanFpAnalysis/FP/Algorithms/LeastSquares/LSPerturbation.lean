@@ -9,10 +9,10 @@
 -- Theorem 20.2: Componentwise perturbation via the augmented system
 --   [I A; Aᵀ 0][r; x] = [b; 0].
 --
--- The full Wedin theorem still requires the project-local SVD, pseudoinverse,
--- and projector perturbation route.  The scalar source right-hand sides below
--- are proved infrastructure, while the older structures remain only as legacy
--- contract packages.
+-- The displayed Wedin bounds are formalized below at the repository
+-- residual-definition and column-orthogonality API.  Further source-minimal
+-- API cleanup may reduce hypotheses, but the core perturbation handoff now
+-- goes through the proved Lemma 20.11 and Lemma 20.12 route.
 
 import Mathlib.Data.Real.Basic
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
@@ -9490,6 +9490,72 @@ theorem wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_min_surf
       heps_nonneg hkappa hdelta hAplus hDeltaA hDeltab hDeltaA_norm_budget
       hDeltab_norm_budget hleftA hleftB hSymA hSymB hrangeA_residual
       hPBIPA hB hr hs horth_s
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equations (20.1)-(20.2):
+    combined source-facing Wedin perturbation surface at the repository
+    residual-definition and column-orthogonality API.
+
+This packages the separately proved solution and residual displayed bounds
+after Lemmas 20.11 and 20.12 have discharged the `Bplus` and projector
+hypotheses.  The two right-hand-side perturbation budgets are kept separate
+because the printed solution and residual estimates use different normalizers. -/
+theorem wedinTheorem20_1_solution_and_residualRelativeRHS_le_of_residual_definitions_min_surface_geometry_column_orthogonal
+    {m k : ℕ} (hm : 0 < m) (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hb_norm_pos : 0 < vecNorm2 b)
+    (hAplus_pos : 0 < Aplus_norm)
+    (hA_norm_pos : 0 < A_norm)
+    (heps_nonneg : 0 ≤ eps)
+    (hx_norm_pos : 0 < vecNorm2 x)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall_eta : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget_solution :
+      Deltab_norm ≤ eps * (A_norm * vecNorm2 x + vecNorm2 r))
+    (hDeltab_norm_budget_residual : Deltab_norm ≤ eps * vecNorm2 b)
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i)
+    (horth_s : ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0) :
+    (vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+        wedinTheorem20_1SolutionRelativeRHS
+          kappa eps A_norm (vecNorm2 x) (vecNorm2 r)) ∧
+      (vecNorm2 (fun i => r i - s i) / vecNorm2 b ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps) := by
+  have hsmall_kappa : kappa * eps < 1 := by
+    have h : kappa * eps = eta := by
+      rw [hkappa, heta, hdelta]
+      ring
+    rw [h]
+    exact hsmall_eta
+  constructor
+  · exact
+      wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_min_surface_column_orthogonal
+        hm A B Aplus Bplus DeltaA b Deltab r s x y hAplus_pos hA_norm_pos
+        hx_norm_pos hkappa hdelta heta hsmall_eta hleftA hleftB hSymA hSymB
+        hDelta hAplus hDeltaA hDeltab hDeltaA_norm_budget
+        hDeltab_norm_budget_solution hrangeA_residual hB hr hs horth_s
+  · exact
+      wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_min_surface_geometry_column_orthogonal
+        hm A B Aplus Bplus DeltaA b Deltab r s x y hb_norm_pos hAplus_pos
+        (le_of_lt hA_norm_pos) heps_nonneg hkappa hdelta hsmall_kappa hAplus
+        hDelta hDeltaA hDeltab hDeltaA_norm_budget
+        hDeltab_norm_budget_residual hleftA hleftB hSymA hSymB
+        hrangeA_residual hB hr hs horth_s
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2), conservative
     residual perturbation bound from the currently proved one-sided
