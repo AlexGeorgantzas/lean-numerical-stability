@@ -111,6 +111,9 @@ import LeanFpAnalysis.FP.Analysis.ConditionEstimatorLowerBound
 import LeanFpAnalysis.FP.Analysis.NilpotentJordanChain
 import LeanFpAnalysis.FP.Analysis.RealInvariantSubspace
 import LeanFpAnalysis.FP.Analysis.ResolventFunctionalCalculus
+import LeanFpAnalysis.FP.Analysis.RealQuasiSchur
+import LeanFpAnalysis.FP.Analysis.DunfordResidue
+import LeanFpAnalysis.FP.Analysis.SemiconvergentBlockFormExists
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderReflector
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderApply
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderOneStep

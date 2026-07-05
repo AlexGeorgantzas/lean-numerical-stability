@@ -15371,3 +15371,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check resolvent_differentiableOn
 #check resolvent_analyticAt
 #check norm_pow_le_of_cauchy_representation
+-- Split-3B Wave-6: full real quasi-Schur (16.4), Dunford residue (18.8), [106] block-form assembly
+#check real_quasi_schur
+#check real_quasi_schur_blocks
+#check pow_eq_two_pi_I_inv_smul_circleIntegral
+#check norm_pow_le_of_cauchy_circleIntegral
+#check resolvent_hasSum_neumann
+#check maxGenEigenspace_one_eq_eigenspace_of_forall_orbit_tendsto
+#check semiconvergent_block_form_exists_of_triangular_complement_diag_conv
