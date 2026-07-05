@@ -241,6 +241,30 @@ theorem isLeast_sylvesterSepRatios (n : ℕ) (A B : Fin n → Fin n → ℝ)
   ⟨sylvesterSepInf_mem_sylvesterSepRatios n A B hn,
     fun _rho hrho => csInf_le (sylvesterSepRatios_bddBelow n A B) hrho⟩
 
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.3,
+    eq. (16.26): source-facing nonzero-ratio form of the `sep(A,B)`
+    minimum. In positive dimension there is a nonzero matrix whose
+    Frobenius-ratio value is exactly `sylvesterSepInf`, and that value is no
+    larger than any other nonzero Frobenius ratio. -/
+theorem exists_sylvesterSep_ratio_minimizer (n : ℕ)
+    (A B : Fin n → Fin n → ℝ) (hn : 0 < n) :
+    ∃ X : Fin n → Fin n → ℝ,
+      Not (frobNormSq X = 0) ∧
+      sylvesterSepInf n A B =
+        frobNorm (sylvesterOp n A B X) / frobNorm X ∧
+      ∀ Y : Fin n → Fin n → ℝ, Not (frobNormSq Y = 0) →
+        frobNorm (sylvesterOp n A B X) / frobNorm X ≤
+          frobNorm (sylvesterOp n A B Y) / frobNorm Y := by
+  have hleast := isLeast_sylvesterSepRatios n A B hn
+  obtain ⟨X, hXne, hXval⟩ := hleast.1
+  refine ⟨X, hXne, hXval, ?_⟩
+  intro Y hYne
+  have hYmem :
+      frobNorm (sylvesterOp n A B Y) / frobNorm Y ∈
+        sylvesterSepRatios n A B := by
+    exact ⟨Y, hYne, rfl⟩
+  simpa [hXval] using hleast.2 hYmem
+
 -- ============================================================
 -- (16.15): the backward-error infimum is an attained minimum
 -- ============================================================
@@ -515,6 +539,288 @@ theorem isLeast_sylvesterBackwardErrorValues (n : ℕ)
       alpha beta gamma halpha hbeta hgamma hne,
     fun _eta heta => csInf_le
       (sylvesterBackwardErrorValues_bddBelow n A B C Y alpha beta gamma) heta⟩
+
+-- ============================================================
+-- (16.21): the structured Lyapunov backward-error infimum is attained
+-- ============================================================
+
+/-- The affine feasibility set of structured Lyapunov backward-error
+    perturbation pairs `(DA, DC)` for eq. (16.21): the perturbed Lyapunov
+    equation holds at the fixed approximate solution `Y`, and `DC` is
+    symmetric. -/
+private def lyapunovBackwardFeasibleSet (n : ℕ)
+    (A C Y : Fin n → Fin n → ℝ) :
+    Set ((Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ)) :=
+  {p | IsSymmetricFiniteMatrix p.2 ∧
+    ∀ i j, lyapunovOp n (fun i' j' => A i' j' + p.1 i' j') Y i j =
+      C i j + p.2 i j}
+
+private lemma continuous_pairFst {n : ℕ} :
+    Continuous fun p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) => p.1 :=
+  continuous_fst
+
+private lemma continuous_pairSnd {n : ℕ} :
+    Continuous fun p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) => p.2 :=
+  continuous_snd
+
+private lemma continuous_pairFst_entry {n : ℕ} (i j : Fin n) :
+    Continuous fun p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) => p.1 i j :=
+  (continuous_matEntry i j).comp continuous_pairFst
+
+private lemma continuous_pairSnd_entry {n : ℕ} (i j : Fin n) :
+    Continuous fun p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) => p.2 i j :=
+  (continuous_matEntry i j).comp continuous_pairSnd
+
+private lemma isClosed_lyapunovBackwardFeasibleSet (n : ℕ)
+    (A C Y : Fin n → Fin n → ℝ) :
+    IsClosed (lyapunovBackwardFeasibleSet n A C Y) := by
+  have hsym_closed :
+      IsClosed {p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) |
+        IsSymmetricFiniteMatrix p.2} := by
+    have hsym_set :
+        {p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) |
+            IsSymmetricFiniteMatrix p.2} =
+          ⋂ (i : Fin n), ⋂ (j : Fin n),
+            {p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) |
+              p.2 i j = p.2 j i} := by
+      ext p
+      simp [IsSymmetricFiniteMatrix]
+    rw [hsym_set]
+    refine isClosed_iInter fun i => isClosed_iInter fun j => ?_
+    exact isClosed_eq (continuous_pairSnd_entry i j) (continuous_pairSnd_entry j i)
+  have heq_closed :
+      IsClosed (⋂ (i : Fin n), ⋂ (j : Fin n),
+        {p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) |
+          lyapunovOp n (fun i' j' => A i' j' + p.1 i' j') Y i j =
+            C i j + p.2 i j}) := by
+    refine isClosed_iInter fun i => isClosed_iInter fun j => ?_
+    refine isClosed_eq ?_ ?_
+    · unfold lyapunovOp matMul matTranspose
+      refine Continuous.add ?_ ?_
+      · refine continuous_finset_sum _ fun k _ => ?_
+        exact (continuous_const.add (continuous_pairFst_entry i k)).mul
+          continuous_const
+      · refine continuous_finset_sum _ fun k _ => ?_
+        exact continuous_const.mul
+          (continuous_const.add (continuous_pairFst_entry j k))
+    · exact continuous_const.add (continuous_pairSnd_entry i j)
+  have hset : lyapunovBackwardFeasibleSet n A C Y =
+      {p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) |
+        IsSymmetricFiniteMatrix p.2} ∩
+        ⋂ (i : Fin n), ⋂ (j : Fin n),
+          {p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ) |
+            lyapunovOp n (fun i' j' => A i' j' + p.1 i' j') Y i j =
+              C i j + p.2 i j} := by
+    ext p
+    simp [lyapunovBackwardFeasibleSet]
+  rw [hset]
+  exact hsym_closed.inter heq_closed
+
+/-- The scaled max-Frobenius objective whose minimum over the structured
+    Lyapunov feasibility set is the Lyapunov backward error `eta(Y)`. -/
+private noncomputable def lyapunovBackwardObjective {n : ℕ}
+    (alpha gamma : ℝ)
+    (p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ)) : ℝ :=
+  max (frobNorm p.1 / alpha) (frobNorm p.2 / gamma)
+
+private lemma continuous_lyapunovBackwardObjective (n : ℕ)
+    (alpha gamma : ℝ) :
+    Continuous (lyapunovBackwardObjective (n := n) alpha gamma) := by
+  unfold lyapunovBackwardObjective
+  refine Continuous.max ?_ ?_
+  · exact (continuous_frobNorm.comp continuous_pairFst).div_const alpha
+  · exact (continuous_frobNorm.comp continuous_pairSnd).div_const gamma
+
+private lemma lyapunovBackwardObjective_nonneg {n : ℕ}
+    {alpha gamma : ℝ} (halpha : 0 < alpha)
+    (p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ)) :
+    0 ≤ lyapunovBackwardObjective alpha gamma p :=
+  le_trans (div_nonneg (frobNorm_nonneg p.1) halpha.le)
+    (le_max_left _ _)
+
+/-- A feasible structured Lyapunov perturbation pair certifies its own
+    objective value as a Lyapunov backward error. -/
+private lemma isLyapunovBackwardError_lyapunovBackwardObjective (n : ℕ)
+    (A C Y : Fin n → Fin n → ℝ) {alpha gamma : ℝ}
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (p : (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ))
+    (hp : p ∈ lyapunovBackwardFeasibleSet n A C Y) :
+    IsLyapunovBackwardError n A C Y alpha gamma
+      (lyapunovBackwardObjective alpha gamma p) := by
+  refine ⟨p.1, p.2, hp.1, hp.2, ?_, ?_⟩
+  · have h1 : frobNorm p.1 / alpha ≤
+        lyapunovBackwardObjective alpha gamma p := le_max_left _ _
+    have h1' : frobNorm p.1 ≤
+        lyapunovBackwardObjective alpha gamma p * alpha :=
+      (div_le_iff₀ halpha).mp h1
+    rw [← frobNorm_sq]
+    exact sq_le_sq_of_nonneg_of_le (frobNorm_nonneg _) h1'
+  · have h2 : frobNorm p.2 / gamma ≤
+        lyapunovBackwardObjective alpha gamma p := le_max_right _ _
+    have h2' : frobNorm p.2 ≤
+        lyapunovBackwardObjective alpha gamma p * gamma :=
+      (div_le_iff₀ hgamma).mp h2
+    rw [← frobNorm_sq]
+    exact sq_le_sq_of_nonneg_of_le (frobNorm_nonneg _) h2'
+
+/-- Any structured Lyapunov backward-error certificate dominates the objective
+    of its witness. -/
+private lemma lyapunovBackwardObjective_le {n : ℕ}
+    {alpha gamma eta : ℝ}
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (heta : 0 ≤ eta) (DA DC : Fin n → Fin n → ℝ)
+    (hA : frobNormSq DA ≤ (eta * alpha) ^ 2)
+    (hC : frobNormSq DC ≤ (eta * gamma) ^ 2) :
+    lyapunovBackwardObjective alpha gamma (DA, DC) ≤ eta := by
+  have hfA : frobNorm DA ≤ eta * alpha :=
+    frobNorm_le_of_frobNormSq_le_sq DA (mul_nonneg heta halpha.le) hA
+  have hfC : frobNorm DC ≤ eta * gamma :=
+    frobNorm_le_of_frobNormSq_le_sq DC (mul_nonneg heta hgamma.le) hC
+  exact max_le ((div_le_iff₀ halpha).mpr hfA) ((div_le_iff₀ hgamma).mpr hfC)
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.2.1,
+    eq (16.21): with positive weights `alpha, gamma` and a nonempty structured
+    Lyapunov feasible set, the infimum model `lyapunovBackwardErrorInf` is
+    itself a feasible structured Lyapunov backward error.  Equivalently, the
+    structured Lyapunov eta model is an attained minimum. -/
+theorem exists_lyapunovBackwardError_minimizer (n : ℕ)
+    (A C Y : Fin n → Fin n → ℝ) (alpha gamma : ℝ)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hne : (lyapunovBackwardErrorValues n A C Y alpha gamma).Nonempty) :
+    IsLyapunovBackwardError n A C Y alpha gamma
+      (lyapunovBackwardErrorInf n A C Y alpha gamma) := by
+  classical
+  obtain ⟨eta0, heta0⟩ := hne
+  have heta0_nonneg : 0 ≤ eta0 := heta0.1
+  obtain ⟨DA0, DC0, hDC0_sym, hEq0, hA0, hC0⟩ := heta0.2
+  have hK : IsCompact
+      ((({M : Fin n → Fin n → ℝ | frobNormSq M ≤ (eta0 * alpha) ^ 2} ×ˢ
+          {M : Fin n → Fin n → ℝ | frobNormSq M ≤ (eta0 * gamma) ^ 2})) ∩
+        lyapunovBackwardFeasibleSet n A C Y) := by
+    exact IsCompact.inter_right
+      ((isCompact_frobNormSq_sublevel _).prod
+        (isCompact_frobNormSq_sublevel _))
+      (isClosed_lyapunovBackwardFeasibleSet n A C Y)
+  have hp0 : ((DA0, DC0) :
+      (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ)) ∈
+      ((({M : Fin n → Fin n → ℝ | frobNormSq M ≤ (eta0 * alpha) ^ 2} ×ˢ
+          {M : Fin n → Fin n → ℝ | frobNormSq M ≤ (eta0 * gamma) ^ 2})) ∩
+        lyapunovBackwardFeasibleSet n A C Y) :=
+    ⟨⟨hA0, hC0⟩, hDC0_sym, hEq0⟩
+  obtain ⟨pmin, hpmin, hmin⟩ :=
+    hK.exists_isMinOn ⟨(DA0, DC0), hp0⟩
+      (continuous_lyapunovBackwardObjective n alpha gamma).continuousOn
+  have hfeas : IsLyapunovBackwardError n A C Y alpha gamma
+      (lyapunovBackwardObjective alpha gamma pmin) :=
+    isLyapunovBackwardError_lyapunovBackwardObjective n A C Y
+      halpha hgamma pmin hpmin.2
+  have hstar_nonneg : 0 ≤ lyapunovBackwardObjective alpha gamma pmin :=
+    lyapunovBackwardObjective_nonneg halpha pmin
+  have hinf_eq : lyapunovBackwardErrorInf n A C Y alpha gamma =
+      lyapunovBackwardObjective alpha gamma pmin := by
+    apply le_antisymm
+    · exact csInf_le
+        (lyapunovBackwardErrorValues_bddBelow n A C Y alpha gamma)
+        ⟨hstar_nonneg, hfeas⟩
+    · unfold lyapunovBackwardErrorInf
+      apply le_csInf ⟨eta0, heta0⟩
+      rintro eta ⟨heta_nonneg, DA, DC, hDC_sym, hEq, hA, hC⟩
+      by_cases hcase : eta ≤ eta0
+      · have hAle : (eta * alpha) ^ 2 ≤ (eta0 * alpha) ^ 2 :=
+          sq_le_sq_of_nonneg_of_le (mul_nonneg heta_nonneg halpha.le)
+            (mul_le_mul_of_nonneg_right hcase halpha.le)
+        have hCle : (eta * gamma) ^ 2 ≤ (eta0 * gamma) ^ 2 :=
+          sq_le_sq_of_nonneg_of_le (mul_nonneg heta_nonneg hgamma.le)
+            (mul_le_mul_of_nonneg_right hcase hgamma.le)
+        have hmem : ((DA, DC) :
+            (Fin n → Fin n → ℝ) × (Fin n → Fin n → ℝ)) ∈
+            ((({M : Fin n → Fin n → ℝ |
+                frobNormSq M ≤ (eta0 * alpha) ^ 2} ×ˢ
+              {M : Fin n → Fin n → ℝ |
+                frobNormSq M ≤ (eta0 * gamma) ^ 2})) ∩
+              lyapunovBackwardFeasibleSet n A C Y) :=
+          ⟨⟨le_trans hA hAle, le_trans hC hCle⟩, hDC_sym, hEq⟩
+        have h1 : lyapunovBackwardObjective alpha gamma pmin ≤
+            lyapunovBackwardObjective alpha gamma (DA, DC) :=
+          hmin hmem
+        have h2 : lyapunovBackwardObjective alpha gamma (DA, DC) ≤ eta :=
+          lyapunovBackwardObjective_le halpha hgamma heta_nonneg DA DC hA hC
+        linarith
+      · push_neg at hcase
+        have h1 : lyapunovBackwardObjective alpha gamma pmin ≤
+            lyapunovBackwardObjective alpha gamma (DA0, DC0) :=
+          hmin hp0
+        have h2 : lyapunovBackwardObjective alpha gamma (DA0, DC0) ≤ eta0 :=
+          lyapunovBackwardObjective_le halpha hgamma heta0_nonneg
+            DA0 DC0 hA0 hC0
+        linarith
+  rw [hinf_eq]
+  exact hfeas
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.2.1,
+    eq (16.21): under positive weights and a nonempty structured feasible set,
+    the Lyapunov eta infimum is a member of its own feasible value set. -/
+theorem lyapunovBackwardErrorInf_mem_lyapunovBackwardErrorValues (n : ℕ)
+    (A C Y : Fin n → Fin n → ℝ) (alpha gamma : ℝ)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hne : (lyapunovBackwardErrorValues n A C Y alpha gamma).Nonempty) :
+    lyapunovBackwardErrorInf n A C Y alpha gamma ∈
+      lyapunovBackwardErrorValues n A C Y alpha gamma :=
+  ⟨lyapunovBackwardErrorInf_nonneg n A C Y alpha gamma,
+    exists_lyapunovBackwardError_minimizer n A C Y alpha gamma
+      halpha hgamma hne⟩
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.2.1,
+    eq (16.21): under positive weights and a nonempty structured feasible set,
+    `lyapunovBackwardErrorInf` is the least feasible structured Lyapunov
+    backward-error value. -/
+theorem isLeast_lyapunovBackwardErrorValues (n : ℕ)
+    (A C Y : Fin n → Fin n → ℝ) (alpha gamma : ℝ)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hne : (lyapunovBackwardErrorValues n A C Y alpha gamma).Nonempty) :
+    IsLeast (lyapunovBackwardErrorValues n A C Y alpha gamma)
+      (lyapunovBackwardErrorInf n A C Y alpha gamma) :=
+  ⟨lyapunovBackwardErrorInf_mem_lyapunovBackwardErrorValues n A C Y
+      alpha gamma halpha hgamma hne,
+    fun _eta heta => csInf_le
+      (lyapunovBackwardErrorValues_bddBelow n A C Y alpha gamma) heta⟩
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.2.1,
+    eq (16.21): for symmetric Lyapunov data with an orthogonal spectral
+    decomposition, the optimizer construction supplies nonemptiness, so the
+    structured eta infimum is attained. -/
+theorem exists_lyapunovBackwardError_minimizer_of_symmetric_spectral (n : ℕ)
+    (A C Y U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (alpha gamma : ℝ)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U)
+    (hC : IsSymmetricFiniteMatrix C) (hYsym : IsSymmetricFiniteMatrix Y)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hpos : ∀ i j : Fin n,
+      0 < 2 * alpha ^ 2 * (lam i ^ 2 + lam j ^ 2) + gamma ^ 2) :
+    IsLyapunovBackwardError n A C Y alpha gamma
+      (lyapunovBackwardErrorInf n A C Y alpha gamma) :=
+  exists_lyapunovBackwardError_minimizer n A C Y alpha gamma halpha hgamma
+    (lyapunovBackwardErrorValues_nonempty_of_symmetric_spectral n
+      A C Y U lam alpha gamma hY hU hC hYsym hpos)
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.2.1,
+    eq (16.21): for symmetric Lyapunov data with an orthogonal spectral
+    decomposition, the structured eta infimum is the least feasible value. -/
+theorem isLeast_lyapunovBackwardErrorValues_of_symmetric_spectral (n : ℕ)
+    (A C Y U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (alpha gamma : ℝ)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U)
+    (hC : IsSymmetricFiniteMatrix C) (hYsym : IsSymmetricFiniteMatrix Y)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hpos : ∀ i j : Fin n,
+      0 < 2 * alpha ^ 2 * (lam i ^ 2 + lam j ^ 2) + gamma ^ 2) :
+    IsLeast (lyapunovBackwardErrorValues n A C Y alpha gamma)
+      (lyapunovBackwardErrorInf n A C Y alpha gamma) :=
+  isLeast_lyapunovBackwardErrorValues n A C Y alpha gamma halpha hgamma
+    (lyapunovBackwardErrorValues_nonempty_of_symmetric_spectral n
+      A C Y U lam alpha gamma hY hU hC hYsym hpos)
 
 -- ============================================================
 -- (16.29): floating-point computed-residual dR model

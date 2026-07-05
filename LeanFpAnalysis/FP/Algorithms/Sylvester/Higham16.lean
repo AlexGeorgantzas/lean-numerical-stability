@@ -1425,6 +1425,30 @@ theorem sylvesterVecCoeff_schurDiagonal_mulVec_bijective (m n : Nat)
       m n U A V B a b hU hV hA hB hsep⟩
 
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
+    Schur-coordinate case: supplied orthogonal diagonal factors with separated
+    diagonal entries make the vec/Kronecker Sylvester coefficient
+    nonsingular. This is the determinant form of the vectorized solve theorem;
+    it is a supplied-factor result, not a proof of Schur existence. -/
+theorem sylvesterVecCoeff_schurDiagonal_det_ne_zero (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0)) :
+    Not (Matrix.det (sylvesterVecCoeff m n A B) = 0) := by
+  intro hdet
+  obtain ⟨x, hxne, hxzero⟩ :=
+    Matrix.exists_mulVec_eq_zero_iff.mpr hdet
+  have hinj :=
+    sylvesterVecCoeff_schurDiagonal_mulVec_injective
+      m n U A V B a b hU hV hA hB hsep
+  have hxzero' : x = 0 := by
+    apply hinj
+    rw [hxzero, Matrix.mulVec_zero]
+  exact hxne hxzero'
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), diagonal
     Schur-coordinate case: the supplied-factor vectorized Sylvester linear
     system has a unique solution for every vectorized right-hand side. -/
 theorem existsUnique_sylvesterVecCoeff_schurDiagonal_mulVec (m n : Nat)
@@ -1447,6 +1471,75 @@ theorem existsUnique_sylvesterVecCoeff_schurDiagonal_mulVec (m n : Nat)
   refine ⟨x, hx, ?_⟩
   intro y hy
   exact hinj (by rw [hy, hx])
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied diagonal
+    Schur-coordinate case: the practical componentwise error bound can use
+    the actual nonsingular inverse of the vec/Kronecker Sylvester coefficient.
+    This is an exact supplied-factor subcase; it does not assert Schur
+    existence or a floating-point residual computation. -/
+theorem sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate
+    (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate m n
+      A B C X Xhat Rhat Ru
+      ((sylvesterVecCoeff m n A B)⁻¹)
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr
+          (sylvesterVecCoeff_schurDiagonal_det_ne_zero
+            m n U A V B a b hU hV hA hB hsep)))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hBudget hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied diagonal
+    Schur-coordinate case with an explicit residual error model:
+    if `Rhat = R(Xhat) + dR` and `|dR| <= Ru`, then the practical
+    componentwise error bound follows using the nonsingular inverse of the
+    supplied Schur-diagonal vec/Kronecker coefficient. -/
+theorem sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model
+    (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Ru dR : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate
+      m n U A V B a b C X Xhat Rhat Ru hU hV hA hB hsep hX
+      (sylvesterComputedResidualBudget_of_error_model m n A B C Xhat Rhat Ru dR
+        hRhat hRu hdR)
+      hXhat
 
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
