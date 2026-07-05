@@ -147,6 +147,33 @@ theorem wedinTheorem20_1_solutionRelativeRHS_eq_first_order_add_quadratic_remain
   field_simp [hden]
   ring
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1 / Problem 20.11:
+    under the natural norm-domain assumptions, Wedin's full displayed
+    solution RHS dominates its first-order coefficient times `eps`. -/
+theorem wedinTheorem20_1_solutionRelativeRHS_first_order_le
+    {kappa eps A_norm x_norm r_norm : ℝ}
+    (hkappa : 0 ≤ kappa) (_heps : 0 ≤ eps) (hsmall : kappa * eps < 1)
+    (hA : 0 < A_norm) (hx : 0 < x_norm) (hr : 0 ≤ r_norm) :
+    eps * kappa *
+        (2 + (kappa + 1) * r_norm / (A_norm * x_norm)) ≤
+      wedinTheorem20_1SolutionRelativeRHS kappa eps A_norm x_norm r_norm := by
+  have hden_ne : 1 - kappa * eps ≠ 0 :=
+    wedinTheorem20_1_denominator_ne_zero hsmall
+  rw [wedinTheorem20_1_solutionRelativeRHS_eq_first_order_add_quadratic_remainder
+    hden_ne]
+  apply le_add_of_nonneg_right
+  have hden_pos : 0 < 1 - kappa * eps :=
+    wedinTheorem20_1_denominator_pos hsmall
+  have hfrac : 0 ≤ (kappa * eps) ^ 2 / (1 - kappa * eps) :=
+    div_nonneg (sq_nonneg (kappa * eps)) (le_of_lt hden_pos)
+  have hAx_pos : 0 < A_norm * x_norm := mul_pos hA hx
+  have hkappa_one_nonneg : 0 ≤ kappa + 1 := by linarith
+  have hterm : 0 ≤ (kappa + 1) * r_norm / (A_norm * x_norm) :=
+    div_nonneg (mul_nonneg hkappa_one_nonneg hr) (le_of_lt hAx_pos)
+  have hparen : 0 ≤ 2 + (kappa + 1) * r_norm / (A_norm * x_norm) := by
+    linarith
+  exact mul_nonneg hfrac hparen
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1), scalar
     normalization for the currently proved one-sided Wedin vector route.
 
