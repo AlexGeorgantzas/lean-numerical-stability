@@ -1175,4 +1175,44 @@ theorem sylvester_practical_error_bound_fl_scalar (fp : FPModel) (m n : Nat)
   exact hbase.trans
     (div_le_div_of_nonneg_right heta (le_of_lt hXhat))
 
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), componentwise scalar-capped floating-point residual
+    instantiation: if a nonnegative scalar `eta` bounds every component of the
+    separated-diagonal practical budget formed from the floating-point computed
+    residual, then the practical relative max-entry forward-error bound has
+    right-hand side `eta / ||Xhat||`.  Only the residual computation is modeled
+    in floating point. -/
+theorem sylvester_practical_error_bound_fl_componentwise_scalar
+    (fp : FPModel) (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C X Xhat : RMatFn m n)
+    (eta : Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p,
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterDiagonalVecCoeffInvAbs m n a b)
+          (flSylvesterResidualRect fp m n
+            (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+          (flSylvesterResidualBudget fp m n
+            (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)) p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_scalar
+      m n a b C X Xhat
+      (flSylvesterResidualRect fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+      (flSylvesterResidualBudget fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+      eta hsep hX
+      (isSylvesterComputedResidualBudget_fl fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat hm hn)
+      heta hcomponent hXhat
+
 end LeanFpAnalysis.FP

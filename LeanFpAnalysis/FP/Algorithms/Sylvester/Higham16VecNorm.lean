@@ -895,6 +895,24 @@ theorem SepLowerBound_lyapunov_of_vecCoeff_left_inverse_finiteOpNorm2Le
       (fun i j => -matTranspose A i j) (1 / M)
       (one_div_pos.mpr hM) hSylv
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a concrete left inverse and operator-2 radius for the printed Lyapunov
+    vec/Kronecker coefficient give an exact-infimum lower bound for
+    `sep(A, -A^T)` in positive dimension. -/
+theorem sylvesterSepInf_lyapunov_ge_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hn : 0 < n) (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    (1 / M) <= sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n A
+      (fun i j => -matTranspose A i j) (1 / M)
+      (SepLowerBound_lyapunov_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A Pinv hM hLeft hPinv)
+      hn
+
 /-- A concrete left inverse and operator-2 radius for the printed Lyapunov
     vec/Kronecker coefficient gives the inverse-operator bound used by the
     Lyapunov condition-number surface. -/
