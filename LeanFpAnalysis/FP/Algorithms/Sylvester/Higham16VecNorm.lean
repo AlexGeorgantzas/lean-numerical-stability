@@ -2247,6 +2247,78 @@ theorem lyapunov_relative_perturbation_of_vecCoeff_left_inverse_finiteOpNorm2Le
       alpha alpha gamma eps halpha halpha hgamma heps
       hDeltaA hDeltaB hDeltaC hLin hDeltaX_ne hX_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    Frobenius Lyapunov perturbation bound from a supplied finite
+    Gram-eigenvalue lower bound for the concrete Lyapunov vec/Kronecker
+    coefficient. -/
+theorem lyapunov_perturbation_bound_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hDeltaX_ne : Not (frobNormSq DeltaX = 0)) :
+    frobNorm DeltaX <=
+      (1 / Real.sqrt lam) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound n A X DeltaA DeltaC DeltaX
+      (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (SepLowerBound_lyapunov_of_vecCoeff_gram_eigenvalues
+        n A (le_of_lt hLam) (Real.sqrt_pos.mpr hLam) hEig)
+      alpha gamma eps halpha hgamma heps
+      hDeltaA hDeltaC hLin hDeltaX_ne
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    relative Lyapunov perturbation bound from a supplied finite
+    Gram-eigenvalue lower bound for the concrete Lyapunov vec/Kronecker
+    coefficient. -/
+theorem lyapunov_relative_perturbation_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hDeltaX_ne : Not (frobNormSq DeltaX = 0))
+    (hX_ne : Not (frobNorm X = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n A (fun i j => -matTranspose A i j) X
+        alpha alpha gamma (Real.sqrt lam) * eps := by
+  have hDeltaB : frobNorm (fun i j => -matTranspose DeltaA i j) <= eps * alpha := by
+    rw [show (fun i j => -matTranspose DeltaA i j) =
+        (fun i j => -(matTranspose DeltaA) i j) from by ext i j; rfl]
+    rw [frobNorm_neg, frobNorm_transpose]
+    exact hDeltaA
+  exact
+    sylvester_relative_perturbation n A
+      (fun i j => -matTranspose A i j) X DeltaA
+      (fun i j => -matTranspose DeltaA i j) DeltaC DeltaX
+      (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (SepLowerBound_lyapunov_of_vecCoeff_gram_eigenvalues
+        n A (le_of_lt hLam) (Real.sqrt_pos.mpr hLam) hEig)
+      alpha alpha gamma eps halpha halpha hgamma heps
+      hDeltaA hDeltaB hDeltaC hLin hDeltaX_ne hX_ne hX_pos
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     source-shaped Lyapunov first-order perturbation bound from a finite
     Gram-eigenvalue lower bound for the concrete vectorized Lyapunov
