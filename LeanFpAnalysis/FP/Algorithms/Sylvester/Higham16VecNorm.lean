@@ -1025,6 +1025,53 @@ theorem lyapunovOp_sigmaMin_of_vecCoeff_gram_eigenvalues (n : Nat)
     lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin n A (Real.sqrt lam)
       (lyapunovVecCoeff_sigmaMin_of_gram_eigenvalues n A hlam hEig)
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a supplied Gram-eigenvalue lower bound for the concrete vectorized
+    Lyapunov coefficient gives a `SepLowerBound` certificate for
+    `sep(A, -A^T)`. -/
+theorem SepLowerBound_lyapunov_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A : Fin n -> Fin n -> Real) {lam : Real}
+    (hlam : 0 <= lam) (hsqrt : 0 < Real.sqrt lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p) :
+    SepLowerBound n A (fun i j => -matTranspose A i j) (Real.sqrt lam) := by
+  have hOp :=
+    lyapunovOp_sigmaMin_of_vecCoeff_gram_eigenvalues n A hlam hEig
+  have hSylv : forall Y : Fin n -> Fin n -> Real,
+      Real.sqrt lam * frobNorm Y <=
+        frobNorm (sylvesterOp n A (fun i j => -matTranspose A i j) Y) := by
+    intro Y
+    have h := hOp Y
+    rwa [lyapunovOp_eq_sylvesterOp n A Y] at h
+  exact
+    sepLowerBound_of_sylvesterOp_sigmaMin n A
+      (fun i j => -matTranspose A i j) (Real.sqrt lam)
+      hsqrt hSylv
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    in positive dimension, a supplied Gram-eigenvalue lower bound for the
+    concrete vectorized Lyapunov coefficient lower-bounds the exact
+    `sep(A, -A^T)` infimum. -/
+theorem sylvesterSepInf_lyapunov_ge_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A : Fin n -> Fin n -> Real) {lam : Real}
+    (hn : 0 < n) (hlam : 0 <= lam) (hsqrt : 0 < Real.sqrt lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p) :
+    Real.sqrt lam <=
+      sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n A
+      (fun i j => -matTranspose A i j) (Real.sqrt lam)
+      (SepLowerBound_lyapunov_of_vecCoeff_gram_eigenvalues
+        n A hlam hsqrt hEig)
+      hn
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
     a uniform lower bound on the diagonal Lyapunov coefficient magnitudes
     `|a_i + a_j|` gives the concrete vectorized coefficient lower bound. -/
