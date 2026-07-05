@@ -15259,3 +15259,6 @@ small enough to serve as a smoke check for representative public declarations.
 #check complexSylvester_schur_factors_exist
 #check complexSylvester_exists_unique_of_schur_shift
 #check complexSylvester_triangular_exists_unique
+-- Unconditional Henrici normal ⟺ N=0 (hard direction discharged via MatrixPowersSchur)
+#check schurNormalImpliesStrictUpperZero_holds
+#check normal_iff_strictUpper_eq_zero_unconditional
