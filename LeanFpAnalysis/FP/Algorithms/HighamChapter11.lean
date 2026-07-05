@@ -1016,6 +1016,62 @@ theorem higham11_14_fl_aasen_next_column_update_formed_sum_abs_error_of_exact_re
       ring
     rw [hfl, harg]
 
+/-- **Equation (11.14) formed-sum update**, single-residual corollary.  This
+packages the prefix-dot residual and the final subtraction/division residual
+into the downstream shape `computed = L k next + Δ`, with an explicit scalar
+budget. -/
+theorem higham11_14_fl_aasen_next_column_update_formed_sum_single_abs_error_of_exact_recurrence
+    (n : ℕ) (fp : FPModel) (A L H : Fin n → Fin n → ℝ)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (i next k : Fin n) (hnext : next.val = i.val + 1)
+    (hk : i.val + 2 ≤ k.val) (hvalSum : gammaValid fp n)
+    (hvalUpdate : gammaValid fp 2) :
+    let Bsum : ℝ :=
+      gamma fp n *
+        ∑ j : Fin n, |if j.val ≤ i.val then L k j else 0| * |H j i|
+    ∃ Δ : ℝ,
+      |Δ| ≤ Bsum / |H next i| +
+        gamma fp 2 * (|L k next| + Bsum / |H next i|) ∧
+      fp.fl_div
+          (fp.fl_sub (A k i) (higham11_14_fl_aasenPrefixDot n fp L H i k))
+          (H next i)
+        = L k next + Δ := by
+  let Bsum : ℝ :=
+    gamma fp n *
+      ∑ j : Fin n, |if j.val ≤ i.val then L k j else 0| * |H j i|
+  obtain ⟨Δs, Δu, hΔs, hΔu, hfl⟩ :=
+    higham11_14_fl_aasen_next_column_update_formed_sum_abs_error_of_exact_recurrence
+      n fp A L H hrec hHnz i next k hnext hk hvalSum hvalUpdate
+  refine ⟨-Δs / H next i + Δu, ?_, ?_⟩
+  · have hΔs_div : |Δs / H next i| ≤ Bsum / |H next i| := by
+      simpa [Bsum, abs_div] using
+        div_le_div_of_nonneg_right hΔs (abs_nonneg (H next i))
+    have hinner :
+        |L k next - Δs / H next i| ≤
+          |L k next| + Bsum / |H next i| := by
+      calc
+        |L k next - Δs / H next i|
+            ≤ |L k next| + |-(Δs / H next i)| := by
+              simpa [sub_eq_add_neg] using abs_add_le (L k next) (-(Δs / H next i))
+        _ = |L k next| + |Δs / H next i| := by rw [abs_neg]
+        _ ≤ |L k next| + Bsum / |H next i| :=
+          add_le_add (le_refl _) hΔs_div
+    have hγ2 : 0 ≤ gamma fp 2 := gamma_nonneg fp hvalUpdate
+    calc
+      |-Δs / H next i + Δu|
+          ≤ |-Δs / H next i| + |Δu| := abs_add_le _ _
+      _ = |Δs / H next i| + |Δu| := by
+        have hneg : -Δs / H next i = -(Δs / H next i) := by ring
+        rw [hneg, abs_neg]
+      _ ≤ Bsum / |H next i| + gamma fp 2 * |L k next - Δs / H next i| :=
+        add_le_add hΔs_div hΔu
+      _ ≤ Bsum / |H next i| +
+            gamma fp 2 * (|L k next| + Bsum / |H next i|) :=
+        add_le_add (le_refl _) (mul_le_mul_of_nonneg_left hinner hγ2)
+  · rw [hfl]
+    ring
+
 /-- **Equation (11.15)**, the Aasen solve chain
 `L z = P b`, `T y = z`, `L^T w = y`, `x = P w`. -/
 def higham11_15_aasenSolveChain (n : ℕ)
