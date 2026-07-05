@@ -743,6 +743,101 @@ theorem lyapunovOp_sigmaMin_diagonal_of_entrywise_abs_ge (n : Nat)
       (lyapunovVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
         a sigma (le_of_lt hsigma) hgap)
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case:
+    if `A = U diag(a) U^T`, then a uniform lower bound on
+    `|a_i + a_j|` gives the same Frobenius lower bound for the original
+    Lyapunov operator. -/
+theorem lyapunovOp_sigmaMin_spectralDiagonal_of_entrywise_abs_ge (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|) :
+    forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y) := by
+  have hnegAT :
+      (fun i j => -matTranspose A i j) =
+        rectMatMul U
+          (rectMatMul (Matrix.diagonal (fun i : Fin n => -a i))
+            (matTranspose U)) := by
+    rw [hA]
+    ext i j
+    simp [rectMatMul, matTranspose, Matrix.diagonal]
+    apply Finset.sum_congr rfl
+    intro k _hk
+    ring
+  have hgapSylv :
+      forall i j, sigma <= |a i - (fun k : Fin n => -a k) j| := by
+    intro i j
+    simpa [sub_eq_add_neg] using hgap i j
+  intro Y
+  have h :=
+    sylvesterOp_sigmaMin_schurDiagonal_of_entrywise_abs_ge n
+      U A U (fun i j => -matTranspose A i j)
+      a (fun i : Fin n => -a i) sigma hU hU hA hnegAT
+      hsigma hgapSylv Y
+  rwa [<- lyapunovOp_eq_sylvesterOp n A Y] at h
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case:
+    the original-coordinate Lyapunov vec/Kronecker coefficient inherits the
+    same sigma lower bound from the spectral-coordinate diagonal sums. -/
+theorem lyapunovVecCoeff_spectralDiagonal_sigmaMin_of_entrywise_abs_ge
+    (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|) :
+    forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x) := by
+  intro x
+  let Y : Matrix (Fin n) (Fin n) Real := fun i j => x (j, i)
+  have hvecY : Matrix.vec Y = x := by
+    ext p
+    rfl
+  have hOp :=
+    lyapunovOp_sigmaMin_spectralDiagonal_of_entrywise_abs_ge n
+      U A a sigma hU hA hsigma hgap Y
+  let Amat : Matrix (Fin n) (Fin n) Real := A
+  let Ymat : Matrix (Fin n) (Fin n) Real := Y
+  have hLY :
+      Amat * Ymat + Ymat * Matrix.transpose Amat = lyapunovOp n A Y := by
+    ext i j
+    simp [Amat, Ymat, Y, lyapunovOp, matMul, matTranspose, Matrix.mul_apply]
+  rw [<- hvecY]
+  rw [lyapunovVecCoeff_mulVec_vec n A Y,
+    finiteVecNorm2_vec_eq_frobNorm n n Y, hLY,
+    finiteVecNorm2_vec_eq_frobNorm n n (lyapunovOp n A Y)]
+  exact hOp
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case:
+    a spectral-coordinate gap gives a finite Gram-eigenvalue lower bound for
+    the original Lyapunov vec/Kronecker coefficient. -/
+theorem lyapunovVecCoeff_spectralDiagonal_gram_eigenvalues_ge_of_entrywise_abs_ge
+    (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|) :
+    forall p : Prod (Fin n) (Fin n),
+      sigma ^ 2 <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p := by
+  exact
+    finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound
+      (lyapunovVecCoeff n A) (le_of_lt hsigma)
+      (lyapunovVecCoeff_spectralDiagonal_sigmaMin_of_entrywise_abs_ge n
+        U A a sigma hU hA hsigma hgap)
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
     the structured `Psi` certificate follows from a positive lower bound on the
     printed Kronecker/vectorized Sylvester coefficient. -/
