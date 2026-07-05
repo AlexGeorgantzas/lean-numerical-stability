@@ -11103,3 +11103,26 @@ These compile, but should not be treated as fully derived stability results:
   determinant/pivot inverse data for all leading prefixes, source-norm versus
   entrywise max-growth integration, Problem 13.4 all-tail source comparisons,
   and Theorem 13.6 cited estimates remain open.
+
+- 2026-07-05 Theorem 13.7 BDD leading-prefix diagonal step: added
+  `higham13_leadingBlockPrefix_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`
+  and
+  `higham13_leadingBlockPrefix_diag_det_ne_zero_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These combine full
+  column BDD inheritance for leading prefixes with the actual-block
+  nonsingularity contradiction: a nonsingular leading prefix cannot have a
+  singular active diagonal block at any prefix index whose inherited diagonal
+  lower bound is nonpositive.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  passed after the edit; focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`,
+  touched Lean placeholder scan, and ignored scratch axiom audit passed.  The
+  axiom audit reported only standard Mathlib axioms `propext`,
+  `Classical.choice`, and `Quot.sound`.  Redirected public lookup printed both
+  new Chapter 13 declarations successfully and still failed only on unrelated
+  pre-existing non-Ch13 lookup rows.  This closes the leading-prefix packaging
+  for the nonpositive-bound/singular-diagonal contradiction, but not the final
+  BDD block-LU existence route: deriving the positive active
+  lower-bound/pivot inverse table for all pivots, source-norm versus entrywise
+  max-growth integration, Problem 13.4 all-tail source comparisons, and Theorem
+  13.6 cited estimates remain open.
