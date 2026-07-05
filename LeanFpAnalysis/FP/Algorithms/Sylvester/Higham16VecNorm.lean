@@ -845,6 +845,32 @@ theorem lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
     finiteMatrix_mulVec_nonsingInv_mulVec_of_det_ne_zero
       (lyapunovVecCoeff n A) hdet c
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5):
+    determinant nonsingularity exposes the left action of the nonsingular
+    inverse for the vectorized Sylvester coefficient. -/
+theorem sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+    (n : Nat) (A B : Fin n -> Fin n -> Real)
+    (hdet : (sylvesterVecCoeff n n A B).det ≠ 0)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹
+        (Matrix.mulVec (sylvesterVecCoeff n n A B) x) = x := by
+  exact
+    finiteMatrix_nonsingInv_mulVec_mulVec_of_det_ne_zero
+      (sylvesterVecCoeff n n A B) hdet x
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    determinant nonsingularity exposes the left action of the nonsingular
+    inverse for the vectorized Lyapunov coefficient. -/
+theorem lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+    (n : Nat) (A : Fin n -> Fin n -> Real)
+    (hdet : (lyapunovVecCoeff n A).det ≠ 0)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A)⁻¹
+        (Matrix.mulVec (lyapunovVecCoeff n A) x) = x := by
+  exact
+    finiteMatrix_nonsingInv_mulVec_mulVec_of_det_ne_zero
+      (lyapunovVecCoeff n A) hdet x
+
 /-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
     a positive sigma-min certificate gives the exact nonsingular-inverse solve
     action for the vectorized Sylvester coefficient. -/
@@ -882,6 +908,44 @@ theorem lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_vecCoeff_sigmaMin
       (lyapunovVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin
         n A hsigma hCoeff)
       c
+
+/-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
+    a positive sigma-min certificate gives the left action of the nonsingular
+    inverse for the vectorized Sylvester coefficient. -/
+theorem sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_vecCoeff_sigmaMin
+    (n : Nat) (A B : Fin n -> Fin n -> Real) {sigma : Real}
+    (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹
+        (Matrix.mulVec (sylvesterVecCoeff n n A B) x) = x := by
+  exact
+    sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+      n A B
+      (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin
+        n A B hsigma hCoeff)
+      x
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a positive sigma-min certificate gives the left action of the nonsingular
+    inverse for the vectorized Lyapunov coefficient. -/
+theorem lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_vecCoeff_sigmaMin
+    (n : Nat) (A : Fin n -> Fin n -> Real) {sigma : Real}
+    (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x))
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A)⁻¹
+        (Matrix.mulVec (lyapunovVecCoeff n A) x) = x := by
+  exact
+    lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+      n A
+      (lyapunovVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin
+        n A hsigma hCoeff)
+      x
 
 /-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
     a positive finite-Gram eigenvalue certificate gives the exact
@@ -925,6 +989,48 @@ theorem lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_vecCoeff_gram_eigenvalues
         n A hlam hEig)
       c
 
+/-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
+    a positive finite-Gram eigenvalue certificate gives the left action of the
+    nonsingular inverse for the vectorized Sylvester coefficient. -/
+theorem sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A B : Fin n -> Fin n -> Real) {lam : Real}
+    (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹
+        (Matrix.mulVec (sylvesterVecCoeff n n A B) x) = x := by
+  exact
+    sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+      n A B
+      (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues
+        n A B hlam hEig)
+      x
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a positive finite-Gram eigenvalue certificate gives the left action of the
+    nonsingular inverse for the vectorized Lyapunov coefficient. -/
+theorem lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A : Fin n -> Fin n -> Real) {lam : Real}
+    (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A)⁻¹
+        (Matrix.mulVec (lyapunovVecCoeff n A) x) = x := by
+  exact
+    lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+      n A
+      (lyapunovVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues
+        n A hlam hEig)
+      x
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5):
     a concrete left inverse with finite operator-2 radius gives the exact
     nonsingular-inverse solve action for the vectorized Sylvester coefficient. -/
@@ -962,6 +1068,44 @@ theorem lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_left_inverse_finiteOpNorm2L
       (lyapunovVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
         n A Pinv hM hLeft hPinv)
       c
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5):
+    a concrete left inverse with finite operator-2 radius gives the left action
+    of the nonsingular inverse for the vectorized Sylvester coefficient. -/
+theorem sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A B : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹
+        (Matrix.mulVec (sylvesterVecCoeff n n A B) x) = x := by
+  exact
+    sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+      n A B
+      (sylvesterVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+        n A B Pinv hM hLeft hPinv)
+      x
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a concrete left inverse with finite operator-2 radius gives the left action
+    of the nonsingular inverse for the vectorized Lyapunov coefficient. -/
+theorem lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A)⁻¹
+        (Matrix.mulVec (lyapunovVecCoeff n A) x) = x := by
+  exact
+    lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+      n A
+      (lyapunovVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+        n A Pinv hM hLeft hPinv)
+      x
 
 /-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
     a positive lower bound for the concrete vectorized Sylvester coefficient

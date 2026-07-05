@@ -322,6 +322,18 @@ theorem sylvesterVecCoeff_singular_of_common_eigenvalue (m n : Nat)
 def IsUpperTriangularFn (n : Nat) (T : RMatFn n n) : Prop :=
   forall i j : Fin n, j < i -> T i j = 0
 
+/-- A real quasi-Schur zero pattern becomes an ordinary upper-triangular
+    pattern when the supplied block map has no repeated adjacent block labels.
+    This is only a structural adapter; it does not assert that real Schur
+    factors are triangular in general. -/
+theorem IsUpperTriangularFn.of_quasiSchur_strictBlockMap (n : Nat)
+    (T : RMatFn n n) (p : Fin n -> Nat)
+    (hzero : ∀ i j : Fin n, p j < p i -> T i j = 0)
+    (hp : ∀ i j : Fin n, j < i -> p j < p i) :
+    IsUpperTriangularFn n T := by
+  intro i j hij
+  exact hzero i j (hp i j hij)
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
     the shifted column coefficient `A - t I` appearing in the
     Bartels-Stewart column solve `(A - t_kk I) x_k = ...`. -/
@@ -1534,6 +1546,49 @@ theorem existsUnique_isSylvesterSolutionRect_schurTriangular (m n : Nat)
     calc
       X = rectMatMul U (rectMatMul YX (matTranspose V)) := hXexpand.symm
       _ = rectMatMul U (rectMatMul Y (matTranspose V)) := by rw [hYeq]
+
+/-- Real quasi-Schur-to-triangular uniqueness bridge.  The theorem returns the
+    exact real quasi-Schur factors for `A` and `B`; if the returned `B`-side
+    block map is supplied to be strictly increasing down the matrix order, so
+    the selected Schur factor is effectively upper triangular, and each
+    shifted triangular column coefficient is nonsingular, then the original
+    Sylvester equation has a unique exact solution.
+
+    Scope: exact arithmetic and the triangular subcase only.  This deliberately
+    does not claim full quasi-triangular block nonsingularity, Hessenberg-Schur
+    execution, or floating-point stability. -/
+theorem existsUnique_isSylvesterSolutionRect_realQuasiSchur_of_strictBlockMap
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      ((∀ i j : Fin n, j < i -> pB j < pB i) ->
+        (∀ k : Fin n,
+          Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) ->
+        ExistsUnique (IsSylvesterSolutionRect m n A B C)) := by
+  obtain ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero,
+    hpBmono, hpBcard, hSzero, _hiff⟩ :=
+    sylvester_realQuasiSchur_transform_solution_iff
+      m n A B C (0 : RMatFn m n)
+  refine ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero,
+    hpBmono, hpBcard, hSzero, ?_⟩
+  intro hpBstrict hshift
+  have hS : IsUpperTriangularFn n S :=
+    IsUpperTriangularFn.of_quasiSchur_strictBlockMap n S pB hSzero hpBstrict
+  exact
+    existsUnique_isSylvesterSolutionRect_schurTriangular
+      m n U R A V S B C hU hV hA hB hS hshift
 
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6),
     supplied triangular Schur-coordinate case: supplied orthogonal factors,
