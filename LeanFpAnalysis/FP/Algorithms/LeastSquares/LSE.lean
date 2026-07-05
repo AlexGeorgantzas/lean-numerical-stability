@@ -1240,6 +1240,29 @@ theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
       (H19.Theorem19_6.one_le_active_row_growth_factor m)
       hphi hdenA hdenW hA hb
 
+/-- Theorem 20.7 active-row bridge with denominator positivity discharged from
+    source-shaped nonzero row hypotheses. -/
+theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (hphi : 0 < phi)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤
+      H19.Theorem19_6.active_row_growth_factor m ^ (n - 1) := by
+  have hden := theorem20_7_denominators_pos_of_rows_nonzero hn A b hphi hrows
+  exact
+    theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
+      hm hn Astage A bstage b phi (le_of_lt hphi) hden.1 hden.2 hA hb
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     one-based source column factor `j^2` in the perturbation bound for
     `Delta a_ij`.  Lean's `Fin` index `j` represents source column `j+1`. -/
