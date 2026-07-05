@@ -4401,6 +4401,45 @@ theorem theorem20_8Residual_sourceRadius_le_firstOrderRHS_scaled {m n p : ℕ}
     hApos hxpos] using hscaled
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    the sum of the three printed first-order source coefficients is exactly
+    the first-order coefficient `theorem20_8FirstOrderRHS`. -/
+theorem theorem20_8SourceCoefficientSum_eq_firstOrderRHS {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ) :
+    theorem20_8KappaA B BAplus *
+          (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) +
+        theorem20_8KappaB A APplus *
+          (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) +
+        theorem20_8ResidualAmplifier A B APplus BAplus *
+          (vecNorm2 r / (frobNormRect A * vecNorm2 x)) =
+      theorem20_8FirstOrderRHS A b B d x r APplus BAplus := by
+  rfl
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
+    after multiplication by `eps * ||x||_2`, the integrated source coefficient
+    sum is still exactly the full first-order coefficient with the same
+    scaling. -/
+theorem theorem20_8SourceCoefficientSum_scaled_eq_firstOrderRHS {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (r : Fin m → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    {eps : ℝ} :
+    eps *
+        (theorem20_8KappaA B BAplus *
+            (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) +
+          theorem20_8KappaB A APplus *
+            (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) +
+          theorem20_8ResidualAmplifier A B APplus BAplus *
+            (vecNorm2 r / (frobNormRect A * vecNorm2 x))) *
+        vecNorm2 x =
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
+        vecNorm2 x := by
+  rw [theorem20_8SourceCoefficientSum_eq_firstOrderRHS]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     the sum of the three printed first-order source coefficients is bounded
     by the single first-order coefficient `theorem20_8FirstOrderRHS`. -/
 theorem theorem20_8SourceCoefficientSum_le_firstOrderRHS {m n p : ℕ}
