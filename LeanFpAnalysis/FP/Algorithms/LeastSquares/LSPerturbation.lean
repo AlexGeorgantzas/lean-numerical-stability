@@ -2333,6 +2333,66 @@ theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_s
       A B Aplus Bplus hleftA hleftB hSymA hSymB hTrace hLoewner
       hDelta hAplus_norm_nonneg hBplus_norm_nonneg hAplus hBplus
 
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 route audit:
+    the compressed-Gram Loewner comparison is not a valid general replacement
+    for the missing Stewart--Sun/principal-angle equality.  Two rank-one
+    orthogonal projections in `ℝ^2` can have equal trace while the Loewner
+    comparison required by the conditional route fails.
+
+This is a bottleneck-audit result, not a source theorem.  It rules out closing
+Lemma 20.12 by trying to prove the displayed Loewner comparison from the
+ordinary equal-rank projection hypotheses alone. -/
+theorem wedinLemma20_12_compressedGram_loewnerLe_counterexample :
+    ∃ P Q : Fin 2 → Fin 2 → ℝ,
+      IsSymmetricFiniteMatrix P ∧
+      IsSymmetricFiniteMatrix Q ∧
+      rectMatMul P P = P ∧
+      rectMatMul Q Q = Q ∧
+      finiteTrace P = finiteTrace Q ∧
+      ¬ finiteLoewnerLe
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix 2 i j - Q i j) P)
+          (fun i j => idMatrix 2 i j - Q i j))
+        (rectMatMul
+          (rectMatMul (fun i j => idMatrix 2 i j - P i j) Q)
+          (fun i j => idMatrix 2 i j - P i j)) := by
+  let P : Fin 2 → Fin 2 → ℝ :=
+    fun i j => if i = (0 : Fin 2) ∧ j = (0 : Fin 2) then 1 else 0
+  let Q : Fin 2 → Fin 2 → ℝ := fun _ _ => (1 / 2 : ℝ)
+  refine ⟨P, Q, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · intro i j
+    fin_cases i <;> fin_cases j <;> norm_num [P]
+  · intro i j
+    norm_num [Q]
+  · ext i j
+    fin_cases i <;> fin_cases j <;> norm_num [P, rectMatMul]
+  · ext i j
+    fin_cases i <;> fin_cases j <;> norm_num [Q, rectMatMul]
+  · norm_num [P, Q, finiteTrace]
+    rfl
+  · intro hLoewner
+    let GP : Fin 2 → Fin 2 → ℝ :=
+      rectMatMul
+        (rectMatMul (fun i j => idMatrix 2 i j - Q i j) P)
+        (fun i j => idMatrix 2 i j - Q i j)
+    let GQ : Fin 2 → Fin 2 → ℝ :=
+      rectMatMul
+        (rectMatMul (fun i j => idMatrix 2 i j - P i j) Q)
+        (fun i j => idMatrix 2 i j - P i j)
+    let e0 : Fin 2 → ℝ := finiteBasisVec (0 : Fin 2)
+    have hquad := hLoewner e0
+    have hGP :
+        finiteQuadraticForm GP e0 = (1 / 4 : ℝ) := by
+      norm_num [GP, P, Q, e0, finiteQuadraticForm, finiteMatVec,
+        rectMatMul, finiteBasisVec, idMatrix]
+    have hGQ :
+        finiteQuadraticForm GQ e0 = 0 := by
+      norm_num [GQ, P, Q, e0, finiteQuadraticForm, finiteMatVec,
+        rectMatMul, finiteBasisVec, idMatrix]
+    have hbad : (1 / 4 : ℝ) ≤ 0 := by
+      simpa [GP, GQ, e0, hGP, hGQ] using hquad
+    norm_num at hbad
+
 /-- Higham, 2nd ed., Chapter 20, Wedin proof line toward (20.33):
     the source-oriented Lemma 20.12 projector estimate controls `Bplus*r`
     whenever `r` is orthogonal to the range of `A`.
