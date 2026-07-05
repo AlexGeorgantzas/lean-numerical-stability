@@ -7527,6 +7527,62 @@ theorem higham13_leadingBlockPrefix_diag_det_ne_zero_of_leadingPrincipalBlockNon
     A invDiagBound hDom p (Nat.lt_trans (Nat.lt_succ_self p) hpLead)
     (hLead p hpLead) j hj
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    the BDD leading-prefix contradiction supplies the canonical two-sided
+    inverse for a diagonal block of a nonsingular leading prefix. -/
+theorem higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (p : ℕ) (hp : p < m)
+    (hPrefix : BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (j : Fin (p + 1))
+    (hj : invDiagBound (leadingBlockPrefixIndex13_7 p hp j) ≤ 0) :
+    IsInverse r
+      (A (leadingBlockPrefixIndex13_7 p hp j)
+        (leadingBlockPrefixIndex13_7 p hp j))
+      (nonsingInv r
+        (A (leadingBlockPrefixIndex13_7 p hp j)
+          (leadingBlockPrefixIndex13_7 p hp j))) := by
+  exact
+    isInverse_nonsingInv_of_det_ne_zero r
+      (A (leadingBlockPrefixIndex13_7 p hp j)
+        (leadingBlockPrefixIndex13_7 p hp j))
+      (higham13_leadingBlockPrefix_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+        A invDiagBound hDom p hp hPrefix j hj)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    leading-principal-block nonsingularity plus column BDD supplies the
+    canonical two-sided inverse for every prefix diagonal block whose BDD
+    lower bound is nonpositive. -/
+theorem higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hLead : LeadingPrincipalBlockNonsingular13_2 A)
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (p : ℕ) (hpLead : p + 1 < m)
+    (j : Fin (p + 1))
+    (hj : invDiagBound
+        (leadingBlockPrefixIndex13_7 p
+          (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j) ≤ 0) :
+    IsInverse r
+      (A
+        (leadingBlockPrefixIndex13_7 p
+          (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j)
+        (leadingBlockPrefixIndex13_7 p
+          (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j))
+      (nonsingInv r
+        (A
+          (leadingBlockPrefixIndex13_7 p
+            (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j)
+          (leadingBlockPrefixIndex13_7 p
+            (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j))) :=
+  higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+    A invDiagBound hDom p (Nat.lt_trans (Nat.lt_succ_self p) hpLead)
+    (hLead p hpLead) j hj
+
 -- ============================================================
 -- §13.3.1  Equation 13.18 proof-chain pieces
 -- ============================================================
