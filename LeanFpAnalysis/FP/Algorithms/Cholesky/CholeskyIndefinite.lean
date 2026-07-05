@@ -968,6 +968,77 @@ theorem fl_blockLDLT_pivot_col_bound (n : ℕ) (fp : FPModel)
   rw [hrw, abs_mul]
   exact (mul_le_mul_of_nonneg_left hδ (abs_nonneg _)).trans_eq (by rw [mul_comm])
 
+/-- Entrywise one-stage backward-error envelope for a rounded 1×1-pivot
+    block-LDLᵀ assemble step.  The leading pivot has exact error `0`; the pivot
+    row/column have the 1×1 solve error `u|A|`; and the trailing block has the
+    per-stage Schur error plus the recursive trailing envelope `Bs`. -/
+noncomputable def flBlockLDLTOneByOneStageBound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) (Bs : Fin n → Fin n → ℝ) :
+    Fin (n + 1) → Fin (n + 1) → ℝ :=
+  fun I J =>
+    Fin.cases
+      (Fin.cases 0 (fun j => fp.u * |A 0 j.succ|) J)
+      (fun i =>
+        Fin.cases
+          (fp.u * |A i.succ 0|)
+          (fun j =>
+            2 * gamma fp 3 *
+              (|A i.succ j.succ| + |A i.succ 0 * A 0 j.succ / A 0 0|)
+              + Bs i j)
+          J)
+      I
+
+/-- **Complete one-stage 1×1-pivot floating-point assemble bound** for
+    Theorem 11.3.  This packages the pivot entry, pivot row, pivot column, and
+    trailing-block estimates into a single all-index statement:
+    `|(L̂D̂L̂ᵀ) I J - A I J|` is bounded by
+    `flBlockLDLTOneByOneStageBound`.  The trailing recursive hypothesis is still
+    explicit; the full multi-stage induction remains a separate theorem. -/
+theorem fl_blockLDLT_oneByOne_stage_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (he : A 0 0 ≠ 0) (hsym1 : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (hval : gammaValid fp 3)
+    (L_S D_S : Fin n → Fin n → ℝ) (Bs : Fin n → Fin n → ℝ)
+    (hIH : ∀ i j : Fin n,
+      |(∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂)
+        - fp.fl_sub (A i.succ j.succ)
+            (fp.fl_mul (fp.fl_div (A i.succ 0) (A 0 0)) (A 0 j.succ))| ≤ Bs i j)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hLtr : ∀ i j : Fin n, L i.succ j.succ = L_S i j)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin n, D i.succ j.succ = D_S i j) :
+    ∀ I J : Fin (n + 1),
+      |(∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) - A I J|
+        ≤ flBlockLDLTOneByOneStageBound n fp A Bs I J := by
+  obtain ⟨h00, hrow⟩ :=
+    fl_blockLDLT_pivot_row_bound n fp A he hsym1 L D
+      hL00 hLcol hL0s hD00 hD0s
+  have hcol :=
+    fl_blockLDLT_pivot_col_bound n fp A he L D
+      hL00 hLcol hL0s hD00 hDs0
+  have htrail :=
+    fl_blockLDLT_trailing_bound n fp A he hsym1 hval L_S D_S Bs hIH L D
+      hLcol hLtr hD00 hD0s hDs0 hDtr
+  intro I J
+  rcases Fin.eq_zero_or_eq_succ I with hI | ⟨i, hI⟩
+  · subst I
+    rcases Fin.eq_zero_or_eq_succ J with hJ | ⟨j, hJ⟩
+    · subst J
+      simp [flBlockLDLTOneByOneStageBound, h00]
+    · subst J
+      simpa [flBlockLDLTOneByOneStageBound] using hrow j
+  · subst I
+    rcases Fin.eq_zero_or_eq_succ J with hJ | ⟨j, hJ⟩
+    · subst J
+      simpa [flBlockLDLTOneByOneStageBound] using hcol i
+    · subst J
+      simpa [flBlockLDLTOneByOneStageBound] using htrail i j
+
 -- ============================================================
 -- Chapter 11.1.4  Tridiagonal symmetric matrices
 -- ============================================================
