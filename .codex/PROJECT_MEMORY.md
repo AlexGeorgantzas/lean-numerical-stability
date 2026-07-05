@@ -11026,3 +11026,27 @@ These compile, but should not be treated as fully derived stability results:
   inverses, source-norm versus entrywise max-growth integration, Problem 13.4
   all-tail source comparisons, and Theorem 13.6 cited implementation estimates
   remain open.
+
+- 2026-07-05 Theorem 13.7 BDD flat-kernel singularity step: added
+  `blockMatrixFlat_det_ne_zero_of_blockMatrixNonsingular`,
+  `higham13_blockMatrixFlat_det_eq_zero_of_offdiag_col_zero_of_diag_kernel`,
+  and
+  `higham13_not_blockMatrixNonsingular_of_offdiag_col_zero_of_diag_kernel` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These formalize the source
+  proof step after (13.18): if BDD has forced a block column's off-diagonal
+  blocks to be zero and the diagonal block has a nonzero right-kernel vector,
+  the flattened block matrix has a nonzero kernel vector and determinant zero,
+  contradicting `BlockMatrixNonsingular`.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`,
+  `git diff --check`, touched Lean placeholder scan, and ignored scratch axiom
+  audit all passed.  The axiom audit reported only standard Mathlib axioms
+  `propext`, `Classical.choice`, and `Quot.sound`.  Redirected public lookup
+  printed all three new Chapter 13 declarations successfully and still failed
+  only on unrelated pre-existing non-Ch13 lookup rows.  This closes the
+  vector-kernel/flat-singularity piece of the Schur-diagonal-singularity
+  contradiction, but not the full BDD block-LU existence route: diagonal-block
+  kernel extraction from lower-bound zero, the leading-prefix contradiction
+  assembly, active pivot inverses, source-norm versus entrywise max-growth
+  integration, Problem 13.4 all-tail source comparisons, and Theorem 13.6 cited
+  estimates remain open.
