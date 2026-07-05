@@ -2342,6 +2342,34 @@ theorem sylvesterOp_sigmaMin_of_vecCoeff_gram_eigenvalues (n : Nat)
       (sylvesterVecCoeff_sigmaMin_of_gram_eigenvalues n A B hlam hEig)
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
+    a positive lower bound for the concrete vectorized Sylvester coefficient
+    gives a `SepLowerBound` certificate. -/
+theorem SepLowerBound_of_vecCoeff_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x)) :
+    SepLowerBound n A B sigma := by
+  exact
+    sepLowerBound_of_sylvesterOp_sigmaMin n A B sigma hsigma
+      (sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B sigma hCoeff)
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
+    in positive dimension, a positive lower bound for the concrete vectorized
+    Sylvester coefficient lower-bounds the exact `sep` infimum. -/
+theorem sylvesterSepInf_ge_of_vecCoeff_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x)) :
+    sigma <= sylvesterSepInf n A B := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n A B sigma
+      (SepLowerBound_of_vecCoeff_sigmaMin n A B sigma hsigma hCoeff) hn
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
     a positive Gram-eigenvalue lower bound for the concrete vectorized
     Sylvester coefficient gives a `SepLowerBound` certificate. -/
 theorem SepLowerBound_of_vecCoeff_gram_eigenvalues (n : Nat)
@@ -2849,6 +2877,44 @@ theorem lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin (n : Nat)
     simp [Amat, Ymat, lyapunovOp, matMul, matTranspose, Matrix.mul_apply]
   rwa [finiteVecNorm2_vec_eq_frobNorm n n Y, hLY,
     finiteVecNorm2_vec_eq_frobNorm n n (lyapunovOp n A Y)] at h
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a positive lower bound for the concrete vectorized Lyapunov coefficient
+    gives a `SepLowerBound` certificate for `sep(A, -A^T)`. -/
+theorem SepLowerBound_lyapunov_of_vecCoeff_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x)) :
+    SepLowerBound n A (fun i j => -matTranspose A i j) sigma := by
+  have hOp := lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin n A sigma hCoeff
+  have hSylv : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <=
+        frobNorm (sylvesterOp n A (fun i j => -matTranspose A i j) Y) := by
+    intro Y
+    have h := hOp Y
+    rwa [lyapunovOp_eq_sylvesterOp n A Y] at h
+  exact
+    sepLowerBound_of_sylvesterOp_sigmaMin n A
+      (fun i j => -matTranspose A i j) sigma hsigma hSylv
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    in positive dimension, a positive lower bound for the concrete vectorized
+    Lyapunov coefficient lower-bounds the exact `sep(A, -A^T)` infimum. -/
+theorem sylvesterSepInf_lyapunov_ge_of_vecCoeff_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x)) :
+    sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n A
+      (fun i j => -matTranspose A i j) sigma
+      (SepLowerBound_lyapunov_of_vecCoeff_sigmaMin
+        n A sigma hsigma hCoeff)
+      hn
 
 /-- A concrete left inverse and operator-2 radius for the printed Lyapunov
     vec/Kronecker coefficient gives the Lyapunov operator sigma-min lower
