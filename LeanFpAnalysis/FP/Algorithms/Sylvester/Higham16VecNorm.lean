@@ -750,6 +750,20 @@ theorem sylvesterVecCoeff_diagonal_gram_eigenvalues_ge_of_entrywise_abs_ge
       (sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
         a b sigma hsigma hgap)
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3),
+    diagonal case: a positive uniform gap `|a_i - b_j| >= sigma` makes the
+    square vec/Kronecker Sylvester coefficient nonsingular. -/
+theorem sylvesterVecCoeff_diagonal_det_ne_zero_of_entrywise_abs_ge
+    (n : Nat) (a b : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|) :
+    (sylvesterVecCoeff n n (Matrix.diagonal a) (Matrix.diagonal b)).det ≠ 0 := by
+  exact
+    sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n
+      (Matrix.diagonal a) (Matrix.diagonal b) hsigma
+      (sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a b sigma (le_of_lt hsigma) hgap)
+
 /-- Higham, 2nd ed., Chapter 16.1 and equation (16.26), diagonal case:
     the concrete diagonal vec/Kronecker lower bound transfers to the
     Frobenius lower bound for the Sylvester operator. -/
@@ -907,6 +921,25 @@ theorem sylvesterVecCoeff_schurDiagonal_gram_eigenvalues_ge_of_entrywise_abs_ge
   exact
     finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound
       (sylvesterVecCoeff n n A B) (le_of_lt hsigma)
+      (sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
+        U A V B a b sigma hU hV hA hB hsigma hgap)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case: a positive coordinate gap makes
+    the original square vec/Kronecker Sylvester coefficient nonsingular. -/
+theorem sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_abs_ge
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|) :
+    (sylvesterVecCoeff n n A B).det ≠ 0 := by
+  exact
+    sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n
+      A B hsigma
       (sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
         U A V B a b sigma hU hV hA hB hsigma hgap)
 
@@ -1307,6 +1340,20 @@ theorem lyapunovVecCoeff_diagonal_gram_eigenvalues_ge_of_entrywise_abs_ge
         a sigma hsigma hgap)
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    a positive uniform gap `|a_i + a_j| >= sigma` makes the square Lyapunov
+    vec/Kronecker coefficient nonsingular. -/
+theorem lyapunovVecCoeff_diagonal_det_ne_zero_of_entrywise_abs_ge
+    (n : Nat) (a : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|) :
+    (lyapunovVecCoeff n (Matrix.diagonal a)).det ≠ 0 := by
+  exact
+    lyapunovVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n
+      (Matrix.diagonal a) hsigma
+      (lyapunovVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a sigma (le_of_lt hsigma) hgap)
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
     the concrete diagonal Lyapunov vec/Kronecker lower bound transfers to the
     Frobenius lower bound for the Lyapunov operator. -/
 theorem lyapunovOp_sigmaMin_diagonal_of_entrywise_abs_ge (n : Nat)
@@ -1413,6 +1460,24 @@ theorem lyapunovVecCoeff_spectralDiagonal_gram_eigenvalues_ge_of_entrywise_abs_g
   exact
     finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound
       (lyapunovVecCoeff n A) (le_of_lt hsigma)
+      (lyapunovVecCoeff_spectralDiagonal_sigmaMin_of_entrywise_abs_ge n
+        U A a sigma hU hA hsigma hgap)
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case: a positive spectral-coordinate sum gap makes the
+    original square Lyapunov vec/Kronecker coefficient nonsingular. -/
+theorem lyapunovVecCoeff_spectralDiagonal_det_ne_zero_of_entrywise_abs_ge
+    (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|) :
+    (lyapunovVecCoeff n A).det ≠ 0 := by
+  exact
+    lyapunovVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin n
+      A hsigma
       (lyapunovVecCoeff_spectralDiagonal_sigmaMin_of_entrywise_abs_ge n
         U A a sigma hU hA hsigma hgap)
 
