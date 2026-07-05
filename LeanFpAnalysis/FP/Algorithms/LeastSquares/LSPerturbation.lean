@@ -2200,6 +2200,215 @@ theorem wedinLemma20_12_projectionSumSubId_sq_eq_id_sub_projectionDiff_sq
   ring
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    if a vector lies in the range of `P`, then applying the companion operator
+    `S = P+Q-I` gives a vector in the range of `Q`. -/
+theorem wedinLemma20_12_rectMatMulVec_projectionSumSubId_maps_projection_range
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (x : Fin m → ℝ)
+    (hxP : rectMatMulVec P x = x) :
+    rectMatMulVec Q
+        (rectMatMulVec (fun i j => P i j + Q i j - idMatrix m i j) x) =
+      rectMatMulVec (fun i j => P i j + Q i j - idMatrix m i j) x := by
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  have hSP :
+      rectMatMul S P = rectMatMul Q S := by
+    simpa [S] using
+      wedinLemma20_12_projectionSumSubId_intertwines_projection
+        P Q hIdemP hIdemQ
+  calc
+    rectMatMulVec Q (rectMatMulVec S x)
+        = rectMatMulVec (rectMatMul Q S) x := by
+            rw [rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec (rectMatMul S P) x := by
+            rw [← hSP]
+    _ = rectMatMulVec S (rectMatMulVec P x) := by
+            rw [rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec S x := by
+            rw [hxP]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped vector-range version of the companion intertwinement. -/
+theorem wedinLemma20_12_rectMatMulVec_projectionSumSubId_maps_projection_range_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (x : Fin m → ℝ)
+    (hxQ : rectMatMulVec Q x = x) :
+    rectMatMulVec P
+        (rectMatMulVec (fun i j => P i j + Q i j - idMatrix m i j) x) =
+      rectMatMulVec (fun i j => P i j + Q i j - idMatrix m i j) x := by
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  have hSQ :
+      rectMatMul S Q = rectMatMul P S := by
+    simpa [S] using
+      wedinLemma20_12_projectionSumSubId_intertwines_projection_swapped
+        P Q hIdemP hIdemQ
+  calc
+    rectMatMulVec P (rectMatMulVec S x)
+        = rectMatMulVec (rectMatMul P S) x := by
+            rw [rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec (rectMatMul S Q) x := by
+            rw [← hSQ]
+    _ = rectMatMulVec S (rectMatMulVec Q x) := by
+            rw [rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec S x := by
+            rw [hxQ]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    because `D^2` commutes with the companion operator `S`, applying `S` to a
+    `D^2` eigenvector preserves the eigenvalue. -/
+theorem wedinLemma20_12_rectMatMulVec_projectionSumSubId_preserves_projectionDiff_sq_eigenvector
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (lambda : ℝ) (x : Fin m → ℝ)
+    (hxEig :
+      rectMatMulVec
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)) x =
+        fun i => lambda * x i) :
+    rectMatMulVec
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j))
+        (rectMatMulVec (fun i j => P i j + Q i j - idMatrix m i j) x) =
+      fun i =>
+        lambda *
+          rectMatMulVec (fun i j => P i j + Q i j - idMatrix m i j) x i := by
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  have hcomm :
+      rectMatMul (rectMatMul D D) S =
+        rectMatMul S (rectMatMul D D) := by
+    simpa [D, S] using
+      wedinLemma20_12_projectionDiff_sq_commutes_projectionSumSubId
+        P Q hIdemP hIdemQ
+  calc
+    rectMatMulVec (rectMatMul D D) (rectMatMulVec S x)
+        = rectMatMulVec (rectMatMul (rectMatMul D D) S) x := by
+            exact (rectMatMulVec_rectMatMul (rectMatMul D D) S x).symm
+    _ = rectMatMulVec (rectMatMul S (rectMatMul D D)) x := by
+            rw [hcomm]
+    _ = rectMatMulVec S (rectMatMulVec (rectMatMul D D) x) := by
+            rw [rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec S (fun i => lambda * x i) := by
+            rw [hxEig]
+    _ = fun i => lambda * rectMatMulVec S x i := by
+            rw [rectMatMulVec_smul]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    on a `D^2` eigenvector, the companion square acts by the scalar
+    `1 - lambda`. -/
+theorem wedinLemma20_12_rectMatMulVec_projectionSumSubId_sq_apply_projectionDiff_sq_eigenvector
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (lambda : ℝ) (x : Fin m → ℝ)
+    (hxEig :
+      rectMatMulVec
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)) x =
+        fun i => lambda * x i) :
+    rectMatMulVec (fun i j => P i j + Q i j - idMatrix m i j)
+        (rectMatMulVec (fun i j => P i j + Q i j - idMatrix m i j) x) =
+      fun i => (1 - lambda) * x i := by
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  have hSsq :
+      rectMatMul S S = fun i j => idMatrix m i j - rectMatMul D D i j := by
+    simpa [D, S] using
+      wedinLemma20_12_projectionSumSubId_sq_eq_id_sub_projectionDiff_sq
+        P Q hIdemP hIdemQ
+  calc
+    rectMatMulVec S (rectMatMulVec S x)
+        = rectMatMulVec (rectMatMul S S) x := by
+            exact (rectMatMulVec_rectMatMul S S x).symm
+    _ = rectMatMulVec (fun i j => idMatrix m i j - rectMatMul D D i j) x := by
+            rw [hSsq]
+    _ = fun i => x i - rectMatMulVec (rectMatMul D D) x i := by
+            simpa [D] using
+              wedinLemma20_12_rectMatMulVec_projectionComplement
+                (rectMatMul D D) x
+    _ = fun i => (1 - lambda) * x i := by
+            rw [hxEig]
+            ext i
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    if a nonzero `D^2` eigenvector has eigenvalue different from `1`, then
+    its companion image is nonzero. -/
+theorem wedinLemma20_12_rectMatMulVec_projectionSumSubId_ne_zero_of_projectionDiff_sq_eigenvalue_ne_one
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (lambda : ℝ) (x : Fin m → ℝ)
+    (hxEig :
+      rectMatMulVec
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)) x =
+        fun i => lambda * x i)
+    (hx_ne : x ≠ 0)
+    (hlambda_ne : lambda ≠ 1) :
+    rectMatMulVec (fun i j => P i j + Q i j - idMatrix m i j) x ≠ 0 := by
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  intro hSx
+  have hSSx_zero : rectMatMulVec S (rectMatMulVec S x) = 0 := by
+    rw [hSx]
+    ext i
+    unfold rectMatMulVec
+    simp
+  have hSSx :=
+    wedinLemma20_12_rectMatMulVec_projectionSumSubId_sq_apply_projectionDiff_sq_eigenvector
+      P Q hIdemP hIdemQ lambda x hxEig
+  have hscaled_zero : (fun i => (1 - lambda) * x i) = 0 := by
+    rw [← hSSx, hSSx_zero]
+  have hcoef_ne : 1 - lambda ≠ 0 := by
+    intro hcoef
+    apply hlambda_ne
+    linarith
+  apply hx_ne
+  ext i
+  have hi := congrFun hscaled_zero i
+  exact (mul_eq_zero.mp hi).resolve_left hcoef_ne
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    a nonunit `D^2` eigenvector in the `P` range transfers through the companion
+    operator to a nonzero `D^2` eigenvector in the `Q` range with the same
+    eigenvalue. -/
+theorem wedinLemma20_12_exists_projection_swapped_range_projectionDiff_sq_eigenvector_of_projection_range
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (lambda : ℝ) (x : Fin m → ℝ)
+    (hxP : rectMatMulVec P x = x)
+    (hxEig :
+      rectMatMulVec
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)) x =
+        fun i => lambda * x i)
+    (hx_ne : x ≠ 0)
+    (hlambda_ne : lambda ≠ 1) :
+    ∃ y : Fin m → ℝ,
+      y ≠ 0 ∧
+      rectMatMulVec Q y = y ∧
+      rectMatMulVec
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)) y =
+        fun i => lambda * y i := by
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  refine ⟨rectMatMulVec S x, ?_, ?_, ?_⟩
+  · simpa [S] using
+      wedinLemma20_12_rectMatMulVec_projectionSumSubId_ne_zero_of_projectionDiff_sq_eigenvalue_ne_one
+        P Q hIdemP hIdemQ lambda x hxEig hx_ne hlambda_ne
+  · simpa [S] using
+      wedinLemma20_12_rectMatMulVec_projectionSumSubId_maps_projection_range
+        P Q hIdemP hIdemQ x hxP
+  · simpa [S] using
+      wedinLemma20_12_rectMatMulVec_projectionSumSubId_preserves_projectionDiff_sq_eigenvector
+        P Q hIdemP hIdemQ lambda x hxEig
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the companion square `S^2`, where `S = P+Q-I`, preserves the `P` range.
 
 This follows from `S^2 = I - (P-Q)^2` and the already proved commutation of
