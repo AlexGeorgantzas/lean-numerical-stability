@@ -12970,6 +12970,52 @@ theorem theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
       hApos hbpos hBpos hdpos hmax)
     hBsmall hStackSmall
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.24):
+    Frobenius-norm perturbation bounds preserve the two LSE rank conditions
+    when their induced radii are strictly below the source lower-bound margins.
+    This is the rank-preservation adapter used by the concrete GQR component
+    bounds in Theorem 20.10. -/
+theorem theorem20_8_conditions20_24_of_frobNormRect_bounds_lt_margins
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {cA cB : ℝ}
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hDeltaA : frobNormRect DeltaA ≤ cA)
+    (hDeltaB : frobNormRect DeltaB ≤ cB)
+    (hBsmall : cB < hBsrc.transposeVecNorm2LowerMargin)
+    (hStackSmall : cA + cB < hStack.vecNorm2LowerMargin) :
+    LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+      LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) := by
+  have hDeltaBTransposeFrob :
+      frobNormRect (fun j : Fin n => fun i : Fin p => DeltaB i j) ≤ cB := by
+    have htrans : frobNormRect (finiteTranspose DeltaB) ≤ cB := by
+      simpa [frobNormRect_finiteTranspose] using hDeltaB
+    simpa [finiteTranspose] using htrans
+  have hDeltaBOp :
+      rectOpNorm2Le (fun j : Fin n => fun i : Fin p => DeltaB i j) cB :=
+    rectOpNorm2Le_of_frobNormRect_le
+      (fun j : Fin n => fun i : Fin p => DeltaB i j)
+      hDeltaBTransposeFrob
+  have hBpert :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) :=
+    LSEFullRowRank.of_transpose_lower_bound_and_rectOpNorm2Le_lt
+      (B := B) (DeltaB := DeltaB)
+      hBsrc.transposeVecNorm2LowerMargin_lower_bound hDeltaBOp hBsmall
+  have hStackOp :
+      rectOpNorm2Le (lseStackedMatrix DeltaA DeltaB) (cA + cB) :=
+    rectOpNorm2Le_lseStackedMatrix_of_frobNormRect_bounds hDeltaA hDeltaB
+  have hStackPert :
+      LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) :=
+    LSEStackedFullColumnRank.of_lower_bound_and_rectOpNorm2Le_lt
+      (A := A) (DeltaA := DeltaA) (B := B) (DeltaB := DeltaB)
+      hStack.vecNorm2LowerMargin_lower_bound hStackOp hStackSmall
+  exact ⟨hBpert, hStackPert⟩
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), prose after the display:
     the null-intersection condition
     `null(A) ∩ null(B) = {0}` is equivalent to full column rank of
@@ -22345,6 +22391,81 @@ theorem exists_lse_minimizer_of_fullRowRank_stackedFullColumnRank
     ⟨x, hx, _huniq⟩
   exact ⟨x, hx⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    relative-budget rank-preservation wrapper for the perturbed equality
+    constrained least-squares problem.  Source full row rank of `B` and full
+    column rank of `[A; B]`, plus strict source-margin smallness, give
+    existence and uniqueness for the perturbed problem directly. -/
+theorem theorem20_8_exists_unique_perturbed_lse_minimizer_of_relativePerturbationBudget_lt_margins
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {eps : ℝ}
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hBsmall :
+      eps * frobNormRect B < hBsrc.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    ∃! y : Fin (p + q) → ℝ,
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j)
+        (fun i => d i + Deltad i) y := by
+  have hcond :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    theorem20_8_conditions20_24_of_relativePerturbationBudget_lt_margins
+      hBsrc hStack hbudget hBsmall hStackSmall
+  exact
+    exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+      (A := fun i j => A i j + DeltaA i j)
+      (B := fun i j => B i j + DeltaB i j)
+      (b := fun i => b i + Deltab i)
+      (d := fun i => d i + Deltad i) hcond.1 hcond.2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    displayed maximum-relative-perturbation version of the perturbed LSE
+    existence and uniqueness wrapper. -/
+theorem theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturbation_lt_margins
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {eps : ℝ}
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hBsrc.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    ∃! y : Fin (p + q) → ℝ,
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j)
+        (fun i => d i + Deltad i) y :=
+  theorem20_8_exists_unique_perturbed_lse_minimizer_of_relativePerturbationBudget_lt_margins
+    hBsrc hStack
+    (theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad
+      hApos hbpos hBpos hdpos hmax)
+    hBsmall hStackSmall
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, exact perturbed-data
     GQR core for the same-constraint-right-hand-side branch.
 
@@ -29483,6 +29604,117 @@ theorem theorem20_10_partB_backward_error_of_householder_components_conservative
   exact
     GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_d
       A DeltaA B DeltaB b Deltab d Deltad hB hstack
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
+    component package with source-rank margin preservation.
+
+    This strengthens
+    `theorem20_10_partB_backward_error_of_householder_components_conservative_gamma`
+    by deriving the perturbed full-row-rank and stacked-full-column-rank
+    assumptions from the source rank hypotheses and strict lower-bound margins
+    for the concrete Householder Frobenius perturbation bounds.  It still leaves
+    the computed-vector identification and any concrete roundoff-smallness
+    proof for these margins as separate obligations. -/
+theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hBMargin :
+      theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hBsrc.transposeVecNorm2LowerMargin)
+    (hStackMargin :
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+      (DeltaB : Fin p → Fin (p + q) → ℝ)
+      (Deltab : Fin (r + q) → ℝ)
+      (Deltad : Fin p → ℝ),
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  dsimp
+  rcases theorem20_10_partB_backward_error_of_householder_components_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf with
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad,
+      hmethod⟩
+  have hcond :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    theorem20_8_conditions20_24_of_frobNormRect_bounds_lt_margins
+      (A := A) (DeltaA := DeltaA) (B := B) (DeltaB := DeltaB)
+      (cA := theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+        frobNormRect A)
+      (cB := theorem20_10_householder_gammaB fp r p q * frobNormRect B)
+      hBsrc hStack hDeltaA hDeltaB hBMargin hStackMargin
+  refine
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad,
+      ?_⟩
+  exact hmethod hcond.1 hcond.2
 
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
