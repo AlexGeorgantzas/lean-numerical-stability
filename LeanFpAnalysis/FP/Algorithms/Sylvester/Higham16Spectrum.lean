@@ -816,6 +816,157 @@ theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_rightInverse_rhs_of_right
           exact sylvesterTwoColumnBlockCoeff_mulVec_rightInverse_rhs
             m n A T C X p q K hRight
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    route for the supplied adjacent two-column block coefficient: a nonzero
+    determinant gives Mathlib's nonsingular inverse as a left inverse.  Scope:
+    exact supplied-block algebra only; this does not prove real-Schur block
+    nonsingularity from spectral separation. -/
+theorem sylvesterTwoColumnBlockCoeff_nonsingInv_mul (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0)) :
+    Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q) *
+        sylvesterTwoColumnBlockCoeff m n A T p q =
+      1 := by
+  exact Matrix.nonsing_inv_mul (sylvesterTwoColumnBlockCoeff m n A T p q)
+    (isUnit_iff_ne_zero.mpr hdet)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    route for the supplied adjacent two-column block coefficient: a nonzero
+    determinant gives Mathlib's nonsingular inverse as a right inverse. -/
+theorem sylvesterTwoColumnBlockCoeff_mul_nonsingInv (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0)) :
+    sylvesterTwoColumnBlockCoeff m n A T p q *
+        Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q) =
+      1 := by
+  exact Matrix.mul_nonsing_inv (sylvesterTwoColumnBlockCoeff m n A T p q)
+    (isUnit_iff_ne_zero.mpr hdet)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based left action: applying the nonsingular inverse after the
+    supplied two-column block coefficient recovers the input vector. -/
+theorem sylvesterTwoColumnBlockCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (z : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z) =
+      z := by
+  rw [Matrix.mulVec_mulVec,
+    sylvesterTwoColumnBlockCoeff_nonsingInv_mul m n A T p q hdet,
+    Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based right action: the supplied two-column block coefficient
+    maps the nonsingular-inverse solution of any block right-hand side back to
+    that right-hand side. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (rhs : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+        (Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          rhs) =
+      rhs := by
+  rw [Matrix.mulVec_mulVec,
+    sylvesterTwoColumnBlockCoeff_mul_nonsingInv m n A T p q hdet,
+    Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based active-block linear solve: if the supplied two-column
+    block coefficient has nonzero determinant, then the block right-hand side
+    has a unique exact solution vector.  The witness is Mathlib's nonsingular
+    inverse applied to the supplied block right-hand side. -/
+theorem existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0)) :
+    ExistsUnique fun z : Sum (Fin m) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q := by
+  refine
+    ⟨Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        (sylvesterTwoColumnBlockRhs m n T C X p q), ?_, ?_⟩
+  · exact
+      sylvesterTwoColumnBlockCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
+        m n A T p q hdet (sylvesterTwoColumnBlockRhs m n T C X p q)
+  · intro z hz
+    calc
+      z =
+          Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+            (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z) := by
+          symm
+          exact
+            sylvesterTwoColumnBlockCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+              m n A T p q hdet z
+      _ =
+          Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+            (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+          rw [hz]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    determinant-based active-block solution identification: every vector
+    solving the supplied two-column block system equals the nonsingular inverse
+    applied to the block right-hand side. -/
+theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    {z : Sum (Fin m) (Fin m) -> Real}
+    (hz :
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q) :
+    z =
+      Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+  calc
+    z =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z) := by
+        symm
+        exact
+          sylvesterTwoColumnBlockCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero
+            m n A T p q hdet z
+    _ =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+        rw [hz]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant-based
+    column wrapper for the supplied adjacent two-column block solve: assigning
+    columns `p` and `q` from the nonsingular-inverse block solution makes `X`
+    satisfy the supplied two-column block recurrence. -/
+theorem sylvesterTwoColumnBlockSystem_of_nonsingInv_columns (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0))
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i)) :
+    IsSylvesterTwoColumnBlockSystem m n A T C X p q := by
+  refine sylvesterTwoColumnBlockSystem_of_blockCoeff_solutionVector
+    m n A T C X p q
+    (Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+      (sylvesterTwoColumnBlockRhs m n T C X p q)) ?_ hXp hXq
+  exact sylvesterTwoColumnBlockCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
+    m n A T p q hdet (sylvesterTwoColumnBlockRhs m n T C X p q)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
     two-column block inverse consistency: any supplied left inverse and right
     inverse of the same block coefficient coincide.  Scope: exact supplied-block
