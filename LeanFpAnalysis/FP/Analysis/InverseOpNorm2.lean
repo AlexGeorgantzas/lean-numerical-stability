@@ -49,8 +49,8 @@
 -- Sylvester/Lyapunov modules with NO supplied `M` at all is the vec-isometry
 -- identity `‖Y‖_F = ‖vec Y‖₂` and `frobNorm (T Y) = ‖P · vec Y‖₂` connecting the
 -- repository's hand-rolled `frobNorm` to the Kronecker coefficient `P`; that
--- Frobenius↔ℓ² bridge is not yet present in the repository (see the note in the
--- `SepLowerBound` docstring), so this file delivers the operator-norm core and
+-- Frobenius↔ℓ² bridge is not yet present in the repository, so this file
+-- delivers the operator-norm core and
 -- packages the σ_min hypothesis in the exact shape the existing
 -- `SepLowerBound → SylvesterInverseOpBound` bridge consumes.
 
@@ -215,12 +215,15 @@ theorem sigmaMin_mul_vecNorm2_le_matMulVec {n : ℕ}
     rw [hlhs_sq, hrhs_sq]; exact hsq_bound
   exact le_of_sq_le_sq_of_nonneg (vecNorm2_nonneg _) hsq
 
-/-- **The exact inverse operator-2 bound `‖x‖₂ ≤ (1/σ_min) ‖P x‖₂`.**
+/-- **The inverse operator-2 bound `‖x‖₂ ≤ (1/√lam) ‖P x‖₂`.**
 
-    With `σ = Real.sqrt λmin > 0` (`= σ_min(P)`), the singular-value lower bound
-    rearranges to the inverse-operator bound with `M = 1/σ_min`:
-      `‖x‖₂ ≤ (1/σ) ‖P x‖₂`  for every `x`.
-    This is exactly `‖P⁻¹‖₂ = 1/σ_min` as a vector-action operator bound. -/
+    With `σ = Real.sqrt lam > 0` for any lower bound `lam ≤ λ_i(PᵀP)` on the Gram
+    eigenvalues, the singular-value lower bound rearranges to the inverse-operator
+    bound with `M = 1/√lam`:
+      `‖x‖₂ ≤ (1/√lam) ‖P x‖₂`  for every `x`.
+    This is the vector-action form of `‖P⁻¹‖₂ ≤ 1/√lam`; it becomes the tight
+    identity `‖P⁻¹‖₂ = 1/σ_min(P)` exactly at the sharp instantiation
+    `lam = λ_min(PᵀP)` (so `√lam = σ_min(P)`). -/
 theorem vecNorm2_le_inv_sigmaMin_mul_matMulVec {n : ℕ}
     (P : Fin n → Fin n → ℝ) {lam : ℝ} (hlam : 0 < lam)
     (hEig : ∀ a : Fin n,

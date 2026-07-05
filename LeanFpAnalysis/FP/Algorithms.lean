@@ -91,6 +91,9 @@ import LeanFpAnalysis.FP.Algorithms.StationaryIterationDrazin
 import LeanFpAnalysis.FP.Analysis.InverseOpNorm2
 import LeanFpAnalysis.FP.Analysis.NumericalRadius
 import LeanFpAnalysis.FP.Analysis.SchurTriangulation
+import LeanFpAnalysis.FP.Analysis.MatrixPowersHenrici
+import LeanFpAnalysis.FP.Analysis.MatrixPowersSchur
+import LeanFpAnalysis.FP.Analysis.SylvesterSchurExistence
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderReflector
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderApply
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderOneStep

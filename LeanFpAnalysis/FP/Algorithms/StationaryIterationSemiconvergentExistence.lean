@@ -44,15 +44,28 @@
 -- modulus `< 1`, i.e. `ρ(Γ) < 1`.  Descending that decomposition to `ℝ`
 -- and reindexing so the eigenvalue-1 summand occupies the coordinates
 -- `(i : ℕ) < r` yields precisely the real column conditions hypothesised
--- below (`hGcolTop`, `hGcolBot`).  We therefore take those real column
--- conditions as the interface — the exact data the primary decomposition
--- produces — and carry out the remaining assembly into the repository's
+-- below (`hGcolTop`, `hGcolBot`).  We take those real column conditions as
+-- the interface and carry out the remaining assembly into the repository's
 -- `matMul` block form entirely over `ℝ`, avoiding the ℂ→ℝ recombination of
--- conjugate blocks.  The one genuine analytic gap that a *fully upstream*
--- version would still have to bridge — deriving semisimplicity-at-1 and
--- `|μ| < 1`-elsewhere from mere convergence of `Gᵐ` — is exactly the part
--- the book's own hypothesis ("`G` semiconvergent") already asserts, so it
--- is folded into the encoding rather than proved here.
+-- conjugate blocks.
+--
+-- HONESTY CAVEAT (statement strength).  Given the invertibility of `X`, the
+-- pair `hGcolTop ∧ hGcolBot` is exactly `G·X = X·diag(I_r,Γ)` in columnwise
+-- form, which is inter-derivable with the consuming module's similarity
+-- conjunct `X⁻¹GX = diag(I_r,Γ)` (`hsim`).  So these column conditions are
+-- NOT strictly more primitive than the block form — they are an EQUIVALENT
+-- product-form repackaging that assumes the full block-diagonalizing basis
+-- `X` outright.  The genuine, non-vacuous work this file does is therefore:
+-- (a) it CONSTRUCTS `J := blockJ n r Γ = diag(I_r,Γ)` (the consumer's opaque
+-- input datum), (b) it transfers the `Γ` bottom-block row-sum contraction to
+-- `J` (`blockJ_bottom_row_sum_le`), and (c) it reassembles the columnwise
+-- data into the product-form similarity (`matMul_G_X_eq_X_blockJ` +
+-- `X_inv_G_X_eq_blockJ`).  The one genuine analytic gap — deriving
+-- semisimplicity-at-1 and `|μ| < 1`-elsewhere, hence the basis `X` itself,
+-- from mere convergence of `Gᵐ` — is exactly the part the book's own
+-- hypothesis ("`G` semiconvergent") already asserts, so it is folded into
+-- the encoding rather than proved here.  This is an honest REDUCTION/
+-- repackaging of `[106, Lem 6.9]`, not a full closure of its existence.
 --
 -- No `sorry`/`admit`/`axiom` is used; the block-form existence is a genuine
 -- theorem over the stated (faithful) semiconvergence encoding.
@@ -150,10 +163,11 @@ theorem blockJ_bottom_row_sum_le (n r : ℕ) (Γ : Fin n → Fin n → ℝ)
     `Γ` (`G · xₖ = ∑_{l : ¬(l:ℕ)<r} Γ_{lk} xₗ`), then
     `G · X = X · diag(I_r, Γ)`.
 
-    This is the algebraic heart of the block form: the two hypotheses
-    `hGcolTop`, `hGcolBot` are exactly the real column data delivered by the
-    primary decomposition specialised to a matrix that is semisimple at the
-    eigenvalue `1`. -/
+    This is the algebraic heart of the reassembly step: the two hypotheses
+    `hGcolTop`, `hGcolBot` are the columnwise form of `G·X = X·diag(I_r,Γ)`
+    (equivalent, given `X` invertible, to the similarity `X⁻¹GX = diag(I_r,Γ)`
+    itself — see the file-header HONESTY CAVEAT); the lemma turns that
+    product data into the repository `matMul` similarity. -/
 theorem matMul_G_X_eq_X_blockJ (n r : ℕ)
     (G X Γ : Fin n → Fin n → ℝ)
     (hGcolTop : ∀ (k : Fin n), (k : ℕ) < r →

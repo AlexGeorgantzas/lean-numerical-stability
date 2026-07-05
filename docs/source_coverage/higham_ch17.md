@@ -26,13 +26,17 @@
   in `StationaryIterationSemiconvergentExistence.lean` (import-only):
   `semiconvergent_block_form_exists` PROVES `X⁻¹GX = diag(I_r,Γ)` and discharges
   all block-form data hypotheses of `StationaryIterationSemiconvergent.lean`
-  from the more primitive real column conditions (eigenvalue-1 eigenvectors +
-  G-invariant complement + Γ row-sum contraction) that the ℂ primary
-  decomposition delivers, plus the two end-to-end corollaries
+  from real column conditions (eigenvalue-1 eigenvectors + G-invariant
+  complement + Γ row-sum contraction), plus the two end-to-end corollaries
   `singular_error_split_semiconvergent_of_block_data` /
-  `matPow_G_tendsto_oneEigenProjector_of_block_data`; deriving those column
-  conditions from mere convergence of `Gᵐ` (semisimplicity-at-1) stays folded
-  into the hypothesis, exactly as the book takes the form as given; the
+  `matPow_G_tendsto_oneEigenProjector_of_block_data`. An adversarial audit
+  confirmed these column conditions are target-EQUIVALENT (given invertibility
+  of X) to the similarity conjunct itself, so the file's genuine work is
+  constructing `J = diag(I_r,Γ)`, transferring the Γ contraction to J's rows,
+  and reassembling the product-form similarity — NOT reducing the analytic
+  difficulty; deriving the basis X from mere convergence of `Gᵐ`
+  (semisimplicity-at-1) stays folded into the hypothesis, exactly as the book
+  takes the form as given; the
   `hne`/certificate hypotheses documented per-row (each
   mirrors an implicit assumption of the printed text); and the
   benchmark-reserved Problem 17.1 / Appendix A 17.1 rows.

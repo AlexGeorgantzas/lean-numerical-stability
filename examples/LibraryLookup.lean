@@ -15244,3 +15244,18 @@ small enough to serve as a smoke check for representative public declarations.
 #check semiconvergent_block_form_exists
 #check singular_error_split_semiconvergent_of_block_data
 #check matPow_G_tendsto_oneEigenProjector_of_block_data
+-- Split-3B Wave-2 Schur-enabled closures (Henrici 18.7, Schur power/normal identity, complex Sylvester)
+#check A_charpoly_factors_schur
+#check frobSq_schur_pythagoras
+#check departureFSq_eq_frobSq_sub_sum_sq_eigs
+#check departureFSq_form_independent
+#check isStarNormal_of_strictUpper_eq_zero
+#check normal_iff_strictUpper_eq_zero
+#check pow_eq_unitary_conj
+#check strictUpper_pow_eq_zero
+#check normal_upperTriangular_isDiag
+#check normal_schur_strictUpper_eq_zero
+#check norm_pow_normal_eq
+#check complexSylvester_schur_factors_exist
+#check complexSylvester_exists_unique_of_schur_shift
+#check complexSylvester_triangular_exists_unique
