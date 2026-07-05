@@ -15403,3 +15403,12 @@ small enough to serve as a smoke check for representative public declarations.
 #check H19_Theorem19_13_firstPivot_storedLoopPerturbation_frobNorm_le_strong
 #check henrici_departure_le_sharp_of_schur
 #check henriciSharpConst_le_henriciConst
+-- Split-3B Wave-10: 19.13 all-pivots strong-model; [620] pseudospectral lower bound; sharp Henrici constant; general r(A^2)<=r(A)^2
+#check H19_Theorem19_13_allPivots_storedLoop_backwardError_strong
+#check H19_Theorem19_13_allPivots_storedLoop_backwardError_frobNorm_strong
+#check pseudospectrum_mem_of_aligned_rankOne_perturbation
+#check pseudospectralRadius_outward_growth_point
+#check henrici_departure_le_exactSharp_of_schur
+#check sum_commDiagRe_eq_zero
+#check numericalRadius_pow_two_le
+#check numericalRadius_pow_two_pow_le
