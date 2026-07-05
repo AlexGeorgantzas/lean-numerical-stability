@@ -7462,6 +7462,71 @@ theorem isBlockDiagDomRow_leadingBlockPrefix13_7 {m : ℕ}
     _ ≤ invDiagBound (emb i) := hDom (emb i)
     _ = leadingBlockPrefixInvDiagBound13_7 invDiagBound p hp i := rfl
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    a nonsingular leading prefix that inherits column BDD cannot have a
+    singular active diagonal block when the active diagonal lower bound is
+    nonpositive. -/
+theorem higham13_leadingBlockPrefix_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (p : ℕ) (hp : p < m)
+    (hPrefix : BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (j : Fin (p + 1))
+    (hj : invDiagBound (leadingBlockPrefixIndex13_7 p hp j) ≤ 0) :
+    Matrix.det
+      (A (leadingBlockPrefixIndex13_7 p hp j)
+        (leadingBlockPrefixIndex13_7 p hp j)) ≠ 0 := by
+  classical
+  have hNormNonneg : ∀ i j : Fin m, 0 ≤ ‖A i j‖ := by
+    intro i j
+    exact norm_nonneg (A i j)
+  have hDomPrefixRaw :=
+    isBlockDiagDomCol_leadingBlockPrefix13_7
+      (fun i j => ‖A i j‖) invDiagBound hNormNonneg hDom p hp
+  have hDomPrefix :
+      IsBlockDiagDomCol (p + 1)
+        (fun i j => ‖leadingBlockPrefix13_2 A p hp i j‖)
+        (leadingBlockPrefixInvDiagBound13_7 invDiagBound p hp) := by
+    simpa [leadingBlockPrefixNorm13_7, leadingBlockPrefix13_2,
+      leadingBlockPrefixIndex13_7] using hDomPrefixRaw
+  have hjPrefix :
+      leadingBlockPrefixInvDiagBound13_7 invDiagBound p hp j ≤ 0 := by
+    simpa [leadingBlockPrefixInvDiagBound13_7, leadingBlockPrefixIndex13_7]
+      using hj
+  have hdetPrefix :=
+    higham13_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+      (leadingBlockPrefix13_2 A p hp)
+      (leadingBlockPrefixInvDiagBound13_7 invDiagBound p hp)
+      hPrefix hDomPrefix j hjPrefix
+  simpa [leadingBlockPrefix13_2, leadingBlockPrefixIndex13_7] using hdetPrefix
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    leading-principal-block nonsingularity supplies the prefix nonsingularity
+    premise used by
+    `higham13_leadingBlockPrefix_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`. -/
+theorem higham13_leadingBlockPrefix_diag_det_ne_zero_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hLead : LeadingPrincipalBlockNonsingular13_2 A)
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (p : ℕ) (hpLead : p + 1 < m)
+    (j : Fin (p + 1))
+    (hj : invDiagBound
+        (leadingBlockPrefixIndex13_7 p
+          (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j) ≤ 0) :
+    Matrix.det
+      (A
+        (leadingBlockPrefixIndex13_7 p
+          (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j)
+        (leadingBlockPrefixIndex13_7 p
+          (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j)) ≠ 0 :=
+  higham13_leadingBlockPrefix_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+    A invDiagBound hDom p (Nat.lt_trans (Nat.lt_succ_self p) hpLead)
+    (hLead p hpLead) j hj
+
 -- ============================================================
 -- §13.3.1  Equation 13.18 proof-chain pieces
 -- ============================================================

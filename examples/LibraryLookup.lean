@@ -11502,6 +11502,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham13_blockDiagDomCol_offdiag_entries_zero_of_norm_table_nonpos
 #check higham13_not_blockMatrixNonsingular_of_blockDiagDomCol_diagBound_nonpos_diag_det_eq_zero
 #check higham13_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+#check higham13_leadingBlockPrefix_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+#check higham13_leadingBlockPrefix_diag_det_ne_zero_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos
 #check blockMatrixNonsingular_of_posDef_flat
 #check matrix_posDef_submatrix_of_injective
 #check blockMatrixFlat_leadingBlockPrefix13_2
@@ -15425,3 +15427,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check sum_commDiagRe_eq_zero
 #check numericalRadius_pow_two_le
 #check numericalRadius_pow_two_pow_le
+-- Split-3B Wave-11: FULL general-k Berger power inequality via Pearcy (r(A^k)<=r(A)^k, all k, arbitrary A) + unconditional (18.7) power bound
+#check numericalRadius_pow_le
+#check norm_pow_le_two_mul_numericalRadius_pow
+#check numericalRadiusCLM_pow_le
+#check numericalRadiusCLM_pow_pointwise_le_of_le_one
