@@ -97,6 +97,8 @@ import LeanFpAnalysis.FP.Analysis.MatrixPowersHenrici
 import LeanFpAnalysis.FP.Analysis.MatrixPowersSchur
 import LeanFpAnalysis.FP.Analysis.MatrixPowersHenriciNormal
 import LeanFpAnalysis.FP.Analysis.SylvesterSchurExistence
+import LeanFpAnalysis.FP.Analysis.MatrixPowersBinomialBound
+import LeanFpAnalysis.FP.Analysis.SemiconvergentSpectral
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderReflector
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderApply
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderOneStep

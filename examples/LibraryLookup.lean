@@ -15294,3 +15294,11 @@ small enough to serve as a smoke check for representative public declarations.
 -- Unconditional Henrici normal ⟺ N=0 (hard direction discharged via MatrixPowersSchur)
 #check schurNormalImpliesStrictUpperZero_holds
 #check normal_iff_strictUpper_eq_zero_unconditional
+-- Split-3B Wave-3: (18.7) 2-norm power bound closed; [106] necessity partial
+#check opNorm_schurpow_le_binomial
+#check exists_schur_powerBounds
+#check norm_pow_nilpotent
+#check opNorm_pow_le_geometric
+#check eigenvalue_norm_le_one_of_orbit_tendsto
+#check maxGenEigenspace_one_eq_eigenspace_of_isFinitelySemisimple
+#check isInternal_maxGenEigenspace

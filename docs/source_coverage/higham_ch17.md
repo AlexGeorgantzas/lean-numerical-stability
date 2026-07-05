@@ -36,7 +36,15 @@
   and reassembling the product-form similarity — NOT reducing the analytic
   difficulty; deriving the basis X from mere convergence of `Gᵐ`
   (semisimplicity-at-1) stays folded into the hypothesis, exactly as the book
-  takes the form as given; the
+  takes the form as given. **Necessity-direction partial (`Analysis/SemiconvergentSpectral.lean`,
+  import-only, axiom-clean):** the honest CONVERSE is now proved —
+  `eigenvalue_norm_le_one_of_orbit_tendsto` (convergence of `Gᵐ` ⟹ every
+  eigenvalue `‖μ‖ ≤ 1`), the semisimple collapse `maxGenEigenspace 1 =
+  eigenspace 1` (given `IsFinitelySemisimple`), and the ℂ primary-decomposition
+  internal direct sum — with the four remaining obstructions to full [106]
+  existence itemized in-file (semisimple-at-1 FROM convergence; strict `|μ|<1`;
+  ℂ→ℝ descent; the `ρ(Γ)<1 ⟹ ‖D⁻¹ΓD‖∞<1` contraction), each naming the exact
+  missing Mathlib v4.29 lemma. Full [106] existence remains allowed-BLOCKED; the
   `hne`/certificate hypotheses documented per-row (each
   mirrors an implicit assumption of the printed text); and the
   benchmark-reserved Problem 17.1 / Appendix A 17.1 rows.
