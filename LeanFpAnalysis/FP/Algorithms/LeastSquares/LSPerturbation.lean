@@ -5970,6 +5970,108 @@ theorem wedinLemma20_12_top_finiteHermitianEigenvalue_projectionDiff_sq_compress
     exact hEndpointP.mpr (hTransfer.mpr (hEndpointQ.mp hQ_one))
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    source range-projection endpoint transfer for the `lambda = 1` case.
+    For the projections `A*Aplus` and `B*Bplus`, the equal range-dimension
+    hypothesis required by the abstract endpoint theorem follows from the two
+    left inverses `Aplus*A = I` and `Bplus*B = I`. -/
+theorem wedinLemma20_12_top_finiteHermitianEigenvalue_rangeProjection_projectionDiff_sq_compression_eq_one_iff_swapped_eq_one
+    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    {aA aB : Fin m}
+    (hTopA : ∀ a : Fin m,
+      finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul (rectMatMul A Aplus)
+              (rectMatMul
+                (fun i j => rectMatMul A Aplus i j - rectMatMul B Bplus i j)
+                (fun i j => rectMatMul A Aplus i j - rectMatMul B Bplus i j)))
+            (rectMatMul A Aplus))
+          (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+            (rectMatMul A Aplus) (rectMatMul B Bplus) hSymA hSymB
+            (rectMatMul_rangeProjection_idempotent_of_left_inverse A Aplus hleftA)
+            (rectMatMul_rangeProjection_idempotent_of_left_inverse B Bplus hleftB)) a ≤
+        finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul (rectMatMul A Aplus)
+              (rectMatMul
+                (fun i j => rectMatMul A Aplus i j - rectMatMul B Bplus i j)
+                (fun i j => rectMatMul A Aplus i j - rectMatMul B Bplus i j)))
+            (rectMatMul A Aplus))
+          (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+            (rectMatMul A Aplus) (rectMatMul B Bplus) hSymA hSymB
+            (rectMatMul_rangeProjection_idempotent_of_left_inverse A Aplus hleftA)
+            (rectMatMul_rangeProjection_idempotent_of_left_inverse B Bplus hleftB)) aA)
+    (hTopB : ∀ a : Fin m,
+      finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul (rectMatMul B Bplus)
+              (rectMatMul
+                (fun i j => rectMatMul A Aplus i j - rectMatMul B Bplus i j)
+                (fun i j => rectMatMul A Aplus i j - rectMatMul B Bplus i j)))
+            (rectMatMul B Bplus))
+          (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+            (rectMatMul A Aplus) (rectMatMul B Bplus) hSymA hSymB
+            (rectMatMul_rangeProjection_idempotent_of_left_inverse A Aplus hleftA)
+            (rectMatMul_rangeProjection_idempotent_of_left_inverse B Bplus hleftB)) a ≤
+        finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul (rectMatMul B Bplus)
+              (rectMatMul
+                (fun i j => rectMatMul A Aplus i j - rectMatMul B Bplus i j)
+                (fun i j => rectMatMul A Aplus i j - rectMatMul B Bplus i j)))
+            (rectMatMul B Bplus))
+          (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+            (rectMatMul A Aplus) (rectMatMul B Bplus) hSymA hSymB
+            (rectMatMul_rangeProjection_idempotent_of_left_inverse A Aplus hleftA)
+            (rectMatMul_rangeProjection_idempotent_of_left_inverse B Bplus hleftB)) aB) :
+    finiteHermitianEigenvalues
+        (rectMatMul
+          (rectMatMul (rectMatMul A Aplus)
+            (rectMatMul
+              (fun i j => rectMatMul A Aplus i j - rectMatMul B Bplus i j)
+              (fun i j => rectMatMul A Aplus i j - rectMatMul B Bplus i j)))
+          (rectMatMul A Aplus))
+        (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+          (rectMatMul A Aplus) (rectMatMul B Bplus) hSymA hSymB
+          (rectMatMul_rangeProjection_idempotent_of_left_inverse A Aplus hleftA)
+          (rectMatMul_rangeProjection_idempotent_of_left_inverse B Bplus hleftB)) aA = 1 ↔
+      finiteHermitianEigenvalues
+        (rectMatMul
+          (rectMatMul (rectMatMul B Bplus)
+            (rectMatMul
+              (fun i j => rectMatMul A Aplus i j - rectMatMul B Bplus i j)
+              (fun i j => rectMatMul A Aplus i j - rectMatMul B Bplus i j)))
+          (rectMatMul B Bplus))
+        (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+          (rectMatMul A Aplus) (rectMatMul B Bplus) hSymA hSymB
+          (rectMatMul_rangeProjection_idempotent_of_left_inverse A Aplus hleftA)
+          (rectMatMul_rangeProjection_idempotent_of_left_inverse B Bplus hleftB)) aB = 1 := by
+  let PA : Fin m → Fin m → ℝ := rectMatMul A Aplus
+  let PB : Fin m → Fin m → ℝ := rectMatMul B Bplus
+  have hIdemA : rectMatMul PA PA = PA := by
+    simpa [PA] using
+      rectMatMul_rangeProjection_idempotent_of_left_inverse A Aplus hleftA
+  have hIdemB : rectMatMul PB PB = PB := by
+    simpa [PB] using
+      rectMatMul_rangeProjection_idempotent_of_left_inverse B Bplus hleftB
+  have hRangeFinrank :
+      Module.finrank ℝ
+          (LinearMap.range ((Matrix.of PA : Matrix (Fin m) (Fin m) ℝ).mulVecLin)) =
+        Module.finrank ℝ
+          (LinearMap.range ((Matrix.of PB : Matrix (Fin m) (Fin m) ℝ).mulVecLin)) := by
+    simpa [PA, PB] using
+      wedinLemma20_12_rangeProjection_range_finrank_eq_of_left_inverses
+        A B Aplus Bplus hleftA hleftB
+  simpa [PA, PB, hIdemA, hIdemB] using
+    wedinLemma20_12_top_finiteHermitianEigenvalue_projectionDiff_sq_compression_eq_one_iff_swapped_eq_one_of_range_finrank_eq
+      PA PB (by simpa [PA] using hSymA) (by simpa [PB] using hSymB)
+      hIdemA hIdemB hTopA hTopB hRangeFinrank
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     if the selected top Hermitian eigenvalues of the two `D^2` compressions
     are away from the endpoint cases `0` and `1`, then the top eigenvalues
     are equal.
