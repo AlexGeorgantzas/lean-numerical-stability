@@ -57,6 +57,30 @@ theorem higham11_3_oneByOne_step_factorization (m : ℕ)
   oneByOne_step_factorization m A ha hsym L D hL0 hLcol hL0s hLtr
     hD00 hD0s hDs0 hDtr
 
+/-- **Eq (11.1)/(11.3) inductive step** for the exact block-LDLᵀ recursion: with
+the trailing block factorized recursively (`hIH : L_S·D_S·L_Sᵀ = S`, the Schur
+complement) and first-stage 1×1-pivot multipliers, the assembled `L,D` reproduce
+`A` exactly.  Iterating gives the exact `PAPᵀ = LDLᵀ` behind Theorem 11.3. -/
+theorem higham11_3_blockLDLT_assemble_step (n : ℕ)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (ha : A 0 0 ≠ 0) (hsym : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (S L_S D_S : Fin n → Fin n → ℝ)
+    (hS : ∀ i j : Fin n, S i j = A i.succ j.succ - A i.succ 0 * A 0 j.succ / A 0 0)
+    (hIH : ∀ i j : Fin n, (∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) = S i j)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL0 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = A i.succ 0 / A 0 0)
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hLtr : ∀ i j : Fin n, L i.succ j.succ = L_S i j)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin n, D i.succ j.succ = D_S i j) :
+    ∀ I J : Fin (n + 1),
+      (∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = A I J :=
+  blockLDLT_assemble_step n A ha hsym S L_S D_S hS hIH L D
+    hL0 hLcol hL0s hLtr hD00 hD0s hDs0 hDtr
+
 /-! ## §11.1.1 Complete pivoting -/
 
 /-- **Algorithm 11.1** pivoting parameter
