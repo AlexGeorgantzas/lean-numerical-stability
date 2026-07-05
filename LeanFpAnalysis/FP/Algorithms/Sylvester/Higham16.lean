@@ -1299,6 +1299,46 @@ theorem sylvester_practical_error_bound_of_diagonal_computed_residual_error_mode
         hRhat hRu hdR)
       heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case
+    with an explicit residual error model: after replacing the exact diagonal
+    inverse and computed-residual budget by componentwise larger supplied
+    estimates, a scalar cap on the estimated practical budget gives the final
+    relative max-entry error bound.  This is an exact diagonal-inverse
+    specialization; it does not prove any estimator such as a LAPACK condition
+    estimator. -/
+theorem sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_mono_scalar
+    (m n : Nat) (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hRhat_eq : forall i j,
+      Rhat i j =
+        sylvesterResidualRect m n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat i j +
+          dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterDiagonalVecCoeffInvAbs m n a b p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono_scalar
+      m n a b C X Xhat Rhat Rhat' Ru Ru' PinvAbs' eta hsep hX
+      (sylvesterComputedResidualBudget_of_error_model m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat Rhat Ru dR
+        hRhat_eq hRu hdR)
+      hPinvAbs_le hRhat_le hRu_le heta hcomponent hXhat
+
 -- ============================================================
 -- Exact Schur-coordinate algebra from Chapter 16.1
 -- ============================================================
