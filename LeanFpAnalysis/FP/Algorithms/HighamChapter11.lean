@@ -916,6 +916,31 @@ theorem higham11_14_fl_aasen_next_column_update_sum_abs_error (n : ℕ)
     (∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0) (H next i)
     (hHnz i next hnext) hval
 
+/-- **Equation (11.14) floating-point next-column update**, exact-recurrence
+bridge.  If the exact Aasen recurrence gives
+`L k next = (A k i - ∑_{j≤i} L k j H j i) / H next i`, then the rounded scalar
+update equals `L k next + Δ` with `|Δ| ≤ γ₂ |L k next|`. -/
+theorem higham11_14_fl_aasen_next_column_update_abs_error_of_exact_recurrence
+    (n : ℕ) (fp : FPModel) (A L H : Fin n → Fin n → ℝ)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (i next k : Fin n) (hnext : next.val = i.val + 1)
+    (hk : i.val + 2 ≤ k.val) (hval : gammaValid fp 2) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 2 * |L k next| ∧
+      fp.fl_div
+          (fp.fl_sub (A k i)
+            (∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0))
+          (H next i)
+        = L k next + Δ := by
+  obtain ⟨Δ, hΔ, hfl⟩ :=
+    higham11_14_fl_aasen_next_column_update_sum_abs_error n fp A L H
+      i next k hHnz hnext hval
+  refine ⟨Δ, ?_, ?_⟩
+  · rw [hrec i next k hnext hk]
+    exact hΔ
+  · rw [hfl, hrec i next k hnext hk]
+
 /-- **Equation (11.15)**, the Aasen solve chain
 `L z = P b`, `T y = z`, `L^T w = y`, `x = P w`. -/
 def higham11_15_aasenSolveChain (n : ℕ)
