@@ -875,6 +875,31 @@ theorem isLeast_lyapunovBackwardErrorValues_of_symmetric_spectral (n : ℕ)
     (lyapunovBackwardErrorValues_nonempty_of_symmetric_spectral n
       A C Y U lam alpha gamma hY hU hC hYsym hpos)
 
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Chapter 16, Section 16.2.1, equation (16.21): exact-arithmetic
+    source-facing Lyapunov residual-ratio lower bound. This wrapper uses the
+    symmetric-spectral optimizer to discharge the feasible-set nonemptiness
+    hypothesis; it is not a rounded solver or estimator. -/
+theorem lyapunov_relative_residual_le_backwardErrorInf_of_symmetric_spectral
+    (n : Nat)
+    (A C Y U : Fin n -> Fin n -> Real) (lam : Fin n -> Real)
+    (alpha gamma : Real)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U)
+    (hC : IsSymmetricFiniteMatrix C) (hYsym : IsSymmetricFiniteMatrix Y)
+    (hpos : forall i j : Fin n,
+      0 < 2 * alpha ^ 2 * (lam i ^ 2 + lam j ^ 2) + gamma ^ 2)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma)
+    (hscale : 0 < 2 * alpha * frobNorm Y + gamma) :
+    frobNorm (lyapunovResidual n A C Y) /
+        (2 * alpha * frobNorm Y + gamma) <=
+      lyapunovBackwardErrorInf n A C Y alpha gamma := by
+  exact
+    lyapunov_relative_residual_le_backwardErrorInf n A C Y alpha gamma
+      halpha hgamma hscale
+      (lyapunovBackwardErrorValues_nonempty_of_symmetric_spectral n
+        A C Y U lam alpha gamma hY hU hC hYsym hpos)
+
 -- ============================================================
 -- (16.29): floating-point computed-residual dR model
 -- ============================================================

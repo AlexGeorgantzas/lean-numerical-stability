@@ -33165,6 +33165,163 @@ theorem theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs_house
       hgammaA_nonneg hgammaB_nonneg hgammaA_ge hgammaB_ge
       hSdiag hL22diag hvalid2S hvalid2L22
 
+/-- Theorem 20.10(a), exact transformed-RHS constructed-source certificate
+    specialized to the Householder `gamma_tilde_mn` and `gamma_tilde_np`
+    coefficients.
+
+    This certificate form is the reusable handoff into the Part B backward-error
+    bridge: it keeps the exact transformed right-hand side
+    `theorem20_10_gqr_xhat` and the printed Householder gamma coefficients,
+    without claiming the rounded RHS-transform or final computed-vector path. -/
+theorem theorem20_10_partA_certificate_of_constructed_source_exact_rhs_householder_gamma
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d)
+          (theorem20_10_householder_gammaA fp r p q)
+          (theorem20_10_householder_gammaB fp r p q)) := by
+  have hKA_ge_two : 2 ≤ householderConstructApplyGammaIndex (r + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKB_ge_two : 2 ≤ householderConstructApplyGammaIndex (p + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKA_pos : 0 < householderConstructApplyGammaIndex (r + q) := by
+    omega
+  have hKB_pos : 0 < householderConstructApplyGammaIndex (p + q) := by
+    omega
+  have hvalid2S : gammaValid fp (2 * p) := by
+    apply gammaValid_mono fp _ hvalidB
+    calc
+      2 * p = p * 2 := by omega
+      _ ≤ p * householderConstructApplyGammaIndex (p + q) :=
+          Nat.mul_le_mul_left p hKB_ge_two
+  have hvalid2L22 : gammaValid fp (2 * q) := by
+    apply gammaValid_mono fp _ hvalidA
+    calc
+      2 * q ≤ 2 * (p + q) := Nat.mul_le_mul_left 2 (by omega)
+      _ = (p + q) * 2 := by omega
+      _ ≤ (p + q) * householderConstructApplyGammaIndex (r + q) :=
+          Nat.mul_le_mul_left (p + q) hKA_ge_two
+  have hgammaA_nonneg :
+      0 ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidA
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  have hidxA_ge_q :
+      q ≤ (p + q) * householderConstructApplyGammaIndex (r + q) := by
+    exact le_trans (by omega)
+      (Nat.le_mul_of_pos_right (p + q) hKA_pos)
+  have hidxB_ge_p :
+      p ≤ p * householderConstructApplyGammaIndex (p + q) :=
+    Nat.le_mul_of_pos_right p hKB_pos
+  have hgammaA_ge :
+      gamma fp q ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA, H19.Theorem19_4.gamma_tilde] using
+      gamma_mono fp hidxA_ge_q hvalidA
+  have hgammaB_ge :
+      gamma fp p ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB, H19.Theorem19_4.gamma_tilde] using
+      gamma_mono fp hidxB_ge_p hvalidB
+  exact
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid_exact_rhs
+      fp h b d
+      (theorem20_10_householder_gammaA fp r p q)
+      (theorem20_10_householder_gammaB fp r p q)
+      hgammaA_nonneg hgammaB_nonneg hgammaA_ge hgammaB_ge
+      hSdiag hL22diag hvalid2S hvalid2L22
+
+/-- Theorem 20.10(b), exact transformed-RHS constructed-source
+    backward-error core specialized to the Householder `gamma_tilde_mn` and
+    `gamma_tilde_np` coefficients.
+
+    This feeds the exact transformed-RHS Part A certificate through the generic
+    Part A-to-Part B bridge, exposing concrete perturbations, the constraint
+    right-hand-side action identity, and the exact perturbed GQR/minimizer core.
+    It is still an exact transformed-RHS branch; the rounded RHS-transform and
+    final computed-vector identification remain separate obligations. -/
+theorem theorem20_10_partB_backward_error_of_constructed_source_exact_rhs_householder_gamma
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let xhat : Fin (p + q) → ℝ := theorem20_10_gqr_xhat fp h b d
+    let gammaA : ℝ := theorem20_10_householder_gammaA fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  dsimp
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  rcases
+    theorem20_10_partA_certificate_of_constructed_source_exact_rhs_householder_gamma
+      fp h b d hSdiag hL22diag hvalidA hvalidB with
+    ⟨_DeltaS, _DeltaL22, _hDeltaSbound, _hDeltaL22bound,
+      _hDeltaSfrob, _hDeltaL22frob, hcertA⟩
+  exact
+    theorem20_10_partB_backward_error_of_nonempty_partA_certificate
+      A B b d (theorem20_10_gqr_xhat fp h b d)
+      hgammaB_nonneg hcertA
+
 /-- Theorem 20.10(b) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
 theorem theorem20_10_partB_backward_error_of_householder_gamma_certificate

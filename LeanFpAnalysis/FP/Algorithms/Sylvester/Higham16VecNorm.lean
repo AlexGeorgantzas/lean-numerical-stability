@@ -4144,6 +4144,179 @@ theorem sylvester_relative_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise
         U A V B a b sigma hU hV hA hB hSigma hgap)
       hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    Lyapunov a posteriori error-residual bound from a positive lower bound on
+    the concrete vectorized Lyapunov coefficient. -/
+theorem lyapunov_aposteriori_bound_of_vecCoeff_sigmaMin (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  have hExactSylv :
+      forall i j,
+        sylvesterOp n A (fun i' j' => -matTranspose A i' j') X i j = C i j := by
+    intro i j
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hExact i j
+  have h :=
+    sylvester_aposteriori_bound n A (fun i j => -matTranspose A i j)
+      C X Xhat sigma hsigma
+      (SepLowerBound_lyapunov_of_vecCoeff_sigmaMin n A sigma hsigma hCoeff)
+      hExactSylv hE_ne
+  simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    relative Lyapunov a posteriori error-residual bound from a positive lower
+    bound on the concrete vectorized Lyapunov coefficient. -/
+theorem lyapunov_relative_aposteriori_bound_of_vecCoeff_sigmaMin
+    (n : Nat) (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  have hExactSylv :
+      forall i j,
+        sylvesterOp n A (fun i' j' => -matTranspose A i' j') X i j = C i j := by
+    intro i j
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hExact i j
+  have h :=
+    sylvester_relative_aposteriori_bound n A (fun i j => -matTranspose A i j)
+      C X Xhat sigma hsigma
+      (SepLowerBound_lyapunov_of_vecCoeff_sigmaMin n A sigma hsigma hCoeff)
+      hExactSylv hE_ne hX_pos
+  simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    Lyapunov a posteriori error-residual bound from a concrete left inverse and
+    operator-2 radius for the printed Lyapunov vec/Kronecker coefficient. -/
+theorem lyapunov_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A C X Xhat : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      M * frobNorm (lyapunovResidual n A C Xhat) := by
+  have hExactSylv :
+      forall i j,
+        sylvesterOp n A (fun i' j' => -matTranspose A i' j') X i j = C i j := by
+    intro i j
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hExact i j
+  have h :=
+    sylvester_aposteriori_bound n A (fun i j => -matTranspose A i j)
+      C X Xhat (1 / M) (one_div_pos.mpr hM)
+      (SepLowerBound_lyapunov_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A Pinv hM hLeft hPinv)
+      hExactSylv hE_ne
+  simpa [one_div, lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    relative Lyapunov a posteriori error-residual bound from a concrete left
+    inverse and operator-2 radius for the printed Lyapunov vec/Kronecker
+    coefficient. -/
+theorem lyapunov_relative_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A C X Xhat : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      (M * frobNorm (lyapunovResidual n A C Xhat)) / frobNorm X := by
+  have hExactSylv :
+      forall i j,
+        sylvesterOp n A (fun i' j' => -matTranspose A i' j') X i j = C i j := by
+    intro i j
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hExact i j
+  have h :=
+    sylvester_relative_aposteriori_bound n A (fun i j => -matTranspose A i j)
+      C X Xhat (1 / M) (one_div_pos.mpr hM)
+      (SepLowerBound_lyapunov_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A Pinv hM hLeft hPinv)
+      hExactSylv hE_ne hX_pos
+  simpa [one_div, lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    Lyapunov a posteriori error-residual bound from a finite Gram-eigenvalue
+    lower bound for the concrete vectorized Lyapunov coefficient. -/
+theorem lyapunov_aposteriori_bound_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A C X Xhat : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / Real.sqrt lam) * frobNorm (lyapunovResidual n A C Xhat) := by
+  have hExactSylv :
+      forall i j,
+        sylvesterOp n A (fun i' j' => -matTranspose A i' j') X i j = C i j := by
+    intro i j
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hExact i j
+  have h :=
+    sylvester_aposteriori_bound n A (fun i j => -matTranspose A i j)
+      C X Xhat (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (SepLowerBound_lyapunov_of_vecCoeff_gram_eigenvalues
+        n A (le_of_lt hLam) (Real.sqrt_pos.mpr hLam) hEig)
+      hExactSylv hE_ne
+  simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    relative Lyapunov a posteriori error-residual bound from a finite
+    Gram-eigenvalue lower bound for the concrete vectorized Lyapunov
+    coefficient. -/
+theorem lyapunov_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A C X Xhat : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / Real.sqrt lam) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  have hExactSylv :
+      forall i j,
+        sylvesterOp n A (fun i' j' => -matTranspose A i' j') X i j = C i j := by
+    intro i j
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hExact i j
+  have h :=
+    sylvester_relative_aposteriori_bound n A (fun i j => -matTranspose A i j)
+      C X Xhat (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (SepLowerBound_lyapunov_of_vecCoeff_gram_eigenvalues
+        n A (le_of_lt hLam) (Real.sqrt_pos.mpr hLam) hEig)
+      hExactSylv hE_ne hX_pos
+  simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using h
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     the Lyapunov condition-number certificate follows from a positive lower
     bound on the printed vectorized Lyapunov coefficient. -/
@@ -4281,6 +4454,71 @@ theorem lyapunov_relative_first_order_bound_of_vecCoeff_sigmaMin
       A X DeltaA DeltaC DeltaX alpha gamma sigma eps
       halpha hgamma hsigma heps hX hCoeff
       hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    Frobenius Lyapunov perturbation bound from a positive lower bound on the
+    concrete vectorized Lyapunov coefficient. -/
+theorem lyapunov_perturbation_bound_of_vecCoeff_sigmaMin (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hDeltaX_ne : Not (frobNormSq DeltaX = 0)) :
+    frobNorm DeltaX <=
+      (1 / sigma) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound n A X DeltaA DeltaC DeltaX
+      sigma hsigma
+      (SepLowerBound_lyapunov_of_vecCoeff_sigmaMin n A sigma hsigma hCoeff)
+      alpha gamma eps halpha hgamma heps
+      hDeltaA hDeltaC hLin hDeltaX_ne
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    relative Lyapunov perturbation bound from a positive lower bound on the
+    concrete vectorized Lyapunov coefficient. -/
+theorem lyapunov_relative_perturbation_of_vecCoeff_sigmaMin
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hDeltaX_ne : Not (frobNormSq DeltaX = 0))
+    (hX_ne : Not (frobNorm X = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n A (fun i j => -matTranspose A i j) X
+        alpha alpha gamma sigma * eps := by
+  have hDeltaB :
+      frobNorm (fun i j => -matTranspose DeltaA i j) <= eps * alpha := by
+    rw [show (fun i j => -matTranspose DeltaA i j) =
+        (fun i j => -(matTranspose DeltaA) i j) from by ext i j; rfl]
+    rw [frobNorm_neg, frobNorm_transpose]
+    exact hDeltaA
+  exact
+    sylvester_relative_perturbation n A
+      (fun i j => -matTranspose A i j) X DeltaA
+      (fun i j => -matTranspose DeltaA i j) DeltaC DeltaX
+      sigma hsigma
+      (SepLowerBound_lyapunov_of_vecCoeff_sigmaMin n A sigma hsigma hCoeff)
+      alpha alpha gamma eps halpha halpha hgamma heps
+      hDeltaA hDeltaB hDeltaC hLin hDeltaX_ne hX_ne hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     Frobenius first-order Lyapunov perturbation bound from a concrete left
