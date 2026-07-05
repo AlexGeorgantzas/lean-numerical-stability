@@ -1931,6 +1931,372 @@ theorem wedinLemma20_12_projectionDiff_sq_commutes_projection_swapped
   simpa using hbase
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    for the companion operator `S = P + Q - I`, `P*S = P*Q`. -/
+theorem wedinLemma20_12_projection_mul_projectionSumSubId_eq_projection_mul_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P) :
+    rectMatMul P (fun i j => P i j + Q i j - idMatrix m i j) =
+      rectMatMul P Q := by
+  calc
+    rectMatMul P (fun i j => P i j + Q i j - idMatrix m i j)
+        = (fun i j =>
+            rectMatMul P (fun i j => P i j + Q i j) i j -
+              rectMatMul P (idMatrix m) i j) := by
+            rw [rectMatMul_sub_right]
+    _ = (fun i j =>
+            (rectMatMul P P i j + rectMatMul P Q i j) -
+              rectMatMul P (idMatrix m) i j) := by
+            rw [rectMatMul_add_right]
+    _ = (fun i j => (P i j + rectMatMul P Q i j) - P i j) := by
+            rw [hIdemP, rectMatMul_id_right]
+    _ = rectMatMul P Q := by
+            ext i j
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    for the companion operator `S = P + Q - I`, `Q*S = Q*P`. -/
+theorem wedinLemma20_12_projection_swapped_mul_projectionSumSubId_eq_projection_swapped_mul_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul Q (fun i j => P i j + Q i j - idMatrix m i j) =
+      rectMatMul Q P := by
+  calc
+    rectMatMul Q (fun i j => P i j + Q i j - idMatrix m i j)
+        = (fun i j =>
+            rectMatMul Q (fun i j => P i j + Q i j) i j -
+              rectMatMul Q (idMatrix m) i j) := by
+            rw [rectMatMul_sub_right]
+    _ = (fun i j =>
+            (rectMatMul Q P i j + rectMatMul Q Q i j) -
+              rectMatMul Q (idMatrix m) i j) := by
+            rw [rectMatMul_add_right]
+    _ = (fun i j => (rectMatMul Q P i j + Q i j) - Q i j) := by
+            rw [hIdemQ, rectMatMul_id_right]
+    _ = rectMatMul Q P := by
+            ext i j
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    for the companion operator `S = P + Q - I`, `S*P = Q*P`. -/
+theorem wedinLemma20_12_projectionSumSubId_mul_projection_eq_swapped_mul_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P) :
+    rectMatMul (fun i j => P i j + Q i j - idMatrix m i j) P =
+      rectMatMul Q P := by
+  calc
+    rectMatMul (fun i j => P i j + Q i j - idMatrix m i j) P
+        = (fun i j =>
+            rectMatMul (fun i j => P i j + Q i j) P i j -
+              rectMatMul (idMatrix m) P i j) := by
+            rw [rectMatMul_sub_left]
+    _ = (fun i j =>
+            (rectMatMul P P i j + rectMatMul Q P i j) -
+              rectMatMul (idMatrix m) P i j) := by
+            rw [rectMatMul_add_left]
+    _ = (fun i j => (P i j + rectMatMul Q P i j) - P i j) := by
+            rw [hIdemP, rectMatMul_id_left]
+    _ = rectMatMul Q P := by
+            ext i j
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    for the companion operator `S = P + Q - I`, `S*Q = P*Q`. -/
+theorem wedinLemma20_12_projectionSumSubId_mul_projection_swapped_eq_projection_mul_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul (fun i j => P i j + Q i j - idMatrix m i j) Q =
+      rectMatMul P Q := by
+  calc
+    rectMatMul (fun i j => P i j + Q i j - idMatrix m i j) Q
+        = (fun i j =>
+            rectMatMul (fun i j => P i j + Q i j) Q i j -
+              rectMatMul (idMatrix m) Q i j) := by
+            rw [rectMatMul_sub_left]
+    _ = (fun i j =>
+            (rectMatMul P Q i j + rectMatMul Q Q i j) -
+              rectMatMul (idMatrix m) Q i j) := by
+            rw [rectMatMul_add_left]
+    _ = (fun i j => (rectMatMul P Q i j + Q i j) - Q i j) := by
+            rw [hIdemQ, rectMatMul_id_left]
+    _ = rectMatMul P Q := by
+            ext i j
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion operator `S = P + Q - I` maps the `P` range into the `Q`
+    range in matrix form, `S*P = Q*S`. -/
+theorem wedinLemma20_12_projectionSumSubId_intertwines_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul (fun i j => P i j + Q i j - idMatrix m i j) P =
+      rectMatMul Q (fun i j => P i j + Q i j - idMatrix m i j) := by
+  calc
+    rectMatMul (fun i j => P i j + Q i j - idMatrix m i j) P
+        = rectMatMul Q P := by
+            exact
+              wedinLemma20_12_projectionSumSubId_mul_projection_eq_swapped_mul_projection
+                P Q hIdemP
+    _ = rectMatMul Q (fun i j => P i j + Q i j - idMatrix m i j) := by
+            exact
+              (wedinLemma20_12_projection_swapped_mul_projectionSumSubId_eq_projection_swapped_mul_projection
+                P Q hIdemQ).symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion operator `S = P + Q - I` also maps the `Q` range into the
+    `P` range in matrix form, `S*Q = P*S`. -/
+theorem wedinLemma20_12_projectionSumSubId_intertwines_projection_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul (fun i j => P i j + Q i j - idMatrix m i j) Q =
+      rectMatMul P (fun i j => P i j + Q i j - idMatrix m i j) := by
+  calc
+    rectMatMul (fun i j => P i j + Q i j - idMatrix m i j) Q
+        = rectMatMul P Q := by
+            exact
+              wedinLemma20_12_projectionSumSubId_mul_projection_swapped_eq_projection_mul_swapped
+                P Q hIdemQ
+    _ = rectMatMul P (fun i j => P i j + Q i j - idMatrix m i j) := by
+            exact
+              (wedinLemma20_12_projection_mul_projectionSumSubId_eq_projection_mul_swapped
+                P Q hIdemP).symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    `D = P-Q` anti-commutes with the companion operator `S = P+Q-I`.
+
+This is the algebraic heart of the principal-angle route: it later implies
+that `D^2` commutes with `S`, while `S` interchanges the two projection ranges. -/
+theorem wedinLemma20_12_projectionDiff_mul_projectionSumSubId_eq_neg_projectionSumSubId_mul_projectionDiff
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul (fun i j => P i j - Q i j)
+        (fun i j => P i j + Q i j - idMatrix m i j) =
+      fun i j =>
+        -rectMatMul (fun i j => P i j + Q i j - idMatrix m i j)
+          (fun i j => P i j - Q i j) i j := by
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  calc
+    rectMatMul D S
+        = (fun i j => rectMatMul P S i j - rectMatMul Q S i j) := by
+            rw [rectMatMul_sub_left]
+    _ = (fun i j => rectMatMul P Q i j - rectMatMul Q P i j) := by
+            rw [wedinLemma20_12_projection_mul_projectionSumSubId_eq_projection_mul_swapped
+                P Q hIdemP,
+              wedinLemma20_12_projection_swapped_mul_projectionSumSubId_eq_projection_swapped_mul_projection
+                P Q hIdemQ]
+    _ = (fun i j => -rectMatMul S D i j) := by
+            have hSD :
+                rectMatMul S D =
+                  (fun i j => rectMatMul S P i j - rectMatMul S Q i j) := by
+              rw [rectMatMul_sub_right]
+            rw [hSD,
+              wedinLemma20_12_projectionSumSubId_mul_projection_eq_swapped_mul_projection
+                P Q hIdemP,
+              wedinLemma20_12_projectionSumSubId_mul_projection_swapped_eq_projection_mul_swapped
+                P Q hIdemQ]
+            ext i j
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the squared projection difference `D^2` commutes with the companion
+    operator `S = P+Q-I`. -/
+theorem wedinLemma20_12_projectionDiff_sq_commutes_projectionSumSubId
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j))
+        (fun i j => P i j + Q i j - idMatrix m i j) =
+      rectMatMul (fun i j => P i j + Q i j - idMatrix m i j)
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)) := by
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  have hanti :
+      rectMatMul D S = fun i j => -rectMatMul S D i j := by
+    simpa [D, S] using
+      wedinLemma20_12_projectionDiff_mul_projectionSumSubId_eq_neg_projectionSumSubId_mul_projectionDiff
+        P Q hIdemP hIdemQ
+  calc
+    rectMatMul (rectMatMul D D) S
+        = rectMatMul D (rectMatMul D S) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul D (fun i j => -rectMatMul S D i j) := by
+            rw [hanti]
+    _ = (fun i j => -rectMatMul D (rectMatMul S D) i j) := by
+            rw [rectMatMul_neg_right]
+    _ = (fun i j => -rectMatMul (rectMatMul D S) D i j) := by
+            rw [← rectMatMul_assoc]
+    _ = (fun i j =>
+            -rectMatMul (fun i j => -rectMatMul S D i j) D i j) := by
+            rw [hanti]
+    _ = (fun i j => -(-rectMatMul (rectMatMul S D) D i j)) := by
+            rw [rectMatMul_neg_left]
+    _ = rectMatMul (rectMatMul S D) D := by
+            ext i j
+            ring
+    _ = rectMatMul S (rectMatMul D D) := by
+            rw [rectMatMul_assoc]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion operator `S = P+Q-I` satisfies
+    `S^2 = I - (P-Q)^2`.
+
+This is the algebraic identity that pairs the range-intertwining map `S` with
+the squared projection-difference operator in the direct principal-angle route. -/
+theorem wedinLemma20_12_projectionSumSubId_sq_eq_id_sub_projectionDiff_sq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul
+        (fun i j => P i j + Q i j - idMatrix m i j)
+        (fun i j => P i j + Q i j - idMatrix m i j) =
+      fun i j =>
+        idMatrix m i j -
+          rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j) i j := by
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  have hSS :
+      rectMatMul S S =
+        fun i j => (rectMatMul P Q i j + rectMatMul Q P i j) - S i j := by
+    calc
+      rectMatMul S S
+          = (fun i j => rectMatMul (fun i j => P i j + Q i j) S i j -
+              rectMatMul (idMatrix m) S i j) := by
+              rw [show S = fun i j => (P i j + Q i j) - idMatrix m i j by rfl]
+              rw [rectMatMul_sub_left]
+      _ = (fun i j => (rectMatMul P S i j + rectMatMul Q S i j) - S i j) := by
+              rw [rectMatMul_add_left, rectMatMul_id_left]
+      _ = (fun i j => (rectMatMul P Q i j + rectMatMul Q P i j) - S i j) := by
+              rw [wedinLemma20_12_projection_mul_projectionSumSubId_eq_projection_mul_swapped
+                    P Q hIdemP,
+                  wedinLemma20_12_projection_swapped_mul_projectionSumSubId_eq_projection_swapped_mul_projection
+                    P Q hIdemQ]
+  have hDD :
+      rectMatMul D D =
+        fun i j => (P i j - rectMatMul P Q i j) -
+          (rectMatMul Q P i j - Q i j) := by
+    calc
+      rectMatMul D D
+          = (fun i j => rectMatMul P D i j - rectMatMul Q D i j) := by
+              rw [show D = fun i j => P i j - Q i j by rfl]
+              rw [rectMatMul_sub_left]
+      _ = (fun i j => (rectMatMul P P i j - rectMatMul P Q i j) -
+              (rectMatMul Q P i j - rectMatMul Q Q i j)) := by
+              rw [rectMatMul_sub_right, rectMatMul_sub_right]
+      _ = (fun i j => (P i j - rectMatMul P Q i j) -
+              (rectMatMul Q P i j - Q i j)) := by
+              rw [hIdemP, hIdemQ]
+  rw [show (fun i j => P i j + Q i j - idMatrix m i j) = S by rfl,
+    show (fun i j => P i j - Q i j) = D by rfl]
+  rw [hSS, hDD]
+  ext i j
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion square `S^2`, where `S = P+Q-I`, preserves the `P` range.
+
+This follows from `S^2 = I - (P-Q)^2` and the already proved commutation of
+`(P-Q)^2` with `P`. -/
+theorem wedinLemma20_12_projectionSumSubId_sq_commutes_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul
+        (rectMatMul (fun i j => P i j + Q i j - idMatrix m i j)
+          (fun i j => P i j + Q i j - idMatrix m i j))
+        P =
+      rectMatMul P
+        (rectMatMul (fun i j => P i j + Q i j - idMatrix m i j)
+          (fun i j => P i j + Q i j - idMatrix m i j)) := by
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  have hSsq :
+      rectMatMul S S = fun i j => idMatrix m i j - rectMatMul D D i j := by
+    simpa [S, D] using
+      wedinLemma20_12_projectionSumSubId_sq_eq_id_sub_projectionDiff_sq
+        P Q hIdemP hIdemQ
+  have hDcomm :
+      rectMatMul (rectMatMul D D) P =
+        rectMatMul P (rectMatMul D D) := by
+    simpa [D] using
+      wedinLemma20_12_projectionDiff_sq_commutes_projection
+        P Q hIdemP hIdemQ
+  calc
+    rectMatMul (rectMatMul S S) P
+        = rectMatMul (fun i j => idMatrix m i j - rectMatMul D D i j) P := by
+            rw [hSsq]
+    _ = (fun i j =>
+            rectMatMul (idMatrix m) P i j -
+              rectMatMul (rectMatMul D D) P i j) := by
+            rw [rectMatMul_sub_left]
+    _ = (fun i j => P i j - rectMatMul (rectMatMul D D) P i j) := by
+            rw [rectMatMul_id_left]
+    _ = (fun i j => P i j - rectMatMul P (rectMatMul D D) i j) := by
+            rw [hDcomm]
+    _ = (fun i j =>
+            rectMatMul P (idMatrix m) i j -
+              rectMatMul P (rectMatMul D D) i j) := by
+            rw [rectMatMul_id_right]
+    _ = rectMatMul P (fun i j => idMatrix m i j - rectMatMul D D i j) := by
+            rw [← rectMatMul_sub_right]
+    _ = rectMatMul P (rectMatMul S S) := by
+            rw [hSsq]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion square `S^2`, where `S = P+Q-I`, also preserves the `Q`
+    range. -/
+theorem wedinLemma20_12_projectionSumSubId_sq_commutes_projection_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul
+        (rectMatMul (fun i j => P i j + Q i j - idMatrix m i j)
+          (fun i j => P i j + Q i j - idMatrix m i j))
+        Q =
+      rectMatMul Q
+        (rectMatMul (fun i j => P i j + Q i j - idMatrix m i j)
+          (fun i j => P i j + Q i j - idMatrix m i j)) := by
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  let D : Fin m → Fin m → ℝ := fun i j => P i j - Q i j
+  have hSsq :
+      rectMatMul S S = fun i j => idMatrix m i j - rectMatMul D D i j := by
+    simpa [S, D] using
+      wedinLemma20_12_projectionSumSubId_sq_eq_id_sub_projectionDiff_sq
+        P Q hIdemP hIdemQ
+  have hDcomm :
+      rectMatMul (rectMatMul D D) Q =
+        rectMatMul Q (rectMatMul D D) := by
+    simpa [D] using
+      wedinLemma20_12_projectionDiff_sq_commutes_projection_swapped
+        P Q hIdemP hIdemQ
+  calc
+    rectMatMul (rectMatMul S S) Q
+        = rectMatMul (fun i j => idMatrix m i j - rectMatMul D D i j) Q := by
+            rw [hSsq]
+    _ = (fun i j =>
+            rectMatMul (idMatrix m) Q i j -
+              rectMatMul (rectMatMul D D) Q i j) := by
+            rw [rectMatMul_sub_left]
+    _ = (fun i j => Q i j - rectMatMul (rectMatMul D D) Q i j) := by
+            rw [rectMatMul_id_left]
+    _ = (fun i j => Q i j - rectMatMul Q (rectMatMul D D) i j) := by
+            rw [hDcomm]
+    _ = (fun i j =>
+            rectMatMul Q (idMatrix m) i j -
+              rectMatMul Q (rectMatMul D D) i j) := by
+            rw [rectMatMul_id_right]
+    _ = rectMatMul Q (fun i j => idMatrix m i j - rectMatMul D D i j) := by
+            rw [← rectMatMul_sub_right]
+    _ = rectMatMul Q (rectMatMul S S) := by
+            rw [hSsq]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm
     of the range-side compression `P(P-Q)^2P`.
 
