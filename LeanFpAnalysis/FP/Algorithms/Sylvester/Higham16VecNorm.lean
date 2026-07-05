@@ -1909,10 +1909,34 @@ theorem H16_eq16_27_lyapunov_condition_of_vecCoeff_sigmaMin (n : Nat)
       hDeltaA hDeltaC hLin
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
-    source-shaped Lyapunov first-order perturbation bound from a concrete
-    left inverse and operator-2 radius for the printed Lyapunov
-    vec/Kronecker coefficient. -/
-theorem H16_eq16_27_lyapunov_condition_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    Frobenius first-order Lyapunov perturbation bound from a concrete left
+    inverse and operator-2 radius for the printed Lyapunov vec/Kronecker
+    coefficient. -/
+theorem lyapunov_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hM : 0 <= M) (hX : 0 < frobNorm X)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX <=
+      lyapunovCond_of_inverseOpBound n X alpha gamma M * frobNorm X *
+        lyapunovScaledPerturbationPairNorm n DeltaA DeltaC alpha gamma := by
+  exact
+    (lyapunovCond_of_vecCoeff_left_inverse_finiteOpNorm2Le_isLyapunovConditionFirstOrderBound
+      n A X alpha gamma M Pinv halpha hgamma hM hX hLeft hPinv)
+      DeltaA DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    relative Lyapunov first-order perturbation bound from a concrete left
+    inverse and operator-2 radius for the printed Lyapunov vec/Kronecker
+    coefficient. -/
+theorem lyapunov_relative_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
     (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
     (alpha gamma M eps : Real)
     (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
@@ -1948,6 +1972,34 @@ theorem H16_eq16_27_lyapunov_condition_of_vecCoeff_left_inverse_finiteOpNorm2Le
       A X DeltaA DeltaC DeltaX alpha gamma
       (lyapunovCond_of_inverseOpBound n X alpha gamma M) eps
       hCond hX hCond_nonneg halpha hgamma heps
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-shaped Lyapunov first-order perturbation bound from a concrete
+    left inverse and operator-2 radius for the printed Lyapunov
+    vec/Kronecker coefficient. -/
+theorem H16_eq16_27_lyapunov_condition_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma M eps : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hM : 0 <= M) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma M * eps := by
+  exact
+    lyapunov_relative_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+      n A X DeltaA DeltaC DeltaX alpha gamma M eps Pinv
+      halpha hgamma hM heps hX hLeft hPinv
       hDeltaA hDeltaC hLin
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
