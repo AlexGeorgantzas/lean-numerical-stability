@@ -311,6 +311,63 @@ theorem lyapunovCond_of_inverseOpBound_isLyapunovConditionFirstOrderBound (n : �
   rw [hpsi]
   exact hchain
 
+/-- Higham, 2nd ed., §16.3, eq (16.27) (p. 317):
+    a positive `SepLowerBound` certificate for `(A, -A^T)` instantiates the
+    Lyapunov condition-number predicate with the safe inverse-operator constant
+    `M = 1 / sigma`. This is a source-facing sep-based realization of the
+    Lyapunov condition number; it is not the exact displayed operator norm when
+    that norm is sharper. -/
+theorem lyapunovCond_of_sepLowerBound_isLyapunovConditionFirstOrderBound (n : ℕ)
+    (A X : Fin n → Fin n → ℝ) (α γ sigma : ℝ)
+    (hα : 0 < α) (hγ : 0 < γ) (hsigma : 0 < sigma)
+    (hX : 0 < frobNorm X)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma) :
+    LyapunovConditionFirstOrderBound n A X α γ
+      (lyapunovCond_of_inverseOpBound n X α γ (1 / sigma)) := by
+  have hInv := lyapunovInverseOpBound_of_sepLowerBound n A sigma hsigma hSep
+  have hMnn : (0 : ℝ) ≤ 1 / sigma := by positivity
+  exact lyapunovCond_of_inverseOpBound_isLyapunovConditionFirstOrderBound n
+    A X α γ (1 / sigma) hα hγ hMnn hX hInv
+
+/-- Higham, 2nd ed., §16.3, eq (16.27) (p. 317):
+    sep-based Lyapunov first-order perturbation bound. If
+    `SepLowerBound A (-A^T) sigma` holds, then the printed relative bound
+    follows with the safe condition-number value
+    `lyapunovCond_of_inverseOpBound ... (1 / sigma)`.
+
+    Scope: this is an exact-arithmetic theorem from a supplied sep lower-bound
+    certificate. It does not compute the sharper nondiagonal operator norm
+    `||P^{-1}[...]||`. -/
+theorem H16_eq16_27_lyapunov_condition_of_sepLowerBound (n : ℕ)
+    (A X ΔA ΔC ΔX : Fin n → Fin n → ℝ)
+    (α γ sigma ε : ℝ)
+    (hα : 0 < α) (hγ : 0 < γ)
+    (hsigma : 0 < sigma) (hε : 0 ≤ ε)
+    (hX : 0 < frobNorm X)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hΔA : frobNorm ΔA ≤ ε * α)
+    (hΔC : frobNorm ΔC ≤ ε * γ)
+    (hLin : ∀ i j,
+      lyapunovOp n A ΔX i j =
+        ΔC i j - matMul n ΔA X i j - matMul n X (matTranspose ΔA) i j) :
+    frobNorm ΔX / frobNorm X ≤
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X α γ (1 / sigma) * ε := by
+  have hCond :=
+    lyapunovCond_of_sepLowerBound_isLyapunovConditionFirstOrderBound n
+      A X α γ sigma hα hγ hsigma hX hSep
+  have hΨnn : 0 ≤ lyapunovCond_of_inverseOpBound n X α γ (1 / sigma) := by
+    unfold lyapunovCond_of_inverseOpBound
+    have hMnn : (0 : ℝ) ≤ 1 / sigma := by positivity
+    have hnum : 0 ≤ 2 * α * frobNorm X + γ := by
+      have hXnn : 0 ≤ frobNorm X := le_of_lt hX
+      nlinarith [le_of_lt hα, le_of_lt hγ, hXnn]
+    positivity
+  exact lyapunov_relative_first_order_bound_of_condition n
+    A X ΔA ΔC ΔX α γ
+    (lyapunovCond_of_inverseOpBound n X α γ (1 / sigma)) ε
+    hCond hX hΨnn hα hγ hε hΔA hΔC hLin
+
 -- ============================================================
 -- Diagonal-case condition-number realization
 -- (eq (16.27), diagonal / distinct-eigenvalue)
