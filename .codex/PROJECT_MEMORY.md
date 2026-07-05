@@ -11148,3 +11148,17 @@ These compile, but should not be treated as fully derived stability results:
   lower-bound/pivot inverse table for all pivots, source-norm versus entrywise
   max-growth integration, Problem 13.4 all-tail source comparisons, and Theorem
   13.6 cited estimates remain open.
+
+- 2026-07-05 Theorem 13.7 BDD all-prefix diagonal inverse table: added
+  `higham13_diag_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  and
+  `higham13_diag_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These specialize the
+  leading-prefix canonical inverse theorem to an all-leading-prefix
+  nonsingularity table, yielding canonical two-sided and right-inverse
+  certificates for every original diagonal block whose column-BDD lower-bound
+  entry is nonpositive.  This is dependency packaging for downstream
+  diagonal/pivot certificate APIs; it does not close the active Schur-stage
+  BDD theorem, because deriving all active pivot certificates from the printed
+  BDD hypotheses and connecting them to the source max-growth/product-update
+  route remains open.
