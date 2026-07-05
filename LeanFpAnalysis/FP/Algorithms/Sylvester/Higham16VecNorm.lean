@@ -291,6 +291,74 @@ theorem finiteMatrixGram_eigenvalues_ge_of_left_inverse_finiteOpNorm2Le
       (finiteMatrix_sigmaMin_of_left_inverse_finiteOpNorm2Le
         P Pinv hM hLeft hPinv)
 
+/-- A concrete left inverse and operator-2 radius for the printed Sylvester
+    vec/Kronecker coefficient gives its sigma-min lower-bound route directly,
+    without assuming the target coefficient lower-bound theorem. -/
+theorem sylvesterVecCoeff_sigmaMin_of_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A B : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    forall x : Prod (Fin n) (Fin n) -> Real,
+      (1 / M) * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x) := by
+  exact
+    finiteMatrix_sigmaMin_of_left_inverse_finiteOpNorm2Le
+      (sylvesterVecCoeff n n A B) Pinv hM hLeft hPinv
+
+/-- A concrete left inverse and operator-2 radius for the printed Sylvester
+    vec/Kronecker coefficient gives the corresponding finite Gram eigenvalue
+    lower bound. -/
+theorem sylvesterVecCoeff_gram_eigenvalues_ge_of_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A B : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    forall p : Prod (Fin n) (Fin n),
+      (1 / M) ^ 2 <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p := by
+  exact
+    finiteMatrixGram_eigenvalues_ge_of_left_inverse_finiteOpNorm2Le
+      (sylvesterVecCoeff n n A B) Pinv hM hLeft hPinv
+
+/-- A concrete left inverse and operator-2 radius for the printed Lyapunov
+    vec/Kronecker coefficient gives its sigma-min lower-bound route directly,
+    without assuming the target coefficient lower-bound theorem. -/
+theorem lyapunovVecCoeff_sigmaMin_of_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    forall x : Prod (Fin n) (Fin n) -> Real,
+      (1 / M) * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x) := by
+  exact
+    finiteMatrix_sigmaMin_of_left_inverse_finiteOpNorm2Le
+      (lyapunovVecCoeff n A) Pinv hM hLeft hPinv
+
+/-- A concrete left inverse and operator-2 radius for the printed Lyapunov
+    vec/Kronecker coefficient gives the corresponding finite Gram eigenvalue
+    lower bound. -/
+theorem lyapunovVecCoeff_gram_eigenvalues_ge_of_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    forall p : Prod (Fin n) (Fin n),
+      (1 / M) ^ 2 <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p := by
+  exact
+    finiteMatrixGram_eigenvalues_ge_of_left_inverse_finiteOpNorm2Le
+      (lyapunovVecCoeff n A) Pinv hM hLeft hPinv
+
 /-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
     a Gram-eigenvalue lower bound for the concrete vectorized Sylvester
     coefficient gives the coefficient lower bound used by the Chapter 16
@@ -342,6 +410,25 @@ theorem sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin (n : Nat)
       sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y) := by
   intro Y
   have h := hCoeff (Matrix.vec Y)
+  rw [sylvesterVecCoeff_mulVec_vec n n A B Y] at h
+  rwa [finiteVecNorm2_vec_eq_frobNorm n n Y,
+    sylvesterOpRect_square_eq_sylvesterOp n A B Y,
+    finiteVecNorm2_vec_eq_frobNorm n n (sylvesterOp n A B Y)] at h
+
+/-- A concrete left inverse and operator-2 radius for the printed Sylvester
+    vec/Kronecker coefficient gives the inverse-operator bound used by the
+    structured condition-number surface. -/
+theorem sylvesterInverseOpBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A B : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real}
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    SylvesterInverseOpBound n A B M := by
+  intro Y
+  have h :=
+    finiteVecNorm2_le_mul_mulVec_of_left_inverse_finiteOpNorm2Le
+      (sylvesterVecCoeff n n A B) Pinv hLeft hPinv (Matrix.vec Y)
   rw [sylvesterVecCoeff_mulVec_vec n n A B Y] at h
   rwa [finiteVecNorm2_vec_eq_frobNorm n n Y,
     sylvesterOpRect_square_eq_sylvesterOp n A B Y,
@@ -768,6 +855,31 @@ theorem lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin (n : Nat)
   rwa [finiteVecNorm2_vec_eq_frobNorm n n Y, hLY,
     finiteVecNorm2_vec_eq_frobNorm n n (lyapunovOp n A Y)] at h
 
+/-- A concrete left inverse and operator-2 radius for the printed Lyapunov
+    vec/Kronecker coefficient gives the inverse-operator bound used by the
+    Lyapunov condition-number surface. -/
+theorem lyapunovInverseOpBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real}
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    LyapunovInverseOpBound n A M := by
+  intro Y
+  have h :=
+    finiteVecNorm2_le_mul_mulVec_of_left_inverse_finiteOpNorm2Le
+      (lyapunovVecCoeff n A) Pinv hLeft hPinv (Matrix.vec Y)
+  rw [lyapunovVecCoeff_mulVec_vec n A Y] at h
+  let Amat : Matrix (Fin n) (Fin n) Real := A
+  let Ymat : Matrix (Fin n) (Fin n) Real := Y
+  have hLY :
+      Amat * Ymat + Ymat * Matrix.transpose Amat =
+        lyapunovOp n A Y := by
+    ext i j
+    simp [Amat, Ymat, lyapunovOp, matMul, matTranspose, Matrix.mul_apply]
+  rwa [finiteVecNorm2_vec_eq_frobNorm n n Y, hLY,
+    finiteVecNorm2_vec_eq_frobNorm n n (lyapunovOp n A Y)] at h
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     a Gram-eigenvalue lower bound for the concrete vectorized Lyapunov
     coefficient gives the Frobenius lower bound for the Lyapunov operator. -/
@@ -1003,6 +1115,26 @@ theorem sylvesterPsi_of_vecCoeff_sigmaMin_isPsiFirstOrderBound (n : Nat)
       (sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B sigma hCoeff)
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
+    a concrete left inverse and operator-2 radius for the printed Sylvester
+    vec/Kronecker coefficient instantiates the structured `Psi` certificate
+    directly, without first postulating a sigma-min lower bound. -/
+theorem sylvesterPsi_of_vecCoeff_left_inverse_finiteOpNorm2Le_isPsiFirstOrderBound
+    (n : Nat)
+    (A B X : Fin n -> Fin n -> Real) (alpha beta gamma M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hM : 0 <= M) (hX : 0 < frobNorm X)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    SylvesterPsiFirstOrderBound n A B X alpha beta gamma
+      (sylvesterPsi_of_inverseOpBound n X alpha beta gamma M) := by
+  exact
+    sylvesterPsi_of_inverseOpBound_isPsiFirstOrderBound n
+      A B X alpha beta gamma M halpha hbeta hgamma hM hX
+      (sylvesterInverseOpBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A B Pinv hLeft hPinv)
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
     source-shaped first-order relative perturbation bound from a positive
     lower bound on the concrete Kronecker/vectorized Sylvester coefficient. -/
 theorem H16_eq16_24_structured_condition_of_vecCoeff_sigmaMin (n : Nat)
@@ -1028,6 +1160,49 @@ theorem H16_eq16_24_structured_condition_of_vecCoeff_sigmaMin (n : Nat)
       A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma sigma eps
       halpha hbeta hgamma hsigma heps hX
       (sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B sigma hCoeff)
+      hDeltaA hDeltaB hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
+    source-shaped first-order relative perturbation bound from a concrete
+    left inverse and operator-2 radius for the printed Sylvester
+    vec/Kronecker coefficient. -/
+theorem H16_eq16_24_structured_condition_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma M eps : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hM : 0 <= M) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaB : frobNorm DeltaB <= eps * beta)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 3 *
+        sylvesterPsi_of_inverseOpBound n X alpha beta gamma M * eps := by
+  have hPsi :=
+    sylvesterPsi_of_vecCoeff_left_inverse_finiteOpNorm2Le_isPsiFirstOrderBound
+      n A B X alpha beta gamma M Pinv halpha hbeta hgamma hM hX hLeft hPinv
+  have hPsi_nonneg :
+      0 <= sylvesterPsi_of_inverseOpBound n X alpha beta gamma M := by
+    unfold sylvesterPsi_of_inverseOpBound
+    have hsum : 0 <= alpha + beta :=
+      add_nonneg (le_of_lt halpha) (le_of_lt hbeta)
+    have hprod : 0 <= (alpha + beta) * frobNorm X :=
+      mul_nonneg hsum (le_of_lt hX)
+    have hnum : 0 <= (alpha + beta) * frobNorm X + gamma :=
+      add_nonneg hprod (le_of_lt hgamma)
+    exact div_nonneg (mul_nonneg hM hnum) (le_of_lt hX)
+  exact
+    sylvester_relative_first_order_bound_of_psi n
+      A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma
+      (sylvesterPsi_of_inverseOpBound n X alpha beta gamma M) eps
+      hPsi hX hPsi_nonneg halpha hbeta hgamma heps
       hDeltaA hDeltaB hDeltaC hLin
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
@@ -1581,6 +1756,25 @@ theorem lyapunovCond_of_vecCoeff_sigmaMin_isLyapunovConditionFirstOrderBound
       (lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin n A sigma hCoeff)
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    a concrete left inverse and operator-2 radius for the printed Lyapunov
+    vec/Kronecker coefficient instantiates the Lyapunov condition certificate
+    directly, without first postulating a sigma-min lower bound. -/
+theorem lyapunovCond_of_vecCoeff_left_inverse_finiteOpNorm2Le_isLyapunovConditionFirstOrderBound
+    (n : Nat) (A X : Fin n -> Fin n -> Real) (alpha gamma M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hM : 0 <= M) (hX : 0 < frobNorm X)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    LyapunovConditionFirstOrderBound n A X alpha gamma
+      (lyapunovCond_of_inverseOpBound n X alpha gamma M) := by
+  exact
+    lyapunovCond_of_inverseOpBound_isLyapunovConditionFirstOrderBound n
+      A X alpha gamma M halpha hgamma hM hX
+      (lyapunovInverseOpBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A Pinv hLeft hPinv)
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     source-shaped Lyapunov first-order perturbation bound from a positive lower
     bound on the concrete vectorized Lyapunov coefficient. -/
 theorem H16_eq16_27_lyapunov_condition_of_vecCoeff_sigmaMin (n : Nat)
@@ -1606,6 +1800,48 @@ theorem H16_eq16_27_lyapunov_condition_of_vecCoeff_sigmaMin (n : Nat)
       A X DeltaA DeltaC DeltaX alpha gamma sigma eps
       halpha hgamma hsigma heps hX
       (lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin n A sigma hCoeff)
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-shaped Lyapunov first-order perturbation bound from a concrete
+    left inverse and operator-2 radius for the printed Lyapunov
+    vec/Kronecker coefficient. -/
+theorem H16_eq16_27_lyapunov_condition_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma M eps : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hM : 0 <= M) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma M * eps := by
+  have hCond :=
+    lyapunovCond_of_vecCoeff_left_inverse_finiteOpNorm2Le_isLyapunovConditionFirstOrderBound
+      n A X alpha gamma M Pinv halpha hgamma hM hX hLeft hPinv
+  have hCond_nonneg :
+      0 <= lyapunovCond_of_inverseOpBound n X alpha gamma M := by
+    unfold lyapunovCond_of_inverseOpBound
+    have htwo_alpha : 0 <= 2 * alpha :=
+      mul_nonneg (by norm_num) (le_of_lt halpha)
+    have hprod : 0 <= 2 * alpha * frobNorm X :=
+      mul_nonneg htwo_alpha (le_of_lt hX)
+    have hnum : 0 <= 2 * alpha * frobNorm X + gamma :=
+      add_nonneg hprod (le_of_lt hgamma)
+    exact div_nonneg (mul_nonneg hM hnum) (le_of_lt hX)
+  exact
+    lyapunov_relative_first_order_bound_of_condition n
+      A X DeltaA DeltaC DeltaX alpha gamma
+      (lyapunovCond_of_inverseOpBound n X alpha gamma M) eps
+      hCond hX hCond_nonneg halpha hgamma heps
       hDeltaA hDeltaC hLin
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
