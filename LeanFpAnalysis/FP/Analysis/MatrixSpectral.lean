@@ -409,6 +409,36 @@ theorem finiteMatVec_finiteHermitianEigenvector_eq
   simpa [finiteMatVec, finiteHermitianEigenvalues, hherm] using
     congrFun hmul i
 
+/-- Any nonzero repository-native eigenvector of a finite real symmetric
+    matrix has an eigenvalue in the locally named Hermitian eigenvalue list. -/
+theorem finiteHermitianEigenvalues_mem_range_of_finiteMatVec_eigenvector
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : ι → ι → ℝ) (hM : IsSymmetricFiniteMatrix M)
+    {lambda : ℝ} {x : ι → ℝ}
+    (hx_ne : x ≠ 0)
+    (hxEig : finiteMatVec M x = fun i => lambda * x i) :
+    lambda ∈ Set.range (finiteHermitianEigenvalues M hM) := by
+  let Mmat : Matrix ι ι ℝ := M
+  let hherm : Matrix.IsHermitian Mmat :=
+    IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM
+  have hxEigLin :
+      Module.End.HasEigenvector (Matrix.toLin' Mmat) lambda x := by
+    rw [Module.End.hasEigenvector_iff]
+    constructor
+    · rw [Module.End.mem_eigenspace_iff]
+      ext i
+      rw [Matrix.toLin'_apply]
+      simpa [Mmat, finiteMatVec, Matrix.mulVec] using congrFun hxEig i
+    · exact hx_ne
+  have hspec :
+      lambda ∈ spectrum ℝ Mmat := by
+    have hspecLin :=
+      (Module.End.hasEigenvalue_of_hasEigenvector hxEigLin).mem_spectrum
+    simpa [Matrix.spectrum_toLin' Mmat] using hspecLin
+  have hrange := hspec
+  rw [hherm.spectrum_real_eq_range_eigenvalues] at hrange
+  simpa [finiteHermitianEigenvalues, Mmat, hherm] using hrange
+
 /-- Any finite operator-2 certificate dominates the absolute value of every
     locally named Hermitian eigenvalue. -/
 theorem abs_finiteHermitianEigenvalues_le_of_finiteOpNorm2Le
