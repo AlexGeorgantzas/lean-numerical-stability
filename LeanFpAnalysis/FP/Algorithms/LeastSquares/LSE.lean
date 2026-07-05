@@ -28640,6 +28640,230 @@ theorem theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_max_gam
       (theorem20_10_householder_max_gamma_sum_bound_of_max_gamma_lt_sourceRankGammaThreshold
         fp A B hB hStack hvalidA hvalidB hsmall)
 
+/-- Nonnegativity of the conservative `A` coefficient used by the
+    Theorem 20.10(b) concrete Householder component branch. -/
+theorem theorem20_10_householder_gammaA_conservativeRhs_nonneg
+    {r p q : ℕ} (fp : FPModel)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q))) :
+    0 ≤ theorem20_10_householder_gammaA_conservativeRhs fp r p q := by
+  have hgammaA_nonneg :
+      0 ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidA
+  exact le_trans hgammaA_nonneg (le_max_left _ _)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    conservative Householder Frobenius budget for the concrete component route.
+
+    This is the source-rank budget after replacing the printed `A` coefficient
+    by the verified conservative maximum of the matrix and RHS coefficients. -/
+noncomputable def theorem20_10_householder_componentSourceRankBudget
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) : ℝ :=
+  theorem20_10_householder_gammaA_conservativeRhs fp r p q * frobNormRect A +
+    theorem20_10_householder_gammaB fp r p q * frobNormRect B
+
+/-- Nonnegativity of the conservative Householder component rank budget used
+    by the Theorem 20.10(b) source-rank branch. -/
+theorem theorem20_10_householder_componentSourceRankBudget_nonneg
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    0 ≤ theorem20_10_householder_componentSourceRankBudget fp A B := by
+  dsimp [theorem20_10_householder_componentSourceRankBudget]
+  have hgammaA_nonneg :
+      0 ≤ theorem20_10_householder_gammaA_conservativeRhs fp r p q :=
+    theorem20_10_householder_gammaA_conservativeRhs_nonneg fp hvalidA
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  exact add_nonneg
+    (mul_nonneg hgammaA_nonneg (frobNormRect_nonneg A))
+    (mul_nonneg hgammaB_nonneg (frobNormRect_nonneg B))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    compact sufficient smallness condition for the conservative concrete
+    Householder component rank budget. -/
+theorem theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) *
+          (frobNormRect A + frobNormRect B) <
+        theorem20_10_householder_sourceRankRadius hB hStack) :
+    theorem20_10_householder_componentSourceRankBudget fp A B <
+      theorem20_10_householder_sourceRankRadius hB hStack := by
+  dsimp [theorem20_10_householder_componentSourceRankBudget]
+  have hA :
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A ≤
+        max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+            (theorem20_10_householder_gammaB fp r p q) *
+          frobNormRect A :=
+    mul_le_mul_of_nonneg_right (le_max_left _ _) (frobNormRect_nonneg A)
+  have hBterm :
+      theorem20_10_householder_gammaB fp r p q * frobNormRect B ≤
+        max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+            (theorem20_10_householder_gammaB fp r p q) *
+          frobNormRect B :=
+    mul_le_mul_of_nonneg_right (le_max_right _ _) (frobNormRect_nonneg B)
+  have hbudget_le :
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+            frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B ≤
+        max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+            (theorem20_10_householder_gammaB fp r p q) *
+          (frobNormRect A + frobNormRect B) := by
+    calc
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+            frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B
+          ≤ max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+                (theorem20_10_householder_gammaB fp r p q) *
+              frobNormRect A +
+            max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+                (theorem20_10_householder_gammaB fp r p q) *
+              frobNormRect B :=
+            add_le_add hA hBterm
+      _ = max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+              (theorem20_10_householder_gammaB fp r p q) *
+            (frobNormRect A + frobNormRect B) := by ring
+  exact lt_of_le_of_lt hbudget_le hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    the existing source-rank gamma threshold also implies the conservative
+    component-route max-gamma product smallness condition. -/
+theorem theorem20_10_householder_component_max_gamma_sum_bound_of_max_gamma_lt_sourceRankGammaThreshold
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) <
+        theorem20_10_householder_sourceRankGammaThreshold hB hStack) :
+    max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+        (theorem20_10_householder_gammaB fp r p q) *
+        (frobNormRect A + frobNormRect B) <
+      theorem20_10_householder_sourceRankRadius hB hStack := by
+  have hgammaA_nonneg :
+      0 ≤ theorem20_10_householder_gammaA_conservativeRhs fp r p q :=
+    theorem20_10_householder_gammaA_conservativeRhs_nonneg fp hvalidA
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  have hgammaMax_nonneg :
+      0 ≤ max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) :=
+    le_trans hgammaA_nonneg (le_max_left _ _)
+  have hScale_pos :
+      0 < max (1 : ℝ) (frobNormRect A + frobNormRect B) :=
+    lt_of_lt_of_le zero_lt_one (le_max_left _ _)
+  have hNorm_le_scale :
+      frobNormRect A + frobNormRect B ≤
+        max (1 : ℝ) (frobNormRect A + frobNormRect B) :=
+    le_max_right _ _
+  have hscaled :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) *
+          max (1 : ℝ) (frobNormRect A + frobNormRect B) <
+        theorem20_10_householder_sourceRankRadius hB hStack := by
+    exact (lt_div_iff₀ hScale_pos).mp
+      (by simpa [theorem20_10_householder_sourceRankGammaThreshold]
+        using hsmall)
+  exact
+    lt_of_le_of_lt
+      (mul_le_mul_of_nonneg_left hNorm_le_scale hgammaMax_nonneg)
+      hscaled
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    source-rank budget smallness for the conservative concrete component route
+    follows from the positive gamma-threshold condition. -/
+theorem theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) <
+        theorem20_10_householder_sourceRankGammaThreshold hB hStack) :
+    theorem20_10_householder_componentSourceRankBudget fp A B <
+      theorem20_10_householder_sourceRankRadius hB hStack := by
+  exact
+    theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
+      fp A B hB hStack
+      (theorem20_10_householder_component_max_gamma_sum_bound_of_max_gamma_lt_sourceRankGammaThreshold
+        fp A B hB hStack hvalidA hvalidB hsmall)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    a single conservative component source-rank budget below the radius implies
+    both strict margin hypotheses consumed by the component source-rank theorem. -/
+theorem theorem20_10_householder_componentSourceRankMargins_of_budget_lt_sourceRankRadius
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hsmall :
+      theorem20_10_householder_componentSourceRankBudget fp A B <
+        theorem20_10_householder_sourceRankRadius hB hStack) :
+    theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hB.transposeVecNorm2LowerMargin ∧
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+            frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hStack.vecNorm2LowerMargin := by
+  have hgammaA_nonneg :
+      0 ≤ theorem20_10_householder_gammaA_conservativeRhs fp r p q :=
+    theorem20_10_householder_gammaA_conservativeRhs_nonneg fp hvalidA
+  have hAterm_nonneg :
+      0 ≤ theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A :=
+    mul_nonneg hgammaA_nonneg (frobNormRect_nonneg A)
+  constructor
+  · calc
+      theorem20_10_householder_gammaB fp r p q * frobNormRect B
+          ≤ theorem20_10_householder_componentSourceRankBudget fp A B := by
+            dsimp [theorem20_10_householder_componentSourceRankBudget]
+            linarith
+      _ < theorem20_10_householder_sourceRankRadius hB hStack := hsmall
+      _ ≤ hB.transposeVecNorm2LowerMargin := by
+            exact min_le_left _ _
+  · calc
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+            frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B
+          = theorem20_10_householder_componentSourceRankBudget fp A B := by
+            rfl
+      _ < theorem20_10_householder_sourceRankRadius hB hStack := hsmall
+      _ ≤ hStack.vecNorm2LowerMargin := by
+            exact min_le_right _ _
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank margin-radius wrapper for the constructed rounded Householder
     GQR Part B returned-vector theorem.
@@ -29715,6 +29939,98 @@ theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks
       hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad,
       ?_⟩
   exact hmethod hcond.1 hcond.2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
+    component package with source-rank radius preservation.
+
+    This packages
+    `theorem20_10_partB_backward_error_of_householder_components_source_ranks_conservative_gamma`
+    behind one conservative rank-budget condition: the sum of the verified
+    conservative `A` component budget and the Householder `B` component budget
+    is strictly below the minimum source rank margin.  It still leaves the
+    concrete roundoff-smallness proof for this radius and the final
+    computed-vector identification as separate obligations. -/
+theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks_rank_radius_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hMargin :
+      theorem20_10_householder_componentSourceRankBudget fp A B <
+        theorem20_10_householder_sourceRankRadius hBsrc hStack) :
+    let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+      (DeltaB : Fin p → Fin (p + q) → ℝ)
+      (Deltab : Fin (r + q) → ℝ)
+      (Deltad : Fin p → ℝ),
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  rcases
+    theorem20_10_householder_componentSourceRankMargins_of_budget_lt_sourceRankRadius
+      fp A B hBsrc hStack hvalidA hMargin with
+    ⟨hBMargin, hStackMargin⟩
+  exact
+    theorem20_10_partB_backward_error_of_householder_components_source_ranks_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
+      hBMargin hStackMargin
 
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
