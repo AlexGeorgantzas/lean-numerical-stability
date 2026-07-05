@@ -32,22 +32,31 @@ end-to-end stability rebuild is tagged as
   solve backward-error theorems.  This supports the existing
   `DemmelHighamSchreiber13_6Estimates` target design but does not close the
   theorem; the [326]-level implementation estimates remain open.
-- 2026-07-05 matrix-`∞` source-norm positive-dimension endpoint: added
-  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv_of_pos_dim`
-  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  It packages the canonical
-  active-pivot source-norm upper/history pair from the source-shaped assumptions
-  plus `0 < r`, discharging the artificial finite unit-sphere witness.  Direct
+- 2026-07-05 matrix-`∞` source-norm positive-dimension paired endpoints:
+  extended the source-norm upper/history positive-block-size cleanup with
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table_of_pos_dim`,
+  `..._of_continuousLinearMap_source_table_of_pivot_right_inverse_of_pos_dim`,
+  `..._of_initial_diag_right_inverse_of_pivot_right_inverse_of_pos_dim`,
+  `..._of_reciprocal_diag_right_inverse_of_pivot_right_inverse_of_pos_dim`,
+  `..._of_nonsingInv_diag_of_pivot_right_inverse_of_pos_dim`, and the earlier
+  canonical active-pivot
+  `..._of_nonsingInv_diag_of_pivotInv_eq_nonsingInv_of_pos_dim` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These package the raw,
+  pivot-right-inverse, initial-diagonal, reciprocal, canonical-initial, and
+  canonical active-pivot source-norm upper/history pairs from the source-shaped
+  assumptions plus `0 < r`, discharging the artificial finite unit-sphere
+  witness.  Direct
   `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` passed before
   lookup refresh; import-materializing
   `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU` passed (`2982/2982`,
-  290s), and ignored scratch
-  `scratch/chapter13/ScratchCh13PosDimAxioms.lean` confirmed the theorem and
-  reported only standard Lean/Mathlib axioms `propext`, `Classical.choice`, and
-  `Quot.sound`.  A redirected full `examples/LibraryLookup.lean` rerun printed
-  the new Ch13 declaration successfully, but the file as a whole now fails at
-  unrelated non-Ch13 `#check`s beginning around line 13063 and continuing
-  through later Split-3B placeholder/foundation entries around lines
-  15306--15337; the new Ch13 check is covered by the focused scratch check.
+  252s), and ignored scratch
+  `scratch/chapter13/ScratchCh13PosDimAxioms.lean` confirmed all six
+  positive-dimension paired endpoints and reported only standard Lean/Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`.  A redirected full
+  `examples/LibraryLookup.lean` rerun printed all six new Ch13 declarations
+  successfully, but the file as a whole now fails at unrelated non-Ch13
+  `#check`s around lines 15311--15342; the new Ch13 checks are covered by the
+  focused scratch check.
   This remains a matrix-`∞` dependency endpoint; it does not close the
   source-strength entrywise Eq.13.21, Eq.13.23 `rho <= 2`, Problem 13.4
   all-tail comparison, or Theorem 13.6 cited-estimate rows.
