@@ -2312,6 +2312,44 @@ theorem two_mul_lyapunovXiSq_eq_simple_bound_of_symmetric (n : ℕ)
           intro j _
           exact hpair i j
 
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21), lower direction:
+    each residual term in the simple Lyapunov `xi^2` bound is dominated by the
+    normalized structured perturbation cost. -/
+theorem lyapunovXiSqSimpleBound_le_scaled_perturbation_cost (n : ℕ)
+    (R_tilde DA DC : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (α γ : ℝ)
+    (hα : 0 < α) (hγ : 0 < γ)
+    (hpos : ∀ i j : Fin n,
+      0 < 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2)
+    (hEq : ∀ i j : Fin n,
+      DA i j * lam j + lam i * DA j i - DC i j = R_tilde i j) :
+    lyapunovXiSqSimpleBound n R_tilde lam α γ ≤
+      ∑ i : Fin n, ∑ j : Fin n,
+        (DA i j ^ 2 / α ^ 2 + DA j i ^ 2 / α ^ 2 +
+          2 * (DC i j ^ 2 / γ ^ 2)) := by
+  unfold lyapunovXiSqSimpleBound
+  apply Finset.sum_le_sum
+  intro i _
+  apply Finset.sum_le_sum
+  intro j _
+  have hD : 0 < 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2 := hpos i j
+  have hα_ne : α ≠ 0 := ne_of_gt hα
+  have hγ_ne : γ ≠ 0 := ne_of_gt hγ
+  rw [div_le_iff₀ hD, ← hEq i j]
+  rw [show
+      DA i j ^ 2 / α ^ 2 + DA j i ^ 2 / α ^ 2 +
+          2 * (DC i j ^ 2 / γ ^ 2) =
+        (DA i j ^ 2 * γ ^ 2 + DA j i ^ 2 * γ ^ 2 +
+            2 * DC i j ^ 2 * α ^ 2) /
+          (α ^ 2 * γ ^ 2) from by
+        field_simp [hα_ne, hγ_ne]]
+  rw [div_mul_eq_mul_div]
+  rw [le_div_iff₀ (by positivity)]
+  nlinarith
+    [sq_nonneg (α * γ * (lam j * DA j i - lam i * DA i j)),
+      sq_nonneg (2 * α ^ 2 * lam j * DC i j + DA i j * γ ^ 2),
+      sq_nonneg (2 * α ^ 2 * lam i * DC i j + DA j i * γ ^ 2)]
+
 /-- Higham, 2nd ed., Chapter 16.2.1, unnumbered inequality after equation
     (16.21): the exact Lyapunov `xi^2` summand is bounded by the simpler
     residual-weighted summand when the displayed denominators are positive. -/
