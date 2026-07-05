@@ -16,6 +16,7 @@
 
 import Mathlib.Data.Real.Basic
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
+import LeanFpAnalysis.FP.Analysis.MatrixSpectral
 import LeanFpAnalysis.FP.Analysis.Norms
 import LeanFpAnalysis.FP.Analysis.HighamChapter7
 
@@ -2714,6 +2715,167 @@ theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped
     finiteLoewnerLe (rectMatMul (rectMatMul Q P) Q) Q :=
   wedinLemma20_12_projection_mul_swapped_mul_projection_loewnerLe_projection
     Q P hQ hP hIdemQ hIdemP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the complement of a symmetric idempotent projection is positive
+    semidefinite. -/
+theorem wedinLemma20_12_projectionComplement_finitePSD
+    {m : ℕ} (P : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hIdemP : rectMatMul P P = P) :
+    finitePSD (fun i j => idMatrix m i j - P i j) := by
+  have hPSD :
+      finitePSD
+        (rectMatMul
+          (rectMatMul (idMatrix m)
+            (fun i j => idMatrix m i j - P i j))
+          (idMatrix m)) :=
+    wedinLemma20_12_projection_mul_projectionComplement_mul_projection_finitePSD
+      (idMatrix m) P (ch7_idMatrix_symmetric m) hP hIdemP
+  simpa [rectMatMul_id_left, rectMatMul_id_right] using hPSD
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    a symmetric idempotent projection is Loewner-bounded by the identity. -/
+theorem wedinLemma20_12_projection_loewnerLe_id
+    {m : ℕ} (P : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hIdemP : rectMatMul P P = P) :
+    finiteLoewnerLe P (fun i j : Fin m => finiteIdMatrix i j) := by
+  have hPSD :
+      finitePSD (fun i j => idMatrix m i j - P i j) :=
+    wedinLemma20_12_projectionComplement_finitePSD P hP hIdemP
+  have hLe : finiteLoewnerLe P (idMatrix m) :=
+    (finiteLoewnerLe_iff_sub_finitePSD P (idMatrix m)).mpr hPSD
+  simpa [idMatrix, finiteIdMatrix] using hLe
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion-square compression `PQP` is Loewner-bounded by the identity. -/
+theorem wedinLemma20_12_projection_mul_swapped_mul_projection_loewnerLe_id
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe (rectMatMul (rectMatMul P Q) P)
+      (fun i j : Fin m => finiteIdMatrix i j) :=
+  finiteLoewnerLe_trans
+    (wedinLemma20_12_projection_mul_swapped_mul_projection_loewnerLe_projection
+      P Q hP hQ hIdemP hIdemQ)
+    (wedinLemma20_12_projection_loewnerLe_id P hP hIdemP)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the swapped companion-square compression `QPQ` is Loewner-bounded by the
+    identity. -/
+theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_loewnerLe_id
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe (rectMatMul (rectMatMul Q P) Q)
+      (fun i j : Fin m => finiteIdMatrix i j) :=
+  finiteLoewnerLe_trans
+    (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_loewnerLe_projection_swapped
+      P Q hP hQ hIdemP hIdemQ)
+    (wedinLemma20_12_projection_loewnerLe_id Q hQ hIdemQ)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of the companion-square compression
+    `PQP` is nonnegative. -/
+theorem wedinLemma20_12_projection_mul_swapped_mul_projection_finiteHermitianEigenvalues_nonneg
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (a : Fin m) :
+    0 ≤
+      finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+        (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+          P Q hP hQ hIdemQ) a := by
+  have hSym :=
+    wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+      P Q hP hQ hIdemQ
+  have hPSD :=
+    wedinLemma20_12_projection_mul_swapped_mul_projection_finitePSD
+      P Q hP hQ hIdemQ
+  exact
+    (finitePSD_iff_finiteHermitianEigenvalues_nonneg
+      (rectMatMul (rectMatMul P Q) P) hSym).mp hPSD a
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of the companion-square compression
+    `PQP` is at most one. -/
+theorem wedinLemma20_12_projection_mul_swapped_mul_projection_finiteHermitianEigenvalues_le_one
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (a : Fin m) :
+    finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+        (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+          P Q hP hQ hIdemQ) a ≤ 1 := by
+  have hSym :=
+    wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+      P Q hP hQ hIdemQ
+  have hLe :
+      finiteLoewnerLe (rectMatMul (rectMatMul P Q) P)
+        (fun i j : Fin m => (1 : ℝ) * finiteIdMatrix i j) := by
+    simpa using
+      wedinLemma20_12_projection_mul_swapped_mul_projection_loewnerLe_id
+        P Q hP hQ hIdemP hIdemQ
+  exact
+    finiteHermitianEigenvalues_le_of_finiteLoewnerLe_smul_id
+      (rectMatMul (rectMatMul P Q) P) hSym hLe a
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of the swapped companion-square
+    compression `QPQ` is nonnegative. -/
+theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_finiteHermitianEigenvalues_nonneg
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (a : Fin m) :
+    0 ≤
+      finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+        (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+          P Q hP hQ hIdemP) a := by
+  have hSym :=
+    wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+      P Q hP hQ hIdemP
+  have hPSD :=
+    wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_finitePSD
+      P Q hP hQ hIdemP
+  exact
+    (finitePSD_iff_finiteHermitianEigenvalues_nonneg
+      (rectMatMul (rectMatMul Q P) Q) hSym).mp hPSD a
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of the swapped companion-square
+    compression `QPQ` is at most one. -/
+theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_finiteHermitianEigenvalues_le_one
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (a : Fin m) :
+    finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+        (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+          P Q hP hQ hIdemP) a ≤ 1 := by
+  have hSym :=
+    wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+      P Q hP hQ hIdemP
+  have hLe :
+      finiteLoewnerLe (rectMatMul (rectMatMul Q P) Q)
+        (fun i j : Fin m => (1 : ℝ) * finiteIdMatrix i j) := by
+    simpa using
+      wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_loewnerLe_id
+        P Q hP hQ hIdemP hIdemQ
+  exact
+    finiteHermitianEigenvalues_le_of_finiteLoewnerLe_smul_id
+      (rectMatMul (rectMatMul Q P) Q) hSym hLe a
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm
