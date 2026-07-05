@@ -451,6 +451,40 @@ theorem sylvesterOp_sigmaMin_of_vecCoeff_gram_eigenvalues (n : Nat)
       (sylvesterVecCoeff_sigmaMin_of_gram_eigenvalues n A B hlam hEig)
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
+    a positive Gram-eigenvalue lower bound for the concrete vectorized
+    Sylvester coefficient gives a `SepLowerBound` certificate. -/
+theorem SepLowerBound_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A B : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p) :
+    SepLowerBound n A B (Real.sqrt lam) := by
+  exact
+    sepLowerBound_of_sylvesterOp_sigmaMin n A B (Real.sqrt lam)
+      (Real.sqrt_pos.mpr hlam)
+      (sylvesterOp_sigmaMin_of_vecCoeff_gram_eigenvalues n A B
+        (le_of_lt hlam) hEig)
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
+    in positive dimension, a positive Gram-eigenvalue lower bound for the
+    concrete vectorized Sylvester coefficient lower-bounds the exact `sep`
+    infimum. -/
+theorem sylvesterSepInf_ge_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A B : Fin n -> Fin n -> Real) {lam : Real}
+    (hn : 0 < n) (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p) :
+    Real.sqrt lam <= sylvesterSepInf n A B := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n A B (Real.sqrt lam)
+      (SepLowerBound_of_vecCoeff_gram_eigenvalues n A B hlam hEig) hn
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
     a supplied concrete left inverse for the printed vec/Kronecker Sylvester
     coefficient gives a `SepLowerBound` certificate. -/
 theorem SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
