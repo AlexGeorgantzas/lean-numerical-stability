@@ -1314,6 +1314,53 @@ theorem lyapunovSpectralTransform_symmetric (n : ℕ)
   rw [hMt] at hT
   simpa [matTranspose] using congrFun (congrFun hT j) i
 
+/-- The Lyapunov action `A * Y + Y * A^T` is symmetric whenever `Y` is
+    symmetric. -/
+theorem lyapunovOp_symmetric_of_symmetric (n : ℕ)
+    (A Y : Fin n → Fin n → ℝ)
+    (hY : IsSymmetricFiniteMatrix Y) :
+    IsSymmetricFiniteMatrix (lyapunovOp n A Y) := by
+  intro i j
+  unfold lyapunovOp matMul matTranspose
+  have hleft :
+      (∑ k : Fin n, A i k * Y k j) =
+        ∑ k : Fin n, Y j k * A i k := by
+    apply Finset.sum_congr rfl
+    intro k _
+    rw [hY k j]
+    ring
+  have hright :
+      (∑ k : Fin n, Y i k * A j k) =
+        ∑ k : Fin n, A j k * Y k i := by
+    apply Finset.sum_congr rfl
+    intro k _
+    rw [hY i k]
+    ring
+  rw [hleft, hright]
+  ring
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    if the Lyapunov data `C` and approximate solution `Y` are symmetric, then
+    the residual `R = C - A * Y - Y * A^T` is symmetric. -/
+theorem lyapunovResidual_symmetric_of_symmetric (n : ℕ)
+    (A C Y : Fin n → Fin n → ℝ)
+    (hC : IsSymmetricFiniteMatrix C) (hY : IsSymmetricFiniteMatrix Y) :
+    IsSymmetricFiniteMatrix (lyapunovResidual n A C Y) := by
+  intro i j
+  unfold lyapunovResidual
+  have hOp := lyapunovOp_symmetric_of_symmetric n A Y hY i j
+  rw [hC i j, hOp]
+
+/-- The spectral Lyapunov residual `U^T R U` is symmetric when the source
+    Lyapunov right-hand side and approximate solution are symmetric. -/
+theorem lyapunovSpectralTransform_residual_symmetric_of_symmetric (n : ℕ)
+    (A C Y U : Fin n → Fin n → ℝ)
+    (hC : IsSymmetricFiniteMatrix C) (hY : IsSymmetricFiniteMatrix Y) :
+    IsSymmetricFiniteMatrix
+      (lyapunovSpectralTransform n U (lyapunovResidual n A C Y)) :=
+  lyapunovSpectralTransform_symmetric n U (lyapunovResidual n A C Y)
+    (lyapunovResidual_symmetric_of_symmetric n A C Y hC hY)
+
 /-- Spectral-coordinate transforms distribute over the `M + N - P` matrix
     combination used in the Lyapunov perturbation residual. -/
 theorem lyapunovSpectralTransform_add_sub (n : ℕ)
@@ -1795,6 +1842,80 @@ noncomputable def lyapunovXiSqSimpleBound (n : ℕ)
   ∑ i : Fin n, ∑ j : Fin n,
     (2 * R_tilde i j ^ 2) /
       (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    for a symmetric transformed Lyapunov residual, the asymmetric printed
+    `xi^2` summation is exactly half of the subsequent simple residual-weighted
+    summation. -/
+theorem two_mul_lyapunovXiSq_eq_simple_bound_of_symmetric (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ) (α γ : ℝ)
+    (hR : IsSymmetricFiniteMatrix R_tilde)
+    (hden : ∀ i j : Fin n,
+      2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2 ≠ 0) :
+    2 * lyapunovXiSq n R_tilde lam α γ =
+      lyapunovXiSqSimpleBound n R_tilde lam α γ := by
+  unfold lyapunovXiSq lyapunovXiSqSimpleBound
+  let term : Fin n → Fin n → ℝ := fun i j =>
+    ((4 * α ^ 2 * lam j ^ 2 + γ ^ 2) * R_tilde i j ^ 2) /
+      (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2) ^ 2
+  have hswap :
+      (∑ i : Fin n, ∑ j : Fin n, term j i) =
+        ∑ i : Fin n, ∑ j : Fin n, term i j := by
+    rw [Finset.sum_comm]
+  have hpair : ∀ i j : Fin n,
+      term i j + term j i =
+        (2 * R_tilde i j ^ 2) /
+          (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2) := by
+    intro i j
+    let D : ℝ := 2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2
+    have hRji : R_tilde j i = R_tilde i j := hR j i
+    have hDsym :
+        2 * α ^ 2 * (lam j ^ 2 + lam i ^ 2) + γ ^ 2 =
+          D := by
+      dsimp [D]
+      ring
+    have hD_ne : D ≠ 0 := by
+      dsimp [D]
+      exact hden i j
+    have hnum :
+        (4 * α ^ 2 * lam j ^ 2 + γ ^ 2) +
+            (4 * α ^ 2 * lam i ^ 2 + γ ^ 2) =
+          2 * D := by
+      dsimp [D]
+      ring
+    dsimp [term]
+    rw [hRji, hDsym]
+    change
+      ((4 * α ^ 2 * lam j ^ 2 + γ ^ 2) * R_tilde i j ^ 2) / D ^ 2 +
+        ((4 * α ^ 2 * lam i ^ 2 + γ ^ 2) * R_tilde i j ^ 2) / D ^ 2 =
+          (2 * R_tilde i j ^ 2) / D
+    calc
+      ((4 * α ^ 2 * lam j ^ 2 + γ ^ 2) * R_tilde i j ^ 2) / D ^ 2 +
+          ((4 * α ^ 2 * lam i ^ 2 + γ ^ 2) * R_tilde i j ^ 2) / D ^ 2
+          = (((4 * α ^ 2 * lam j ^ 2 + γ ^ 2) +
+              (4 * α ^ 2 * lam i ^ 2 + γ ^ 2)) * R_tilde i j ^ 2) /
+                D ^ 2 := by
+              ring
+      _ = (2 * D * R_tilde i j ^ 2) / D ^ 2 := by
+            rw [hnum]
+      _ = (2 * R_tilde i j ^ 2) / D := by
+            field_simp [hD_ne]
+  calc
+    2 * (∑ i : Fin n, ∑ j : Fin n, term i j)
+        = (∑ i : Fin n, ∑ j : Fin n, term i j) +
+            (∑ i : Fin n, ∑ j : Fin n, term i j) := by ring
+    _ = (∑ i : Fin n, ∑ j : Fin n, term i j) +
+          (∑ i : Fin n, ∑ j : Fin n, term j i) := by rw [hswap]
+    _ = ∑ i : Fin n, ∑ j : Fin n, (term i j + term j i) := by
+          simp [Finset.sum_add_distrib]
+    _ = ∑ i : Fin n, ∑ j : Fin n,
+          (2 * R_tilde i j ^ 2) /
+            (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2) := by
+          apply Finset.sum_congr rfl
+          intro i _
+          apply Finset.sum_congr rfl
+          intro j _
+          exact hpair i j
 
 /-- Higham, 2nd ed., Chapter 16.2.1, unnumbered inequality after equation
     (16.21): the exact Lyapunov `xi^2` summand is bounded by the simpler
