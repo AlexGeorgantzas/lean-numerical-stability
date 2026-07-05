@@ -7225,6 +7225,91 @@ theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_s
     simpa [min_eq_right hBA] using hB_bound x
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    source range-projection Stewart--Sun equality.  For the projections
+    `A*Aplus` and `B*Bplus`, the equal range-dimension hypothesis follows from
+    the two source left inverses. -/
+theorem wedinLemma20_12_complexMatrixOp2_rangeProjection_crossProjection_eq_of_left_inverses
+    {m k : ℕ} (hm : 0 < m) (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus)) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul
+            (rectMatMul B Bplus)
+            (fun i j => idMatrix m i j - rectMatMul A Aplus i j))) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul
+            (rectMatMul A Aplus)
+            (fun i j => idMatrix m i j - rectMatMul B Bplus i j))) := by
+  let PA : Fin m → Fin m → ℝ := rectMatMul A Aplus
+  let PB : Fin m → Fin m → ℝ := rectMatMul B Bplus
+  have hIdemA : rectMatMul PA PA = PA := by
+    simpa [PA] using
+      rectMatMul_rangeProjection_idempotent_of_left_inverse A Aplus hleftA
+  have hIdemB : rectMatMul PB PB = PB := by
+    simpa [PB] using
+      rectMatMul_rangeProjection_idempotent_of_left_inverse B Bplus hleftB
+  have hRangeFinrank :
+      Module.finrank ℝ
+          (LinearMap.range ((Matrix.of PB : Matrix (Fin m) (Fin m) ℝ).mulVecLin)) =
+        Module.finrank ℝ
+          (LinearMap.range ((Matrix.of PA : Matrix (Fin m) (Fin m) ℝ).mulVecLin)) := by
+    simpa [PA, PB] using
+      wedinLemma20_12_rangeProjection_range_finrank_eq_of_left_inverses
+        B A Bplus Aplus hleftB hleftA
+  simpa [PA, PB] using
+    wedinLemma20_12_complexMatrixOp2_crossProjection_eq_of_range_finrank_eq
+      hm PB PA (by simpa [PB] using hSymB) (by simpa [PA] using hSymA)
+      hIdemB hIdemA hRangeFinrank
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12:
+    source `min` projector bound with the Stewart--Sun/principal-angle equality
+    discharged.
+
+This is the source-facing Lemma 20.12 surface in the repository's
+`rectOpNorm2Le` API:
+`||P_B(I-P_A)||₂ <= ||A-B||₂ * min(||Aplus||₂, ||Bplus||₂)`. -/
+theorem wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_min
+    {m k : ℕ} (hm : 0 < m) (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    {delta Aplus_norm Bplus_norm : ℝ}
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus_norm_nonneg : 0 ≤ Aplus_norm)
+    (hBplus_norm_nonneg : 0 ≤ Bplus_norm)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hBplus : rectOpNorm2Le Bplus Bplus_norm) :
+    rectOpNorm2Le
+      (rectMatMul
+        (rectMatMul B Bplus)
+        (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+      (delta * min Aplus_norm Bplus_norm) := by
+  have hEq :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul B Bplus)
+              (fun i j => idMatrix m i j - rectMatMul A Aplus i j))) =
+        complexMatrixOp2
+          (realRectToCMatrix
+            (rectMatMul
+              (rectMatMul A Aplus)
+              (fun i j => idMatrix m i j - rectMatMul B Bplus i j))) :=
+    wedinLemma20_12_complexMatrixOp2_rangeProjection_crossProjection_eq_of_left_inverses
+      hm A B Aplus Bplus hleftA hleftB hSymA hSymB
+  exact
+    wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_min_of_complexMatrixOp2_eq
+      A B Aplus Bplus hleftA hleftB hSymA hSymB hDelta
+      hAplus_norm_nonneg hBplus_norm_nonneg hAplus hBplus hEq
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     conditional Loewner-to-`min` packaging for the source-oriented
     `P_B(I-P_A)` projector estimate.
 
