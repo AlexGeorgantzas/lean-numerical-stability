@@ -4232,6 +4232,57 @@ theorem H16_eq16_27_lyapunov_condition_of_vecCoeff_sigmaMin (n : Nat)
       hDeltaA hDeltaC hLin
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    Frobenius first-order Lyapunov perturbation bound from a positive lower
+    bound on the concrete vectorized Lyapunov coefficient. -/
+theorem lyapunov_first_order_bound_of_vecCoeff_sigmaMin (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (hX : 0 < frobNorm X)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x))
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX <=
+      lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) *
+        frobNorm X *
+        lyapunovScaledPerturbationPairNorm n DeltaA DeltaC alpha gamma := by
+  exact
+    (lyapunovCond_of_vecCoeff_sigmaMin_isLyapunovConditionFirstOrderBound
+      n A X alpha gamma sigma halpha hgamma hsigma hX hCoeff)
+      DeltaA DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    relative Lyapunov first-order perturbation bound from a positive lower
+    bound on the concrete vectorized Lyapunov coefficient. -/
+theorem lyapunov_relative_first_order_bound_of_vecCoeff_sigmaMin
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x))
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_27_lyapunov_condition_of_vecCoeff_sigmaMin n
+      A X DeltaA DeltaC DeltaX alpha gamma sigma eps
+      halpha hgamma hsigma heps hX hCoeff
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     Frobenius first-order Lyapunov perturbation bound from a concrete left
     inverse and operator-2 radius for the printed Lyapunov vec/Kronecker
     coefficient. -/
