@@ -2502,6 +2502,49 @@ theorem wedinLemma20_12_projectionSumSubId_intertwines_companion_sq_compression_
             rw [hS2P]
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    on the `P` range, the companion-square compression `PQP` and the
+    cross-Gram product `P(I-Q)P` are complementary pieces of `P`. -/
+theorem wedinLemma20_12_projection_mul_swapped_mul_projection_add_crossGram_eq_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P) :
+    (fun i j =>
+      rectMatMul (rectMatMul P Q) P i j +
+        rectMatMul (rectMatMul P (fun i j => idMatrix m i j - Q i j)) P i j) =
+      P := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hQI : (fun i j => Q i j + IQ i j) = idMatrix m := by
+    ext i j
+    simp [IQ]
+  calc
+    (fun i j =>
+      rectMatMul (rectMatMul P Q) P i j +
+        rectMatMul (rectMatMul P IQ) P i j)
+        = rectMatMul
+            (fun i j => rectMatMul P Q i j + rectMatMul P IQ i j) P := by
+            rw [rectMatMul_add_left]
+    _ = rectMatMul (rectMatMul P (fun i j => Q i j + IQ i j)) P := by
+            rw [rectMatMul_add_right]
+    _ = rectMatMul (rectMatMul P (idMatrix m)) P := by
+            rw [hQI]
+    _ = rectMatMul P P := by
+            rw [rectMatMul_id_right]
+    _ = P := hIdemP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the symmetric `Q`-range version of the companion/cross-Gram complement
+    identity. -/
+theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_add_crossGram_swapped_eq_projection_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    (fun i j =>
+      rectMatMul (rectMatMul Q P) Q i j +
+        rectMatMul (rectMatMul Q (fun i j => idMatrix m i j - P i j)) Q i j) =
+      Q := by
+  simpa [add_comm] using
+    wedinLemma20_12_projection_mul_swapped_mul_projection_add_crossGram_eq_projection
+      Q P hIdemQ
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm
     of the range-side compression `P(P-Q)^2P`.
 
