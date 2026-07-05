@@ -372,6 +372,24 @@ noncomputable def sylvesterTwoColumnBlockCoeff (m n : Nat)
     ((- (T p q)) • (1 : Matrix (Fin m) (Fin m) Real))
     (sylvesterTriangularShiftedCoeff m A (T q q))
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), right-hand side for
+    the supplied adjacent two-column block recurrence.  It collects the
+    two active column equations into the same `Sum`-indexed vector space as
+    `sylvesterTwoColumnBlockCoeff`; only previously solved columns `j < p`
+    appear on this side. -/
+def sylvesterTwoColumnBlockRhs (m n : Nat)
+    (T : RMatFn n n) (C X : RMatFn m n) (p q : Fin n) :
+    Sum (Fin m) (Fin m) -> Real :=
+  Sum.elim
+    (fun i =>
+      C i p +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => T j p * X i j))
+    (fun i =>
+      C i q +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => T j q * X i j))
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6), exact block-vector form:
     the supplied adjacent two-column predicate is equivalent to one combined
     linear system for the concatenated unknown vector `(Z(:,p), Z(:,q))`.
@@ -423,6 +441,140 @@ theorem sylvester_two_column_block_system_iff_blockCoeff_mulVec (m n : Nat)
       simp only [Sum.elim_inr, Pi.add_apply] at hi
       rw [Matrix.smul_mulVec, Matrix.one_mulVec] at hi
       simpa [sub_eq_add_neg, neg_mul, add_comm, add_left_comm, add_assoc] using hi
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact supplied
+    right-inverse certificate for the two-column block coefficient: if
+    `K` is a right inverse of `sylvesterTwoColumnBlockCoeff`, then applying
+    `K` to the block right-hand side gives a vector that solves the combined
+    two-column linear system. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_rightInverse_rhs (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (K : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+        (Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q)) =
+      sylvesterTwoColumnBlockRhs m n T C X p q := by
+  rw [Matrix.mulVec_mulVec, hRight, Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    block-vector-to-column wrapper: any vector solving the supplied
+    two-column block system yields `IsSylvesterTwoColumnBlockSystem` once
+    columns `p` and `q` of `X` are defined by that vector. -/
+theorem sylvesterTwoColumnBlockSystem_of_blockCoeff_solutionVector (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n) (z : Sum (Fin m) (Fin m) -> Real)
+    (hz :
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q)
+    (hXp : forall i : Fin m, X i p = z (Sum.inl i))
+    (hXq : forall i : Fin m, X i q = z (Sum.inr i)) :
+    IsSylvesterTwoColumnBlockSystem m n A T C X p q := by
+  apply (sylvester_two_column_block_system_iff_blockCoeff_mulVec
+    m n A T C X p q).mpr
+  have hcol :
+      Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) = z := by
+    funext r
+    cases r with
+    | inl i => exact hXp i
+    | inr i => exact hXq i
+  rw [hcol]
+  simpa [sylvesterTwoColumnBlockRhs] using hz
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
+    right-inverse column wrapper: if columns `p` and `q` of `X` are the
+    components of `K` applied to the block right-hand side, and `K` is a
+    right inverse of the block coefficient, then `X` satisfies the supplied
+    two-column block system. -/
+theorem sylvesterTwoColumnBlockSystem_of_rightInverse_columns (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (K : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i)) :
+    IsSylvesterTwoColumnBlockSystem m n A T C X p q := by
+  refine sylvesterTwoColumnBlockSystem_of_blockCoeff_solutionVector
+    m n A T C X p q
+    (Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q)) ?_ hXp hXq
+  exact sylvesterTwoColumnBlockCoeff_mulVec_rightInverse_rhs
+    m n A T C X p q K hRight
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
+    left-inverse certificate: a supplied left inverse of the two-column
+    block coefficient makes its `mulVec` action injective. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_leftInverse (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1)
+    {x y : Sum (Fin m) (Fin m) -> Real}
+    (hxy :
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) x =
+        Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) y) :
+    x = y := by
+  have h := congrArg (Matrix.mulVec L) hxy
+  rw [Matrix.mulVec_mulVec, Matrix.mulVec_mulVec,
+    hLeft, Matrix.one_mulVec, Matrix.one_mulVec] at h
+  exact h
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), uniqueness
+    wrapper for the supplied two-column block system: if two block-system
+    solutions have the same block right-hand side, a supplied left inverse
+    forces their active column vectors to be equal. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_leftInverse (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1)
+    (hX : IsSylvesterTwoColumnBlockSystem m n A T C X p q)
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hRhs :
+      sylvesterTwoColumnBlockRhs m n T C X p q =
+        sylvesterTwoColumnBlockRhs m n T C Y p q) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  apply sylvesterTwoColumnBlockCoeff_mulVec_injective_of_leftInverse
+    m n A T p q L hLeft
+  have hXm := (sylvester_two_column_block_system_iff_blockCoeff_mulVec
+    m n A T C X p q).mp hX
+  have hYm := (sylvester_two_column_block_system_iff_blockCoeff_mulVec
+    m n A T C Y p q).mp hY
+  calc
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+        (Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q))
+        = sylvesterTwoColumnBlockRhs m n T C X p q := by
+          simpa [sylvesterTwoColumnBlockRhs] using hXm
+    _ = sylvesterTwoColumnBlockRhs m n T C Y p q := hRhs
+    _ = Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+        (Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q)) := by
+          simpa [sylvesterTwoColumnBlockRhs] using hYm.symm
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), component form
+    of the left-inverse uniqueness wrapper for supplied two-column block
+    systems with the same block right-hand side. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_leftInverse (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1)
+    (hX : IsSylvesterTwoColumnBlockSystem m n A T C X p q)
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hRhs :
+      sylvesterTwoColumnBlockRhs m n T C X p q =
+        sylvesterTwoColumnBlockRhs m n T C Y p q) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  have hvec := sylvesterTwoColumnBlockSystem_activeColumns_eq_of_leftInverse
+    m n A T C X Y p q L hLeft hX hY hRhs
+  constructor
+  · intro i
+    simpa using congrFun hvec (Sum.inl i)
+  · intro i
+    simpa using congrFun hvec (Sum.inr i)
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
     quasi-triangular `2 x 2` block recurrence: if columns `p,q` form a supplied

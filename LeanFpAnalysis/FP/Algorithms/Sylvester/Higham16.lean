@@ -1170,6 +1170,36 @@ theorem sylvester_practical_error_bound_of_diagonal_computed_residual_certificat
       hBudget hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case:
+    a scalar cap on the explicit diagonal-inverse practical budget gives the
+    final practical relative max-entry error bound. -/
+theorem sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_scalar
+    (m n : Nat) (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hBudget :
+      IsSylvesterComputedResidualBudget m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat Rhat Ru)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterDiagonalVecCoeffInvAbs m n a b) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_scalar m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat Rhat Ru
+      (sylvesterDiagonalVecCoeffInv m n a b)
+      (sylvesterDiagonalVecCoeffInvAbs m n a b)
+      eta hX
+      (sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal
+        m n a b hsep)
+      (sylvesterDiagonalVecCoeffInv_abs_le_invAbs m n a b)
+      hBudget heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case:
     if the computed residual has an explicit error model
     `Rhat = R(Xhat) + dR` with `|dR| <= Ru`, then the practical
     componentwise error bound follows using the explicit diagonal inverse of
@@ -1199,6 +1229,36 @@ theorem sylvester_practical_error_bound_of_diagonal_computed_residual_error_mode
         (Matrix.diagonal a) (Matrix.diagonal b) C Xhat Rhat Ru dR
         hRhat hRu hdR)
       hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal separated case
+    with an explicit residual error model and a scalar cap on the practical
+    budget. -/
+theorem sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_scalar
+    (m n : Nat) (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Ru dR : RMatFn m n) (eta : Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hRhat : forall i j,
+      Rhat i j =
+        sylvesterResidualRect m n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat i j +
+          dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterDiagonalVecCoeffInvAbs m n a b) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_scalar
+      m n a b C X Xhat Rhat Ru eta hsep hX
+      (sylvesterComputedResidualBudget_of_error_model m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat Rhat Ru dR
+        hRhat hRu hdR)
+      heta hcomponent hXhat
 
 -- ============================================================
 -- Exact Schur-coordinate algebra from Chapter 16.1
@@ -1728,6 +1788,41 @@ theorem sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certi
       hBudget hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied diagonal
+    Schur-coordinate case: a scalar cap on the nonsingular-inverse practical
+    budget gives the final practical relative max-entry error bound. -/
+theorem sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_scalar
+    (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_scalar m n
+      A B C X Xhat Rhat Ru
+      ((sylvesterVecCoeff m n A B)⁻¹)
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      eta hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr
+          (sylvesterVecCoeff_schurDiagonal_det_ne_zero
+            m n U A V B a b hU hV hA hB hsep)))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hBudget heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied diagonal
     Schur-coordinate case with an explicit residual error model:
     if `Rhat = R(Xhat) + dR` and `|dR| <= Ru`, then the practical
     componentwise error bound follows using the nonsingular inverse of the
@@ -1759,6 +1854,38 @@ theorem sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error
       (sylvesterComputedResidualBudget_of_error_model m n A B C Xhat Rhat Ru dR
         hRhat hRu hdR)
       hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied diagonal
+    Schur-coordinate case with an explicit residual error model and a scalar
+    cap on the practical budget. -/
+theorem sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model_scalar
+    (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat Ru dR : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_scalar
+      m n U A V B a b C X Xhat Rhat Ru eta hU hV hA hB hsep hX
+      (sylvesterComputedResidualBudget_of_error_model m n A B C Xhat Rhat Ru dR
+        hRhat hRu hdR)
+      heta hcomponent hXhat
 
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
