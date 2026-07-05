@@ -1091,7 +1091,7 @@ theorem sylvester_schur_transform_identity (m n : Nat)
   rw [hleft, hright]
   exact hcombine.symm
 
-private theorem rectMatMul_schur_coords_cancel {m n : Nat}
+theorem rectMatMul_schur_coords_cancel {m n : Nat}
     (U : RMatFn m m) (V : RMatFn n n) (M : RMatFn m n)
     (hU : IsOrthogonal m U) (hV : IsOrthogonal n V) :
     rectMatMul (matTranspose U)
@@ -1124,7 +1124,7 @@ private theorem rectMatMul_schur_coords_cancel {m n : Nat}
     _ = M := by
             rw [rectMatMul_id_right]
 
-private theorem rectMatMul_schur_coords_expand {m n : Nat}
+theorem rectMatMul_schur_coords_expand {m n : Nat}
     (U : RMatFn m m) (V : RMatFn n n) (C : RMatFn m n)
     (hU : IsOrthogonal m U) (hV : IsOrthogonal n V) :
     rectMatMul U

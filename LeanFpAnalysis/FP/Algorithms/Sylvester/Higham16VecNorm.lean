@@ -6,6 +6,7 @@
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16PerturbationSigmaMin
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16PsiSigmaMin
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16LyapunovSigmaMin
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16
 
 namespace LeanFpAnalysis.FP
 
@@ -392,6 +393,150 @@ theorem sylvesterOp_sigmaMin_diagonal_of_entrywise_abs_ge (n : Nat)
       (Matrix.diagonal a) (Matrix.diagonal b) sigma
       (sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
         a b sigma (le_of_lt hsigma) hgap)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.3)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    a uniform lower bound on the diagonal coordinate gaps `|a_i - b_j|`
+    gives the same Frobenius lower bound for the original Sylvester operator
+    after the supplied orthogonal coordinate transformations. -/
+theorem sylvesterOp_sigmaMin_schurDiagonal_of_entrywise_abs_ge (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|) :
+    forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y) := by
+  intro Y
+  let Yc : Fin n -> Fin n -> Real :=
+    rectMatMul (matTranspose U) (rectMatMul Y V)
+  have hYnorm : frobNorm Yc = frobNorm Y := by
+    dsimp [Yc]
+    calc
+      frobNorm (rectMatMul (matTranspose U) (rectMatMul Y V))
+          = frobNorm (rectMatMul Y V) := by
+            simpa [rectMatMul, matMul] using
+              (frobNorm_orthogonal_left (matTranspose U)
+                (rectMatMul Y V) hU.transpose)
+      _ = frobNorm Y := by
+            simpa [rectMatMul, matMul] using
+              (frobNorm_orthogonal_right Y V hV)
+  have hYexpand :
+      rectMatMul U (rectMatMul Yc (matTranspose V)) = Y := by
+    dsimp [Yc]
+    exact rectMatMul_schur_coords_expand U V Y hU hV
+  have htrans :
+      sylvesterOpRect n n A B Y =
+        rectMatMul U
+          (rectMatMul
+            (sylvesterOpRect n n (Matrix.diagonal a)
+              (Matrix.diagonal b) Yc)
+            (matTranspose V)) := by
+    have h :=
+      sylvester_schur_transform_identity n n
+        U (Matrix.diagonal a) A V (Matrix.diagonal b) B Yc
+        hU hV hA hB
+    rwa [hYexpand] at h
+  have hOut :
+      frobNorm (sylvesterOp n A B Y) =
+        frobNorm (sylvesterOp n (Matrix.diagonal a)
+          (Matrix.diagonal b) Yc) := by
+    rw [<- sylvesterOpRect_square_eq_sylvesterOp n A B Y, htrans]
+    calc
+      frobNorm
+          (rectMatMul U
+            (rectMatMul
+              (sylvesterOpRect n n (Matrix.diagonal a)
+                (Matrix.diagonal b) Yc)
+              (matTranspose V)))
+          = frobNorm
+              (rectMatMul
+                (sylvesterOpRect n n (Matrix.diagonal a)
+                  (Matrix.diagonal b) Yc)
+                (matTranspose V)) := by
+            simpa [rectMatMul, matMul] using
+              (frobNorm_orthogonal_left U
+                (rectMatMul
+                  (sylvesterOpRect n n (Matrix.diagonal a)
+                    (Matrix.diagonal b) Yc)
+                  (matTranspose V)) hU)
+      _ = frobNorm
+            (sylvesterOpRect n n (Matrix.diagonal a)
+              (Matrix.diagonal b) Yc) := by
+            simpa [rectMatMul, matMul] using
+              (frobNorm_orthogonal_right
+                (sylvesterOpRect n n (Matrix.diagonal a)
+                  (Matrix.diagonal b) Yc)
+                (matTranspose V) hV.transpose)
+      _ = frobNorm (sylvesterOp n (Matrix.diagonal a)
+            (Matrix.diagonal b) Yc) := by
+            rw [sylvesterOpRect_square_eq_sylvesterOp]
+  have hdiag :=
+    sylvesterOp_sigmaMin_diagonal_of_entrywise_abs_ge n
+      a b sigma hsigma hgap Yc
+  calc
+    sigma * frobNorm Y = sigma * frobNorm Yc := by
+      rw [hYnorm]
+    _ <= frobNorm (sylvesterOp n (Matrix.diagonal a)
+          (Matrix.diagonal b) Yc) := hdiag
+    _ = frobNorm (sylvesterOp n A B Y) := hOut.symm
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    the corresponding product-index vec/Kronecker coefficient inherits the
+    same sigma lower bound from the Schur-coordinate diagonal gap. -/
+theorem sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|) :
+    forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x) := by
+  intro x
+  let Y : Fin n -> Fin n -> Real := fun i j => x (j, i)
+  have hvecY : Matrix.vec Y = x := by
+    ext p
+    rfl
+  have h :=
+    sylvesterOp_sigmaMin_schurDiagonal_of_entrywise_abs_ge n
+      U A V B a b sigma hU hV hA hB hsigma hgap Y
+  rw [<- hvecY]
+  rw [sylvesterVecCoeff_mulVec_vec n n A B Y,
+    finiteVecNorm2_vec_eq_frobNorm n n Y,
+    sylvesterOpRect_square_eq_sylvesterOp n A B Y,
+    finiteVecNorm2_vec_eq_frobNorm n n (sylvesterOp n A B Y)]
+  exact h
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    a supplied Schur-coordinate gap gives a finite Gram-eigenvalue lower
+    bound for the original vec/Kronecker Sylvester coefficient. -/
+theorem sylvesterVecCoeff_schurDiagonal_gram_eigenvalues_ge_of_entrywise_abs_ge
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|) :
+    forall p : Prod (Fin n) (Fin n),
+      sigma ^ 2 <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p := by
+  exact
+    finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound
+      (sylvesterVecCoeff n n A B) (le_of_lt hsigma)
+      (sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
+        U A V B a b sigma hU hV hA hB hsigma hgap)
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     a positive lower bound for the concrete vectorized Lyapunov coefficient
