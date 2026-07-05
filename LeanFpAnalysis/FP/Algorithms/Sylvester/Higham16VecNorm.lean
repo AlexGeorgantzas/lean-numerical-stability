@@ -220,6 +220,50 @@ theorem finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound
     finiteQuadraticForm_finiteMatrixGram_eq_finiteVecNorm2Sq_mulVec]
   exact hsq_bound
 
+/-- A positive finite Euclidean lower-bound certificate for a square matrix
+    rules out a nonzero kernel vector, hence gives determinant nonsingularity.
+    This is the generic finite-index bridge used by the Chapter 16 vec/Kronecker
+    coefficient wrappers. -/
+theorem finiteMatrix_det_ne_zero_of_sigmaMin_lower_bound
+    {idx : Type*} [Fintype idx] [DecidableEq idx]
+    (P : Matrix idx idx Real) {sigma : Real} (hsigma : 0 < sigma)
+    (hCoeff : forall x : idx -> Real,
+      sigma * finiteVecNorm2 x <= finiteVecNorm2 (Matrix.mulVec P x)) :
+    P.det ≠ 0 := by
+  intro hdet
+  obtain ⟨x, hxne, hxzero⟩ :=
+    Matrix.exists_mulVec_eq_zero_iff.mpr hdet
+  have hnorm_ne : finiteVecNorm2 x ≠ 0 := by
+    intro hnorm
+    apply hxne
+    funext i
+    exact (finiteVecNorm2_eq_zero_iff x).mp hnorm i
+  have hnorm_pos : 0 < finiteVecNorm2 x :=
+    lt_of_le_of_ne (finiteVecNorm2_nonneg x) (Ne.symm hnorm_ne)
+  have hprod_pos : 0 < sigma * finiteVecNorm2 x :=
+    mul_pos hsigma hnorm_pos
+  have hmul_zero : finiteVecNorm2 (Matrix.mulVec P x) = 0 := by
+    rw [hxzero]
+    exact finiteVecNorm2_zero
+  have hzero : sigma * finiteVecNorm2 x <= 0 := by
+    simpa [hmul_zero] using hCoeff x
+  exact (not_le_of_gt hprod_pos) hzero
+
+/-- A positive lower bound on every finite-Gram eigenvalue gives determinant
+    nonsingularity of the original square matrix. -/
+theorem finiteMatrix_det_ne_zero_of_gram_eigenvalues
+    {idx : Type*} [Fintype idx] [DecidableEq idx]
+    (P : Matrix idx idx Real) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall a : idx,
+      lam <= finiteHermitianEigenvalues (finiteMatrixGram P)
+        (isSymmetricFiniteMatrix_finiteMatrixGram P) a) :
+    P.det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_sigmaMin_lower_bound P
+      (Real.sqrt_pos.mpr hlam)
+      (finiteMatrixGram_sigmaMin_mul_finiteVecNorm2_le_mulVec
+        P (le_of_lt hlam) hEig)
+
 /-- A concrete left inverse with a finite operator-2 bound gives the inverse
     action bound on the original product-index matrix.  This is a reusable
     bridge from exact inverse certificates to the `P`-coefficient route, without
@@ -288,6 +332,21 @@ theorem finiteMatrixGram_eigenvalues_ge_of_left_inverse_finiteOpNorm2Le
   exact
     finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound P
       (by positivity)
+      (finiteMatrix_sigmaMin_of_left_inverse_finiteOpNorm2Le
+        P Pinv hM hLeft hPinv)
+
+/-- A concrete left inverse with operator-2 radius `M` gives determinant
+    nonsingularity of the original finite matrix through the same lower-bound
+    certificate used by the Chapter 16 vec/Kronecker estimates. -/
+theorem finiteMatrix_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (P Pinv : Matrix ι ι Real) {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * P = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    P.det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_sigmaMin_lower_bound P
+      (one_div_pos.mpr hM)
       (finiteMatrix_sigmaMin_of_left_inverse_finiteOpNorm2Le
         P Pinv hM hLeft hPinv)
 
@@ -396,6 +455,90 @@ theorem lyapunovVecCoeff_sigmaMin_of_gram_eigenvalues (n : Nat)
   exact
     finiteMatrixGram_sigmaMin_mul_finiteVecNorm2_le_mulVec
       (lyapunovVecCoeff n A) hlam hEig x
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5):
+    a positive sigma-min lower-bound certificate for the vec/Kronecker
+    Sylvester coefficient implies determinant nonsingularity. -/
+theorem sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) {sigma : Real} (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x)) :
+    (sylvesterVecCoeff n n A B).det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_sigmaMin_lower_bound
+      (sylvesterVecCoeff n n A B) hsigma hCoeff
+
+/-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
+    a positive finite-Gram eigenvalue lower bound for the concrete vectorized
+    Sylvester coefficient implies determinant nonsingularity. -/
+theorem sylvesterVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A B : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p) :
+    (sylvesterVecCoeff n n A B).det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_gram_eigenvalues
+      (sylvesterVecCoeff n n A B) hlam hEig
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5):
+    a concrete left inverse with finite operator-2 radius for the vec/Kronecker
+    Sylvester coefficient implies determinant nonsingularity. -/
+theorem sylvesterVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A B : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    (sylvesterVecCoeff n n A B).det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+      (sylvesterVecCoeff n n A B) Pinv hM hLeft hPinv
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a positive sigma-min lower-bound certificate for the vec/Kronecker
+    Lyapunov coefficient implies determinant nonsingularity. -/
+theorem lyapunovVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) {sigma : Real} (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x)) :
+    (lyapunovVecCoeff n A).det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_sigmaMin_lower_bound
+      (lyapunovVecCoeff n A) hsigma hCoeff
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a positive finite-Gram eigenvalue lower bound for the concrete vectorized
+    Lyapunov coefficient implies determinant nonsingularity. -/
+theorem lyapunovVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A : Fin n -> Fin n -> Real) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p) :
+    (lyapunovVecCoeff n A).det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_gram_eigenvalues
+      (lyapunovVecCoeff n A) hlam hEig
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and equation (16.27):
+    a concrete left inverse with finite operator-2 radius for the vec/Kronecker
+    Lyapunov coefficient implies determinant nonsingularity. -/
+theorem lyapunovVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    (lyapunovVecCoeff n A).det ≠ 0 := by
+  exact
+    finiteMatrix_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+      (lyapunovVecCoeff n A) Pinv hM hLeft hPinv
 
 /-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
     a positive lower bound for the concrete vectorized Sylvester coefficient
