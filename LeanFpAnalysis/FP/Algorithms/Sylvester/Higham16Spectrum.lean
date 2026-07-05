@@ -390,6 +390,39 @@ def sylvesterTwoColumnBlockRhs (m n : Nat)
         Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
           (fun j => T j q * X i j))
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact supplied
+    two-column block recurrence: the block right-hand side depends on `X`
+    only through previously solved columns `j < p`. -/
+theorem sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq (m n : Nat)
+    (T : RMatFn n n) (C X Y : RMatFn m n) (p q : Fin n)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    sylvesterTwoColumnBlockRhs m n T C X p q =
+      sylvesterTwoColumnBlockRhs m n T C Y p q := by
+  funext r
+  cases r with
+  | inl i =>
+      have hsum :
+          Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+              (fun j => T j p * X i j) =
+            Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+              (fun j => T j p * Y i j) := by
+        apply Finset.sum_congr rfl
+        intro j hj
+        have hjp : j < p := (Finset.mem_filter.mp hj).2
+        rw [hprev j hjp i]
+      simp [sylvesterTwoColumnBlockRhs, hsum]
+  | inr i =>
+      have hsum :
+          Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+              (fun j => T j q * X i j) =
+            Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+              (fun j => T j q * Y i j) := by
+        apply Finset.sum_congr rfl
+        intro j hj
+        have hjp : j < p := (Finset.mem_filter.mp hj).2
+        rw [hprev j hjp i]
+      simp [sylvesterTwoColumnBlockRhs, hsum]
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6), exact block-vector form:
     the supplied adjacent two-column predicate is equivalent to one combined
     linear system for the concatenated unknown vector `(Z(:,p), Z(:,q))`.
@@ -575,6 +608,25 @@ theorem sylvesterTwoColumnBlockSystem_columns_eq_of_leftInverse (m n : Nat)
     simpa using congrFun hvec (Sum.inl i)
   · intro i
     simpa using congrFun hvec (Sum.inr i)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact supplied
+    two-column recurrence uniqueness bridge: if two block-system solutions
+    agree on all previously solved columns `j < p`, then the shared supplied
+    left inverse forces their active columns `p` and `q` to agree. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_leftInverse_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1)
+    (hX : IsSylvesterTwoColumnBlockSystem m n A T C X p q)
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  apply sylvesterTwoColumnBlockSystem_columns_eq_of_leftInverse
+    m n A T C X Y p q L hLeft hX hY
+  exact sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq m n T C X Y p q hprev
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
     quasi-triangular `2 x 2` block recurrence: if columns `p,q` form a supplied
