@@ -554,6 +554,43 @@ theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_leftInverse (m n : Nat)
     hLeft, Matrix.one_mulVec, Matrix.one_mulVec] at h
   exact h
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    right-inverse/left-inverse bridge for the supplied adjacent two-column
+    block system: if `K` is a supplied right inverse of the block coefficient,
+    `L` is a supplied left inverse, `Y` solves the supplied block system, and
+    the right-hand side source `X` agrees with `Y` on the previous columns
+    `j < p`, then the active vector obtained by applying `K` to the `X`-based
+    block right-hand side is exactly the active vector of `Y`.  Scope: exact
+    supplied-block algebra only; no Schur existence, structural block
+    nonsingularity, or floating-point stability is asserted. -/
+theorem sylvesterTwoColumnBlockCoeff_rightInverse_solutionVector_eq_of_leftInverse_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (K L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1)
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  apply sylvesterTwoColumnBlockCoeff_mulVec_injective_of_leftInverse
+    m n A T p q L hLeft
+  have hYm := (sylvester_two_column_block_system_iff_blockCoeff_mulVec
+    m n A T C Y p q).mp hY
+  calc
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+        (Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q))
+        = sylvesterTwoColumnBlockRhs m n T C X p q := by
+          exact sylvesterTwoColumnBlockCoeff_mulVec_rightInverse_rhs
+            m n A T C X p q K hRight
+    _ = sylvesterTwoColumnBlockRhs m n T C Y p q := by
+          exact sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq
+            m n T C X Y p q hprev
+    _ = Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+        (Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q)) := by
+          simpa [sylvesterTwoColumnBlockRhs] using hYm.symm
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), uniqueness
     wrapper for the supplied two-column block system: if two block-system
     solutions have the same block right-hand side, a supplied left inverse
