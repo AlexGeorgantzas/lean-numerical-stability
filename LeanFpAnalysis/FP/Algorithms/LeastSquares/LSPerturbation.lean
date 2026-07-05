@@ -127,6 +127,26 @@ theorem wedinTheorem20_1_solutionRelativeRHS_of_zero_residual
       2 * ((kappa * eps) / (1 - kappa * eps)) := by
   simp [wedinTheorem20_1SolutionRelativeRHS, mul_comm]
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1 / Problem 20.11:
+    Wedin's displayed solution RHS is its first-order coefficient times `eps`
+    plus an explicit quadratic remainder.  This is the scalar algebra behind
+    the source's statement that (20.25) recovers (20.1) to first order in the
+    unconstrained case. -/
+theorem wedinTheorem20_1_solutionRelativeRHS_eq_first_order_add_quadratic_remainder
+    {kappa eps A_norm x_norm r_norm : ℝ}
+    (hden : 1 - kappa * eps ≠ 0) :
+    wedinTheorem20_1SolutionRelativeRHS kappa eps A_norm x_norm r_norm =
+      eps * kappa *
+          (2 + (kappa + 1) * r_norm / (A_norm * x_norm)) +
+        ((kappa * eps) ^ 2 / (1 - kappa * eps)) *
+          (2 + (kappa + 1) * r_norm / (A_norm * x_norm)) := by
+  let c : ℝ := 2 + (kappa + 1) * r_norm / (A_norm * x_norm)
+  unfold wedinTheorem20_1SolutionRelativeRHS
+  change (kappa * eps) / (1 - kappa * eps) * c =
+    eps * kappa * c + ((kappa * eps) ^ 2 / (1 - kappa * eps)) * c
+  field_simp [hden]
+  ring
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1), scalar
     normalization for the currently proved one-sided Wedin vector route.
 
