@@ -4041,6 +4041,102 @@ theorem wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_eq_swa
             (finiteTrace_rectMatMul_comm (rectMatMul Q P) Q).symm
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the finite trace of the `P`-range `D^2` compression is the projection
+    trace minus the companion-square trace. -/
+theorem wedinLemma20_12_finiteTrace_projectionDiff_sq_compression_eq_projection_sub_companion
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul P
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          P) =
+      finiteTrace P - finiteTrace (rectMatMul (rectMatMul P Q) P) := by
+  let MP : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul P
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      P
+  let CP : Fin m → Fin m → ℝ := rectMatMul (rectMatMul P Q) P
+  have hAdd :
+      (fun i j => MP i j + CP i j) = P := by
+    simpa [MP, CP] using
+      wedinLemma20_12_projectionDiff_sq_compression_add_companion_sq_eq_projection
+        P Q hIdemP hIdemQ
+  have hTraceAdd :
+      finiteTrace MP + finiteTrace CP = finiteTrace P := by
+    have h := congrArg finiteTrace hAdd
+    simpa [finiteTrace_add] using h
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped finite-trace version for the `Q`-range `D^2` compression. -/
+theorem wedinLemma20_12_finiteTrace_projectionDiff_sq_compression_swapped_eq_projection_sub_companion
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul Q
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          Q) =
+      finiteTrace Q - finiteTrace (rectMatMul (rectMatMul Q P) Q) := by
+  let MQ : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul Q
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      Q
+  let CQ : Fin m → Fin m → ℝ := rectMatMul (rectMatMul Q P) Q
+  have hAdd :
+      (fun i j => MQ i j + CQ i j) = Q := by
+    simpa [MQ, CQ] using
+      wedinLemma20_12_projectionDiff_sq_compression_swapped_add_companion_sq_swapped_eq_projection_swapped
+        P Q hIdemP hIdemQ
+  have hTraceAdd :
+      finiteTrace MQ + finiteTrace CQ = finiteTrace Q := by
+    have h := congrArg finiteTrace hAdd
+    simpa [finiteTrace_add] using h
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    equal projection traces imply equal finite traces for the two `D^2`
+    range-compressions `P(P-Q)^2P` and `Q(P-Q)^2Q`. -/
+theorem wedinLemma20_12_finiteTrace_projectionDiff_sq_compression_eq_swapped_of_projection_trace_eq
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (hTrace : finiteTrace P = finiteTrace Q) :
+    finiteTrace
+        (rectMatMul
+          (rectMatMul P
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          P) =
+      finiteTrace
+        (rectMatMul
+          (rectMatMul Q
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          Q) := by
+  have hPTrace :=
+    wedinLemma20_12_finiteTrace_projectionDiff_sq_compression_eq_projection_sub_companion
+      P Q hIdemP hIdemQ
+  have hQTrace :=
+    wedinLemma20_12_finiteTrace_projectionDiff_sq_compression_swapped_eq_projection_sub_companion
+      P Q hIdemP hIdemQ
+  have hComp :
+      finiteTrace (rectMatMul (rectMatMul P Q) P) =
+        finiteTrace (rectMatMul (rectMatMul Q P) Q) :=
+    wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_eq_swapped
+      P Q hIdemP hIdemQ
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the two companion-square compressions `PQP` and `QPQ` have the same
     second trace moment. -/
 theorem wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_sq_eq_swapped
@@ -4720,6 +4816,117 @@ theorem wedinLemma20_12_projectionDiff_sq_compression_swapped_finitePSD
   simpa using hbase
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the `P`-range `D^2` compression is Loewner-bounded above by the projection
+    `P`. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_loewnerLe_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe
+      (rectMatMul
+        (rectMatMul P
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)))
+        P) P := by
+  let MP : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul P
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      P
+  let CP : Fin m → Fin m → ℝ := rectMatMul (rectMatMul P Q) P
+  have hPSDcomp : finitePSD CP := by
+    simpa [CP] using
+      wedinLemma20_12_projection_mul_swapped_mul_projection_finitePSD
+        P Q hP hQ hIdemQ
+  have hdiff :
+      (fun i j => P i j - MP i j) = CP := by
+    have hsum :=
+      wedinLemma20_12_projectionDiff_sq_compression_add_companion_sq_eq_projection
+        P Q hIdemP hIdemQ
+    ext i j
+    have hij := congrFun (congrFun hsum i) j
+    dsimp [MP, CP] at hij ⊢
+    linarith
+  have hPSDdiff : finitePSD (fun i j => P i j - MP i j) := by
+    rw [hdiff]
+    exact hPSDcomp
+  exact
+    (finiteLoewnerLe_iff_sub_finitePSD MP P).mpr hPSDdiff
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped Loewner upper bound for the `Q`-range `D^2` compression. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_swapped_loewnerLe_projection_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe
+      (rectMatMul
+        (rectMatMul Q
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)))
+        Q) Q := by
+  have hbase :=
+    wedinLemma20_12_projectionDiff_sq_compression_loewnerLe_projection
+      Q P hQ hP hIdemQ hIdemP
+  have hsq :
+      rectMatMul (fun i j => Q i j - P i j)
+          (fun i j => Q i j - P i j) =
+        rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j) := by
+    ext i j
+    unfold rectMatMul
+    apply Finset.sum_congr rfl
+    intro k _
+    ring
+  rw [hsq] at hbase
+  simpa using hbase
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the `P`-range `D^2` compression is Loewner-bounded above by the identity. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_loewnerLe_id
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe
+      (rectMatMul
+        (rectMatMul P
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)))
+        P)
+      (fun i j : Fin m => finiteIdMatrix i j) :=
+  finiteLoewnerLe_trans
+    (wedinLemma20_12_projectionDiff_sq_compression_loewnerLe_projection
+      P Q hP hQ hIdemP hIdemQ)
+    (wedinLemma20_12_projection_loewnerLe_id P hP hIdemP)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped identity upper bound for the `Q`-range `D^2` compression. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_swapped_loewnerLe_id
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe
+      (rectMatMul
+        (rectMatMul Q
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)))
+        Q)
+      (fun i j : Fin m => finiteIdMatrix i j) :=
+  finiteLoewnerLe_trans
+    (wedinLemma20_12_projectionDiff_sq_compression_swapped_loewnerLe_projection_swapped
+      P Q hP hQ hIdemP hIdemQ)
+    (wedinLemma20_12_projection_loewnerLe_id Q hQ hIdemQ)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     every finite Hermitian eigenvalue of `P(P-Q)^2P` is nonnegative. -/
 theorem wedinLemma20_12_projectionDiff_sq_compression_finiteHermitianEigenvalues_nonneg
     {m : ℕ} (P Q : Fin m → Fin m → ℝ)
@@ -4750,6 +4957,43 @@ theorem wedinLemma20_12_projectionDiff_sq_compression_finiteHermitianEigenvalues
           (rectMatMul (fun i j => P i j - Q i j)
             (fun i j => P i j - Q i j)))
         P) hSym).mp hPSD a
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of `P(P-Q)^2P` is at most one. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_finiteHermitianEigenvalues_le_one
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (a : Fin m) :
+    finiteHermitianEigenvalues
+        (rectMatMul
+          (rectMatMul P
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          P)
+        (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+          P Q hP hQ hIdemP hIdemQ) a ≤ 1 := by
+  let MP : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul P
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      P
+  have hSym : IsSymmetricFiniteMatrix MP := by
+    simpa [MP] using
+      wedinLemma20_12_projectionDiff_sq_compression_symmetric
+        P Q hP hQ hIdemP hIdemQ
+  have hLe :
+      finiteLoewnerLe MP
+        (fun i j : Fin m => (1 : ℝ) * finiteIdMatrix i j) := by
+    simpa [MP] using
+      wedinLemma20_12_projectionDiff_sq_compression_loewnerLe_id
+        P Q hP hQ hIdemP hIdemQ
+  simpa [MP] using
+    finiteHermitianEigenvalues_le_of_finiteLoewnerLe_smul_id
+      MP hSym hLe a
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     every finite Hermitian eigenvalue of `P(P-Q)^2P` is bounded above by its
@@ -4901,6 +5145,43 @@ theorem wedinLemma20_12_projectionDiff_sq_compression_swapped_finiteHermitianEig
         Q) hSym).mp hPSD a
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of `Q(P-Q)^2Q` is at most one. -/
+theorem wedinLemma20_12_projectionDiff_sq_compression_swapped_finiteHermitianEigenvalues_le_one
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (a : Fin m) :
+    finiteHermitianEigenvalues
+        (rectMatMul
+          (rectMatMul Q
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          Q)
+        (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+          P Q hP hQ hIdemP hIdemQ) a ≤ 1 := by
+  let MQ : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul Q
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      Q
+  have hSym : IsSymmetricFiniteMatrix MQ := by
+    simpa [MQ] using
+      wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+        P Q hP hQ hIdemP hIdemQ
+  have hLe :
+      finiteLoewnerLe MQ
+        (fun i j : Fin m => (1 : ℝ) * finiteIdMatrix i j) := by
+    simpa [MQ] using
+      wedinLemma20_12_projectionDiff_sq_compression_swapped_loewnerLe_id
+        P Q hP hQ hIdemP hIdemQ
+  simpa [MQ] using
+    finiteHermitianEigenvalues_le_of_finiteLoewnerLe_smul_id
+      MQ hSym hLe a
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     every finite Hermitian eigenvalue of `Q(P-Q)^2Q` is bounded above by its
     exact complexified Euclidean operator norm. -/
 theorem wedinLemma20_12_projectionDiff_sq_compression_swapped_finiteHermitianEigenvalues_le_complexMatrixOp2
@@ -5016,6 +5297,438 @@ theorem wedinLemma20_12_exists_topEigenvalue_complexMatrixOp2_projectionDiff_sq_
       wedinLemma20_12_projectionDiff_sq_compression_swapped_finiteHermitianEigenvalues_le_complexMatrixOp2
         P Q hP hQ hIdemP hIdemQ a₀
   exact ⟨a₀, le_antisymm hUpper hLower, hMax⟩
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    endpoint characterization for the selected top eigenvalue of
+    `P(P-Q)^2P`.  Under a top-index certificate, that top value is `1`
+    exactly when the exceptional range/kernel subspace
+    `ran(P) ∩ ker(Q)` contains a nonzero vector.
+
+This packages the `lambda = 1` endpoint into a finite-dimensional
+range/kernel problem; it does not compare the two endpoint multiplicities. -/
+theorem wedinLemma20_12_top_finiteHermitianEigenvalue_projectionDiff_sq_compression_eq_one_iff_exists_projection_range_projection_swapped_zero
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    {aP : Fin m}
+    (hTopP : ∀ a : Fin m,
+      finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul P
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            P)
+          (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+            P Q hP hQ hIdemP hIdemQ) a ≤
+        finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul P
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            P)
+          (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+            P Q hP hQ hIdemP hIdemQ) aP) :
+    finiteHermitianEigenvalues
+        (rectMatMul
+          (rectMatMul P
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          P)
+        (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+          P Q hP hQ hIdemP hIdemQ) aP = 1 ↔
+      ∃ x : Fin m → ℝ,
+        x ≠ 0 ∧
+        rectMatMulVec P x = x ∧
+        rectMatMulVec Q x = 0 := by
+  let MP : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul P
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      P
+  have hSymP : IsSymmetricFiniteMatrix MP := by
+    simpa [MP] using
+      wedinLemma20_12_projectionDiff_sq_compression_symmetric
+        P Q hP hQ hIdemP hIdemQ
+  let lambdaP : ℝ := finiteHermitianEigenvalues MP hSymP aP
+  have hTopP' :
+      ∀ a : Fin m, finiteHermitianEigenvalues MP hSymP a ≤ lambdaP := by
+    intro a
+    simpa [MP, lambdaP] using hTopP a
+  constructor
+  · intro hTop_eq_one
+    have hLambda_eq_one : lambdaP = 1 := by
+      simpa [MP, lambdaP] using hTop_eq_one
+    let xP : Fin m → ℝ :=
+      ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian MP hSymP).eigenvectorBasis aP)
+    have hxP_ne : xP ≠ 0 := by
+      intro hx0
+      have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one MP hSymP aP
+      change finiteVecNorm2Sq xP = 1 at hnorm
+      rw [hx0] at hnorm
+      simp [finiteVecNorm2Sq] at hnorm
+    have hxP_eig :
+        rectMatMulVec MP xP = fun i => lambdaP * xP i := by
+      have h := finiteMatVec_finiteHermitianEigenvector_eq MP hSymP aP
+      simpa [finiteMatVec, rectMatMulVec, MP, xP, lambdaP] using h
+    have hLambda_ne_zero : lambdaP ≠ 0 := by
+      simp [hLambda_eq_one]
+    have hxP_range :
+        rectMatMulVec P xP = xP :=
+      wedinLemma20_12_projection_range_of_projectionDiff_sq_compression_eigenvalue_ne_zero
+        P Q hIdemP lambdaP xP
+        (by simpa [MP] using hxP_eig) hLambda_ne_zero
+    have hxP_compress_self : rectMatMulVec MP xP = xP := by
+      calc
+        rectMatMulVec MP xP = fun i => lambdaP * xP i := hxP_eig
+        _ = xP := by
+              ext i
+              simp [hLambda_eq_one]
+    have hxQ_zero : rectMatMulVec Q xP = 0 :=
+      (wedinLemma20_12_projection_range_projectionDiff_sq_compression_eq_self_iff_projection_swapped_zero
+        P Q hP hQ hIdemP hIdemQ xP hxP_range).mp
+        (by simpa [MP] using hxP_compress_self)
+    exact ⟨xP, hxP_ne, hxP_range, hxQ_zero⟩
+  · rintro ⟨x, hx_ne, hxP_range, hxQ_zero⟩
+    have hxP_compress_self :
+        rectMatMulVec MP x = x := by
+      simpa [MP] using
+        (wedinLemma20_12_projection_range_projectionDiff_sq_compression_eq_self_iff_projection_swapped_zero
+          P Q hP hQ hIdemP hIdemQ x hxP_range).mpr hxQ_zero
+    have hxP_eig :
+        finiteMatVec MP x = fun i => (1 : ℝ) * x i := by
+      calc
+        finiteMatVec MP x = rectMatMulVec MP x := by
+            rfl
+        _ = x := hxP_compress_self
+        _ = fun i => (1 : ℝ) * x i := by
+            ext i
+            simp
+    have hOne_mem :
+        (1 : ℝ) ∈ Set.range (finiteHermitianEigenvalues MP hSymP) :=
+      finiteHermitianEigenvalues_mem_range_of_finiteMatVec_eigenvector
+        MP hSymP hx_ne hxP_eig
+    rcases hOne_mem with ⟨bP, hbP⟩
+    have hOne_le : (1 : ℝ) ≤ lambdaP := by
+      rw [← hbP]
+      exact hTopP' bP
+    have hTop_le_one : lambdaP ≤ 1 := by
+      simpa [MP, lambdaP] using
+        wedinLemma20_12_projectionDiff_sq_compression_finiteHermitianEigenvalues_le_one
+          P Q hP hQ hIdemP hIdemQ aP
+    simpa [MP, lambdaP] using le_antisymm hTop_le_one hOne_le
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped endpoint characterization for the selected top eigenvalue of
+    `Q(P-Q)^2Q`.  Under a top-index certificate, that top value is `1`
+    exactly when `ran(Q) ∩ ker(P)` contains a nonzero vector. -/
+theorem wedinLemma20_12_top_finiteHermitianEigenvalue_projectionDiff_sq_compression_swapped_eq_one_iff_exists_projection_swapped_range_projection_zero
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    {aQ : Fin m}
+    (hTopQ : ∀ a : Fin m,
+      finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul Q
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            Q)
+          (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+            P Q hP hQ hIdemP hIdemQ) a ≤
+        finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul Q
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            Q)
+          (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+            P Q hP hQ hIdemP hIdemQ) aQ) :
+    finiteHermitianEigenvalues
+        (rectMatMul
+          (rectMatMul Q
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          Q)
+        (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+          P Q hP hQ hIdemP hIdemQ) aQ = 1 ↔
+      ∃ x : Fin m → ℝ,
+        x ≠ 0 ∧
+        rectMatMulVec Q x = x ∧
+        rectMatMulVec P x = 0 := by
+  let MQ : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul Q
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      Q
+  have hSymQ : IsSymmetricFiniteMatrix MQ := by
+    simpa [MQ] using
+      wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+        P Q hP hQ hIdemP hIdemQ
+  let lambdaQ : ℝ := finiteHermitianEigenvalues MQ hSymQ aQ
+  have hTopQ' :
+      ∀ a : Fin m, finiteHermitianEigenvalues MQ hSymQ a ≤ lambdaQ := by
+    intro a
+    simpa [MQ, lambdaQ] using hTopQ a
+  constructor
+  · intro hTop_eq_one
+    have hLambda_eq_one : lambdaQ = 1 := by
+      simpa [MQ, lambdaQ] using hTop_eq_one
+    let xQ : Fin m → ℝ :=
+      ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian MQ hSymQ).eigenvectorBasis aQ)
+    have hxQ_ne : xQ ≠ 0 := by
+      intro hx0
+      have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one MQ hSymQ aQ
+      change finiteVecNorm2Sq xQ = 1 at hnorm
+      rw [hx0] at hnorm
+      simp [finiteVecNorm2Sq] at hnorm
+    have hxQ_eig :
+        rectMatMulVec MQ xQ = fun i => lambdaQ * xQ i := by
+      have h := finiteMatVec_finiteHermitianEigenvector_eq MQ hSymQ aQ
+      simpa [finiteMatVec, rectMatMulVec, MQ, xQ, lambdaQ] using h
+    have hLambda_ne_zero : lambdaQ ≠ 0 := by
+      simp [hLambda_eq_one]
+    have hxQ_range :
+        rectMatMulVec Q xQ = xQ :=
+      wedinLemma20_12_projection_swapped_range_of_projectionDiff_sq_compression_eigenvalue_ne_zero
+        P Q hIdemQ lambdaQ xQ
+        (by simpa [MQ] using hxQ_eig) hLambda_ne_zero
+    have hxQ_compress_self : rectMatMulVec MQ xQ = xQ := by
+      calc
+        rectMatMulVec MQ xQ = fun i => lambdaQ * xQ i := hxQ_eig
+        _ = xQ := by
+              ext i
+              simp [hLambda_eq_one]
+    have hxP_zero : rectMatMulVec P xQ = 0 :=
+      (wedinLemma20_12_projection_swapped_range_projectionDiff_sq_compression_eq_self_iff_projection_zero
+        P Q hP hQ hIdemP hIdemQ xQ hxQ_range).mp
+        (by simpa [MQ] using hxQ_compress_self)
+    exact ⟨xQ, hxQ_ne, hxQ_range, hxP_zero⟩
+  · rintro ⟨x, hx_ne, hxQ_range, hxP_zero⟩
+    have hxQ_compress_self :
+        rectMatMulVec MQ x = x := by
+      simpa [MQ] using
+        (wedinLemma20_12_projection_swapped_range_projectionDiff_sq_compression_eq_self_iff_projection_zero
+          P Q hP hQ hIdemP hIdemQ x hxQ_range).mpr hxP_zero
+    have hxQ_eig :
+        finiteMatVec MQ x = fun i => (1 : ℝ) * x i := by
+      calc
+        finiteMatVec MQ x = rectMatMulVec MQ x := by
+            rfl
+        _ = x := hxQ_compress_self
+        _ = fun i => (1 : ℝ) * x i := by
+            ext i
+            simp
+    have hOne_mem :
+        (1 : ℝ) ∈ Set.range (finiteHermitianEigenvalues MQ hSymQ) :=
+      finiteHermitianEigenvalues_mem_range_of_finiteMatVec_eigenvector
+        MQ hSymQ hx_ne hxQ_eig
+    rcases hOne_mem with ⟨bQ, hbQ⟩
+    have hOne_le : (1 : ℝ) ≤ lambdaQ := by
+      rw [← hbQ]
+      exact hTopQ' bQ
+    have hTop_le_one : lambdaQ ≤ 1 := by
+      simpa [MQ, lambdaQ] using
+        wedinLemma20_12_projectionDiff_sq_compression_swapped_finiteHermitianEigenvalues_le_one
+          P Q hP hQ hIdemP hIdemQ aQ
+    simpa [MQ, lambdaQ] using le_antisymm hTop_le_one hOne_le
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    if the selected top Hermitian eigenvalues of the two `D^2` compressions
+    are away from the endpoint cases `0` and `1`, then the top eigenvalues
+    are equal.
+
+The remaining principal-angle work is therefore concentrated on the endpoint
+cases, especially the `lambda = 1` eigenspace multiplicity/rank comparison. -/
+theorem wedinLemma20_12_top_finiteHermitianEigenvalue_projectionDiff_sq_compression_eq_swapped_of_top_of_nonzero_nonunit
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    {aP aQ : Fin m}
+    (hTopP : ∀ a : Fin m,
+      finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul P
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            P)
+          (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+            P Q hP hQ hIdemP hIdemQ) a ≤
+        finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul P
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            P)
+          (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+            P Q hP hQ hIdemP hIdemQ) aP)
+    (hTopQ : ∀ a : Fin m,
+      finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul Q
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            Q)
+          (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+            P Q hP hQ hIdemP hIdemQ) a ≤
+        finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul Q
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            Q)
+          (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+            P Q hP hQ hIdemP hIdemQ) aQ)
+    (hTopP_ne_zero :
+      finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul P
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            P)
+          (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+            P Q hP hQ hIdemP hIdemQ) aP ≠ 0)
+    (hTopP_ne_one :
+      finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul P
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            P)
+          (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+            P Q hP hQ hIdemP hIdemQ) aP ≠ 1)
+    (hTopQ_ne_zero :
+      finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul Q
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            Q)
+          (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+            P Q hP hQ hIdemP hIdemQ) aQ ≠ 0)
+    (hTopQ_ne_one :
+      finiteHermitianEigenvalues
+          (rectMatMul
+            (rectMatMul Q
+              (rectMatMul (fun i j => P i j - Q i j)
+                (fun i j => P i j - Q i j)))
+            Q)
+          (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+            P Q hP hQ hIdemP hIdemQ) aQ ≠ 1) :
+    finiteHermitianEigenvalues
+        (rectMatMul
+          (rectMatMul P
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          P)
+        (wedinLemma20_12_projectionDiff_sq_compression_symmetric
+          P Q hP hQ hIdemP hIdemQ) aP =
+      finiteHermitianEigenvalues
+        (rectMatMul
+          (rectMatMul Q
+            (rectMatMul (fun i j => P i j - Q i j)
+              (fun i j => P i j - Q i j)))
+          Q)
+        (wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+          P Q hP hQ hIdemP hIdemQ) aQ := by
+  let MP : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul P
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      P
+  let MQ : Fin m → Fin m → ℝ :=
+    rectMatMul
+      (rectMatMul Q
+        (rectMatMul (fun i j => P i j - Q i j)
+          (fun i j => P i j - Q i j)))
+      Q
+  have hSymP : IsSymmetricFiniteMatrix MP := by
+    simpa [MP] using
+      wedinLemma20_12_projectionDiff_sq_compression_symmetric
+        P Q hP hQ hIdemP hIdemQ
+  have hSymQ : IsSymmetricFiniteMatrix MQ := by
+    simpa [MQ] using
+      wedinLemma20_12_projectionDiff_sq_compression_swapped_symmetric
+        P Q hP hQ hIdemP hIdemQ
+  let lambdaP : ℝ := finiteHermitianEigenvalues MP hSymP aP
+  let lambdaQ : ℝ := finiteHermitianEigenvalues MQ hSymQ aQ
+  have hTopP' :
+      ∀ a : Fin m, finiteHermitianEigenvalues MP hSymP a ≤ lambdaP := by
+    intro a
+    simpa [MP, lambdaP] using hTopP a
+  have hTopQ' :
+      ∀ a : Fin m, finiteHermitianEigenvalues MQ hSymQ a ≤ lambdaQ := by
+    intro a
+    simpa [MQ, lambdaQ] using hTopQ a
+  have hTopP_ne_zero' : lambdaP ≠ 0 := by
+    simpa [MP, lambdaP] using hTopP_ne_zero
+  have hTopP_ne_one' : lambdaP ≠ 1 := by
+    simpa [MP, lambdaP] using hTopP_ne_one
+  have hTopQ_ne_zero' : lambdaQ ≠ 0 := by
+    simpa [MQ, lambdaQ] using hTopQ_ne_zero
+  have hTopQ_ne_one' : lambdaQ ≠ 1 := by
+    simpa [MQ, lambdaQ] using hTopQ_ne_one
+  let xP : Fin m → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian MP hSymP).eigenvectorBasis aP)
+  have hxP_ne : xP ≠ 0 := by
+    intro hx0
+    have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one MP hSymP aP
+    change finiteVecNorm2Sq xP = 1 at hnorm
+    rw [hx0] at hnorm
+    simp [finiteVecNorm2Sq] at hnorm
+  have hxP_eig : rectMatMulVec MP xP = fun i => lambdaP * xP i := by
+    have h := finiteMatVec_finiteHermitianEigenvector_eq MP hSymP aP
+    simpa [finiteMatVec, rectMatMulVec, MP, xP, lambdaP] using h
+  obtain ⟨yQ, hyQ_ne, _hyQ_range, hyQ_eig⟩ :=
+    wedinLemma20_12_exists_projection_swapped_range_projectionDiff_sq_compression_eigenvector_of_projection_range
+      P Q hIdemP hIdemQ lambdaP xP
+      (by simpa [MP] using hxP_eig) hxP_ne hTopP_ne_zero' hTopP_ne_one'
+  have hyQ_eig_finite :
+      finiteMatVec MQ yQ = fun i => lambdaP * yQ i := by
+    simpa [finiteMatVec, rectMatMulVec, MQ] using hyQ_eig
+  have hRangeQ :
+      lambdaP ∈ Set.range (finiteHermitianEigenvalues MQ hSymQ) :=
+    finiteHermitianEigenvalues_mem_range_of_finiteMatVec_eigenvector
+      MQ hSymQ hyQ_ne hyQ_eig_finite
+  rcases hRangeQ with ⟨bQ, hbQ⟩
+  have hP_le_Q : lambdaP ≤ lambdaQ := by
+    rw [← hbQ]
+    exact hTopQ' bQ
+  let xQ : Fin m → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian MQ hSymQ).eigenvectorBasis aQ)
+  have hxQ_ne : xQ ≠ 0 := by
+    intro hx0
+    have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one MQ hSymQ aQ
+    change finiteVecNorm2Sq xQ = 1 at hnorm
+    rw [hx0] at hnorm
+    simp [finiteVecNorm2Sq] at hnorm
+  have hxQ_eig : rectMatMulVec MQ xQ = fun i => lambdaQ * xQ i := by
+    have h := finiteMatVec_finiteHermitianEigenvector_eq MQ hSymQ aQ
+    simpa [finiteMatVec, rectMatMulVec, MQ, xQ, lambdaQ] using h
+  obtain ⟨yP, hyP_ne, _hyP_range, hyP_eig⟩ :=
+    wedinLemma20_12_exists_projection_range_projectionDiff_sq_compression_eigenvector_of_projection_swapped_range
+      P Q hIdemP hIdemQ lambdaQ xQ
+      (by simpa [MQ] using hxQ_eig) hxQ_ne hTopQ_ne_zero' hTopQ_ne_one'
+  have hyP_eig_finite :
+      finiteMatVec MP yP = fun i => lambdaQ * yP i := by
+    simpa [finiteMatVec, rectMatMulVec, MP] using hyP_eig
+  have hRangeP :
+      lambdaQ ∈ Set.range (finiteHermitianEigenvalues MP hSymP) :=
+    finiteHermitianEigenvalues_mem_range_of_finiteMatVec_eigenvector
+      MP hSymP hyP_ne hyP_eig_finite
+  rcases hRangeP with ⟨bP, hbP⟩
+  have hQ_le_P : lambdaQ ≤ lambdaP := by
+    rw [← hbP]
+    exact hTopP' bP
+  simpa [MP, MQ, lambdaP, lambdaQ] using le_antisymm hP_le_Q hQ_le_P
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     equality of the two `D^2` range-compression operator norms implies the
