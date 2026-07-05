@@ -372,6 +372,22 @@ theorem higham11_3_fl_blockLDLT_pivot_row_bound (n : ℕ) (fp : FPModel)
           ≤ fp.u * |A 0 j.succ| :=
   fl_blockLDLT_pivot_row_bound n fp A he hsym1 L D hL00 hLcol hL0s hD00 hD0s
 
+/-- **Theorem 11.3 pivot-column fl backward error**:
+`|(L̂D̂L̂ᵀ)_{i+1,0} − A_{i+1,0}| ≤ u·|A_{i+1,0}|` — the pivot-column case,
+completing all four index cases of the single 1×1-pivot fl assemble step. -/
+theorem higham11_3_fl_blockLDLT_pivot_col_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) (he : A 0 0 ≠ 0)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hD00 : D 0 0 = A 0 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0) :
+    ∀ i : Fin n,
+      |(∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L 0 k₂) - A i.succ 0|
+        ≤ fp.u * |A i.succ 0| :=
+  fl_blockLDLT_pivot_col_bound n fp A he L D hL00 hLcol hL0s hD00 hDs0
+
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
     (ε : ℝ) : Fin 3 → Fin 3 → ℝ :=
