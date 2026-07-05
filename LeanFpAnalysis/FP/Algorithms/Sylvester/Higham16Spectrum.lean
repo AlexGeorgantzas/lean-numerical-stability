@@ -554,6 +554,43 @@ theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_leftInverse (m n : Nat)
     hLeft, Matrix.one_mulVec, Matrix.one_mulVec] at h
   exact h
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
+    right-inverse/left-inverse bridge for the supplied adjacent two-column
+    block system: if `K` is a supplied right inverse of the block coefficient,
+    `L` is a supplied left inverse, `Y` solves the supplied block system, and
+    the right-hand side source `X` agrees with `Y` on the previous columns
+    `j < p`, then the active vector obtained by applying `K` to the `X`-based
+    block right-hand side is exactly the active vector of `Y`.  Scope: exact
+    supplied-block algebra only; no Schur existence, structural block
+    nonsingularity, or floating-point stability is asserted. -/
+theorem sylvesterTwoColumnBlockCoeff_rightInverse_solutionVector_eq_of_leftInverse_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (K L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1)
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  apply sylvesterTwoColumnBlockCoeff_mulVec_injective_of_leftInverse
+    m n A T p q L hLeft
+  have hYm := (sylvester_two_column_block_system_iff_blockCoeff_mulVec
+    m n A T C Y p q).mp hY
+  calc
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+        (Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q))
+        = sylvesterTwoColumnBlockRhs m n T C X p q := by
+          exact sylvesterTwoColumnBlockCoeff_mulVec_rightInverse_rhs
+            m n A T C X p q K hRight
+    _ = sylvesterTwoColumnBlockRhs m n T C Y p q := by
+          exact sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq
+            m n T C X Y p q hprev
+    _ = Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+        (Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q)) := by
+          simpa [sylvesterTwoColumnBlockRhs] using hYm.symm
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), uniqueness
     wrapper for the supplied two-column block system: if two block-system
     solutions have the same block right-hand side, a supplied left inverse
@@ -658,6 +695,38 @@ theorem sylvesterTwoColumnBlockSystem_columns_eq_of_rightInverse_leftInverse_pre
       m n A T C X p q K hRight hXp hXq
   exact sylvesterTwoColumnBlockSystem_columns_eq_of_leftInverse_of_prev_columns_eq
     m n A T C X Y p q L hLeft hX hY hprev
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), vector form of
+    the exact supplied two-column solve/uniqueness bridge: under the same
+    supplied right-inverse/left-inverse and previous-column agreement
+    hypotheses as the component wrapper, the combined active-column vectors
+    `(X(:,p), X(:,q))` and `(Y(:,p), Y(:,q))` agree.  Scope: exact
+    supplied-block algebra only; no Schur existence, structural block
+    nonsingularity, or floating-point stability is asserted. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_rightInverse_leftInverse_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (K L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  have hcols :=
+    sylvesterTwoColumnBlockSystem_columns_eq_of_rightInverse_leftInverse_prev_columns_eq
+      m n A T C X Y p q K L hRight hLeft hXp hXq hY hprev
+  funext r
+  cases r with
+  | inl i => simpa using hcols.1 i
+  | inr i => simpa using hcols.2 i
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
     quasi-triangular `2 x 2` block recurrence: if columns `p,q` form a supplied
@@ -1302,6 +1371,50 @@ theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_cer
       hBudget heta hcomponent hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
+    Schur-coordinate case with a monotone scalar cap on an estimated practical
+    budget.  The exact nonsingular inverse is supplied by the Schur-triangular
+    certificate, while `PinvAbs'`, `Rhat'`, and `Ru'` may be any componentwise
+    larger estimator inputs. -/
+theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_mono_scalar
+      m n A B C X Xhat Rhat Rhat' Ru Ru'
+      ((sylvesterVecCoeff m n A B)⁻¹)
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      PinvAbs' eta hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr
+          (sylvesterVecCoeff_schurTriangular_det_ne_zero
+            m n U R A V S B hU hV hA hB hS hshift)))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hPinvAbs_le hBudget hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
     Schur-coordinate case with an explicit residual error model and a scalar
     cap on the practical budget. -/
 theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_error_model_scalar
@@ -1333,5 +1446,45 @@ theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_err
       (sylvesterComputedResidualBudget_of_error_model m n A B C Xhat Rhat Ru dR
         hRhat hRu hdR)
       heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
+    Schur-coordinate case with an explicit residual error model and a monotone
+    scalar cap on an estimated practical budget. -/
+theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_error_model_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat_model : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate_mono_scalar
+      m n U R A V S B C X Xhat Rhat Rhat' Ru Ru' PinvAbs' eta
+      hU hV hA hB hS hshift hX
+      (sylvesterComputedResidualBudget_of_error_model m n A B C Xhat Rhat Ru dR
+        hRhat_model hRu hdR)
+      hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
 
 end LeanFpAnalysis.FP
