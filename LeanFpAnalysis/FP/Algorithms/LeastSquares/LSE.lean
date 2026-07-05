@@ -28865,6 +28865,63 @@ theorem theorem20_10_householder_componentSourceRankMargins_of_budget_lt_sourceR
             exact min_le_right _ _
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    the compact max-gamma product condition directly supplies the two strict
+    source-rank margins needed by the conservative component route. -/
+theorem theorem20_10_householder_componentSourceRankMargins_of_max_gamma_sum_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) *
+          (frobNormRect A + frobNormRect B) <
+        theorem20_10_householder_sourceRankRadius hB hStack) :
+    theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hB.transposeVecNorm2LowerMargin ∧
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+            frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hStack.vecNorm2LowerMargin := by
+  exact
+    theorem20_10_householder_componentSourceRankMargins_of_budget_lt_sourceRankRadius
+      fp A B hB hStack hvalidA
+      (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
+        fp A B hB hStack hsmall)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    the positive source-rank gamma threshold directly supplies the two strict
+    source-rank margins needed by the conservative component route. -/
+theorem theorem20_10_householder_componentSourceRankMargins_of_max_gamma_lt_sourceRankGammaThreshold
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) <
+        theorem20_10_householder_sourceRankGammaThreshold hB hStack) :
+    theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hB.transposeVecNorm2LowerMargin ∧
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+            frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hStack.vecNorm2LowerMargin := by
+  exact
+    theorem20_10_householder_componentSourceRankMargins_of_budget_lt_sourceRankRadius
+      fp A B hB hStack hvalidA
+      (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
+        fp A B hB hStack hvalidA hvalidB hsmall)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank margin-radius wrapper for the constructed rounded Householder
     GQR Part B returned-vector theorem.
 
