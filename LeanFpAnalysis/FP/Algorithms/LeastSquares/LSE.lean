@@ -7620,6 +7620,39 @@ theorem theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
   rw [hAPv]
   exact hAPleft_null z hz
 
+/-- Matrix extensionality through the finite vector action used by the local
+    rectangular-matrix API. -/
+theorem rectMatMul_eq_of_forall_rectMatMulVec_eq {m n : ℕ}
+    (M N : Fin m → Fin n → ℝ)
+    (h : ∀ v : Fin n → ℝ, rectMatMulVec M v = rectMatMulVec N v) :
+    M = N := by
+  ext i j
+  have hv := congrFun (h (finiteBasisVec j)) i
+  have hMcol := congrFun (rectMatMulVec_finiteBasisVec_gsColumn M j) i
+  have hNcol := congrFun (rectMatMulVec_finiteBasisVec_gsColumn N j) i
+  simpa [gsColumn] using hMcol.symm.trans (hv.trans hNcol)
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24):
+    matrix form of the projected action `(AP)^+ AP = P` from the reduced
+    operator left-inverse condition on the homogeneous constraint nullspace. -/
+theorem theorem20_8_APplus_AP_eq_projection_of_AP_left_inverse_on_nullspace
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B Bplus) z) = z) :
+    rectMatMul APplus (theorem20_8AP A B Bplus) =
+      theorem20_8Projection B Bplus := by
+  apply rectMatMul_eq_of_forall_rectMatMulVec_eq
+  intro v
+  simpa [rectMatMulVec_rectMatMul] using
+    theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
+      A B Bplus APplus hright hAPleft_null v
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a Penrose-style route to the reduced-operator left-inverse condition on
     the homogeneous constraint nullspace.  If `AP * (AP)^+ * AP = AP`,
@@ -14113,6 +14146,64 @@ theorem
   exact
     _root_.LeanFpAnalysis.FP.theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
       A B (undetAplusOfGramNonsingInv B) APplus hright hAPleft_null v
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24):
+    source stacked-full-column-rank matrix identity `(AP)^+ AP = P` for the
+    Gram-`B` rank-tolerant Moore--Penrose route. -/
+theorem
+    LSEFullRowRank.theorem20_8_APplus_AP_eq_projection_of_MP_gram_projection_lseStackedFullColumnRank
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hstack : LSEStackedFullColumnRank A B) :
+    rectMatMul APplus
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) =
+      theorem20_8Projection B (undetAplusOfGramNonsingInv B) := by
+  have hright :
+      rectMatMul B (undetAplusOfGramNonsingInv B) = idMatrix p :=
+    higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero
+      B hB.rectGram_det_ne_zero
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_gram_projection_lseStackedFullColumnRank
+      A hB APplus hMP hstack
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_APplus_AP_eq_projection_of_AP_left_inverse_on_nullspace
+      A B (undetAplusOfGramNonsingInv B) APplus hright hAPleft_null
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24):
+    determinant-facing concrete Gram-pseudoinverse matrix identity
+    `(AP)^+ AP = P`. -/
+theorem
+    LSEFullRowRank.theorem20_8_APplus_AP_eq_projection_of_gram_MP_gram_projection_lseStackedFullColumnRank
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (hdetAP :
+      Matrix.det
+        (rectGram (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hstack : LSEStackedFullColumnRank A B) :
+    rectMatMul
+        (undetAplusOfGramNonsingInv
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)))
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) =
+      theorem20_8Projection B (undetAplusOfGramNonsingInv B) :=
+  LSEFullRowRank.theorem20_8_APplus_AP_eq_projection_of_MP_gram_projection_lseStackedFullColumnRank
+    A hB
+    (undetAplusOfGramNonsingInv
+      (theorem20_8AP A B (undetAplusOfGramNonsingInv B)))
+    (higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero
+      (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) hdetAP)
+    hstack
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank exact same-residual correction-vector
