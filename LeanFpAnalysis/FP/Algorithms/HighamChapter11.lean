@@ -853,6 +853,28 @@ theorem higham11_14_aasen_next_column_of_product (n : ℕ)
   rw [eq_div_iff (hHnz i next hnext)]
   linarith [hsum]
 
+/-- **Equation (11.14) floating-point scalar update**, relative-error form.
+The computed scalar update `fl(fl(a - s) / h)` equals the exact update
+`(a - s) / h` multiplied by a two-operation relative error bounded by `γ₂`.
+This is the local fl ingredient for the Aasen next-column recurrence. -/
+theorem higham11_14_fl_aasen_next_column_update_rel_error
+    (fp : FPModel) (a s h : ℝ) (hh : h ≠ 0) (hval : gammaValid fp 2) :
+    ∃ θ : ℝ,
+      |θ| ≤ gamma fp 2 ∧
+      fp.fl_div (fp.fl_sub a s) h = ((a - s) / h) * (1 + θ) := by
+  obtain ⟨δs, hδs, hs⟩ := fp.model_sub a s
+  obtain ⟨δd, hδd, hd⟩ := fp.model_div (fp.fl_sub a s) h hh
+  obtain ⟨θ, hθ, hprod⟩ :=
+    prod_error_bound fp 2 ![δs, δd]
+      (by intro i; fin_cases i <;> simp_all) hval
+  have hfactor : (1 + δs) * (1 + δd) = 1 + θ := by
+    have h := hprod
+    rw [Fin.prod_univ_two] at h
+    simpa using h
+  refine ⟨θ, hθ, ?_⟩
+  rw [hd, hs, ← hfactor]
+  field_simp [hh]
+
 /-- **Equation (11.15)**, the Aasen solve chain
 `L z = P b`, `T y = z`, `L^T w = y`, `x = P w`. -/
 def higham11_15_aasenSolveChain (n : ℕ)
