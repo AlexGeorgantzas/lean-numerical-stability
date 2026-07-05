@@ -2409,6 +2409,42 @@ theorem wedinLemma20_12_exists_projection_swapped_range_projectionDiff_sq_eigenv
         P Q hIdemP hIdemQ lambda x hxEig
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    symmetric nonunit transfer: a nonzero `D^2` eigenvector in the `Q` range
+    maps through the same companion operator to a nonzero `D^2` eigenvector in
+    the `P` range with the same eigenvalue. -/
+theorem wedinLemma20_12_exists_projection_range_projectionDiff_sq_eigenvector_of_projection_swapped_range
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (lambda : ℝ) (x : Fin m → ℝ)
+    (hxQ : rectMatMulVec Q x = x)
+    (hxEig :
+      rectMatMulVec
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)) x =
+        fun i => lambda * x i)
+    (hx_ne : x ≠ 0)
+    (hlambda_ne : lambda ≠ 1) :
+    ∃ y : Fin m → ℝ,
+      y ≠ 0 ∧
+      rectMatMulVec P y = y ∧
+      rectMatMulVec
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)) y =
+        fun i => lambda * y i := by
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  refine ⟨rectMatMulVec S x, ?_, ?_, ?_⟩
+  · simpa [S] using
+      wedinLemma20_12_rectMatMulVec_projectionSumSubId_ne_zero_of_projectionDiff_sq_eigenvalue_ne_one
+        P Q hIdemP hIdemQ lambda x hxEig hx_ne hlambda_ne
+  · simpa [S] using
+      wedinLemma20_12_rectMatMulVec_projectionSumSubId_maps_projection_range_swapped
+        P Q hIdemP hIdemQ x hxQ
+  · simpa [S] using
+      wedinLemma20_12_rectMatMulVec_projectionSumSubId_preserves_projectionDiff_sq_eigenvector
+        P Q hIdemP hIdemQ lambda x hxEig
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the companion square `S^2`, where `S = P+Q-I`, preserves the `P` range.
 
 This follows from `S^2 = I - (P-Q)^2` and the already proved commutation of
