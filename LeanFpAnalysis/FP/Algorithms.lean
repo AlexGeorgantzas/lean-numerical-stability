@@ -108,6 +108,9 @@ import LeanFpAnalysis.FP.Analysis.BergerInequality
 import LeanFpAnalysis.FP.Analysis.PseudospectralResolvent
 import LeanFpAnalysis.FP.Analysis.HenriciExtremal
 import LeanFpAnalysis.FP.Analysis.ConditionEstimatorLowerBound
+import LeanFpAnalysis.FP.Analysis.NilpotentJordanChain
+import LeanFpAnalysis.FP.Analysis.RealInvariantSubspace
+import LeanFpAnalysis.FP.Analysis.ResolventFunctionalCalculus
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderReflector
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderApply
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderOneStep

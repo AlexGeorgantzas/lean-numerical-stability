@@ -15361,3 +15361,13 @@ small enough to serve as a smoke check for representative public declarations.
 #check H19_Theorem19_13_storedLoopPerturbation_frobNorm_le
 #check lapack_condEstimate_le_kappaOne
 #check condOneNumber_ge_scaled_estimator
+-- Split-3B Wave-5: deep closures — full JNF over ℂ, dim-≤2 real invariant subspace, resolvent functional calculus
+#check nilpotentJordanBasis_holds
+#check exists_isSimilar_nilpotentJordanForm
+#check jordan_normal_form
+#check exists_isSimilar_jordan
+#check exists_real_invariant_subspace_dim_le_two
+#check real_peel_one_or_two
+#check resolvent_differentiableOn
+#check resolvent_analyticAt
+#check norm_pow_le_of_cauchy_representation
