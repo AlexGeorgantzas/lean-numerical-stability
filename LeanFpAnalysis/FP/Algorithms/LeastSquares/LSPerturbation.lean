@@ -2878,6 +2878,73 @@ theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped
       (rectMatMul (rectMatMul Q P) Q) hSym hLe a
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the two companion-square compressions `PQP` and `QPQ` have the same
+    finite trace. -/
+theorem wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_eq_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteTrace (rectMatMul (rectMatMul P Q) P) =
+      finiteTrace (rectMatMul (rectMatMul Q P) Q) := by
+  calc
+    finiteTrace (rectMatMul (rectMatMul P Q) P)
+        = finiteTrace (rectMatMul P (rectMatMul P Q)) :=
+            finiteTrace_rectMatMul_comm (rectMatMul P Q) P
+    _ = finiteTrace (rectMatMul (rectMatMul P P) Q) := by
+            rw [rectMatMul_assoc]
+    _ = finiteTrace (rectMatMul P Q) := by
+            rw [hIdemP]
+    _ = finiteTrace (rectMatMul Q P) :=
+            finiteTrace_rectMatMul_comm P Q
+    _ = finiteTrace (rectMatMul (rectMatMul Q Q) P) := by
+            rw [hIdemQ]
+    _ = finiteTrace (rectMatMul Q (rectMatMul Q P)) := by
+            rw [rectMatMul_assoc]
+    _ = finiteTrace (rectMatMul (rectMatMul Q P) Q) :=
+            (finiteTrace_rectMatMul_comm (rectMatMul Q P) Q).symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the locally named finite Hermitian eigenvalues of the two
+    companion-square compressions have equal sums. -/
+theorem wedinLemma20_12_sum_finiteHermitianEigenvalues_projection_mul_swapped_mul_projection_eq_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    (∑ a : Fin m,
+      finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+        (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+          P Q hP hQ hIdemQ) a) =
+      ∑ a : Fin m,
+        finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+          (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+            P Q hP hQ hIdemP) a := by
+  let MPQ : Fin m → Fin m → ℝ := rectMatMul (rectMatMul P Q) P
+  let MQP : Fin m → Fin m → ℝ := rectMatMul (rectMatMul Q P) Q
+  have hSymPQ :
+      IsSymmetricFiniteMatrix MPQ := by
+    simpa [MPQ] using
+      wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+        P Q hP hQ hIdemQ
+  have hSymQP :
+      IsSymmetricFiniteMatrix MQP := by
+    simpa [MQP] using
+      wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+        P Q hP hQ hIdemP
+  have hTrace : finiteTrace MPQ = finiteTrace MQP := by
+    simpa [MPQ, MQP] using
+      wedinLemma20_12_finiteTrace_projection_mul_swapped_mul_projection_eq_swapped
+        P Q hIdemP hIdemQ
+  calc
+    (∑ a : Fin m, finiteHermitianEigenvalues MPQ hSymPQ a)
+        = finiteTrace MPQ :=
+            (finiteTrace_eq_sum_finiteHermitianEigenvalues MPQ hSymPQ).symm
+    _ = finiteTrace MQP := hTrace
+    _ = ∑ a : Fin m, finiteHermitianEigenvalues MQP hSymQP a :=
+            finiteTrace_eq_sum_finiteHermitianEigenvalues MQP hSymQP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm
     of the range-side compression `P(P-Q)^2P`.
 
