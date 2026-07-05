@@ -329,6 +329,33 @@ theorem higham12_4_conditional_two_gamma_bound (n : ℕ) (fp : FPModel)
     b r hr hres hsolve hDeltaA y hy hmu_nonneg hnu_nonneg homega_nonneg
     (2 * gamma fp (n + 1)) hdom
 
+/-- **Equations (12.20)-(12.21)**, the Neumann-inversion step of Higham §12.2.
+
+Genuine replacement for the previously-assumed
+"`(I − uM₃)⁻¹ ≥ 0`, `‖(I − uM₃)⁻¹‖∞ ≤ 2`" step.  From the componentwise
+correction inequality `(I − M)(|A||d̂|) ≤ w` with `M ≥ 0` entrywise and row sums
+`≤ c < 1`, we obtain the ∞-norm correction bound
+`‖ |A||d̂| ‖∞ ≤ ‖w‖∞ / (1 − c)`.  With `c = 1/2` this is exactly the factor-`2`
+bound the source uses (`u‖M₃‖∞ < 1/2 ⇒ ‖(I − uM₃)⁻¹‖∞ ≤ 2`).  No matrix inverse
+is constructed; the bound is proved directly from the row-sum contraction, which
+is the honest analytic content behind the printed Neumann step. -/
+theorem higham12_21_correction_infNorm_bound {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (d_hat w : Fin n → ℝ)
+    (M : Fin n → Fin n → ℝ)
+    (hM : ∀ i j : Fin n, 0 ≤ M i j)
+    (c : ℝ) (hc_lt : c < 1)
+    (hrow : ∀ i : Fin n, ∑ j : Fin n, M i j ≤ c)
+    (hcorr : ∀ i : Fin n,
+      (∑ j : Fin n, |A i j| * |d_hat j|) ≤
+        (∑ j : Fin n, M i j * (∑ k : Fin n, |A j k| * |d_hat k|)) + w i) :
+    infNormVec (fun i => ∑ j : Fin n, |A i j| * |d_hat j|) ≤
+      infNormVec w / (1 - c) :=
+  nonneg_resolvent_infNormVec_bound hn M
+    (fun i => ∑ j : Fin n, |A i j| * |d_hat j|) w hM
+    (fun _ => Finset.sum_nonneg
+      (fun _ _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)))
+    c hc_lt hrow hcorr
+
 /-! ## Problems and Appendix A -/
 
 /-- Component skewness `max_i |x_i| / min_i |x_i|` used in Problem 12.1.

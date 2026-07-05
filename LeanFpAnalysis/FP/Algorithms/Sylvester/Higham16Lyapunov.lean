@@ -347,6 +347,180 @@ theorem lyapunovCond_of_pos_le_sylvesterSepInf_isLyapunovConditionFirstOrderBoun
       (SepLowerBound_of_pos_le_sylvesterSepInf n A
         (fun i j => -matTranspose A i j) sigma hsigma hle)
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    Frobenius Lyapunov perturbation bound from a supplied positive
+    `SepLowerBound` certificate for `sep(A, -A^T)`.
+
+    Scope: exact arithmetic and certificate transfer. This does not claim
+    rounded arithmetic, automatic Schur production, or an estimator for
+    `sigma`. -/
+theorem lyapunov_perturbation_bound_of_sepLowerBound (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hDeltaX_ne : Not (frobNormSq DeltaX = 0)) :
+    frobNorm DeltaX <=
+      (1 / sigma) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound n A X DeltaA DeltaC DeltaX
+      sigma hsigma hSep alpha gamma eps halpha hgamma heps
+      hDeltaA hDeltaC hLin hDeltaX_ne
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    relative Lyapunov perturbation bound from a supplied positive
+    `SepLowerBound` certificate for `sep(A, -A^T)`.
+
+    Scope: exact arithmetic and certificate transfer. The conclusion is the
+    relative form of the perturbation inequality under the supplied separation
+    certificate. -/
+theorem lyapunov_relative_perturbation_of_sepLowerBound (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hDeltaX_ne : Not (frobNormSq DeltaX = 0))
+    (hX_ne : Not (frobNorm X = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n A (fun i j => -matTranspose A i j) X
+        alpha alpha gamma sigma * eps := by
+  have hDeltaB :
+      frobNorm (fun i j => -matTranspose DeltaA i j) <= eps * alpha := by
+    rw [show (fun i j => -matTranspose DeltaA i j) =
+        (fun i j => -(matTranspose DeltaA) i j) from by ext i j; rfl]
+    rw [frobNorm_neg, frobNorm_transpose]
+    exact hDeltaA
+  exact
+    sylvester_relative_perturbation n A
+      (fun i j => -matTranspose A i j) X DeltaA
+      (fun i j => -matTranspose DeltaA i j) DeltaC DeltaX
+      sigma hsigma hSep alpha alpha gamma eps halpha halpha hgamma heps
+      hDeltaA hDeltaB hDeltaC hLin hDeltaX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
+    Frobenius Lyapunov perturbation bound from a positive lower bound on the
+    exact infimum model of `sep(A, -A^T)`.
+
+    Scope: exact arithmetic and certificate transfer. This is not a rounded
+    solve, Schur-production, or separation-estimation result. -/
+theorem lyapunov_perturbation_bound_of_pos_le_sylvesterSepInf (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hDeltaX_ne : Not (frobNormSq DeltaX = 0)) :
+    frobNorm DeltaX <=
+      (1 / sigma) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound_of_sepLowerBound n
+      A X DeltaA DeltaC DeltaX sigma hsigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hDeltaX_ne
+
+/-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
+    relative Lyapunov perturbation bound from a positive lower bound on the
+    exact infimum model of `sep(A, -A^T)`.
+
+    Scope: exact arithmetic and certificate transfer. The theorem only
+    transfers the supplied exact-infimum certificate into the existing
+    Lyapunov/Sylvester perturbation theorem. -/
+theorem lyapunov_relative_perturbation_of_pos_le_sylvesterSepInf (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hDeltaX_ne : Not (frobNormSq DeltaX = 0))
+    (hX_ne : Not (frobNorm X = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n A (fun i j => -matTranspose A i j) X
+        alpha alpha gamma sigma * eps := by
+  exact
+    lyapunov_relative_perturbation_of_sepLowerBound n
+      A X DeltaA DeltaC DeltaX sigma hsigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
+      hDeltaX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.27):
+    source-facing sep-based first-order Lyapunov bound before the
+    `sqrt 2 * eps` relative wrapper. This simply applies the structured
+    Lyapunov condition certificate instantiated by
+    `lyapunovCond_of_sepLowerBound_isLyapunovConditionFirstOrderBound` to a
+    supplied linearized perturbation equation. -/
+theorem lyapunov_first_order_bound_of_sepLowerBound (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (hX : 0 < frobNorm X)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX <=
+      lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) *
+        frobNorm X *
+        lyapunovScaledPerturbationPairNorm n DeltaA DeltaC alpha gamma := by
+  exact
+    (lyapunovCond_of_sepLowerBound_isLyapunovConditionFirstOrderBound n
+      A X alpha gamma sigma halpha hgamma hsigma hX hSep)
+      DeltaA DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Section 16.3-16.4, equations (16.26)-(16.27):
+    source-facing first-order Lyapunov bound from a positive lower bound on
+    the exact infimum model of `sep(A,-A^T)`, exposed before the relative
+    `sqrt 2 * eps` wrapper. -/
+theorem lyapunov_first_order_bound_of_pos_le_sylvesterSepInf (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (hX : 0 < frobNorm X)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX <=
+      lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) *
+        frobNorm X *
+        lyapunovScaledPerturbationPairNorm n DeltaA DeltaC alpha gamma := by
+  exact
+    (lyapunovCond_of_pos_le_sylvesterSepInf_isLyapunovConditionFirstOrderBound n
+      A X alpha gamma sigma halpha hgamma hsigma hX hle)
+      DeltaA DeltaC DeltaX hLin
+
 /-- Higham, 2nd ed., §16.3, eq (16.27) (p. 317):
     sep-based Lyapunov first-order perturbation bound. If
     `SepLowerBound A (-A^T) sigma` holds, then the printed relative bound
