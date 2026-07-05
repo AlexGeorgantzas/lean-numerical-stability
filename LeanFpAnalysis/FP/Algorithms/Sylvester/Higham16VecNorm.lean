@@ -2198,6 +2198,82 @@ theorem lyapunov_relative_first_order_bound_of_vecCoeff_left_inverse_finiteOpNor
       hDeltaA hDeltaC hLin
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    Frobenius first-order Lyapunov perturbation bound from a finite
+    Gram-eigenvalue lower bound for the concrete vectorized Lyapunov
+    coefficient. -/
+theorem lyapunov_first_order_bound_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma lam : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hlam : 0 < lam) (hX : 0 < frobNorm X)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX <=
+      lyapunovCond_of_inverseOpBound n X alpha gamma
+        (1 / Real.sqrt lam) * frobNorm X *
+        lyapunovScaledPerturbationPairNorm n DeltaA DeltaC alpha gamma := by
+  exact
+    (lyapunovCond_of_vecCoeff_gram_eigenvalues_isLyapunovConditionFirstOrderBound
+      n A X alpha gamma lam halpha hgamma hlam hX hEig)
+      DeltaA DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    relative Lyapunov first-order perturbation bound from a finite
+    Gram-eigenvalue lower bound for the concrete vectorized Lyapunov
+    coefficient. -/
+theorem lyapunov_relative_first_order_bound_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma lam eps : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hlam : 0 < lam) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma
+          (1 / Real.sqrt lam) * eps := by
+  have hCond :=
+    lyapunovCond_of_vecCoeff_gram_eigenvalues_isLyapunovConditionFirstOrderBound
+      n A X alpha gamma lam halpha hgamma hlam hX hEig
+  have hCond_nonneg :
+      0 <= lyapunovCond_of_inverseOpBound n X alpha gamma
+        (1 / Real.sqrt lam) := by
+    unfold lyapunovCond_of_inverseOpBound
+    have hM : 0 <= (1 : Real) / Real.sqrt lam := by
+      exact div_nonneg zero_le_one (Real.sqrt_nonneg lam)
+    have htwo_alpha : 0 <= 2 * alpha :=
+      mul_nonneg (by norm_num) (le_of_lt halpha)
+    have hprod : 0 <= 2 * alpha * frobNorm X :=
+      mul_nonneg htwo_alpha (le_of_lt hX)
+    have hnum : 0 <= 2 * alpha * frobNorm X + gamma :=
+      add_nonneg hprod (le_of_lt hgamma)
+    exact div_nonneg (mul_nonneg hM hnum) (le_of_lt hX)
+  exact
+    lyapunov_relative_first_order_bound_of_condition n
+      A X DeltaA DeltaC DeltaX alpha gamma
+      (lyapunovCond_of_inverseOpBound n X alpha gamma
+        (1 / Real.sqrt lam)) eps
+      hCond hX hCond_nonneg halpha hgamma heps
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     source-shaped Lyapunov first-order perturbation bound from a concrete
     left inverse and operator-2 radius for the printed Lyapunov
     vec/Kronecker coefficient. -/
