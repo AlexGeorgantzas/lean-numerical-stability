@@ -72,6 +72,64 @@ theorem sylvesterSepInf_lyapunov_ge_of_sigmaMin (n : Nat)
       (SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin)
       hn
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    a supplied positive singular-value lower-bound certificate for the
+    Lyapunov operator instantiates the a posteriori residual-error bound.
+
+    Scope: exact arithmetic and certificate transfer. The theorem does not
+    construct `sigma` from spectral data or from a numerical estimator. -/
+theorem lyapunov_aposteriori_bound_of_sigmaMin (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  by_cases hE_ne :
+      Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)
+  · have hExactSylv :
+        forall i j,
+          sylvesterOp n A (fun i j => -matTranspose A i j) X i j = C i j := by
+      intro i j
+      rw [<- lyapunovOp_eq_sylvesterOp n A X]
+      exact hExact i j
+    have h :=
+      sylvester_aposteriori_bound_of_sepLowerBound n A
+        (fun i j => -matTranspose A i j) C X Xhat sigma
+        (SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin)
+        hExactSylv hE_ne
+    simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using h
+  · have hE_sq :
+        frobNormSq (fun i j => X i j - Xhat i j) = 0 :=
+      Classical.not_not.mp hE_ne
+    have hE :
+        frobNorm (fun i j => X i j - Xhat i j) = 0 := by
+      simp [frobNorm_eq_sqrt_frobNormSq, hE_sq]
+    rw [hE]
+    exact mul_nonneg (by positivity) (frobNorm_nonneg _)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    relative a posteriori Lyapunov residual-error bound from a supplied
+    positive singular-value lower-bound certificate for the Lyapunov operator.
+
+    Scope: exact arithmetic and certificate transfer, divided by the norm of
+    the exact Lyapunov solution. -/
+theorem lyapunov_relative_aposteriori_bound_of_sigmaMin (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  have hAbs :=
+    lyapunov_aposteriori_bound_of_sigmaMin n A C X Xhat sigma
+      hsigma hSigmaMin hExact
+  exact div_le_div_of_nonneg_right hAbs (le_of_lt hX_pos)
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
     Frobenius Lyapunov perturbation bound from a supplied positive
     singular-value lower bound on the Lyapunov operator.
