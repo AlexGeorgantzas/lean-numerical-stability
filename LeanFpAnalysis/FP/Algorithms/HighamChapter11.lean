@@ -976,6 +976,76 @@ theorem higham11_14_fl_aasen_prefix_dot_abs_error (n : ℕ)
   · simpa [higham11_14_fl_aasenPrefixDot, x, y, hsum] using hbound
   · ring
 
+/-- Source-length floating-point dot product for the prefix sum in Aasen's
+next-column recurrence (11.14).  Unlike `higham11_14_fl_aasenPrefixDot`, this
+uses a vector of length `next.val`, so when `next = i+1` the error radius is the
+source prefix length rather than the ambient dimension. -/
+noncomputable def higham11_14_fl_aasenSourcePrefixDot (n : ℕ)
+    (fp : FPModel) (L H : Fin n → Fin n → ℝ)
+    (i next k : Fin n) : ℝ :=
+  fl_dotProduct fp next.val
+    (fun j : Fin next.val => L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩)
+    (fun j : Fin next.val => H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i)
+
+/-- **Equation (11.14) source-prefix formation error**.  The rounded dot
+product over the source-length prefix `j = 0, ..., i` has a `γ_{i+1}`-style
+additive residual and reindexes to the same masked `j≤i` Aasen sum. -/
+theorem higham11_14_fl_aasen_source_prefix_dot_abs_error (n : ℕ)
+    (fp : FPModel) (L H : Fin n → Fin n → ℝ) (i next k : Fin n)
+    (hnext : next.val = i.val + 1) (hval : gammaValid fp next.val) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp next.val *
+        ∑ j : Fin next.val,
+          |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+            |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i| ∧
+      higham11_14_fl_aasenSourcePrefixDot n fp L H i next k =
+        (∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0) + Δ := by
+  let x : Fin next.val → ℝ :=
+    fun j => L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩
+  let y : Fin next.val → ℝ :=
+    fun j => H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i
+  have hbound := dotProduct_error_bound fp next.val x y hval
+  have hprefix :
+      (∑ j : Fin next.val, x j * y j) =
+        ∑ j : Fin next.val,
+          L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ *
+            H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i := by
+    apply Finset.sum_congr rfl
+    intro j _
+    simp [x, y]
+  have hle_lt :
+      (∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0) =
+        ∑ j : Fin n, if j.val < next.val then L k j * H j i else 0 := by
+    apply Finset.sum_congr rfl
+    intro j _
+    have hiff : j.val ≤ i.val ↔ j.val < next.val := by omega
+    by_cases hj : j.val ≤ i.val
+    · have hjlt : j.val < next.val := hiff.mp hj
+      simp [hj, hjlt]
+    · have hjnlt : ¬j.val < next.val := by
+        intro hjlt
+        exact hj (hiff.mpr hjlt)
+      simp [hj, hjnlt]
+  have hmasked :=
+    finMaskedPrefixSum_eq_finSum next (fun j : Fin n => L k j * H j i)
+  have hsum :
+      (∑ j : Fin next.val, x j * y j) =
+        ∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0 := by
+    calc
+      (∑ j : Fin next.val, x j * y j)
+          = ∑ j : Fin next.val,
+              L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ *
+                H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i := hprefix
+      _ = (∑ j : Fin n, if j.val < next.val then L k j * H j i else 0) :=
+        hmasked.symm
+      _ = (∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0) :=
+        hle_lt.symm
+  refine
+    ⟨higham11_14_fl_aasenSourcePrefixDot n fp L H i next k -
+        (∑ j : Fin n, if j.val ≤ i.val then L k j * H j i else 0), ?_, ?_⟩
+  · simpa [higham11_14_fl_aasenSourcePrefixDot, x, y, hsum] using hbound
+  · ring
+
 /-- **Equation (11.14) floating-point next-column update with a formed sum**.
 Combines the rounded prefix dot-product formation error with the subsequent
 rounded subtraction/division update.  Under the exact Aasen recurrence, the
