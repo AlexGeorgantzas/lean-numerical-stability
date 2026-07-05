@@ -60,6 +60,88 @@ theorem sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin (n : Nat)
     sylvesterOpRect_square_eq_sylvesterOp n A B Y,
     finiteVecNorm2_vec_eq_frobNorm n n (sylvesterOp n A B Y)] at h
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
+    in the diagonal case, a uniform lower bound on the coefficient magnitudes
+    `|a_i - b_j|` gives the concrete vectorized coefficient lower bound. -/
+theorem sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge (n : Nat)
+    (a b : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 <= sigma)
+    (hgap : forall i j, sigma <= |a i - b j|) :
+    forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec
+          (sylvesterVecCoeff n n (Matrix.diagonal a) (Matrix.diagonal b)) x) := by
+  classical
+  intro x
+  let d : Prod (Fin n) (Fin n) -> Real := fun p => a p.2 - b p.1
+  have hmul :
+      Matrix.mulVec
+          (sylvesterVecCoeff n n (Matrix.diagonal a) (Matrix.diagonal b)) x =
+        fun p => d p * x p := by
+    rw [sylvesterVecCoeff_diagonal]
+    ext p
+    simp [d, Matrix.mulVec, dotProduct, Matrix.diagonal]
+  have hsquares :
+      sigma ^ 2 * finiteVecNorm2Sq x <=
+        finiteVecNorm2Sq (fun p : Prod (Fin n) (Fin n) => d p * x p) := by
+    unfold finiteVecNorm2Sq
+    rw [Finset.mul_sum]
+    apply Finset.sum_le_sum
+    intro p _hp
+    have hleft : -|d p| <= sigma := by
+      linarith [abs_nonneg (d p), hsigma]
+    have hsq_abs : sigma ^ 2 <= |d p| ^ 2 := by
+      exact sq_le_sq' hleft (by simpa [d] using hgap p.2 p.1)
+    calc
+      sigma ^ 2 * x p ^ 2 <= |d p| ^ 2 * x p ^ 2 :=
+        mul_le_mul_of_nonneg_right hsq_abs (sq_nonneg (x p))
+      _ = (d p * x p) ^ 2 := by
+        rw [sq_abs]
+        ring
+  have hleft_sq :
+      (sigma * finiteVecNorm2 x) ^ 2 =
+        sigma ^ 2 * finiteVecNorm2Sq x := by
+    rw [show (sigma * finiteVecNorm2 x) ^ 2 =
+        sigma ^ 2 * finiteVecNorm2 x ^ 2 by ring,
+      finiteVecNorm2_sq]
+  have hright_sq :
+      finiteVecNorm2
+          (Matrix.mulVec
+            (sylvesterVecCoeff n n (Matrix.diagonal a) (Matrix.diagonal b)) x) ^ 2 =
+        finiteVecNorm2Sq (fun p : Prod (Fin n) (Fin n) => d p * x p) := by
+    rw [hmul, finiteVecNorm2_sq]
+  have hsq :
+      (sigma * finiteVecNorm2 x) ^ 2 <=
+        finiteVecNorm2
+          (Matrix.mulVec
+            (sylvesterVecCoeff n n (Matrix.diagonal a) (Matrix.diagonal b)) x) ^ 2 := by
+    simpa [hleft_sq, hright_sq] using hsquares
+  have hleft_nonneg : 0 <= sigma * finiteVecNorm2 x :=
+    mul_nonneg hsigma (finiteVecNorm2_nonneg x)
+  have hright_nonneg :
+      0 <= finiteVecNorm2
+        (Matrix.mulVec
+          (sylvesterVecCoeff n n (Matrix.diagonal a) (Matrix.diagonal b)) x) :=
+    finiteVecNorm2_nonneg _
+  have habs := (sq_le_sq).mp hsq
+  simpa [abs_of_nonneg hleft_nonneg, abs_of_nonneg hright_nonneg] using habs
+
+/-- Higham, 2nd ed., Chapter 16.1 and equation (16.26), diagonal case:
+    the concrete diagonal vec/Kronecker lower bound transfers to the
+    Frobenius lower bound for the Sylvester operator. -/
+theorem sylvesterOp_sigmaMin_diagonal_of_entrywise_abs_ge (n : Nat)
+    (a b : Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|) :
+    forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <=
+        frobNorm (sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) Y) := by
+  exact
+    sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n
+      (Matrix.diagonal a) (Matrix.diagonal b) sigma
+      (sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a b sigma (le_of_lt hsigma) hgap)
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     a positive lower bound for the concrete vectorized Lyapunov coefficient
     gives the Lyapunov operator lower bound consumed by the sigma-min
