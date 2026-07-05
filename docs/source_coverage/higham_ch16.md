@@ -625,6 +625,13 @@ Latest open-row update:
   - `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Minimizers.lean`: passed for the Lyapunov minimizer proof commit, with only the usual CRLF normalization warning before the commit.
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Minimizers.lean`: passed after adding `exists_sylvesterSep_ratio_minimizer`.
   - `Select-String -Path LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Minimizers.lean -Pattern "\bsorry\b","\badmit\b","\baxiom\b","\bunsafe\b","\bopaque\b" -CaseSensitive`: no matches after adding `exists_sylvesterSep_ratio_minimizer`.
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16VecNorm.lean`: passed after adding the determinant/certificate/source-route trivial-kernel wrappers for Sylvester and Lyapunov vector coefficients.
+  - `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16VecNorm.lean`: no matches after adding the zero-kernel wrapper group.
+  - `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16VecNorm.lean`: passed for the zero-kernel wrapper group, with only the usual CRLF normalization warning before the commit.
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Minimizers.lean`: passed after adding the left-inverse finite-op-norm, Gram-eigenvalue, and sigma-min computed-residual certificate adapters and their scalar/monotone variants.
+  - `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Minimizers.lean`: no matches after adding the computed-residual certificate adapter group.
+  - `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Minimizers.lean`: passed for the computed-residual certificate adapter group, with only the usual CRLF normalization warning before the commit.
+  - `lake build LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16`: passed after integrating both parallel-agent Chapter 16 proof groups.
 
 ## Git and Local-Only Notes
 
