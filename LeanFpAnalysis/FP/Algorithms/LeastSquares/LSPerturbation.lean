@@ -2403,6 +2403,148 @@ theorem wedinLemma20_12_projection_swapped_mul_projectionSumSubId_sq_eq_projecti
             rw [← rectMatMul_assoc]
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion operator `S = P+Q-I` intertwines the `PQP` and `QPQ`
+    companion-square compressions.
+
+This is a direct principal-angle route identity: it relates the two restricted
+operators before any spectral or operator-norm comparison is invoked. -/
+theorem wedinLemma20_12_projectionSumSubId_intertwines_companion_sq_compression
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul (fun i j => P i j + Q i j - idMatrix m i j)
+        (rectMatMul (rectMatMul P Q) P) =
+      rectMatMul (rectMatMul (rectMatMul Q P) Q)
+        (fun i j => P i j + Q i j - idMatrix m i j) := by
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  let S2 : Fin m → Fin m → ℝ := rectMatMul S S
+  have hSP : rectMatMul S P = rectMatMul Q S := by
+    simpa [S] using
+      wedinLemma20_12_projectionSumSubId_intertwines_projection
+        P Q hIdemP hIdemQ
+  have hS2P : rectMatMul S2 P = rectMatMul (rectMatMul P Q) P := by
+    simpa [S, S2] using
+      wedinLemma20_12_projectionSumSubId_sq_mul_projection_eq_projection_mul_swapped_mul_projection
+        P Q hIdemP hIdemQ
+  have hS2Q : rectMatMul S2 Q = rectMatMul (rectMatMul Q P) Q := by
+    simpa [S, S2] using
+      wedinLemma20_12_projectionSumSubId_sq_mul_projection_swapped_eq_projection_swapped_mul_projection_mul_projection_swapped
+        P Q hIdemP hIdemQ
+  have hS_S2 : rectMatMul S S2 = rectMatMul S2 S := by
+    dsimp [S2]
+    exact (rectMatMul_assoc S S S).symm
+  change
+    rectMatMul S (rectMatMul (rectMatMul P Q) P) =
+      rectMatMul (rectMatMul (rectMatMul Q P) Q) S
+  calc
+    rectMatMul S (rectMatMul (rectMatMul P Q) P)
+        = rectMatMul S (rectMatMul S2 P) := by
+            rw [hS2P]
+    _ = rectMatMul (rectMatMul S S2) P := by
+            rw [← rectMatMul_assoc]
+    _ = rectMatMul (rectMatMul S2 S) P := by
+            rw [hS_S2]
+    _ = rectMatMul S2 (rectMatMul S P) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul S2 (rectMatMul Q S) := by
+            rw [hSP]
+    _ = rectMatMul (rectMatMul S2 Q) S := by
+            rw [← rectMatMul_assoc]
+    _ = rectMatMul (rectMatMul (rectMatMul Q P) Q) S := by
+            rw [hS2Q]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the swapped companion intertwinement for the `QPQ` and `PQP`
+    companion-square compressions. -/
+theorem wedinLemma20_12_projectionSumSubId_intertwines_companion_sq_compression_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul (fun i j => P i j + Q i j - idMatrix m i j)
+        (rectMatMul (rectMatMul Q P) Q) =
+      rectMatMul (rectMatMul (rectMatMul P Q) P)
+        (fun i j => P i j + Q i j - idMatrix m i j) := by
+  let S : Fin m → Fin m → ℝ := fun i j => P i j + Q i j - idMatrix m i j
+  let S2 : Fin m → Fin m → ℝ := rectMatMul S S
+  have hSQ : rectMatMul S Q = rectMatMul P S := by
+    simpa [S] using
+      wedinLemma20_12_projectionSumSubId_intertwines_projection_swapped
+        P Q hIdemP hIdemQ
+  have hS2P : rectMatMul S2 P = rectMatMul (rectMatMul P Q) P := by
+    simpa [S, S2] using
+      wedinLemma20_12_projectionSumSubId_sq_mul_projection_eq_projection_mul_swapped_mul_projection
+        P Q hIdemP hIdemQ
+  have hS2Q : rectMatMul S2 Q = rectMatMul (rectMatMul Q P) Q := by
+    simpa [S, S2] using
+      wedinLemma20_12_projectionSumSubId_sq_mul_projection_swapped_eq_projection_swapped_mul_projection_mul_projection_swapped
+        P Q hIdemP hIdemQ
+  have hS_S2 : rectMatMul S S2 = rectMatMul S2 S := by
+    dsimp [S2]
+    exact (rectMatMul_assoc S S S).symm
+  change
+    rectMatMul S (rectMatMul (rectMatMul Q P) Q) =
+      rectMatMul (rectMatMul (rectMatMul P Q) P) S
+  calc
+    rectMatMul S (rectMatMul (rectMatMul Q P) Q)
+        = rectMatMul S (rectMatMul S2 Q) := by
+            rw [hS2Q]
+    _ = rectMatMul (rectMatMul S S2) Q := by
+            rw [← rectMatMul_assoc]
+    _ = rectMatMul (rectMatMul S2 S) Q := by
+            rw [hS_S2]
+    _ = rectMatMul S2 (rectMatMul S Q) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul S2 (rectMatMul P S) := by
+            rw [hSQ]
+    _ = rectMatMul (rectMatMul S2 P) S := by
+            rw [← rectMatMul_assoc]
+    _ = rectMatMul (rectMatMul (rectMatMul P Q) P) S := by
+            rw [hS2P]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    on the `P` range, the companion-square compression `PQP` and the
+    cross-Gram product `P(I-Q)P` are complementary pieces of `P`. -/
+theorem wedinLemma20_12_projection_mul_swapped_mul_projection_add_crossGram_eq_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P) :
+    (fun i j =>
+      rectMatMul (rectMatMul P Q) P i j +
+        rectMatMul (rectMatMul P (fun i j => idMatrix m i j - Q i j)) P i j) =
+      P := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hQI : (fun i j => Q i j + IQ i j) = idMatrix m := by
+    ext i j
+    simp [IQ]
+  calc
+    (fun i j =>
+      rectMatMul (rectMatMul P Q) P i j +
+        rectMatMul (rectMatMul P IQ) P i j)
+        = rectMatMul
+            (fun i j => rectMatMul P Q i j + rectMatMul P IQ i j) P := by
+            rw [rectMatMul_add_left]
+    _ = rectMatMul (rectMatMul P (fun i j => Q i j + IQ i j)) P := by
+            rw [rectMatMul_add_right]
+    _ = rectMatMul (rectMatMul P (idMatrix m)) P := by
+            rw [hQI]
+    _ = rectMatMul P P := by
+            rw [rectMatMul_id_right]
+    _ = P := hIdemP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the symmetric `Q`-range version of the companion/cross-Gram complement
+    identity. -/
+theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_add_crossGram_swapped_eq_projection_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    (fun i j =>
+      rectMatMul (rectMatMul Q P) Q i j +
+        rectMatMul (rectMatMul Q (fun i j => idMatrix m i j - P i j)) Q i j) =
+      Q := by
+  simpa [add_comm] using
+    wedinLemma20_12_projection_mul_swapped_mul_projection_add_crossGram_eq_projection
+      Q P hIdemQ
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm
     of the range-side compression `P(P-Q)^2P`.
 
