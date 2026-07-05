@@ -659,6 +659,38 @@ theorem sylvesterTwoColumnBlockSystem_columns_eq_of_rightInverse_leftInverse_pre
   exact sylvesterTwoColumnBlockSystem_columns_eq_of_leftInverse_of_prev_columns_eq
     m n A T C X Y p q L hLeft hX hY hprev
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), vector form of
+    the exact supplied two-column solve/uniqueness bridge: under the same
+    supplied right-inverse/left-inverse and previous-column agreement
+    hypotheses as the component wrapper, the combined active-column vectors
+    `(X(:,p), X(:,q))` and `(Y(:,p), Y(:,q))` agree.  Scope: exact
+    supplied-block algebra only; no Schur existence, structural block
+    nonsingularity, or floating-point stability is asserted. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_rightInverse_leftInverse_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (K L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec K (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  have hcols :=
+    sylvesterTwoColumnBlockSystem_columns_eq_of_rightInverse_leftInverse_prev_columns_eq
+      m n A T C X Y p q K L hRight hLeft hXp hXq hY hprev
+  funext r
+  cases r with
+  | inl i => simpa using hcols.1 i
+  | inr i => simpa using hcols.2 i
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
     quasi-triangular `2 x 2` block recurrence: if columns `p,q` form a supplied
     adjacent diagonal block of the Schur factor `T`, then any exact solution of
