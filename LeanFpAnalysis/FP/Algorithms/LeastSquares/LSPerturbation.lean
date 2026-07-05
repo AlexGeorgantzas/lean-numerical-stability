@@ -2622,6 +2622,100 @@ theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped
     Q P hQ hP hIdemP
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the `P(I-Q)P` cross-Gram complement is a rectangular Gram product. -/
+theorem wedinLemma20_12_projection_mul_projectionComplement_mul_projection_eq_transpose_self
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    rectMatMul
+        (finiteTranspose
+          (rectMatMul (fun i j => idMatrix m i j - Q i j) P))
+        (rectMatMul (fun i j => idMatrix m i j - Q i j) P) =
+      rectMatMul
+        (rectMatMul P (fun i j => idMatrix m i j - Q i j)) P := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hIQ : IsSymmetricFiniteMatrix IQ :=
+    wedinLemma20_12_projectionComplement_symmetric Q hQ
+  have hIQIdem : rectMatMul IQ IQ = IQ := by
+    simpa [IQ] using
+      wedinLemma20_12_projectionComplement_idempotent Q hIdemQ
+  have htranspose :
+      finiteTranspose (rectMatMul IQ P) = rectMatMul P IQ :=
+    wedinLemma20_12_finiteTranspose_rectMatMul_of_symmetric IQ P hIQ hP
+  rw [htranspose]
+  calc
+    rectMatMul (rectMatMul P IQ) (rectMatMul IQ P)
+        = rectMatMul P (rectMatMul IQ (rectMatMul IQ P)) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul P (rectMatMul (rectMatMul IQ IQ) P) := by
+            rw [rectMatMul_assoc]
+    _ = rectMatMul P (rectMatMul IQ P) := by
+            rw [hIQIdem]
+    _ = rectMatMul (rectMatMul P IQ) P := by
+            rw [← rectMatMul_assoc]
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the `P(I-Q)P` cross-Gram complement is positive semidefinite. -/
+theorem wedinLemma20_12_projection_mul_projectionComplement_mul_projection_finitePSD
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finitePSD
+      (rectMatMul
+        (rectMatMul P (fun i j => idMatrix m i j - Q i j)) P) := by
+  have hEq :=
+    wedinLemma20_12_projection_mul_projectionComplement_mul_projection_eq_transpose_self
+      P Q hP hQ hIdemQ
+  exact
+    finitePSD_of_eq_rectMatMul_transpose_self
+      (rectMatMul (fun i j => idMatrix m i j - Q i j) P) hEq.symm
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion-square compression `PQP` is Loewner-bounded above by `P`. -/
+theorem wedinLemma20_12_projection_mul_swapped_mul_projection_loewnerLe_projection
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe (rectMatMul (rectMatMul P Q) P) P := by
+  let IQ : Fin m → Fin m → ℝ := fun i j => idMatrix m i j - Q i j
+  have hPSD :
+      finitePSD (rectMatMul (rectMatMul P IQ) P) := by
+    simpa [IQ] using
+      wedinLemma20_12_projection_mul_projectionComplement_mul_projection_finitePSD
+        P Q hP hQ hIdemQ
+  have hdiff :
+      (fun i j => P i j - rectMatMul (rectMatMul P Q) P i j) =
+        rectMatMul (rectMatMul P IQ) P := by
+    have hsum :=
+      wedinLemma20_12_projection_mul_swapped_mul_projection_add_crossGram_eq_projection
+        P Q hIdemP
+    ext i j
+    have hij := congrFun (congrFun hsum i) j
+    dsimp [IQ] at hij ⊢
+    linarith
+  exact
+    (finiteLoewnerLe_iff_sub_finitePSD
+      (rectMatMul (rectMatMul P Q) P) P).mpr
+      (by simpa [hdiff] using hPSD)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the swapped companion-square compression `QPQ` is Loewner-bounded above
+    by `Q`. -/
+theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_loewnerLe_projection_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    finiteLoewnerLe (rectMatMul (rectMatMul Q P) Q) Q :=
+  wedinLemma20_12_projection_mul_swapped_mul_projection_loewnerLe_projection
+    Q P hQ hP hIdemQ hIdemP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm
     of the range-side compression `P(P-Q)^2P`.
 
