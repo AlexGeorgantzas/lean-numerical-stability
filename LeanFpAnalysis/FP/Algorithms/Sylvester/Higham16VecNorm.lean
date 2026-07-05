@@ -3357,6 +3357,84 @@ theorem sylvesterPsi_of_vecCoeff_left_inverse_finiteOpNorm2Le_isPsiFirstOrderBou
         n A B Pinv hLeft hPinv)
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
+    source-facing first-order Frobenius Sylvester bound from a positive lower
+    bound on the concrete Kronecker/vectorized Sylvester coefficient. -/
+theorem sylvester_first_order_bound_of_vecCoeff_sigmaMin (n : Nat)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma sigma : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (hX : 0 < frobNorm X)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (hLin : forall i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX <=
+      sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) *
+        frobNorm X *
+        sylvesterScaledPerturbationTripleNorm n DeltaA DeltaB DeltaC
+          alpha beta gamma := by
+  exact
+    sylvesterPsi_of_vecCoeff_sigmaMin_isPsiFirstOrderBound n
+      A B X alpha beta gamma sigma halpha hbeta hgamma hsigma hX hCoeff
+      DeltaA DeltaB DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
+    source-facing first-order Frobenius Sylvester bound from a finite
+    Gram-eigenvalue lower bound for the concrete vectorized Sylvester
+    coefficient. -/
+theorem sylvester_first_order_bound_of_vecCoeff_gram_eigenvalues
+    (n : Nat)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma lam : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hlam : 0 < lam) (hX : 0 < frobNorm X)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (hLin : forall i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX <=
+      sylvesterPsi_of_inverseOpBound n X alpha beta gamma
+          (1 / Real.sqrt lam) *
+        frobNorm X *
+        sylvesterScaledPerturbationTripleNorm n DeltaA DeltaB DeltaC
+          alpha beta gamma := by
+  exact
+    sylvesterPsi_of_vecCoeff_gram_eigenvalues_isPsiFirstOrderBound n
+      A B X alpha beta gamma lam halpha hbeta hgamma hlam hX hEig
+      DeltaA DeltaB DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
+    source-facing first-order Frobenius Sylvester bound from a concrete left
+    inverse and operator-2 radius for the printed vec/Kronecker coefficient. -/
+theorem sylvester_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hM : 0 <= M) (hX : 0 < frobNorm X)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hLin : forall i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX <=
+      sylvesterPsi_of_inverseOpBound n X alpha beta gamma M *
+        frobNorm X *
+        sylvesterScaledPerturbationTripleNorm n DeltaA DeltaB DeltaC
+          alpha beta gamma := by
+  exact
+    sylvesterPsi_of_vecCoeff_left_inverse_finiteOpNorm2Le_isPsiFirstOrderBound
+      n A B X alpha beta gamma M Pinv halpha hbeta hgamma hM hX hLeft hPinv
+      DeltaA DeltaB DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
     source-shaped first-order relative perturbation bound from a positive
     lower bound on the concrete Kronecker/vectorized Sylvester coefficient. -/
 theorem H16_eq16_24_structured_condition_of_vecCoeff_sigmaMin (n : Nat)
