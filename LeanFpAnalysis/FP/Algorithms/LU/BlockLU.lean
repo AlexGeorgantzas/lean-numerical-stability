@@ -18508,6 +18508,37 @@ theorem
     hm A pivotInv invDiagBound hPrefix hDom hBound).2
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    determinant nonsingularity of the stage-zero Algorithm 13.3 pivot forced by
+    the all-leading-prefix BDD table. -/
+theorem
+    higham13_algorithm13_3_initial_pivot_det_ne_zero_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ} (hm : 0 < m)
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0) :
+    Matrix.det
+      (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+        ⟨0, hm⟩ ⟨0, hm⟩) ≠ 0 := by
+  have hRight :=
+    higham13_algorithm13_3_initial_pivot_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+      hm A pivotInv invDiagBound hPrefix hDom hBound
+  exact
+    Matrix.det_ne_zero_of_right_inverse
+      (A := higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+        ⟨0, hm⟩ ⟨0, hm⟩)
+      (B := nonsingInv r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+          ⟨0, hm⟩ ⟨0, hm⟩))
+      (by
+        ext i j
+        rw [Matrix.mul_apply, Matrix.one_apply]
+        exact hRight i j)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
     if Algorithm 13.3's supplied first pivot inverse is the canonical inverse
     forced by the BDD all-prefix table, then the first active pivot has the
     exact right-inverse certificate required by downstream pivot APIs. -/
