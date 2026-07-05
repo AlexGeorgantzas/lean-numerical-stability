@@ -11077,3 +11077,29 @@ These compile, but should not be treated as fully derived stability results:
   nonsingularity, source-norm versus entrywise max-growth integration, Problem
   13.4 all-tail source comparisons, and Theorem 13.6 cited estimates remain
   open.
+
+- 2026-07-05 Theorem 13.7 BDD actual-block contradiction step: added
+  `higham13_block_entries_zero_of_norm_eq_zero`,
+  `higham13_blockDiagDomCol_offdiag_entries_zero_of_norm_table_nonpos`,
+  `higham13_not_blockMatrixNonsingular_of_blockDiagDomCol_diagBound_nonpos_diag_det_eq_zero`,
+  and
+  `higham13_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These connect the
+  abstract nonnegative BDD norm-table step to the actual block matrix table
+  `fun i j => ‖A i j‖`: a nonpositive active diagonal lower bound gives
+  zero scalar entries in all off-diagonal blocks of that column, and together
+  with determinant zero of the active diagonal block contradicts
+  `BlockMatrixNonsingular`.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  passed after the edit; focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`,
+  touched Lean placeholder scan, and ignored scratch axiom audit passed.  The
+  axiom audit reported only standard Mathlib axioms `propext`,
+  `Classical.choice`, and `Quot.sound`.  Redirected public lookup printed all
+  four new Chapter 13 declarations successfully and still failed only on
+  unrelated pre-existing non-Ch13 lookup rows.  This closes the actual-block
+  column-BDD nonpositive-bound/singular-diagonal contradiction dependency, but
+  not the full BDD block-LU existence route: deriving positive active diagonal
+  determinant/pivot inverse data for all leading prefixes, source-norm versus
+  entrywise max-growth integration, Problem 13.4 all-tail source comparisons,
+  and Theorem 13.6 cited estimates remain open.
