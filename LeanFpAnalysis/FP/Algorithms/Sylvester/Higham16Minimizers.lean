@@ -241,6 +241,30 @@ theorem isLeast_sylvesterSepRatios (n : ℕ) (A B : Fin n → Fin n → ℝ)
   ⟨sylvesterSepInf_mem_sylvesterSepRatios n A B hn,
     fun _rho hrho => csInf_le (sylvesterSepRatios_bddBelow n A B) hrho⟩
 
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.3,
+    eq. (16.26): source-facing nonzero-ratio form of the `sep(A,B)`
+    minimum. In positive dimension there is a nonzero matrix whose
+    Frobenius-ratio value is exactly `sylvesterSepInf`, and that value is no
+    larger than any other nonzero Frobenius ratio. -/
+theorem exists_sylvesterSep_ratio_minimizer (n : ℕ)
+    (A B : Fin n → Fin n → ℝ) (hn : 0 < n) :
+    ∃ X : Fin n → Fin n → ℝ,
+      Not (frobNormSq X = 0) ∧
+      sylvesterSepInf n A B =
+        frobNorm (sylvesterOp n A B X) / frobNorm X ∧
+      ∀ Y : Fin n → Fin n → ℝ, Not (frobNormSq Y = 0) →
+        frobNorm (sylvesterOp n A B X) / frobNorm X ≤
+          frobNorm (sylvesterOp n A B Y) / frobNorm Y := by
+  have hleast := isLeast_sylvesterSepRatios n A B hn
+  obtain ⟨X, hXne, hXval⟩ := hleast.1
+  refine ⟨X, hXne, hXval, ?_⟩
+  intro Y hYne
+  have hYmem :
+      frobNorm (sylvesterOp n A B Y) / frobNorm Y ∈
+        sylvesterSepRatios n A B := by
+    exact ⟨Y, hYne, rfl⟩
+  simpa [hXval] using hleast.2 hYmem
+
 -- ============================================================
 -- (16.15): the backward-error infimum is an attained minimum
 -- ============================================================
