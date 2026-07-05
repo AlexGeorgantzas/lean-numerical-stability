@@ -27,20 +27,59 @@
 --   over the reals, so only real eigenpairs are covered; complex-conjugate
 --   eigenvalue pairs of real matrices are outside the statements below.
 -- * The quasi-triangular (2x2 diagonal block, real-Schur) Bartels-Stewart
---   route behind equations (16.7)-(16.8) is represented only by a supplied
---   adjacent two-column exact block-equation lemma; the full block solver,
---   real-Schur existence theorem, and floating-point error propagation remain
---   open.
--- * No Schur existence, no floating-point rounding analysis: all triangular
---   and eigenpair data are supplied hypotheses, exactly as in the
---   supplied-factor diagonal case of `Higham16.lean`.
+--   route behind equations (16.4), (16.7), and (16.8) is represented by an
+--   imported real quasi-Schur existence wrapper plus supplied adjacent
+--   two-column exact block-equation lemmas; the full block solver and
+--   floating-point error propagation remain open.
+-- * No floating-point rounding analysis: triangular and eigenpair data in the
+--   solver wrappers are supplied hypotheses, exactly as in the supplied-factor
+--   diagonal case of `Higham16.lean`.
 
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16
+import LeanFpAnalysis.FP.Analysis.RealQuasiSchur
 import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
 
 namespace LeanFpAnalysis.FP
 
 open scoped BigOperators
+
+-- ============================================================
+-- (16.4): real quasi-Schur factors for both Sylvester sides
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.4), real Schur form
+    packaged for the Sylvester equation: both real square factors have
+    orthogonal changes of basis to real quasi-upper-triangular factors, with
+    explicit block maps whose fibers have size at most two.  This is only the
+    exact real quasi-Schur existence step used before the Bartels-Stewart
+    recurrence; it does not assert the block solve, nonsingularity of the
+    resulting Sylvester coefficient, or any floating-point stability bound. -/
+theorem sylvester_realQuasiSchur_factors (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) :
+    ∃ (U R : Matrix (Fin m) (Fin m) Real)
+      (V S : Matrix (Fin n) (Fin n) Real)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      U ∈ Matrix.orthogonalGroup (Fin m) Real ∧
+      V ∈ Matrix.orthogonalGroup (Fin n) Real ∧
+      Matrix.transpose U * Matrix.of A * U = R ∧
+      Matrix.transpose V * Matrix.of B * V = S ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) := by
+  obtain ⟨U, pA, hU, hpAmono, hpAcard, hAzero⟩ :=
+    real_quasi_schur_blocks (Matrix.of A)
+  obtain ⟨V, pB, hV, hpBmono, hpBcard, hBzero⟩ :=
+    real_quasi_schur_blocks (Matrix.of B)
+  refine ⟨U, Matrix.transpose U * Matrix.of A * U,
+    V, Matrix.transpose V * Matrix.of B * V, pA, pB,
+    hU, hV, rfl, rfl, hpAmono, hpAcard, ?_, hpBmono, hpBcard, ?_⟩
+  · intro i j hij
+    exact hAzero i j hij
+  · intro i j hij
+    exact hBzero i j hij
 
 -- ============================================================
 -- (16.3): constructive spectral directions
@@ -490,6 +529,37 @@ theorem sylvesterTwoColumnBlockCoeff_mulVec_rightInverse_rhs (m n : Nat)
       sylvesterTwoColumnBlockRhs m n T C X p q := by
   rw [Matrix.mulVec_mulVec, hRight, Matrix.one_mulVec]
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact supplied
+    two-column block structural certificate: a supplied right inverse of the
+    active block coefficient forces the coefficient determinant to be nonzero.
+    This is pure exact algebra around the supplied inverse certificate; it does
+    not prove that the real-Schur block is nonsingular from spectral separation. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_rightInverse (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (K : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  intro hdet
+  have h := congrArg Matrix.det hRight
+  rw [Matrix.det_mul, hdet, zero_mul, Matrix.det_one] at h
+  exact zero_ne_one h
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact supplied
+    right-inverse structural certificate: a supplied right inverse makes the
+    active block coefficient map onto every right-hand side.  Scope: exact
+    supplied-block algebra only, not a proof of the missing quasi-triangular
+    block nonsingularity condition. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_rightInverse
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (K : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1) :
+    Function.Surjective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  intro b
+  refine ⟨Matrix.mulVec K b, ?_⟩
+  rw [Matrix.mulVec_mulVec, hRight, Matrix.one_mulVec]
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact
     block-vector-to-column wrapper: any vector solving the supplied
     two-column block system yields `IsSylvesterTwoColumnBlockSystem` once
@@ -553,6 +623,40 @@ theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_leftInverse (m n : Nat)
   rw [Matrix.mulVec_mulVec, Matrix.mulVec_mulVec,
     hLeft, Matrix.one_mulVec, Matrix.one_mulVec] at h
   exact h
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact supplied
+    two-column block structural certificate: a supplied left inverse of the
+    active block coefficient forces the coefficient determinant to be nonzero.
+    Scope: exact supplied-block algebra only. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_leftInverse (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  intro hdet
+  have h := congrArg Matrix.det hLeft
+  rw [Matrix.det_mul, hdet, mul_zero, Matrix.det_one] at h
+  exact zero_ne_one h
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact supplied
+    active-block linear algebra wrapper: matching supplied right- and
+    left-inverse certificates make the two-column block coefficient map
+    bijective.  This packages the finite-dimensional exact algebra that the
+    quasi-triangular block nonsingularity row can reuse. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_rightInverse_leftInverse
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (K L : Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real)
+    (hRight : sylvesterTwoColumnBlockCoeff m n A T p q * K = 1)
+    (hLeft : L * sylvesterTwoColumnBlockCoeff m n A T p q = 1) :
+    Function.Bijective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  constructor
+  · intro x y hxy
+    exact sylvesterTwoColumnBlockCoeff_mulVec_injective_of_leftInverse
+      m n A T p q L hLeft hxy
+  · exact sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_rightInverse
+      m n A T p q K hRight
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), exact supplied
     active-block linear solve: if `K` is a supplied right inverse and `L` is a
