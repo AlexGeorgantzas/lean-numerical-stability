@@ -356,6 +356,74 @@ def IsSylvesterTwoColumnBlockSystem (m n : Nat)
         Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
           (fun j => T j q * X i j))
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), supplied adjacent
+    `2 x 2` block coefficient for the two active block columns in the real
+    Bartels-Stewart recurrence.  The diagonal blocks are the shifted column
+    coefficients, and the off-diagonal blocks are the scalar couplings inside
+    the supplied quasi-triangular diagonal block.  Scope: exact supplied-block
+    algebra only; no Schur existence, block nonsingularity, or floating-point
+    error propagation from (16.7)-(16.8) is asserted. -/
+noncomputable def sylvesterTwoColumnBlockCoeff (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n) :
+    Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real :=
+  Matrix.fromBlocks
+    (sylvesterTriangularShiftedCoeff m A (T p p))
+    ((- (T q p)) • (1 : Matrix (Fin m) (Fin m) Real))
+    ((- (T p q)) • (1 : Matrix (Fin m) (Fin m) Real))
+    (sylvesterTriangularShiftedCoeff m A (T q q))
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), exact block-vector form:
+    the supplied adjacent two-column predicate is equivalent to one combined
+    linear system for the concatenated unknown vector `(Z(:,p), Z(:,q))`.
+    This packages the algebra needed by later block-solve/nonsingularity
+    statements without claiming those statements here. -/
+theorem sylvester_two_column_block_system_iff_blockCoeff_mulVec (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n) :
+    IsSylvesterTwoColumnBlockSystem m n A T C X p q <->
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+          (Sum.elim (fun i => X i p) (fun i => X i q)) =
+        Sum.elim
+          (fun i =>
+            C i p +
+              Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                (fun j => T j p * X i j))
+          (fun i =>
+            C i q +
+              Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                (fun j => T j q * X i j)) := by
+  constructor
+  · intro hsys
+    rcases hsys with ⟨hp, hq⟩
+    funext r
+    cases r with
+    | inl i =>
+        have hi := congrFun hp i
+        rw [sylvesterTwoColumnBlockCoeff, Matrix.fromBlocks_mulVec]
+        simp only [Sum.elim_inl, Pi.add_apply]
+        rw [Matrix.smul_mulVec, Matrix.one_mulVec]
+        simpa [sub_eq_add_neg, neg_mul] using hi
+    | inr i =>
+        have hi := congrFun hq i
+        rw [sylvesterTwoColumnBlockCoeff, Matrix.fromBlocks_mulVec]
+        simp only [Sum.elim_inr, Pi.add_apply]
+        rw [Matrix.smul_mulVec, Matrix.one_mulVec]
+        simpa [sub_eq_add_neg, neg_mul, add_comm, add_left_comm, add_assoc] using hi
+  · intro hmul
+    constructor
+    · funext i
+      have hi := congrFun hmul (Sum.inl i)
+      rw [sylvesterTwoColumnBlockCoeff, Matrix.fromBlocks_mulVec] at hi
+      simp only [Sum.elim_inl, Pi.add_apply] at hi
+      rw [Matrix.smul_mulVec, Matrix.one_mulVec] at hi
+      simpa [sub_eq_add_neg, neg_mul] using hi
+    · funext i
+      have hi := congrFun hmul (Sum.inr i)
+      rw [sylvesterTwoColumnBlockCoeff, Matrix.fromBlocks_mulVec] at hi
+      simp only [Sum.elim_inr, Pi.add_apply] at hi
+      rw [Matrix.smul_mulVec, Matrix.one_mulVec] at hi
+      simpa [sub_eq_add_neg, neg_mul, add_comm, add_left_comm, add_assoc] using hi
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
     quasi-triangular `2 x 2` block recurrence: if columns `p,q` form a supplied
     adjacent diagonal block of the Schur factor `T`, then any exact solution of
