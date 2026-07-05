@@ -450,6 +450,43 @@ theorem sylvesterOp_sigmaMin_of_vecCoeff_gram_eigenvalues (n : Nat)
     sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B (Real.sqrt lam)
       (sylvesterVecCoeff_sigmaMin_of_gram_eigenvalues n A B hlam hEig)
 
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
+    a supplied concrete left inverse for the printed vec/Kronecker Sylvester
+    coefficient gives a `SepLowerBound` certificate. -/
+theorem SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A B : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    SepLowerBound n A B (1 / M) := by
+  have hCoeff :=
+    sylvesterVecCoeff_sigmaMin_of_left_inverse_finiteOpNorm2Le
+      n A B Pinv hM hLeft hPinv
+  have hOp :
+      forall Y : Fin n -> Fin n -> Real,
+        (1 / M) * frobNorm Y <= frobNorm (sylvesterOp n A B Y) :=
+    sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B (1 / M) hCoeff
+  exact
+    sepLowerBound_of_sylvesterOp_sigmaMin n A B (1 / M)
+      (one_div_pos.mpr hM) hOp
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
+    in positive dimension, a supplied concrete left inverse for the printed
+    vec/Kronecker Sylvester coefficient lower-bounds the exact `sep` infimum. -/
+theorem sylvesterSepInf_ge_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A B : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hn : 0 < n) (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    (1 / M) <= sylvesterSepInf n A B := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n A B (1 / M)
+      (SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A B Pinv hM hLeft hPinv)
+      hn
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
     in the diagonal case, a uniform lower bound on the coefficient magnitudes
     `|a_i - b_j|` gives the concrete vectorized coefficient lower bound. -/
