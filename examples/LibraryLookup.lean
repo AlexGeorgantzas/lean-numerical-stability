@@ -15379,3 +15379,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check resolvent_hasSum_neumann
 #check maxGenEigenspace_one_eq_eigenspace_of_forall_orbit_tendsto
 #check semiconvergent_block_form_exists_of_triangular_complement_diag_conv
+-- Split-3B Wave-7: [106] quasi-triangular block-form assembly (GAP-4 2x2-block extension)
+#check exists_diag_infNorm_conj_lt_one_of_quasiUpperTriangular
+#check semiconvergent_block_form_exists_of_quasiTriangular_complement
+#check matPow_G_tendsto_oneEigenProjector_of_quasiTriangular_complement
