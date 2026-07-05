@@ -2411,9 +2411,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_matrix_bandwidth_five_bohte_solve_tight_of_isBanded`
 - `higham9_11_matrix_bandwidth_five_bohte_solve_tight_of_isBanded_growth_le`
 - `higham9_12_spd_lu_backward_error`
+- `higham9_12_matrix_spd_lu_backward_error`
 - `tridiag_spd_shape_absLU_eq_absA`
 - `higham9_12_spd_tridiag_absLU_eq_of_positive_DLT`
 - `higham9_12_spd_tridiag_lu_backward_error_of_positive_DLT`
+- `higham9_12_matrix_spd_tridiag_lu_backward_error_of_positive_DLT`
 - `higham9_12_nonneg_lu_optimal_growth`
 - `higham9_growthFactorEntry_le_one_of_absLU_le_absA`
 - `higham9_12_spd_tridiag_growthFactorEntry_le_one`
@@ -2422,10 +2424,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_12_spd_tridiag_builder_growthFactorEntry_le_one`
 - `higham9_12_spd_tridiag_builder_growthFactorEntry_le_one_of_spd`
 - `higham9_12_spd_tridiag_builder_lu_backward_error_of_positive_DLT`
+- `higham9_12_matrix_spd_tridiag_builder_lu_backward_error_of_positive_DLT`
 - `higham9_12_spd_tridiag_builder_absLU_eq_of_recurrence`
 - `higham9_12_spd_tridiag_builder_growthFactorEntry_le_one_of_recurrence`
 - `higham9_12_spd_tridiag_builder_growthFactorEntry_le_one_of_spd_recurrence`
 - `higham9_12_spd_tridiag_builder_lu_backward_error_of_recurrence`
+- `higham9_12_matrix_spd_tridiag_builder_lu_backward_error_of_recurrence`
 - `higham9_12_nonneg_lu_growthFactorEntry_le_one`
 - `higham9_12_mmatrix_lu_optimal_growth`
 - `higham9_12_mmatrix_lu_growthFactorEntry_le_one`
