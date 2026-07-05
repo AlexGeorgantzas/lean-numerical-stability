@@ -1591,4 +1591,54 @@ theorem lu_refinement_thm_11_4 (n : ℕ) (fp : FPModel)
     hr hy hsolve hΔA hres hf₂ hn1 hu_lt ρ hρ_nn hcorr
     (2 * gamma fp (n + 1)) hρ_cond
 
+-- ============================================================
+-- §12.2  Nonnegative resolvent ∞-norm bound (Neumann inversion, eqns 12.20–12.21)
+-- ============================================================
+
+/-- **Nonnegative resolvent ∞-norm bound** — the Neumann-series consequence used
+    in Higham §12.2, eqns (12.20)–(12.21) (2nd ed., Chapter 12 "Iterative
+    Refinement"; the file's earlier `11.x` docstrings predate the 2nd-edition
+    renumbering, in which iterative refinement is Chapter 12).
+
+    If `M` is entrywise nonnegative with every row sum `≤ c < 1`, `v ≥ 0`
+    componentwise, and `(I − M) v ≤ w` componentwise (`v_i ≤ (M v)_i + w_i`),
+    then `‖v‖∞ ≤ ‖w‖∞ / (1 − c)`.
+
+    This is the honest content of "`(I − M)` has a nonnegative inverse with
+    `‖(I − M)⁻¹‖∞ ≤ 1/(1−c)`" without constructing the inverse: it is exactly the
+    scalar bound Higham uses at (12.20)–(12.21) (with `c = 1/2`, giving the
+    factor `2` in `‖(I − uM₃)⁻¹‖∞ ≤ 2`). -/
+theorem nonneg_resolvent_infNormVec_bound {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (v w : Fin n → ℝ)
+    (hM : ∀ i j : Fin n, 0 ≤ M i j)
+    (hv : ∀ i : Fin n, 0 ≤ v i)
+    (c : ℝ) (hc_lt : c < 1)
+    (hrow : ∀ i : Fin n, ∑ j : Fin n, M i j ≤ c)
+    (hstep : ∀ i : Fin n, v i ≤ (∑ j : Fin n, M i j * v j) + w i) :
+    infNormVec v ≤ infNormVec w / (1 - c) := by
+  have h1c : (0 : ℝ) < 1 - c := by linarith
+  obtain ⟨i, hi⟩ := infNormVec_exists_le_abs hn v
+  have hnv_le_vi : infNormVec v ≤ v i := by
+    rw [abs_of_nonneg (hv i)] at hi; exact hi
+  have hMv : (∑ j : Fin n, M i j * v j) ≤ c * infNormVec v := by
+    calc (∑ j : Fin n, M i j * v j)
+        ≤ ∑ j : Fin n, M i j * infNormVec v :=
+          Finset.sum_le_sum (fun j _ => by
+            have hvj : v j ≤ infNormVec v := by
+              have := abs_le_infNormVec v j
+              rwa [abs_of_nonneg (hv j)] at this
+            exact mul_le_mul_of_nonneg_left hvj (hM i j))
+      _ = (∑ j : Fin n, M i j) * infNormVec v := by rw [Finset.sum_mul]
+      _ ≤ c * infNormVec v :=
+          mul_le_mul_of_nonneg_right (hrow i) (infNormVec_nonneg v)
+  have hwi : w i ≤ infNormVec w :=
+    le_trans (le_abs_self (w i)) (abs_le_infNormVec w i)
+  have hchain : infNormVec v ≤ c * infNormVec v + infNormVec w := by
+    calc infNormVec v ≤ v i := hnv_le_vi
+      _ ≤ (∑ j : Fin n, M i j * v j) + w i := hstep i
+      _ ≤ c * infNormVec v + infNormVec w := by linarith [hMv, hwi]
+  rw [le_div_iff₀ h1c]
+  have hrw : infNormVec v * (1 - c) = infNormVec v - c * infNormVec v := by ring
+  linarith [hchain, hrw]
+
 end LeanFpAnalysis.FP
