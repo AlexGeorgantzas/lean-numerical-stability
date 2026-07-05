@@ -121,6 +121,7 @@ import LeanFpAnalysis.FP.Analysis.HenriciSharpConstant
 import LeanFpAnalysis.FP.Analysis.HenriciSharpConstantExact
 import LeanFpAnalysis.FP.Analysis.PseudospectralLowerBound
 import LeanFpAnalysis.FP.Analysis.BergerResolvent
+import LeanFpAnalysis.FP.Analysis.BergerGeneral
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderReflector
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderApply
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderOneStep

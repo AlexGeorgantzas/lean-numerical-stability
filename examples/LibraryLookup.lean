@@ -15429,3 +15429,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check sum_commDiagRe_eq_zero
 #check numericalRadius_pow_two_le
 #check numericalRadius_pow_two_pow_le
+-- Split-3B Wave-11: FULL general-k Berger power inequality via Pearcy (r(A^k)<=r(A)^k, all k, arbitrary A) + unconditional (18.7) power bound
+#check numericalRadius_pow_le
+#check norm_pow_le_two_mul_numericalRadius_pow
+#check numericalRadiusCLM_pow_le
+#check numericalRadiusCLM_pow_pointwise_le_of_le_one
