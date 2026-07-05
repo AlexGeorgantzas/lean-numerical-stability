@@ -314,6 +314,18 @@ theorem higham11_3_fl_oneByOne_solve_backward_error
     ∃ Δe : ℝ, |Δe| ≤ gamma fp 1 * |e| ∧ (e + Δe) * fp.fl_div b e = b :=
   fl_oneByOne_solve_backward_error fp b e he hval
 
+/-- **Theorem 11.3 per-stage trailing fl backward error** (Higham [608,1997]
+§4.2): the computed `L̂D̂L̂ᵀ` trailing entry `l̂_i·e·l̂_j` plus the computed Schur
+entry `Ŝ = fl(b − fl(l̂_i·c_j))` equals `b + Δ` with
+`|Δ| ≤ 2γ₃(|b| + |c_i c_j/e|)` — the atomic `(i,j)` step of Theorem 11.3's
+componentwise backward-error induction. -/
+theorem higham11_3_fl_stage_trailing_error (fp : FPModel) (e ci cj b : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ, |Δ| ≤ 2 * gamma fp 3 * (|b| + |ci * cj / e|) ∧
+      fp.fl_div ci e * e * fp.fl_div cj e
+        + fp.fl_sub b (fp.fl_mul (fp.fl_div ci e) cj) = b + Δ :=
+  fl_oneByOne_stage_trailing_error fp e ci cj b he hval
+
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
     (ε : ℝ) : Fin 3 → Fin 3 → ℝ :=

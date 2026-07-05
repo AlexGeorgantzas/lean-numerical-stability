@@ -760,6 +760,63 @@ theorem fl_oneByOne_solve_backward_error (fp : FPModel) (b e : ℝ)
       _ = gamma fp 1 * |e| * (1 + δ) := by ring
   · rw [hd]; field_simp; ring
 
+/-- **Per-stage trailing floating-point backward error** for a 1×1-pivot block
+    LDLᵀ step (Higham [608,1997] §4.2).  Combining the rounded multiplier product
+    `l̂_i·e·l̂_j` (an entry of `L̂D̂L̂ᵀ` before the recursion) with the computed
+    Schur entry `Ŝ = fl(b − fl(l̂_i·c_j))`, the total equals the original entry `b`
+    plus a backward error `Δ` with `|Δ| ≤ 2·γ₃·(|b| + |c_i c_j/e|)`.  Derived from
+    the standard model via `prod_error_bound`, not assumed — the atomic `(i,j)`
+    ingredient of Theorem 11.3's componentwise backward-error induction. -/
+theorem fl_oneByOne_stage_trailing_error (fp : FPModel) (e ci cj b : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ, |Δ| ≤ 2 * gamma fp 3 * (|b| + |ci * cj / e|) ∧
+      fp.fl_div ci e * e * fp.fl_div cj e
+        + fp.fl_sub b (fp.fl_mul (fp.fl_div ci e) cj) = b + Δ := by
+  obtain ⟨δi, hδi, hli⟩ := fp.model_div ci e he
+  obtain ⟨δj, hδj, hlj⟩ := fp.model_div cj e he
+  obtain ⟨δ1, hδ1, hpp⟩ := fp.model_mul (fp.fl_div ci e) cj
+  obtain ⟨δ2, hδ2, hss⟩ := fp.model_sub b (fp.fl_mul (fp.fl_div ci e) cj)
+  have hval2 : gammaValid fp 2 := gammaValid_mono fp (by norm_num) hval
+  have hg2 : gamma fp 2 ≤ gamma fp 3 := gamma_mono fp (by norm_num) hval
+  have hg0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+  obtain ⟨θa, hθa, hpa⟩ :=
+    prod_error_bound fp 2 ![δi, δj] (by intro i; fin_cases i <;> simp_all) hval2
+  have hfa : (1 + δi) * (1 + δj) = 1 + θa := by
+    have h := hpa; rw [Fin.prod_univ_two] at h; simpa using h
+  obtain ⟨θb, hθb, hpb⟩ :=
+    prod_error_bound fp 3 ![δi, δ1, δ2] (by intro i; fin_cases i <;> simp_all) hval
+  have hfb : (1 + δi) * (1 + δ1) * (1 + δ2) = 1 + θb := by
+    have h := hpb; rw [Fin.prod_univ_three] at h; simpa using h
+  have hab : ∀ x y : ℝ, |x - y| ≤ |x| + |y| := fun x y => by
+    have := abs_add_le x (-y); rwa [← sub_eq_add_neg, abs_neg] at this
+  refine ⟨ci * cj / e * θa - ci * cj / e * θb + b * δ2, ?_, ?_⟩
+  · have hθa3 : |θa| ≤ gamma fp 3 := le_trans hθa hg2
+    have hu3 : fp.u ≤ gamma fp 3 := u_le_gamma fp (by norm_num) hval
+    have hb2 : |b * δ2| ≤ |b| * gamma fp 3 := by
+      rw [abs_mul]; exact mul_le_mul_of_nonneg_left (le_trans hδ2 hu3) (abs_nonneg _)
+    have hP : |ci * cj / e * θa| ≤ |ci * cj / e| * gamma fp 3 := by
+      rw [abs_mul]; exact mul_le_mul_of_nonneg_left hθa3 (abs_nonneg _)
+    have hPb : |ci * cj / e * θb| ≤ |ci * cj / e| * gamma fp 3 := by
+      rw [abs_mul]; exact mul_le_mul_of_nonneg_left hθb (abs_nonneg _)
+    calc |ci * cj / e * θa - ci * cj / e * θb + b * δ2|
+        ≤ |ci * cj / e * θa - ci * cj / e * θb| + |b * δ2| := abs_add_le _ _
+      _ ≤ (|ci * cj / e * θa| + |ci * cj / e * θb|) + |b * δ2| :=
+          add_le_add (hab _ _) (le_refl _)
+      _ ≤ (|ci * cj / e| * gamma fp 3 + |ci * cj / e| * gamma fp 3) + |b| * gamma fp 3 :=
+          add_le_add (add_le_add hP hPb) hb2
+      _ ≤ 2 * gamma fp 3 * (|b| + |ci * cj / e|) := by
+          nlinarith [hg0, abs_nonneg b, abs_nonneg (ci * cj / e)]
+  · have key : ci / e * (1 + δi) * e * (cj / e * (1 + δj))
+        + (b - ci / e * (1 + δi) * cj * (1 + δ1)) * (1 + δ2)
+        = b + (ci * cj / e * θa - ci * cj / e * θb + b * δ2) := by
+      have e1 : ci / e * (1 + δi) * e * (cj / e * (1 + δj))
+          = ci * cj / e * ((1 + δi) * (1 + δj)) := by field_simp
+      have e2 : (b - ci / e * (1 + δi) * cj * (1 + δ1)) * (1 + δ2)
+          = b * (1 + δ2) - ci * cj / e * ((1 + δi) * (1 + δ1) * (1 + δ2)) := by
+        field_simp
+      rw [e1, e2, hfa, hfb]; ring
+    rw [hss, hpp, hli, hlj]; exact key
+
 -- ============================================================
 -- Chapter 11.1.4  Tridiagonal symmetric matrices
 -- ============================================================
