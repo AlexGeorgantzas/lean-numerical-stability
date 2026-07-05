@@ -541,6 +541,58 @@ theorem isLeast_sylvesterBackwardErrorValues (n : ℕ)
     fun _eta heta => csInf_le
       (sylvesterBackwardErrorValues_bddBelow n A B C Y alpha beta gamma) heta⟩
 
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.2,
+    eq (16.15): SVD optimal perturbations supply the nonempty feasible set
+    needed by `exists_sylvesterBackwardError_minimizer`. -/
+theorem exists_sylvesterBackwardError_minimizer_of_svdOptimalPerturbations (n : ℕ)
+    (A B C Y U V : Fin n → Fin n → ℝ) (sigma : Fin n → ℝ)
+    (alpha beta gamma : ℝ)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hSVD : IsSVD n Y U V sigma)
+    (hpos : ∀ i j : Fin n,
+      0 < alpha ^ 2 * sigma j ^ 2 + beta ^ 2 * sigma i ^ 2 + gamma ^ 2) :
+    IsBackwardError n A B C Y alpha beta gamma
+      (sylvesterBackwardErrorInf n A B C Y alpha beta gamma) := by
+  exact exists_sylvesterBackwardError_minimizer n A B C Y alpha beta gamma
+    halpha hbeta hgamma
+    (sylvesterBackwardErrorValues_nonempty_of_svdOptimalPerturbations n
+      A B C Y U V sigma alpha beta gamma hSVD hpos)
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.2,
+    eq (16.15): under SVD optimal perturbation hypotheses, the infimum
+    backward error is itself a feasible value. -/
+theorem sylvesterBackwardErrorInf_mem_sylvesterBackwardErrorValues_of_svdOptimalPerturbations
+    (n : ℕ)
+    (A B C Y U V : Fin n → Fin n → ℝ) (sigma : Fin n → ℝ)
+    (alpha beta gamma : ℝ)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hSVD : IsSVD n Y U V sigma)
+    (hpos : ∀ i j : Fin n,
+      0 < alpha ^ 2 * sigma j ^ 2 + beta ^ 2 * sigma i ^ 2 + gamma ^ 2) :
+    sylvesterBackwardErrorInf n A B C Y alpha beta gamma ∈
+      sylvesterBackwardErrorValues n A B C Y alpha beta gamma := by
+  exact sylvesterBackwardErrorInf_mem_sylvesterBackwardErrorValues n A B C Y
+    alpha beta gamma halpha hbeta hgamma
+    (sylvesterBackwardErrorValues_nonempty_of_svdOptimalPerturbations n
+      A B C Y U V sigma alpha beta gamma hSVD hpos)
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.2,
+    eq (16.15): under SVD optimal perturbation hypotheses,
+    `sylvesterBackwardErrorInf` is the least feasible backward-error value. -/
+theorem isLeast_sylvesterBackwardErrorValues_of_svdOptimalPerturbations (n : ℕ)
+    (A B C Y U V : Fin n → Fin n → ℝ) (sigma : Fin n → ℝ)
+    (alpha beta gamma : ℝ)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hSVD : IsSVD n Y U V sigma)
+    (hpos : ∀ i j : Fin n,
+      0 < alpha ^ 2 * sigma j ^ 2 + beta ^ 2 * sigma i ^ 2 + gamma ^ 2) :
+    IsLeast (sylvesterBackwardErrorValues n A B C Y alpha beta gamma)
+      (sylvesterBackwardErrorInf n A B C Y alpha beta gamma) := by
+  exact isLeast_sylvesterBackwardErrorValues n A B C Y alpha beta gamma
+    halpha hbeta hgamma
+    (sylvesterBackwardErrorValues_nonempty_of_svdOptimalPerturbations n
+      A B C Y U V sigma alpha beta gamma hSVD hpos)
+
 -- ============================================================
 -- (16.21): the structured Lyapunov backward-error infimum is attained
 -- ============================================================
