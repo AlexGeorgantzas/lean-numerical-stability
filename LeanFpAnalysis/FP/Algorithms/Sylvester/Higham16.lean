@@ -1125,6 +1125,114 @@ theorem sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residua
       hPinvAbs_le hBudget hRhat hRu_le heta hcomponent hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square determinant
+    raw computed-residual budget endpoint: a determinant-nonzero vec/Kronecker
+    coefficient supplies the nonsingular inverse, while the caller supplies a
+    direct absolute residual budget. -/
+theorem sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget
+    (n : Nat)
+    (A B C X Xhat Rhat Ru : RMatFn n n)
+    (hdet : Matrix.det (sylvesterVecCoeff n n A B) ≠ 0)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate
+      n A B C X Xhat Rhat Ru hdet hX (And.intro hRu hRhat) hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square determinant
+    raw computed-residual budget endpoint with monotone supplied inverse and
+    residual estimates.  The determinant certificate still provides the exact
+    inverse; the primed inputs are any componentwise larger practical budget. -/
+theorem sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hdet : Matrix.det (sylvesterVecCoeff n n A B) ≠ 0)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat_budget : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono
+      n A B C X Xhat Rhat Rhat' Ru Ru' PinvAbs'
+      hdet hX (And.intro hRu hRhat_budget)
+      hPinvAbs_le hRhat hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square determinant
+    raw computed-residual budget endpoint with a scalar cap on the practical
+    budget induced by the nonsingular vec/Kronecker inverse. -/
+theorem sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_scalar
+    (n : Nat)
+    (A B C X Xhat Rhat Ru : RMatFn n n) (eta : Real)
+    (hdet : Matrix.det (sylvesterVecCoeff n n A B) ≠ 0)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      eta / sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_scalar
+      n A B C X Xhat Rhat Ru eta hdet hX
+      (And.intro hRu hRhat) heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square determinant
+    raw computed-residual budget endpoint with monotone supplied estimates and
+    a scalar cap on the enlarged practical budget. -/
+theorem sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono_scalar
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (eta : Real)
+    (hdet : Matrix.det (sylvesterVecCoeff n n A B) ≠ 0)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat_budget : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      eta / sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono_scalar
+      n A B C X Xhat Rhat Rhat' Ru Ru' PinvAbs' eta hdet hX
+      (And.intro hRu hRhat_budget)
+      hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square determinant
     explicit residual-error model endpoint.  An explicit residual perturbation
     supplies the computed-residual certificate; determinant nonsingularity
     supplies the exact inverse budget. -/
