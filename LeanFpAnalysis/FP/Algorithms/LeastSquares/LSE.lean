@@ -29438,6 +29438,77 @@ theorem theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold
       fp hB hStack (by omega) hsmallA hsmallB hhalf hunit
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    the single combined unit-roundoff smallness threshold supplies the
+    conservative component source-rank budget condition. -/
+theorem theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_unit_roundoff_smallnessThreshold
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hp : 0 < p) (hq : 0 < q)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hBsrc hStack) :
+    theorem20_10_householder_componentSourceRankBudget fp A B <
+      theorem20_10_householder_sourceRankRadius hBsrc hStack := by
+  rcases
+    theorem20_10_householder_component_unit_roundoff_conditions_of_lt_smallnessThreshold
+      fp hBsrc hStack hp hq hu with
+    ⟨hsmallA, hsmallB, _hhalf, _hunit⟩
+  have hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)) := by
+    unfold gammaValid
+    exact lt_of_le_of_lt hsmallA (by norm_num)
+  have hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)) := by
+    unfold gammaValid
+    exact lt_of_le_of_lt hsmallB (by norm_num)
+  exact
+    theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
+      fp A B hBsrc hStack hvalidA hvalidB
+      (theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold_of_unit_roundoff_smallnessThreshold
+        fp hBsrc hStack hp hq hu)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    the single combined unit-roundoff smallness threshold directly supplies
+    both strict source-rank margin hypotheses for the conservative component
+    route. -/
+theorem theorem20_10_householder_componentSourceRankMargins_of_unit_roundoff_smallnessThreshold
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hp : 0 < p) (hq : 0 < q)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hBsrc hStack) :
+    theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hBsrc.transposeVecNorm2LowerMargin ∧
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+            frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hStack.vecNorm2LowerMargin := by
+  rcases
+    theorem20_10_householder_component_unit_roundoff_conditions_of_lt_smallnessThreshold
+      fp hBsrc hStack hp hq hu with
+    ⟨hsmallA, hsmallB, _hhalf, _hunit⟩
+  have hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)) := by
+    unfold gammaValid
+    exact lt_of_le_of_lt hsmallA (by norm_num)
+  have hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)) := by
+    unfold gammaValid
+    exact lt_of_le_of_lt hsmallB (by norm_num)
+  exact
+    theorem20_10_householder_componentSourceRankMargins_of_max_gamma_lt_sourceRankGammaThreshold
+      fp A B hBsrc hStack hvalidA hvalidB
+      (theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold_of_unit_roundoff_smallnessThreshold
+        fp hBsrc hStack hp hq hu)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank margin-radius wrapper for the constructed rounded Householder
     GQR Part B returned-vector theorem.
 
