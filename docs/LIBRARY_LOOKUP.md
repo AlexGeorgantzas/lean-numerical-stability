@@ -4890,6 +4890,7 @@ Source-facing Chapter 12 wrappers:
 - `higham12_vectorAbsSkew_nonneg`
 - `higham12_vectorAbsSkew_entry_bound`
 - `higham12_problem_12_1_square`
+- `higham12_22_infNorm_skew_apply`
 
 Chapter 12 formalization status and source inventory:
 
