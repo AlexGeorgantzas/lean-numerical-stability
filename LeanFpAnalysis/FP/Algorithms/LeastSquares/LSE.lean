@@ -28956,6 +28956,225 @@ theorem theorem20_10_householder_componentSourceRankMargins_of_max_gamma_lt_sour
         fp A B hB hStack hvalidA hvalidB hsmall)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    dimension-only linear unit-roundoff coefficient that dominates the
+    conservative Householder component max-gamma coefficient under the usual
+    `gamma <= 2*n*u` half-radius guards.
+
+    The three branches correspond to the printed `A` Householder coefficient,
+    the verified conservative RHS coefficient, and the `Bᵀ` Householder
+    coefficient. -/
+noncomputable def theorem20_10_householder_componentUnitRoundoffCoefficient
+    (r p q : ℕ) : ℝ :=
+  max
+    (max
+      ((2 : ℝ) *
+        (((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ))
+      ((4 : ℝ) * Real.sqrt (r + q : ℝ) *
+        (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
+        ((q * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ)))
+    ((2 : ℝ) *
+      (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ)))
+
+/-- Nonnegativity of the dimension-only coefficient used by the
+    Theorem 20.10(b) conservative unit-roundoff threshold wrapper. -/
+theorem theorem20_10_householder_componentUnitRoundoffCoefficient_nonneg
+    (r p q : ℕ) :
+    0 ≤ theorem20_10_householder_componentUnitRoundoffCoefficient r p q := by
+  dsimp [theorem20_10_householder_componentUnitRoundoffCoefficient]
+  positivity
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    linear unit-roundoff cap for the printed `A` Householder coefficient under
+    the standard half-radius smallness condition. -/
+theorem theorem20_10_householder_gammaA_le_linear_unit_roundoff_of_small
+    {r p q : ℕ} (fp : FPModel)
+    (hsmallA :
+      ((((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    theorem20_10_householder_gammaA fp r p q ≤
+      (2 * (((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ)) *
+        fp.u := by
+  simpa [theorem20_10_householder_gammaA] using
+    H19.Theorem19_4.gamma_tilde_le_two_index_mul_unit_roundoff_of_small
+      fp (r + q) (p + q) hsmallA
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    linear unit-roundoff cap for the `Bᵀ` Householder coefficient under the
+    standard half-radius smallness condition. -/
+theorem theorem20_10_householder_gammaB_le_linear_unit_roundoff_of_small
+    {r p q : ℕ} (fp : FPModel)
+    (hsmallB :
+      ((((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ) *
+        fp.u) ≤ 1 / 2)) :
+    theorem20_10_householder_gammaB fp r p q ≤
+      (2 * (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ)) *
+        fp.u) := by
+  simpa [theorem20_10_householder_gammaB] using
+    H19.Theorem19_4.gamma_tilde_le_two_index_mul_unit_roundoff_of_small
+      fp (p + q) p hsmallB
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    linear unit-roundoff cap for the verified conservative RHS coefficient
+    used by the rounded Householder `A Q₂` path. -/
+theorem theorem20_10_householder_rhs_conservative_gamma_le_linear_unit_roundoff_of_small
+    {r p q : ℕ} (fp : FPModel)
+    (hm : 0 < r + q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    theorem20_10_householder_rhs_conservative_gamma fp r p q ≤
+      ((4 : ℝ) * Real.sqrt (r + q : ℝ) *
+        (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
+        ((q * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ)) *
+        fp.u := by
+  let idx : ℕ := householderQRRhsPanelGammaClosedGrowthIndex (r + q) q
+  let K : ℕ := householderConstructApplyGammaIndex (r + q)
+  let F : ℝ :=
+    (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ)
+  have hprinted_le_idx : q * K ≤ idx := by
+    change q * householderConstructApplyGammaIndex (r + q) ≤
+      householderQRRhsPanelGammaClosedGrowthIndex (r + q) q
+    rw [householderQRRhsPanelGammaClosedGrowthIndex_eq_factor_mul_printedIndex]
+    exact Nat.le_mul_of_pos_left _
+      (householderQRRhsPanelGammaClosedGrowthFactor_pos
+        (m := r + q) (p := q) hm)
+  have hqK_le_idx_real :
+      (((q * K : ℕ) : ℝ) * fp.u) ≤ (idx : ℝ) * fp.u := by
+    have hidx : (((q * K : ℕ) : ℝ)) ≤ (idx : ℝ) := by
+      exact_mod_cast hprinted_le_idx
+    exact mul_le_mul_of_nonneg_right hidx fp.u_nonneg
+  have hqK_half :
+      (((q * K : ℕ) : ℝ) * fp.u) ≤ 1 / 2 := by
+    exact le_trans hqK_le_idx_real (by simpa [idx] using hhalf)
+  have hgamma :
+      gamma fp (q * K) ≤ 2 * (((q * K : ℕ) : ℝ) * fp.u) :=
+    gamma_le_two_mul_n_u_of_nu_le_half fp (q * K) hqK_half
+  have hscale_nonneg :
+      0 ≤ Real.sqrt (r + q : ℝ) * ((2 : ℝ) * F) := by
+    positivity
+  calc
+    theorem20_10_householder_rhs_conservative_gamma fp r p q
+        = (Real.sqrt (r + q : ℝ) * ((2 : ℝ) * F)) *
+            gamma fp (q * K) := by
+            simp [theorem20_10_householder_rhs_conservative_gamma, K, F,
+              mul_left_comm, mul_comm]
+    _ ≤ (Real.sqrt (r + q : ℝ) * ((2 : ℝ) * F)) *
+          (2 * (((q * K : ℕ) : ℝ) * fp.u)) :=
+        mul_le_mul_of_nonneg_left hgamma hscale_nonneg
+    _ = ((4 : ℝ) * Real.sqrt (r + q : ℝ) * F *
+          ((q * K : ℕ) : ℝ)) * fp.u := by ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    the conservative component max-gamma coefficient is bounded by the
+    dimension-only unit-roundoff coefficient under explicit half-radius guards
+    for the three accumulated gamma terms. -/
+theorem theorem20_10_householder_component_max_gamma_le_componentUnitRoundoffCoefficient_mul_u_of_small
+    {r p q : ℕ} (fp : FPModel)
+    (hm : 0 < r + q)
+    (hsmallA :
+      ((((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hsmallB :
+      ((((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ) *
+        fp.u) ≤ 1 / 2))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+        (theorem20_10_householder_gammaB fp r p q) ≤
+      theorem20_10_householder_componentUnitRoundoffCoefficient r p q * fp.u := by
+  let capA : ℝ :=
+    (2 : ℝ) *
+      (((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ)
+  let capRhs : ℝ :=
+    (4 : ℝ) * Real.sqrt (r + q : ℝ) *
+      (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
+      ((q * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ)
+  let capB : ℝ :=
+    (2 : ℝ) *
+      (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ))
+  let cap : ℝ :=
+    theorem20_10_householder_componentUnitRoundoffCoefficient r p q
+  have hcapA_le : capA ≤ cap := by
+    dsimp [cap, capA, capRhs, capB,
+      theorem20_10_householder_componentUnitRoundoffCoefficient]
+    exact le_trans (le_max_left _ _) (le_max_left _ _)
+  have hcapRhs_le : capRhs ≤ cap := by
+    dsimp [cap, capA, capRhs, capB,
+      theorem20_10_householder_componentUnitRoundoffCoefficient]
+    exact le_trans (le_max_right _ _) (le_max_left _ _)
+  have hcapB_le : capB ≤ cap := by
+    dsimp [cap, capA, capRhs, capB,
+      theorem20_10_householder_componentUnitRoundoffCoefficient]
+    exact le_max_right _ _
+  have hAraw :
+      theorem20_10_householder_gammaA fp r p q ≤ capA * fp.u := by
+    simpa [capA] using
+      (theorem20_10_householder_gammaA_le_linear_unit_roundoff_of_small
+        fp hsmallA)
+  have hRhsraw :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q ≤
+        capRhs * fp.u := by
+    simpa [capRhs] using
+      (theorem20_10_householder_rhs_conservative_gamma_le_linear_unit_roundoff_of_small
+        fp hm hhalf)
+  have hBraw :
+      theorem20_10_householder_gammaB fp r p q ≤ capB * fp.u := by
+    simpa [capB] using
+      (theorem20_10_householder_gammaB_le_linear_unit_roundoff_of_small
+        fp hsmallB)
+  have hA :
+      theorem20_10_householder_gammaA fp r p q ≤ cap * fp.u := by
+    exact le_trans hAraw
+      (mul_le_mul_of_nonneg_right hcapA_le fp.u_nonneg)
+  have hRhs :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q ≤
+        cap * fp.u := by
+    exact le_trans hRhsraw
+      (mul_le_mul_of_nonneg_right hcapRhs_le fp.u_nonneg)
+  have hB :
+      theorem20_10_householder_gammaB fp r p q ≤ cap * fp.u := by
+    exact le_trans hBraw
+      (mul_le_mul_of_nonneg_right hcapB_le fp.u_nonneg)
+  have hAcons :
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q ≤
+        cap * fp.u := by
+    dsimp [theorem20_10_householder_gammaA_conservativeRhs]
+    exact max_le hA hRhs
+  exact max_le hAcons hB
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    explicit linear unit-roundoff threshold implies the conservative component
+    gamma-threshold condition used by the source-rank branch. -/
+theorem theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold_of_unit_roundoff_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hm : 0 < r + q)
+    (hsmallA :
+      ((((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hsmallB :
+      ((((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ) *
+        fp.u) ≤ 1 / 2))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hunit :
+      theorem20_10_householder_componentUnitRoundoffCoefficient r p q *
+          fp.u <
+        theorem20_10_householder_sourceRankGammaThreshold hB hStack) :
+    max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+        (theorem20_10_householder_gammaB fp r p q) <
+      theorem20_10_householder_sourceRankGammaThreshold hB hStack := by
+  exact lt_of_le_of_lt
+    (theorem20_10_householder_component_max_gamma_le_componentUnitRoundoffCoefficient_mul_u_of_small
+      fp hm hsmallA hsmallB hhalf)
+    hunit
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank margin-radius wrapper for the constructed rounded Householder
     GQR Part B returned-vector theorem.
 
