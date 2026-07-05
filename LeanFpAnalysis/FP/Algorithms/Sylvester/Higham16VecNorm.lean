@@ -597,6 +597,82 @@ theorem sylvesterSepInf_schurDiagonal_ge_of_entrywise_abs_ge_of_pos_dim
         U A V B a b sigma hU hV hA hB hsigma hgap)
       hn
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27),
+    supplied orthogonal spectral-coordinate Lyapunov case:
+    a uniform spectral-coordinate sum gap gives a `SepLowerBound` certificate
+    for the Sylvester special case `sep(A,-A^T)`. -/
+theorem SepLowerBound_lyapunovSpectralDiagonal_of_entrywise_abs_ge (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|) :
+    SepLowerBound n A (fun i j => -matTranspose A i j) sigma := by
+  have hnegAT :
+      (fun i j => -matTranspose A i j) =
+        rectMatMul U
+          (rectMatMul (Matrix.diagonal (fun i : Fin n => -a i))
+            (matTranspose U)) := by
+    rw [hA]
+    ext i j
+    simp [rectMatMul, matTranspose, Matrix.diagonal]
+    apply Finset.sum_congr rfl
+    intro k _hk
+    ring
+  have hgapSylv :
+      forall i j, sigma <= |a i - (fun k : Fin n => -a k) j| := by
+    intro i j
+    simpa [sub_eq_add_neg] using hgap i j
+  exact
+    SepLowerBound_schurDiagonal_of_entrywise_abs_ge n
+      U A U (fun i j => -matTranspose A i j)
+      a (fun i : Fin n => -a i) sigma hU hU hA hnegAT
+      hsigma hgapSylv
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27),
+    supplied orthogonal spectral-coordinate Lyapunov case:
+    the spectral-coordinate sum gap is below the exact infimum model of
+    `sep(A,-A^T)` whenever the feasible ratio set is nonempty. -/
+theorem sylvesterSepInf_lyapunovSpectralDiagonal_ge_of_entrywise_abs_ge
+    (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hne : (sylvesterSepRatios n A
+      (fun i j => -matTranspose A i j)).Nonempty) :
+    sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_nonempty n A
+      (fun i j => -matTranspose A i j) sigma
+      (SepLowerBound_lyapunovSpectralDiagonal_of_entrywise_abs_ge n
+        U A a sigma hU hA hsigma hgap)
+      hne
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27),
+    supplied orthogonal spectral-coordinate Lyapunov case:
+    in positive dimension, the spectral-coordinate sum gap is below the exact
+    infimum model of `sep(A,-A^T)`. -/
+theorem sylvesterSepInf_lyapunovSpectralDiagonal_ge_of_entrywise_abs_ge_of_pos_dim
+    (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hsigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hn : 0 < n) :
+    sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n A
+      (fun i j => -matTranspose A i j) sigma
+      (SepLowerBound_lyapunovSpectralDiagonal_of_entrywise_abs_ge n
+        U A a sigma hU hA hsigma hgap)
+      hn
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     a positive lower bound for the concrete vectorized Lyapunov coefficient
     gives the Lyapunov operator lower bound consumed by the sigma-min
@@ -1552,6 +1628,38 @@ theorem H16_eq16_27_lyapunov_condition_spectralDiagonal_of_vecCoeff_entrywise_ab
       A X DeltaA DeltaC DeltaX alpha gamma sigma eps
       halpha hgamma hsigma heps hX
       (lyapunovVecCoeff_spectralDiagonal_sigmaMin_of_entrywise_abs_ge n
+        U A a sigma hU hA hsigma hgap)
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case:
+    source-shaped Lyapunov first-order perturbation bound from the
+    spectral-coordinate `sep(A,-A^T)` lower-bound certificate. -/
+theorem H16_eq16_27_lyapunov_condition_spectralDiagonal_of_sep_entrywise_abs_ge
+    (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma eps : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_27_lyapunov_condition_of_sepLowerBound n
+      A X DeltaA DeltaC DeltaX alpha gamma sigma eps
+      halpha hgamma hsigma heps hX
+      (SepLowerBound_lyapunovSpectralDiagonal_of_entrywise_abs_ge n
         U A a sigma hU hA hsigma hgap)
       hDeltaA hDeltaC hLin
 
