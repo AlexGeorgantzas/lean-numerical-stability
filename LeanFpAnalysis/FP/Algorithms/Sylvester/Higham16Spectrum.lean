@@ -1866,6 +1866,62 @@ theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_bud
       m n U R A V S B C X Xhat Rhat Ru hU hV hA hB hS hshift hX
       ⟨hRu, hRhat⟩ hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), real quasi-Schur
+    triangular subcase: return exact real quasi-Schur factors for `A` and `B`;
+    if the returned `B`-side block labels are strictly increasing below the
+    diagonal and the shifted triangular column coefficients are nonsingular,
+    then the raw computed-residual practical bound follows for the original
+    `A` and `B`.
+
+    Scope: this is only the strict-block-map triangular subcase, reusing the
+    supplied Schur-triangular endpoint above.  It does not assert full
+    quasi-triangular block nonsingularity, Hessenberg-Schur execution, rounded
+    residual arithmetic, or floating-point stability. -/
+theorem sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      ((∀ i j : Fin n, j < i -> pB j < pB i) ->
+        (∀ k : Fin n,
+          Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) ->
+        IsSylvesterSolutionRect m n A B C X ->
+        (∀ i j, 0 <= Ru i j) ->
+        (∀ i j,
+          |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j) ->
+        0 < sylvesterMaxEntryNormRect m n Xhat ->
+        sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+            sylvesterMaxEntryNormRect m n Xhat <=
+          sylvesterVecMaxNorm m n
+            (sylvesterPracticalBudgetVec m n
+              (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+            sylvesterMaxEntryNormRect m n Xhat) := by
+  obtain ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero,
+    hpBmono, hpBcard, hSzero, _hiff⟩ :=
+    sylvester_realQuasiSchur_transform_solution_iff
+      m n A B C (0 : RMatFn m n)
+  refine ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero,
+    hpBmono, hpBcard, hSzero, ?_⟩
+  intro hpBstrict hshift hX hRu hRhat hXhat
+  have hS : IsUpperTriangularFn n S :=
+    IsUpperTriangularFn.of_quasiSchur_strictBlockMap n S pB hSzero hpBstrict
+  exact
+    sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget
+      m n U R A V S B C X Xhat Rhat Ru hU hV hA hB hS hshift hX
+      hRu hRhat hXhat
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
     Schur-coordinate case with raw computed-residual budget assumptions and
     componentwise larger practical-budget inputs. -/
