@@ -143,6 +143,33 @@ theorem lyapunov_relative_perturbation_of_sigmaMin (n : Nat)
       alpha alpha gamma eps halpha halpha hgamma heps
       hDeltaA hDeltaB hDeltaC hLin hDeltaX_ne hX_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    raw first-order Lyapunov perturbation bound from a supplied positive
+    singular-value lower bound on the Lyapunov operator.
+
+    This exposes the condition-certificate conclusion before the later
+    `sqrt 2` relative-budget specialization. -/
+theorem lyapunov_first_order_bound_of_sigmaMin (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma)
+    (hX : 0 < frobNorm X)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX <=
+      lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) *
+        frobNorm X *
+        lyapunovScaledPerturbationPairNorm n DeltaA DeltaC alpha gamma := by
+  exact
+    (lyapunovCond_of_sigmaMin_isLyapunovConditionFirstOrderBound n
+      A X alpha gamma sigma halpha hgamma hsigma hX hSigmaMin)
+      DeltaA DeltaC DeltaX hLin
+
 /-- Higham, 2nd ed., §16.3, eq (16.27) (p. 317):
     sigma-min Lyapunov first-order perturbation bound. If the Lyapunov operator
     satisfies `sigma * ||Y||_F <= ||L(Y)||_F` for all `Y`, then the printed
