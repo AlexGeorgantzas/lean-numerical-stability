@@ -2709,6 +2709,132 @@ theorem wedinLemma20_12_rectMatMulVec_projection_swapped_mul_projection_mul_proj
     _ = 0 := hSsqx
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    if `x` lies in the range of `P` and `PQP` kills `x`, then the swapped
+    projection `Q` kills `x`. -/
+theorem wedinLemma20_12_rectMatMulVec_projection_swapped_eq_zero_of_projection_range_companion_compression_eq_zero
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (x : Fin m → ℝ)
+    (hxP : rectMatMulVec P x = x)
+    (hPQP :
+      rectMatMulVec (rectMatMul (rectMatMul P Q) P) x = 0) :
+    rectMatMulVec Q x = 0 := by
+  have hxP_fin : finiteMatVec P x = x := by
+    simpa [finiteMatVec, rectMatMulVec] using hxP
+  have hPQP_fin :
+      finiteMatVec (finiteMatMul (finiteMatMul P Q) P) x = 0 := by
+    simpa [finiteMatVec, rectMatMulVec, finiteMatMul, rectMatMul] using hPQP
+  have hP_Qx_zero : finiteMatVec P (finiteMatVec Q x) = 0 := by
+    calc
+      finiteMatVec P (finiteMatVec Q x)
+          = finiteMatVec P (finiteMatVec Q (finiteMatVec P x)) := by
+              rw [hxP_fin]
+      _ = finiteMatVec (finiteMatMul P Q) (finiteMatVec P x) := by
+              exact (finiteMatVec_finiteMatMul P Q (finiteMatVec P x)).symm
+      _ = finiteMatVec (finiteMatMul (finiteMatMul P Q) P) x := by
+              exact (finiteMatVec_finiteMatMul (finiteMatMul P Q) P x).symm
+      _ = 0 := hPQP_fin
+  have hquad_zero : finiteQuadraticForm Q x = 0 := by
+    calc
+      finiteQuadraticForm Q x
+          = ∑ i : Fin m, x i * finiteMatVec Q x i := rfl
+      _ = ∑ i : Fin m, finiteMatVec P x i * finiteMatVec Q x i := by
+              rw [hxP_fin]
+      _ = ∑ i : Fin m, x i * finiteMatVec P (finiteMatVec Q x) i := by
+              exact
+                (finiteVecInnerProduct_finiteMatVec_left_eq_right_of_symmetric
+                  P hP x (finiteMatVec Q x)).symm
+      _ = 0 := by
+              rw [hP_Qx_zero]
+              simp
+  have hIdemQ_fin : ∀ i j : Fin m, finiteMatMul Q Q i j = Q i j := by
+    intro i j
+    simpa [finiteMatMul, rectMatMul] using congrFun (congrFun hIdemQ i) j
+  have hnormsq_zero : finiteVecNorm2Sq (finiteMatVec Q x) = 0 := by
+    calc
+      finiteVecNorm2Sq (finiteMatVec Q x)
+          = finiteQuadraticForm (finiteMatMul Q Q) x := by
+              exact
+                (finiteQuadraticForm_finiteMatMul_self_of_symmetric
+                  Q hQ x).symm
+      _ = finiteQuadraticForm Q x := by
+              have hmat : finiteMatMul Q Q = Q := by
+                funext i j
+                exact hIdemQ_fin i j
+              rw [hmat]
+      _ = 0 := hquad_zero
+  have hnorm_zero : vecNorm2 (rectMatMulVec Q x) = 0 := by
+    have hsq : vecNorm2 (rectMatMulVec Q x) ^ 2 = 0 := by
+      rw [vecNorm2_sq]
+      simpa [finiteVecNorm2Sq_fin, finiteMatVec, rectMatMulVec] using hnormsq_zero
+    exact sq_eq_zero_iff.mp hsq
+  ext i
+  exact (vecNorm2_eq_zero_iff (rectMatMulVec Q x)).mp hnorm_zero i
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped version: if `x` lies in the range of `Q` and `QPQ` kills `x`,
+    then `P` kills `x`. -/
+theorem wedinLemma20_12_rectMatMulVec_projection_eq_zero_of_projection_swapped_range_companion_compression_eq_zero
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (x : Fin m → ℝ)
+    (hxQ : rectMatMulVec Q x = x)
+    (hQPQ :
+      rectMatMulVec (rectMatMul (rectMatMul Q P) Q) x = 0) :
+    rectMatMulVec P x = 0 := by
+  simpa using
+    wedinLemma20_12_rectMatMulVec_projection_swapped_eq_zero_of_projection_range_companion_compression_eq_zero
+      Q P hQ hP hIdemP x hxQ hQPQ
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    a `D^2` eigenvector with eigenvalue `1` in the range of `P` is orthogonal
+    to the swapped projection range, in vector-action form `Q*x = 0`. -/
+theorem wedinLemma20_12_rectMatMulVec_projection_swapped_eq_zero_of_projectionDiff_sq_eigenvalue_one_projection_range
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (x : Fin m → ℝ)
+    (hxP : rectMatMulVec P x = x)
+    (hxEig :
+      rectMatMulVec
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)) x = x) :
+    rectMatMulVec Q x = 0 := by
+  exact
+    wedinLemma20_12_rectMatMulVec_projection_swapped_eq_zero_of_projection_range_companion_compression_eq_zero
+      P Q hP hQ hIdemQ x hxP
+      (wedinLemma20_12_rectMatMulVec_projection_mul_swapped_mul_projection_eq_zero_of_projectionDiff_sq_eigenvalue_one_projection_range
+        P Q hIdemP hIdemQ x hxP hxEig)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    swapped action-zero consequence for a `D^2` eigenvector with eigenvalue
+    `1` in the range of `Q`. -/
+theorem wedinLemma20_12_rectMatMulVec_projection_eq_zero_of_projectionDiff_sq_eigenvalue_one_projection_swapped_range
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (x : Fin m → ℝ)
+    (hxQ : rectMatMulVec Q x = x)
+    (hxEig :
+      rectMatMulVec
+          (rectMatMul (fun i j => P i j - Q i j)
+            (fun i j => P i j - Q i j)) x = x) :
+    rectMatMulVec P x = 0 := by
+  exact
+    wedinLemma20_12_rectMatMulVec_projection_eq_zero_of_projection_swapped_range_companion_compression_eq_zero
+      P Q hP hQ hIdemP x hxQ
+      (wedinLemma20_12_rectMatMulVec_projection_swapped_mul_projection_mul_projection_swapped_eq_zero_of_projectionDiff_sq_eigenvalue_one_projection_swapped_range
+        P Q hIdemP hIdemQ x hxQ hxEig)
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     left-compressing the companion square `S^2` to the `Q` range gives
     `Q*P*Q`. -/
 theorem wedinLemma20_12_projection_swapped_mul_projectionSumSubId_sq_eq_projection_swapped_mul_projection_mul_projection_swapped
