@@ -11126,3 +11126,25 @@ These compile, but should not be treated as fully derived stability results:
   lower-bound/pivot inverse table for all pivots, source-norm versus entrywise
   max-growth integration, Problem 13.4 all-tail source comparisons, and Theorem
   13.6 cited estimates remain open.
+
+- 2026-07-05 Theorem 13.7 BDD leading-prefix canonical inverse step: added
+  `higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`
+  and
+  `higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These wrap the
+  leading-prefix determinant-nonzero facts with
+  `isInverse_nonsingInv_of_det_ne_zero`, exposing the repository canonical
+  `nonsingInv` as a two-sided inverse for every prefix diagonal block whose
+  inherited column-BDD lower bound is nonpositive.  Focused
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU` passed; `git diff --check`,
+  touched Lean placeholder scan, and the extended ignored scratch
+  axiom audit passed.  The new wrappers' axiom audit reports only standard
+  Mathlib axioms `propext`, `Classical.choice`, and `Quot.sound`.  Redirected
+  public lookup printed both new Chapter 13 declarations successfully and still
+  failed only on unrelated pre-existing non-Ch13 lookup rows.  This closes the
+  canonical inverse packaging needed by downstream active-pivot APIs, but not
+  the final BDD block-LU existence route: deriving the positive active
+  lower-bound/pivot inverse table for all pivots, source-norm versus entrywise
+  max-growth integration, Problem 13.4 all-tail source comparisons, and Theorem
+  13.6 cited estimates remain open.

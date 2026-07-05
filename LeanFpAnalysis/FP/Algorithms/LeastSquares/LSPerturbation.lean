@@ -8524,6 +8524,82 @@ theorem wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_crossPro
       hDeltaA hDeltab hDeltaA_norm_budget hDeltab_norm_budget
       hrangeA_residual hB hr hs horth_s
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1):
+    printed relative solution perturbation bound using the source-facing
+    Lemma 20.12 `min` projector surface.
+
+This removes the old caller-facing cross-projection equality hypothesis by
+combining Lemma 20.11's `Bplus` radius with the proved Lemma 20.12 bound
+`||P_B(I-P_A)||₂ <= delta * min(||Aplus||₂, ||Bplus||₂)`. -/
+theorem wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_min_surface_column_orthogonal
+    {m k : ℕ} (hm : 0 < m) (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {Aplus_norm delta eta DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hAplus_pos : 0 < Aplus_norm)
+    (hA_norm_pos : 0 < A_norm)
+    (hx_norm_pos : 0 < vecNorm2 x)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (heta : eta = Aplus_norm * delta)
+    (hsmall : eta < 1)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget :
+      Deltab_norm ≤ eps * (A_norm * vecNorm2 x + vecNorm2 r))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i)
+    (horth_s : ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      wedinTheorem20_1SolutionRelativeRHS
+        kappa eps A_norm (vecNorm2 x) (vecNorm2 r) := by
+  have hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)) :=
+    wedinLemma20_11_rectOpNorm2Le_Bplus_of_left_inverse_rectOpNorm2Le
+      A B Aplus Bplus hAplus_pos heta hsmall hleftA hAplus hDelta
+      hleftB hSymB
+  have hden_pos : 0 < 1 - eta :=
+    wedinLemma20_11_denominator_pos hsmall
+  have hBplus_radius_nonneg : 0 ≤ Aplus_norm / (1 - eta) :=
+    div_nonneg (le_of_lt hAplus_pos) (le_of_lt hden_pos)
+  have hPBIPA_min :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * min Aplus_norm (Aplus_norm / (1 - eta))) :=
+    wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_min
+      hm A B Aplus Bplus hleftA hleftB hSymA hSymB hDelta
+      (le_of_lt hAplus_pos) hBplus_radius_nonneg hAplus hBplus
+  have hdelta_nonneg : 0 ≤ delta :=
+    rectOpNorm2Le_radius_nonneg (M := fun i j => B i j - A i j) hDelta
+  have hPBIPA :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm) :=
+    rectOpNorm2Le_mono
+      (mul_le_mul_of_nonneg_left
+        (min_le_left Aplus_norm (Aplus_norm / (1 - eta))) hdelta_nonneg)
+      hPBIPA_min
+  exact
+    wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_projector_bound_column_orthogonal
+      A B Aplus Bplus DeltaA b Deltab r s x y hAplus_pos hA_norm_pos
+      hx_norm_pos hkappa hdelta heta hsmall hleftB hSymB hPBIPA hBplus
+      hDeltaA hDeltab hDeltaA_norm_budget hDeltab_norm_budget
+      hrangeA_residual hB hr hs horth_s
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1), conservative
     relative solution perturbation bound assembled from the currently proved
     Wedin vector route.
@@ -9328,6 +9404,86 @@ theorem wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_crossPro
     wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_of_complexMatrixOp2_eq
       A B Aplus Bplus hleftB hSymA hSymB hDelta hAplus_norm_nonneg
       hAplus hEq
+  exact
+    wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_projector_bound_geometry_column_orthogonal
+      A B Aplus Bplus DeltaA b Deltab r s x y hb_norm_pos hA_norm_nonneg
+      heps_nonneg hkappa hdelta hAplus hDeltaA hDeltab hDeltaA_norm_budget
+      hDeltab_norm_budget hleftA hleftB hSymA hSymB hrangeA_residual
+      hPBIPA hB hr hs horth_s
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2):
+    printed relative residual perturbation bound using the source-facing
+    Lemma 20.12 `min` projector surface.
+
+This wrapper removes both the raw `P_B(I-P_A)` projector-bound hypothesis and
+the earlier exact cross-projection equality hypothesis.  Lemma 20.11 supplies
+the `Bplus` radius used by the Lemma 20.12 `min` surface, and monotonicity of
+`rectOpNorm2Le` weakens `delta * min(...)` to the printed `delta*||Aplus||₂`
+radius consumed by the residual perturbation algebra. -/
+theorem wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_min_surface_geometry_column_orthogonal
+    {m k : ℕ} (hm : 0 < m) (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {delta Aplus_norm DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hb_norm_pos : 0 < vecNorm2 b)
+    (hAplus_pos : 0 < Aplus_norm)
+    (hA_norm_nonneg : 0 ≤ A_norm)
+    (heps_nonneg : 0 ≤ eps)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (hsmall : kappa * eps < 1)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget : Deltab_norm ≤ eps * vecNorm2 b)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i)
+    (horth_s : ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0) :
+    vecNorm2 (fun i => r i - s i) / vecNorm2 b ≤
+      wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+  have heta : kappa * eps = Aplus_norm * delta := by
+    rw [hkappa, hdelta]
+    ring
+  have hBplus :
+      rectOpNorm2Le Bplus (Aplus_norm / (1 - kappa * eps)) :=
+    wedinLemma20_11_rectOpNorm2Le_Bplus_of_left_inverse_rectOpNorm2Le
+      A B Aplus Bplus hAplus_pos heta hsmall hleftA hAplus hDelta
+      hleftB hSymB
+  have hden_pos : 0 < 1 - kappa * eps :=
+    wedinTheorem20_1_denominator_pos hsmall
+  have hBplus_radius_nonneg : 0 ≤ Aplus_norm / (1 - kappa * eps) :=
+    div_nonneg (le_of_lt hAplus_pos) (le_of_lt hden_pos)
+  have hPBIPA_min :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * min Aplus_norm (Aplus_norm / (1 - kappa * eps))) :=
+    wedinLemma20_12_rectOpNorm2Le_rangeProjection_mul_projectionComplement_swapped_min
+      hm A B Aplus Bplus hleftA hleftB hSymA hSymB hDelta
+      (le_of_lt hAplus_pos) hBplus_radius_nonneg hAplus hBplus
+  have hdelta_nonneg : 0 ≤ delta :=
+    rectOpNorm2Le_radius_nonneg (M := fun i j => B i j - A i j) hDelta
+  have hPBIPA :
+      rectOpNorm2Le
+        (rectMatMul
+          (rectMatMul B Bplus)
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
+        (delta * Aplus_norm) :=
+    rectOpNorm2Le_mono
+      (mul_le_mul_of_nonneg_left
+        (min_le_left Aplus_norm (Aplus_norm / (1 - kappa * eps)))
+        hdelta_nonneg)
+      hPBIPA_min
   exact
     wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_projector_bound_geometry_column_orthogonal
       A B Aplus Bplus DeltaA b Deltab r s x y hb_norm_pos hA_norm_nonneg
