@@ -24,6 +24,7 @@
 -- `RMatFn m n = Fin m -> Fin n -> Real`, matching the Chapter 16 modules.
 
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16VecNorm
 import LeanFpAnalysis.FP.Algorithms.MatMul
 
 namespace LeanFpAnalysis.FP
@@ -1142,6 +1143,80 @@ theorem sylvester_practical_error_bound_fl_of_left_inverse (fp : FPModel)
       Pinv PinvAbs hX hLeft hPinvAbs
       (isSylvesterComputedResidualBudget_fl fp m n A B C Xhat hm hn)
       hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), square arbitrary-coefficient endpoint: a positive Gram
+    eigenvalue lower-bound certificate for the vec/Kronecker Sylvester
+    coefficient discharges the nonsingular-inverse left-inverse hypothesis in
+    the floating-point practical residual bound.  Scope: square coefficients;
+    only the residual computation is modeled in floating point. -/
+theorem sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues
+    (fp : FPModel) (n : Nat)
+    (A B C X Xhat : RMatFn n n) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hn2 : gammaValid fp (n + 2)) (hn1 : gammaValid fp (n + 1))
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B)
+          (flSylvesterResidualRect fp n n A B C Xhat)
+          (flSylvesterResidualBudget fp n n A B C Xhat)) /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_fl_of_left_inverse fp n n
+      A B C X Xhat
+      (Inv.inv (sylvesterVecCoeff n n A B))
+      (sylvesterVecCoeffNonsingInvAbs n n A B)
+      hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff n n A B)
+        (isUnit_iff_ne_zero.mpr
+          (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues
+            n A B hlam hEig)))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs n n A B)
+      hn2 hn1 hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), square arbitrary-coefficient endpoint: a positive sigma-min
+    lower-bound certificate for the vec/Kronecker Sylvester coefficient
+    discharges the nonsingular-inverse left-inverse hypothesis in the
+    floating-point practical residual bound.  Scope: square coefficients;
+    only the residual computation is modeled in floating point. -/
+theorem sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin
+    (fp : FPModel) (n : Nat)
+    (A B C X Xhat : RMatFn n n) {sigma : Real} (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hn2 : gammaValid fp (n + 2)) (hn1 : gammaValid fp (n + 1))
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B)
+          (flSylvesterResidualRect fp n n A B C Xhat)
+          (flSylvesterResidualBudget fp n n A B C Xhat)) /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_fl_of_left_inverse fp n n
+      A B C X Xhat
+      (Inv.inv (sylvesterVecCoeff n n A B))
+      (sylvesterVecCoeffNonsingInvAbs n n A B)
+      hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff n n A B)
+        (isUnit_iff_ne_zero.mpr
+          (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin
+            n A B hsigma hCoeff)))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs n n A B)
+      hn2 hn1 hXhat
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
     eq (16.29), arbitrary-coefficient scalar endpoint: if a nonnegative scalar
