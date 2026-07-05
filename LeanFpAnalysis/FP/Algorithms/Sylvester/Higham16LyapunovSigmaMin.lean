@@ -53,6 +53,25 @@ theorem SepLowerBound_lyapunov_of_sigmaMin (n : Nat)
     sepLowerBound_of_sylvesterOp_sigmaMin n A
       (fun i j => -matTranspose A i j) sigma hsigma hSylv
 
+/-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
+    in positive dimension, a supplied positive singular-value lower-bound
+    certificate for the Lyapunov operator lower-bounds the exact infimum model
+    of `sep(A, -A^T)`.
+
+    Scope: exact arithmetic and certificate transfer only. This theorem does
+    not construct `sigma` from spectral data or a numerical estimator. -/
+theorem sylvesterSepInf_lyapunov_ge_of_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y)) :
+    sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n A
+      (fun i j => -matTranspose A i j) sigma
+      (SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin)
+      hn
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
     Frobenius Lyapunov perturbation bound from a supplied positive
     singular-value lower bound on the Lyapunov operator.
