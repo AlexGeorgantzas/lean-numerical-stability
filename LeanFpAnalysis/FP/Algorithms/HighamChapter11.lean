@@ -896,6 +896,16 @@ theorem higham11_8_infNorm_le_card_mul_of_uniform_componentwise_bound (n : ℕ)
         simp [Finset.sum_const, nsmul_eq_mul]
   · exact mul_nonneg (Nat.cast_nonneg n) hβ
 
+/-- Direct bridge into the printed Theorem 11.8 normwise predicate from a
+uniform componentwise perturbation bound and a scalar row-sum budget. -/
+theorem higham11_8_aasenNormwiseBackwardBound_of_uniform_componentwise_bound
+    (n : ℕ) (ΔA : Fin n → Fin n → ℝ) (β γ15n25 T_inf : ℝ)
+    (hβ : 0 ≤ β) (hΔ : ∀ i j : Fin n, |ΔA i j| ≤ β)
+    (hbudget : (n : ℝ) * β ≤ ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * T_inf) :
+    higham11_8_aasenNormwiseBackwardBound n (infNorm ΔA) γ15n25 T_inf :=
+  (higham11_8_infNorm_le_card_mul_of_uniform_componentwise_bound n ΔA β hβ hΔ).trans
+    hbudget
+
 /-- Aasen growth factor `rho_n = max_ij |t_ij| / max_ij |a_ij|`. -/
 noncomputable def higham11_8_aasenGrowthFactor
     (Tmax Amax : ℝ) : ℝ :=
