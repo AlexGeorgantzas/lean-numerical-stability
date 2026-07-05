@@ -51,6 +51,17 @@ end-to-end stability rebuild is tagged as
   This remains a matrix-`∞` dependency endpoint; it does not close the
   source-strength entrywise Eq.13.21, Eq.13.23 `rho <= 2`, Problem 13.4
   all-tail comparison, or Theorem 13.6 cited-estimate rows.
+- 2026-07-05 post-merge verification for the same endpoint: local milestone
+  commit `0b483444` was merged with incoming `origin/main` commit `de29bd7c`
+  by merge commit `f101dfba`.  At that merge tip,
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`,
+  and the touched Lean placeholder scan passed; ignored scratch
+  `scratch/chapter13/ScratchCh13PosDimAxioms.lean` again printed the theorem
+  and only standard axioms `propext`, `Classical.choice`, and `Quot.sound`.
+  A redirected `examples/LibraryLookup.lean` run printed the new Ch13
+  declaration but still exited nonzero on unrelated non-Ch13 lookup rows
+  beginning around line 13063 and later Split-3B placeholder/foundation rows
+  around 15306--15337.
 - 2026-07-04 plain inverse-comparison canonical active-pivot wrappers: added
   `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivotInv_eq_nonsingInv`,
   `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivotInv_eq_nonsingInv`,
