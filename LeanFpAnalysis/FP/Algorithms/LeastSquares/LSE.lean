@@ -22345,6 +22345,81 @@ theorem exists_lse_minimizer_of_fullRowRank_stackedFullColumnRank
     ⟨x, hx, _huniq⟩
   exact ⟨x, hx⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    relative-budget rank-preservation wrapper for the perturbed equality
+    constrained least-squares problem.  Source full row rank of `B` and full
+    column rank of `[A; B]`, plus strict source-margin smallness, give
+    existence and uniqueness for the perturbed problem directly. -/
+theorem theorem20_8_exists_unique_perturbed_lse_minimizer_of_relativePerturbationBudget_lt_margins
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {eps : ℝ}
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hBsmall :
+      eps * frobNormRect B < hBsrc.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    ∃! y : Fin (p + q) → ℝ,
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j)
+        (fun i => d i + Deltad i) y := by
+  have hcond :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    theorem20_8_conditions20_24_of_relativePerturbationBudget_lt_margins
+      hBsrc hStack hbudget hBsmall hStackSmall
+  exact
+    exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+      (A := fun i j => A i j + DeltaA i j)
+      (B := fun i j => B i j + DeltaB i j)
+      (b := fun i => b i + Deltab i)
+      (d := fun i => d i + Deltad i) hcond.1 hcond.2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    displayed maximum-relative-perturbation version of the perturbed LSE
+    existence and uniqueness wrapper. -/
+theorem theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturbation_lt_margins
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {eps : ℝ}
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hBsrc.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    ∃! y : Fin (p + q) → ℝ,
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j)
+        (fun i => d i + Deltad i) y :=
+  theorem20_8_exists_unique_perturbed_lse_minimizer_of_relativePerturbationBudget_lt_margins
+    hBsrc hStack
+    (theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad
+      hApos hbpos hBpos hdpos hmax)
+    hBsmall hStackSmall
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, exact perturbed-data
     GQR core for the same-constraint-right-hand-side branch.
 
