@@ -2829,6 +2829,36 @@ theorem wedinLemma20_12_projection_mul_swapped_mul_projection_finiteHermitianEig
       (rectMatMul (rectMatMul P Q) P) hSym hLe a
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of the companion-square compression
+    `PQP` is bounded above by its exact complexified Euclidean operator norm.
+
+This is the lower-bound side of the PSD norm/top-eigenvalue route for the
+principal-angle proof. -/
+theorem wedinLemma20_12_projection_mul_swapped_mul_projection_finiteHermitianEigenvalues_le_complexMatrixOp2
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemQ : rectMatMul Q Q = Q)
+    (a : Fin m) :
+    finiteHermitianEigenvalues (rectMatMul (rectMatMul P Q) P)
+        (wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+          P Q hP hQ hIdemQ) a ≤
+      complexMatrixOp2
+        (realRectToCMatrix (rectMatMul (rectMatMul P Q) P)) := by
+  have hSym :=
+    wedinLemma20_12_projection_mul_swapped_mul_projection_symmetric
+      P Q hP hQ hIdemQ
+  have hNonneg :=
+    wedinLemma20_12_projection_mul_swapped_mul_projection_finiteHermitianEigenvalues_nonneg
+      P Q hP hQ hIdemQ a
+  exact
+    finiteHermitianEigenvalues_le_of_nonneg_of_finiteOpNorm2Le
+      (rectMatMul (rectMatMul P Q) P) hSym
+      (opNorm2Le_complexMatrixOp2_realRectToCMatrix
+        (rectMatMul (rectMatMul P Q) P))
+      a hNonneg
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     every finite Hermitian eigenvalue of the swapped companion-square
     compression `QPQ` is nonnegative. -/
 theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_finiteHermitianEigenvalues_nonneg
@@ -2876,6 +2906,34 @@ theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped
   exact
     finiteHermitianEigenvalues_le_of_finiteLoewnerLe_smul_id
       (rectMatMul (rectMatMul Q P) Q) hSym hLe a
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    every finite Hermitian eigenvalue of the swapped companion-square
+    compression `QPQ` is bounded above by its exact complexified Euclidean
+    operator norm. -/
+theorem wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_finiteHermitianEigenvalues_le_complexMatrixOp2
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hP : IsSymmetricFiniteMatrix P)
+    (hQ : IsSymmetricFiniteMatrix Q)
+    (hIdemP : rectMatMul P P = P)
+    (a : Fin m) :
+    finiteHermitianEigenvalues (rectMatMul (rectMatMul Q P) Q)
+        (wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+          P Q hP hQ hIdemP) a ≤
+      complexMatrixOp2
+        (realRectToCMatrix (rectMatMul (rectMatMul Q P) Q)) := by
+  have hSym :=
+    wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_symmetric
+      P Q hP hQ hIdemP
+  have hNonneg :=
+    wedinLemma20_12_projection_swapped_mul_projection_mul_projection_swapped_finiteHermitianEigenvalues_nonneg
+      P Q hP hQ hIdemP a
+  exact
+    finiteHermitianEigenvalues_le_of_nonneg_of_finiteOpNorm2Le
+      (rectMatMul (rectMatMul Q P) Q) hSym
+      (opNorm2Le_complexMatrixOp2_realRectToCMatrix
+        (rectMatMul (rectMatMul Q P) Q))
+      a hNonneg
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the two companion-square compressions `PQP` and `QPQ` have the same
@@ -3089,6 +3147,77 @@ theorem wedinLemma20_12_sum_sq_finiteHermitianEigenvalues_projection_mul_swapped
     _ = ∑ a : Fin m, finiteHermitianEigenvalues MQP hSymQP a ^ 2 :=
             finiteTrace_rectMatMul_self_eq_sum_sq_finiteHermitianEigenvalues
               MQP hSymQP
+
+/-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
+    the companion-square compressions `PQP` and `QPQ` have the same
+    complexified spectral radius.
+
+This is a direct spectral-radius bridge for the principal-angle route.  It uses
+only projection idempotence and the finite-dimensional fact `rho(AB)=rho(BA)`;
+it does not yet identify this radius with the exact operator-2 norm of the PSD
+compressions. -/
+theorem wedinLemma20_12_toLin_spectralRadius_projection_mul_swapped_mul_projection_eq_swapped
+    {m : ℕ} (P Q : Fin m → Fin m → ℝ)
+    (hIdemP : rectMatMul P P = P)
+    (hIdemQ : rectMatMul Q Q = Q) :
+    spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin m) (Fin m) ℂ from
+            realRectToCMatrix (rectMatMul (rectMatMul P Q) P))) =
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin m) (Fin m) ℂ from
+            realRectToCMatrix (rectMatMul (rectMatMul Q P) Q))) := by
+  let Pc : Matrix (Fin m) (Fin m) ℂ := realRectToCMatrix P
+  let Qc : Matrix (Fin m) (Fin m) ℂ := realRectToCMatrix Q
+  have hPidemC : Pc * Pc = Pc := by
+    have hbase :
+        realRectToCMatrix (rectMatMul P P) =
+          realRectToCMatrix P := by
+      rw [hIdemP]
+    simpa [Pc, realRectToCMatrix_rectMatMul] using hbase
+  have hQidemC : Qc * Qc = Qc := by
+    have hbase :
+        realRectToCMatrix (rectMatMul Q Q) =
+          realRectToCMatrix Q := by
+      rw [hIdemQ]
+    simpa [Qc, realRectToCMatrix_rectMatMul] using hbase
+  have hPQP :
+      (show Matrix (Fin m) (Fin m) ℂ from
+        realRectToCMatrix (rectMatMul (rectMatMul P Q) P)) =
+        (Pc * Qc) * Pc := by
+    ext i j
+    simp [Pc, Qc, realRectToCMatrix_rectMatMul, complexMatrixMul,
+      Matrix.mul_apply]
+  have hQPQ :
+      (show Matrix (Fin m) (Fin m) ℂ from
+        realRectToCMatrix (rectMatMul (rectMatMul Q P) Q)) =
+        (Qc * Pc) * Qc := by
+    ext i j
+    simp [Pc, Qc, realRectToCMatrix_rectMatMul, complexMatrixMul,
+      Matrix.mul_apply]
+  calc
+    spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin m) (Fin m) ℂ from
+            realRectToCMatrix (rectMatMul (rectMatMul P Q) P)))
+        = spectralRadius ℂ (Matrix.toLin' (Pc * (Qc * Pc))) := by
+            rw [hPQP, Matrix.mul_assoc]
+    _ = spectralRadius ℂ (Matrix.toLin' ((Qc * Pc) * Pc)) :=
+            ch7_toLin_spectralRadius_mul_comm_eq Pc (Qc * Pc)
+    _ = spectralRadius ℂ (Matrix.toLin' (Qc * Pc)) := by
+            rw [Matrix.mul_assoc, hPidemC]
+    _ = spectralRadius ℂ (Matrix.toLin' (Pc * Qc)) :=
+            ch7_toLin_spectralRadius_mul_comm_eq Qc Pc
+    _ = spectralRadius ℂ (Matrix.toLin' ((Pc * Qc) * Qc)) := by
+            rw [Matrix.mul_assoc, hQidemC]
+    _ = spectralRadius ℂ (Matrix.toLin' (Qc * (Pc * Qc))) :=
+            (ch7_toLin_spectralRadius_mul_comm_eq Qc (Pc * Qc)).symm
+    _ = spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin m) (Fin m) ℂ from
+            realRectToCMatrix (rectMatMul (rectMatMul Q P) Q))) := by
+            rw [hQPQ, Matrix.mul_assoc]
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.12 dependency:
     the exact squared operator-2 norm of `P(I-Q)` is the exact operator-2 norm
