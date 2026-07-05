@@ -10916,3 +10916,20 @@ These compile, but should not be treated as fully derived stability results:
   dependency/interface cleanup only: the structured max-entry product estimate,
   source table data, all-tail source comparisons, and Theorem 13.6 cited
   implementation estimates remain open.
+
+- 2026-07-04 Algorithm 13.3 matrix-infinity source-norm paired endpoints:
+  added six wrappers in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  pairing the assembled matrix-stage upper-factor `blockInfNorm` bound with the
+  finite matrix-stage history `blockInfNorm` bound:
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table_of_pivot_right_inverse`,
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_initial_diag_right_inverse_of_pivot_right_inverse`,
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_reciprocal_diag_right_inverse_of_pivot_right_inverse`,
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivot_right_inverse`,
+  and
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv`.
+  Direct `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  passed before documentation/lookup refresh.  These are source-norm
+  dependency packages only; the source-strength entrywise max-entry BDD/product
+  update route, Problem 13.4 all-tail source comparisons, and Theorem 13.6
+  cited implementation estimates remain open.
