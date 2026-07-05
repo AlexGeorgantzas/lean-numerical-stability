@@ -1191,6 +1191,32 @@ theorem existsUnique_sylvester_triangular_column_step_of_shifted_det (m n : Nat)
       Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
         (fun j => T j k * X i j))
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), active column step:
+    under the same shifted determinant nonsingularity, two supplied candidate
+    vectors that solve the exact active column equation for the same right-hand
+    side must be equal.  This is only a uniqueness consequence for the supplied
+    shifted coefficient, not a full Schur assembly or floating-point result. -/
+theorem sylvester_triangular_column_step_eq_of_shifted_det (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (hT : IsUpperTriangularFn n T) (k : Fin n)
+    (hdet : Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T k k)) = 0))
+    {x y : Fin m -> Real}
+    (hx :
+      Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T k k)) x =
+        fun i => C i k +
+          Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+            (fun j => T j k * X i j))
+    (hy :
+      Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T k k)) y =
+        fun i => C i k +
+          Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+            (fun j => T j k * X i j)) :
+    x = y := by
+  obtain ⟨w, hw, huniq⟩ :=
+    existsUnique_sylvester_triangular_column_step_of_shifted_det
+      m n A T C X hT k hdet
+  exact (huniq x hx).trans (huniq y hy).symm
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
     `A - t_kk I` nonsingular, two solutions of `AX - XT = C` coincide, by
