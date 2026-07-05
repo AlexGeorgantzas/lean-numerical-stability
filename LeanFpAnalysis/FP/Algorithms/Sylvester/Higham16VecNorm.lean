@@ -220,6 +220,77 @@ theorem finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound
     finiteQuadraticForm_finiteMatrixGram_eq_finiteVecNorm2Sq_mulVec]
   exact hsq_bound
 
+/-- A concrete left inverse with a finite operator-2 bound gives the inverse
+    action bound on the original product-index matrix.  This is a reusable
+    bridge from exact inverse certificates to the `P`-coefficient route, without
+    assuming a sigma-min theorem as a hypothesis. -/
+theorem finiteVecNorm2_le_mul_mulVec_of_left_inverse_finiteOpNorm2Le
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (P Pinv : Matrix ι ι Real) {M : Real}
+    (hLeft : Pinv * P = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    forall x : ι -> Real,
+      finiteVecNorm2 x <= M * finiteVecNorm2 (Matrix.mulVec P x) := by
+  classical
+  have hLeftFinite : finiteMatMul Pinv P = finiteIdMatrix := by
+    ext i j
+    have hentry :=
+      congrArg (fun Q : Matrix ι ι Real => Q i j) hLeft
+    simpa [finiteMatMul, finiteIdMatrix, Matrix.mul_apply] using hentry
+  intro x
+  have hPx : Matrix.mulVec P x = finiteMatVec P x := by
+    ext i
+    rfl
+  have hrecover :
+      finiteMatVec Pinv (Matrix.mulVec P x) = x := by
+    calc
+      finiteMatVec Pinv (Matrix.mulVec P x)
+          = finiteMatVec Pinv (finiteMatVec P x) := by rw [hPx]
+      _ = finiteMatVec (finiteMatMul Pinv P) x := by
+          rw [finiteMatVec_finiteMatMul]
+      _ = finiteMatVec finiteIdMatrix x := by rw [hLeftFinite]
+      _ = x := finiteMatVec_finiteIdMatrix x
+  have hbound := hPinv (Matrix.mulVec P x)
+  simpa [hrecover] using hbound
+
+/-- A concrete left inverse with operator-2 radius `M` gives the coefficient
+    sigma-min lower bound with `sigma = 1 / M`.  This is the product-index
+    route needed once an arbitrary nondiagonal vec/Kronecker inverse has been
+    constructed and norm-bounded. -/
+theorem finiteMatrix_sigmaMin_of_left_inverse_finiteOpNorm2Le
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (P Pinv : Matrix ι ι Real) {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * P = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    forall x : ι -> Real,
+      (1 / M) * finiteVecNorm2 x <= finiteVecNorm2 (Matrix.mulVec P x) := by
+  intro x
+  have hinvBound :=
+    finiteVecNorm2_le_mul_mulVec_of_left_inverse_finiteOpNorm2Le
+      P Pinv hLeft hPinv x
+  have hcomm :
+      finiteVecNorm2 x <= finiteVecNorm2 (Matrix.mulVec P x) * M := by
+    simpa [mul_comm, mul_left_comm, mul_assoc] using hinvBound
+  have hdiv : finiteVecNorm2 x / M <= finiteVecNorm2 (Matrix.mulVec P x) :=
+    (div_le_iff₀ hM).mpr hcomm
+  simpa [one_div, div_eq_inv_mul] using hdiv
+
+/-- A concrete left inverse with operator-2 radius `M` gives a lower bound
+    `(1 / M)^2` on every eigenvalue of the finite Gram matrix `P^T P`. -/
+theorem finiteMatrixGram_eigenvalues_ge_of_left_inverse_finiteOpNorm2Le
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (P Pinv : Matrix ι ι Real) {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * P = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    forall a : ι,
+      (1 / M) ^ 2 <= finiteHermitianEigenvalues (finiteMatrixGram P)
+        (isSymmetricFiniteMatrix_finiteMatrixGram P) a := by
+  exact
+    finiteMatrixGram_eigenvalues_ge_of_sigmaMin_lower_bound P
+      (by positivity)
+      (finiteMatrix_sigmaMin_of_left_inverse_finiteOpNorm2Le
+        P Pinv hM hLeft hPinv)
+
 /-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
     a Gram-eigenvalue lower bound for the concrete vectorized Sylvester
     coefficient gives the coefficient lower bound used by the Chapter 16
