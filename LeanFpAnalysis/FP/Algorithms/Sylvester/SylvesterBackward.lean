@@ -1954,6 +1954,51 @@ noncomputable def lyapunovAmplificationMu (α γ yNorm lamStar : ℝ) : ℝ :=
     Real.sqrt (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)
 
 /-- Lyapunov xi-squared residual bound using an explicit lower square bound on
+    the simple residual-weighted summation. -/
+theorem lyapunovXiSqSimpleBound_le_min_eigen_bound (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (α γ lamStar : ℝ)
+    (hLam : ∀ i : Fin n, lamStar ^ 2 ≤ lam i ^ 2)
+    (hDenom : 0 < 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) :
+    lyapunovXiSqSimpleBound n R_tilde lam α γ ≤
+      2 * frobNormSq R_tilde / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := by
+  have hdenom_le : ∀ i j : Fin n,
+      4 * α ^ 2 * lamStar ^ 2 + γ ^ 2 ≤
+        2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2 := by
+    intro i j
+    nlinarith [sq_nonneg α, hLam i, hLam j]
+  have hD_ne : 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2 ≠ 0 := ne_of_gt hDenom
+  unfold lyapunovXiSqSimpleBound
+  suffices h :
+      (∑ i : Fin n, ∑ j : Fin n,
+        (2 * R_tilde i j ^ 2) /
+          (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2)) ≤
+        (∑ i : Fin n, ∑ j : Fin n,
+          (2 * R_tilde i j ^ 2) /
+            (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)) by
+    rwa [show
+        (∑ i : Fin n, ∑ j : Fin n,
+          (2 * R_tilde i j ^ 2) /
+            (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)) =
+          2 * frobNormSq R_tilde / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) from by
+      unfold frobNormSq
+      rw [eq_div_iff hD_ne]
+      rw [Finset.sum_mul]
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [Finset.sum_mul]
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro j _
+      exact div_mul_cancel₀ _ hD_ne] at h
+  apply Finset.sum_le_sum
+  intro i _
+  apply Finset.sum_le_sum
+  intro j _
+  exact div_le_div_of_nonneg_left (by positivity) hDenom (hdenom_le i j)
+
+/-- Lyapunov xi-squared residual bound using an explicit lower square bound on
     the spectral magnitudes.  This is the xi-level foundation behind the final
     Lyapunov analogue of equations (16.17)-(16.18). -/
 theorem lyapunovXiSq_le_min_eigen_bound (n : ℕ)
@@ -1972,40 +2017,46 @@ theorem lyapunovXiSq_le_min_eigen_bound (n : ℕ)
     intro i j
     exact lt_of_lt_of_le hDenom (hdenom_le i j)
   have hsimple := lyapunovXiSq_le_simple_bound n R_tilde lam α γ hpos
-  have hD_ne : 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2 ≠ 0 := ne_of_gt hDenom
   have hbound :
       lyapunovXiSqSimpleBound n R_tilde lam α γ ≤
         2 * frobNormSq R_tilde / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := by
-    unfold lyapunovXiSqSimpleBound
-    suffices h :
-        (∑ i : Fin n, ∑ j : Fin n,
-          (2 * R_tilde i j ^ 2) /
-            (2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2)) ≤
-          (∑ i : Fin n, ∑ j : Fin n,
-            (2 * R_tilde i j ^ 2) /
-              (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)) by
-      rwa [show
-          (∑ i : Fin n, ∑ j : Fin n,
-            (2 * R_tilde i j ^ 2) /
-              (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)) =
-            2 * frobNormSq R_tilde / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) from by
-        unfold frobNormSq
-        rw [eq_div_iff hD_ne]
-        rw [Finset.sum_mul]
-        rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro i _
-        rw [Finset.sum_mul]
-        rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro j _
-        exact div_mul_cancel₀ _ hD_ne] at h
-    apply Finset.sum_le_sum
-    intro i _
-    apply Finset.sum_le_sum
-    intro j _
-    exact div_le_div_of_nonneg_left (by positivity) hDenom (hdenom_le i j)
+    exact lyapunovXiSqSimpleBound_le_min_eigen_bound n R_tilde lam α γ lamStar
+      hLam hDenom
   exact le_trans hsimple hbound
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    for symmetric transformed Lyapunov residuals, the min-eigen xi-squared
+    estimate has the sharp constant obtained from the paired summation. -/
+theorem lyapunovXiSq_symmetric_le_min_eigen_bound (n : ℕ)
+    (R_tilde : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (α γ lamStar : ℝ)
+    (hR : IsSymmetricFiniteMatrix R_tilde)
+    (hLam : ∀ i : Fin n, lamStar ^ 2 ≤ lam i ^ 2)
+    (hDenom : 0 < 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) :
+    lyapunovXiSq n R_tilde lam α γ ≤
+      frobNormSq R_tilde / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := by
+  have hdenom_le : ∀ i j : Fin n,
+      4 * α ^ 2 * lamStar ^ 2 + γ ^ 2 ≤
+        2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2 := by
+    intro i j
+    nlinarith [sq_nonneg α, hLam i, hLam j]
+  have hden : ∀ i j : Fin n,
+      2 * α ^ 2 * (lam i ^ 2 + lam j ^ 2) + γ ^ 2 ≠ 0 := by
+    intro i j
+    exact ne_of_gt (lt_of_lt_of_le hDenom (hdenom_le i j))
+  have htwo :=
+    two_mul_lyapunovXiSq_eq_simple_bound_of_symmetric n R_tilde lam α γ hR hden
+  have hbound :=
+    lyapunovXiSqSimpleBound_le_min_eigen_bound n R_tilde lam α γ lamStar
+      hLam hDenom
+  let B : ℝ := frobNormSq R_tilde / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2)
+  have hbound' :
+      lyapunovXiSqSimpleBound n R_tilde lam α γ ≤ 2 * B := by
+    dsimp [B]
+    simpa [mul_div_assoc] using hbound
+  have htwobound : 2 * lyapunovXiSq n R_tilde lam α γ ≤ 2 * B := by
+    simpa [htwo] using hbound'
+  nlinarith
 
 /-- Lyapunov xi-squared residual bound after the orthogonal spectral transform
     `R_tilde = U^T R U`. -/
@@ -2020,6 +2071,24 @@ theorem lyapunovXiSq_spectral_le_min_eigen_bound (n : ℕ)
   have hle :=
     lyapunovXiSq_le_min_eigen_bound n (lyapunovSpectralTransform n U R) lam
       α γ lamStar hLam hDenom
+  rw [lyapunovSpectralTransform_frobNormSq n U R hU] at hle
+  exact hle
+
+/-- Lyapunov xi-squared residual bound after an orthogonal spectral transform,
+    sharpened for symmetric residuals. -/
+theorem lyapunovXiSq_spectral_symmetric_le_min_eigen_bound (n : ℕ)
+    (R U : Fin n → Fin n → ℝ) (lam : Fin n → ℝ)
+    (α γ lamStar : ℝ)
+    (hR : IsSymmetricFiniteMatrix R)
+    (hU : IsOrthogonal n U)
+    (hLam : ∀ i : Fin n, lamStar ^ 2 ≤ lam i ^ 2)
+    (hDenom : 0 < 4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) :
+    lyapunovXiSq n (lyapunovSpectralTransform n U R) lam α γ ≤
+      frobNormSq R / (4 * α ^ 2 * lamStar ^ 2 + γ ^ 2) := by
+  have hle :=
+    lyapunovXiSq_symmetric_le_min_eigen_bound n
+      (lyapunovSpectralTransform n U R) lam α γ lamStar
+      (lyapunovSpectralTransform_symmetric n U R hR) hLam hDenom
   rw [lyapunovSpectralTransform_frobNormSq n U R hU] at hle
   exact hle
 
