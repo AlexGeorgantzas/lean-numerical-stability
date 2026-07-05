@@ -50,10 +50,14 @@
   upper-triangular T with |diag|≤ρ<1 ⟹ ∃ diagonal D, ‖D⁻¹TD‖∞<1); gap (1)
   reverse block-growth — `genEigenvector_one_rank_two_orbit_norm_tendsto_atTop`
   (a rank-2 Jordan chain at 1 makes ‖Gᵐx‖→∞, so a bounded orbit has none). The
-  LONE remaining bridge to full [106] is gap (3) the ℂ→ℝ descent (evidenced
-  obstruction: Mathlib v4.29 has no real-Jordan/real-invariant-basis API; the
-  general gap (4) reduces to it). Full [106] existence remains allowed-BLOCKED on
-  gap (3) only; the
+  gap (3) ℂ→ℝ descent core is now ALSO built (`Analysis/RealInvariantSubspace.lean`,
+  axiom-clean): `exists_real_invariant_subspace_dim_le_two` + `real_peel_one_or_two`
+  supply the real dim-≤2 invariant subspace / conjugate-pair recombination that
+  gap (3) named as absent. So all four analytic gaps are now closed; the sole
+  residual to assembling the full printed (17.22) block form is the deflation
+  INDUCTION that iterates the peel-1-or-2 primitive into the global real basis
+  (engineering, mirroring the general-(16.4) real-Schur residual) — no missing
+  mathematics. Full [106] block-form assembly is thus reduced to that induction; the
   `hne`/certificate hypotheses documented per-row (each
   mirrors an implicit assumption of the printed text); and the
   benchmark-reserved Problem 17.1 / Appendix A 17.1 rows.
