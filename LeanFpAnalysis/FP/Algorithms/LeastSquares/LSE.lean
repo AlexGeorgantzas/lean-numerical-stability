@@ -14561,6 +14561,52 @@ theorem
     _root_.LeanFpAnalysis.FP.theorem20_8_APplus_AP_eq_projection_of_AP_left_inverse_on_nullspace
       A B (undetAplusOfGramNonsingInv B) APplus hright hAPleft_null
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    residual-explicit exact solution-difference identity for the Gram-`B`
+    rank-tolerant Moore--Penrose route.
+
+    Source full row rank of `B`, stacked full column rank of `[A; B]`, and a
+    Moore--Penrose certificate for `(AP)^+` derive the projector identity
+    `(AP)^+ AP = P`; feasibility and the perturbed Higham residual equation
+    derive the reduced `AP*(y-x)` equation internally.  Thus this surface no
+    longer exposes either reduced equation as a caller hypothesis. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_MP_gram_projection_lseStackedFullColumnRank_perturbed_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m =>
+              (b i - rectMatMulVec A x i) - rHigh i -
+                rectMatMulVec DeltaA y i + Deltab i) j := by
+  have hAPleft :
+      rectMatMul APplus
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) =
+        theorem20_8Projection B (undetAplusOfGramNonsingInv B) :=
+    LSEFullRowRank.theorem20_8_APplus_AP_eq_projection_of_MP_gram_projection_lseStackedFullColumnRank
+      A hB APplus hMP hstack
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham_residual_eq
+      A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
+      d Deltad x y rHigh hAPleft hx hy hres
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.24):
     determinant-facing concrete Gram-pseudoinverse matrix identity
     `(AP)^+ AP = P`. -/
