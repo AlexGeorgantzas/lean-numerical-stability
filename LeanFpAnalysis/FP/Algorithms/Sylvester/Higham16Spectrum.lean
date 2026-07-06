@@ -1103,6 +1103,103 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_det_ne_zero
     sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_product_shift_det_ne_zero
       m n A T p q hdet
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-local
+    spectral obstruction for a supplied real `2 x 2` Schur block: a nonzero
+    product-shift kernel vector yields two real vectors satisfying the same
+    coupled two-column block action, provided the subdiagonal coupling is
+    nonzero.  This is the forward algebraic step needed for the real-Schur
+    block-separation route: a future separation theorem can rule out these
+    coupled block-action witnesses to obtain the product-shift no-eigenvector
+    certificate. -/
+theorem sylvesterTwoColumnBlock_product_shift_kernel_to_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hsub : T q p ≠ 0)
+    {u : Fin m -> Real}
+    (hker :
+      Matrix.mulVec
+          (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p)) u =
+        (fun i => (T q p * T p q) * u i)) :
+    ∃ v : Fin m -> Real,
+      Matrix.mulVec (Matrix.of A) u =
+          (fun i => T p p * u i + T q p * v i) ∧
+      Matrix.mulVec (Matrix.of A) v =
+          (fun i => T p q * u i + T q q * v i) := by
+  let P : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T p p)
+  let Q : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T q q)
+  let v : Fin m -> Real := fun i => (T q p)⁻¹ * Matrix.mulVec P u i
+  refine ⟨v, ?_, ?_⟩
+  · funext i
+    have hv : T q p * v i = Matrix.mulVec P u i := by
+      simp [v, hsub]
+    have hP := sylvesterTriangularShiftedCoeff_mulVec_apply m A (T p p) u i
+    have hP' : Matrix.mulVec P u i =
+        Matrix.mulVec (Matrix.of A) u i - T p p * u i := by
+      simpa [P, Matrix.mulVec, dotProduct, Matrix.of_apply] using hP
+    calc
+      Matrix.mulVec (Matrix.of A) u i =
+          Matrix.mulVec P u i + T p p * u i := by linarith
+      _ = T p p * u i + T q p * v i := by rw [hv]; ring
+  · funext i
+    have hQPu : Matrix.mulVec Q (Matrix.mulVec P u) i =
+        (T q p * T p q) * u i := by
+      have hi := congrFun hker i
+      simpa [P, Q, Matrix.mulVec_mulVec] using hi
+    have hQv : Matrix.mulVec Q v i = T p q * u i := by
+      have hsmul : Matrix.mulVec Q v =
+          fun i : Fin m => (T q p)⁻¹ * Matrix.mulVec Q (Matrix.mulVec P u) i := by
+        simpa [v] using Matrix.mulVec_smul Q (T q p)⁻¹ (Matrix.mulVec P u)
+      calc
+        Matrix.mulVec Q v i =
+            (T q p)⁻¹ * Matrix.mulVec Q (Matrix.mulVec P u) i := by
+              rw [hsmul]
+        _ = (T q p)⁻¹ * ((T q p * T p q) * u i) := by rw [hQPu]
+        _ = T p q * u i := by
+              field_simp [hsub]
+    have hQ := sylvesterTriangularShiftedCoeff_mulVec_apply m A (T q q) v i
+    have hQ' : Matrix.mulVec Q v i =
+        Matrix.mulVec (Matrix.of A) v i - T q q * v i := by
+      simpa [Q, Matrix.mulVec, dotProduct, Matrix.of_apply] using hQ
+    calc
+      Matrix.mulVec (Matrix.of A) v i =
+          Matrix.mulVec Q v i + T q q * v i := by linarith
+      _ = T p q * u i + T q q * v i := by rw [hQv]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), contrapositive
+    block-separation certificate for a supplied real `2 x 2` Schur block: if
+    no nonzero vector can be extended to a coupled two-vector block action
+    matching the supplied diagonal block, then the product-shift eigen-equation
+    has only the zero solution.  Together with the existing
+    `sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector`,
+    this is the next block-local spectral bridge before a full real-Schur
+    separation theorem supplies the `hno` hypothesis from source-level
+    spectral disjointness. -/
+theorem sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_no_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hsub : T q p ≠ 0)
+    (hno :
+      ∀ u : Fin m -> Real, u ≠ 0 ->
+        ¬ ∃ v : Fin m -> Real,
+          Matrix.mulVec (Matrix.of A) u =
+              (fun i => T p p * u i + T q p * v i) ∧
+          Matrix.mulVec (Matrix.of A) v =
+              (fun i => T p q * u i + T q q * v i)) :
+    forall u : Fin m -> Real,
+      Matrix.mulVec
+          (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p)) u =
+        (fun i => (T q p * T p q) * u i) ->
+      u = 0 := by
+  intro u hker
+  by_contra hune
+  exact hno u hune
+    (sylvesterTwoColumnBlock_product_shift_kernel_to_coupled_block_action
+      m n A T p q hsub hker)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
     determinant bridge for a supplied adjacent two-column block with zero
     coupling product: if the two scalar shifted column coefficients
