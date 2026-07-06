@@ -4874,6 +4874,91 @@ theorem lyapunov_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_b
         (fun i j => -matTranspose A i j) sigma hsigma hle)
       hX hRu hRhat hX_pos hResidualCap
 
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered alias for the Sylvester
+    Frobenius relative-error endpoint from a raw computed-residual budget and
+    a `SepLowerBound` certificate. -/
+theorem H16_eq16_29_sylvester_relative_error_le_of_sepLowerBound_computed_residual_budget
+    (n : Nat)
+    (A B C X Xhat Rhat Ru : RMatFn n n) {sigma eta : Real}
+    (hSep : SepLowerBound n A B sigma)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_sepLowerBound_computed_residual_budget
+      n A B C X Xhat Rhat Ru hSep hX hRu hRhat hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered alias for the Sylvester
+    Frobenius relative-error endpoint when a positive lower bound on
+    `sylvesterSepInf` supplies the separation certificate. -/
+theorem H16_eq16_29_sylvester_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_budget
+    (n : Nat)
+    (A B C X Xhat Rhat Ru : RMatFn n n) {sigma eta : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_budget
+      n A B C X Xhat Rhat Ru hsigma hle hX hRu hRhat hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered alias for the Lyapunov
+    Frobenius relative-error endpoint from a raw computed-residual budget and
+    a `SepLowerBound(A,-A^T)` certificate. -/
+theorem H16_eq16_29_lyapunov_relative_error_le_of_sepLowerBound_computed_residual_budget
+    (n : Nat)
+    (A C X Xhat Rhat Ru : RMatFn n n) {sigma eta : Real}
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |lyapunovResidual n A C Xhat i j - Rhat i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    lyapunov_relative_error_le_of_sepLowerBound_computed_residual_budget
+      n A C X Xhat Rhat Ru hSep hX hRu hRhat hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered alias for the Lyapunov
+    Frobenius relative-error endpoint when a positive lower bound on
+    `sep(A,-A^T)` supplies the separation certificate. -/
+theorem H16_eq16_29_lyapunov_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_budget
+    (n : Nat)
+    (A C X Xhat Rhat Ru : RMatFn n n) {sigma eta : Real}
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |lyapunovResidual n A C Xhat i j - Rhat i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    lyapunov_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_budget
+      n A C X Xhat Rhat Ru hsigma hle hX hRu hRhat hX_pos hResidualCap
+
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, equation (16.29), Lyapunov Frobenius residual-error-model endpoint:
     an explicit `Rhat = residual + dR` model derives the raw residual-budget
