@@ -1547,6 +1547,175 @@ theorem lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual
       PinvAbs' eta hdet hXSylv hBudget hPinvAbs_le hRhat hRu_le
       heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16, equation (16.29), Lyapunov specialization
+    of the determinant practical raw computed-residual budget endpoint. -/
+theorem lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget
+    (n : Nat)
+    (A C X Xhat Rhat Ru : RMatFn n n)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterVecCoeff n n A (fun i j => -matTranspose A i j)) = 0))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |lyapunovResidual n A C Xhat i j - Rhat i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A
+            (fun i j => -matTranspose A i j)) Rhat Ru) /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  have hXSylv :
+      IsSylvesterSolutionRect n n A (fun i j => -matTranspose A i j) C X := by
+    intro i j
+    change sylvesterOp n A (fun i j => -matTranspose A i j) X i j = C i j
+    have hij := hX i j
+    rw [lyapunovOp_eq_sylvesterOp] at hij
+    exact hij
+  have hRhatSylv : forall i j,
+      |sylvesterResidualRect n n A (fun i j => -matTranspose A i j) C Xhat i j -
+          Rhat i j| <= Ru i j := by
+    intro i j
+    simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using
+      hRhat i j
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget
+      n A (fun i j => -matTranspose A i j) C X Xhat Rhat Ru
+      hdet hXSylv hRu hRhatSylv hXhat
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29), scalar Lyapunov
+    specialization of the determinant practical raw computed-residual budget
+    endpoint. -/
+theorem lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_scalar
+    (n : Nat)
+    (A C X Xhat Rhat Ru : RMatFn n n) (eta : Real)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterVecCoeff n n A (fun i j => -matTranspose A i j)) = 0))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |lyapunovResidual n A C Xhat i j - Rhat i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A
+            (fun i j => -matTranspose A i j)) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      eta / sylvesterMaxEntryNormRect n n Xhat := by
+  have hXSylv :
+      IsSylvesterSolutionRect n n A (fun i j => -matTranspose A i j) C X := by
+    intro i j
+    change sylvesterOp n A (fun i j => -matTranspose A i j) X i j = C i j
+    have hij := hX i j
+    rw [lyapunovOp_eq_sylvesterOp] at hij
+    exact hij
+  have hRhatSylv : forall i j,
+      |sylvesterResidualRect n n A (fun i j => -matTranspose A i j) C Xhat i j -
+          Rhat i j| <= Ru i j := by
+    intro i j
+    simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using
+      hRhat i j
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_scalar
+      n A (fun i j => -matTranspose A i j) C X Xhat Rhat Ru eta
+      hdet hXSylv hRu hRhatSylv heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29), monotone Lyapunov
+    specialization of the determinant practical raw computed-residual budget
+    endpoint with supplied inverse and residual estimates. -/
+theorem lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono
+    (n : Nat)
+    (A C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterVecCoeff n n A (fun i j => -matTranspose A i j)) = 0))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat_budget : forall i j,
+      |lyapunovResidual n A C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A
+          (fun i j => -matTranspose A i j) p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  have hXSylv :
+      IsSylvesterSolutionRect n n A (fun i j => -matTranspose A i j) C X := by
+    intro i j
+    change sylvesterOp n A (fun i j => -matTranspose A i j) X i j = C i j
+    have hij := hX i j
+    rw [lyapunovOp_eq_sylvesterOp] at hij
+    exact hij
+  have hRhatSylv : forall i j,
+      |sylvesterResidualRect n n A (fun i j => -matTranspose A i j) C Xhat i j -
+          Rhat i j| <= Ru i j := by
+    intro i j
+    simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using
+      hRhat_budget i j
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono
+      n A (fun i j => -matTranspose A i j) C X Xhat Rhat Rhat' Ru Ru'
+      PinvAbs' hdet hXSylv hRu hRhatSylv hPinvAbs_le hRhat hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29), monotone scalar Lyapunov
+    specialization of the determinant practical raw computed-residual budget
+    endpoint with supplied inverse and residual estimates. -/
+theorem lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono_scalar
+    (n : Nat)
+    (A C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (eta : Real)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterVecCoeff n n A (fun i j => -matTranspose A i j)) = 0))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat_budget : forall i j,
+      |lyapunovResidual n A C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A
+          (fun i j => -matTranspose A i j) p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      eta / sylvesterMaxEntryNormRect n n Xhat := by
+  have hXSylv :
+      IsSylvesterSolutionRect n n A (fun i j => -matTranspose A i j) C X := by
+    intro i j
+    change sylvesterOp n A (fun i j => -matTranspose A i j) X i j = C i j
+    have hij := hX i j
+    rw [lyapunovOp_eq_sylvesterOp] at hij
+    exact hij
+  have hRhatSylv : forall i j,
+      |sylvesterResidualRect n n A (fun i j => -matTranspose A i j) C Xhat i j -
+          Rhat i j| <= Ru i j := by
+    intro i j
+    simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using
+      hRhat_budget i j
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono_scalar
+      n A (fun i j => -matTranspose A i j) C X Xhat Rhat Rhat' Ru Ru'
+      PinvAbs' eta hdet hXSylv hRu hRhatSylv hPinvAbs_le hRhat hRu_le
+      heta hcomponent hXhat
+
 /-- Higham, 2nd ed., Chapter 16, equation (16.29), Lyapunov practical
     computed-residual certificate from a supplied positive separation lower
     bound. -/

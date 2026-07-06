@@ -9687,6 +9687,89 @@ theorem
   exact (div_le_iff₀ hxpos).2 (by simpa [BAplus, mul_assoc] using hscaled)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    convert a reduced residual-relative estimate into the operator-scaled
+    residual-gap obligation used by the Eldén--Cox--Higham handoff. -/
+theorem theorem20_8_source_residual_gap_op2_le_of_residual_relative_bound
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (r rHigh : Fin m → ℝ) {eps residualRelativeRHS : ℝ}
+    (hrpos : 0 < vecNorm2 r)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        residualRelativeRHS)
+    (hscale :
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+          (residualRelativeRHS * vecNorm2 r) ≤
+        eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+          (vecNorm2 r / frobNormRect A)) :
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        vecNorm2 (fun i : Fin m => r i - rHigh i) ≤
+      eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+        (vecNorm2 r / frobNormRect A) := by
+  have hgap :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) ≤
+        residualRelativeRHS * vecNorm2 r :=
+    (div_le_iff₀ hrpos).mp hrelative
+  have hop_nonneg : 0 ≤ complexMatrixOp2 (realRectToCMatrix APplus) :=
+    complexMatrixOp2_nonneg (realRectToCMatrix APplus)
+  exact (mul_le_mul_of_nonneg_left hgap hop_nonneg).trans hscale
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    projected-action first-order handoff from a residual-relative reduced-LS
+    estimate.  The scalar comparison to the Chapter 20.8 residual amplifier is
+    kept explicit. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_source_residual_relative_bound_projected_action_op2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps residualRelativeRHS : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        residualRelativeRHS)
+    (hscale :
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+          (residualRelativeRHS * vecNorm2 r) ≤
+        eps * theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) := by
+  exact
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_source_residual_gap_projected_action_op2_le
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hmax hAPaction hx hy
+      hr hres
+      (theorem20_8_source_residual_gap_op2_le_of_residual_relative_bound
+        A B APplus (theorem20_8BAplus A B Bplus APplus) r rHigh hrpos
+        hrelative hscale)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action residual-gap first-order handoff packaged in the
     source-shaped first-order plus explicit `eps^2`-coefficient form. -/
 theorem
