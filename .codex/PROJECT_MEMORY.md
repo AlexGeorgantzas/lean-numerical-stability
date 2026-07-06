@@ -11244,3 +11244,27 @@ These compile, but should not be treated as fully derived stability results:
   declarations including the new all-prefix table, with empty stderr; it still
   failed only on unrelated pre-existing stale lookup rows later in
   `examples/LibraryLookup.lean`.
+
+- 2026-07-06 Theorem 13.7 BDD first Schur-tail diagonal inverse handoff:
+  added
+  `higham13_algorithm13_3_first_schur_tail_diag_nonsingInv_isInverse_of_tail_blockDiagDomCol_diagBound_nonpos`,
+  `higham13_algorithm13_3_first_schur_tail_diag_nonsingInv_isRightInverse_of_tail_blockDiagDomCol_diagBound_nonpos`,
+  and
+  `higham13_algorithm13_3_first_schur_tail_diag_det_ne_zero_of_tail_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These apply the
+  first-Schur-tail all-prefix handoff to the existing BDD all-prefix
+  diagonal-inverse theorem: if the first Schur tail has its own column-BDD
+  lower-bound table with nonpositive bounds, then every tail diagonal block
+  has the canonical `nonsingInv` two-sided/right-inverse certificates and a
+  nonzero determinant certificate.  This is recursive pivot-certificate
+  packaging only; it does not prove the tail BDD/source reciprocal table,
+  entrywise max-growth product/update route, Problem 13.4 all-tail
+  comparisons, or Theorem 13.6 cited implementation estimates.  Verification
+  passed: direct `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`, touched Lean
+  marker scan, scratch prototype, expanded scratch axiom audit, and redirected
+  public lookup presence.  The axiom audit reported only standard Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`; lookup stderr was
+  empty and the later nonzero exit was still from unrelated stale
+  non-Chapter-13 lookup rows.
