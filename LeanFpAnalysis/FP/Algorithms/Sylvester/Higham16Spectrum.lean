@@ -286,6 +286,70 @@ theorem sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair (m n : Nat)
   funext p
   simp [Matrix.vec]
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), shifted determinant form
+    with the `B`-side eigenpair supplied as a left eigenpair `w^T B = mu w^T`.
+    The supplied real eigenpair difference `lam - mu` makes the shifted
+    vec/Kronecker Sylvester coefficient singular. -/
+theorem sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair_vecMul (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (v : Fin m -> Real) (w : Fin n -> Real) (lam mu : Real)
+    (hv0 : Not (v = 0)) (hw0 : Not (w = 0))
+    (hv : Matrix.mulVec A v = fun i => lam * v i)
+    (hw : Matrix.vecMul w B = fun j => mu * w j) :
+    Matrix.det
+        (sylvesterVecCoeff m n A B -
+          (lam - mu) •
+            (1 : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)) =
+      0 := by
+  apply Matrix.exists_mulVec_eq_zero_iff.mp
+  refine ⟨Matrix.vec (fun i j => v i * w j : RMatFn m n),
+    vec_outer_product_ne_zero m n v w hv0 hw0, ?_⟩
+  rw [Matrix.sub_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec,
+    sylvesterVecCoeff_eigenpair_vecMul m n A B v w lam mu hv hw]
+  funext p
+  simp [Matrix.vec]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), shifted nonsingular
+    exclusion: if the shifted vec/Kronecker Sylvester coefficient at
+    `lam - mu` has nonzero determinant, then no supplied nonzero real
+    eigenpairs of `A` and `B^T` can have those eigenvalues. -/
+theorem no_real_eigenpair_difference_of_sylvesterVecCoeff_shifted_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (lam mu : Real)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterVecCoeff m n A B -
+          (lam - mu) •
+            (1 : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)) =
+        0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.mulVec (Matrix.transpose B) w = (fun j => mu * w j)) := by
+  rintro ⟨v, w, hv0, hw0, hv, hw⟩
+  exact hdet
+    (sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair
+      m n A B v w lam mu hv0 hw0 hv hw)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-facing shifted
+    nonsingular exclusion with the `B` eigenpair supplied in left-eigenvector
+    form. -/
+theorem no_real_left_eigenpair_difference_of_sylvesterVecCoeff_shifted_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (lam mu : Real)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterVecCoeff m n A B -
+          (lam - mu) •
+            (1 : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)) =
+        0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.vecMul w B = (fun j => mu * w j)) := by
+  rintro ⟨v, w, hv0, hw0, hv, hw⟩
+  exact hdet
+    (sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair_vecMul
+      m n A B v w lam mu hv0 hw0 hv hw)
+
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3) and the common-eigenvalue
     criterion, constructive direction: a shared real eigenvalue of `A` and
     `B^T` (equivalently of `B`) yields the nonzero kernel vector
@@ -309,6 +373,59 @@ theorem sylvesterVecCoeff_singular_of_common_eigenvalue (m n : Nat)
   rw [sylvesterVecCoeff_eigenpair m n A B v w lam lam hv hw]
   funext p
   simp
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), left-eigenvector form:
+    a shared supplied real eigenvalue of `A` and `B`, with the `B` side given
+    as a left eigenpair `w^T B = lam w^T`, makes the vec/Kronecker Sylvester
+    coefficient singular.  This is the constructive common-eigenvalue
+    obstruction, not the full converse spectral theorem. -/
+theorem sylvesterVecCoeff_singular_of_common_left_eigenvalue (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real)
+    (hv0 : Not (v = 0)) (hw0 : Not (w = 0))
+    (hv : Matrix.mulVec A v = fun i => lam * v i)
+    (hw : Matrix.vecMul w B = fun j => lam * w j) :
+    Matrix.det (sylvesterVecCoeff m n A B) = 0 := by
+  apply Matrix.exists_mulVec_eq_zero_iff.mp
+  refine ⟨Matrix.vec (fun i j => v i * w j : RMatFn m n),
+    vec_outer_product_ne_zero m n v w hv0 hw0, ?_⟩
+  rw [sylvesterVecCoeff_eigenpair_vecMul m n A B v w lam lam hv hw]
+  funext p
+  simp
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), nonsingular exclusion:
+    if the vec/Kronecker Sylvester coefficient has nonzero determinant, then
+    there is no supplied nonzero real eigenpair of `A` and `B^T` with the same
+    eigenvalue.  This is the contrapositive of the constructive
+    common-eigenvalue obstruction and does not prove the full complex spectral
+    converse. -/
+theorem no_common_real_eigenpair_of_sylvesterVecCoeff_det_ne_zero (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.mulVec (Matrix.transpose B) w = (fun j => lam * w j)) := by
+  rintro ⟨v, w, lam, hv0, hw0, hv, hw⟩
+  exact hdet
+    (sylvesterVecCoeff_singular_of_common_eigenvalue
+      m n A B v w lam hv0 hw0 hv hw)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), nonsingular exclusion in
+    the source-facing left-eigenvector form: a nonzero determinant for the
+    vec/Kronecker Sylvester coefficient rules out supplied nonzero real
+    eigenpairs `A v = lam v` and `w^T B = lam w^T`. -/
+theorem no_common_real_left_eigenpair_of_sylvesterVecCoeff_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.vecMul w B = (fun j => lam * w j)) := by
+  rintro ⟨v, w, lam, hv0, hw0, hv, hw⟩
+  exact hdet
+    (sylvesterVecCoeff_singular_of_common_left_eigenvalue
+      m n A B v w lam hv0 hw0 hv hw)
 
 -- ============================================================
 -- (16.4)-(16.8): Bartels-Stewart supplied-triangular column solve
@@ -2143,6 +2260,46 @@ theorem sylvesterVecCoeff_schurTriangular_det_ne_zero (m n : Nat)
     rw [hxzero, Matrix.mulVec_zero]
   exact hxne hxzero'
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6),
+    supplied triangular Schur-coordinate case: the exact shifted-determinant
+    hypotheses that make the vectorized Sylvester coefficient nonsingular also
+    rule out supplied common real eigenpairs of `A` and `B^T`. -/
+theorem no_common_real_eigenpair_of_schurTriangular (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.mulVec (Matrix.transpose B) w = (fun j => lam * w j)) :=
+  no_common_real_eigenpair_of_sylvesterVecCoeff_det_ne_zero m n A B
+    (sylvesterVecCoeff_schurTriangular_det_ne_zero
+      m n U R A V S B hU hV hA hB hS hshift)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6),
+    supplied triangular Schur-coordinate case in left-eigenvector form:
+    exact shifted-determinant hypotheses rule out supplied nonzero real
+    eigenpairs `A v = lam v` and `w^T B = lam w^T`. -/
+theorem no_common_real_left_eigenpair_of_schurTriangular (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.vecMul w B = (fun j => lam * w j)) :=
+  no_common_real_left_eigenpair_of_sylvesterVecCoeff_det_ne_zero m n A B
+    (sylvesterVecCoeff_schurTriangular_det_ne_zero
+      m n U R A V S B hU hV hA hB hS hshift)
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
     Schur-coordinate case: the practical componentwise error bound can use
     the actual nonsingular inverse of the vec/Kronecker Sylvester coefficient.
@@ -3200,5 +3357,785 @@ theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_err
       (sylvesterComputedResidualBudget_of_error_model m n A B C Xhat Rhat Ru dR
         hRhat_model hRu hdR)
       hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_certificate
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_certificate_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_certificate_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate_mono
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_certificate_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate_mono_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_budget
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_budget_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_budget_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget_mono
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_budget_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget_mono_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_error_model
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru dR : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_error_model
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_error_model_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru dR : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_error_model_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_error_model_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat_model : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_error_model_mono
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_error_model_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat_model : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_error_model_mono_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_certificate
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_certificate_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_certificate_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate_mono
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_certificate_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate_mono_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_budget
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      ((∀ i j : Fin n, j < i -> pB j < pB i) ->
+        (∀ k : Fin n,
+          Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) ->
+        IsSylvesterSolutionRect m n A B C X ->
+        (∀ i j, 0 <= Ru i j) ->
+        (∀ i j,
+          |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j) ->
+        0 < sylvesterMaxEntryNormRect m n Xhat ->
+        sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+            sylvesterMaxEntryNormRect m n Xhat <=
+          sylvesterVecMaxNorm m n
+            (sylvesterPracticalBudgetVec m n
+              (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+            sylvesterMaxEntryNormRect m n Xhat) := by
+  exact
+    sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget
+      m n A B C X Xhat Rhat Ru
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_budget_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_budget_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget_mono
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_budget_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget_mono_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_error_model
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru dR : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_error_model
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_error_model_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru dR : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_error_model_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_error_model_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat_model : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_error_model_mono
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_error_model_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat_model : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_error_model_mono_scalar
+  all_goals assumption
 
 end LeanFpAnalysis.FP

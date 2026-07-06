@@ -997,6 +997,329 @@ theorem sylvester_practical_error_bound_of_computed_residual_error_model_mono_sc
         hRhat hRu hdR)
       hRhat_le hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the generic computed-residual certificate endpoint. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_of_computed_residual_certificate
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat Rhat Ru : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate m n
+      A B C X Xhat Rhat Ru Pinv PinvAbs hX hLeft hPinvAbs hBudget hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar computed-residual certificate endpoint. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_of_computed_residual_certificate_scalar
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_scalar m n
+      A B C X Xhat Rhat Ru Pinv PinvAbs eta hX hLeft hPinvAbs
+      hBudget heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone computed-residual certificate endpoint. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_of_computed_residual_certificate_mono
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (Pinv PinvAbs PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hPinvAbs_le : forall p q, PinvAbs p q <= PinvAbs' p q)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_mono m n
+      A B C X Xhat Rhat Rhat' Ru Ru' Pinv PinvAbs PinvAbs'
+      hX hLeft hPinvAbs hPinvAbs_le hBudget hRhat hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar computed-residual certificate endpoint. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_of_computed_residual_certificate_mono_scalar
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (Pinv PinvAbs PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hPinvAbs_le : forall p q, PinvAbs p q <= PinvAbs' p q)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_mono_scalar m n
+      A B C X Xhat Rhat Rhat' Ru Ru' Pinv PinvAbs PinvAbs' eta
+      hX hLeft hPinvAbs hPinvAbs_le hBudget hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the generic raw computed-residual budget endpoint. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_of_computed_residual_budget
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat Rhat Ru : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_budget m n
+      A B C X Xhat Rhat Ru Pinv PinvAbs hX hLeft hPinvAbs hRu hRhat hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar raw computed-residual budget endpoint. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_of_computed_residual_budget_scalar
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_budget_scalar m n
+      A B C X Xhat Rhat Ru Pinv PinvAbs eta hX hLeft hPinvAbs
+      hRu hRhat heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone raw computed-residual budget endpoint. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_of_computed_residual_budget_mono
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (Pinv PinvAbs PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hPinvAbs_le : forall p q, PinvAbs p q <= PinvAbs' p q)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_budget_mono m n
+      A B C X Xhat Rhat Rhat' Ru Ru' Pinv PinvAbs PinvAbs'
+      hX hLeft hPinvAbs hPinvAbs_le hRu hRhat hRhat_le hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar raw computed-residual budget endpoint. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_of_computed_residual_budget_mono_scalar
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (Pinv PinvAbs PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hPinvAbs_le : forall p q, PinvAbs p q <= PinvAbs' p q)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_budget_mono_scalar m n
+      A B C X Xhat Rhat Rhat' Ru Ru' Pinv PinvAbs PinvAbs' eta
+      hX hLeft hPinvAbs hPinvAbs_le hRu hRhat hRhat_le hRu_le
+      heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the generic explicit residual-error model endpoint. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_of_computed_residual_error_model
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat Rhat Ru dR : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_error_model m n
+      A B C X Xhat Rhat Ru dR Pinv PinvAbs hX hLeft hPinvAbs
+      hRhat hRu hdR hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar explicit residual-error model endpoint. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_of_computed_residual_error_model_scalar
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Ru dR : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_error_model_scalar m n
+      A B C X Xhat Rhat Ru dR Pinv PinvAbs eta hX hLeft hPinvAbs
+      hRhat hRu hdR heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone explicit residual-error model endpoint. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_of_computed_residual_error_model_mono
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (Pinv PinvAbs PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hPinvAbs_le : forall p q, PinvAbs p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_error_model_mono m n
+      A B C X Xhat Rhat Rhat' Ru Ru' dR Pinv PinvAbs PinvAbs'
+      hX hLeft hPinvAbs hPinvAbs_le hRhat hRu hdR hRhat_le hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar explicit residual-error model endpoint. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_of_computed_residual_error_model_mono_scalar
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (Pinv PinvAbs PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hPinvAbs_le : forall p q, PinvAbs p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_error_model_mono_scalar m n
+      A B C X Xhat Rhat Rhat' Ru Ru' dR Pinv PinvAbs PinvAbs' eta
+      hX hLeft hPinvAbs hPinvAbs_le hRhat hRu hdR hRhat_le hRu_le
+      heta hcomponent hXhat
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square determinant
     endpoint: nonsingularity of the vec/Kronecker Sylvester coefficient
     supplies the actual inverse and its absolute-value budget for the exact
@@ -4134,6 +4457,313 @@ theorem sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_resid
       hX hPinvAbs_le hRhat_eq hRu hdR hRhat_le hRu_le heta hcomponent hXhat
 
 -- ============================================================
+-- Equation (16.29) source-numbered practical endpoint aliases
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero practical certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero monotone certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero monotone scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero monotone raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero monotone scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero scalar residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero monotone residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero monotone scalar error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal practical certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal monotone certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal monotone scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_budget :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal monotone raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal monotone scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal scalar residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal monotone residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal monotone scalar error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal monotone certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal monotone scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal monotone raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal monotone scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal scalar residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal monotone error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal monotone scalar error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` monotone certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` monotone scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` monotone raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` monotone scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` scalar residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` monotone residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` monotone scalar error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` monotone certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` monotone scalar certificate
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` monotone raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` monotone scalar raw budget
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` scalar error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` monotone error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` monotone scalar error-model
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono_scalar
+
+-- ============================================================
 -- Perturbation source wrappers from Chapter 16.3
 -- ============================================================
 
@@ -4182,6 +4812,75 @@ theorem sylvester_relative_perturbation_of_sepLowerBound (n : Nat)
     sylvester_relative_perturbation n A B X dA dB dC dX sigma hSep.1 hSep
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hdX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
+    total Frobenius first-order Sylvester perturbation bound from a supplied
+    exact `SepLowerBound` certificate.
+
+    This version removes the nonzero perturbation side condition by proving
+    the zero-perturbation case directly. -/
+theorem sylvester_perturbation_bound_of_sepLowerBound_total (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSep : SepLowerBound n A B sigma)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  by_cases hdX_sq : frobNormSq dX = 0
+  · have hdX : frobNorm dX = 0 := by
+      simp [frobNorm_eq_sqrt_frobNormSq, hdX_sq]
+    have hSigma : 0 < sigma := hSep.1
+    have hInv : 0 <= (1 / sigma) := by positivity
+    have hAlphaBeta : 0 <= alpha + beta := add_nonneg hAlpha hBeta
+    have hScale : 0 <= (alpha + beta) * frobNorm X :=
+      mul_nonneg hAlphaBeta (frobNorm_nonneg X)
+    have hBudget : 0 <= (alpha + beta) * frobNorm X + gamma :=
+      add_nonneg hScale hGamma
+    rw [hdX]
+    exact mul_nonneg (mul_nonneg hInv hBudget) hEps
+  · exact
+      sylvester_perturbation_bound_of_sepLowerBound n A B X dA dB dC dX sigma
+        hSep alpha beta gamma eps hAlpha hBeta hGamma hEps
+        hdA hdB hdC hLin hdX_sq
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
+    total relative Sylvester perturbation bound from a supplied exact
+    `SepLowerBound` certificate.
+
+    The absolute total theorem handles zero perturbation; this wrapper divides
+    by the positive Frobenius norm of the exact solution. -/
+theorem sylvester_relative_perturbation_of_sepLowerBound_total (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSep : SepLowerBound n A B sigma)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma sigma * eps := by
+  have hAbs :=
+    sylvester_perturbation_bound_of_sepLowerBound_total n A B X dA dB dC dX
+      sigma hSep alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+  unfold condSylvester
+  rw [div_le_iff₀ hX_pos]
+  calc
+    frobNorm dX <=
+        (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := hAbs
+    _ = ((alpha + beta) * frobNorm X + gamma) /
+          (sigma * frobNorm X) * eps * frobNorm X := by
+        field_simp [ne_of_gt hSep.1, ne_of_gt hX_pos]
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
     an exact-infimum lower bound on `sep(A,B)` instantiates the Frobenius
@@ -4233,6 +4932,55 @@ theorem sylvester_relative_perturbation_of_pos_le_sylvesterSepInf
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hdX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
+    total Frobenius first-order Sylvester perturbation bound from a positive
+    lower bound on the exact infimum model of `sep(A,B)`. -/
+theorem sylvester_perturbation_bound_of_pos_le_sylvesterSepInf_total (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_of_sepLowerBound_total n A B X dA dB dC dX
+      sigma (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
+    total relative Sylvester perturbation bound from a positive lower bound on
+    the exact infimum model of `sep(A,B)`. -/
+theorem sylvester_relative_perturbation_of_pos_le_sylvesterSepInf_total
+    (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma sigma * eps := by
+  exact
+    sylvester_relative_perturbation_of_sepLowerBound_total n
+      A B X dA dB dC dX sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26),
     diagonal case: a uniform diagonal-difference gap instantiates the
@@ -4289,6 +5037,59 @@ theorem sylvester_relative_perturbation_diagonal_of_entrywise_abs_ge
       (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hdX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26),
+    diagonal case: total Frobenius first-order perturbation bound from a
+    uniform lower bound on all diagonal differences. -/
+theorem sylvester_perturbation_bound_diagonal_of_entrywise_abs_ge_total (n : Nat)
+    (a b : Fin n -> Real) (X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) dX i j =
+        dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_of_sepLowerBound_total n
+      (Matrix.diagonal a) (Matrix.diagonal b) X dA dB dC dX sigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26),
+    diagonal case: total relative perturbation bound from a uniform lower
+    bound on all diagonal differences. -/
+theorem sylvester_relative_perturbation_diagonal_of_entrywise_abs_ge_total
+    (n : Nat)
+    (a b : Fin n -> Real) (X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) dX i j =
+        dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n (Matrix.diagonal a) (Matrix.diagonal b) X
+        alpha beta gamma sigma * eps := by
+  exact
+    sylvester_relative_perturbation_of_sepLowerBound_total n
+      (Matrix.diagonal a) (Matrix.diagonal b) X dA dB dC dX sigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
 
 -- ============================================================
 -- A posteriori source wrapper from Chapter 16.4
@@ -4375,6 +5176,93 @@ theorem sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
       hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total source-facing Sylvester a posteriori error-residual bound from a
+    supplied exact `SepLowerBound` certificate.
+
+    This version removes the nonzero error side condition by proving the
+    zero-error case directly. -/
+theorem sylvester_aposteriori_bound_of_sepLowerBound_total (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSep : SepLowerBound n A B sigma)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) := by
+  by_cases hE_ne :
+      Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)
+  case pos =>
+    exact
+      sylvester_aposteriori_bound_of_sepLowerBound n A B C X Xhat sigma
+        hSep hExact hE_ne
+  case neg =>
+    have hE_sq :
+        frobNormSq (fun i j => X i j - Xhat i j) = 0 :=
+      Classical.not_not.mp hE_ne
+    have hE :
+        frobNorm (fun i j => X i j - Xhat i j) = 0 := by
+      simp [frobNorm_eq_sqrt_frobNormSq, hE_sq]
+    have hsigma : 0 < sigma := hSep.1
+    rw [hE]
+    exact mul_nonneg (by positivity) (frobNorm_nonneg _)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total relative Sylvester a posteriori error-residual bound from a supplied
+    exact `SepLowerBound` certificate.
+
+    The absolute total theorem handles zero error; this wrapper divides by
+    the positive Frobenius norm of the exact solution. -/
+theorem sylvester_relative_aposteriori_bound_of_sepLowerBound_total (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSep : SepLowerBound n A B sigma)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+        frobNorm X := by
+  have hAbs :=
+    sylvester_aposteriori_bound_of_sepLowerBound_total n A B C X Xhat sigma
+      hSep hExact
+  exact div_le_div_of_nonneg_right hAbs (le_of_lt hX_pos)
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    total Sylvester a posteriori error-residual bound from a positive lower
+    bound on the exact infimum model of `sep(A,B)`.
+
+    This routes through the total `SepLowerBound` wrapper. -/
+theorem sylvester_aposteriori_bound_of_pos_le_sylvesterSepInf_total (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_of_sepLowerBound_total n A B C X Xhat sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    total relative Sylvester a posteriori error-residual bound from a positive
+    lower bound on the exact infimum model of `sep(A,B)`.
+
+    This routes through the total `SepLowerBound` wrapper and divides by
+    `||X||_F`. -/
+theorem sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf_total
+    (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_of_sepLowerBound_total n
+      A B C X Xhat sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
+      hExact hX_pos
+
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
     diagonal case: a uniform diagonal-difference gap instantiates the
     Frobenius a posteriori error-residual bound. -/
@@ -4417,6 +5305,48 @@ theorem sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge
       (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat sigma hSigma
       (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
       hExact hE_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
+    diagonal case: the total Frobenius a posteriori error-residual bound
+    follows from a uniform lower bound on all diagonal differences. -/
+theorem sylvester_aposteriori_bound_diagonal_of_entrywise_abs_ge_total
+    (n : Nat)
+    (a b : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) *
+        frobNorm
+          (sylvesterResidual n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_of_sepLowerBound_total n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat sigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
+    diagonal case: the total relative a posteriori error-residual bound
+    follows from a uniform lower bound on all diagonal differences. -/
+theorem sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge_total
+    (n : Nat)
+    (a b : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) *
+          frobNorm
+            (sylvesterResidual n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_of_sepLowerBound_total n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat sigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
+      hExact hX_pos
 
 -- ============================================================
 -- Generalized equations from Chapter 16.5

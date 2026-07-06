@@ -4887,6 +4887,7 @@ Source-facing Chapter 12 wrappers:
 - `higham12_21_correction_infNorm_bound`
 - `higham12_4_conditional_two_gamma_bound`
 - `higham12_4_explicit_condition`
+- `higham12_4_from_solver`
 - `higham12_vectorAbsSkew`
 - `higham12_vectorAbsSkew_nonneg`
 - `higham12_vectorAbsSkew_entry_bound`
