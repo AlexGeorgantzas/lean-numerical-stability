@@ -1883,6 +1883,24 @@ theorem higham11_8_aasenNormwiseBackwardBound_of_componentwise_T_bound
   (higham11_8_infNorm_le_mul_of_componentwise_T_bound n ΔA T_hat η hη hΔ).trans
     hbudget
 
+/-- Normwise bridge for the closed Aasen solve-chain budget.  Once the closed
+componentwise chain budget is majorized by `η |T_hat|`, the existing Theorem
+11.8 normwise predicate follows from the relative `T_hat` bridge. -/
+theorem higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound
+    (n : ℕ) (DeltaA L T U BT T_hat : Fin n → Fin n → ℝ)
+    (γ η γ15n25 : ℝ) (hη : 0 ≤ η)
+    (hDelta : ∀ i j : Fin n,
+      |DeltaA i j| ≤ higham11_15_aasenChainDeltaABound n γ BT L T U i j)
+    (hchain_le : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n γ BT L T U i j ≤ η * |T_hat i j|)
+    (hbudget : η * infNorm T_hat ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat) :
+    higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA) γ15n25
+      (infNorm T_hat) :=
+  higham11_8_aasenNormwiseBackwardBound_of_componentwise_T_bound
+    n DeltaA T_hat η γ15n25 hη
+    (fun i j => (hDelta i j).trans (hchain_le i j)) hbudget
+
 /-- Aasen growth factor `rho_n = max_ij |t_ij| / max_ij |a_ij|`. -/
 noncomputable def higham11_8_aasenGrowthFactor
     (Tmax Amax : ℝ) : ℝ :=
