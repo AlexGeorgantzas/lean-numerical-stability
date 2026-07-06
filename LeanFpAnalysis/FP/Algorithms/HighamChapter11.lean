@@ -1419,6 +1419,49 @@ noncomputable def higham11_15_aasenChainDeltaA (n : ℕ)
         (U q j + DeltaU q j)) -
     (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * U q j)
 
+/-- Entrywise-to-matrix summation bridge for
+`higham11_15_aasenChainDeltaA`: to bound one collapsed source perturbation
+entry it suffices to bound each `(p,q)` triple-product perturbation term and
+sum the resulting budgets. -/
+theorem higham11_15_aasenChainDeltaA_abs_bound_of_entrywise
+    (n : ℕ) (L T U DeltaL DeltaT DeltaU : Fin n → Fin n → ℝ)
+    (i j : Fin n) (B : Fin n → Fin n → ℝ)
+    (hentry : ∀ p q : Fin n,
+      |(L i p + DeltaL i p) * (T p q + DeltaT p q) *
+          (U q j + DeltaU q j) - L i p * T p q * U q j| ≤ B p q) :
+    |higham11_15_aasenChainDeltaA n L T U DeltaL DeltaT DeltaU i j| ≤
+      ∑ p : Fin n, ∑ q : Fin n, B p q := by
+  have hsum :
+      higham11_15_aasenChainDeltaA n L T U DeltaL DeltaT DeltaU i j =
+        ∑ p : Fin n, ∑ q : Fin n,
+          ((L i p + DeltaL i p) * (T p q + DeltaT p q) *
+            (U q j + DeltaU q j) - L i p * T p q * U q j) := by
+    unfold higham11_15_aasenChainDeltaA
+    simp [Finset.sum_sub_distrib]
+  rw [hsum]
+  calc
+    |∑ p : Fin n, ∑ q : Fin n,
+        ((L i p + DeltaL i p) * (T p q + DeltaT p q) *
+          (U q j + DeltaU q j) - L i p * T p q * U q j)|
+        ≤ ∑ p : Fin n,
+            |∑ q : Fin n,
+              ((L i p + DeltaL i p) * (T p q + DeltaT p q) *
+                (U q j + DeltaU q j) - L i p * T p q * U q j)| :=
+          Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ p : Fin n, ∑ q : Fin n, B p q := by
+          apply Finset.sum_le_sum
+          intro p _
+          calc
+            |∑ q : Fin n,
+              ((L i p + DeltaL i p) * (T p q + DeltaT p q) *
+                (U q j + DeltaU q j) - L i p * T p q * U q j)|
+                ≤ ∑ q : Fin n,
+                    |(L i p + DeltaL i p) * (T p q + DeltaT p q) *
+                      (U q j + DeltaU q j) - L i p * T p q * U q j| :=
+                  Finset.abs_sum_le_sum_abs _ _
+            _ ≤ ∑ q : Fin n, B p q :=
+                  Finset.sum_le_sum (fun q _ => hentry p q)
+
 /-- **Equation (11.15) source backward-error algebra**.  If the three rounded
 solve-chain components satisfy perturbed equations and the unperturbed product
 is `A = L T U`, then the collapsed product perturbation gives a single source
