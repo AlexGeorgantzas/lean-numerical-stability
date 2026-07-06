@@ -1225,6 +1225,49 @@ theorem theorem20_7_completionB_bound_of_h19_stored_rhs_step_budget_nat
         theorem20_7_initialWeightedRowMax hn A b phi i :=
           hbudget i hi
 
+/-- Theorem 20.7 support: stored RHS steps preserve completed rows.
+
+Once row `i` has been processed, every later stored RHS step has active pivot
+strictly below `i`; the definition of `fl_householderStoredRhsStep` copies such
+prefix rows.  This is the exact preservation field needed by the weighted
+least-squares completion-preservation route for `bhat`. -/
+theorem theorem20_7_completedB_preservation_of_stored_rhs_steps_nat
+    {m n : ℕ} (fp : FPModel) (v : ℕ → Fin m → ℝ) (beta : ℕ → ℝ)
+    (bstage : ℕ → Fin m → ℝ)
+    (hStep : ∀ k, k < n →
+      bstage (k + 1) =
+        fl_householderStoredRhsStep fp m k (v k) (beta k) (bstage k)) :
+    ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+      bstage k i = bstage (i.val + 1) i := by
+  have hprefix :
+      ∀ k, k ≤ n → ∀ i : Fin m, i.val < k →
+        bstage k i = bstage (i.val + 1) i := by
+    intro k hk
+    induction k with
+    | zero =>
+        intro i hi
+        exact (Nat.not_lt_zero i.val hi).elim
+    | succ k ih =>
+        intro i hi
+        have hk_lt : k < n := Nat.lt_of_succ_le hk
+        rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi_lt | hi_eq
+        · have hstepPoint :
+            bstage (k + 1) i =
+              fl_householderStoredRhsStep fp m k
+                (v k) (beta k) (bstage k) i := by
+              exact congrFun (hStep k hk_lt) i
+          calc
+            bstage (k + 1) i
+                = fl_householderStoredRhsStep fp m k
+                    (v k) (beta k) (bstage k) i := hstepPoint
+            _ = bstage k i := by
+                  simp [fl_householderStoredRhsStep, hi_lt]
+            _ = bstage (i.val + 1) i := ih (Nat.le_of_lt hk_lt) i hi_lt
+        · have hsucc : i.val + 1 = k + 1 := by omega
+          simp [hsucc]
+  intro i k hk hik
+  exact hprefix k (Nat.le_of_lt hk) i hik
+
 /-- Theorem 20.7 support: split the staged row-growth obligations into
     completed rows `i < k` and active rows `k <= i`.
 
