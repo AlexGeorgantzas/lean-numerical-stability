@@ -164,6 +164,53 @@ theorem sylvester_realQuasiSchur_transform_solution_iff (m n : Nat)
     hpAmono, hpAcard, hRzero, hpBmono, hpBcard, hSzero, ?_⟩
   exact sylvester_schur_transform_solution_iff m n U R A V S B C Y hU hV hA hB
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.4), source-numbered alias:
+    real quasi-Schur factors for both sides of the Sylvester equation, with
+    block maps of size at most two.  This is only the factor-existence surface,
+    not the block solve or floating-point stability theorem. -/
+theorem H16_eq16_4_sylvester_realQuasiSchur_factors (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) :
+    ∃ (U R : Matrix (Fin m) (Fin m) Real)
+      (V S : Matrix (Fin n) (Fin n) Real)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      U ∈ Matrix.orthogonalGroup (Fin m) Real ∧
+      V ∈ Matrix.orthogonalGroup (Fin n) Real ∧
+      Matrix.transpose U * Matrix.of A * U = R ∧
+      Matrix.transpose V * Matrix.of B * V = S ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) :=
+  sylvester_realQuasiSchur_factors m n A B
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.5),
+    source-numbered alias: choose real quasi-Schur coordinates and expose the
+    exact equivalence between the original Sylvester equation and the
+    transformed Schur-coordinate equation.  The subsequent block recurrence
+    and floating-point analysis remain separate certificate surfaces. -/
+theorem H16_eq16_4_5_sylvester_realQuasiSchur_transform_solution_iff
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C Y : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      (IsSylvesterSolutionRect m n A B C
+          (rectMatMul U (rectMatMul Y (matTranspose V))) ↔
+        IsSylvesterSolutionRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) :=
+  sylvester_realQuasiSchur_transform_solution_iff m n A B C Y
+
 -- ============================================================
 -- (16.3): constructive spectral directions
 -- ============================================================
