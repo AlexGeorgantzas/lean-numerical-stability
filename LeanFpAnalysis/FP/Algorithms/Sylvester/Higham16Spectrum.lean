@@ -771,6 +771,46 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_quadratic_det_ne_zero
       | inl i => simpa [u] using congrFun hu i
       | inr i => simpa [v] using congrFun hv i
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
+    determinant bridge for a supplied adjacent two-column block with zero
+    coupling product: if the two scalar shifted column coefficients
+    `A - T_pp I` and `A - T_qq I` are nonsingular and
+    `T_qp * T_pq = 0`, then the full two-column block coefficient is
+    nonsingular. This instantiates the product-shift quadratic bridge from
+    the existing shifted determinant assumptions in the triangular or
+    degenerate-block case, avoiding a supplied block inverse/determinant
+    certificate for that local step. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  apply sylvesterTwoColumnBlockCoeff_det_ne_zero_of_quadratic_det_ne_zero
+    m n A T p q
+  · intro hdet
+    have hprod :
+        Matrix.det
+          (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p)) = 0 := by
+      simpa [sylvesterTwoColumnBlockFirstQuadraticCoeff, hcouple] using hdet
+    rw [Matrix.det_mul] at hprod
+    exact (mul_ne_zero hqdet hpdet) hprod
+  · intro hdet
+    have hcouple' : T p q * T q p = 0 := by
+      rw [mul_comm]
+      exact hcouple
+    have hprod :
+        Matrix.det
+          (sylvesterTriangularShiftedCoeff m A (T p p) *
+            sylvesterTriangularShiftedCoeff m A (T q q)) = 0 := by
+      simpa [sylvesterTwoColumnBlockSecondQuadraticCoeff, hcouple'] using hdet
+    rw [Matrix.det_mul] at hprod
+    exact (mul_ne_zero hpdet hqdet) hprod
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6), right-hand side for
     the supplied adjacent two-column block recurrence.  It collects the
     two active column equations into the same `Sum`-indexed vector space as

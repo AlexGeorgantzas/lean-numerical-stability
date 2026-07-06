@@ -4737,6 +4737,53 @@ theorem sylvester_relative_error_le_of_operator_sigmaMin_computed_residual_budge
       (hResidualNorm.trans hResidualCap)
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equations (16.26), (16.28), and (16.29), square arbitrary-coefficient
+    Frobenius endpoint: a source `SepLowerBound` certificate discharges the
+    operator sigma-min hypothesis of the clean raw residual-budget theorem. -/
+theorem sylvester_relative_error_le_of_sepLowerBound_computed_residual_budget
+    (n : Nat)
+    (A B C X Xhat Rhat Ru : RMatFn n n) {sigma eta : Real}
+    (hSep : SepLowerBound n A B sigma)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_operator_sigmaMin_computed_residual_budget
+      n A B C X Xhat Rhat Ru sigma eta hSep.1
+      (sylvesterOp_sigmaMin_of_sepLowerBound n A B sigma hSep)
+      hX hRu hRhat hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equations (16.26), (16.28), and (16.29), square arbitrary-coefficient
+    Frobenius endpoint: a positive exact lower bound on `sylvesterSepInf`
+    supplies the `SepLowerBound` certificate, then the clean raw
+    residual-budget conclusion follows. -/
+theorem sylvester_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_budget
+    (n : Nat)
+    (A B C X Xhat Rhat Ru : RMatFn n n) {sigma eta : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_sepLowerBound_computed_residual_budget
+      n A B C X Xhat Rhat Ru
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
+      hX hRu hRhat hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, eq (16.29), square arbitrary-coefficient raw residual-budget
     monotone endpoint: an operator sigma-min lower-bound certificate supplies
     determinant nonsingularity, while componentwise larger practical estimates
