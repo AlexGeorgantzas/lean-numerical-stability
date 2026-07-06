@@ -18665,6 +18665,47 @@ theorem
   exact LeadingPrincipalBlockNonsingular13_2.schur hInvLeft hInvRight hLead
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    all leading prefixes of the first Algorithm 13.3 Schur tail are
+    nonsingular under the BDD-derived canonical first pivot.
+
+    This packages the preceding full-tail and leading-principal handoffs in
+    the exact table shape consumed by the all-prefix BDD diagonal-inverse
+    theorem. -/
+theorem
+    higham13_algorithm13_3_first_schur_tail_all_leadingBlockPrefixes_nonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin ((m + 1) + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < (m + 1) + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol ((m + 1) + 1)
+      (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin ((m + 1) + 1), invDiagBound j ≤ 0)
+    (hPivot0 :
+      pivotInv 0 =
+        nonsingInv r
+          (A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1)))) :
+    ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (blockSchur A (pivotInv 0)) p hp) := by
+  intro p hp
+  by_cases hpLead : p + 1 < m + 1
+  · have hLeadTail :=
+      higham13_algorithm13_3_first_schur_tail_leadingPrincipalBlockNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+        A pivotInv invDiagBound hPrefix hDom hBound hPivot0
+    simpa [leadingBlockPrefix13_2] using hLeadTail p hpLead
+  · have hpSuccLe : p + 1 ≤ m + 1 := Nat.succ_le_of_lt hp
+    have hmSuccLe : m + 1 ≤ p + 1 := Nat.le_of_not_gt hpLead
+    have hpSuccEq : p + 1 = m + 1 := le_antisymm hpSuccLe hmSuccLe
+    have hpEq : p = m := Nat.succ.inj hpSuccEq
+    subst p
+    have hTail :=
+      higham13_algorithm13_3_first_schur_tail_blockMatrixNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+        A pivotInv invDiagBound hPrefix hDom hBound hPivot0
+    simpa [leadingBlockPrefix13_2] using hTail
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
     product-index flattened determinant form of the BDD first-Schur-tail
     nonsingularity handoff. -/
 theorem
