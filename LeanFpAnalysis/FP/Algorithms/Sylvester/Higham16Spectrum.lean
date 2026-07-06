@@ -1276,6 +1276,37 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
     rw [Matrix.det_mul] at hprod
     exact (mul_ne_zero hpdet hqdet) hprod
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), degenerate
+    same-block real-Schur adapter: the exported quasi-Schur block-map data
+    supplies the adjacent two-column zero pattern, while nonsingularity of
+    the two shifted column coefficients and zero coupling product prove the
+    active two-column block coefficient is nonsingular.  This closes the
+    zero-coupling subcase of the real `2 x 2` block route; the genuinely
+    coupled block still requires a spectral separation/no-coupled-action
+    certificate. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    IsAdjacentQuasiTriangularBlockFn n T p q ∧
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  refine ⟨?_, ?_⟩
+  · exact IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block
+      n T pmap p q hmono hcard hzero hpq hsame
+  · exact sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
+      m n A T p q hpdet hqdet hcouple
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6), right-hand side for
     the supplied adjacent two-column block recurrence.  It collects the
     two active column equations into the same `Sum`-indexed vector space as
