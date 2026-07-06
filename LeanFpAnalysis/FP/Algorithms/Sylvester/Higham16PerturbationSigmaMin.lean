@@ -54,6 +54,30 @@ theorem H16_eq16_26_sylvesterSepInf_ge_of_sigmaMin (n : Nat)
     sigma <= sylvesterSepInf n A B := by
   exact sylvesterSepInf_ge_of_sigmaMin n A B sigma hn hSigma hSigmaMin
 
+/-- Higham Ch.16.3-16.4, equation (16.26):
+    in positive dimension, a positive Sylvester operator sigma-min certificate
+    makes the exact `sep(A,B)` infimum strictly positive. -/
+theorem sylvesterSepInf_pos_of_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    0 < sylvesterSepInf n A B := by
+  exact
+    lt_of_lt_of_le hSigma
+      (sylvesterSepInf_ge_of_sigmaMin n A B sigma hn hSigma hSigmaMin)
+
+/-- Higham, 2nd ed., Chapter 16.3-16.4, equation (16.26):
+    source-numbered alias for strict positivity of `sep(A,B)` from a positive
+    Sylvester operator sigma-min certificate. -/
+theorem H16_eq16_26_sylvesterSepInf_pos_of_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    0 < sylvesterSepInf n A B := by
+  exact sylvesterSepInf_pos_of_sigmaMin n A B sigma hn hSigma hSigmaMin
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
     a positive singular-value lower bound on the Sylvester operator
     instantiates the Frobenius first-order Sylvester perturbation bound. -/
