@@ -2371,6 +2371,94 @@ theorem higham11_8_fl_aasen_factor_solve_source_backward_error
   · exact hDeltaS
   · exact hsource
 
+/-- Rounded Aasen source backward-error wrapper from source-prefix recurrence
+updates.  This removes the standalone relative `L_hat` hypothesis from
+`higham11_8_fl_aasen_factor_solve_source_backward_error`: the factorization
+residual is supplied directly by the rounded source-prefix next-column update
+bridge, while the concrete middle-factor budget for `T_hat` remains explicit. -/
+theorem higham11_8_fl_aasen_factor_solve_source_backward_error_of_source_prefix_updates
+    (fp : FPModel) (n : ℕ)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor :
+      Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor : ℝ) (hγ_factor : 0 ≤ γ_factor)
+    (hBT_factor : ∀ i j : Fin n, 0 ≤ BT_factor i j)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hvalSum : ∀ i next : Fin n, next.val = i.val + 1 →
+      gammaValid fp next.val)
+    (hvalUpdate : gammaValid fp 2)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ γ_factor * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT_factor i j) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) := by
+  intro rhs z_hat q_hat y_hat U_outer w_hat BT_solve B_factor B_solve
+  let A_fact : Fin n → Fin n → ℝ :=
+    fun i j => ∑ p : Fin n, ∑ q : Fin n, L_hat i p * T_hat p q * L_hat j q
+  have hprod_fact : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L_hat i p * T_hat p q * L_hat j q) =
+        A_fact i j := by
+    intro i j
+    rfl
+  obtain ⟨DeltaS, hDeltaS, hsource⟩ :=
+    higham11_15_fl_aasen_solve_chain_source_backward_error
+      fp n A_fact Pmat L_hat T_hat L_T_hat U_T_hat b DeltaT_LU h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn
+      hprod_fact
+  apply higham11_8_aasen_source_backward_error_of_factor_and_solve_residuals
+    n A A_fact DeltaS B_factor B_solve rhs w_hat
+  · intro i j
+    simpa [A_fact, B_factor] using
+      higham11_8_aasen_factorization_product_abs_bound_of_source_prefix_updates
+        n fp A L H T L_hat T_hat BT_factor γ_factor hγ_factor hBT_factor
+        hrec hHnz hvalSum hvalUpdate hLhat_update hLhat_fixed_successor
+        hLhat_fixed_other hbudget_rel hprod hThat i j
+  · exact hDeltaS
+  · exact hsource
+
 /-- **Equation (11.15) exact solve-chain bridge**, unpermuted case.  If the
 exact Aasen product is `A = L T Lᵀ` and the three exact solves in the chain are
 satisfied with identity permutation, then the resulting `x` solves `A x = b`.
