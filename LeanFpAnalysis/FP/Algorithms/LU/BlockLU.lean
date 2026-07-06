@@ -7462,6 +7462,168 @@ theorem isBlockDiagDomRow_leadingBlockPrefix13_7 {m : ℕ}
     _ ≤ invDiagBound (emb i) := hDom (emb i)
     _ = leadingBlockPrefixInvDiagBound13_7 invDiagBound p hp i := rfl
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    a nonsingular leading prefix that inherits column BDD cannot have a
+    singular active diagonal block when the active diagonal lower bound is
+    nonpositive. -/
+theorem higham13_leadingBlockPrefix_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (p : ℕ) (hp : p < m)
+    (hPrefix : BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (j : Fin (p + 1))
+    (hj : invDiagBound (leadingBlockPrefixIndex13_7 p hp j) ≤ 0) :
+    Matrix.det
+      (A (leadingBlockPrefixIndex13_7 p hp j)
+        (leadingBlockPrefixIndex13_7 p hp j)) ≠ 0 := by
+  classical
+  have hNormNonneg : ∀ i j : Fin m, 0 ≤ ‖A i j‖ := by
+    intro i j
+    exact norm_nonneg (A i j)
+  have hDomPrefixRaw :=
+    isBlockDiagDomCol_leadingBlockPrefix13_7
+      (fun i j => ‖A i j‖) invDiagBound hNormNonneg hDom p hp
+  have hDomPrefix :
+      IsBlockDiagDomCol (p + 1)
+        (fun i j => ‖leadingBlockPrefix13_2 A p hp i j‖)
+        (leadingBlockPrefixInvDiagBound13_7 invDiagBound p hp) := by
+    simpa [leadingBlockPrefixNorm13_7, leadingBlockPrefix13_2,
+      leadingBlockPrefixIndex13_7] using hDomPrefixRaw
+  have hjPrefix :
+      leadingBlockPrefixInvDiagBound13_7 invDiagBound p hp j ≤ 0 := by
+    simpa [leadingBlockPrefixInvDiagBound13_7, leadingBlockPrefixIndex13_7]
+      using hj
+  have hdetPrefix :=
+    higham13_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+      (leadingBlockPrefix13_2 A p hp)
+      (leadingBlockPrefixInvDiagBound13_7 invDiagBound p hp)
+      hPrefix hDomPrefix j hjPrefix
+  simpa [leadingBlockPrefix13_2, leadingBlockPrefixIndex13_7] using hdetPrefix
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    leading-principal-block nonsingularity supplies the prefix nonsingularity
+    premise used by
+    `higham13_leadingBlockPrefix_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`. -/
+theorem higham13_leadingBlockPrefix_diag_det_ne_zero_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hLead : LeadingPrincipalBlockNonsingular13_2 A)
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (p : ℕ) (hpLead : p + 1 < m)
+    (j : Fin (p + 1))
+    (hj : invDiagBound
+        (leadingBlockPrefixIndex13_7 p
+          (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j) ≤ 0) :
+    Matrix.det
+      (A
+        (leadingBlockPrefixIndex13_7 p
+          (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j)
+        (leadingBlockPrefixIndex13_7 p
+          (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j)) ≠ 0 :=
+  higham13_leadingBlockPrefix_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+    A invDiagBound hDom p (Nat.lt_trans (Nat.lt_succ_self p) hpLead)
+    (hLead p hpLead) j hj
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    the BDD leading-prefix contradiction supplies the canonical two-sided
+    inverse for a diagonal block of a nonsingular leading prefix. -/
+theorem higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (p : ℕ) (hp : p < m)
+    (hPrefix : BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (j : Fin (p + 1))
+    (hj : invDiagBound (leadingBlockPrefixIndex13_7 p hp j) ≤ 0) :
+    IsInverse r
+      (A (leadingBlockPrefixIndex13_7 p hp j)
+        (leadingBlockPrefixIndex13_7 p hp j))
+      (nonsingInv r
+        (A (leadingBlockPrefixIndex13_7 p hp j)
+          (leadingBlockPrefixIndex13_7 p hp j))) := by
+  exact
+    isInverse_nonsingInv_of_det_ne_zero r
+      (A (leadingBlockPrefixIndex13_7 p hp j)
+        (leadingBlockPrefixIndex13_7 p hp j))
+      (higham13_leadingBlockPrefix_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+        A invDiagBound hDom p hp hPrefix j hj)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    leading-principal-block nonsingularity plus column BDD supplies the
+    canonical two-sided inverse for every prefix diagonal block whose BDD
+    lower bound is nonpositive. -/
+theorem higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hLead : LeadingPrincipalBlockNonsingular13_2 A)
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (p : ℕ) (hpLead : p + 1 < m)
+    (j : Fin (p + 1))
+    (hj : invDiagBound
+        (leadingBlockPrefixIndex13_7 p
+          (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j) ≤ 0) :
+    IsInverse r
+      (A
+        (leadingBlockPrefixIndex13_7 p
+          (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j)
+        (leadingBlockPrefixIndex13_7 p
+          (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j))
+      (nonsingInv r
+        (A
+          (leadingBlockPrefixIndex13_7 p
+            (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j)
+          (leadingBlockPrefixIndex13_7 p
+            (Nat.lt_trans (Nat.lt_succ_self p) hpLead) j))) :=
+  higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+    A invDiagBound hDom p (Nat.lt_trans (Nat.lt_succ_self p) hpLead)
+    (hLead p hpLead) j hj
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    if every leading prefix is nonsingular, column BDD supplies the canonical
+    two-sided inverse table for all original diagonal blocks whose BDD lower
+    bounds are nonpositive. -/
+theorem higham13_diag_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (j : Fin m) :
+    IsInverse r (A j j) (nonsingInv r (A j j)) := by
+  let jPrefix : Fin (j.val + 1) := ⟨j.val, by omega⟩
+  have hidx : leadingBlockPrefixIndex13_7 j.val j.isLt jPrefix = j := by
+    ext
+    simp [leadingBlockPrefixIndex13_7, jPrefix]
+  have hmain :=
+    higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos
+      A invDiagBound hDom j.val j.isLt (hPrefix j.val j.isLt) jPrefix
+      (by simpa [hidx] using hBound j)
+  simpa [hidx] using hmain
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    right-inverse projection of
+    `higham13_diag_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`,
+    ready for downstream Algorithm 13.3 pivot-certificate APIs. -/
+theorem higham13_diag_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (j : Fin m) :
+    IsRightInverse r (A j j) (nonsingInv r (A j j)) :=
+  (higham13_diag_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    A invDiagBound hPrefix hDom hBound j).2
+
 -- ============================================================
 -- §13.3.1  Equation 13.18 proof-chain pieces
 -- ============================================================
@@ -18297,6 +18459,78 @@ theorem higham13_algorithm13_3_matrixStages_product_eq_of_pivot_left_inverse
   exact
     (higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivot_left_inverse
       A pivotInv hPivotLeft).product_eq
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    at Algorithm 13.3 stage zero, the active pivot is the original first
+    diagonal block, so the BDD all-prefix inverse table supplies its canonical
+    two-sided inverse. -/
+theorem
+    higham13_algorithm13_3_initial_pivot_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ} (hm : 0 < m)
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0) :
+    IsInverse r
+      (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+        ⟨0, hm⟩ ⟨0, hm⟩)
+      (nonsingInv r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+          ⟨0, hm⟩ ⟨0, hm⟩)) := by
+  have hDiag :=
+    higham13_diag_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+      A invDiagBound hPrefix hDom hBound ⟨0, hm⟩
+  simpa [higham13_algorithm13_3_schurStageMatrixBlock,
+    higham13_algorithm13_3_schurStageBlock] using hDiag
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    right-inverse projection of the BDD stage-zero canonical pivot inverse. -/
+theorem
+    higham13_algorithm13_3_initial_pivot_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ} (hm : 0 < m)
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0) :
+    IsRightInverse r
+      (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+        ⟨0, hm⟩ ⟨0, hm⟩)
+      (nonsingInv r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+          ⟨0, hm⟩ ⟨0, hm⟩)) :=
+  (higham13_algorithm13_3_initial_pivot_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    hm A pivotInv invDiagBound hPrefix hDom hBound).2
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    if Algorithm 13.3's supplied first pivot inverse is the canonical inverse
+    forced by the BDD all-prefix table, then the first active pivot has the
+    exact right-inverse certificate required by downstream pivot APIs. -/
+theorem
+    higham13_algorithm13_3_initial_pivot_right_inverse_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ} (hm : 0 < m)
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (hPivot0 : pivotInv 0 = nonsingInv r (A ⟨0, hm⟩ ⟨0, hm⟩)) :
+    IsRightInverse r
+      (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+        ⟨0, hm⟩ ⟨0, hm⟩)
+      (pivotInv 0) := by
+  have hRight :=
+    higham13_algorithm13_3_initial_pivot_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+      hm A pivotInv invDiagBound hPrefix hDom hBound
+  simpa [hPivot0, higham13_algorithm13_3_schurStageMatrixBlock,
+    higham13_algorithm13_3_schurStageBlock] using hRight
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
     exact pivot right-inverse certificates also provide the pivot-left

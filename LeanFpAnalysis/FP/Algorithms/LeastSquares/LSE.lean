@@ -188,6 +188,15 @@ theorem theorem20_7_initialWeightedRowMax_pos_of_b_ne_zero {m n : ℕ}
   dsimp [theorem20_7_initialWeightedRowMax]
   exact (abs_pos.mpr hb).trans_le (le_max_right _ _)
 
+/-- The source right-hand-side entry is bounded by the weighted row scale used
+    in Theorem 20.7. -/
+theorem theorem20_7_initialWeightedRowMax_abs_b_le {m n : ℕ}
+    (hn : 0 < n) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (phi : ℝ) (i : Fin m) :
+    |b i| ≤ theorem20_7_initialWeightedRowMax hn A b phi i := by
+  dsimp [theorem20_7_initialWeightedRowMax]
+  exact le_max_right _ _
+
 /-- Source-shaped nonzero-row hypotheses discharge both denominator
     positivity side conditions used by the Theorem 20.7 row-growth bridges. -/
 theorem theorem20_7_denominators_pos_of_rows_nonzero {m n : ℕ}
@@ -203,6 +212,17 @@ theorem theorem20_7_denominators_pos_of_rows_nonzero {m n : ℕ}
     exact
       theorem20_7_initialWeightedRowMax_pos_of_exists_entry_ne_zero
         hn A b hphi i (hrows i)
+
+/-- The additive-error accumulator used by the Chapter 19 row-wise QR bridge
+    vanishes when every step budget is zero. -/
+theorem theorem20_7_scalarAffineGrowthBudget_zero_stepBudget
+    (c : ℝ) (steps : ℕ) :
+    scalarAffineGrowthBudget c (fun _ : ℕ => (0 : ℝ)) steps = 0 := by
+  induction steps with
+  | zero =>
+      simp [scalarAffineGrowthBudget]
+  | succ steps ih =>
+      simp [scalarAffineGrowthBudget, ih]
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     finite maximum over staged right-hand-side entries. -/
@@ -2539,6 +2559,368 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
       (le_of_lt hphi) hgamma herr hden.1 hden.2 hAcompleted hbcompleted
       hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc hbsorted
       hbinitExact hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    source-shaped all-entry H19 accumulated-error wrapper specialized to the
+    natural initial row scales `max_j |a_ij|` and
+    `max(phi max_j |a_ij|, |b_i|)`.  This discharges the initial exact
+    source-entry bounds while keeping the substantive row-sorting,
+    accumulated-error, completed-row, and perturbation-entry obligations
+    explicit. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Ahat k i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bhat k i| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ j : Fin n,
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |bhat 0 r - bexact 0 r| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_nat
+      hm hn hnm Ahat Aexact A bhat bexact b gammaTilde err
+      (theorem20_7_initialRowMax hn A)
+      (theorem20_7_initialWeightedRowMax hn A b phi)
+      AstepBudget bstepBudget DeltaA Deltab hphi hgamma herr hrows
+      hAcompleted hbcompleted hAsorted
+      (fun r j => by
+        rw [hAexact0 r j]
+        exact theorem20_7_initialRowMax_entry_le hn A r j)
+      hAstepExact hAstepErr hArow0 hAacc hbsorted
+      (fun r => by
+        rw [hbexact0 r]
+        exact theorem20_7_initialWeightedRowMax_abs_b_le hn A b phi r)
+      hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    zero-start specialization of the source-initial all-entry H19
+    accumulated-error wrapper.  When the rounded and exact stage-zero data both
+    equal the source row data, the accumulated-error hypotheses reduce to the
+    scalar affine-budget domination terms. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_zero_start_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Ahat k i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bhat k i| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ _ : Fin n,
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_nat
+      hm hn hnm Ahat Aexact A bhat bexact b gammaTilde err
+      AstepBudget bstepBudget DeltaA Deltab hphi hgamma herr hrows
+      hAexact0 hbexact0 hAcompleted hbcompleted hAsorted hAstepExact
+      hAstepErr hArow0
+      (fun k r hkr j => by
+        have hzero : |Ahat 0 r j - Aexact 0 r j| = 0 := by
+          rw [hAhat0 r j, hAexact0 r j, sub_self, abs_zero]
+        simpa [hzero] using hAaccBudget k r hkr j)
+      hbsorted hbstepExact hbstepErr hbrow0
+      (fun k r hkr => by
+        have hzero : |bhat 0 r - bexact 0 r| = 0 := by
+          rw [hbhat0 r, hbexact0 r, sub_self, abs_zero]
+        simpa [hzero] using hbaccBudget k r hkr)
+      hDeltaA hDeltab
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    zero-start and zero-step-budget specialization of the source-initial
+    all-entry H19 accumulated-error wrapper.  When the rounded and exact
+    stage-zero data both equal the source `A` and `b`, and the per-step
+    accumulated-error budgets are zero, the scalar affine-budget domination
+    obligations are discharged by nonnegativity of the source row scales. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_zero_start_zero_budget_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    {phi : ℝ} (gammaTilde err : ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Ahat k i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bhat k i| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Ahat t r j - Aexact t r j|)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bhat t r - bexact t r|)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_zero_start_nat
+      hm hn hnm Ahat Aexact A bhat bexact b gammaTilde err
+      (fun _ : ℕ => (0 : ℝ)) (fun _ : ℕ => (0 : ℝ))
+      DeltaA Deltab hphi hgamma herr hrows hAhat0 hAexact0 hbhat0
+      hbexact0 hAcompleted hbcompleted hAsorted hAstepExact
+      (fun r j t => by
+        simpa using hAstepErr r j t)
+      hArow0
+      (fun k r _hkr _j => by
+        rw [theorem20_7_scalarAffineGrowthBudget_zero_stepBudget]
+        exact mul_nonneg herr (theorem20_7_initialRowMax_nonneg hn A r))
+      hbsorted hbstepExact
+      (fun r t => by
+        simpa using hbstepErr r t)
+      hbrow0
+      (fun k r _hkr => by
+        rw [theorem20_7_scalarAffineGrowthBudget_zero_stepBudget]
+        exact mul_nonneg herr
+          (theorem20_7_initialWeightedRowMax_nonneg hn A b (le_of_lt hphi) r))
+      hDeltaA hDeltab
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     Chapter 19.6 active-row geometric bounds control each `Delta A`
@@ -7620,6 +8002,39 @@ theorem theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
   rw [hAPv]
   exact hAPleft_null z hz
 
+/-- Matrix extensionality through the finite vector action used by the local
+    rectangular-matrix API. -/
+theorem rectMatMul_eq_of_forall_rectMatMulVec_eq {m n : ℕ}
+    (M N : Fin m → Fin n → ℝ)
+    (h : ∀ v : Fin n → ℝ, rectMatMulVec M v = rectMatMulVec N v) :
+    M = N := by
+  ext i j
+  have hv := congrFun (h (finiteBasisVec j)) i
+  have hMcol := congrFun (rectMatMulVec_finiteBasisVec_gsColumn M j) i
+  have hNcol := congrFun (rectMatMulVec_finiteBasisVec_gsColumn N j) i
+  simpa [gsColumn] using hMcol.symm.trans (hv.trans hNcol)
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24):
+    matrix form of the projected action `(AP)^+ AP = P` from the reduced
+    operator left-inverse condition on the homogeneous constraint nullspace. -/
+theorem theorem20_8_APplus_AP_eq_projection_of_AP_left_inverse_on_nullspace
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B Bplus) z) = z) :
+    rectMatMul APplus (theorem20_8AP A B Bplus) =
+      theorem20_8Projection B Bplus := by
+  apply rectMatMul_eq_of_forall_rectMatMulVec_eq
+  intro v
+  simpa [rectMatMulVec_rectMatMul] using
+    theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
+      A B Bplus APplus hright hAPleft_null v
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a Penrose-style route to the reduced-operator left-inverse condition on
     the homogeneous constraint nullspace.  If `AP * (AP)^+ * AP = AP`,
@@ -11817,6 +12232,29 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_null
         (theorem20_8AP A B Bplus) B APplus hMP hBAPt)
       hnull
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.24):
+    Moore--Penrose/transpose-range route to the matrix identity
+    `(AP)^+ AP = P`.  The source rank conditions enter through the explicit
+    right-inverse and null-intersection hypotheses. -/
+theorem theorem20_8_APplus_AP_eq_projection_of_MP_transpose_range_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B Bplus) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B Bplus)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    rectMatMul APplus (theorem20_8AP A B Bplus) =
+      theorem20_8Projection B Bplus :=
+  theorem20_8_APplus_AP_eq_projection_of_AP_left_inverse_on_nullspace
+    A B Bplus APplus hright
+    (theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
+      A B Bplus APplus hMP hBAPt hnull)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a Moore--Penrose certificate for `(AP)^+`, matrix-level annihilation
     `B*(AP)^+ = 0`, and (20.24)'s null-intersection condition together give
@@ -11865,6 +12303,74 @@ theorem theorem20_8_APplus_constraint_annihilates_of_projection_range
           simp
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if the columns of `(AP)^+` satisfy the constraint nullspace equation, then
+    the source projector `P = I - B^+B` fixes those columns. -/
+theorem theorem20_8_APplus_projection_range_of_constraint_annihilates
+    {m n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ)
+    (hBAPplus :
+      rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul (theorem20_8Projection B Bplus) APplus = APplus := by
+  apply rectMatMul_eq_of_forall_rectMatMulVec_eq
+  intro w
+  have hnull :
+      rectMatMulVec B (rectMatMulVec APplus w) = (fun _i : Fin p => 0) := by
+    calc
+      rectMatMulVec B (rectMatMulVec APplus w) =
+          rectMatMulVec (rectMatMul B APplus) w := by
+            exact (rectMatMulVec_rectMatMul B APplus w).symm
+      _ = rectMatMulVec (fun _i : Fin p => fun _j : Fin m => 0) w := by
+            rw [hBAPplus]
+      _ = (fun _i : Fin p => 0) := by
+            ext i
+            unfold rectMatMulVec
+            simp
+  calc
+    rectMatMulVec (rectMatMul (theorem20_8Projection B Bplus) APplus) w =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (rectMatMulVec APplus w) := by
+          exact rectMatMulVec_rectMatMul (theorem20_8Projection B Bplus) APplus w
+    _ = rectMatMulVec APplus w := by
+          exact theorem20_8Projection_apply_nullspace B Bplus
+            (rectMatMulVec APplus w) hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    a Moore--Penrose certificate for `AP` plus the transpose-range certificate
+    `B*AP^T = 0` gives the projector-range identity
+    `P*(AP)^+ = (AP)^+`. -/
+theorem theorem20_8_APplus_projection_range_of_MP_transpose_constraint
+    {m n p : ℕ}
+    (AP : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hMP : RectMoorePenrosePseudoinverse m n AP APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose AP) =
+        (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul (theorem20_8Projection B Bplus) APplus = APplus :=
+  theorem20_8_APplus_projection_range_of_constraint_annihilates B Bplus
+    APplus
+    (theorem20_8_APplus_constraint_annihilates_of_MP_transpose_constraint
+      AP B APplus hMP hBAPt)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source reduced-operator specialization of the MP/transpose-range
+    projector-range bridge for `AP = A(I-B^+B)`. -/
+theorem theorem20_8_APplus_projection_range_of_MP_transpose_range
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B Bplus) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B Bplus)) =
+        (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul (theorem20_8Projection B Bplus) APplus = APplus :=
+  theorem20_8_APplus_projection_range_of_MP_transpose_constraint
+    (theorem20_8AP A B Bplus) B Bplus APplus hMP hBAPt
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the reduced-operator left inverse follows from a Moore--Penrose certificate
     for `(AP)^+`, a projector-range certificate `P*(AP)^+ = (AP)^+`, source
     right-invertibility of `B^+`, and (20.24)'s null-intersection condition. -/
@@ -11901,6 +12407,37 @@ theorem LSEFullRowRank.theorem20_8_APplus_constraint_annihilates_of_projection_r
     rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0) :=
   _root_.LeanFpAnalysis.FP.theorem20_8_APplus_constraint_annihilates_of_projection_range
     B hB.rightInverse APplus hB.rightInverse_spec hProjAPplus
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source full row rank instantiates the annihilation-to-projector-range bridge
+    for the noncomputable right inverse obtained from `rank(B)=p`. -/
+theorem LSEFullRowRank.theorem20_8_APplus_projection_range_of_constraint_annihilates
+    {m n p : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hBAPplus :
+      rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul (theorem20_8Projection B hB.rightInverse) APplus = APplus :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_APplus_projection_range_of_constraint_annihilates
+    B hB.rightInverse APplus hBAPplus
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank specialization of the MP/transpose-range
+    projector-range bridge for `AP = A(I-B^+B)`. -/
+theorem LSEFullRowRank.theorem20_8_APplus_projection_range_of_MP_transpose_range
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul (theorem20_8Projection B hB.rightInverse) APplus = APplus :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_APplus_projection_range_of_MP_transpose_range
+    A B hB.rightInverse APplus hMP hBAPt
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the current Moore--Penrose/projector-range
@@ -12134,6 +12671,27 @@ theorem
           (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
   _root_.LeanFpAnalysis.FP.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
     A B hB.rightInverse APplus hMP hBAPt hnull
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24):
+    source-full-row-rank Moore--Penrose/transpose-range route to the matrix
+    identity `(AP)^+ AP = P`. -/
+theorem
+    LSEFullRowRank.theorem20_8_APplus_AP_eq_projection_of_MP_transpose_range_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+      theorem20_8Projection B hB.rightInverse :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_APplus_AP_eq_projection_of_MP_transpose_range_nullIntersection
+    A B hB.rightInverse APplus hB.rightInverse_spec hMP hBAPt hnull
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank projected-difference handoff from a Moore--Penrose
@@ -13924,6 +14482,190 @@ theorem LSENullIntersectionTrivial.iff_lseStackedFullColumnRank {m n p : ℕ}
       simp [rectMatMulVec]
     exact hfull hzero_action
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-stacked-full-column-rank form of the Moore--Penrose/transpose-range
+    reduced-left-inverse route.  This replaces the local null-intersection
+    predicate by the printed full-column-rank condition for `[A^T, B^T]^T`. -/
+theorem
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_lseStackedFullColumnRank
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∀ z : Fin n → ℝ,
+      rectMatMulVec B z = (fun _i : Fin p => 0) →
+        rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
+  LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
+    A hB APplus hMP hBAPt
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24):
+    source-stacked-full-column-rank Moore--Penrose/transpose-range route to
+    the matrix identity `(AP)^+ AP = P`. -/
+theorem
+    LSEFullRowRank.theorem20_8_APplus_AP_eq_projection_of_MP_transpose_range_lseStackedFullColumnRank
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B) :
+    rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+      theorem20_8Projection B hB.rightInverse :=
+  LSEFullRowRank.theorem20_8_APplus_AP_eq_projection_of_MP_transpose_range_nullIntersection
+    A hB APplus hMP hBAPt
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-stacked-full-column-rank projected-difference handoff for the
+    Moore--Penrose/transpose-range route. -/
+theorem
+    LSEFullRowRank.theorem20_8_projected_difference_eq_APplus_of_MP_transpose_range_lseStackedFullColumnRank_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (Deltad : Fin p → ℝ) (y x : Fin n → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+        (fun k : Fin n => y k - x k) =
+      fun j : Fin n =>
+        rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j -
+          rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l))) j :=
+  LSEFullRowRank.theorem20_8_projected_difference_eq_APplus_of_MP_transpose_range_null_nullIntersection_reduced_difference_eq
+    A DeltaA Deltab hB DeltaB APplus Deltad y x hMP hBAPt
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+    hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-stacked-full-column-rank exact correction-vector identity for the
+    Moore--Penrose/transpose-range route. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_MP_transpose_range_lseStackedFullColumnRank_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y x : Fin n → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (theorem20_8BAplus A B hB.rightInverse APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j :=
+  LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_MP_transpose_range_null_nullIntersection_reduced_difference_eq
+    A DeltaA b Deltab hB DeltaB APplus d Deltad y x hx hy hMP hBAPt
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+    hAPdiff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-stacked-full-column-rank relative solution-difference handoff for
+    the Moore--Penrose/transpose-range route. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_transpose_range_lseStackedFullColumnRank_reduced_difference_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (y x : Fin n → ℝ) (r : Fin m → ℝ)
+    {eps solutionRadius : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hyx :
+      vecNorm2 (fun j : Fin n => y j - x j) ≤
+        eps * solutionRadius * vecNorm2 x)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hAPdiff :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+          (fun k : Fin n => y k - x k) =
+        fun i : Fin m =>
+          (rectMatMulVec DeltaA y i - Deltab i) -
+            rectMatMulVec A
+              (rectMatMulVec hB.rightInverse
+                (fun l : Fin p =>
+                  Deltad l - rectMatMulVec DeltaB y l)) i) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 * solutionRadius *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) :=
+  LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_transpose_range_null_nullIntersection_reduced_difference_eq
+    A DeltaA b Deltab hB DeltaB APplus d Deltad y x r heps_nonneg hApos
+    hbpos hBpos hdpos hxpos hmax hyx hx hy hMP hBAPt
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+    hAPdiff
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank form of the rank-tolerant Gram-`B`
     Moore--Penrose left-inverse route.  The printed rank condition for
@@ -14113,6 +14855,110 @@ theorem
   exact
     _root_.LeanFpAnalysis.FP.theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
       A B (undetAplusOfGramNonsingInv B) APplus hright hAPleft_null v
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24):
+    source stacked-full-column-rank matrix identity `(AP)^+ AP = P` for the
+    Gram-`B` rank-tolerant Moore--Penrose route. -/
+theorem
+    LSEFullRowRank.theorem20_8_APplus_AP_eq_projection_of_MP_gram_projection_lseStackedFullColumnRank
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hstack : LSEStackedFullColumnRank A B) :
+    rectMatMul APplus
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) =
+      theorem20_8Projection B (undetAplusOfGramNonsingInv B) := by
+  have hright :
+      rectMatMul B (undetAplusOfGramNonsingInv B) = idMatrix p :=
+    higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero
+      B hB.rectGram_det_ne_zero
+  have hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) z) = z :=
+    LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_gram_projection_lseStackedFullColumnRank
+      A hB APplus hMP hstack
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_APplus_AP_eq_projection_of_AP_left_inverse_on_nullspace
+      A B (undetAplusOfGramNonsingInv B) APplus hright hAPleft_null
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    residual-explicit exact solution-difference identity for the Gram-`B`
+    rank-tolerant Moore--Penrose route.
+
+    Source full row rank of `B`, stacked full column rank of `[A; B]`, and a
+    Moore--Penrose certificate for `(AP)^+` derive the projector identity
+    `(AP)^+ AP = P`; feasibility and the perturbed Higham residual equation
+    derive the reduced `AP*(y-x)` equation internally.  Thus this surface no
+    longer exposes either reduced equation as a caller hypothesis. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_MP_gram_projection_lseStackedFullColumnRank_perturbed_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ) (rHigh : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m =>
+              (b i - rectMatMulVec A x i) - rHigh i -
+                rectMatMulVec DeltaA y i + Deltab i) j := by
+  have hAPleft :
+      rectMatMul APplus
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) =
+        theorem20_8Projection B (undetAplusOfGramNonsingInv B) :=
+    LSEFullRowRank.theorem20_8_APplus_AP_eq_projection_of_MP_gram_projection_lseStackedFullColumnRank
+      A hB APplus hMP hstack
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham_residual_eq
+      A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
+      d Deltad x y rHigh hAPleft hx hy hres
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24):
+    determinant-facing concrete Gram-pseudoinverse matrix identity
+    `(AP)^+ AP = P`. -/
+theorem
+    LSEFullRowRank.theorem20_8_APplus_AP_eq_projection_of_gram_MP_gram_projection_lseStackedFullColumnRank
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (hdetAP :
+      Matrix.det
+        (rectGram (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hstack : LSEStackedFullColumnRank A B) :
+    rectMatMul
+        (undetAplusOfGramNonsingInv
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)))
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) =
+      theorem20_8Projection B (undetAplusOfGramNonsingInv B) :=
+  LSEFullRowRank.theorem20_8_APplus_AP_eq_projection_of_MP_gram_projection_lseStackedFullColumnRank
+    A hB
+    (undetAplusOfGramNonsingInv
+      (theorem20_8AP A B (undetAplusOfGramNonsingInv B)))
+    (higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero
+      (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) hdetAP)
+    hstack
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank exact same-residual correction-vector
@@ -14527,6 +15373,51 @@ theorem
     (higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero
       (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) hdetAP)
     hstack hr hres hgap
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 route audit:
+    the source rank assumptions in (20.24) do not imply the determinant-facing
+    Gram condition `det((AP)(AP)^T) != 0` for the concrete full-row-rank
+    pseudoinverse construction of `(AP)^+`.
+
+    In this `m = n = 3`, `p = 1` example, `A = I` and `B` selects the first
+    coordinate.  Then `B` is full row rank and `[A; B]` has full column rank, but
+    `AP = A(I - B^+B)` has rank two, so its `3 x 3` row Gram determinant is
+    zero.  Thus the rank-tolerant Moore--Penrose route is genuinely needed for
+    the full Theorem 20.8 surface. -/
+theorem theorem20_8_gram_AP_rectGram_det_zero_counterexample :
+    ∃ (A : Fin 3 → Fin 3 → ℝ) (B : Fin 1 → Fin 3 → ℝ)
+      (Bplus : Fin 3 → Fin 1 → ℝ),
+      rectMatMul B Bplus = idMatrix 1 ∧
+        LSEFullRowRank B ∧
+          LSEStackedFullColumnRank A B ∧
+            Matrix.det
+              (rectGram (theorem20_8AP A B Bplus) :
+                Matrix (Fin 3) (Fin 3) ℝ) = 0 := by
+  let A : Fin 3 → Fin 3 → ℝ := idMatrix 3
+  let B : Fin 1 → Fin 3 → ℝ := fun _ j =>
+    if j = (0 : Fin 3) then 1 else 0
+  let Bplus : Fin 3 → Fin 1 → ℝ := fun j _ =>
+    if j = (0 : Fin 3) then 1 else 0
+  refine ⟨A, B, Bplus, ?_, ?_, ?_, ?_⟩
+  · ext i j
+    fin_cases i
+    fin_cases j
+    norm_num [B, Bplus, rectMatMul, idMatrix]
+  · intro y
+    refine ⟨fun j : Fin 3 => if j = (0 : Fin 3) then y 0 else 0, ?_⟩
+    ext i
+    fin_cases i
+    norm_num [B, lseConstraintLinearMap, rectMatMulVec]
+  · intro x y hxy
+    have hAxy : rectMatMulVec A x = rectMatMulVec A y := by
+      ext i
+      have hi := congrFun hxy (Fin.castAdd 1 i)
+      rw [congrFun (lseStackedMatrix_mulVec A B x) (Fin.castAdd 1 i)] at hi
+      rw [congrFun (lseStackedMatrix_mulVec A B y) (Fin.castAdd 1 i)] at hi
+      simpa [Fin.append_left] using hi
+    simpa [A, rectMatMulVec_idMatrix] using hAxy
+  · simp [A, B, Bplus, theorem20_8AP, theorem20_8Projection, rectMatMul,
+      rectGram, idMatrix, Matrix.det_fin_three, eq_comm]
 
 /-- A square finite matrix is lower triangular when all entries above the
     diagonal vanish.  This is the exact triangularity predicate used by
@@ -32002,6 +32893,121 @@ theorem theorem20_10_partB_backward_error_of_constructed_source_householder_rhs_
   · simpa [hDeltabeq] using hDeltab
   · simpa [hDeltadeq] using hDeltad
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
+    Part B certificate route with source rank hypotheses instead of supplied
+    triangular diagonal nonzero hypotheses.
+
+    The supplied GQR factorization converts source full row rank of `B` and
+    full column rank of `[A; B]` into nonzero diagonals of `S` and `L22`, so
+    callers no longer need to expose those factor-level side conditions for
+    this constructed-source certificate branch. -/
+theorem theorem20_10_partB_certificate_of_constructed_source_householder_rhs_conservative_gamma_of_source_ranks
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hUfl :
+      h.U =
+        fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A h.Q))
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    Nonempty
+      (Theorem20_10PartBPerturbationCertificate A B b d
+        (theorem20_10_gqr_xhat_of_transformed_tail fp h
+          (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
+        (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+        (theorem20_10_householder_gammaB fp r p q)) := by
+  have hdiag :
+      (∀ i : Fin p, h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0) :=
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
+      ⟨hBsrc, hStack⟩
+  exact
+    theorem20_10_partB_certificate_of_constructed_source_householder_rhs_conservative_gamma
+      fp h b d hUfl hq hhalf hdiag.1 hdiag.2 hvalidA hvalidB
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
+    Part B backward-error core with source rank hypotheses instead of supplied
+    triangular diagonal nonzero hypotheses.
+
+    This is the source-facing version of
+    `theorem20_10_partB_backward_error_of_constructed_source_householder_rhs_conservative_gamma`
+    for an already supplied exact GQR factorization.  It removes the
+    caller-facing `S`/`L22` diagonal side conditions by deriving them from
+    `LSEFullRowRank B` and `LSEStackedFullColumnRank A B`. -/
+theorem theorem20_10_partB_backward_error_of_constructed_source_householder_rhs_conservative_gamma_of_source_ranks
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hUfl :
+      h.U =
+        fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A h.Q))
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let xhat : Fin (p + q) → ℝ :=
+      theorem20_10_gqr_xhat_of_transformed_tail fp h
+        (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d
+    let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  have hdiag :
+      (∀ i : Fin p, h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0) :=
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
+      ⟨hBsrc, hStack⟩
+  exact
+    theorem20_10_partB_backward_error_of_constructed_source_householder_rhs_conservative_gamma
+      fp h b d hUfl hq hhalf hdiag.1 hdiag.2 hvalidA hvalidB
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete Householder `Bᵀ` perturbation together with the induced
     constraint right-hand-side perturbation bound.
@@ -33073,6 +34079,163 @@ theorem theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs_house
       (theorem20_10_householder_gammaB fp r p q)
       hgammaA_nonneg hgammaB_nonneg hgammaA_ge hgammaB_ge
       hSdiag hL22diag hvalid2S hvalid2L22
+
+/-- Theorem 20.10(a), exact transformed-RHS constructed-source certificate
+    specialized to the Householder `gamma_tilde_mn` and `gamma_tilde_np`
+    coefficients.
+
+    This certificate form is the reusable handoff into the Part B backward-error
+    bridge: it keeps the exact transformed right-hand side
+    `theorem20_10_gqr_xhat` and the printed Householder gamma coefficients,
+    without claiming the rounded RHS-transform or final computed-vector path. -/
+theorem theorem20_10_partA_certificate_of_constructed_source_exact_rhs_householder_gamma
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d)
+          (theorem20_10_householder_gammaA fp r p q)
+          (theorem20_10_householder_gammaB fp r p q)) := by
+  have hKA_ge_two : 2 ≤ householderConstructApplyGammaIndex (r + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKB_ge_two : 2 ≤ householderConstructApplyGammaIndex (p + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKA_pos : 0 < householderConstructApplyGammaIndex (r + q) := by
+    omega
+  have hKB_pos : 0 < householderConstructApplyGammaIndex (p + q) := by
+    omega
+  have hvalid2S : gammaValid fp (2 * p) := by
+    apply gammaValid_mono fp _ hvalidB
+    calc
+      2 * p = p * 2 := by omega
+      _ ≤ p * householderConstructApplyGammaIndex (p + q) :=
+          Nat.mul_le_mul_left p hKB_ge_two
+  have hvalid2L22 : gammaValid fp (2 * q) := by
+    apply gammaValid_mono fp _ hvalidA
+    calc
+      2 * q ≤ 2 * (p + q) := Nat.mul_le_mul_left 2 (by omega)
+      _ = (p + q) * 2 := by omega
+      _ ≤ (p + q) * householderConstructApplyGammaIndex (r + q) :=
+          Nat.mul_le_mul_left (p + q) hKA_ge_two
+  have hgammaA_nonneg :
+      0 ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidA
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  have hidxA_ge_q :
+      q ≤ (p + q) * householderConstructApplyGammaIndex (r + q) := by
+    exact le_trans (by omega)
+      (Nat.le_mul_of_pos_right (p + q) hKA_pos)
+  have hidxB_ge_p :
+      p ≤ p * householderConstructApplyGammaIndex (p + q) :=
+    Nat.le_mul_of_pos_right p hKB_pos
+  have hgammaA_ge :
+      gamma fp q ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA, H19.Theorem19_4.gamma_tilde] using
+      gamma_mono fp hidxA_ge_q hvalidA
+  have hgammaB_ge :
+      gamma fp p ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB, H19.Theorem19_4.gamma_tilde] using
+      gamma_mono fp hidxB_ge_p hvalidB
+  exact
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid_exact_rhs
+      fp h b d
+      (theorem20_10_householder_gammaA fp r p q)
+      (theorem20_10_householder_gammaB fp r p q)
+      hgammaA_nonneg hgammaB_nonneg hgammaA_ge hgammaB_ge
+      hSdiag hL22diag hvalid2S hvalid2L22
+
+/-- Theorem 20.10(b), exact transformed-RHS constructed-source
+    backward-error core specialized to the Householder `gamma_tilde_mn` and
+    `gamma_tilde_np` coefficients.
+
+    This feeds the exact transformed-RHS Part A certificate through the generic
+    Part A-to-Part B bridge, exposing concrete perturbations, the constraint
+    right-hand-side action identity, and the exact perturbed GQR/minimizer core.
+    It is still an exact transformed-RHS branch; the rounded RHS-transform and
+    final computed-vector identification remain separate obligations. -/
+theorem theorem20_10_partB_backward_error_of_constructed_source_exact_rhs_householder_gamma
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let xhat : Fin (p + q) → ℝ := theorem20_10_gqr_xhat fp h b d
+    let gammaA : ℝ := theorem20_10_householder_gammaA fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  dsimp
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  rcases
+    theorem20_10_partA_certificate_of_constructed_source_exact_rhs_householder_gamma
+      fp h b d hSdiag hL22diag hvalidA hvalidB with
+    ⟨_DeltaS, _DeltaL22, _hDeltaSbound, _hDeltaL22bound,
+      _hDeltaSfrob, _hDeltaL22frob, hcertA⟩
+  exact
+    theorem20_10_partB_backward_error_of_nonempty_partA_certificate
+      A B b d (theorem20_10_gqr_xhat fp h b d)
+      hgammaB_nonneg hcertA
 
 /-- Theorem 20.10(b) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/

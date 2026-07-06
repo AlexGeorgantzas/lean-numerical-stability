@@ -590,6 +590,106 @@ theorem H16_eq16_27_lyapunov_condition_of_pos_le_sylvesterSepInf (n : Nat)
       hDeltaA hDeltaC hLin
 
 -- ============================================================
+-- A posteriori source wrappers from Chapter 16.4
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    a supplied exact `SepLowerBound` certificate for `sep(A,-A^T)`
+    instantiates the Lyapunov a posteriori error-residual bound.
+
+    Scope: exact arithmetic and certificate transfer. The residual in the
+    conclusion is the Lyapunov residual `C - (A Xhat + Xhat A^T)`. -/
+theorem lyapunov_aposteriori_bound_of_sepLowerBound (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  have hExactSylv :
+      forall i j,
+        sylvesterOp n A (fun i j => -matTranspose A i j) X i j = C i j := by
+    intro i j
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hExact i j
+  have h :=
+    sylvester_aposteriori_bound_of_sepLowerBound n A
+      (fun i j => -matTranspose A i j) C X Xhat sigma hSep hExactSylv hE_ne
+  simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    the source-shaped relative Lyapunov a posteriori bound follows from a
+    supplied exact `SepLowerBound` certificate for `sep(A,-A^T)`.
+
+    Scope: exact arithmetic and certificate transfer, divided by the norm of
+    the exact Lyapunov solution. -/
+theorem lyapunov_relative_aposteriori_bound_of_sepLowerBound (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  have hExactSylv :
+      forall i j,
+        sylvesterOp n A (fun i j => -matTranspose A i j) X i j = C i j := by
+    intro i j
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hExact i j
+  have h :=
+    sylvester_relative_aposteriori_bound_of_sepLowerBound n A
+      (fun i j => -matTranspose A i j) C X Xhat sigma hSep hExactSylv hE_ne
+      hX_pos
+  simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    a positive lower bound on the exact infimum model of `sep(A,-A^T)`
+    instantiates the Lyapunov a posteriori error-residual bound.
+
+    Scope: exact arithmetic and certificate transfer from the exact-infimum
+    separation model. -/
+theorem lyapunov_aposteriori_bound_of_pos_le_sylvesterSepInf (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_of_sepLowerBound n A C X Xhat sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      hExact hE_ne
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    the source-shaped relative Lyapunov a posteriori bound follows from a
+    positive lower bound on the exact infimum model of `sep(A,-A^T)`.
+
+    Scope: exact arithmetic and certificate transfer, divided by the norm of
+    the exact Lyapunov solution. -/
+theorem lyapunov_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
+    (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  exact
+    lyapunov_relative_aposteriori_bound_of_sepLowerBound n A C X Xhat sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      hExact hE_ne hX_pos
+
+-- ============================================================
 -- Diagonal-case condition-number realization
 -- (eq (16.27), diagonal / distinct-eigenvalue)
 -- ============================================================
@@ -649,6 +749,175 @@ theorem lyapunovInverseOpBound_diagonal (n : ℕ)
   have hMnn : (0 : ℝ) ≤ 1 / s := by positivity
   exact frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le Y
     (lyapunovOp n (Matrix.diagonal a) Y) hMnn hentry
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal Lyapunov case:
+    an entrywise lower bound on all sums `|a_i + a_j|` gives a
+    `SepLowerBound` certificate for `(diag a, -(diag a)^T)`. -/
+theorem SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge (n : Nat)
+    (a : Fin n -> Real) (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|) :
+    SepLowerBound n (Matrix.diagonal a)
+      (fun i j => -matTranspose (Matrix.diagonal a) i j) s := by
+  have hB :
+      (fun i j => -matTranspose (Matrix.diagonal a) i j) =
+        (Matrix.diagonal fun k => -a k) := by
+    ext p q
+    simp only [matTranspose, Matrix.diagonal]
+    by_cases hpq : q = p
+    · subst hpq
+      simp
+    · have hpq' : p ≠ q := fun h => hpq h.symm
+      simp [hpq, hpq']
+  have hgap : forall i j, s <= |a i - (fun k : Fin n => -a k) j| := by
+    intro i j
+    simpa [sub_eq_add_neg] using hsep i j
+  rw [hB]
+  exact
+    SepLowerBound_diagonal_of_entrywise_abs_ge n a
+      (fun k : Fin n => -a k) s hs hgap
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal Lyapunov case:
+    in positive dimension, the same entrywise sum gap is below the exact
+    infimum model of `sep(diag a, -(diag a)^T)`. -/
+theorem sylvesterSepInf_lyapunov_diagonal_ge_of_entrywise_abs_ge (n : Nat)
+    (a : Fin n -> Real) (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (hn : 0 < n) :
+    s <= sylvesterSepInf n (Matrix.diagonal a)
+      (fun i j => -matTranspose (Matrix.diagonal a) i j) := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n (Matrix.diagonal a)
+      (fun i j => -matTranspose (Matrix.diagonal a) i j) s
+      (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
+      hn
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27), diagonal
+    Lyapunov case: Frobenius perturbation bound from the entrywise certificate
+    `s <= |a_i + a_j|`. -/
+theorem lyapunov_perturbation_bound_diagonal (n : Nat)
+    (a : Fin n -> Real) (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a)
+          (fun i' j' => -matTranspose (Matrix.diagonal a) i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hDeltaX_ne : Not (frobNormSq DeltaX = 0)) :
+    frobNorm DeltaX <=
+      (1 / s) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound_of_sepLowerBound n (Matrix.diagonal a)
+      X DeltaA DeltaC DeltaX s hs
+      (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hDeltaX_ne
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27), diagonal
+    Lyapunov case: relative perturbation bound from the entrywise certificate
+    `s <= |a_i + a_j|`. -/
+theorem lyapunov_relative_perturbation_diagonal (n : Nat)
+    (a : Fin n -> Real) (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a)
+          (fun i' j' => -matTranspose (Matrix.diagonal a) i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hDeltaX_ne : Not (frobNormSq DeltaX = 0))
+    (hX_ne : Not (frobNorm X = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n (Matrix.diagonal a)
+        (fun i j => -matTranspose (Matrix.diagonal a) i j) X
+        alpha alpha gamma s * eps := by
+  exact
+    lyapunov_relative_perturbation_of_sepLowerBound n (Matrix.diagonal a)
+      X DeltaA DeltaC DeltaX s hs
+      (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
+      hDeltaX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal Lyapunov case:
+    an entrywise lower bound on `|a_i + a_j|` gives the residual-error bound. -/
+theorem lyapunov_aposteriori_bound_diagonal (n : Nat)
+    (a : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (hExact : forall i j,
+      lyapunovOp n (Matrix.diagonal a) X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / s) * frobNorm (lyapunovResidual n (Matrix.diagonal a) C Xhat) := by
+  have hB :
+      (fun i j => -matTranspose (Matrix.diagonal a) i j) =
+        (Matrix.diagonal fun k => -a k) := by
+    ext p q
+    simp only [matTranspose, Matrix.diagonal]
+    by_cases hpq : q = p
+    · subst hpq
+      simp
+    · have hpq' : p ≠ q := fun h => hpq h.symm
+      simp [hpq, hpq']
+  have hgap : forall i j, s <= |a i - (fun k : Fin n => -a k) j| := by
+    intro i j
+    simpa [sub_eq_add_neg] using hsep i j
+  have hSep :
+      SepLowerBound n (Matrix.diagonal a)
+        (fun i j => -matTranspose (Matrix.diagonal a) i j) s := by
+    rw [hB]
+    exact
+      SepLowerBound_diagonal_of_entrywise_abs_ge n a
+        (fun k : Fin n => -a k) s hs hgap
+  exact
+    lyapunov_aposteriori_bound_of_sepLowerBound n (Matrix.diagonal a)
+      C X Xhat s hSep hExact hE_ne
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal Lyapunov case:
+    the relative residual-error bound follows from the same entrywise gap. -/
+theorem lyapunov_relative_aposteriori_bound_diagonal (n : Nat)
+    (a : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (hExact : forall i j,
+      lyapunovOp n (Matrix.diagonal a) X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / s) *
+        frobNorm (lyapunovResidual n (Matrix.diagonal a) C Xhat)) /
+        frobNorm X := by
+  have hB :
+      (fun i j => -matTranspose (Matrix.diagonal a) i j) =
+        (Matrix.diagonal fun k => -a k) := by
+    ext p q
+    simp only [matTranspose, Matrix.diagonal]
+    by_cases hpq : q = p
+    · subst hpq
+      simp
+    · have hpq' : p ≠ q := fun h => hpq h.symm
+      simp [hpq, hpq']
+  have hgap : forall i j, s <= |a i - (fun k : Fin n => -a k) j| := by
+    intro i j
+    simpa [sub_eq_add_neg] using hsep i j
+  have hSep :
+      SepLowerBound n (Matrix.diagonal a)
+        (fun i j => -matTranspose (Matrix.diagonal a) i j) s := by
+    rw [hB]
+    exact
+      SepLowerBound_diagonal_of_entrywise_abs_ge n a
+        (fun k : Fin n => -a k) s hs hgap
+  exact
+    lyapunov_relative_aposteriori_bound_of_sepLowerBound n
+      (Matrix.diagonal a) C X Xhat s hSep hExact hE_ne hX_pos
 
 /-- Higham, 2nd ed., §16.3, eq (16.27), diagonal case (p. 317):
     the concrete structured Lyapunov condition number for the separated diagonal

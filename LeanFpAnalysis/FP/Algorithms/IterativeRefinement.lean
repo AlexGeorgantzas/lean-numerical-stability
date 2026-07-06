@@ -1641,4 +1641,121 @@ theorem nonneg_resolvent_infNormVec_bound {n : ℕ} (hn : 0 < n)
   have hrw : infNormVec v * (1 - c) = infNormVec v - c * infNormVec v := by ring
   linarith [hchain, hrw]
 
+-- ============================================================
+-- §12.1  Exact forward-error identity/bound for one step (eqns 12.4–12.5)
+-- ============================================================
+
+/-- **Exact forward-error identity for one refinement step** (Higham §12.1, the
+    exact core of eq. (12.5) with all three rounding sources).
+
+    Let `x` be the exact solution (`A x = b`).  With computed residual
+    `rc = (b − A x_i) + Δr` (residual-computation error `Δr`), computed correction
+    `d` solving the perturbed system `(A + ΔA) d = rc`, and rounded update
+    `y = x_i + d + Δx`, the forward error of the corrected iterate obeys the exact
+    identity
+      `A (y − x) = Δr − ΔA·d + A·Δx`.
+    No inverse and no first-order truncation are used; this is the exact residual
+    of the new forward error, from which the (12.5) recurrence follows by applying
+    `|A⁻¹|`. -/
+theorem forward_error_step_identity (n : ℕ)
+    (A ΔA : Fin n → Fin n → ℝ)
+    (x x_i d Δr Δx rc y b : Fin n → ℝ)
+    (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (hrc : ∀ i, rc i = (b i - ∑ j : Fin n, A i j * x_i j) + Δr i)
+    (hsolve : ∀ i, ∑ j : Fin n, (A i j + ΔA i j) * d j = rc i)
+    (hy : ∀ i, y i = x_i i + d i + Δx i) :
+    ∀ i : Fin n,
+      ∑ j : Fin n, A i j * (y j - x j) =
+        Δr i - (∑ j : Fin n, ΔA i j * d j) + (∑ j : Fin n, A i j * Δx j) := by
+  intro i
+  have hAd : ∑ j : Fin n, A i j * d j =
+      rc i - ∑ j : Fin n, ΔA i j * d j := by
+    have := hsolve i; simp_rw [add_mul] at this
+    rw [Finset.sum_add_distrib] at this; linarith
+  have hexp : ∑ j : Fin n, A i j * (y j - x j) =
+      (∑ j : Fin n, A i j * x_i j) + (∑ j : Fin n, A i j * d j)
+        + (∑ j : Fin n, A i j * Δx j) - ∑ j : Fin n, A i j * x j := by
+    have h1 : ∀ j : Fin n, A i j * (y j - x j)
+        = A i j * x_i j + A i j * d j + A i j * Δx j - A i j * x j :=
+      fun j => by rw [hy]; ring
+    simp_rw [h1]
+    rw [Finset.sum_sub_distrib, Finset.sum_add_distrib, Finset.sum_add_distrib]
+  rw [hexp, hAd, hrc i, hAx i]
+  ring
+
+/-- **Forward-error bound for one refinement step** (Higham §12.1, eq. (12.5)).
+
+    Applying a componentwise `|A⁻¹|` resolver (`Ainv ≥ 0`, resolving `A v = w ⇒
+    |v| ≤ Ainv |w|`) to `forward_error_step_identity` gives the componentwise
+    forward-error bound
+      `|y − x|_i ≤ ∑_j Ainv_ij (|Δr|_j + (|ΔA||d|)_j + (|A||Δx|)_j)`,
+    the three-source form of Higham's `G_i|x − x_i| + g_i` recurrence: `Δr` carries
+    the (12.2) residual term (which contains the contracting `|A||x − x_i|` part),
+    `ΔA` the solver backward error `≤ uW`, and `Δx` the update rounding. -/
+theorem forward_error_step_bound (n : ℕ)
+    (A ΔA : Fin n → Fin n → ℝ)
+    (x x_i d Δr Δx rc y b : Fin n → ℝ)
+    (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (hrc : ∀ i, rc i = (b i - ∑ j : Fin n, A i j * x_i j) + Δr i)
+    (hsolve : ∀ i, ∑ j : Fin n, (A i j + ΔA i j) * d j = rc i)
+    (hy : ∀ i, y i = x_i i + d i + Δx i)
+    (Ainv : Fin n → Fin n → ℝ)
+    (hAinv_nn : ∀ i j, 0 ≤ Ainv i j)
+    (hAinv : ∀ (v w : Fin n → ℝ),
+      (∀ i, ∑ j : Fin n, A i j * v j = w i) →
+      ∀ i, |v i| ≤ ∑ j : Fin n, Ainv i j * |w j|) :
+    ∀ i : Fin n,
+      |y i - x i| ≤
+        ∑ j : Fin n, Ainv i j *
+          (|Δr j| + (∑ k : Fin n, |ΔA j k| * |d k|)
+            + (∑ k : Fin n, |A j k| * |Δx k|)) := by
+  intro i
+  have hid := forward_error_step_identity n A ΔA x x_i d Δr Δx rc y b
+    hAx hrc hsolve hy
+  have hstep := hAinv (fun j => y j - x j)
+    (fun j => Δr j - (∑ k : Fin n, ΔA j k * d k) + (∑ k : Fin n, A j k * Δx k))
+    hid i
+  refine le_trans hstep ?_
+  apply Finset.sum_le_sum
+  intro j _
+  apply mul_le_mul_of_nonneg_left _ (hAinv_nn i j)
+  have hΔAd : |∑ k : Fin n, ΔA j k * d k| ≤ ∑ k : Fin n, |ΔA j k| * |d k| := by
+    calc |∑ k, ΔA j k * d k| ≤ ∑ k, |ΔA j k * d k| := Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ k, |ΔA j k| * |d k| := by congr 1; ext k; exact abs_mul _ _
+  have hAΔx : |∑ k : Fin n, A j k * Δx k| ≤ ∑ k : Fin n, |A j k| * |Δx k| := by
+    calc |∑ k, A j k * Δx k| ≤ ∑ k, |A j k * Δx k| := Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ k, |A j k| * |Δx k| := by congr 1; ext k; exact abs_mul _ _
+  have htri : |Δr j - (∑ k, ΔA j k * d k) + (∑ k, A j k * Δx k)|
+      ≤ |Δr j| + |∑ k, ΔA j k * d k| + |∑ k, A j k * Δx k| := by
+    have h := abs_add_three_le (Δr j) (-(∑ k, ΔA j k * d k)) (∑ k, A j k * Δx k)
+    simp only [abs_neg] at h
+    have heq : Δr j - (∑ k, ΔA j k * d k) + (∑ k, A j k * Δx k)
+        = Δr j + -(∑ k, ΔA j k * d k) + (∑ k, A j k * Δx k) := by ring
+    rw [heq]; exact h
+  linarith [htri, hΔAd, hAΔx]
+
+-- ============================================================
+-- §12.2  Norm-to-componentwise correction bound (σ/cond step for Thm 12.4)
+-- ============================================================
+
+/-- **Norm-to-componentwise correction bound** (scalar form of the σ/cond step
+    discharging the correction hypothesis of Theorem 12.4).
+
+    If the nonnegative correction-magnitude vector `dvec` has `‖dvec‖∞ ≤ ρ₀`, the
+    target vector `t` is bounded below by `m > 0`, and `ρ₀ ≤ ρ·m`, then
+    `dvec_i ≤ ρ · t_i` for every `i`.  Here `m` is a positive lower bound on the
+    scaled data `|A||ŷ| + |b|`; `ρ = ρ₀/m` is the explicit correction constant —
+    the exact, non-asymptotic content of Higham's `cond(A⁻¹)σ(A,ŷ)` condition. -/
+theorem correction_componentwise_of_infNorm {n : ℕ}
+    (dvec t : Fin n → ℝ) (rho0 ρ m : ℝ)
+    (hnorm : infNormVec dvec ≤ rho0)
+    (hm_pos : 0 < m) (ht_lb : ∀ i, m ≤ t i)
+    (hρ_nn : 0 ≤ ρ) (hcond : rho0 ≤ ρ * m) :
+    ∀ i, dvec i ≤ ρ * t i := by
+  intro i
+  have hdi : dvec i ≤ rho0 :=
+    le_trans (le_trans (le_abs_self _) (abs_le_infNormVec dvec i)) hnorm
+  have h2 : ρ * m ≤ ρ * t i := mul_le_mul_of_nonneg_left (ht_lb i) hρ_nn
+  linarith [hdi, hcond, h2]
+
 end LeanFpAnalysis.FP
