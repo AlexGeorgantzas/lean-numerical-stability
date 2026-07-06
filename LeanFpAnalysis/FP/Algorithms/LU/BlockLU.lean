@@ -18563,6 +18563,83 @@ theorem
   simpa [hPivot0, higham13_algorithm13_3_schurStageMatrixBlock,
     higham13_algorithm13_3_schurStageBlock] using hRight
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    the first Schur tail in Algorithm 13.3 is block-nonsingular when the
+    original matrix has all nonsingular leading prefixes and the first pivot
+    inverse is the BDD-forced canonical inverse of the first diagonal block.
+
+    This is the first recursive nonsingularity handoff after the stage-zero
+    pivot bridge.  It does not assert the later active Schur-stage BDD
+    reciprocal/source table. -/
+theorem
+    higham13_algorithm13_3_first_schur_tail_blockMatrixNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin ((m + 1) + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < (m + 1) + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol ((m + 1) + 1)
+      (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin ((m + 1) + 1), invDiagBound j ≤ 0)
+    (hPivot0 :
+      pivotInv 0 =
+        nonsingInv r
+          (A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1)))) :
+    BlockMatrixNonsingular (blockSchur A (pivotInv 0)) := by
+  have hDiagInv :
+      IsInverse r
+        (A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1)))
+        (nonsingInv r
+          (A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1)))) :=
+    higham13_diag_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+      A invDiagBound hPrefix hDom hBound (0 : Fin ((m + 1) + 1))
+  have hInvLeft :
+      ∀ s t : Fin r,
+        ∑ l : Fin r,
+          pivotInv 0 s l *
+            A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1)) l t =
+          if s = t then 1 else 0 := by
+    simpa [hPivot0] using hDiagInv.1
+  have hInvRight :
+      ∀ s t : Fin r,
+        ∑ l : Fin r,
+          A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1)) s l *
+            pivotInv 0 l t =
+          if s = t then 1 else 0 := by
+    simpa [hPivot0] using hDiagInv.2
+  have hFull : BlockMatrixNonsingular A := by
+    simpa [leadingBlockPrefix13_2] using
+      hPrefix (m + 1) (Nat.lt_succ_self (m + 1))
+  exact
+    blockSchur_nonsingular_of_nonsingular_of_first_block_inverse
+      hInvLeft hInvRight hFull
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    product-index flattened determinant form of the BDD first-Schur-tail
+    nonsingularity handoff. -/
+theorem
+    higham13_algorithm13_3_first_schur_tail_blockMatrixFlat_det_ne_zero_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin ((m + 1) + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < (m + 1) + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol ((m + 1) + 1)
+      (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin ((m + 1) + 1), invDiagBound j ≤ 0)
+    (hPivot0 :
+      pivotInv 0 =
+        nonsingInv r
+          (A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1)))) :
+    Matrix.det (blockMatrixFlat (blockSchur A (pivotInv 0))) ≠ 0 := by
+  exact
+    blockMatrixFlat_det_ne_zero_of_blockMatrixNonsingular
+      (blockSchur A (pivotInv 0))
+      (higham13_algorithm13_3_first_schur_tail_blockMatrixNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+        A pivotInv invDiagBound hPrefix hDom hBound hPivot0)
+
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
     exact pivot right-inverse certificates also provide the pivot-left
     certificates needed by the matrix-stage reconstruction theorem. -/

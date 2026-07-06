@@ -11178,3 +11178,26 @@ These compile, but should not be treated as fully derived stability results:
   right-inverse certificate consumed by matrix-stage APIs.  This closes only
   the base-pivot bridge; deriving later active Schur-stage pivot certificates
   from the printed BDD hypotheses remains open.
+
+- 2026-07-06 Theorem 13.7 BDD first Schur-tail nonsingularity handoff: added
+  `higham13_algorithm13_3_first_schur_tail_blockMatrixNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  and
+  `higham13_algorithm13_3_first_schur_tail_blockMatrixFlat_det_ne_zero_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These compose the
+  BDD all-prefix canonical first-pivot inverse with the existing
+  Schur-complement nonsingularity theorem: full leading-prefix nonsingularity
+  gives nonsingularity of the original full block matrix, and the BDD-derived
+  canonical first pivot supplies the two-sided inverse needed to prove
+  `blockSchur A (pivotInv 0)` block-nonsingular.  The determinant corollary
+  exposes the product-index flattened determinant certificate.  This closes
+  the first recursive nonsingularity handoff after the base pivot bridge, but
+  not the later active Schur-stage BDD reciprocal/source table, entrywise
+  max-growth product/update route, Problem 13.4 all-tail comparisons, or
+  Theorem 13.6 cited implementation estimates.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`,
+  `git diff --check`, touched Lean marker scan, scratch proof bench, and
+  scratch axiom audit passed; the axiom audit reported only standard Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`.  Redirected public
+  lookup printed both new Chapter 13 declarations and still failed only on
+  unrelated pre-existing stale lookup rows.
