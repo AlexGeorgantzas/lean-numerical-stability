@@ -2465,6 +2465,36 @@ theorem H16_eq16_26_sylvesterVecCoeff_mulVec_eq_zero_iff_of_operator_sigmaMin
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     a Sylvester operator sigma-min certificate makes the vectorized
+    coefficient map injective. -/
+theorem sylvesterVecCoeff_mulVec_injective_of_operator_sigmaMin
+    (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff n n A B)) := by
+  exact
+    finiteMatrix_mulVec_injective_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_operator_sigmaMin
+        n A B sigma hsigma hSigmaMin)
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    a Sylvester operator sigma-min certificate makes the vectorized
+    coefficient map surjective. -/
+theorem sylvesterVecCoeff_mulVec_surjective_of_operator_sigmaMin
+    (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff n n A B)) := by
+  exact
+    finiteMatrix_mulVec_surjective_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_operator_sigmaMin
+        n A B sigma hsigma hSigmaMin)
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    a Sylvester operator sigma-min certificate makes the vectorized
     coefficient solve bijective. -/
 theorem sylvesterVecCoeff_mulVec_bijective_of_operator_sigmaMin
     (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
