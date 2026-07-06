@@ -593,6 +593,32 @@ theorem isLeast_sylvesterBackwardErrorValues_of_svdOptimalPerturbations (n : ℕ
     (sylvesterBackwardErrorValues_nonempty_of_svdOptimalPerturbations n
       A B C Y U V sigma alpha beta gamma hSVD hpos)
 
+/-- Higham, 2nd ed., Chapter 16, Section 16.2, equation (16.15):
+    source-facing two-sided Sylvester eta/xi infimum bound from SVD data. -/
+theorem sylvesterBackwardErrorInf_two_sided_sqrt_xiSq_of_svdOptimalPerturbations
+    (n : Nat)
+    (A B C Y U V : Fin n -> Fin n -> Real) (sigma : Fin n -> Real)
+    (alpha beta gamma : Real)
+    (hSVD : IsSVD n Y U V sigma)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hpos : forall i j : Fin n,
+      0 < alpha ^ 2 * sigma j ^ 2 + beta ^ 2 * sigma i ^ 2 + gamma ^ 2) :
+    Real.sqrt
+        (xiSq n (svdResidual n U V (sylvesterResidual n A B C Y))
+          sigma alpha beta gamma / 3) <=
+      sylvesterBackwardErrorInf n A B C Y alpha beta gamma ∧
+    sylvesterBackwardErrorInf n A B C Y alpha beta gamma <=
+      Real.sqrt
+        (xiSq n (svdResidual n U V (sylvesterResidual n A B C Y))
+          sigma alpha beta gamma) := by
+  constructor
+  · exact
+      sqrt_xiSq_div_three_le_sylvesterBackwardErrorInf_of_svd n
+        A B C Y U V sigma alpha beta gamma hSVD halpha hbeta hgamma hpos
+  · exact
+      sylvesterBackwardErrorInf_le_sqrt_xiSq_of_svdOptimalPerturbations n
+        A B C Y U V sigma alpha beta gamma hSVD hpos
+
 -- ============================================================
 -- (16.21): the structured Lyapunov backward-error infimum is attained
 -- ============================================================
@@ -906,6 +932,32 @@ theorem lyapunovBackwardErrorInf_two_sided_sqrt_lyapunovXiSq_of_symmetric_spectr
   · exact
       lyapunovBackwardErrorInf_le_sqrt_lyapunovXiSq_of_symmetric_spectral
         n A C Y U lam alpha gamma hY hU hC hYsym hpos
+
+/-- Higham, 2nd ed., Chapter 16, Section 16.2.1, equation (16.21):
+    Lyapunov eta infimum bounded by the mu-scaled relative residual. -/
+theorem lyapunovBackwardErrorInf_le_mu_relative_residual_of_symmetric_spectral
+    (n : Nat)
+    (A C Y U : Fin n -> Fin n -> Real) (lam : Fin n -> Real)
+    (alpha gamma lamStar : Real)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U)
+    (hC : IsSymmetricFiniteMatrix C) (hYsym : IsSymmetricFiniteMatrix Y)
+    (hpos : forall i j : Fin n,
+      0 < 2 * alpha ^ 2 * (lam i ^ 2 + lam j ^ 2) + gamma ^ 2)
+    (hLam : forall i : Fin n, lamStar ^ 2 <= lam i ^ 2)
+    (hDenom : 0 < 4 * alpha ^ 2 * lamStar ^ 2 + gamma ^ 2)
+    (hScale : 0 < 2 * alpha * frobNorm Y + gamma) :
+    lyapunovBackwardErrorInf n A C Y alpha gamma <=
+      lyapunovAmplificationMu alpha gamma (frobNorm Y) lamStar *
+        (frobNorm (lyapunovResidual n A C Y) /
+          (2 * alpha * frobNorm Y + gamma)) := by
+  exact
+    le_trans
+      (lyapunovBackwardErrorInf_le_sqrt_lyapunovXiSq_of_symmetric_spectral
+        n A C Y U lam alpha gamma hY hU hC hYsym hpos)
+      (sqrt_lyapunovXiSq_le_mu_relative_residual n Y
+        (lyapunovResidual n A C Y) U lam alpha gamma lamStar
+        hU hLam hDenom hScale)
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
     Chapter 16, Section 16.2.1, equation (16.21): exact-arithmetic

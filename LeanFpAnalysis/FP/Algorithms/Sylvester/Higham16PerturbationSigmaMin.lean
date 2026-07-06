@@ -9,6 +9,31 @@ namespace LeanFpAnalysis.FP
 
 open scoped BigOperators Matrix.Norms.Frobenius
 
+/-- Higham Ch.16.3-16.4, equations (16.25)-(16.26):
+    a positive singular-value lower-bound certificate for the Sylvester
+    operator gives the corresponding `SepLowerBound`. -/
+theorem SepLowerBound_sylvester_of_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    SepLowerBound n A B sigma := by
+  exact sepLowerBound_of_sylvesterOp_sigmaMin n A B sigma hSigma hSigmaMin
+
+/-- Higham Ch.16.3-16.4, equation (16.26):
+    in positive dimension, a Sylvester operator sigma-min certificate
+    lower-bounds the exact `sep(A,B)` infimum. -/
+theorem sylvesterSepInf_ge_of_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    sigma <= sylvesterSepInf n A B := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n A B sigma
+      (SepLowerBound_sylvester_of_sigmaMin n A B sigma hSigma hSigmaMin)
+      hn
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
     a positive singular-value lower bound on the Sylvester operator
     instantiates the Frobenius first-order Sylvester perturbation bound. -/
