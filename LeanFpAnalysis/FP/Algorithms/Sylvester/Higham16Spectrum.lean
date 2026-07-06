@@ -2260,6 +2260,46 @@ theorem sylvesterVecCoeff_schurTriangular_det_ne_zero (m n : Nat)
     rw [hxzero, Matrix.mulVec_zero]
   exact hxne hxzero'
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6),
+    supplied triangular Schur-coordinate case: the exact shifted-determinant
+    hypotheses that make the vectorized Sylvester coefficient nonsingular also
+    rule out supplied common real eigenpairs of `A` and `B^T`. -/
+theorem no_common_real_eigenpair_of_schurTriangular (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.mulVec (Matrix.transpose B) w = (fun j => lam * w j)) :=
+  no_common_real_eigenpair_of_sylvesterVecCoeff_det_ne_zero m n A B
+    (sylvesterVecCoeff_schurTriangular_det_ne_zero
+      m n U R A V S B hU hV hA hB hS hshift)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6),
+    supplied triangular Schur-coordinate case in left-eigenvector form:
+    exact shifted-determinant hypotheses rule out supplied nonzero real
+    eigenpairs `A v = lam v` and `w^T B = lam w^T`. -/
+theorem no_common_real_left_eigenpair_of_schurTriangular (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.vecMul w B = (fun j => lam * w j)) :=
+  no_common_real_left_eigenpair_of_sylvesterVecCoeff_det_ne_zero m n A B
+    (sylvesterVecCoeff_schurTriangular_det_ne_zero
+      m n U R A V S B hU hV hA hB hS hshift)
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
     Schur-coordinate case: the practical componentwise error bound can use
     the actual nonsingular inverse of the vec/Kronecker Sylvester coefficient.
