@@ -15047,6 +15047,51 @@ theorem
       (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) hdetAP)
     hstack hr hres hgap
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 route audit:
+    the source rank assumptions in (20.24) do not imply the determinant-facing
+    Gram condition `det((AP)(AP)^T) != 0` for the concrete full-row-rank
+    pseudoinverse construction of `(AP)^+`.
+
+    In this `m = n = 3`, `p = 1` example, `A = I` and `B` selects the first
+    coordinate.  Then `B` is full row rank and `[A; B]` has full column rank, but
+    `AP = A(I - B^+B)` has rank two, so its `3 x 3` row Gram determinant is
+    zero.  Thus the rank-tolerant Moore--Penrose route is genuinely needed for
+    the full Theorem 20.8 surface. -/
+theorem theorem20_8_gram_AP_rectGram_det_zero_counterexample :
+    ∃ (A : Fin 3 → Fin 3 → ℝ) (B : Fin 1 → Fin 3 → ℝ)
+      (Bplus : Fin 3 → Fin 1 → ℝ),
+      rectMatMul B Bplus = idMatrix 1 ∧
+        LSEFullRowRank B ∧
+          LSEStackedFullColumnRank A B ∧
+            Matrix.det
+              (rectGram (theorem20_8AP A B Bplus) :
+                Matrix (Fin 3) (Fin 3) ℝ) = 0 := by
+  let A : Fin 3 → Fin 3 → ℝ := idMatrix 3
+  let B : Fin 1 → Fin 3 → ℝ := fun _ j =>
+    if j = (0 : Fin 3) then 1 else 0
+  let Bplus : Fin 3 → Fin 1 → ℝ := fun j _ =>
+    if j = (0 : Fin 3) then 1 else 0
+  refine ⟨A, B, Bplus, ?_, ?_, ?_, ?_⟩
+  · ext i j
+    fin_cases i
+    fin_cases j
+    norm_num [B, Bplus, rectMatMul, idMatrix]
+  · intro y
+    refine ⟨fun j : Fin 3 => if j = (0 : Fin 3) then y 0 else 0, ?_⟩
+    ext i
+    fin_cases i
+    norm_num [B, lseConstraintLinearMap, rectMatMulVec]
+  · intro x y hxy
+    have hAxy : rectMatMulVec A x = rectMatMulVec A y := by
+      ext i
+      have hi := congrFun hxy (Fin.castAdd 1 i)
+      rw [congrFun (lseStackedMatrix_mulVec A B x) (Fin.castAdd 1 i)] at hi
+      rw [congrFun (lseStackedMatrix_mulVec A B y) (Fin.castAdd 1 i)] at hi
+      simpa [Fin.append_left] using hi
+    simpa [A, rectMatMulVec_idMatrix] using hAxy
+  · simp [A, B, Bplus, theorem20_8AP, theorem20_8Projection, rectMatMul,
+      rectGram, idMatrix, Matrix.det_fin_three, eq_comm]
+
 /-- A square finite matrix is lower triangular when all entries above the
     diagonal vanish.  This is the exact triangularity predicate used by
     Higham's generalized QR factorization in (20.27). -/
