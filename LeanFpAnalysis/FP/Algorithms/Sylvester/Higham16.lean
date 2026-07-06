@@ -870,6 +870,60 @@ theorem sylvester_practical_abs_error_bound_of_computed_residual_error_model_sca
         hRhat hRu hdR)
       heta hcomponent
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), absolute Frobenius
+    residual-arithmetic endpoint: a Frobenius residual perturbation certificate
+    supplies the componentwise residual budget with uniform radius `rho`,
+    giving an unnormalized max-entry forward-error bound. -/
+theorem sylvester_practical_abs_error_bound_of_computed_residual_frobenius_error_model
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat dR : RMatFn m n) (rho : Real)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hrho : 0 <= rho)
+    (hdR : frobNorm dR <= rho) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat (fun _ _ => rho)) := by
+  exact
+    sylvester_practical_abs_error_bound_of_computed_residual_certificate m n
+      A B C X Xhat Rhat (fun _ _ => rho) Pinv PinvAbs
+      hX hLeft hPinvAbs
+      (sylvesterComputedResidualBudget_of_frobenius_error_model m n
+        A B C Xhat Rhat dR rho hRhat hrho hdR)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), absolute Frobenius
+    residual-arithmetic endpoint with a scalar practical-budget cap. -/
+theorem sylvester_practical_abs_error_bound_of_computed_residual_frobenius_error_model_scalar
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat dR : RMatFn m n) (rho eta : Real)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hrho : 0 <= rho)
+    (hdR : frobNorm dR <= rho)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs Rhat (fun _ _ => rho) p <= eta) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) <= eta := by
+  exact
+    sylvester_practical_abs_error_bound_of_computed_residual_certificate_scalar m n
+      A B C X Xhat Rhat (fun _ _ => rho) Pinv PinvAbs eta
+      hX hLeft hPinvAbs
+      (sylvesterComputedResidualBudget_of_frobenius_error_model m n
+        A B C Xhat Rhat dR rho hRhat hrho hdR)
+      heta hcomponent
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
     practical residual bound from a Frobenius residual-arithmetic model.
     The bound `||dR||_F <= rho` derives the raw componentwise residual-budget
