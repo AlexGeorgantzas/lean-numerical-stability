@@ -2039,6 +2039,58 @@ theorem higham11_8_aasen_factorization_product_abs_bound_gamma
     rw [hsum]
   simpa [htarget, U] using hchain
 
+/-- Aasen factorization-product residual from source-prefix rounded column
+updates.  This combines the global relative `L_hat` bridge for the rounded
+next-column recurrences with the factorization-product residual theorem, so
+the factorization side no longer needs a separately supplied relative `L_hat`
+hypothesis. -/
+theorem higham11_8_aasen_factorization_product_abs_bound_of_source_prefix_updates
+    (n : ℕ) (fp : FPModel)
+    (A L H T L_hat T_hat BT : Fin n → Fin n → ℝ)
+    (γ_factor : ℝ) (hγ_factor : 0 ≤ γ_factor)
+    (hBT : ∀ p q : Fin n, 0 ≤ BT p q)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hvalSum : ∀ i next : Fin n, next.val = i.val + 1 →
+      gammaValid fp next.val)
+    (hvalUpdate : gammaValid fp 2)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ γ_factor * |L k next|)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT i j) :
+    ∀ i j : Fin n,
+      |(∑ p : Fin n, ∑ q : Fin n, L_hat i p * T_hat p q * L_hat j q) -
+          A i j| ≤
+        higham11_15_aasenChainDeltaABound n γ_factor BT L T
+          (fun r c => L c r) i j := by
+  have hLhat : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ_factor * |L i j| :=
+    higham11_14_fl_aasen_source_prefix_Lhat_global_relative_bound_of_exact_recurrence
+      n fp A L H L_hat hrec hHnz hvalSum hvalUpdate γ_factor hγ_factor
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel
+  exact
+    higham11_8_aasen_factorization_product_abs_bound_gamma
+      n A L T L_hat T_hat BT γ_factor hγ_factor hBT hprod hLhat hThat
+
 /-- Combine a factorization residual and a solve-chain residual into a single
 source backward-error perturbation.  If `A_fact` is close to the source matrix
 `A`, and `(A_fact + DeltaS) w = rhs`, then `(A + DeltaA) w = rhs` for a
