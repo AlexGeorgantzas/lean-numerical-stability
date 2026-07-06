@@ -53,6 +53,54 @@ theorem SepLowerBound_lyapunov_of_sigmaMin (n : Nat)
     sepLowerBound_of_sylvesterOp_sigmaMin n A
       (fun i j => -matTranspose A i j) sigma hsigma hSylv
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a positive singular-value lower bound for the Lyapunov operator makes its
+    exact kernel trivial.
+
+    This is an operator-level invertibility consequence of the supplied
+    sigma-min certificate. It does not assume a separate `SepLowerBound`
+    certificate or a vectorized coefficient determinant. -/
+theorem lyapunovOp_eq_zero_iff_of_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (Y : Fin n -> Fin n -> Real) :
+    (forall i j, lyapunovOp n A Y i j = 0) <->
+      forall i j, Y i j = 0 := by
+  constructor
+  · intro hYop
+    have hOpNorm : frobNorm (lyapunovOp n A Y) = 0 :=
+      (frobNorm_eq_zero_iff (lyapunovOp n A Y)).mpr hYop
+    have hLower := hSigmaMin Y
+    rw [hOpNorm] at hLower
+    have hYnorm_nonneg : 0 <= frobNorm Y := frobNorm_nonneg Y
+    have hYnorm : frobNorm Y = 0 := by
+      nlinarith
+    exact (frobNorm_eq_zero_iff Y).mp hYnorm
+  · intro hY i j
+    unfold lyapunovOp matMul
+    simp [hY]
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a positive Lyapunov operator sigma-min certificate eliminates the separate
+    `SepLowerBound` assumption in the local uniqueness API: two exact solutions
+    of `A X + X A^T = C` are equal.
+
+    Scope: exact arithmetic and certificate transfer only. Existence still
+    depends on the vectorized finite-dimensional solve infrastructure. -/
+theorem lyapunov_unique_solution_of_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (C X1 X2 : Fin n -> Fin n -> Real)
+    (hX1 : forall i j, lyapunovOp n A X1 i j = C i j)
+    (hX2 : forall i j, lyapunovOp n A X2 i j = C i j) :
+    forall i j, X1 i j = X2 i j := by
+  exact
+    lyapunov_unique_solution_of_sep n A sigma
+      (SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin)
+      C X1 X2 hX1 hX2
+
 /-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
     in positive dimension, a supplied positive singular-value lower-bound
     certificate for the Lyapunov operator lower-bounds the exact infimum model
