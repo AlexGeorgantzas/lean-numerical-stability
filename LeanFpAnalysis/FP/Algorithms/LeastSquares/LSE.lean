@@ -1126,6 +1126,105 @@ theorem theorem20_7_completionA_bound_of_h19_stored_panel_step_budget_nat
       (theorem20_7_completionA_active_tail_bound_of_h19_stored_panel_step_budget_nat
         hn fp v beta Astage A err B hm hStep hcompleted hpivot hexact hbudget)
 
+/-- Theorem 20.7 support: completion-time right-hand-side row bounds from the
+    stored Householder RHS one-step budget interface.
+
+For row `i` at stage `i`, the stored RHS update uses the active compact
+Householder primitive.  This wrapper turns an exact same-reflector RHS growth
+bound plus the concrete compact component budget into the completion-time
+bound for `bstage (i+1) i`. -/
+theorem theorem20_7_completionB_bound_of_h19_stored_rhs_step_budget_nat
+    {m n : ℕ} (hn : 0 < n)
+    (fp : FPModel) (v : ℕ → Fin m → ℝ) (beta : ℕ → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (phi err : ℝ) (B : Fin m → ℝ)
+    (hm : gammaValid fp m)
+    (hStep : ∀ k, k < n →
+      bstage (k + 1) =
+        fl_householderStoredRhsStep fp m k (v k) (beta k) (bstage k))
+    (hexact :
+      ∀ i : Fin m, i.val + 1 < n →
+        |matMulVec m (householder m (v i.val) (beta i.val)) (bstage i.val) i| ≤
+          H19.Theorem19_6.active_row_growth_factor m * B i)
+    (hbudget :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * B i +
+            householderCompactComponentBudget fp m (v i.val) (beta i.val)
+              (bstage i.val) i ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i) :
+    ∀ i : Fin m, i.val + 1 < n →
+      |bstage (i.val + 1) i| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  intro i hi
+  have hik : i.val < n := Nat.lt_trans (Nat.lt_succ_self i.val) hi
+  let exactUpdate : ℝ :=
+    matMulVec m (householder m (v i.val) (beta i.val)) (bstage i.val) i
+  have hstepPoint :
+      bstage (i.val + 1) i =
+        fl_householderStoredRhsStep fp m i.val
+          (v i.val) (beta i.val) (bstage i.val) i := by
+    exact congrFun (hStep i.val hik) i
+  rw [hstepPoint]
+  have hround :
+      |fl_householderStoredRhsStep fp m i.val
+          (v i.val) (beta i.val) (bstage i.val) i - exactUpdate| ≤
+        householderCompactComponentBudget fp m
+          (v i.val) (beta i.val) (bstage i.val) i := by
+    have hnot : ¬ i.val < i.val := lt_irrefl i.val
+    simpa [fl_householderStoredRhsStep, exactUpdate, hnot] using
+      fl_householderApplyCompact_componentwise_error_bound
+        fp m (v i.val) (beta i.val) (bstage i.val) hm i
+  have htri :
+      |fl_householderStoredRhsStep fp m i.val
+          (v i.val) (beta i.val) (bstage i.val) i| ≤
+        |fl_householderStoredRhsStep fp m i.val
+            (v i.val) (beta i.val) (bstage i.val) i - exactUpdate| +
+          |exactUpdate| := by
+    have hsum :
+        fl_householderStoredRhsStep fp m i.val
+            (v i.val) (beta i.val) (bstage i.val) i =
+          (fl_householderStoredRhsStep fp m i.val
+              (v i.val) (beta i.val) (bstage i.val) i - exactUpdate) +
+            exactUpdate := by
+      ring
+    calc
+      |fl_householderStoredRhsStep fp m i.val
+          (v i.val) (beta i.val) (bstage i.val) i|
+          = |(fl_householderStoredRhsStep fp m i.val
+              (v i.val) (beta i.val) (bstage i.val) i - exactUpdate) +
+              exactUpdate| := by
+              exact congrArg (fun z : ℝ => |z|) hsum
+      _ ≤ |fl_householderStoredRhsStep fp m i.val
+            (v i.val) (beta i.val) (bstage i.val) i - exactUpdate| +
+          |exactUpdate| := by
+            exact abs_add_le
+              (fl_householderStoredRhsStep fp m i.val
+                (v i.val) (beta i.val) (bstage i.val) i - exactUpdate)
+              exactUpdate
+  calc
+    |fl_householderStoredRhsStep fp m i.val
+        (v i.val) (beta i.val) (bstage i.val) i|
+        ≤ |fl_householderStoredRhsStep fp m i.val
+            (v i.val) (beta i.val) (bstage i.val) i - exactUpdate| +
+          |exactUpdate| := htri
+    _ ≤ householderCompactComponentBudget fp m
+          (v i.val) (beta i.val) (bstage i.val) i +
+        H19.Theorem19_6.active_row_growth_factor m * B i :=
+          add_le_add hround (by simpa [exactUpdate] using hexact i hi)
+    _ = H19.Theorem19_6.active_row_growth_factor m * B i +
+        householderCompactComponentBudget fp m
+          (v i.val) (beta i.val) (bstage i.val) i := by ring
+    _ ≤ (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+          err) *
+        theorem20_7_initialWeightedRowMax hn A b phi i :=
+          hbudget i hi
+
 /-- Theorem 20.7 support: split the staged row-growth obligations into
     completed rows `i < k` and active rows `k <= i`.
 
