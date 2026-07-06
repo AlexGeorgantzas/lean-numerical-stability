@@ -4407,6 +4407,183 @@ theorem sylvester_relative_perturbation_of_vecCoeff_gram_eigenvalues (n : Nat)
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hdX_ne hX_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    total Frobenius first-order Sylvester perturbation bound from a positive
+    lower bound on the concrete Kronecker/vectorized Sylvester coefficient.
+
+    This source-facing wrapper removes the nonzero perturbation side condition
+    by routing through the total `SepLowerBound` theorem. -/
+theorem sylvester_perturbation_bound_of_vecCoeff_sigmaMin_total (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_of_sepLowerBound_total n
+      A B X dA dB dC dX sigma
+      (SepLowerBound_of_vecCoeff_sigmaMin n A B sigma hSigma hCoeff)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    total relative Sylvester perturbation bound from a positive lower bound on
+    the concrete Kronecker/vectorized Sylvester coefficient.
+
+    This is the total absolute vec-coefficient wrapper divided by the positive
+    Frobenius norm of the exact Sylvester solution. -/
+theorem sylvester_relative_perturbation_of_vecCoeff_sigmaMin_total (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma sigma * eps := by
+  exact
+    sylvester_relative_perturbation_of_sepLowerBound_total n
+      A B X dA dB dC dX sigma
+      (SepLowerBound_of_vecCoeff_sigmaMin n A B sigma hSigma hCoeff)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    total Frobenius first-order Sylvester perturbation bound from a concrete
+    left inverse and operator-2 radius for the printed vec/Kronecker
+    coefficient. -/
+theorem sylvester_perturbation_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+    (n : Nat) (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      M * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  have h :=
+    sylvester_perturbation_bound_of_sepLowerBound_total n
+      A B X dA dB dC dX (1 / M)
+      (SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A B Pinv hM hLeft hPinv)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+  simpa [one_div] using h
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    total relative Sylvester perturbation bound from a concrete left inverse
+    and operator-2 radius for the printed vec/Kronecker coefficient. -/
+theorem sylvester_relative_perturbation_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+    (n : Nat) (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma (1 / M) * eps := by
+  exact
+    sylvester_relative_perturbation_of_sepLowerBound_total n
+      A B X dA dB dC dX (1 / M)
+      (SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A B Pinv hM hLeft hPinv)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    total Frobenius first-order Sylvester perturbation bound from a finite
+    Gram-eigenvalue lower bound for the concrete vectorized Sylvester
+    coefficient. -/
+theorem sylvester_perturbation_bound_of_vecCoeff_gram_eigenvalues_total (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / Real.sqrt lam) *
+        ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_of_sepLowerBound_total n
+      A B X dA dB dC dX (Real.sqrt lam)
+      (SepLowerBound_of_vecCoeff_gram_eigenvalues n A B hLam hEig)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    total relative Sylvester perturbation bound from a finite Gram-eigenvalue
+    lower bound for the concrete vectorized Sylvester coefficient. -/
+theorem sylvester_relative_perturbation_of_vecCoeff_gram_eigenvalues_total
+    (n : Nat) (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma (Real.sqrt lam) * eps := by
+  exact
+    sylvester_relative_perturbation_of_sepLowerBound_total n
+      A B X dA dB dC dX (Real.sqrt lam)
+      (SepLowerBound_of_vecCoeff_gram_eigenvalues n A B hLam hEig)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26),
     diagonal case: Frobenius first-order Sylvester perturbation bound from the
     concrete diagonal vec/Kronecker coefficient lower-bound certificate. -/
@@ -5998,6 +6175,189 @@ theorem lyapunov_relative_perturbation_of_vecCoeff_gram_eigenvalues
         n A (le_of_lt hLam) (Real.sqrt_pos.mpr hLam) hEig)
       alpha alpha gamma eps halpha halpha hgamma heps
       hDeltaA hDeltaB hDeltaC hLin hDeltaX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    total Frobenius Lyapunov perturbation bound from a positive lower bound on
+    the concrete vectorized Lyapunov coefficient.
+
+    This source-facing wrapper removes the nonzero perturbation side condition
+    by routing through the total Lyapunov `SepLowerBound` theorem. -/
+theorem lyapunov_perturbation_bound_of_vecCoeff_sigmaMin_total (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j) :
+    frobNorm DeltaX <=
+      (1 / sigma) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound_of_sepLowerBound_total n
+      A X DeltaA DeltaC DeltaX sigma hsigma
+      (SepLowerBound_lyapunov_of_vecCoeff_sigmaMin
+        n A sigma hsigma hCoeff)
+      alpha gamma eps halpha hgamma heps
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    total relative Lyapunov perturbation bound from a positive lower bound on
+    the concrete vectorized Lyapunov coefficient.
+
+    This is the total absolute vec-coefficient wrapper divided by the positive
+    Frobenius norm of the exact Lyapunov solution. -/
+theorem lyapunov_relative_perturbation_of_vecCoeff_sigmaMin_total
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n A (fun i j => -matTranspose A i j) X
+        alpha alpha gamma sigma * eps := by
+  exact
+    lyapunov_relative_perturbation_of_sepLowerBound_total n
+      A X DeltaA DeltaC DeltaX sigma hsigma
+      (SepLowerBound_lyapunov_of_vecCoeff_sigmaMin
+        n A sigma hsigma hCoeff)
+      alpha gamma eps halpha hgamma heps
+      hDeltaA hDeltaC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    total Frobenius Lyapunov perturbation bound from a concrete left inverse
+    and operator-2 radius for the printed Lyapunov vec/Kronecker coefficient. -/
+theorem lyapunov_perturbation_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j) :
+    frobNorm DeltaX <=
+      M * (2 * alpha * frobNorm X + gamma) * eps := by
+  have h :=
+    lyapunov_perturbation_bound_of_sepLowerBound_total n
+      A X DeltaA DeltaC DeltaX (1 / M) (one_div_pos.mpr hM)
+      (SepLowerBound_lyapunov_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A Pinv hM hLeft hPinv)
+      alpha gamma eps halpha hgamma heps
+      hDeltaA hDeltaC hLin
+  simpa [one_div] using h
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    total relative Lyapunov perturbation bound from a concrete left inverse
+    and operator-2 radius for the printed Lyapunov vec/Kronecker coefficient. -/
+theorem lyapunov_relative_perturbation_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n A (fun i j => -matTranspose A i j) X
+        alpha alpha gamma (1 / M) * eps := by
+  exact
+    lyapunov_relative_perturbation_of_sepLowerBound_total n
+      A X DeltaA DeltaC DeltaX (1 / M) (one_div_pos.mpr hM)
+      (SepLowerBound_lyapunov_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A Pinv hM hLeft hPinv)
+      alpha gamma eps halpha hgamma heps
+      hDeltaA hDeltaC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    total Frobenius Lyapunov perturbation bound from a supplied finite
+    Gram-eigenvalue lower bound for the concrete Lyapunov vec/Kronecker
+    coefficient. -/
+theorem lyapunov_perturbation_bound_of_vecCoeff_gram_eigenvalues_total
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j) :
+    frobNorm DeltaX <=
+      (1 / Real.sqrt lam) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound_of_sepLowerBound_total n
+      A X DeltaA DeltaC DeltaX (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (SepLowerBound_lyapunov_of_vecCoeff_gram_eigenvalues
+        n A (le_of_lt hLam) (Real.sqrt_pos.mpr hLam) hEig)
+      alpha gamma eps halpha hgamma heps
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    total relative Lyapunov perturbation bound from a supplied finite
+    Gram-eigenvalue lower bound for the concrete Lyapunov vec/Kronecker
+    coefficient. -/
+theorem lyapunov_relative_perturbation_of_vecCoeff_gram_eigenvalues_total
+    (n : Nat) (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n A (fun i j => -matTranspose A i j) X
+        alpha alpha gamma (Real.sqrt lam) * eps := by
+  exact
+    lyapunov_relative_perturbation_of_sepLowerBound_total n
+      A X DeltaA DeltaC DeltaX (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (SepLowerBound_lyapunov_of_vecCoeff_gram_eigenvalues
+        n A (le_of_lt hLam) (Real.sqrt_pos.mpr hLam) hEig)
+      alpha gamma eps halpha hgamma heps
+      hDeltaA hDeltaC hLin hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     source-shaped Lyapunov first-order perturbation bound from a finite

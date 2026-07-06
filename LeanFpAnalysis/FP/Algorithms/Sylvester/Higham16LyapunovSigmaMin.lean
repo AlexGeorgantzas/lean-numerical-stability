@@ -161,6 +161,33 @@ theorem lyapunov_perturbation_bound_of_sigmaMin (n : Nat)
       hDeltaA hDeltaC hLin hDeltaX_ne
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    total Frobenius Lyapunov perturbation bound from a supplied positive
+    singular-value lower bound on the Lyapunov operator.
+
+    Scope: exact arithmetic and certificate transfer. The total `SepLowerBound`
+    source wrapper handles the zero perturbation case. -/
+theorem lyapunov_perturbation_bound_of_sigmaMin_total (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j) :
+    frobNorm DeltaX <=
+      (1 / sigma) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound_of_sepLowerBound_total n
+      A X DeltaA DeltaC DeltaX sigma hsigma
+      (SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin)
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
     relative Lyapunov perturbation bound from a supplied positive
     singular-value lower bound on the Lyapunov operator.
 
@@ -200,6 +227,35 @@ theorem lyapunov_relative_perturbation_of_sigmaMin (n : Nat)
       (SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin)
       alpha alpha gamma eps halpha halpha hgamma heps
       hDeltaA hDeltaB hDeltaC hLin hDeltaX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    total relative Lyapunov perturbation bound from a supplied positive
+    singular-value lower bound on the Lyapunov operator.
+
+    Scope: exact arithmetic and certificate transfer, divided by the positive
+    Frobenius norm of the exact Lyapunov solution. -/
+theorem lyapunov_relative_perturbation_of_sigmaMin_total (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n A (fun i j => -matTranspose A i j) X
+        alpha alpha gamma sigma * eps := by
+  exact
+    lyapunov_relative_perturbation_of_sepLowerBound_total n
+      A X DeltaA DeltaC DeltaX sigma hsigma
+      (SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin)
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     raw first-order Lyapunov perturbation bound from a supplied positive
