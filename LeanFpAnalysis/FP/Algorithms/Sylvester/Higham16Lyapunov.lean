@@ -689,6 +689,95 @@ theorem lyapunov_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
         (fun i j => -matTranspose A i j) sigma hsigma hle)
       hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total source-facing Lyapunov a posteriori error-residual bound from a
+    supplied exact `SepLowerBound` certificate for `sep(A,-A^T)`.
+
+    This version removes the nonzero error side condition by proving the
+    zero-error case directly. -/
+theorem lyapunov_aposteriori_bound_of_sepLowerBound_total (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  by_cases hE_ne :
+      Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)
+  · exact
+      lyapunov_aposteriori_bound_of_sepLowerBound n A C X Xhat sigma
+        hSep hExact hE_ne
+  · have hE_sq :
+        frobNormSq (fun i j => X i j - Xhat i j) = 0 :=
+      Classical.not_not.mp hE_ne
+    have hE :
+        frobNorm (fun i j => X i j - Xhat i j) = 0 := by
+      simp [frobNorm_eq_sqrt_frobNormSq, hE_sq]
+    have hsigma : 0 < sigma := hSep.1
+    rw [hE]
+    exact mul_nonneg (by positivity) (frobNorm_nonneg _)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total relative Lyapunov a posteriori error-residual bound from a supplied
+    exact `SepLowerBound` certificate for `sep(A,-A^T)`.
+
+    The absolute total theorem handles zero error; this wrapper only divides by
+    the positive norm of the exact solution. -/
+theorem lyapunov_relative_aposteriori_bound_of_sepLowerBound_total (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  have hAbs :=
+    lyapunov_aposteriori_bound_of_sepLowerBound_total n A C X Xhat sigma
+      hSep hExact
+  exact div_le_div_of_nonneg_right hAbs (le_of_lt hX_pos)
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    total Lyapunov a posteriori error-residual bound from a positive lower
+    bound on the exact infimum model of `sep(A,-A^T)`.
+
+    This routes through the total `SepLowerBound` wrapper. -/
+theorem lyapunov_aposteriori_bound_of_pos_le_sylvesterSepInf_total (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_of_sepLowerBound_total n A C X Xhat sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    total relative Lyapunov a posteriori error-residual bound from a positive
+    lower bound on the exact infimum model of `sep(A,-A^T)`.
+
+    This routes through the total `SepLowerBound` wrapper and divides by
+    `||X||_F`. -/
+theorem lyapunov_relative_aposteriori_bound_of_pos_le_sylvesterSepInf_total
+    (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  exact
+    lyapunov_relative_aposteriori_bound_of_sepLowerBound_total n
+      A C X Xhat sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      hExact hX_pos
+
 -- ============================================================
 -- Diagonal-case condition-number realization
 -- (eq (16.27), diagonal / distinct-eigenvalue)
@@ -918,6 +1007,46 @@ theorem lyapunov_relative_aposteriori_bound_diagonal (n : Nat)
   exact
     lyapunov_relative_aposteriori_bound_of_sepLowerBound n
       (Matrix.diagonal a) C X Xhat s hSep hExact hE_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal Lyapunov case:
+    total residual-error bound from an entrywise lower bound on `|a_i + a_j|`.
+
+    The zero-error case is handled by the total `SepLowerBound` wrapper. -/
+theorem lyapunov_aposteriori_bound_diagonal_total (n : Nat)
+    (a : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (hExact : forall i j,
+      lyapunovOp n (Matrix.diagonal a) X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / s) * frobNorm (lyapunovResidual n (Matrix.diagonal a) C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_of_sepLowerBound_total n (Matrix.diagonal a)
+      C X Xhat s
+      (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal Lyapunov case:
+    total relative residual-error bound from the same entrywise sum gap.
+
+    This routes through the total `SepLowerBound` wrapper and divides by
+    `||X||_F`. -/
+theorem lyapunov_relative_aposteriori_bound_diagonal_total (n : Nat)
+    (a : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (hExact : forall i j,
+      lyapunovOp n (Matrix.diagonal a) X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / s) *
+        frobNorm (lyapunovResidual n (Matrix.diagonal a) C Xhat)) /
+        frobNorm X := by
+  exact
+    lyapunov_relative_aposteriori_bound_of_sepLowerBound_total n
+      (Matrix.diagonal a) C X Xhat s
+      (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
+      hExact hX_pos
 
 /-- Higham, 2nd ed., §16.3, eq (16.27), diagonal case (p. 317):
     the concrete structured Lyapunov condition number for the separated diagonal
