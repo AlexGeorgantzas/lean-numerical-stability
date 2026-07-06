@@ -19,7 +19,12 @@ Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
 (chapter-label surface); reusable definitions and proofs in
 `LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskyIndefinite.lean`.
 
-## Completed selected targets (genuinely proved)
+## Proved selected targets and dependencies
+Rows in this table are compiled Lean results. Rows labelled with Theorem 11.8
+after the exact recurrence entries are dependency or wrapper results only; they
+do **not** close the selected Theorem 11.8 row while the budget-comparison
+assumptions remain open in the not-proved ledger below.
+
 | Source item | Lean declaration(s) | File | Notes |
 |---|---|---|---|
 | Alg 11.1 α = (1+√17)/8 root of 4α²−α−1 | `bunch_parlett_alpha_root`, `higham11_1_bunch_parlett_alpha_root` | CholeskyIndefinite / Ch11 | exact algebraic identity |
