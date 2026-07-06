@@ -2310,6 +2310,48 @@ theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero (m n : Nat)
 
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
     real-quasi-Schur singleton-block case: the strict supplied-factor
+    determinant certificate makes the vectorized Sylvester coefficient have
+    trivial kernel. Scope: exact supplied factors only; no 2-by-2 block solve
+    or floating-point stability is claimed. -/
+theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_eq_zero_iff
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (x : Prod (Fin n) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff m n A B) x = 0 <-> x = 0 := by
+  constructor
+  · intro hx
+    have hdet :=
+      sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero
+        m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+        hpBmono hpBcard hpBstrict hSstrict hshift
+    have h := congrArg
+      (Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B))) hx
+    rw [Matrix.mulVec_zero, Matrix.mulVec_mulVec,
+      Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet),
+      Matrix.one_mulVec] at h
+    exact h
+  · intro hx
+    rw [hx]
+    exact Matrix.mulVec_zero _
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: the strict supplied-factor
     determinant certificate makes the vectorized Sylvester coefficient
     injective. Scope: exact supplied factors only; no 2-by-2 block solve or
     floating-point stability is claimed. -/
