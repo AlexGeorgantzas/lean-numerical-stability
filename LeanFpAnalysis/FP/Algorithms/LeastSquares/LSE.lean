@@ -1448,6 +1448,136 @@ theorem theorem20_7_deltaBEntry_bound_of_alphaBetaMax_le {m n : ℕ}
     (theorem20_7_deltaBEntryBudget_le_of_alphaBetaMax_le
       hm hn Astage A bstage b phi gammaTilde i hphi hgamma hmax)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7, printed page 395:
+    source-facing row-wise backward-error certificate for Householder QR
+    with row pivoting.  The certificate records perturbations whose printed
+    row-ratio budgets hold and whose perturbed least-squares problem is solved
+    exactly by the computed vector.
+
+    This is an exactness and perturbation certificate boundary; it does not
+    itself construct the QR perturbations or prove the row-sorting ratio
+    estimates. -/
+structure Theorem20_7RowwiseBackwardError {m n : ℕ} (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (phi gammaTilde : ℝ) (xhat : Fin n → ℝ) : Type where
+  /-- Perturbation of the least-squares matrix `A`. -/
+  DeltaA : Fin m → Fin n → ℝ
+  /-- Perturbation of the right-hand side `b`. -/
+  Deltab : Fin m → ℝ
+  /-- The computed vector solves the displayed perturbed least-squares problem
+      exactly. -/
+  exact_solution :
+    IsLeastSquaresMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i) xhat
+  /-- Printed componentwise `Delta A` budget with the source row ratio
+      `alpha_i`. -/
+  deltaA_bound :
+    ∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (theorem20_7_alpha hn Astage A i)
+          (theorem20_7_initialRowMax hn A i) j
+  /-- Printed componentwise `Delta b` budget with the source row ratio
+      `beta_i`. -/
+  deltab_bound :
+    ∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (theorem20_7_beta hn Astage A bstage b phi i)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)
+
+/-- The exact least-squares minimizer component of a Theorem 20.7 row-wise
+    backward-error certificate. -/
+theorem Theorem20_7RowwiseBackwardError.exactSolution {m n : ℕ}
+    {hn : 0 < n} {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {Astage : ℕ → Fin m → Fin n → ℝ} {bstage : ℕ → Fin m → ℝ}
+    {phi gammaTilde : ℝ} {xhat : Fin n → ℝ}
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Astage bstage phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+      (fun i j => A i j + hcert.DeltaA i j)
+      (fun i => b i + hcert.Deltab i) xhat :=
+  hcert.exact_solution
+
+/-- A Theorem 20.7 row-wise backward-error certificate inherits any uniform
+    finite bound on `max_i {alpha_i, beta_i}` for its `Delta A` components. -/
+theorem Theorem20_7RowwiseBackwardError.deltaA_bound_of_alphaBetaMax_le
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (phi gammaTilde : ℝ) (xhat : Fin n → ℝ) {C : ℝ}
+    (hgamma : 0 ≤ gammaTilde)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Astage bstage phi gammaTilde
+        xhat) :
+    ∀ i : Fin m, ∀ j : Fin n,
+      |hcert.DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde C
+          (theorem20_7_initialRowMax hn A i) j := by
+  intro i j
+  exact
+    theorem20_7_deltaAEntry_bound_of_alphaBetaMax_le
+      hm hn Astage A bstage b phi gammaTilde hcert.DeltaA i j
+      hgamma hmax (hcert.deltaA_bound i j)
+
+/-- A Theorem 20.7 row-wise backward-error certificate inherits any uniform
+    finite bound on `max_i {alpha_i, beta_i}` for its `Delta b` components. -/
+theorem Theorem20_7RowwiseBackwardError.deltab_bound_of_alphaBetaMax_le
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (phi gammaTilde : ℝ) (xhat : Fin n → ℝ) {C : ℝ}
+    (hphi : 0 ≤ phi) (hgamma : 0 ≤ gammaTilde)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Astage bstage phi gammaTilde
+        xhat) :
+    ∀ i : Fin m,
+      |hcert.Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde C
+          (theorem20_7_initialWeightedRowMax hn A b phi i) := by
+  intro i
+  exact
+    theorem20_7_deltaBEntry_bound_of_alphaBetaMax_le
+      hm hn Astage A bstage b phi gammaTilde hcert.Deltab i
+      hphi hgamma hmax (hcert.deltab_bound i)
+
+/-- A uniform `max_i {alpha_i, beta_i}` bound turns a Theorem 20.7 row-wise
+    backward-error certificate into the source-shaped exact perturbed
+    least-squares conclusion with uniform componentwise budgets. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_alphaBetaMax_le
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (phi gammaTilde : ℝ) (xhat : Fin n → ℝ) {C : ℝ}
+    (hphi : 0 ≤ phi) (hgamma : 0 ≤ gammaTilde)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Astage bstage phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde C
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde C
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  refine ⟨hcert.exact_solution, ?_, ?_⟩
+  · exact
+      hcert.deltaA_bound_of_alphaBetaMax_le
+        hm hn A b Astage bstage phi gammaTilde xhat hgamma hmax
+  · exact
+      hcert.deltab_bound_of_alphaBetaMax_le
+        hm hn A b Astage bstage phi gammaTilde xhat hphi hgamma hmax
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row-sorting stage bounds with the printed
     `sqrt(m) * (1 + sqrt 2)^(n-1)` coefficient control each `Delta A`
