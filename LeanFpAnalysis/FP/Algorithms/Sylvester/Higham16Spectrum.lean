@@ -2168,6 +2168,178 @@ theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_quasiSc
     sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_zero
       m n A T C X p q hdet hz
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block active-block injectivity: same-block quasi-Schur block-map data,
+    nonsingular shifted column coefficients, and zero coupling product make the
+    supplied two-column block coefficient injective. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    Function.Injective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_injective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block active-block surjectivity from same-block quasi-Schur data,
+    nonsingular shifted column coefficients, and zero coupling product. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    Function.Surjective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block active-block bijectivity wrapper from the same-block
+    quasi-Schur/shifted-determinant/zero-coupling route. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    Function.Bijective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block trivial-kernel wrapper for the supplied two-column block
+    coefficient under the same-block quasi-Schur/zero-coupling hypotheses. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    (z : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0 <->
+      z = 0 := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_det_ne_zero
+    m n A T p q hdet z
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block active-block linear solve from same-block quasi-Schur data,
+    nonsingular shifted column coefficients, and zero coupling product. -/
+theorem existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    ExistsUnique fun z : Sum (Fin m) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_det_ne_zero
+    m n A T C X p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block active-block solution identification under same-block
+    quasi-Schur data, nonsingular shifted column coefficients, and zero
+    coupling product. -/
+theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    {z : Sum (Fin m) (Fin m) -> Real}
+    (hz :
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q) :
+    z =
+      Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact
+    sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_zero
+      m n A T C X p q hdet hz
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant-based
     column wrapper for the supplied adjacent two-column block solve: assigning
     columns `p` and `q` from the nonsingular-inverse block solution makes `X`
@@ -2740,6 +2912,119 @@ theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_nonsingInv_columns_of_
   have hcols :=
     sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_quasiSchur_no_coupled_block_action_of_prev_columns_eq
       m n A T C X Y pmap p q hmono hcard hzero hpq hsame hsub hno
+      hXp hXq hY hprev
+  funext r
+  cases r with
+  | inl i => simpa using hcols.1 i
+  | inr i => simpa using hcols.2 i
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block column wrapper for the supplied adjacent two-column block solve:
+    assigning columns `p` and `q` from the nonsingular-inverse block solution
+    makes `X` satisfy the supplied two-column recurrence under same-block
+    quasi-Schur data, shifted determinant certificates, and zero coupling. -/
+theorem sylvesterTwoColumnBlockSystem_of_nonsingInv_columns_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i)) :
+    IsSylvesterTwoColumnBlockSystem m n A T C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact sylvesterTwoColumnBlockSystem_of_nonsingInv_columns
+    m n A T C X p q hdet hXp hXq
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block nonsingular-inverse solve/uniqueness bridge: the zero-coupling
+    quasi-Schur determinant route gives active-column uniqueness once previous
+    columns agree. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_quasiSchur_shifted_det_product_zero_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_det_ne_zero_of_prev_columns_eq
+      m n A T C X Y p q hdet hXp hXq hY hprev
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), vector form of
+    the degenerate same-block nonsingular-inverse solve/uniqueness bridge. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_nonsingInv_columns_of_quasiSchur_shifted_det_product_zero_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  have hcols :=
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_quasiSchur_shifted_det_product_zero_of_prev_columns_eq
+      m n A T C X Y pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple
       hXp hXq hY hprev
   funext r
   cases r with
