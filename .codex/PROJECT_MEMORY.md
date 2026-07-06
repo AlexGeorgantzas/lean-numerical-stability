@@ -11166,12 +11166,15 @@ These compile, but should not be treated as fully derived stability results:
 - 2026-07-05 Theorem 13.7 BDD initial active-pivot bridge: added
   `higham13_algorithm13_3_initial_pivot_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`,
   `higham13_algorithm13_3_initial_pivot_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`,
+  `higham13_algorithm13_3_initial_pivot_det_ne_zero_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`,
   and
   `higham13_algorithm13_3_initial_pivot_right_inverse_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
   in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These specialize the
   BDD all-prefix diagonal inverse table to Algorithm 13.3 stage zero, where
-  the active pivot is definitionally the original first diagonal block, and
-  turn `pivotInv 0 = nonsingInv r (A 0 0)` into the exact first active pivot
+  the active pivot is definitionally the original first diagonal block.  The
+  determinant wrapper gives first-pivot nonsingularity directly from the
+  canonical BDD inverse, and the equality wrapper turns
+  `pivotInv 0 = nonsingInv r (A 0 0)` into the exact first active pivot
   right-inverse certificate consumed by matrix-stage APIs.  This closes only
   the base-pivot bridge; deriving later active Schur-stage pivot certificates
   from the printed BDD hypotheses remains open.
