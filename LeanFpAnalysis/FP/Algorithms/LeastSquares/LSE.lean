@@ -1011,6 +1011,121 @@ theorem theorem20_7_completionA_bound_of_stored_panel_lower_zero_and_active_tail
     simpa using hbound_nonneg
   · exact hactiveTail i hi j (le_of_not_gt hji)
 
+/-- Theorem 20.7 support: active/trailing completion-time `A` row bounds from
+    the Chapter 19 stored-panel one-step budget interface.
+
+At row `i`, columns `i <= j` are still in the active/trailing panel during
+stage `i`.  This wrapper turns an exact same-reflector active-tail growth
+bound plus the concrete compact Householder component budget into the
+completion-time bound for `Astage (i+1) i j`. -/
+theorem theorem20_7_completionA_active_tail_bound_of_h19_stored_panel_step_budget_nat
+    {m n : ℕ} (hn : 0 < n)
+    (fp : FPModel) (v : ℕ → Fin m → ℝ) (beta : ℕ → ℝ)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (err : ℝ) (B : Fin m → ℝ)
+    (hm : gammaValid fp m)
+    (hStep : ∀ k, k < n →
+      Astage (k + 1) =
+        fl_householderStoredPanelStep fp m n k (v k) (beta k) (Astage k))
+    (hcompleted :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, j.val < i.val →
+        ∀ a : Fin m,
+          matMulVec m (householder m (v i.val) (beta i.val))
+            (fun r => Astage i.val r j) a = Astage i.val a j)
+    (hpivot :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, j.val = i.val →
+        ∀ a : Fin m, i.val < a.val →
+          matMulVec m (householder m (v i.val) (beta i.val))
+            (fun r => Astage i.val r j) a = 0)
+    (hexact :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        |matMulVec m (householder m (v i.val) (beta i.val))
+            (fun r => Astage i.val r j) i| ≤
+          H19.Theorem19_6.active_row_growth_factor m * B i)
+    (hbudget :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        H19.Theorem19_6.active_row_growth_factor m * B i +
+            householderCompactComponentBudget fp m (v i.val) (beta i.val)
+              (fun r => Astage i.val r j) i ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialRowMax hn A i) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      |Astage (i.val + 1) i j| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  intro i hi j hij
+  have hik : i.val < n := Nat.lt_trans (Nat.lt_succ_self i.val) hi
+  have hstepPoint :
+      Astage (i.val + 1) i j =
+        fl_householderStoredPanelStep fp m n i.val
+          (v i.val) (beta i.val) (Astage i.val) i j := by
+    exact congrFun (congrFun (hStep i.val hik) i) j
+  rw [hstepPoint]
+  exact
+    (H19.Theorem19_6.stored_panel_step_active_entry_bound_of_exact_stage_budget_factor
+      fp m n i.val (v i.val) (beta i.val)
+      (H19.Theorem19_6.active_row_growth_factor m) (B i)
+      (Astage i.val) hm i j hij
+      (fun hj => hcompleted i hi j hj)
+      (fun hj => hpivot i hi j hj)
+      (hexact i hi j hij)).trans
+      (hbudget i hi j hij)
+
+/-- Theorem 20.7 support: full completion-time `A` row bounds for stored panel
+    sequences from lower-prefix zeros plus the Chapter 19 stored-panel
+    one-step budget interface.
+
+This is the combined handoff needed by the completion-preservation route:
+below-diagonal completion entries are discharged by the stored lower-zero
+invariant, while active/trailing entries are supplied by the H19 one-step
+stored-panel budget theorem. -/
+theorem theorem20_7_completionA_bound_of_h19_stored_panel_step_budget_nat
+    {m n : ℕ} (hn : 0 < n)
+    (fp : FPModel) (v : ℕ → Fin m → ℝ) (beta : ℕ → ℝ)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (err : ℝ) (B : Fin m → ℝ) (herr : 0 ≤ err)
+    (hm : gammaValid fp m)
+    (hStep : ∀ k, k < n →
+      Astage (k + 1) =
+        fl_householderStoredPanelStep fp m n k (v k) (beta k) (Astage k))
+    (hcompleted :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, j.val < i.val →
+        ∀ a : Fin m,
+          matMulVec m (householder m (v i.val) (beta i.val))
+            (fun r => Astage i.val r j) a = Astage i.val a j)
+    (hpivot :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, j.val = i.val →
+        ∀ a : Fin m, i.val < a.val →
+          matMulVec m (householder m (v i.val) (beta i.val))
+            (fun r => Astage i.val r j) a = 0)
+    (hexact :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        |matMulVec m (householder m (v i.val) (beta i.val))
+            (fun r => Astage i.val r j) i| ≤
+          H19.Theorem19_6.active_row_growth_factor m * B i)
+    (hbudget :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        H19.Theorem19_6.active_row_growth_factor m * B i +
+            householderCompactComponentBudget fp m (v i.val) (beta i.val)
+              (fun r => Astage i.val r j) i ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialRowMax hn A i) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n,
+      |Astage (i.val + 1) i j| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  exact
+    theorem20_7_completionA_bound_of_stored_panel_lower_zero_and_active_tail_nat
+      hn fp v beta Astage A err herr hStep
+      (theorem20_7_completionA_active_tail_bound_of_h19_stored_panel_step_budget_nat
+        hn fp v beta Astage A err B hm hStep hcompleted hpivot hexact hbudget)
+
 /-- Theorem 20.7 support: split the staged row-growth obligations into
     completed rows `i < k` and active rows `k <= i`.
 
