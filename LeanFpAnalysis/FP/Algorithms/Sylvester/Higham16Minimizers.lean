@@ -4672,6 +4672,71 @@ theorem sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_b
       hX hRu hRhat heta hcomponent hXhat
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equations (16.26), (16.28), and (16.29), square arbitrary-coefficient
+    Frobenius endpoint: a supplied operator sigma-min lower bound and a raw
+    computed-residual certificate give the clean relative Frobenius forward
+    error bound once the componentwise residual budget has a Frobenius cap.
+    Scope: this consumes a residual-budget certificate; it is not a proof that
+    a solver or estimator produced the certificate. -/
+theorem sylvester_relative_error_le_of_operator_sigmaMin_computed_residual_budget
+    (n : Nat)
+    (A B C X Xhat Rhat Ru : RMatFn n n) (sigma eta : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y))
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  have hExact : forall i j, sylvesterOp n A B X i j = C i j := by
+    intro i j
+    simpa [IsSylvesterSolutionRect, sylvesterOpRect, sylvesterOp,
+      matMulRect_square_eq_matMul] using hX i j
+  have hRhat_square : forall i j,
+      |sylvesterResidual n A B C Xhat i j - Rhat i j| <= Ru i j := by
+    intro i j
+    simpa [sylvesterResidualRect, sylvesterResidual, sylvesterOpRect,
+      sylvesterOp, matMulRect_square_eq_matMul] using hRhat i j
+  have hResidualEntry : forall i j,
+      |sylvesterResidual n A B C Xhat i j| <=
+        1 * |(|Rhat i j| + Ru i j)| := by
+    intro i j
+    have hnonneg : 0 <= |Rhat i j| + Ru i j :=
+      add_nonneg (abs_nonneg _) (hRu i j)
+    calc
+      |sylvesterResidual n A B C Xhat i j|
+          = |Rhat i j +
+              (sylvesterResidual n A B C Xhat i j - Rhat i j)| := by
+              congr 1
+              ring
+      _ <= |Rhat i j| +
+            |sylvesterResidual n A B C Xhat i j - Rhat i j| :=
+          abs_add_le _ _
+      _ <= |Rhat i j| + Ru i j := by
+          exact add_le_add (le_refl _) (hRhat_square i j)
+      _ = 1 * |(|Rhat i j| + Ru i j)| := by
+          rw [abs_of_nonneg hnonneg]
+          ring
+  have hResidualNorm :
+      frobNorm (sylvesterResidual n A B C Xhat) <=
+        frobNorm (fun i j => |Rhat i j| + Ru i j) := by
+    have h :=
+      frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le
+        (sylvesterResidual n A B C Xhat)
+        (fun i j => |Rhat i j| + Ru i j)
+        (c := 1) (by norm_num) hResidualEntry
+    simpa using h
+  exact
+    sylvester_relative_error_le_of_sigmaMin_residual_budget n
+      A B C X Xhat sigma eta hsigma hSigmaMin hExact hX_pos
+      (hResidualNorm.trans hResidualCap)
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, eq (16.29), square arbitrary-coefficient raw residual-budget
     monotone endpoint: an operator sigma-min lower-bound certificate supplies
     determinant nonsingularity, while componentwise larger practical estimates

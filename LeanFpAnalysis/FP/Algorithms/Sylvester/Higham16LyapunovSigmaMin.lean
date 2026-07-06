@@ -101,6 +101,35 @@ theorem lyapunov_unique_solution_of_sigmaMin (n : Nat)
       (SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin)
       C X1 X2 hX1 hX2
 
+/-- Higham, 2nd ed., Chapter 16.2.1 and 16.3, equations (16.26)-(16.27):
+    under a positive Lyapunov operator sigma-min certificate, zero exact
+    Lyapunov residual norm certifies that the residual-zero candidate is the
+    unique exact solution.
+
+    Scope: exact arithmetic and certificate transfer only. This removes the
+    separate `SepLowerBound` assumption from the residual-zero uniqueness route;
+    it does not construct the sigma-min certificate or model rounded residual
+    arithmetic. -/
+theorem lyapunov_solution_eq_of_residual_norm_zero_sigmaMin (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hResidual : frobNorm (lyapunovResidual n A C Xhat) = 0) :
+    forall i j, X i j = Xhat i j := by
+  have hResidual_entries :
+      forall i j, lyapunovResidual n A C Xhat i j = 0 :=
+    (frobNorm_eq_zero_iff (lyapunovResidual n A C Xhat)).mp hResidual
+  have hXhat : forall i j, lyapunovOp n A Xhat i j = C i j := by
+    intro i j
+    have hzero := hResidual_entries i j
+    unfold lyapunovResidual at hzero
+    exact (sub_eq_zero.mp hzero).symm
+  exact
+    lyapunov_unique_solution_of_sigmaMin n A sigma hsigma hSigmaMin
+      C X Xhat hExact hXhat
+
 /-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
     in positive dimension, a supplied positive singular-value lower-bound
     certificate for the Lyapunov operator lower-bounds the exact infimum model

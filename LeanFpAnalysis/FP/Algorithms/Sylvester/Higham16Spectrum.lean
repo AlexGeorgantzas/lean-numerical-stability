@@ -623,6 +623,154 @@ noncomputable def sylvesterTwoColumnBlockCoeff (m n : Nat)
     ((- (T p q)) • (1 : Matrix (Fin m) (Fin m) Real))
     (sylvesterTriangularShiftedCoeff m A (T q q))
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), first-column
+    quadratic coefficient induced by the supplied adjacent two-column block.
+    A zero vector for the full block coefficient forces the first active
+    column through this product-shift coefficient. -/
+noncomputable def sylvesterTwoColumnBlockFirstQuadraticCoeff (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n) :
+    Matrix (Fin m) (Fin m) Real :=
+  sylvesterTriangularShiftedCoeff m A (T q q) *
+      sylvesterTriangularShiftedCoeff m A (T p p) -
+    Matrix.scalar (Fin m) (T q p * T p q)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), second-column
+    quadratic coefficient induced by the supplied adjacent two-column block.
+    This is the companion product-shift condition for the second active
+    column. -/
+noncomputable def sylvesterTwoColumnBlockSecondQuadraticCoeff (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n) :
+    Matrix (Fin m) (Fin m) Real :=
+  sylvesterTriangularShiftedCoeff m A (T p p) *
+      sylvesterTriangularShiftedCoeff m A (T q q) -
+    Matrix.scalar (Fin m) (T p q * T q p)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
+    kernel reduction for the supplied adjacent two-column block: a vector in
+    the kernel of the `2 x 2` block coefficient has first and second active
+    components in the kernels of the two product-shift quadratic coefficients.
+    This is exact block algebra and does not use a supplied inverse. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_quadratic (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (z : Sum (Fin m) (Fin m) -> Real)
+    (hz : Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0) :
+    Matrix.mulVec (sylvesterTwoColumnBlockFirstQuadraticCoeff m n A T p q)
+        (fun i : Fin m => z (Sum.inl i)) = 0 /\
+      Matrix.mulVec (sylvesterTwoColumnBlockSecondQuadraticCoeff m n A T p q)
+        (fun i : Fin m => z (Sum.inr i)) = 0 := by
+  let u : Fin m -> Real := fun i => z (Sum.inl i)
+  let v : Fin m -> Real := fun i => z (Sum.inr i)
+  let P : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T p p)
+  let Q : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T q q)
+  have hP : Matrix.mulVec P u = fun i : Fin m => T q p * v i := by
+    funext i
+    have hi := congrFun hz (Sum.inl i)
+    have hi' : Matrix.mulVec P u i + (-(T q p)) * v i = 0 := by
+      simpa [sylvesterTwoColumnBlockCoeff, P, Q, u, v,
+        Matrix.fromBlocks_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec] using hi
+    linarith
+  have hQ : Matrix.mulVec Q v = fun i : Fin m => T p q * u i := by
+    funext i
+    have hi := congrFun hz (Sum.inr i)
+    have hi' : Matrix.mulVec Q v i + (-(T p q)) * u i = 0 := by
+      simpa [sylvesterTwoColumnBlockCoeff, P, Q, u, v,
+        Matrix.fromBlocks_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec,
+        add_comm, add_left_comm, add_assoc] using hi
+    linarith
+  constructor
+  case left =>
+    funext i
+    have hsmul : Matrix.mulVec Q (fun i : Fin m => T q p * v i) =
+        fun i : Fin m => T q p * Matrix.mulVec Q v i := by
+      simpa using Matrix.mulVec_smul Q (T q p) v
+    calc
+      Matrix.mulVec (sylvesterTwoColumnBlockFirstQuadraticCoeff m n A T p q) u i =
+          Matrix.mulVec Q (Matrix.mulVec P u) i - (T q p * T p q) * u i := by
+        simp [sylvesterTwoColumnBlockFirstQuadraticCoeff, P, Q, Matrix.sub_mulVec,
+          Matrix.mulVec_mulVec, Matrix.scalar_apply]
+      _ = Matrix.mulVec Q (fun i : Fin m => T q p * v i) i -
+            (T q p * T p q) * u i := by rw [hP]
+      _ = T q p * Matrix.mulVec Q v i - (T q p * T p q) * u i := by rw [hsmul]
+      _ = T q p * (T p q * u i) - (T q p * T p q) * u i := by rw [hQ]
+      _ = 0 := by ring
+  case right =>
+    funext i
+    have hsmul : Matrix.mulVec P (fun i : Fin m => T p q * u i) =
+        fun i : Fin m => T p q * Matrix.mulVec P u i := by
+      simpa using Matrix.mulVec_smul P (T p q) u
+    calc
+      Matrix.mulVec (sylvesterTwoColumnBlockSecondQuadraticCoeff m n A T p q) v i =
+          Matrix.mulVec P (Matrix.mulVec Q v) i - (T p q * T q p) * v i := by
+        simp [sylvesterTwoColumnBlockSecondQuadraticCoeff, P, Q, Matrix.sub_mulVec,
+          Matrix.mulVec_mulVec, Matrix.scalar_apply]
+      _ = Matrix.mulVec P (fun i : Fin m => T p q * u i) i -
+            (T p q * T q p) * v i := by rw [hQ]
+      _ = T p q * Matrix.mulVec P u i - (T p q * T q p) * v i := by rw [hsmul]
+      _ = T p q * (T q p * v i) - (T p q * T q p) * v i := by rw [hP]
+      _ = 0 := by ring
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    bridge for the supplied adjacent two-column block: nonsingularity of the
+    two induced product-shift quadratic coefficients rules out a kernel vector
+    of the full `2 x 2` block coefficient. This removes the need for a
+    supplied left/right inverse certificate at this local block step; the
+    remaining source-level route is to derive these quadratic determinant
+    hypotheses from the real-Schur scalar block separation data. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_quadratic_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hfirst :
+      Not (Matrix.det
+        (sylvesterTwoColumnBlockFirstQuadraticCoeff m n A T p q) = 0))
+    (hsecond :
+      Not (Matrix.det
+        (sylvesterTwoColumnBlockSecondQuadraticCoeff m n A T p q) = 0)) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  intro hdet
+  cases Matrix.exists_mulVec_eq_zero_iff.mpr hdet with
+  | intro z hz =>
+      have hzne : Not (z = 0) := hz.1
+      have hzzero :
+          Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0 := hz.2
+      have hquad :=
+        sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_quadratic
+          m n A T p q z hzzero
+      let u : Fin m -> Real := fun i => z (Sum.inl i)
+      let v : Fin m -> Real := fun i => z (Sum.inr i)
+      let M1 : Matrix (Fin m) (Fin m) Real :=
+        sylvesterTwoColumnBlockFirstQuadraticCoeff m n A T p q
+      let M2 : Matrix (Fin m) (Fin m) Real :=
+        sylvesterTwoColumnBlockSecondQuadraticCoeff m n A T p q
+      have hinj1 : Function.Injective (Matrix.mulVec M1) := by
+        intro x y hxy
+        have h := congrArg (Matrix.mulVec (Inv.inv M1)) hxy
+        rw [Matrix.mulVec_mulVec, Matrix.mulVec_mulVec,
+          Matrix.nonsing_inv_mul M1
+            (isUnit_iff_ne_zero.mpr (by simpa [M1] using hfirst)),
+          Matrix.one_mulVec, Matrix.one_mulVec] at h
+        exact h
+      have hinj2 : Function.Injective (Matrix.mulVec M2) := by
+        intro x y hxy
+        have h := congrArg (Matrix.mulVec (Inv.inv M2)) hxy
+        rw [Matrix.mulVec_mulVec, Matrix.mulVec_mulVec,
+          Matrix.nonsing_inv_mul M2
+            (isUnit_iff_ne_zero.mpr (by simpa [M2] using hsecond)),
+          Matrix.one_mulVec, Matrix.one_mulVec] at h
+        exact h
+      have hu : u = 0 := by
+        apply hinj1
+        rw [hquad.1, Matrix.mulVec_zero]
+      have hv : v = 0 := by
+        apply hinj2
+        rw [hquad.2, Matrix.mulVec_zero]
+      apply hzne
+      funext r
+      cases r with
+      | inl i => simpa [u] using congrFun hu i
+      | inr i => simpa [v] using congrFun hv i
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6), right-hand side for
     the supplied adjacent two-column block recurrence.  It collects the
     two active column equations into the same `Sum`-indexed vector space as
