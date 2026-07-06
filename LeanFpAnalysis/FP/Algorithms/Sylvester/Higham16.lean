@@ -2065,6 +2065,54 @@ theorem sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residua
       hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square determinant
+    absolute Frobenius residual-error endpoint.  A Frobenius residual-arithmetic
+    certificate supplies the uniform residual budget `rho`; determinant
+    nonsingularity supplies the nonsingular inverse budget. -/
+theorem sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_frobenius_error_model
+    (n : Nat)
+    (A B C X Xhat Rhat dR : RMatFn n n) (rho : Real)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff n n A B) = 0))
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect n n A B C Xhat i j + dR i j)
+    (hrho : 0 <= rho)
+    (hdR : frobNorm dR <= rho) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B) Rhat
+          (fun _ _ => rho)) := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate
+      n A B C X Xhat Rhat (fun _ _ => rho) hdet hX
+      (sylvesterComputedResidualBudget_of_frobenius_error_model n n
+        A B C Xhat Rhat dR rho hRhat hrho hdR)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square determinant
+    absolute Frobenius residual-error scalar endpoint. -/
+theorem sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_frobenius_error_model_scalar
+    (n : Nat)
+    (A B C X Xhat Rhat dR : RMatFn n n) (rho eta : Real)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff n n A B) = 0))
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect n n A B C Xhat i j + dR i j)
+    (hrho : 0 <= rho)
+    (hdR : frobNorm dR <= rho)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B) Rhat
+          (fun _ _ => rho) p <= eta) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <= eta := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_scalar
+      n A B C X Xhat Rhat (fun _ _ => rho) eta hdet hX
+      (sylvesterComputedResidualBudget_of_frobenius_error_model n n
+        A B C Xhat Rhat dR rho hRhat hrho hdR)
+      heta hcomponent
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square determinant
     Frobenius residual-error scalar endpoint.  The scalar cap is taken over
     the determinant-supplied inverse budget and the uniform residual budget
     `rho`. -/
