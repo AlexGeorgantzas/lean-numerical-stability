@@ -20,6 +20,16 @@ theorem SepLowerBound_sylvester_of_sigmaMin (n : Nat)
     SepLowerBound n A B sigma := by
   exact sepLowerBound_of_sylvesterOp_sigmaMin n A B sigma hSigma hSigmaMin
 
+/-- Higham, 2nd ed., Chapter 16.3-16.4, equation (16.26):
+    source-numbered alias for the sigma-min `SepLowerBound` certificate. -/
+theorem H16_eq16_26_sepLowerBound_of_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    SepLowerBound n A B sigma := by
+  exact SepLowerBound_sylvester_of_sigmaMin n A B sigma hSigma hSigmaMin
+
 /-- Higham Ch.16.3-16.4, equation (16.26):
     in positive dimension, a Sylvester operator sigma-min certificate
     lower-bounds the exact `sep(A,B)` infimum. -/
@@ -33,6 +43,16 @@ theorem sylvesterSepInf_ge_of_sigmaMin (n : Nat)
     SepLowerBound_le_sylvesterSepInf_of_pos_dim n A B sigma
       (SepLowerBound_sylvester_of_sigmaMin n A B sigma hSigma hSigmaMin)
       hn
+
+/-- Higham, 2nd ed., Chapter 16.3-16.4, equation (16.26):
+    source-numbered alias for the sigma-min lower bound on `sep(A,B)`. -/
+theorem H16_eq16_26_sylvesterSepInf_ge_of_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    sigma <= sylvesterSepInf n A B := by
+  exact sylvesterSepInf_ge_of_sigmaMin n A B sigma hn hSigma hSigmaMin
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
     a positive singular-value lower bound on the Sylvester operator
@@ -111,6 +131,29 @@ theorem sylvester_perturbation_bound_of_sigmaMin_total (n : Nat)
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25):
+    source-numbered alias for the total sigma-min Sylvester perturbation bound. -/
+theorem H16_eq16_25_sylvester_perturbation_bound_of_sigmaMin_total (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y))
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_of_sigmaMin_total n
+      A B X dA dB dC dX sigma hSigma hSigmaMin
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
     total relative Sylvester perturbation bound from a supplied positive
     singular-value lower bound on the Sylvester operator. -/
@@ -134,6 +177,30 @@ theorem sylvester_relative_perturbation_of_sigmaMin_total (n : Nat)
     sylvester_relative_perturbation_of_sepLowerBound_total n
       A B X dA dB dC dX sigma
       (sepLowerBound_of_sylvesterOp_sigmaMin n A B sigma hSigma hSigmaMin)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25):
+    source-numbered alias for the total relative sigma-min perturbation bound. -/
+theorem H16_eq16_25_sylvester_relative_perturbation_of_sigmaMin_total (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y))
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma sigma * eps := by
+  exact
+    sylvester_relative_perturbation_of_sigmaMin_total n
+      A B X dA dB dC dX sigma hSigma hSigmaMin
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hX_pos
 
@@ -184,6 +251,20 @@ theorem sylvester_aposteriori_bound_of_sigmaMin_total (n : Nat)
     rw [hE]
     exact mul_nonneg (by positivity) (frobNorm_nonneg _)
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the total sigma-min a posteriori bound. -/
+theorem H16_eq16_28_sylvester_aposteriori_bound_of_sigmaMin_total (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_of_sigmaMin_total n A B C X Xhat sigma
+      hSigma hSigmaMin hExact
+
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
     the source-shaped relative a posteriori bound follows from a positive
     singular-value lower bound on the Sylvester operator. -/
@@ -223,5 +304,22 @@ theorem sylvester_relative_aposteriori_bound_of_sigmaMin_total (n : Nat)
     sylvester_aposteriori_bound_of_sigmaMin_total n A B C X Xhat sigma
       hSigma hSigmaMin hExact
   exact div_le_div_of_nonneg_right hAbs (le_of_lt hX_pos)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the total relative sigma-min a posteriori bound. -/
+theorem H16_eq16_28_sylvester_relative_aposteriori_bound_of_sigmaMin_total
+    (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_of_sigmaMin_total n
+      A B C X Xhat sigma hSigma hSigmaMin hExact hX_pos
 
 end LeanFpAnalysis.FP
