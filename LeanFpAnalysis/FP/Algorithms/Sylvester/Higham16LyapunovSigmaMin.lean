@@ -110,6 +110,23 @@ theorem lyapunov_aposteriori_bound_of_sigmaMin (n : Nat)
     exact mul_nonneg (by positivity) (frobNorm_nonneg _)
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total alias for the supplied sigma-min Lyapunov a posteriori
+    residual-error bound.
+
+    Scope: exact arithmetic and certificate transfer. -/
+theorem lyapunov_aposteriori_bound_of_sigmaMin_total (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_of_sigmaMin n A C X Xhat sigma
+      hsigma hSigmaMin hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
     relative a posteriori Lyapunov residual-error bound from a supplied
     positive singular-value lower-bound certificate for the Lyapunov operator.
 
@@ -127,6 +144,27 @@ theorem lyapunov_relative_aposteriori_bound_of_sigmaMin (n : Nat)
         frobNorm X := by
   have hAbs :=
     lyapunov_aposteriori_bound_of_sigmaMin n A C X Xhat sigma
+      hsigma hSigmaMin hExact
+  exact div_le_div_of_nonneg_right hAbs (le_of_lt hX_pos)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total relative alias for the supplied sigma-min Lyapunov a posteriori
+    residual-error bound.
+
+    Scope: exact arithmetic and certificate transfer, divided by the positive
+    Frobenius norm of the exact Lyapunov solution. -/
+theorem lyapunov_relative_aposteriori_bound_of_sigmaMin_total (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  have hAbs :=
+    lyapunov_aposteriori_bound_of_sigmaMin_total n A C X Xhat sigma
       hsigma hSigmaMin hExact
   exact div_le_div_of_nonneg_right hAbs (le_of_lt hX_pos)
 
