@@ -61,6 +61,57 @@ theorem sylvester_relative_perturbation_of_sigmaMin (n : Nat)
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hdX_ne hX_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
+    total Sylvester perturbation bound from a supplied positive singular-value
+    lower bound on the Sylvester operator. -/
+theorem sylvester_perturbation_bound_of_sigmaMin_total (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y))
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_of_sepLowerBound_total n
+      A B X dA dB dC dX sigma
+      (sepLowerBound_of_sylvesterOp_sigmaMin n A B sigma hSigma hSigmaMin)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
+    total relative Sylvester perturbation bound from a supplied positive
+    singular-value lower bound on the Sylvester operator. -/
+theorem sylvester_relative_perturbation_of_sigmaMin_total (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y))
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma sigma * eps := by
+  exact
+    sylvester_relative_perturbation_of_sepLowerBound_total n
+      A B X dA dB dC dX sigma
+      (sepLowerBound_of_sylvesterOp_sigmaMin n A B sigma hSigma hSigmaMin)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
+
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
     a positive singular-value lower bound on the Sylvester operator
     instantiates the Frobenius a posteriori error-residual bound. -/

@@ -110,6 +110,23 @@ theorem lyapunov_aposteriori_bound_of_sigmaMin (n : Nat)
     exact mul_nonneg (by positivity) (frobNorm_nonneg _)
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total alias for the supplied sigma-min Lyapunov a posteriori
+    residual-error bound.
+
+    Scope: exact arithmetic and certificate transfer. -/
+theorem lyapunov_aposteriori_bound_of_sigmaMin_total (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_of_sigmaMin n A C X Xhat sigma
+      hsigma hSigmaMin hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
     relative a posteriori Lyapunov residual-error bound from a supplied
     positive singular-value lower-bound certificate for the Lyapunov operator.
 
@@ -127,6 +144,27 @@ theorem lyapunov_relative_aposteriori_bound_of_sigmaMin (n : Nat)
         frobNorm X := by
   have hAbs :=
     lyapunov_aposteriori_bound_of_sigmaMin n A C X Xhat sigma
+      hsigma hSigmaMin hExact
+  exact div_le_div_of_nonneg_right hAbs (le_of_lt hX_pos)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total relative alias for the supplied sigma-min Lyapunov a posteriori
+    residual-error bound.
+
+    Scope: exact arithmetic and certificate transfer, divided by the positive
+    Frobenius norm of the exact Lyapunov solution. -/
+theorem lyapunov_relative_aposteriori_bound_of_sigmaMin_total (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  have hAbs :=
+    lyapunov_aposteriori_bound_of_sigmaMin_total n A C X Xhat sigma
       hsigma hSigmaMin hExact
   exact div_le_div_of_nonneg_right hAbs (le_of_lt hX_pos)
 
@@ -325,5 +363,31 @@ theorem H16_eq16_27_lyapunov_condition_of_sigmaMin (n : ℕ)
     A X DeltaA DeltaC DeltaX alpha gamma
     (lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma)) eps
     hCond hX hPsinn halpha hgamma heps hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    relative Lyapunov first-order perturbation bound from a supplied positive
+    singular-value lower bound on the Lyapunov operator. -/
+theorem lyapunov_relative_first_order_bound_of_sigmaMin (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_27_lyapunov_condition_of_sigmaMin n
+      A X DeltaA DeltaC DeltaX alpha gamma sigma eps
+      halpha hgamma hsigma heps hX hSigmaMin
+      hDeltaA hDeltaC hLin
 
 end LeanFpAnalysis.FP
