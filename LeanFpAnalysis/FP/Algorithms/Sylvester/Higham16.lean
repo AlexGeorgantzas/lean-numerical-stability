@@ -4897,6 +4897,47 @@ theorem sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certi
       (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
       hX hBudget heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source
+    `SepLowerBound` absolute endpoint for a practical computed-residual
+    certificate.  The source separation certificate discharges vec/Kronecker
+    nonsingularity, and no positive `||Xhat||` denominator is needed. -/
+theorem sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_certificate
+    (n : Nat)
+    (A B C X Xhat Rhat Ru : RMatFn n n) {sigma : Real}
+    (hSep : SepLowerBound n A B sigma)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget n n A B C Xhat Rhat Ru) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B) Rhat Ru) := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate
+      n A B C X Xhat Rhat Ru
+      (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+      hX hBudget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source
+    `SepLowerBound` absolute scalar endpoint for a practical computed-residual
+    certificate. -/
+theorem sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_certificate_scalar
+    (n : Nat)
+    (A B C X Xhat Rhat Ru : RMatFn n n) {sigma : Real}
+    (hSep : SepLowerBound n A B sigma)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget n n A B C Xhat Rhat Ru)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B) Rhat Ru p <= eta) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <= eta := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_scalar
+      n A B C X Xhat Rhat Ru eta
+      (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+      hX hBudget heta hcomponent
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), `SepLowerBound`
     certificate endpoint with monotone supplied inverse and residual
     estimates. -/
@@ -5216,6 +5257,48 @@ theorem sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_resid
       (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
         n A B sigma hsigma hle)
       hX hBudget heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact-infimum
+    lower-bound absolute endpoint for a practical computed-residual
+    certificate. -/
+theorem sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate
+    (n : Nat)
+    (A B C X Xhat Rhat Ru : RMatFn n n) {sigma : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget n n A B C Xhat Rhat Ru) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B) Rhat Ru) := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate
+      n A B C X Xhat Rhat Ru
+      (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A B sigma hsigma hle)
+      hX hBudget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact-infimum
+    lower-bound absolute scalar endpoint for a practical computed-residual
+    certificate. -/
+theorem sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_scalar
+    (n : Nat)
+    (A B C X Xhat Rhat Ru : RMatFn n n) {sigma : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget n n A B C Xhat Rhat Ru)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B) Rhat Ru p <= eta) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <= eta := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_scalar
+      n A B C X Xhat Rhat Ru eta
+      (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A B sigma hsigma hle)
+      hX hBudget heta hcomponent
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact-infimum endpoint
     with monotone supplied inverse and residual estimates. -/
