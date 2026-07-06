@@ -4668,6 +4668,139 @@ theorem sylvester_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues
         (le_of_lt hLam) hEig)
       hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    total a posteriori error-residual bound from a positive lower bound on the
+    concrete Kronecker/vectorized Sylvester coefficient.
+
+    This source-facing wrapper removes the nonzero-error side condition by
+    routing through the total Sylvester sigma-min theorem. -/
+theorem sylvester_aposteriori_bound_of_vecCoeff_sigmaMin_total (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_of_sigmaMin_total n
+      A B C X Xhat sigma hSigma
+      (sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B sigma hCoeff)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    total relative a posteriori error-residual bound from a positive lower
+    bound on the concrete Kronecker/vectorized Sylvester coefficient.
+
+    This is the total absolute vec-coefficient wrapper divided by the positive
+    Frobenius norm of the exact Sylvester solution. -/
+theorem sylvester_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_of_sigmaMin_total n
+      A B C X Xhat sigma hSigma
+      (sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B sigma hCoeff)
+      hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    total a posteriori error-residual bound from a concrete left inverse and
+    operator-2 radius for the printed vec/Kronecker coefficient. -/
+theorem sylvester_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+    (n : Nat) (A B C X Xhat : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      M * frobNorm (sylvesterResidual n A B C Xhat) := by
+  have h :=
+    sylvester_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A B C X Xhat (1 / M) (one_div_pos.mpr hM)
+      (sylvesterVecCoeff_sigmaMin_of_left_inverse_finiteOpNorm2Le
+        n A B Pinv hM hLeft hPinv)
+      hExact
+  simpa [one_div] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    total relative a posteriori error-residual bound from a concrete left
+    inverse and operator-2 radius for the printed vec/Kronecker coefficient. -/
+theorem sylvester_relative_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+    (n : Nat) (A B C X Xhat : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      (M * frobNorm (sylvesterResidual n A B C Xhat)) / frobNorm X := by
+  have h :=
+    sylvester_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A B C X Xhat (1 / M) (one_div_pos.mpr hM)
+      (sylvesterVecCoeff_sigmaMin_of_left_inverse_finiteOpNorm2Le
+        n A B Pinv hM hLeft hPinv)
+      hExact hX_pos
+  simpa [one_div] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    total a posteriori error-residual bound from a finite Gram-eigenvalue lower
+    bound for the concrete vectorized Sylvester coefficient. -/
+theorem sylvester_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total
+    (n : Nat) (A B C X Xhat : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / Real.sqrt lam) *
+        frobNorm (sylvesterResidual n A B C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A B C X Xhat (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (sylvesterVecCoeff_sigmaMin_of_gram_eigenvalues n A B
+        (le_of_lt hLam) hEig)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    total relative a posteriori error-residual bound from a finite
+    Gram-eigenvalue lower bound for the concrete vectorized Sylvester
+    coefficient. -/
+theorem sylvester_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total
+    (n : Nat) (A B C X Xhat : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / Real.sqrt lam) *
+        frobNorm (sylvesterResidual n A B C Xhat)) / frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A B C X Xhat (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (sylvesterVecCoeff_sigmaMin_of_gram_eigenvalues n A B
+        (le_of_lt hLam) hEig)
+      hExact hX_pos
+
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
     diagonal case: a posteriori error-residual bound from the concrete diagonal
     vec/Kronecker coefficient lower-bound certificate. -/
@@ -4940,6 +5073,137 @@ theorem lyapunov_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues
         n A (le_of_lt hLam) (Real.sqrt_pos.mpr hLam) hEig)
       hExactSylv hE_ne hX_pos
   simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total Lyapunov a posteriori error-residual bound from a positive lower
+    bound on the concrete vectorized Lyapunov coefficient.
+
+    This routes through the total Lyapunov sigma-min theorem. -/
+theorem lyapunov_aposteriori_bound_of_vecCoeff_sigmaMin_total (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_of_sigmaMin n
+      A C X Xhat sigma hsigma
+      (lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin n A sigma hCoeff)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total relative Lyapunov a posteriori error-residual bound from a positive
+    lower bound on the concrete vectorized Lyapunov coefficient. -/
+theorem lyapunov_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total
+    (n : Nat) (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  exact
+    lyapunov_relative_aposteriori_bound_of_sigmaMin n
+      A C X Xhat sigma hsigma
+      (lyapunovOp_sigmaMin_of_vecCoeff_sigmaMin n A sigma hCoeff)
+      hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total Lyapunov a posteriori error-residual bound from a concrete left
+    inverse and operator-2 radius for the printed Lyapunov vec/Kronecker
+    coefficient. -/
+theorem lyapunov_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+    (n : Nat) (A C X Xhat : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      M * frobNorm (lyapunovResidual n A C Xhat) := by
+  have h :=
+    lyapunov_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A C X Xhat (1 / M) (one_div_pos.mpr hM)
+      (lyapunovVecCoeff_sigmaMin_of_left_inverse_finiteOpNorm2Le
+        n A Pinv hM hLeft hPinv)
+      hExact
+  simpa [one_div] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total relative Lyapunov a posteriori error-residual bound from a concrete
+    left inverse and operator-2 radius for the printed Lyapunov vec/Kronecker
+    coefficient. -/
+theorem lyapunov_relative_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+    (n : Nat) (A C X Xhat : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      (M * frobNorm (lyapunovResidual n A C Xhat)) / frobNorm X := by
+  have h :=
+    lyapunov_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A C X Xhat (1 / M) (one_div_pos.mpr hM)
+      (lyapunovVecCoeff_sigmaMin_of_left_inverse_finiteOpNorm2Le
+        n A Pinv hM hLeft hPinv)
+      hExact hX_pos
+  simpa [one_div] using h
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total Lyapunov a posteriori error-residual bound from a finite
+    Gram-eigenvalue lower bound for the concrete vectorized Lyapunov
+    coefficient. -/
+theorem lyapunov_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total
+    (n : Nat) (A C X Xhat : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / Real.sqrt lam) * frobNorm (lyapunovResidual n A C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A C X Xhat (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (lyapunovVecCoeff_sigmaMin_of_gram_eigenvalues n A
+        (le_of_lt hLam) hEig)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total relative Lyapunov a posteriori error-residual bound from a finite
+    Gram-eigenvalue lower bound for the concrete vectorized Lyapunov
+    coefficient. -/
+theorem lyapunov_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total
+    (n : Nat) (A C X Xhat : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / Real.sqrt lam) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  exact
+    lyapunov_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A C X Xhat (Real.sqrt lam) (Real.sqrt_pos.mpr hLam)
+      (lyapunovVecCoeff_sigmaMin_of_gram_eigenvalues n A
+        (le_of_lt hLam) hEig)
+      hExact hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal case:
     Lyapunov a posteriori error-residual bound from the concrete diagonal
