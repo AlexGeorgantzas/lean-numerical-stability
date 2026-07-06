@@ -1268,6 +1268,54 @@ theorem theorem20_7_completedB_preservation_of_stored_rhs_steps_nat
   intro i k hk hik
   exact hprefix k (Nat.le_of_lt hk) i hik
 
+/-- Theorem 20.7 support: sequence-level completed-row preservation for `A`
+    from a local stored-panel row-preservation field.
+
+The concrete stored panel step does not, by definition alone, copy every row
+above the active pivot on active/trailing columns.  This adapter therefore
+exposes the honest local QR obligation: if each stored-panel step preserves all
+rows above its pivot, then every completed row `i` remains equal to its
+completion-time row `Astage (i+1) i` at all later stages. -/
+theorem theorem20_7_completedA_preservation_of_stored_panel_step_row_preservation_nat
+    {m n : ℕ} (fp : FPModel) (v : ℕ → Fin m → ℝ) (beta : ℕ → ℝ)
+    (Astage : ℕ → Fin m → Fin n → ℝ)
+    (hStep : ∀ k, k < n →
+      Astage (k + 1) =
+        fl_householderStoredPanelStep fp m n k (v k) (beta k) (Astage k))
+    (hrowStep :
+      ∀ k, k < n → ∀ i : Fin m, i.val < k → ∀ j : Fin n,
+        fl_householderStoredPanelStep fp m n k (v k) (beta k) (Astage k) i j =
+          Astage k i j) :
+    ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+      Astage k i j = Astage (i.val + 1) i j := by
+  have hprefix :
+      ∀ k, k ≤ n → ∀ i : Fin m, i.val < k → ∀ j : Fin n,
+        Astage k i j = Astage (i.val + 1) i j := by
+    intro k hk
+    induction k with
+    | zero =>
+        intro i hi j
+        exact (Nat.not_lt_zero i.val hi).elim
+    | succ k ih =>
+        intro i hi j
+        have hk_lt : k < n := Nat.lt_of_succ_le hk
+        rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi_lt | hi_eq
+        · have hstepPoint :
+            Astage (k + 1) i j =
+              fl_householderStoredPanelStep fp m n k
+                (v k) (beta k) (Astage k) i j := by
+              exact congrFun (congrFun (hStep k hk_lt) i) j
+          calc
+            Astage (k + 1) i j
+                = fl_householderStoredPanelStep fp m n k
+                    (v k) (beta k) (Astage k) i j := hstepPoint
+            _ = Astage k i j := hrowStep k hk_lt i hi_lt j
+            _ = Astage (i.val + 1) i j := ih (Nat.le_of_lt hk_lt) i hi_lt j
+        · have hsucc : i.val + 1 = k + 1 := by omega
+          simp [hsucc]
+  intro i k hk hik j
+  exact hprefix k (Nat.le_of_lt hk) i hik j
+
 /-- Theorem 20.7 support: split the staged row-growth obligations into
     completed rows `i < k` and active rows `k <= i`.
 
