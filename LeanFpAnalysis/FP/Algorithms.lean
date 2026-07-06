@@ -118,6 +118,7 @@ import LeanFpAnalysis.FP.Analysis.SemiconvergentBlockFormExists
 import LeanFpAnalysis.FP.Analysis.SemiconvergentExistenceFull
 import LeanFpAnalysis.FP.Analysis.SemiconvergentExistenceComplete
 import LeanFpAnalysis.FP.Analysis.SemiconvergentRealSpectrumComplete
+import LeanFpAnalysis.FP.Analysis.SemiconvergentLimitGeneral
 import LeanFpAnalysis.FP.Analysis.HenriciSharpConstant
 import LeanFpAnalysis.FP.Analysis.HenriciSharpConstantExact
 import LeanFpAnalysis.FP.Analysis.PseudospectralLowerBound
