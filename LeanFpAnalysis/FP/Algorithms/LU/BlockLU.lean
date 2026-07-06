@@ -18616,6 +18616,55 @@ theorem
       hInvLeft hInvRight hFull
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    the all-leading-prefix nonsingularity table transfers to the first
+    Algorithm 13.3 Schur tail once the BDD-forced canonical first pivot inverse
+    is used.
+
+    This is the recursive leading-principal-block handoff needed before the
+    BDD route can be iterated on Schur tails. -/
+theorem
+    higham13_algorithm13_3_first_schur_tail_leadingPrincipalBlockNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin ((m + 1) + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < (m + 1) + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol ((m + 1) + 1)
+      (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin ((m + 1) + 1), invDiagBound j ≤ 0)
+    (hPivot0 :
+      pivotInv 0 =
+        nonsingInv r
+          (A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1)))) :
+    LeadingPrincipalBlockNonsingular13_2 (blockSchur A (pivotInv 0)) := by
+  have hDiagInv :
+      IsInverse r
+        (A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1)))
+        (nonsingInv r
+          (A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1)))) :=
+    higham13_diag_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+      A invDiagBound hPrefix hDom hBound (0 : Fin ((m + 1) + 1))
+  have hInvLeft :
+      ∀ s t : Fin r,
+        ∑ l : Fin r,
+          pivotInv 0 s l *
+            A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1)) l t =
+          if s = t then 1 else 0 := by
+    simpa [hPivot0] using hDiagInv.1
+  have hInvRight :
+      ∀ s t : Fin r,
+        ∑ l : Fin r,
+          A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1)) s l *
+            pivotInv 0 l t =
+          if s = t then 1 else 0 := by
+    simpa [hPivot0] using hDiagInv.2
+  have hLead : LeadingPrincipalBlockNonsingular13_2 A := by
+    intro p hp
+    exact hPrefix p (Nat.lt_trans (Nat.lt_succ_self p) hp)
+  exact LeadingPrincipalBlockNonsingular13_2.schur hInvLeft hInvRight hLead
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
     product-index flattened determinant form of the BDD first-Schur-tail
     nonsingularity handoff. -/
 theorem
