@@ -954,6 +954,63 @@ theorem theorem20_7_completedB_bound_of_completion_preservation_nat
       (mul_le_mul_of_nonneg_right hfactor
         (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
 
+/-- Theorem 20.7 support: stored Householder panel lower-prefix zeros reduce
+    completion-time `A` row bounds to active/trailing columns.
+
+For row `i` at its completion stage `i+1`, columns `j < i` are already in the
+stored lower-zero prefix, so their absolute values are zero and satisfy the
+source-shaped completion bound automatically.  The remaining columns `i <= j`
+are the genuine QR row-growth obligation. -/
+theorem theorem20_7_completionA_bound_of_stored_panel_lower_zero_and_active_tail_nat
+    {m n : ℕ} (hn : 0 < n)
+    (fp : FPModel) (v : ℕ → Fin m → ℝ) (beta : ℕ → ℝ)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (err : ℝ) (herr : 0 ≤ err)
+    (hStep : ∀ k, k < n →
+      Astage (k + 1) =
+        fl_householderStoredPanelStep fp m n k (v k) (beta k) (Astage k))
+    (hactiveTail :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        |Astage (i.val + 1) i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialRowMax hn A i) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n,
+      |Astage (i.val + 1) i j| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  intro i hi j
+  by_cases hji : j.val < i.val
+  · have hk_le : i.val + 1 ≤ n := Nat.le_of_lt hi
+    have hzero :
+        Astage (i.val + 1) i j = 0 := by
+      exact
+        fl_householderStoredPanel_sequence_prefix_lower_zero
+          fp v beta Astage hStep (i.val + 1) hk_le i j
+          (Nat.lt_succ_of_lt hji) hji
+    have hfactor_nonneg :
+        0 ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err := by
+      exact add_nonneg
+        (mul_nonneg (Real.sqrt_nonneg _)
+          (pow_nonneg H19.Theorem19_6.rowwise_step_growth_factor_nonneg
+            (i.val + 1)))
+        herr
+    have hbound_nonneg :
+        0 ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialRowMax hn A i :=
+      mul_nonneg hfactor_nonneg (theorem20_7_initialRowMax_nonneg hn A i)
+    rw [hzero]
+    simpa using hbound_nonneg
+  · exact hactiveTail i hi j (le_of_not_gt hji)
+
 /-- Theorem 20.7 support: split the staged row-growth obligations into
     completed rows `i < k` and active rows `k <= i`.
 
