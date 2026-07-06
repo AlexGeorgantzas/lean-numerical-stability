@@ -5040,6 +5040,282 @@ theorem sylvester_relative_perturbation_schurDiagonal_of_vecCoeff_entrywise_abs_
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25):
+    source-numbered alias for the total Frobenius Sylvester perturbation bound
+    from a positive lower bound on the concrete vectorized coefficient. -/
+theorem H16_eq16_25_sylvester_perturbation_bound_of_vecCoeff_sigmaMin_total
+    (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_of_vecCoeff_sigmaMin_total n
+      A B X dA dB dC dX sigma hSigma hCoeff
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25):
+    source-numbered alias for the total relative Sylvester perturbation bound
+    from a positive lower bound on the concrete vectorized coefficient. -/
+theorem H16_eq16_25_sylvester_relative_perturbation_of_vecCoeff_sigmaMin_total
+    (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma sigma * eps := by
+  exact
+    sylvester_relative_perturbation_of_vecCoeff_sigmaMin_total n
+      A B X dA dB dC dX sigma hSigma hCoeff
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25):
+    source-numbered alias for the total Frobenius Sylvester perturbation bound
+    from a concrete left inverse of the printed vec/Kronecker coefficient. -/
+theorem H16_eq16_25_sylvester_perturbation_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+    (n : Nat) (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      M * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+      n A B X dA dB dC dX M Pinv hM hLeft hPinv
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25):
+    source-numbered alias for the total relative Sylvester perturbation bound
+    from a concrete left inverse of the printed vec/Kronecker coefficient. -/
+theorem H16_eq16_25_sylvester_relative_perturbation_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+    (n : Nat) (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma (1 / M) * eps := by
+  exact
+    sylvester_relative_perturbation_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+      n A B X dA dB dC dX M Pinv hM hLeft hPinv
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25):
+    source-numbered alias for the total Frobenius Sylvester perturbation bound
+    from a Gram-eigenvalue certificate for the concrete vectorized coefficient. -/
+theorem H16_eq16_25_sylvester_perturbation_bound_of_vecCoeff_gram_eigenvalues_total
+    (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / Real.sqrt lam) *
+        ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_of_vecCoeff_gram_eigenvalues_total n
+      A B X dA dB dC dX lam hLam hEig
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25):
+    source-numbered alias for the total relative Sylvester perturbation bound
+    from a Gram-eigenvalue certificate for the concrete vectorized coefficient. -/
+theorem H16_eq16_25_sylvester_relative_perturbation_of_vecCoeff_gram_eigenvalues_total
+    (n : Nat) (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma (Real.sqrt lam) * eps := by
+  exact
+    sylvester_relative_perturbation_of_vecCoeff_gram_eigenvalues_total n
+      A B X dA dB dC dX lam hLam hEig
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25), diagonal case:
+    source-numbered alias for the total Frobenius Sylvester perturbation bound
+    from the diagonal concrete coefficient certificate. -/
+theorem H16_eq16_25_sylvester_perturbation_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat) (a b : Fin n -> Real)
+    (X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) dX i j =
+        dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+      n a b X dA dB dC dX sigma hSigma hgap
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25), diagonal case:
+    source-numbered alias for the total relative Sylvester perturbation bound
+    from the diagonal concrete coefficient certificate. -/
+theorem H16_eq16_25_sylvester_relative_perturbation_diagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat) (a b : Fin n -> Real)
+    (X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) dX i j =
+        dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n (Matrix.diagonal a) (Matrix.diagonal b)
+        X alpha beta gamma sigma * eps := by
+  exact
+    sylvester_relative_perturbation_diagonal_of_vecCoeff_entrywise_abs_ge_total
+      n a b X dA dB dC dX sigma hSigma hgap
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25), supplied orthogonal
+    diagonal Schur-coordinate case:
+    source-numbered alias for the total Frobenius Sylvester perturbation bound
+    from the Schur-diagonal concrete coefficient certificate. -/
+theorem H16_eq16_25_sylvester_perturbation_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge_total
+      n U A V B a b X dA dB dC dX sigma hU hV hA hB hSigma hgap
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25), supplied orthogonal
+    diagonal Schur-coordinate case:
+    source-numbered alias for the total relative Sylvester perturbation bound
+    from the Schur-diagonal concrete coefficient certificate. -/
+theorem H16_eq16_25_sylvester_relative_perturbation_schurDiagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma sigma * eps := by
+  exact
+    sylvester_relative_perturbation_schurDiagonal_of_vecCoeff_entrywise_abs_ge_total
+      n U A V B a b X dA dB dC dX sigma hU hV hA hB hSigma hgap
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
+
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
     a posteriori error-residual bound from a positive lower bound on the
     concrete Kronecker/vectorized Sylvester coefficient. -/
@@ -5500,6 +5776,204 @@ theorem sylvester_relative_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise
       (sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
         U A V B a b sigma hU hV hA hB hSigma hgap)
       hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the total Sylvester a posteriori
+    error-residual bound from a positive lower bound on the concrete
+    vectorized coefficient. -/
+theorem H16_eq16_28_sylvester_aposteriori_bound_of_vecCoeff_sigmaMin_total
+    (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A B C X Xhat sigma hSigma hCoeff hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the total relative Sylvester a posteriori
+    error-residual bound from a positive lower bound on the concrete
+    vectorized coefficient. -/
+theorem H16_eq16_28_sylvester_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total
+    (n : Nat) (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A B C X Xhat sigma hSigma hCoeff hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the total Sylvester a posteriori
+    error-residual bound from a concrete left inverse of the printed
+    vec/Kronecker coefficient. -/
+theorem H16_eq16_28_sylvester_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+    (n : Nat) (A B C X Xhat : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      M * frobNorm (sylvesterResidual n A B C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+      n A B C X Xhat M Pinv hM hLeft hPinv hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the total relative Sylvester a posteriori
+    error-residual bound from a concrete left inverse of the printed
+    vec/Kronecker coefficient. -/
+theorem H16_eq16_28_sylvester_relative_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+    (n : Nat) (A B C X Xhat : Fin n -> Fin n -> Real)
+    (M : Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      (M * frobNorm (sylvesterResidual n A B C Xhat)) / frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+      n A B C X Xhat M Pinv hM hLeft hPinv hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the total Sylvester a posteriori
+    error-residual bound from a Gram-eigenvalue certificate for the concrete
+    vectorized coefficient. -/
+theorem H16_eq16_28_sylvester_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total
+    (n : Nat) (A B C X Xhat : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / Real.sqrt lam) *
+        frobNorm (sylvesterResidual n A B C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total
+      n A B C X Xhat lam hLam hEig hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the total relative Sylvester a posteriori
+    error-residual bound from a Gram-eigenvalue certificate for the concrete
+    vectorized coefficient. -/
+theorem H16_eq16_28_sylvester_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total
+    (n : Nat) (A B C X Xhat : Fin n -> Fin n -> Real)
+    (lam : Real) (hLam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / Real.sqrt lam) *
+        frobNorm (sylvesterResidual n A B C Xhat)) / frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total
+      n A B C X Xhat lam hLam hEig hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal case:
+    source-numbered alias for the total Sylvester a posteriori
+    error-residual bound from the diagonal concrete coefficient certificate. -/
+theorem H16_eq16_28_sylvester_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat) (a b : Fin n -> Real)
+    (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) *
+        frobNorm
+          (sylvesterResidual n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+      n a b C X Xhat sigma hSigma hgap hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal case:
+    source-numbered alias for the total relative Sylvester a posteriori
+    error-residual bound from the diagonal concrete coefficient certificate. -/
+theorem H16_eq16_28_sylvester_relative_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat) (a b : Fin n -> Real)
+    (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) *
+        frobNorm
+          (sylvesterResidual n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+      n a b C X Xhat sigma hSigma hgap hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), supplied orthogonal
+    diagonal Schur-coordinate case:
+    source-numbered alias for the total Sylvester a posteriori error-residual
+    bound from the Schur-diagonal concrete coefficient certificate. -/
+theorem H16_eq16_28_sylvester_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge_total
+      n U A V B a b C X Xhat sigma hU hV hA hB hSigma hgap hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), supplied orthogonal
+    diagonal Schur-coordinate case:
+    source-numbered alias for the total relative Sylvester a posteriori
+    error-residual bound from the Schur-diagonal concrete coefficient
+    certificate. -/
+theorem H16_eq16_28_sylvester_relative_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge_total
+      n U A V B a b C X Xhat sigma hU hV hA hB hSigma hgap hExact hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
     Lyapunov a posteriori error-residual bound from a positive lower bound on

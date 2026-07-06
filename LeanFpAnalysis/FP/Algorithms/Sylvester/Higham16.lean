@@ -4457,6 +4457,313 @@ theorem sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_resid
       hX hPinvAbs_le hRhat_eq hRu hdR hRhat_le hRu_le heta hcomponent hXhat
 
 -- ============================================================
+-- Equation (16.29) source-numbered practical endpoint aliases
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero practical certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero monotone certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero monotone scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero monotone raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero monotone scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero scalar residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero monotone residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the determinant-nonzero monotone scalar error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal practical certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal monotone certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal monotone scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_budget :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal monotone raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal monotone scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal scalar residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal monotone residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal monotone scalar error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_diagonal_computed_residual_error_model_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal monotone certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal monotone scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal monotone raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal monotone scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal scalar residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal monotone error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied Schur-diagonal monotone scalar error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error_model_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` monotone certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` monotone scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` monotone raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` monotone scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` scalar residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` monotone residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` monotone scalar error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` scalar certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` monotone certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` monotone scalar certificate
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` scalar raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` monotone raw budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` monotone scalar raw budget
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` scalar error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` monotone error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` monotone scalar error-model
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono_scalar
+
+-- ============================================================
 -- Perturbation source wrappers from Chapter 16.3
 -- ============================================================
 
