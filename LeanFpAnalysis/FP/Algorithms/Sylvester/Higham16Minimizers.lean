@@ -6529,6 +6529,303 @@ theorem sylvester_practical_error_bound_fl_mono_scalar
       hRhat hRu_le heta hcomponent hXhat
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29), named diagonal endpoint for the floating-point
+    computed residual budget. -/
+theorem sylvester_practical_error_bound_fl_of_diagonal
+    (fp : FPModel) (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C X Xhat : RMatFn m n)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterDiagonalVecCoeffInvAbs m n a b)
+          (flSylvesterResidualRect fp m n
+            (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+          (flSylvesterResidualBudget fp m n
+            (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_diagonal_computed_residual_certificate
+      m n a b C X Xhat
+      (flSylvesterResidualRect fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+      (flSylvesterResidualBudget fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+      hsep hX
+      (isSylvesterComputedResidualBudget_fl fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat hm hn)
+      hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29), scalar-capped diagonal endpoint for the
+    floating-point computed residual budget. -/
+theorem sylvester_practical_error_bound_fl_of_diagonal_scalar
+    (fp : FPModel) (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real) (C X Xhat : RMatFn m n)
+    (eta : Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterDiagonalVecCoeffInvAbs m n a b)
+          (flSylvesterResidualRect fp m n
+            (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+          (flSylvesterResidualBudget fp m n
+            (Matrix.diagonal a) (Matrix.diagonal b) C Xhat) p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_scalar
+      m n a b C X Xhat
+      (flSylvesterResidualRect fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+      (flSylvesterResidualBudget fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+      eta hsep hX
+      (isSylvesterComputedResidualBudget_fl fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat hm hn)
+      heta hcomponent hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29), monotone diagonal endpoint for enlarged estimates
+    of the floating-point computed residual budget. -/
+theorem sylvester_practical_error_bound_fl_of_diagonal_mono
+    (fp : FPModel) (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat' Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hPinvAbs_le : forall p q,
+      sylvesterDiagonalVecCoeffInvAbs m n a b p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      |flSylvesterResidualRect fp m n
+          (Matrix.diagonal a) (Matrix.diagonal b) C Xhat i j| <=
+        |Rhat' i j|)
+    (hRu_le : forall i j,
+      flSylvesterResidualBudget fp m n
+          (Matrix.diagonal a) (Matrix.diagonal b) C Xhat i j <=
+        Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono
+      m n a b C X Xhat
+      (flSylvesterResidualRect fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+      Rhat'
+      (flSylvesterResidualBudget fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+      Ru' PinvAbs' hsep hX
+      (isSylvesterComputedResidualBudget_fl fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat hm hn)
+      hPinvAbs_le hRhat hRu_le hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29), monotone scalar-capped diagonal endpoint for
+    enlarged estimates of the floating-point computed residual budget. -/
+theorem sylvester_practical_error_bound_fl_of_diagonal_mono_scalar
+    (fp : FPModel) (m n : Nat)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat' Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hPinvAbs_le : forall p q,
+      sylvesterDiagonalVecCoeffInvAbs m n a b p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      |flSylvesterResidualRect fp m n
+          (Matrix.diagonal a) (Matrix.diagonal b) C Xhat i j| <=
+        |Rhat' i j|)
+    (hRu_le : forall i j,
+      flSylvesterResidualBudget fp m n
+          (Matrix.diagonal a) (Matrix.diagonal b) C Xhat i j <=
+        Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_diagonal_computed_residual_certificate_mono_scalar
+      m n a b C X Xhat
+      (flSylvesterResidualRect fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+      Rhat'
+      (flSylvesterResidualBudget fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)
+      Ru' PinvAbs' eta hsep hX
+      (isSylvesterComputedResidualBudget_fl fp m n
+        (Matrix.diagonal a) (Matrix.diagonal b) C Xhat hm hn)
+      hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29), supplied Schur-diagonal endpoint for the
+    floating-point computed residual budget.  The Schur factors are exact
+    hypotheses; only the residual computation is modeled in floating point. -/
+theorem sylvester_practical_error_bound_fl_of_schurDiagonal
+    (fp : FPModel) (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B)
+          (flSylvesterResidualRect fp m n A B C Xhat)
+          (flSylvesterResidualBudget fp m n A B C Xhat)) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate
+      m n U A V B a b C X Xhat
+      (flSylvesterResidualRect fp m n A B C Xhat)
+      (flSylvesterResidualBudget fp m n A B C Xhat)
+      hU hV hA hB hsep hX
+      (isSylvesterComputedResidualBudget_fl fp m n A B C Xhat hm hn)
+      hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29), scalar-capped supplied Schur-diagonal endpoint for
+    the floating-point computed residual budget. -/
+theorem sylvester_practical_error_bound_fl_of_schurDiagonal_scalar
+    (fp : FPModel) (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B)
+          (flSylvesterResidualRect fp m n A B C Xhat)
+          (flSylvesterResidualBudget fp m n A B C Xhat) p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_scalar
+      m n U A V B a b C X Xhat
+      (flSylvesterResidualRect fp m n A B C Xhat)
+      (flSylvesterResidualBudget fp m n A B C Xhat)
+      eta hU hV hA hB hsep hX
+      (isSylvesterComputedResidualBudget_fl fp m n A B C Xhat hm hn)
+      heta hcomponent hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29), monotone supplied Schur-diagonal endpoint for
+    enlarged estimates of the floating-point computed residual budget. -/
+theorem sylvester_practical_error_bound_fl_of_schurDiagonal_mono
+    (fp : FPModel) (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat' Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      |flSylvesterResidualRect fp m n A B C Xhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j,
+      flSylvesterResidualBudget fp m n A B C Xhat i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_mono
+      m n U A V B a b C X Xhat
+      (flSylvesterResidualRect fp m n A B C Xhat) Rhat'
+      (flSylvesterResidualBudget fp m n A B C Xhat) Ru'
+      PinvAbs' hU hV hA hB hsep hX
+      (isSylvesterComputedResidualBudget_fl fp m n A B C Xhat hm hn)
+      hPinvAbs_le hRhat hRu_le hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29), monotone scalar-capped supplied Schur-diagonal
+    endpoint for enlarged estimates of the floating-point computed residual
+    budget. -/
+theorem sylvester_practical_error_bound_fl_of_schurDiagonal_mono_scalar
+    (fp : FPModel) (m n : Nat)
+    (U A : RMatFn m m) (V B : RMatFn n n)
+    (a : Fin m -> Real) (b : Fin n -> Real)
+    (C X Xhat Rhat' Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, Not (a i - b j = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      |flSylvesterResidualRect fp m n A B C Xhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j,
+      flSylvesterResidualBudget fp m n A B C Xhat i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_schurDiagonal_computed_residual_certificate_mono_scalar
+      m n U A V B a b C X Xhat
+      (flSylvesterResidualRect fp m n A B C Xhat) Rhat'
+      (flSylvesterResidualBudget fp m n A B C Xhat) Ru'
+      PinvAbs' eta hU hV hA hB hsep hX
+      (isSylvesterComputedResidualBudget_fl fp m n A B C Xhat hm hn)
+      hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, equation (16.29), Lyapunov specialization of the floating-point
     computed residual budget: `flSylvesterResidualRect` applied to
     `(A,-A^T)` is a certified computed residual for the Lyapunov equation. -/
