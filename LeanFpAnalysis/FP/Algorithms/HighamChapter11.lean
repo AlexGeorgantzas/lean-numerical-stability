@@ -2152,6 +2152,25 @@ theorem higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound
     n DeltaA T_hat η γ15n25 hη
     (fun i j => (hDelta i j).trans (hchain_le i j)) hbudget
 
+/-- Scalar-coefficient version of
+`higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound`.  It is often
+more convenient to supply `η ≤ (n-1)^2 γ_{15n+25}` and let this theorem multiply
+both sides by `‖T_hat‖∞`. -/
+theorem higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound_coeff_le
+    (n : ℕ) (DeltaA L T U BT T_hat : Fin n → Fin n → ℝ)
+    (γ η γ15n25 : ℝ) (hη : 0 ≤ η)
+    (hDelta : ∀ i j : Fin n,
+      |DeltaA i j| ≤ higham11_15_aasenChainDeltaABound n γ BT L T U i j)
+    (hchain_le : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n γ BT L T U i j ≤ η * |T_hat i j|)
+    (hη_le : η ≤ ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA) γ15n25
+      (infNorm T_hat) := by
+  apply higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound
+    n DeltaA L T U BT T_hat γ η γ15n25 hη hDelta hchain_le
+  simpa [mul_assoc] using
+    mul_le_mul_of_nonneg_right hη_le (infNorm_nonneg T_hat)
+
 /-- Rounded Aasen solve-chain source equation plus the printed Theorem 11.8
 normwise shape, under an explicit comparison from the closed chain budget to
 `η |T_hat|`.  This packages the solve-chain part of the Aasen stability proof;
