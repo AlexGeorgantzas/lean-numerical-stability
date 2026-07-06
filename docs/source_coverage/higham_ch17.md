@@ -70,9 +70,29 @@
   is achievable EXACTLY when `|Re λ|+|Im λ|<1` for every non-1 eigenvalue, and is
   genuinely IMPOSSIBLE in the ∞-norm otherwise (a real mathematical fact, not a
   Mathlib gap — the book's printed (17.22) uses the weaker ρ(Γ)<1 / 2-norm object).
-  Net: the semiconvergent block-form existence is CLOSED from convergence for the
-  fully-real-spectrum case (modulo a ~80-line mechanical `basisActionMatrix↔toMatrix`
-  reindex bridge), and reduced to the honest ∞-norm-vs-2-norm distinction otherwise. The
+  Net: the semiconvergent block-form existence is now FULLY CLOSED from convergence
+  for the fully-real-spectrum case — `Analysis/SemiconvergentRealSpectrumComplete.lean`
+  (`semiconvergent_block_form_exists_of_convergence_real_spectrum`, axiom-clean):
+  from ONLY (i) every orbit `Gᵐx` converges and (ii) `charpoly` splits over ℝ (real
+  spectrum), it produces the full `semiconvergent_block_form_exists` data package
+  (r = dim ker(G−I) derived, X'⁻¹GX' = diag(I_r,Γ), eigenvalue-1 eigenvector columns,
+  ‖Γ‖∞ ≤ q < 1) with NO supplied basis/column/contraction data, plus the
+  `Gᵐ → oneEigenProjector` corollary. The mechanical `basisActionMatrix↔toMatrix`
+  bridge is proved (`basisActionMatrix_complement_eq_toMatrix_restrict`).
+  **GENERAL-complex LIMIT now FULLY CLOSED (`Analysis/SemiconvergentLimitGeneral.lean`,
+  axiom-clean):** `matPow_G_tendsto_oneEigenProjector_of_convergence` proves, for an
+  ARBITRARY real G (no real-spectrum restriction) and from convergence of every orbit
+  ALONE, that `Gᵐ → oneEigenProjector = X·diag(I_r,0)·X⁻¹` entrywise — the [106]/(17.22)
+  semiconvergence limit at full generality. It bypasses the ∞-norm entirely: the block
+  form `G X = X·diag(I_r,C)` comes from the primary splitting, and `Cᵐ → 0` follows
+  because `lim Cᵐ` is fixed by C yet the complement F contains no eigenvalue-1 vector
+  (`E₁∩F={0}`, `compBlock_no_comp_fixed`) — a pure real-linear-algebra fixed-point
+  argument, no spectral hypothesis needed. A second entry
+  `matPow_G_tendsto_oneEigenProjector_of_spectralRadius` gives the printed-(17.22)
+  route via `ρ(Γ)<1` + Gelfand. So the semiconvergence LIMIT is closed in general; the
+  repo's ∞-norm block-form *packaging* remains impossible for a non-1 eigenvalue with
+  |Reλ|+|Imλ|≥1 (proven) but is now UNNECESSARY (the limit is proved directly), and the
+  book's `ρ(Γ)<1` object is the correct general one. The
   `hne`/certificate hypotheses documented per-row (each
   mirrors an implicit assumption of the printed text); and the
   benchmark-reserved Problem 17.1 / Appendix A 17.1 rows.

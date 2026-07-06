@@ -321,20 +321,19 @@ theorem sylvesterPsi_of_sepLowerBound_isPsiFirstOrderBound (n : ℕ)
     (1 / sigma) hα hβ hγ hMnn hX hInv
 
 /-- Higham, 2nd ed., Section 16.3-16.4, equations (16.23)-(16.24):
-    a positive lower bound on the exact infimum model of `sep(A,B)` instantiates
-    the structured first-order Psi certificate through the safe reciprocal
-    condition value `1 / sigma`. -/
+    a positive lower bound on the exact infimum model of `sep(A,B)`
+    instantiates the structured first-order `Psi` certificate through the safe
+    reciprocal condition value `1 / sigma`. -/
 theorem sylvesterPsi_of_pos_le_sylvesterSepInf_isPsiFirstOrderBound (n : Nat)
     (A B X : Fin n -> Fin n -> Real) (alpha beta gamma sigma : Real)
     (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
-    (hsigma : 0 < sigma)
-    (hX : 0 < frobNorm X)
+    (hsigma : 0 < sigma) (hX : 0 < frobNorm X)
     (hle : sigma <= sylvesterSepInf n A B) :
     SylvesterPsiFirstOrderBound n A B X alpha beta gamma
       (sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma)) := by
   exact
-    sylvesterPsi_of_sepLowerBound_isPsiFirstOrderBound n A B X alpha beta gamma sigma
-      halpha hbeta hgamma hsigma hX
+    sylvesterPsi_of_sepLowerBound_isPsiFirstOrderBound n A B X
+      alpha beta gamma sigma halpha hbeta hgamma hsigma hX
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
 
 /-- Higham, 2nd ed., §16.3, eq (16.24) (p. 313):
@@ -382,6 +381,48 @@ theorem sylvester_first_order_bound_of_pos_le_sylvesterSepInf (n : Nat)
     sylvesterPsi_of_pos_le_sylvesterSepInf_isPsiFirstOrderBound n
       A B X alpha beta gamma sigma halpha hbeta hgamma hsigma hX hle
       DeltaA DeltaB DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.23):
+    source-numbered alias for the sep-lower-bound first-order Sylvester endpoint. -/
+theorem H16_eq16_23_sylvester_first_order_bound_of_sepLowerBound (n : Nat)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma sigma : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (hX : 0 < frobNorm X)
+    (hSep : SepLowerBound n A B sigma)
+    (hLin : forall i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX <=
+      sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) *
+        frobNorm X *
+        sylvesterScaledPerturbationTripleNorm n DeltaA DeltaB DeltaC
+          alpha beta gamma := by
+  exact
+    sylvester_first_order_bound_of_sepLowerBound n
+      A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma sigma
+      halpha hbeta hgamma hsigma hX hSep hLin
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.23):
+    source-numbered alias for the exact-infimum first-order Sylvester endpoint. -/
+theorem H16_eq16_23_sylvester_first_order_bound_of_pos_le_sylvesterSepInf (n : Nat)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma sigma : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (hX : 0 < frobNorm X)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hLin : forall i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX <=
+      sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) *
+        frobNorm X *
+        sylvesterScaledPerturbationTripleNorm n DeltaA DeltaB DeltaC
+          alpha beta gamma := by
+  exact
+    sylvester_first_order_bound_of_pos_le_sylvesterSepInf n
+      A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma sigma
+      halpha hbeta hgamma hsigma hX hle hLin
 
 /-- Higham, 2nd ed., §16.3, eqs. (16.23)-(16.24) (p. 313):
     sep-based structured first-order perturbation bound. If
@@ -452,6 +493,105 @@ theorem H16_eq16_24_structured_condition_of_pos_le_sylvesterSepInf (n : Nat)
       A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma sigma eps
       halpha hbeta hgamma hsigma heps hX
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
+      hDeltaA hDeltaB hDeltaC hLin
+
+/-- Higham, 2nd ed., Section 16.3, equations (16.23)-(16.24):
+    sep-based relative first-order Sylvester perturbation bound with the safe
+    condition value `sylvesterPsi_of_inverseOpBound ... (1 / sigma)`. -/
+theorem sylvester_relative_first_order_bound_of_sepLowerBound (n : Nat)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hSep : SepLowerBound n A B sigma)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaB : frobNorm DeltaB <= eps * beta)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 3 *
+        sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_24_structured_condition_of_sepLowerBound n
+      A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma sigma eps
+      halpha hbeta hgamma hsigma heps hX hSep
+      hDeltaA hDeltaB hDeltaC hLin
+
+/-- Higham, 2nd ed., Section 16.3-16.4, equations (16.23)-(16.24):
+    relative first-order Sylvester perturbation bound from a positive lower
+    bound on the exact infimum model of `sep(A,B)`. -/
+theorem sylvester_relative_first_order_bound_of_pos_le_sylvesterSepInf (n : Nat)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaB : frobNorm DeltaB <= eps * beta)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 3 *
+        sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_24_structured_condition_of_pos_le_sylvesterSepInf n
+      A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma sigma eps
+      halpha hbeta hgamma hsigma heps hX hle
+      hDeltaA hDeltaB hDeltaC hLin
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.24):
+    source-numbered alias for the sep-lower-bound relative Sylvester endpoint. -/
+theorem H16_eq16_24_sylvester_relative_first_order_bound_of_sepLowerBound (n : Nat)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hSep : SepLowerBound n A B sigma)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaB : frobNorm DeltaB <= eps * beta)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 3 *
+        sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) * eps := by
+  exact
+    sylvester_relative_first_order_bound_of_sepLowerBound n
+      A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma sigma eps
+      halpha hbeta hgamma hsigma heps hX hSep
+      hDeltaA hDeltaB hDeltaC hLin
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.24):
+    source-numbered alias for the exact-infimum relative Sylvester endpoint. -/
+theorem H16_eq16_24_sylvester_relative_first_order_bound_of_pos_le_sylvesterSepInf
+    (n : Nat)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaB : frobNorm DeltaB <= eps * beta)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 3 *
+        sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) * eps := by
+  exact
+    sylvester_relative_first_order_bound_of_pos_le_sylvesterSepInf n
+      A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma sigma eps
+      halpha hbeta hgamma hsigma heps hX hle
       hDeltaA hDeltaB hDeltaC hLin
 
 -- ============================================================
@@ -576,5 +716,52 @@ theorem H16_eq16_24_structured_condition_diagonal (n : ℕ)
     (Matrix.diagonal a) (Matrix.diagonal b) X ΔA ΔB ΔC ΔX
     α β γ (sylvesterPsiDiagonal n X α β γ s) ε
     hPsi hX hΨnn hα hβ hγ hε hΔA hΔB hΔC hLin
+
+/-- Higham, 2nd ed., Section 16.3, equations (16.23)-(16.24), diagonal case:
+    relative first-order Sylvester perturbation bound with the concrete
+    diagonal condition number `sylvesterPsiDiagonal`. -/
+theorem sylvester_relative_first_order_bound_diagonal (n : Nat)
+    (a b : Fin n -> Real) (X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma s eps : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hs : 0 < s) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hsep : forall i j, s <= |a i - b j|)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaB : frobNorm DeltaB <= eps * beta)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 3 * sylvesterPsiDiagonal n X alpha beta gamma s * eps := by
+  exact
+    H16_eq16_24_structured_condition_diagonal n
+      a b X DeltaA DeltaB DeltaC DeltaX alpha beta gamma s eps
+      halpha hbeta hgamma hs heps hX hsep
+      hDeltaA hDeltaB hDeltaC hLin
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.24), diagonal case:
+    source-numbered alias for the diagonal relative Sylvester endpoint. -/
+theorem H16_eq16_24_sylvester_relative_first_order_bound_diagonal (n : Nat)
+    (a b : Fin n -> Real) (X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma s eps : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hs : 0 < s) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hsep : forall i j, s <= |a i - b j|)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaB : frobNorm DeltaB <= eps * beta)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 3 * sylvesterPsiDiagonal n X alpha beta gamma s * eps := by
+  exact
+    sylvester_relative_first_order_bound_diagonal n
+      a b X DeltaA DeltaB DeltaC DeltaX alpha beta gamma s eps
+      halpha hbeta hgamma hs heps hX hsep
+      hDeltaA hDeltaB hDeltaC hLin
 
 end LeanFpAnalysis.FP

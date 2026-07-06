@@ -256,6 +256,53 @@ theorem bunch_parlett_growth_balance :
     (ne_of_lt bunch_parlett_alpha_lt_one)
     bunch_parlett_alpha_root
 
+/-- `α > 1/2` (since `√17 > 3`). -/
+theorem bunch_parlett_alpha_gt_half : (1 : ℝ) / 2 < bunchParlettAlpha := by
+  unfold bunchParlettAlpha
+  have h : (3 : ℝ) < Real.sqrt 17 :=
+    (Real.lt_sqrt (by norm_num : (0 : ℝ) ≤ 3)).mpr (by norm_num)
+  linarith
+
+/-- `α ≤ 5/7` (since `√17 ≤ 33/7`). -/
+theorem bunch_parlett_alpha_le_5_7 : bunchParlettAlpha ≤ 5 / 7 := by
+  unfold bunchParlettAlpha
+  have h : Real.sqrt 17 ≤ 33 / 7 := by
+    rw [show (33 : ℝ) / 7 = Real.sqrt ((33 / 7) ^ 2) from (Real.sqrt_sq (by norm_num)).symm]
+    exact Real.sqrt_le_sqrt (by norm_num)
+  linarith
+
+/-- From the root `4α²−α−1=0`: `α² = (α+1)/4`. -/
+theorem bunch_parlett_alpha_sq :
+    bunchParlettAlpha ^ 2 = (bunchParlettAlpha + 1) / 4 := by
+  nlinarith [bunch_parlett_alpha_root]
+
+/-- The 1×1-pivot multiplier constant `1/α < 2` (Higham [608, 1997], the bound
+    `g_ij ≤ α⁻¹·max ≤ 2·max` for 1×1 pivots). -/
+theorem bunch_kaufman_recip_alpha_lt_two : 1 / bunchParlettAlpha < 2 := by
+  rw [div_lt_iff₀ bunch_parlett_alpha_pos]; nlinarith [bunch_parlett_alpha_gt_half]
+
+/-- **Higham [608, 1997], appendix (A.3)**: `|E||E⁻¹||E| ≤ ((3+α²)/(1−α²))|E| ≤ 6|E|`
+    — the scalar constant `(3+α²)/(1−α²) ≤ 6` for the Bunch–Kaufman `α`. -/
+theorem bunch_kaufman_pivot_norm_const_le_six :
+    (3 + bunchParlettAlpha ^ 2) / (1 - bunchParlettAlpha ^ 2) ≤ 6 := by
+  have hlt : bunchParlettAlpha ^ 2 < 1 := by
+    nlinarith [bunch_parlett_alpha_pos, bunch_parlett_alpha_lt_one]
+  rw [div_le_iff₀ (by linarith)]
+  nlinarith [bunch_parlett_alpha_sq, bunch_parlett_alpha_le_5_7, bunch_parlett_alpha_pos]
+
+/-- **Higham [608, 1997], eq (4.13)** — the constant behind the Theorem 11.4
+    bound `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36 n ρₙ ‖A‖_M`: for a 2×2 pivot,
+    `(3+α²)(3+α)/(1−α²)² ≤ 36`. -/
+theorem bunch_kaufman_bound_const_le_36 :
+    (3 + bunchParlettAlpha ^ 2) * (3 + bunchParlettAlpha)
+      / (1 - bunchParlettAlpha ^ 2) ^ 2 ≤ 36 := by
+  have hlt : bunchParlettAlpha ^ 2 < 1 := by
+    nlinarith [bunch_parlett_alpha_pos, bunch_parlett_alpha_lt_one]
+  have hden : 0 < (1 - bunchParlettAlpha ^ 2) ^ 2 := pow_pos (by linarith) 2
+  rw [div_le_iff₀ hden]
+  nlinarith [bunch_parlett_alpha_sq, bunch_parlett_alpha_le_5_7,
+    bunch_parlett_alpha_pos, bunch_parlett_alpha_lt_one]
+
 /-- **Growth-factor recursion** (Higham §11.1.1).  If the stage-maximum sequence
     `r` grows by at most the single-step factor `1 + 1/α` at each elimination
     stage (`r(k+1) ≤ (1 + 1/α)·r k`, the per-step bound proved for both 1×1 and
@@ -713,6 +760,214 @@ theorem fl_oneByOne_solve_backward_error (fp : FPModel) (b e : ℝ)
       _ = gamma fp 1 * |e| * (1 + δ) := by ring
   · rw [hd]; field_simp; ring
 
+/-- **Per-stage trailing floating-point backward error** for a 1×1-pivot block
+    LDLᵀ step (Higham [608,1997] §4.2).  Combining the rounded multiplier product
+    `l̂_i·e·l̂_j` (an entry of `L̂D̂L̂ᵀ` before the recursion) with the computed
+    Schur entry `Ŝ = fl(b − fl(l̂_i·c_j))`, the total equals the original entry `b`
+    plus a backward error `Δ` with `|Δ| ≤ 2·γ₃·(|b| + |c_i c_j/e|)`.  Derived from
+    the standard model via `prod_error_bound`, not assumed — the atomic `(i,j)`
+    ingredient of Theorem 11.3's componentwise backward-error induction. -/
+theorem fl_oneByOne_stage_trailing_error (fp : FPModel) (e ci cj b : ℝ)
+    (he : e ≠ 0) (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ, |Δ| ≤ 2 * gamma fp 3 * (|b| + |ci * cj / e|) ∧
+      fp.fl_div ci e * e * fp.fl_div cj e
+        + fp.fl_sub b (fp.fl_mul (fp.fl_div ci e) cj) = b + Δ := by
+  obtain ⟨δi, hδi, hli⟩ := fp.model_div ci e he
+  obtain ⟨δj, hδj, hlj⟩ := fp.model_div cj e he
+  obtain ⟨δ1, hδ1, hpp⟩ := fp.model_mul (fp.fl_div ci e) cj
+  obtain ⟨δ2, hδ2, hss⟩ := fp.model_sub b (fp.fl_mul (fp.fl_div ci e) cj)
+  have hval2 : gammaValid fp 2 := gammaValid_mono fp (by norm_num) hval
+  have hg2 : gamma fp 2 ≤ gamma fp 3 := gamma_mono fp (by norm_num) hval
+  have hg0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+  obtain ⟨θa, hθa, hpa⟩ :=
+    prod_error_bound fp 2 ![δi, δj] (by intro i; fin_cases i <;> simp_all) hval2
+  have hfa : (1 + δi) * (1 + δj) = 1 + θa := by
+    have h := hpa; rw [Fin.prod_univ_two] at h; simpa using h
+  obtain ⟨θb, hθb, hpb⟩ :=
+    prod_error_bound fp 3 ![δi, δ1, δ2] (by intro i; fin_cases i <;> simp_all) hval
+  have hfb : (1 + δi) * (1 + δ1) * (1 + δ2) = 1 + θb := by
+    have h := hpb; rw [Fin.prod_univ_three] at h; simpa using h
+  have hab : ∀ x y : ℝ, |x - y| ≤ |x| + |y| := fun x y => by
+    have := abs_add_le x (-y); rwa [← sub_eq_add_neg, abs_neg] at this
+  refine ⟨ci * cj / e * θa - ci * cj / e * θb + b * δ2, ?_, ?_⟩
+  · have hθa3 : |θa| ≤ gamma fp 3 := le_trans hθa hg2
+    have hu3 : fp.u ≤ gamma fp 3 := u_le_gamma fp (by norm_num) hval
+    have hb2 : |b * δ2| ≤ |b| * gamma fp 3 := by
+      rw [abs_mul]; exact mul_le_mul_of_nonneg_left (le_trans hδ2 hu3) (abs_nonneg _)
+    have hP : |ci * cj / e * θa| ≤ |ci * cj / e| * gamma fp 3 := by
+      rw [abs_mul]; exact mul_le_mul_of_nonneg_left hθa3 (abs_nonneg _)
+    have hPb : |ci * cj / e * θb| ≤ |ci * cj / e| * gamma fp 3 := by
+      rw [abs_mul]; exact mul_le_mul_of_nonneg_left hθb (abs_nonneg _)
+    calc |ci * cj / e * θa - ci * cj / e * θb + b * δ2|
+        ≤ |ci * cj / e * θa - ci * cj / e * θb| + |b * δ2| := abs_add_le _ _
+      _ ≤ (|ci * cj / e * θa| + |ci * cj / e * θb|) + |b * δ2| :=
+          add_le_add (hab _ _) (le_refl _)
+      _ ≤ (|ci * cj / e| * gamma fp 3 + |ci * cj / e| * gamma fp 3) + |b| * gamma fp 3 :=
+          add_le_add (add_le_add hP hPb) hb2
+      _ ≤ 2 * gamma fp 3 * (|b| + |ci * cj / e|) := by
+          nlinarith [hg0, abs_nonneg b, abs_nonneg (ci * cj / e)]
+  · have key : ci / e * (1 + δi) * e * (cj / e * (1 + δj))
+        + (b - ci / e * (1 + δi) * cj * (1 + δ1)) * (1 + δ2)
+        = b + (ci * cj / e * θa - ci * cj / e * θb + b * δ2) := by
+      have e1 : ci / e * (1 + δi) * e * (cj / e * (1 + δj))
+          = ci * cj / e * ((1 + δi) * (1 + δj)) := by field_simp
+      have e2 : (b - ci / e * (1 + δi) * cj * (1 + δ1)) * (1 + δ2)
+          = b * (1 + δ2) - ci * cj / e * ((1 + δi) * (1 + δ1) * (1 + δ2)) := by
+        field_simp
+      rw [e1, e2, hfa, hfb]; ring
+    rw [hss, hpp, hli, hlj]; exact key
+
+/-- **Trailing-block floating-point backward error of one 1×1-pivot stage**
+    (Higham [608,1997] §4.2, the inductive step of Theorem 11.3).  With computed
+    multipliers `l̂_i = fl(A i.succ 0 / A00)`, computed Schur entries
+    `Ŝ i j = fl(A i.succ j.succ − fl(l̂_i · A 0 j.succ))`, and a recursive
+    factorization `L_S,D_S` approximating `Ŝ` entrywise within `Bs` (`hIH`), the
+    assembled `L̂,D̂` satisfy on the trailing block
+    `|(L̂D̂L̂ᵀ)_{i+1,j+1} − A_{i+1,j+1}| ≤ 2γ₃(|A_{i+1,j+1}| + |A_{i+1,0}·A_{0,j+1}/A00|) + Bs i j`.
+    Combines `fl_oneByOne_stage_trailing_error` with the recursion hypothesis. -/
+theorem fl_blockLDLT_trailing_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (he : A 0 0 ≠ 0) (hsym1 : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (hval : gammaValid fp 3)
+    (L_S D_S : Fin n → Fin n → ℝ) (Bs : Fin n → Fin n → ℝ)
+    (hIH : ∀ i j : Fin n,
+      |(∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂)
+        - fp.fl_sub (A i.succ j.succ)
+            (fp.fl_mul (fp.fl_div (A i.succ 0) (A 0 0)) (A 0 j.succ))| ≤ Bs i j)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hLtr : ∀ i j : Fin n, L i.succ j.succ = L_S i j)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin n, D i.succ j.succ = D_S i j) :
+    ∀ i j : Fin n,
+      |(∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L j.succ k₂) - A i.succ j.succ|
+        ≤ 2 * gamma fp 3 * (|A i.succ j.succ|
+            + |A i.succ 0 * A 0 j.succ / A 0 0|) + Bs i j := by
+  intro i j
+  have hreduce : (∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L j.succ k₂)
+      = L i.succ 0 * (A 0 0) * L j.succ 0
+        + (∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) := by
+    have inner : ∀ k₁ : Fin (n + 1),
+        (∑ k₂, L i.succ k₁ * D k₁ k₂ * L j.succ k₂)
+          = L i.succ k₁ * (∑ k₂, D k₁ k₂ * L j.succ k₂) := by
+      intro k₁; rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro k _; ring
+    rw [Fin.sum_univ_succ, inner 0]
+    have c0 : (∑ k₂, D 0 k₂ * L j.succ k₂) = A 0 0 * L j.succ 0 := by
+      rw [Fin.sum_univ_succ, hD00]
+      have : (∑ k₂ : Fin n, D 0 k₂.succ * L j.succ k₂.succ) = 0 :=
+        Finset.sum_eq_zero fun k _ => by rw [hD0s k, zero_mul]
+      rw [this, add_zero]
+    rw [c0]
+    have csucc : (∑ k₁ : Fin n, ∑ k₂, L i.succ k₁.succ * D k₁.succ k₂ * L j.succ k₂)
+        = ∑ k₁ : Fin n, ∑ k₂ : Fin n, L_S i k₁ * D_S k₁ k₂ * L_S j k₂ := by
+      apply Finset.sum_congr rfl; intro k₁ _
+      rw [inner k₁.succ, Fin.sum_univ_succ, hDs0 k₁, zero_mul, zero_add]
+      rw [hLtr i k₁, Finset.mul_sum]
+      apply Finset.sum_congr rfl; intro k₂ _
+      rw [hDtr k₁ k₂, hLtr j k₂]; ring
+    rw [csucc, hLcol i, hLcol j]; ring
+  obtain ⟨Δ, hΔ, hstage⟩ :=
+    fl_oneByOne_stage_trailing_error fp (A 0 0) (A i.succ 0) (A 0 j.succ)
+      (A i.succ j.succ) he hval
+  have hljeq : L j.succ 0 = fp.fl_div (A 0 j.succ) (A 0 0) := by
+    rw [hLcol j, hsym1 j]
+  set Ŝ := fp.fl_sub (A i.succ j.succ)
+      (fp.fl_mul (fp.fl_div (A i.succ 0) (A 0 0)) (A 0 j.succ)) with hŜ
+  have hval2 : (∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L j.succ k₂)
+      = (fp.fl_div (A i.succ 0) (A 0 0) * A 0 0 * fp.fl_div (A 0 j.succ) (A 0 0) + Ŝ)
+        + ((∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) - Ŝ) := by
+    rw [hreduce, hLcol i, hljeq]; ring
+  rw [hval2, hstage]
+  have hcancel : (A i.succ j.succ + Δ)
+      + ((∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) - Ŝ) - A i.succ j.succ
+      = Δ + ((∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) - Ŝ) := by ring
+  rw [hcancel]
+  calc |Δ + ((∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) - Ŝ)|
+      ≤ |Δ| + |(∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) - Ŝ| := abs_add_le _ _
+    _ ≤ 2 * gamma fp 3 * (|A i.succ j.succ| + |A i.succ 0 * A 0 j.succ / A 0 0|)
+          + Bs i j := add_le_add hΔ (hIH i j)
+
+/-- **Pivot row/column floating-point backward error of one 1×1-pivot stage.**
+    The pivot entry is reproduced exactly, `(L̂D̂L̂ᵀ)_{0,0} = A 0 0`, and each
+    pivot-row entry has a tiny backward error `(L̂D̂L̂ᵀ)_{0,j+1} = A 0 j.succ + Δ`
+    with `|Δ| ≤ u·|A 0 j.succ|`.  Together with `fl_blockLDLT_trailing_bound` this
+    is the complete 1×1-stage assemble step of Theorem 11.3's backward error. -/
+theorem fl_blockLDLT_pivot_row_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (he : A 0 0 ≠ 0) (hsym1 : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0) :
+    (∑ k₁, ∑ k₂, L 0 k₁ * D k₁ k₂ * L 0 k₂) = A 0 0
+    ∧ ∀ j : Fin n,
+        |(∑ k₁, ∑ k₂, L 0 k₁ * D k₁ k₂ * L j.succ k₂) - A 0 j.succ|
+          ≤ fp.u * |A 0 j.succ| := by
+  have row0 : ∀ (X : Fin (n + 1)),
+      (∑ k₁, ∑ k₂, L 0 k₁ * D k₁ k₂ * L X k₂) = ∑ k₂, D 0 k₂ * L X k₂ := by
+    intro X
+    rw [Fin.sum_univ_succ]
+    have hz : (∑ k₁ : Fin n, ∑ k₂, L 0 k₁.succ * D k₁.succ k₂ * L X k₂) = 0 :=
+      Finset.sum_eq_zero fun k _ => by
+        simp only [hL0s k]
+        exact Finset.sum_eq_zero fun k₂ _ => by ring
+    rw [hz, add_zero, hL00]
+    apply Finset.sum_congr rfl; intro k₂ _; ring
+  have colpick : ∀ (X : Fin (n + 1)), (∑ k₂, D 0 k₂ * L X k₂) = A 0 0 * L X 0 := by
+    intro X; rw [Fin.sum_univ_succ, hD00]
+    have : (∑ k₂ : Fin n, D 0 k₂.succ * L X k₂.succ) = 0 :=
+      Finset.sum_eq_zero fun k _ => by rw [hD0s k, zero_mul]
+    rw [this, add_zero]
+  constructor
+  · rw [row0 0, colpick 0, hL00, mul_one]
+  · intro j
+    rw [row0 j.succ, colpick j.succ, hLcol j, hsym1 j]
+    obtain ⟨δ, hδ, hd⟩ := fp.model_div (A j.succ 0) (A 0 0) he
+    rw [hd]
+    have hrw : A 0 0 * (A j.succ 0 / A 0 0 * (1 + δ)) - A j.succ 0
+        = A j.succ 0 * δ := by field_simp; ring
+    rw [hrw, abs_mul]
+    exact (mul_le_mul_of_nonneg_left hδ (abs_nonneg _)).trans_eq (by rw [mul_comm])
+
+/-- **Pivot-column floating-point backward error of one 1×1-pivot stage.**
+    `(L̂D̂L̂ᵀ)_{i+1,0} = l̂_i·A00 = A_{i+1,0}(1+δ)`, so
+    `|(L̂D̂L̂ᵀ)_{i+1,0} − A_{i+1,0}| ≤ u·|A_{i+1,0}|` — the pivot-column companion of
+    `fl_blockLDLT_pivot_row_bound`, completing all four index cases of the
+    single 1×1-pivot floating-point assemble step. -/
+theorem fl_blockLDLT_pivot_col_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) (he : A 0 0 ≠ 0)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hD00 : D 0 0 = A 0 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0) :
+    ∀ i : Fin n,
+      |(∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L 0 k₂) - A i.succ 0|
+        ≤ fp.u * |A i.succ 0| := by
+  intro i
+  have colred : (∑ k₁, ∑ k₂, L i.succ k₁ * D k₁ k₂ * L 0 k₂)
+      = ∑ k₁, L i.succ k₁ * D k₁ 0 := by
+    apply Finset.sum_congr rfl; intro k₁ _
+    rw [Fin.sum_univ_succ, hL00, mul_one]
+    have : (∑ k₂ : Fin n, L i.succ k₁ * D k₁ k₂.succ * L 0 k₂.succ) = 0 :=
+      Finset.sum_eq_zero fun k _ => by rw [hL0s k, mul_zero]
+    rw [this, add_zero]
+  rw [colred, Fin.sum_univ_succ, hD00]
+  have : (∑ k₁ : Fin n, L i.succ k₁.succ * D k₁.succ 0) = 0 :=
+    Finset.sum_eq_zero fun k _ => by rw [hDs0 k, mul_zero]
+  rw [this, add_zero, hLcol i]
+  obtain ⟨δ, hδ, hd⟩ := fp.model_div (A i.succ 0) (A 0 0) he
+  rw [hd]
+  have hrw : A i.succ 0 / A 0 0 * (1 + δ) * A 0 0 - A i.succ 0 = A i.succ 0 * δ := by
+    field_simp; ring
+  rw [hrw, abs_mul]
+  exact (mul_le_mul_of_nonneg_left hδ (abs_nonneg _)).trans_eq (by rw [mul_comm])
+
 -- ============================================================
 -- Chapter 11.1.4  Tridiagonal symmetric matrices
 -- ============================================================
@@ -785,5 +1040,199 @@ theorem skew_twoByTwo_schur_entry_bound
     _ ≤ (|aij| + |ai2 / a21 * aj1|) + |ai1 / a21 * aj2| := add_le_add htriA (le_refl _)
     _ ≤ (M + M) + M := add_le_add (add_le_add hij t1) t2
     _ = 3 * M := by ring
+
+-- ============================================================
+-- Chapter 11.1  Exact block-LDL^T factorization step (eq (11.3), s = 1)
+-- ============================================================
+
+/-- **Equation (11.3), `s = 1` case** — one 1×1-pivot block-LDLᵀ elimination step
+    is an exact factorization (exact arithmetic).  For a symmetric
+    `A : Fin (m+1) → Fin (m+1) → ℝ` with nonzero pivot `A 0 0`, the unit lower
+    triangular `L` (first column `A i0 / A00` below the pivot, identity in the
+    trailing block) and the block-diagonal `D` (pivot `A00`, trailing Schur
+    complement `A i j − A i0·A 0j / A00`) satisfy
+    `∑_{k₁,k₂} L I k₁·D k₁ k₂·L J k₂ = A I J`.  This is the exact base of the
+    diagonal-pivoting recursion underlying Theorem 11.3 (the floating-point
+    version adds the rounding error `fl_oneByOne_schur_step_error`). -/
+theorem oneByOne_step_factorization (m : ℕ) (A : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (ha : A 0 0 ≠ 0) (hsym : ∀ i : Fin m, A 0 i.succ = A i.succ 0)
+    (L D : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hL0 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin m, L i.succ 0 = A i.succ 0 / A 0 0)
+    (hL0s : ∀ j : Fin m, L 0 j.succ = 0)
+    (hLtr : ∀ i j : Fin m, L i.succ j.succ = if i = j then 1 else 0)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin m, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin m, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin m, D i.succ j.succ
+      = A i.succ j.succ - A i.succ 0 * A 0 j.succ / A 0 0) :
+    ∀ I J : Fin (m + 1),
+      (∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = A I J := by
+  have inner : ∀ (I k₁ J : Fin (m + 1)),
+      (∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = L I k₁ * (∑ k₂, D k₁ k₂ * L J k₂) := by
+    intro I k₁ J; rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro k _; ring
+  have cdl0 : ∀ J : Fin (m + 1), (∑ k₂, D 0 k₂ * L J k₂) = A 0 0 * L J 0 := by
+    intro J; rw [Fin.sum_univ_succ, hD00]
+    have : (∑ k₂ : Fin m, D 0 k₂.succ * L J k₂.succ) = 0 :=
+      Finset.sum_eq_zero fun k _ => by rw [hD0s k, zero_mul]
+    rw [this, add_zero]
+  have cdls : ∀ (i : Fin m) (J : Fin (m + 1)),
+      (∑ k₂, D i.succ k₂ * L J k₂)
+        = ∑ k₂' : Fin m, D i.succ k₂'.succ * L J k₂'.succ := by
+    intro i J; rw [Fin.sum_univ_succ, hDs0 i, zero_mul, zero_add]
+  intro I J
+  rw [Fin.sum_univ_succ, inner I 0 J, cdl0 J]
+  have hrest : (∑ i : Fin m, ∑ k₂, L I i.succ * D i.succ k₂ * L J k₂)
+      = ∑ i : Fin m, L I i.succ * (∑ k₂' : Fin m, D i.succ k₂'.succ * L J k₂'.succ) := by
+    apply Finset.sum_congr rfl; intro i _; rw [inner I i.succ J, cdls i J]
+  rw [hrest]
+  rcases Fin.eq_zero_or_eq_succ I with hI | ⟨i0, hI⟩ <;>
+    rcases Fin.eq_zero_or_eq_succ J with hJ | ⟨j0, hJ⟩ <;> subst hI <;> subst hJ
+  · have : (∑ i : Fin m, L 0 i.succ *
+        (∑ k₂' : Fin m, D i.succ k₂'.succ * L 0 k₂'.succ)) = 0 :=
+      Finset.sum_eq_zero fun i _ => by rw [hL0s i, zero_mul]
+    rw [this, hL0, add_zero]; ring
+  · have : (∑ i : Fin m, L 0 i.succ *
+        (∑ k₂' : Fin m, D i.succ k₂'.succ * L j0.succ k₂'.succ)) = 0 :=
+      Finset.sum_eq_zero fun i _ => by rw [hL0s i, zero_mul]
+    rw [this, hL0, add_zero, hLcol j0, hsym j0]; field_simp
+  · have hz : (∑ i : Fin m, L i0.succ i.succ *
+        (∑ k₂' : Fin m, D i.succ k₂'.succ * L 0 k₂'.succ)) = 0 :=
+      Finset.sum_eq_zero fun i _ => by
+        rw [show (∑ k₂' : Fin m, D i.succ k₂'.succ * L 0 k₂'.succ) = 0 from
+          Finset.sum_eq_zero fun k _ => by rw [hL0s k, mul_zero], mul_zero]
+    rw [hz, add_zero, hLcol i0, hL0]; field_simp
+  · have hrsum : (∑ i : Fin m, L i0.succ i.succ *
+        (∑ k₂' : Fin m, D i.succ k₂'.succ * L j0.succ k₂'.succ))
+        = A i0.succ j0.succ - A i0.succ 0 * A 0 j0.succ / A 0 0 := by
+      rw [Finset.sum_eq_single i0]
+      · rw [hLtr i0 i0, if_pos rfl, one_mul, Finset.sum_eq_single j0]
+        · rw [hDtr i0 j0, hLtr j0 j0, if_pos rfl, mul_one]
+        · intro k _ hk; rw [hLtr j0 k, if_neg (Ne.symm hk), mul_zero]
+        · intro h; exact absurd (Finset.mem_univ j0) h
+      · intro i _ hi; rw [hLtr i0 i, if_neg (Ne.symm hi), zero_mul]
+      · intro h; exact absurd (Finset.mem_univ i0) h
+    rw [hrsum, hLcol i0, hLcol j0, hsym j0]; field_simp; ring
+
+/-- **Inductive step of the exact block-LDLᵀ recursion** (1×1 pivot), Higham
+    eq (11.1)/(11.3).  Generalises `oneByOne_step_factorization`: the trailing
+    block of `L`/`D` is a *recursively computed* factorization
+    `L_S·D_S·L_Sᵀ = S` of the Schur complement `S` (the induction hypothesis
+    `hIH`), not the identity.  With first-stage multipliers `A i0/A00` and Schur
+    complement `S i j = A i.succ j.succ − A i.succ 0·A 0 j.succ / A00`, the
+    assembled factors reproduce `A` exactly.  Iterating this is the exact
+    `PAPᵀ = LDLᵀ` recursion underlying Theorem 11.3. -/
+theorem blockLDLT_assemble_step (n : ℕ) (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (ha : A 0 0 ≠ 0) (hsym : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (S L_S D_S : Fin n → Fin n → ℝ)
+    (hS : ∀ i j : Fin n, S i j = A i.succ j.succ - A i.succ 0 * A 0 j.succ / A 0 0)
+    (hIH : ∀ i j : Fin n, (∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂) = S i j)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL0 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = A i.succ 0 / A 0 0)
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hLtr : ∀ i j : Fin n, L i.succ j.succ = L_S i j)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin n, D i.succ j.succ = D_S i j) :
+    ∀ I J : Fin (n + 1),
+      (∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = A I J := by
+  have inner : ∀ (I k₁ J : Fin (n + 1)),
+      (∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = L I k₁ * (∑ k₂, D k₁ k₂ * L J k₂) := by
+    intro I k₁ J; rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro k _; ring
+  have cdl0 : ∀ J : Fin (n + 1), (∑ k₂, D 0 k₂ * L J k₂) = A 0 0 * L J 0 := by
+    intro J; rw [Fin.sum_univ_succ, hD00]
+    have : (∑ k₂ : Fin n, D 0 k₂.succ * L J k₂.succ) = 0 :=
+      Finset.sum_eq_zero fun k _ => by rw [hD0s k, zero_mul]
+    rw [this, add_zero]
+  have cdls : ∀ (i : Fin n) (J : Fin (n + 1)),
+      (∑ k₂, D i.succ k₂ * L J k₂)
+        = ∑ k₂' : Fin n, D_S i k₂' * L J k₂'.succ := by
+    intro i J; rw [Fin.sum_univ_succ, hDs0 i, zero_mul, zero_add]
+    apply Finset.sum_congr rfl; intro k _; rw [hDtr i k]
+  intro I J
+  rw [Fin.sum_univ_succ, inner I 0 J, cdl0 J]
+  have hrest : (∑ i : Fin n, ∑ k₂, L I i.succ * D i.succ k₂ * L J k₂)
+      = ∑ i : Fin n, L I i.succ * (∑ k₂' : Fin n, D_S i k₂' * L J k₂'.succ) := by
+    apply Finset.sum_congr rfl; intro i _; rw [inner I i.succ J, cdls i J]
+  rw [hrest]
+  rcases Fin.eq_zero_or_eq_succ I with hI | ⟨i0, hI⟩ <;>
+    rcases Fin.eq_zero_or_eq_succ J with hJ | ⟨j0, hJ⟩ <;> subst hI <;> subst hJ
+  · have : (∑ i : Fin n, L 0 i.succ *
+        (∑ k₂' : Fin n, D_S i k₂' * L 0 k₂'.succ)) = 0 :=
+      Finset.sum_eq_zero fun i _ => by rw [hL0s i, zero_mul]
+    rw [this, hL0, add_zero]; ring
+  · have : (∑ i : Fin n, L 0 i.succ *
+        (∑ k₂' : Fin n, D_S i k₂' * L j0.succ k₂'.succ)) = 0 :=
+      Finset.sum_eq_zero fun i _ => by rw [hL0s i, zero_mul]
+    rw [this, hL0, add_zero, hLcol j0, hsym j0]; field_simp
+  · have hz : (∑ i : Fin n, L i0.succ i.succ *
+        (∑ k₂' : Fin n, D_S i k₂' * L 0 k₂'.succ)) = 0 :=
+      Finset.sum_eq_zero fun i _ => by
+        rw [show (∑ k₂' : Fin n, D_S i k₂' * L 0 k₂'.succ) = 0 from
+          Finset.sum_eq_zero fun k _ => by rw [hL0s k, mul_zero], mul_zero]
+    rw [hz, add_zero, hLcol i0, hL0]; field_simp
+  · have htrail : (∑ i : Fin n, L i0.succ i.succ *
+        (∑ k₂' : Fin n, D_S i k₂' * L j0.succ k₂'.succ)) = S i0 j0 := by
+      rw [← hIH i0 j0]
+      apply Finset.sum_congr rfl; intro i _
+      rw [hLtr i0 i, Finset.mul_sum]
+      apply Finset.sum_congr rfl; intro k _
+      rw [hLtr j0 k]; ring
+    rw [htrail, hLcol i0, hLcol j0, hS i0 j0, hsym j0]
+    field_simp; ring
+
+/-- Schur complement of the leading 1×1 pivot,
+`S i j = A i.succ j.succ − A i.succ 0 · A 0 j.succ / A 0 0`. -/
+noncomputable def schurCompl (n : ℕ) (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j => A i.succ j.succ - A i.succ 0 * A 0 j.succ / A 0 0
+
+/-- Symmetry is inherited by the Schur complement. -/
+theorem schurCompl_symm (n : ℕ) (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hsym : ∀ i j, A i j = A j i) :
+    ∀ i j : Fin n, schurCompl n A i j = schurCompl n A j i := by
+  intro i j
+  simp only [schurCompl]
+  rw [hsym i.succ j.succ, hsym i.succ 0, hsym 0 j.succ]; ring
+
+/-- The successive leading 1×1 pivots of the diagonal-pivoting recursion are all
+nonzero (the "no 2×2 pivot needed / leading principal minors nonzero" case). -/
+def AllOnePivots : (n : ℕ) → (Fin n → Fin n → ℝ) → Prop
+  | 0, _ => True
+  | (n + 1), A => A 0 0 ≠ 0 ∧ AllOnePivots n (schurCompl n A)
+
+/-- **Exact all-1×1 block-LDLᵀ factorization existence** (Higham eqs (11.1)/(11.2),
+the no-2×2-pivot / root-free `LDLᵀ` case).  If `A` is symmetric and every
+successive Schur-complement pivot is nonzero (`AllOnePivots`), there exist factors
+`L, D` with `∑ L·D·Lᵀ = A` — the exact `PAPᵀ = LDLᵀ` recursion (with `P = I`)
+underlying Theorem 11.3, obtained by iterating `blockLDLT_assemble_step`. -/
+theorem exact_blockLDLT_all_oneByOne :
+    ∀ (n : ℕ) (A : Fin n → Fin n → ℝ),
+      (∀ i j, A i j = A j i) → AllOnePivots n A →
+      ∃ L D : Fin n → Fin n → ℝ,
+        ∀ I J, (∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) = A I J := by
+  intro n
+  induction n with
+  | zero => intro A _ _; exact ⟨A, A, fun I => I.elim0⟩
+  | succ n ih =>
+    intro A hsym hp
+    obtain ⟨ha, hpS⟩ := hp
+    obtain ⟨L_S, D_S, hprodS⟩ := ih (schurCompl n A) (schurCompl_symm n A hsym) hpS
+    refine ⟨fun I J => Fin.cases (Fin.cases 1 (fun _ => 0) J)
+              (fun i => Fin.cases (A i.succ 0 / A 0 0) (fun j => L_S i j) J) I,
+            fun I J => Fin.cases (Fin.cases (A 0 0) (fun _ => 0) J)
+              (fun i => Fin.cases 0 (fun j => D_S i j) J) I, ?_⟩
+    apply blockLDLT_assemble_step n A ha (fun i => hsym 0 i.succ)
+      (schurCompl n A) L_S D_S (fun i j => rfl) hprodS
+    · simp
+    · intro i; simp
+    · intro j; simp
+    · intro i j; simp
+    · simp
+    · intro j; simp
+    · intro i; simp
+    · intro i j; simp
 
 end LeanFpAnalysis.FP

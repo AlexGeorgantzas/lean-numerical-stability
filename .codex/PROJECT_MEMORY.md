@@ -20,6 +20,57 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-05 sync/checkpoint: local `main` fast-forwarded to `origin/main`
+  commit `183253e3`; direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` passed with no
+  output after the sync.  For Theorem 13.6, the exact cited [326] paper has
+  been identified as J. W. Demmel, N. J. Higham, and R. S. Schreiber,
+  "Stability of block LU factorization", *Numerical Linear Algebra with
+  Applications* 2 (1995), pp. 173--190, doi:10.1002/nla.1680020208.  The later
+  Lindquist--Luszczek--Dongarra arXiv:2509.07305 paper gives an advisory
+  Section 2.2 route split into factorization, triangular-solve, and combined
+  solve backward-error theorems.  This supports the existing
+  `DemmelHighamSchreiber13_6Estimates` target design but does not close the
+  theorem; the [326]-level implementation estimates remain open.
+- 2026-07-05 matrix-`∞` source-norm positive-dimension paired endpoints:
+  extended the source-norm upper/history positive-block-size cleanup with
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table_of_pos_dim`,
+  `..._of_continuousLinearMap_source_table_of_pivot_right_inverse_of_pos_dim`,
+  `..._of_initial_diag_right_inverse_of_pivot_right_inverse_of_pos_dim`,
+  `..._of_reciprocal_diag_right_inverse_of_pivot_right_inverse_of_pos_dim`,
+  `..._of_nonsingInv_diag_of_pivot_right_inverse_of_pos_dim`, and the earlier
+  canonical active-pivot
+  `..._of_nonsingInv_diag_of_pivotInv_eq_nonsingInv_of_pos_dim` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These package the raw,
+  pivot-right-inverse, initial-diagonal, reciprocal, canonical-initial, and
+  canonical active-pivot source-norm upper/history pairs from the source-shaped
+  assumptions plus `0 < r`, discharging the artificial finite unit-sphere
+  witness.  Direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` passed before
+  lookup refresh; import-materializing
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU` passed (`2982/2982`,
+  252s), and ignored scratch
+  `scratch/chapter13/ScratchCh13PosDimAxioms.lean` confirmed all six
+  positive-dimension paired endpoints and reported only standard Lean/Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`.  A redirected full
+  `examples/LibraryLookup.lean` rerun printed all six new Ch13 declarations
+  successfully, but the file as a whole now fails at unrelated non-Ch13
+  `#check`s around lines 15311--15342; the new Ch13 checks are covered by the
+  focused scratch check.
+  This remains a matrix-`∞` dependency endpoint; it does not close the
+  source-strength entrywise Eq.13.21, Eq.13.23 `rho <= 2`, Problem 13.4
+  all-tail comparison, or Theorem 13.6 cited-estimate rows.
+- 2026-07-05 post-merge verification for the same endpoint: local milestone
+  commit `0b483444` was merged with incoming `origin/main` commit `de29bd7c`
+  by merge commit `f101dfba`.  At that merge tip,
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`,
+  and the touched Lean placeholder scan passed; ignored scratch
+  `scratch/chapter13/ScratchCh13PosDimAxioms.lean` again printed the theorem
+  and only standard axioms `propext`, `Classical.choice`, and `Quot.sound`.
+  A redirected `examples/LibraryLookup.lean` run printed the new Ch13
+  declaration but still exited nonzero on unrelated non-Ch13 lookup rows
+  beginning around line 13063 and later Split-3B placeholder/foundation rows
+  around 15306--15337.
 - 2026-07-04 plain inverse-comparison canonical active-pivot wrappers: added
   `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivotInv_eq_nonsingInv`,
   `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivotInv_eq_nonsingInv`,
@@ -10917,8 +10968,8 @@ These compile, but should not be treated as fully derived stability results:
   source table data, all-tail source comparisons, and Theorem 13.6 cited
   implementation estimates remain open.
 
-- 2026-07-04 Algorithm 13.3 matrix-infinity source-norm paired endpoints:
-  added six wrappers in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+- 2026-07-04/05 Algorithm 13.3 matrix-infinity source-norm paired endpoints:
+  added seven wrappers in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
   pairing the assembled matrix-stage upper-factor `blockInfNorm` bound with the
   finite matrix-stage history `blockInfNorm` bound:
   `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table`,
@@ -10927,9 +10978,293 @@ These compile, but should not be treated as fully derived stability results:
   `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_reciprocal_diag_right_inverse_of_pivot_right_inverse`,
   `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivot_right_inverse`,
   and
-  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv`.
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv`;
+  the positive-block-size canonical active-pivot wrapper
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv_of_pos_dim`
+  removes the finite unit-sphere witness from that paired source-norm route.
   Direct `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
   passed before documentation/lookup refresh.  These are source-norm
   dependency packages only; the source-strength entrywise max-entry BDD/product
   update route, Problem 13.4 all-tail source comparisons, and Theorem 13.6
   cited implementation estimates remain open.
+
+- 2026-07-05 Algorithm 13.3 arbitrary-norm active lower table: added
+  `higham13_algorithm13_3_source_lowerNorm_table_of_active_schur_pivots` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  The theorem names the
+  source lower-norm table for the actual continuous-linear Algorithm 13.3 Schur
+  stages: `continuousLinearMapLowerNorm` of each active Schur diagonal satisfies
+  the Eq.13.18 active diagonal-update predicate, and two-sided active pivot
+  inverse identities give the active reciprocal table.  The existing downstream
+  CLM diagonal-certificate theorem
+  `higham13_algorithm13_3_clm_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table`
+  now consumes this named table instead of reconstructing it inline.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  passed after the edit.  This closes the listed lower-norm-table dependency in
+  the BDD bottleneck ledger, but not the whole BDD row: deriving active
+  reciprocal/pivot data from the printed BDD hypotheses, choosing or connecting
+  the source-norm versus entrywise max-norm downstream surface, Problem 13.4
+  all-tail source comparisons, and Theorem 13.6 cited implementation estimates
+  remain open.
+
+- 2026-07-05 Theorem 13.7 BDD zero-offdiagonal scalar step: added
+  `higham13_blockDiagDomCol_offdiag_zero_of_diagBound_nonpos` and
+  `higham13_blockDiagDomRow_offdiag_zero_of_diagBound_nonpos` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These prove that a
+  nonpositive active diagonal lower bound in a nonnegative column/row BDD norm
+  table forces all off-diagonal block norms in that column/row to vanish,
+  matching the source proof sentence after (13.18).  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  passed after the edit; focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`,
+  touched Lean placeholder scan, and ignored scratch axiom audit passed.  The
+  axiom audit reported only standard Mathlib axioms `propext`,
+  `Classical.choice`, and `Quot.sound`.  Redirected public lookup printed both
+  new Chapter 13 declarations successfully and failed only on unrelated
+  pre-existing non-Ch13 lookup rows.  This closes only the scalar
+  zero-off-column/row piece of the Schur-diagonal-singularity contradiction;
+  the vector-kernel/flat singularity contradiction, BDD-derived active pivot
+  inverses, source-norm versus entrywise max-growth integration, Problem 13.4
+  all-tail source comparisons, and Theorem 13.6 cited implementation estimates
+  remain open.
+
+- 2026-07-05 Theorem 13.7 BDD flat-kernel singularity step: added
+  `blockMatrixFlat_det_ne_zero_of_blockMatrixNonsingular`,
+  `higham13_blockMatrixFlat_det_eq_zero_of_offdiag_col_zero_of_diag_kernel`,
+  and
+  `higham13_not_blockMatrixNonsingular_of_offdiag_col_zero_of_diag_kernel` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These formalize the source
+  proof step after (13.18): if BDD has forced a block column's off-diagonal
+  blocks to be zero and the diagonal block has a nonzero right-kernel vector,
+  the flattened block matrix has a nonzero kernel vector and determinant zero,
+  contradicting `BlockMatrixNonsingular`.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`,
+  `git diff --check`, touched Lean placeholder scan, and ignored scratch axiom
+  audit all passed.  The axiom audit reported only standard Mathlib axioms
+  `propext`, `Classical.choice`, and `Quot.sound`.  Redirected public lookup
+  printed all three new Chapter 13 declarations successfully and still failed
+  only on unrelated pre-existing non-Ch13 lookup rows.  This closes the
+  vector-kernel/flat-singularity piece of the Schur-diagonal-singularity
+  contradiction, but not the full BDD block-LU existence route: diagonal-block
+  kernel extraction from lower-bound zero, the leading-prefix contradiction
+  assembly, active pivot inverses, source-norm versus entrywise max-growth
+  integration, Problem 13.4 all-tail source comparisons, and Theorem 13.6 cited
+  estimates remain open.
+
+- 2026-07-05 Theorem 13.7 BDD diagonal-singularity contradiction step: added
+  `higham13_exists_nonzero_coord_of_vec_ne_zero`,
+  `higham13_exists_diag_kernel_coord_of_det_eq_zero`,
+  `higham13_blockMatrixFlat_det_eq_zero_of_offdiag_col_zero_of_diag_det_eq_zero`,
+  and
+  `higham13_not_blockMatrixNonsingular_of_offdiag_col_zero_of_diag_det_eq_zero`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These bridge the previous
+  flat-kernel lemma to the source's singular-active-diagonal-block case:
+  determinant zero of the active diagonal block yields a nonzero right-kernel
+  vector with a named nonzero coordinate, and zero off-diagonal blocks in that
+  column then make the whole flattened block matrix singular, contradicting
+  `BlockMatrixNonsingular`.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  passed after the edit; focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`,
+  touched Lean placeholder scan, and ignored scratch axiom audit passed.  The
+  axiom audit reported only standard Mathlib axioms `propext`,
+  `Classical.choice`, and `Quot.sound`.  Redirected public lookup printed all
+  four new Chapter 13 declarations successfully and still failed only on
+  unrelated pre-existing non-Ch13 lookup rows.  This closes the diagonal-block
+  singularity-to-flat contradiction dependency, but not the full BDD block-LU
+  existence route: deriving active diagonal-block determinant nonzero/pivot
+  inverses from the BDD lower-bound alternatives and leading-prefix
+  nonsingularity, source-norm versus entrywise max-growth integration, Problem
+  13.4 all-tail source comparisons, and Theorem 13.6 cited estimates remain
+  open.
+
+- 2026-07-05 Theorem 13.7 BDD actual-block contradiction step: added
+  `higham13_block_entries_zero_of_norm_eq_zero`,
+  `higham13_blockDiagDomCol_offdiag_entries_zero_of_norm_table_nonpos`,
+  `higham13_not_blockMatrixNonsingular_of_blockDiagDomCol_diagBound_nonpos_diag_det_eq_zero`,
+  and
+  `higham13_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These connect the
+  abstract nonnegative BDD norm-table step to the actual block matrix table
+  `fun i j => ‖A i j‖`: a nonpositive active diagonal lower bound gives
+  zero scalar entries in all off-diagonal blocks of that column, and together
+  with determinant zero of the active diagonal block contradicts
+  `BlockMatrixNonsingular`.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  passed after the edit; focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`,
+  touched Lean placeholder scan, and ignored scratch axiom audit passed.  The
+  axiom audit reported only standard Mathlib axioms `propext`,
+  `Classical.choice`, and `Quot.sound`.  Redirected public lookup printed all
+  four new Chapter 13 declarations successfully and still failed only on
+  unrelated pre-existing non-Ch13 lookup rows.  This closes the actual-block
+  column-BDD nonpositive-bound/singular-diagonal contradiction dependency, but
+  not the full BDD block-LU existence route: deriving positive active diagonal
+  determinant/pivot inverse data for all leading prefixes, source-norm versus
+  entrywise max-growth integration, Problem 13.4 all-tail source comparisons,
+  and Theorem 13.6 cited estimates remain open.
+
+- 2026-07-05 Theorem 13.7 BDD leading-prefix diagonal step: added
+  `higham13_leadingBlockPrefix_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`
+  and
+  `higham13_leadingBlockPrefix_diag_det_ne_zero_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These combine full
+  column BDD inheritance for leading prefixes with the actual-block
+  nonsingularity contradiction: a nonsingular leading prefix cannot have a
+  singular active diagonal block at any prefix index whose inherited diagonal
+  lower bound is nonpositive.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  passed after the edit; focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`,
+  touched Lean placeholder scan, and ignored scratch axiom audit passed.  The
+  axiom audit reported only standard Mathlib axioms `propext`,
+  `Classical.choice`, and `Quot.sound`.  Redirected public lookup printed both
+  new Chapter 13 declarations successfully and still failed only on unrelated
+  pre-existing non-Ch13 lookup rows.  This closes the leading-prefix packaging
+  for the nonpositive-bound/singular-diagonal contradiction, but not the final
+  BDD block-LU existence route: deriving the positive active
+  lower-bound/pivot inverse table for all pivots, source-norm versus entrywise
+  max-growth integration, Problem 13.4 all-tail source comparisons, and Theorem
+  13.6 cited estimates remain open.
+
+- 2026-07-05 Theorem 13.7 BDD leading-prefix canonical inverse step: added
+  `higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`
+  and
+  `higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These wrap the
+  leading-prefix determinant-nonzero facts with
+  `isInverse_nonsingInv_of_det_ne_zero`, exposing the repository canonical
+  `nonsingInv` as a two-sided inverse for every prefix diagonal block whose
+  inherited column-BDD lower bound is nonpositive.  Focused
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU` passed; `git diff --check`,
+  touched Lean placeholder scan, and the extended ignored scratch
+  axiom audit passed.  The new wrappers' axiom audit reports only standard
+  Mathlib axioms `propext`, `Classical.choice`, and `Quot.sound`.  Redirected
+  public lookup printed both new Chapter 13 declarations successfully and still
+  failed only on unrelated pre-existing non-Ch13 lookup rows.  This closes the
+  canonical inverse packaging needed by downstream active-pivot APIs, but not
+  the final BDD block-LU existence route: deriving the positive active
+  lower-bound/pivot inverse table for all pivots, source-norm versus entrywise
+  max-growth integration, Problem 13.4 all-tail source comparisons, and Theorem
+  13.6 cited estimates remain open.
+
+- 2026-07-05 Theorem 13.7 BDD all-prefix diagonal inverse table: added
+  `higham13_diag_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  and
+  `higham13_diag_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These specialize the
+  leading-prefix canonical inverse theorem to an all-leading-prefix
+  nonsingularity table, yielding canonical two-sided and right-inverse
+  certificates for every original diagonal block whose column-BDD lower-bound
+  entry is nonpositive.  This is dependency packaging for downstream
+  diagonal/pivot certificate APIs; it does not close the active Schur-stage
+  BDD theorem, because deriving all active pivot certificates from the printed
+  BDD hypotheses and connecting them to the source max-growth/product-update
+  route remains open.
+
+- 2026-07-05 Theorem 13.7 BDD initial active-pivot bridge: added
+  `higham13_algorithm13_3_initial_pivot_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`,
+  `higham13_algorithm13_3_initial_pivot_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`,
+  `higham13_algorithm13_3_initial_pivot_det_ne_zero_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`,
+  and
+  `higham13_algorithm13_3_initial_pivot_right_inverse_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These specialize the
+  BDD all-prefix diagonal inverse table to Algorithm 13.3 stage zero, where
+  the active pivot is definitionally the original first diagonal block.  The
+  determinant wrapper gives first-pivot nonsingularity directly from the
+  canonical BDD inverse, and the equality wrapper turns
+  `pivotInv 0 = nonsingInv r (A 0 0)` into the exact first active pivot
+  right-inverse certificate consumed by matrix-stage APIs.  This closes only
+  the base-pivot bridge; deriving later active Schur-stage pivot certificates
+  from the printed BDD hypotheses remains open.
+
+- 2026-07-06 Theorem 13.7 BDD first Schur-tail nonsingularity handoff: added
+  `higham13_algorithm13_3_first_schur_tail_blockMatrixNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  and
+  `higham13_algorithm13_3_first_schur_tail_blockMatrixFlat_det_ne_zero_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These compose the
+  BDD all-prefix canonical first-pivot inverse with the existing
+  Schur-complement nonsingularity theorem: full leading-prefix nonsingularity
+  gives nonsingularity of the original full block matrix, and the BDD-derived
+  canonical first pivot supplies the two-sided inverse needed to prove
+  `blockSchur A (pivotInv 0)` block-nonsingular.  The determinant corollary
+  exposes the product-index flattened determinant certificate.  This closes
+  the first recursive nonsingularity handoff after the base pivot bridge, but
+  not the later active Schur-stage BDD reciprocal/source table, entrywise
+  max-growth product/update route, Problem 13.4 all-tail comparisons, or
+  Theorem 13.6 cited implementation estimates.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`,
+  `git diff --check`, touched Lean marker scan, scratch proof bench, and
+  scratch axiom audit passed; the axiom audit reported only standard Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`.  Redirected public
+  lookup printed both new Chapter 13 declarations and still failed only on
+  unrelated pre-existing stale lookup rows.
+
+- 2026-07-06 Theorem 13.7 BDD first Schur-tail leading-prefix handoff: added
+  `higham13_algorithm13_3_first_schur_tail_leadingPrincipalBlockNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  This strengthens the
+  first Schur-tail nonsingularity bridge by transferring the full
+  `LeadingPrincipalBlockNonsingular13_2` condition to
+  `blockSchur A (pivotInv 0)` from the all-leading-prefix table and the
+  BDD-derived canonical first pivot inverse.  It is the recursive
+  leading-prefix handoff needed before later BDD/source-table work can iterate
+  on Schur tails.  Later active Schur-stage reciprocal/source-table data,
+  entrywise max-growth product/update routing, Problem 13.4 all-tail
+  comparisons, and Theorem 13.6 cited implementation estimates remain open.
+  Direct `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`, touched Lean
+  marker scan, scratch proof bench, and scratch axiom audit passed; the axiom
+  audit reported only standard Mathlib axioms `propext`, `Classical.choice`,
+  and `Quot.sound`.  Redirected public lookup printed the full first-tail
+  theorem family and still failed only on unrelated pre-existing stale lookup
+  rows.
+
+- 2026-07-06 Theorem 13.7 BDD first Schur-tail all-prefix table:
+  added
+  `higham13_algorithm13_3_first_schur_tail_all_leadingBlockPrefixes_nonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  This packages the
+  preceding full-tail nonsingularity and leading-principal handoffs for
+  `blockSchur A (pivotInv 0)` into the all-leading-prefix table shape
+  consumed by the BDD all-prefix diagonal-inverse theorem.  It is a small but
+  important recursive dependency: after the first canonical BDD pivot, the
+  first Schur tail now has the exact prefix-nonsingularity hypothesis format
+  needed by later tail-level diagonal inverse/pivot-certificate steps.  It
+  still does not construct the later active Schur-stage reciprocal/source
+  table, entrywise max-growth product/update route, Problem 13.4 all-tail
+  comparisons, or Theorem 13.6 cited implementation estimates.  Direct
+  `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`, touched Lean
+  marker scan, scratch proof bench, and scratch axiom audit passed.  The axiom
+  audit reported only standard Mathlib axioms `propext`, `Classical.choice`,
+  and `Quot.sound`.  Redirected public lookup printed the four first-tail
+  declarations including the new all-prefix table, with empty stderr; it still
+  failed only on unrelated pre-existing stale lookup rows later in
+  `examples/LibraryLookup.lean`.
+
+- 2026-07-06 Theorem 13.7 BDD first Schur-tail diagonal inverse handoff:
+  added
+  `higham13_algorithm13_3_first_schur_tail_diag_nonsingInv_isInverse_of_tail_blockDiagDomCol_diagBound_nonpos`,
+  `higham13_algorithm13_3_first_schur_tail_diag_nonsingInv_isRightInverse_of_tail_blockDiagDomCol_diagBound_nonpos`,
+  and
+  `higham13_algorithm13_3_first_schur_tail_diag_det_ne_zero_of_tail_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These apply the
+  first-Schur-tail all-prefix handoff to the existing BDD all-prefix
+  diagonal-inverse theorem: if the first Schur tail has its own column-BDD
+  lower-bound table with nonpositive bounds, then every tail diagonal block
+  has the canonical `nonsingInv` two-sided/right-inverse certificates and a
+  nonzero determinant certificate.  This is recursive pivot-certificate
+  packaging only; it does not prove the tail BDD/source reciprocal table,
+  entrywise max-growth product/update route, Problem 13.4 all-tail
+  comparisons, or Theorem 13.6 cited implementation estimates.  Verification
+  passed: direct `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`, touched Lean
+  marker scan, scratch prototype, expanded scratch axiom audit, and redirected
+  public lookup presence.  The axiom audit reported only standard Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`; lookup stderr was
+  empty and the later nonzero exit was still from unrelated stale
+  non-Chapter-13 lookup rows.

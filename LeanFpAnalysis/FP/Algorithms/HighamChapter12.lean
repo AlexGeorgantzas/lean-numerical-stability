@@ -116,6 +116,59 @@ theorem higham12_forward_error_steady_state (a : ℕ → ℝ) (eta tau : ℝ)
   linear_contraction_steady_state a eta tau
     heta_nonneg heta_lt htau_nonneg hstep ha0
 
+/-- **Equations (12.4)-(12.5)** exact forward-error identity of one refinement
+step.  With computed residual `rc = (b - A x_i) + Δr`, correction `d` solving
+`(A + ΔA) d = rc`, and rounded update `y = x_i + d + Δx`, the corrected forward
+error satisfies exactly `A (y - x) = Δr - ΔA·d + A·Δx`.  This is the exact,
+inverse-free core of the recurrence (12.5) (before the source's asymptotic
+`F_i`, `G_i`, `O(u^2)` estimates). -/
+theorem higham12_5_forward_error_identity (n : ℕ)
+    (A DeltaA : Fin n → Fin n → ℝ)
+    (x x_i d DeltaR DeltaX rc y b : Fin n → ℝ)
+    (hAx : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hrc : ∀ i : Fin n,
+      rc i = (b i - ∑ j : Fin n, A i j * x_i j) + DeltaR i)
+    (hsolve : ∀ i : Fin n,
+      ∑ j : Fin n, (A i j + DeltaA i j) * d j = rc i)
+    (hy : ∀ i : Fin n, y i = x_i i + d i + DeltaX i) :
+    ∀ i : Fin n,
+      ∑ j : Fin n, A i j * (y j - x j) =
+        DeltaR i - (∑ j : Fin n, DeltaA i j * d j)
+          + (∑ j : Fin n, A i j * DeltaX j) :=
+  forward_error_step_identity n A DeltaA x x_i d DeltaR DeltaX rc y b
+    hAx hrc hsolve hy
+
+/-- **Equation (12.5)** componentwise forward-error bound of one refinement step.
+Applying a nonnegative `|A^{-1}|` resolver to the exact identity gives
+`|y - x|_i ≤ ∑_j Ainv_ij (|Δr|_j + (|ΔA||d|)_j + (|A||Δx|)_j)`.  The three
+sources are: residual computation `Δr` (eq. 12.2, carrying the contracting
+`|A||x - x_i|` term), solver backward error `ΔA ≤ uW` (eq. 12.1), and update
+rounding `Δx` (eq. 12.13).  This is the exact three-source form of Higham's
+`G_i|x - x_i| + g_i` recurrence; the "reduces by factor ≈ η" summary of
+Theorems 12.1/12.2 is the qualitative reading of this bound iterated via
+`higham12_forward_error_linear_contraction`. -/
+theorem higham12_5_forward_error_bound (n : ℕ)
+    (A DeltaA : Fin n → Fin n → ℝ)
+    (x x_i d DeltaR DeltaX rc y b : Fin n → ℝ)
+    (hAx : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hrc : ∀ i : Fin n,
+      rc i = (b i - ∑ j : Fin n, A i j * x_i j) + DeltaR i)
+    (hsolve : ∀ i : Fin n,
+      ∑ j : Fin n, (A i j + DeltaA i j) * d j = rc i)
+    (hy : ∀ i : Fin n, y i = x_i i + d i + DeltaX i)
+    (Ainv : Fin n → Fin n → ℝ)
+    (hAinv_nn : ∀ i j : Fin n, 0 ≤ Ainv i j)
+    (hAinv : ∀ (v w : Fin n → ℝ),
+      (∀ i : Fin n, ∑ j : Fin n, A i j * v j = w i) →
+      ∀ i : Fin n, |v i| ≤ ∑ j : Fin n, Ainv i j * |w j|) :
+    ∀ i : Fin n,
+      |y i - x i| ≤
+        ∑ j : Fin n, Ainv i j *
+          (|DeltaR j| + (∑ k : Fin n, |DeltaA j k| * |d k|)
+            + (∑ k : Fin n, |A j k| * |DeltaX k|)) :=
+  forward_error_step_bound n A DeltaA x x_i d DeltaR DeltaX rc y b
+    hAx hrc hsolve hy Ainv hAinv_nn hAinv
+
 /-! ## §12.2 Iterative Refinement Implies Stability -/
 
 /-- **Equation (12.7)** source model for the initial computed solution:
@@ -329,6 +382,165 @@ theorem higham12_4_conditional_two_gamma_bound (n : ℕ) (fp : FPModel)
     b r hr hres hsolve hDeltaA y hy hmu_nonneg hnu_nonneg homega_nonneg
     (2 * gamma fp (n + 1)) hdom
 
+/-- **Theorem 12.4, explicit-condition form** (Higham §12.2, GE with `μ = γ(3n)`).
+
+A fully-derived Theorem 12.4: from the solver/residual/update models, a norm
+bound `‖ |A||d̂| ‖∞ ≤ ρ₀` on the correction magnitude (supplied by the Neumann
+step `higham12_21_correction_infNorm_bound`), an explicit positive lower bound
+`m` on the scaled data `|A||ŷ| + |b|`, and the explicit scalar conditions
+`ρ₀ ≤ ρ·m` and `hρ_cond`, one step of iterative refinement gives
+`|b − Aŷ|_i ≤ 2γ_{n+1}(|A||ŷ| + |b|)_i`.
+
+Unlike `higham12_4_conditional_two_gamma_bound`, this assumes **no** componentwise
+dominance: the dominance is *derived* via `correction_componentwise_of_infNorm`
+and fed to `lu_refinement_thm_11_4`.  All hypotheses are precise (no `≈`); the
+`(m, ρ)` pair is the explicit, non-asymptotic replacement for the source's
+approximate function `f(t₁,t₂)` and its `cond(A⁻¹)σ(A,ŷ)` sufficient condition. -/
+theorem higham12_4_explicit_condition (n : ℕ) (fp : FPModel)
+    (A : Fin n → Fin n → ℝ)
+    (x₀ d_hat r_hat b r : Fin n → ℝ)
+    (f₂ y : Fin n → ℝ)
+    (DeltaA_solve : Fin n → Fin n → ℝ)
+    (hr : ∀ i : Fin n, r i = b i - ∑ j : Fin n, A i j * x₀ j)
+    (hy : ∀ i : Fin n, y i = x₀ i + d_hat i + f₂ i)
+    (hsolve : ∀ i : Fin n,
+      ∑ j : Fin n, (A i j + DeltaA_solve i j) * d_hat j = r_hat i)
+    (hDeltaA : ∀ i j : Fin n, |DeltaA_solve i j| ≤ gamma fp (3 * n) * |A i j|)
+    (hres : ∀ i : Fin n, |r_hat i - r i| ≤
+      gamma fp (n + 1) * (|b i| + ∑ j : Fin n, |A i j| * |x₀ j|))
+    (hf₂ : ∀ j : Fin n, |f₂ j| ≤ fp.u * (|x₀ j| + |d_hat j|))
+    (hn1 : gammaValid fp (n + 1)) (hn3 : gammaValid fp (3 * n)) (hu_lt : fp.u < 1)
+    (rho0 m ρ : ℝ)
+    (hnorm : infNormVec (fun i => ∑ j : Fin n, |A i j| * |d_hat j|) ≤ rho0)
+    (hm_pos : 0 < m)
+    (ht_lb : ∀ i : Fin n, m ≤ ∑ j : Fin n, |A i j| * |y j| + |b i|)
+    (hρ_nn : 0 ≤ ρ) (hcond : rho0 ≤ ρ * m)
+    (hρ_cond : (gamma fp (n + 1) + fp.u) +
+        ((gamma fp (n + 1) + fp.u) * (1 + fp.u) +
+         (1 - fp.u) * (gamma fp (3 * n) + fp.u)) * ρ ≤
+        (1 - fp.u) * (2 * gamma fp (n + 1))) :
+    ∀ i : Fin n,
+      |b i - ∑ j : Fin n, A i j * y j| ≤
+        2 * gamma fp (n + 1) * (∑ j : Fin n, |A i j| * |y j| + |b i|) := by
+  have hcorr : ∀ i : Fin n, ∑ j : Fin n, |A i j| * |d_hat j| ≤
+      ρ * (∑ j : Fin n, |A i j| * |y j| + |b i|) :=
+    correction_componentwise_of_infNorm
+      (fun i => ∑ j : Fin n, |A i j| * |d_hat j|)
+      (fun i => ∑ j : Fin n, |A i j| * |y j| + |b i|)
+      rho0 ρ m hnorm hm_pos ht_lb hρ_nn hcond
+  exact lu_refinement_thm_11_4 n fp A x₀ d_hat b r r_hat f₂ y DeltaA_solve
+    hr hy hsolve hDeltaA hres hf₂ hn1 hn3 hu_lt ρ hρ_nn hcorr hρ_cond
+
+/-- **Equations (12.20)-(12.21)**, the Neumann-inversion step of Higham §12.2.
+
+Genuine replacement for the previously-assumed
+"`(I − uM₃)⁻¹ ≥ 0`, `‖(I − uM₃)⁻¹‖∞ ≤ 2`" step.  From the componentwise
+correction inequality `(I − M)(|A||d̂|) ≤ w` with `M ≥ 0` entrywise and row sums
+`≤ c < 1`, we obtain the ∞-norm correction bound
+`‖ |A||d̂| ‖∞ ≤ ‖w‖∞ / (1 − c)`.  With `c = 1/2` this is exactly the factor-`2`
+bound the source uses (`u‖M₃‖∞ < 1/2 ⇒ ‖(I − uM₃)⁻¹‖∞ ≤ 2`).  No matrix inverse
+is constructed; the bound is proved directly from the row-sum contraction, which
+is the honest analytic content behind the printed Neumann step. -/
+theorem higham12_21_correction_infNorm_bound {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (d_hat w : Fin n → ℝ)
+    (M : Fin n → Fin n → ℝ)
+    (hM : ∀ i j : Fin n, 0 ≤ M i j)
+    (c : ℝ) (hc_lt : c < 1)
+    (hrow : ∀ i : Fin n, ∑ j : Fin n, M i j ≤ c)
+    (hcorr : ∀ i : Fin n,
+      (∑ j : Fin n, |A i j| * |d_hat j|) ≤
+        (∑ j : Fin n, M i j * (∑ k : Fin n, |A j k| * |d_hat k|)) + w i) :
+    infNormVec (fun i => ∑ j : Fin n, |A i j| * |d_hat j|) ≤
+      infNormVec w / (1 - c) :=
+  nonneg_resolvent_infNormVec_bound hn M
+    (fun i => ∑ j : Fin n, |A i j| * |d_hat j|) w hM
+    (fun _ => Finset.sum_nonneg
+      (fun _ _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)))
+    c hc_lt hrow hcorr
+
+/-- **Theorem 12.4, fully solver-derived** (Higham §12.2, GE with `μ = γ(3n)`).
+
+The complete Theorem 12.4 for one step of fixed-precision iterative refinement:
+from the solver `(A + ΔA)d̂ = r̂` (`|ΔA| ≤ γ(3n)|A|`, Theorem 9.4), the residual
+and update models, and a nonnegative resolver `Ainv` for `A`, one obtains
+`|b − Aŷ|_i ≤ 2γ_{n+1}(|A||ŷ| + |b|)_i`.
+
+The correction bound is **derived end-to-end**, not assumed: the solver gives the
+componentwise Neumann inequality `(I − μ|A|Ainv)(|A||d̂|) ≤ (|A|Ainv)|r̂|`
+(`correction_neumann_inequality`); the row-sum contraction `‖μ|A|Ainv‖∞ ≤ c < 1`
+turns it into the ∞-norm bound `‖ |A||d̂| ‖∞ ≤ ‖(|A|Ainv)|r̂|‖∞ / (1−c)`
+(`higham12_21_correction_infNorm_bound`); the lower bound `m` on the scaled data
+with `‖…‖/(1−c) ≤ ρ·m` gives the componentwise correction bound
+(`correction_componentwise_of_infNorm`), fed to `lu_refinement_thm_11_4`.
+
+`Ainv` is the honest componentwise stand-in for `|A⁻¹|`; `c` (`= μ‖|A||A⁻¹|‖∞`, a
+`cond`-type quantity) and `(m, ρ)` are the explicit, non-asymptotic replacement for
+the source's approximate `f(t₁,t₂)` and `cond(A⁻¹)σ(A,ŷ)` sufficient condition. -/
+theorem higham12_4_from_solver (n : ℕ) (hn : 0 < n) (fp : FPModel)
+    (A Ainv : Fin n → Fin n → ℝ)
+    (x₀ d_hat r_hat b r : Fin n → ℝ)
+    (f₂ y : Fin n → ℝ)
+    (DeltaA_solve : Fin n → Fin n → ℝ)
+    (hAinv_nn : ∀ i j : Fin n, 0 ≤ Ainv i j)
+    (hAinv : ∀ (v w : Fin n → ℝ),
+      (∀ i : Fin n, ∑ j : Fin n, A i j * v j = w i) →
+      ∀ i : Fin n, |v i| ≤ ∑ j : Fin n, Ainv i j * |w j|)
+    (hr : ∀ i : Fin n, r i = b i - ∑ j : Fin n, A i j * x₀ j)
+    (hy : ∀ i : Fin n, y i = x₀ i + d_hat i + f₂ i)
+    (hsolve : ∀ i : Fin n,
+      ∑ j : Fin n, (A i j + DeltaA_solve i j) * d_hat j = r_hat i)
+    (hDeltaA : ∀ i j : Fin n, |DeltaA_solve i j| ≤ gamma fp (3 * n) * |A i j|)
+    (hres : ∀ i : Fin n, |r_hat i - r i| ≤
+      gamma fp (n + 1) * (|b i| + ∑ j : Fin n, |A i j| * |x₀ j|))
+    (hf₂ : ∀ j : Fin n, |f₂ j| ≤ fp.u * (|x₀ j| + |d_hat j|))
+    (hn1 : gammaValid fp (n + 1)) (hn3 : gammaValid fp (3 * n)) (hu_lt : fp.u < 1)
+    (c : ℝ) (hc_lt : c < 1)
+    (hrow : ∀ i : Fin n,
+      ∑ k : Fin n, gamma fp (3 * n) * (∑ j : Fin n, |A i j| * Ainv j k) ≤ c)
+    (m : ℝ) (hm_pos : 0 < m)
+    (ht_lb : ∀ i : Fin n, m ≤ ∑ j : Fin n, |A i j| * |y j| + |b i|)
+    (ρ : ℝ) (hρ_nn : 0 ≤ ρ)
+    (hcond : (infNormVec (fun i => ∑ k : Fin n,
+        (∑ j : Fin n, |A i j| * Ainv j k) * |r_hat k|)) / (1 - c) ≤ ρ * m)
+    (hρ_cond : (gamma fp (n + 1) + fp.u) +
+        ((gamma fp (n + 1) + fp.u) * (1 + fp.u) +
+         (1 - fp.u) * (gamma fp (3 * n) + fp.u)) * ρ ≤
+        (1 - fp.u) * (2 * gamma fp (n + 1))) :
+    ∀ i : Fin n,
+      |b i - ∑ j : Fin n, A i j * y j| ≤
+        2 * gamma fp (n + 1) * (∑ j : Fin n, |A i j| * |y j| + |b i|) := by
+  have hM_nn : ∀ i k : Fin n,
+      0 ≤ gamma fp (3 * n) * ∑ j : Fin n, |A i j| * Ainv j k := fun i k =>
+    mul_nonneg (gamma_nonneg fp hn3)
+      (Finset.sum_nonneg (fun j _ => mul_nonneg (abs_nonneg _) (hAinv_nn j k)))
+  have hneu := correction_neumann_inequality n A Ainv DeltaA_solve d_hat r_hat
+    (gamma fp (3 * n)) (gamma_nonneg fp hn3) hAinv_nn hAinv hDeltaA hsolve
+  have hcorr21 : ∀ i : Fin n,
+      (∑ j : Fin n, |A i j| * |d_hat j|) ≤
+        (∑ k : Fin n, (gamma fp (3 * n) * ∑ j : Fin n, |A i j| * Ainv j k)
+          * (∑ l : Fin n, |A k l| * |d_hat l|))
+        + (∑ k : Fin n, (∑ j : Fin n, |A i j| * Ainv j k) * |r_hat k|) := by
+    intro i
+    have hrw : gamma fp (3 * n) * ∑ k : Fin n,
+          (∑ j : Fin n, |A i j| * Ainv j k) * (∑ l : Fin n, |A k l| * |d_hat l|)
+        = ∑ k : Fin n, (gamma fp (3 * n) * ∑ j : Fin n, |A i j| * Ainv j k)
+          * (∑ l : Fin n, |A k l| * |d_hat l|) := by
+      rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro k _; ring
+    linarith [hneu i, hrw]
+  have hnorm := higham12_21_correction_infNorm_bound hn A d_hat
+    (fun i => ∑ k : Fin n, (∑ j : Fin n, |A i j| * Ainv j k) * |r_hat k|)
+    (fun i k => gamma fp (3 * n) * ∑ j : Fin n, |A i j| * Ainv j k)
+    hM_nn c hc_lt hrow hcorr21
+  have hcorr : ∀ i : Fin n, ∑ j : Fin n, |A i j| * |d_hat j| ≤
+      ρ * (∑ j : Fin n, |A i j| * |y j| + |b i|) :=
+    correction_componentwise_of_infNorm
+      (fun i => ∑ j : Fin n, |A i j| * |d_hat j|)
+      (fun i => ∑ j : Fin n, |A i j| * |y j| + |b i|)
+      _ ρ m hnorm hm_pos ht_lb hρ_nn hcond
+  exact lu_refinement_thm_11_4 n fp A x₀ d_hat b r r_hat f₂ y DeltaA_solve
+    hr hy hsolve hDeltaA hres hf₂ hn1 hn3 hu_lt ρ hρ_nn hcorr hρ_cond
+
+
 /-! ## Problems and Appendix A -/
 
 /-- Component skewness `max_i |x_i| / min_i |x_i|` used in Problem 12.1.
@@ -421,5 +633,47 @@ theorem higham12_problem_12_1_square {n : ℕ} (hn : 0 < n)
           mul_le_mul_of_nonneg_right (row_sum_le_infNorm A i) hsigmax_nonneg
     _ = higham12_vectorAbsSkew hn x * infNorm A * |x i| := by
           ring
+
+/-- **Equation (12.22) σ-bridge**: for an entrywise nonnegative matrix `M` and a
+componentwise-positive vector `v`, each component of `M v` is controlled by the
+∞-norm of `M` and the ill-scaling `σ(v) = max_i v_i / min_i v_i`:
+  `(M v)_i ≤ ‖M‖∞ · σ(v) · v_i`.
+
+This is the mechanism behind Higham's step (12.22)
+`(γ_{n+1} I + M₅)|A||ŷ| ≤ (γ_{n+1} + ‖M₅‖∞ σ(A,ŷ)) |A||ŷ|`: applied with
+`v = |A||ŷ|` it converts a norm bound on the residual coefficient matrix into the
+componentwise dominance that yields the `2γ_{n+1}|A||ŷ|` backward-error bound of
+Theorem 12.4.  Combined with `higham12_21_correction_infNorm_bound` (the Neumann
+step) it turns a norm correction bound into the componentwise correction bound
+consumed by `refinement_two_gamma_bound` / `higham12_4_conditional_two_gamma_bound`. -/
+theorem higham12_22_infNorm_skew_apply {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (v : Fin n → ℝ)
+    (hM : ∀ i j : Fin n, 0 ≤ M i j)
+    (hv : ∀ i : Fin n, 0 < v i) :
+    ∀ i : Fin n,
+      (∑ j : Fin n, M i j * v j) ≤
+        infNorm M * higham12_vectorAbsSkew hn v * v i := by
+  intro i
+  have hσ_nn : 0 ≤ higham12_vectorAbsSkew hn v :=
+    higham12_vectorAbsSkew_nonneg hn v (fun k => abs_pos.mpr (ne_of_gt (hv k)))
+  have hentry : ∀ j : Fin n, v j ≤ higham12_vectorAbsSkew hn v * v i := by
+    intro j
+    have h := higham12_vectorAbsSkew_entry_bound hn v
+      (fun k => abs_pos.mpr (ne_of_gt (hv k))) i j
+    rwa [abs_of_pos (hv j), abs_of_pos (hv i)] at h
+  have hσvi_nn : 0 ≤ higham12_vectorAbsSkew hn v * v i :=
+    mul_nonneg hσ_nn (le_of_lt (hv i))
+  calc ∑ j : Fin n, M i j * v j
+      ≤ ∑ j : Fin n, M i j * (higham12_vectorAbsSkew hn v * v i) :=
+        Finset.sum_le_sum (fun j _ =>
+          mul_le_mul_of_nonneg_left (hentry j) (hM i j))
+    _ = (∑ j : Fin n, M i j) * (higham12_vectorAbsSkew hn v * v i) := by
+        rw [Finset.sum_mul]
+    _ ≤ infNorm M * (higham12_vectorAbsSkew hn v * v i) := by
+        apply mul_le_mul_of_nonneg_right _ hσvi_nn
+        have hpos : ∑ j : Fin n, M i j = ∑ j : Fin n, |M i j| := by
+          apply Finset.sum_congr rfl; intro j _; rw [abs_of_nonneg (hM i j)]
+        rw [hpos]; exact row_sum_le_infNorm M i
+    _ = infNorm M * higham12_vectorAbsSkew hn v * v i := by ring
 
 end LeanFpAnalysis.FP
