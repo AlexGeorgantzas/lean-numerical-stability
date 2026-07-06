@@ -4184,6 +4184,75 @@ theorem sylvester_relative_perturbation_of_sepLowerBound (n : Nat)
       hdA hdB hdC hLin hdX_ne hX_ne hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
+    total Frobenius first-order Sylvester perturbation bound from a supplied
+    exact `SepLowerBound` certificate.
+
+    This version removes the nonzero perturbation side condition by proving
+    the zero-perturbation case directly. -/
+theorem sylvester_perturbation_bound_of_sepLowerBound_total (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSep : SepLowerBound n A B sigma)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  by_cases hdX_sq : frobNormSq dX = 0
+  · have hdX : frobNorm dX = 0 := by
+      simp [frobNorm_eq_sqrt_frobNormSq, hdX_sq]
+    have hSigma : 0 < sigma := hSep.1
+    have hInv : 0 <= (1 / sigma) := by positivity
+    have hAlphaBeta : 0 <= alpha + beta := add_nonneg hAlpha hBeta
+    have hScale : 0 <= (alpha + beta) * frobNorm X :=
+      mul_nonneg hAlphaBeta (frobNorm_nonneg X)
+    have hBudget : 0 <= (alpha + beta) * frobNorm X + gamma :=
+      add_nonneg hScale hGamma
+    rw [hdX]
+    exact mul_nonneg (mul_nonneg hInv hBudget) hEps
+  · exact
+      sylvester_perturbation_bound_of_sepLowerBound n A B X dA dB dC dX sigma
+        hSep alpha beta gamma eps hAlpha hBeta hGamma hEps
+        hdA hdB hdC hLin hdX_sq
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
+    total relative Sylvester perturbation bound from a supplied exact
+    `SepLowerBound` certificate.
+
+    The absolute total theorem handles zero perturbation; this wrapper divides
+    by the positive Frobenius norm of the exact solution. -/
+theorem sylvester_relative_perturbation_of_sepLowerBound_total (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSep : SepLowerBound n A B sigma)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma sigma * eps := by
+  have hAbs :=
+    sylvester_perturbation_bound_of_sepLowerBound_total n A B X dA dB dC dX
+      sigma hSep alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+  unfold condSylvester
+  rw [div_le_iff₀ hX_pos]
+  calc
+    frobNorm dX <=
+        (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := hAbs
+    _ = ((alpha + beta) * frobNorm X + gamma) /
+          (sigma * frobNorm X) * eps * frobNorm X := by
+        field_simp [ne_of_gt hSep.1, ne_of_gt hX_pos]
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
     an exact-infimum lower bound on `sep(A,B)` instantiates the Frobenius
     first-order Sylvester perturbation bound. -/
 theorem sylvester_perturbation_bound_of_pos_le_sylvesterSepInf (n : Nat)
@@ -4233,6 +4302,55 @@ theorem sylvester_relative_perturbation_of_pos_le_sylvesterSepInf
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hdX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
+    total Frobenius first-order Sylvester perturbation bound from a positive
+    lower bound on the exact infimum model of `sep(A,B)`. -/
+theorem sylvester_perturbation_bound_of_pos_le_sylvesterSepInf_total (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_of_sepLowerBound_total n A B X dA dB dC dX
+      sigma (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
+    total relative Sylvester perturbation bound from a positive lower bound on
+    the exact infimum model of `sep(A,B)`. -/
+theorem sylvester_relative_perturbation_of_pos_le_sylvesterSepInf_total
+    (n : Nat)
+    (A B X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j, sylvesterOp n A B dX i j =
+      dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n A B X alpha beta gamma sigma * eps := by
+  exact
+    sylvester_relative_perturbation_of_sepLowerBound_total n
+      A B X dA dB dC dX sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26),
     diagonal case: a uniform diagonal-difference gap instantiates the
@@ -4289,6 +4407,59 @@ theorem sylvester_relative_perturbation_diagonal_of_entrywise_abs_ge
       (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hdX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26),
+    diagonal case: total Frobenius first-order perturbation bound from a
+    uniform lower bound on all diagonal differences. -/
+theorem sylvester_perturbation_bound_diagonal_of_entrywise_abs_ge_total (n : Nat)
+    (a b : Fin n -> Real) (X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) dX i j =
+        dC i j - matMul n dA X i j + matMul n X dB i j) :
+    frobNorm dX <=
+      (1 / sigma) * ((alpha + beta) * frobNorm X + gamma) * eps := by
+  exact
+    sylvester_perturbation_bound_of_sepLowerBound_total n
+      (Matrix.diagonal a) (Matrix.diagonal b) X dA dB dC dX sigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26),
+    diagonal case: total relative perturbation bound from a uniform lower
+    bound on all diagonal differences. -/
+theorem sylvester_relative_perturbation_diagonal_of_entrywise_abs_ge_total
+    (n : Nat)
+    (a b : Fin n -> Real) (X dA dB dC dX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (alpha beta gamma eps : Real)
+    (hAlpha : 0 <= alpha) (hBeta : 0 <= beta)
+    (hGamma : 0 <= gamma) (hEps : 0 <= eps)
+    (hdA : frobNorm dA <= eps * alpha)
+    (hdB : frobNorm dB <= eps * beta)
+    (hdC : frobNorm dC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) dX i j =
+        dC i j - matMul n dA X i j + matMul n X dB i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm dX / frobNorm X <=
+      condSylvester n (Matrix.diagonal a) (Matrix.diagonal b) X
+        alpha beta gamma sigma * eps := by
+  exact
+    sylvester_relative_perturbation_of_sepLowerBound_total n
+      (Matrix.diagonal a) (Matrix.diagonal b) X dA dB dC dX sigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
+      alpha beta gamma eps hAlpha hBeta hGamma hEps
+      hdA hdB hdC hLin hX_pos
 
 -- ============================================================
 -- A posteriori source wrapper from Chapter 16.4

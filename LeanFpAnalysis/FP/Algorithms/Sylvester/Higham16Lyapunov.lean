@@ -375,6 +375,41 @@ theorem lyapunov_perturbation_bound_of_sepLowerBound (n : Nat)
       hDeltaA hDeltaC hLin hDeltaX_ne
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    total Frobenius Lyapunov perturbation bound from a supplied positive
+    `SepLowerBound` certificate for `sep(A, -A^T)`.
+
+    This version removes the nonzero perturbation side condition by proving the
+    zero-perturbation case directly. -/
+theorem lyapunov_perturbation_bound_of_sepLowerBound_total (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j) :
+    frobNorm DeltaX <=
+      (1 / sigma) * (2 * alpha * frobNorm X + gamma) * eps := by
+  by_cases hDeltaX_ne : Not (frobNormSq DeltaX = 0)
+  · exact
+      lyapunov_perturbation_bound_of_sepLowerBound n
+        A X DeltaA DeltaC DeltaX sigma hsigma hSep
+        alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hDeltaX_ne
+  · have hDeltaX_sq : frobNormSq DeltaX = 0 := Classical.not_not.mp hDeltaX_ne
+    have hDeltaX : frobNorm DeltaX = 0 := by
+      simp [frobNorm_eq_sqrt_frobNormSq, hDeltaX_sq]
+    rw [hDeltaX]
+    have hprod : 0 <= 2 * alpha * frobNorm X :=
+      mul_nonneg (mul_nonneg (by positivity) halpha) (frobNorm_nonneg X)
+    have hmiddle : 0 <= 2 * alpha * frobNorm X + gamma :=
+      add_nonneg hprod hgamma
+    exact mul_nonneg (mul_nonneg (by positivity) hmiddle) heps
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
     relative Lyapunov perturbation bound from a supplied positive
     `SepLowerBound` certificate for `sep(A, -A^T)`.
 
@@ -412,6 +447,42 @@ theorem lyapunov_relative_perturbation_of_sepLowerBound (n : Nat)
       sigma hsigma hSep alpha alpha gamma eps halpha halpha hgamma heps
       hDeltaA hDeltaB hDeltaC hLin hDeltaX_ne hX_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    total relative Lyapunov perturbation bound from a supplied positive
+    `SepLowerBound` certificate for `sep(A, -A^T)`.
+
+    The total absolute theorem handles the zero perturbation case; this wrapper
+    divides by the positive Frobenius norm of the exact solution. -/
+theorem lyapunov_relative_perturbation_of_sepLowerBound_total (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n A (fun i j => -matTranspose A i j) X
+        alpha alpha gamma sigma * eps := by
+  have hAbs :=
+    lyapunov_perturbation_bound_of_sepLowerBound_total n
+      A X DeltaA DeltaC DeltaX sigma hsigma hSep
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
+  calc
+    frobNorm DeltaX / frobNorm X
+        <= ((1 / sigma) * (2 * alpha * frobNorm X + gamma) * eps) /
+            frobNorm X := div_le_div_of_nonneg_right hAbs (le_of_lt hX_pos)
+    _ = condSylvester n A (fun i j => -matTranspose A i j) X
+          alpha alpha gamma sigma * eps := by
+        unfold condSylvester
+        field_simp [hsigma.ne', hX_pos.ne']
+        ring
+
 /-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
     Frobenius Lyapunov perturbation bound from a positive lower bound on the
     exact infimum model of `sep(A, -A^T)`.
@@ -439,6 +510,32 @@ theorem lyapunov_perturbation_bound_of_pos_le_sylvesterSepInf (n : Nat)
       (SepLowerBound_of_pos_le_sylvesterSepInf n A
         (fun i j => -matTranspose A i j) sigma hsigma hle)
       alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hDeltaX_ne
+
+/-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
+    total Frobenius Lyapunov perturbation bound from a positive lower bound on
+    the exact infimum model of `sep(A, -A^T)`.
+
+    This routes through the total `SepLowerBound` wrapper. -/
+theorem lyapunov_perturbation_bound_of_pos_le_sylvesterSepInf_total (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j) :
+    frobNorm DeltaX <=
+      (1 / sigma) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound_of_sepLowerBound_total n
+      A X DeltaA DeltaC DeltaX sigma hsigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
 
 /-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
     relative Lyapunov perturbation bound from a positive lower bound on the
@@ -472,6 +569,35 @@ theorem lyapunov_relative_perturbation_of_pos_le_sylvesterSepInf (n : Nat)
         (fun i j => -matTranspose A i j) sigma hsigma hle)
       alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
       hDeltaX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
+    total relative Lyapunov perturbation bound from a positive lower bound on
+    the exact infimum model of `sep(A, -A^T)`.
+
+    This routes through the total `SepLowerBound` wrapper and divides by
+    `||X||_F`. -/
+theorem lyapunov_relative_perturbation_of_pos_le_sylvesterSepInf_total (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n A (fun i j => -matTranspose A i j) X
+        alpha alpha gamma sigma * eps := by
+  exact
+    lyapunov_relative_perturbation_of_sepLowerBound_total n
+      A X DeltaA DeltaC DeltaX sigma hsigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hX_pos
 
 /-- Higham, 2nd ed., Section 16.3, equation (16.27):
     source-facing sep-based first-order Lyapunov bound before the
@@ -934,6 +1060,57 @@ theorem lyapunov_relative_perturbation_diagonal (n : Nat)
       (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
       alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
       hDeltaX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27), diagonal
+    Lyapunov case: total Frobenius perturbation bound from the entrywise
+    certificate `s <= |a_i + a_j|`. -/
+theorem lyapunov_perturbation_bound_diagonal_total (n : Nat)
+    (a : Fin n -> Real) (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a)
+          (fun i' j' => -matTranspose (Matrix.diagonal a) i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j) :
+    frobNorm DeltaX <=
+      (1 / s) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound_of_sepLowerBound_total n (Matrix.diagonal a)
+      X DeltaA DeltaC DeltaX s hs
+      (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27), diagonal
+    Lyapunov case: total relative perturbation bound from the entrywise
+    certificate `s <= |a_i + a_j|`. -/
+theorem lyapunov_relative_perturbation_diagonal_total (n : Nat)
+    (a : Fin n -> Real) (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a)
+          (fun i' j' => -matTranspose (Matrix.diagonal a) i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n (Matrix.diagonal a)
+        (fun i j => -matTranspose (Matrix.diagonal a) i j) X
+        alpha alpha gamma s * eps := by
+  exact
+    lyapunov_relative_perturbation_of_sepLowerBound_total n (Matrix.diagonal a)
+      X DeltaA DeltaC DeltaX s hs
+      (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal Lyapunov case:
     an entrywise lower bound on `|a_i + a_j|` gives the residual-error bound. -/
