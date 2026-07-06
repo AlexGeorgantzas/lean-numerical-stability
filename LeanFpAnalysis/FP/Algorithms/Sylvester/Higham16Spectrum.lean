@@ -286,6 +286,70 @@ theorem sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair (m n : Nat)
   funext p
   simp [Matrix.vec]
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), shifted determinant form
+    with the `B`-side eigenpair supplied as a left eigenpair `w^T B = mu w^T`.
+    The supplied real eigenpair difference `lam - mu` makes the shifted
+    vec/Kronecker Sylvester coefficient singular. -/
+theorem sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair_vecMul (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (v : Fin m -> Real) (w : Fin n -> Real) (lam mu : Real)
+    (hv0 : Not (v = 0)) (hw0 : Not (w = 0))
+    (hv : Matrix.mulVec A v = fun i => lam * v i)
+    (hw : Matrix.vecMul w B = fun j => mu * w j) :
+    Matrix.det
+        (sylvesterVecCoeff m n A B -
+          (lam - mu) •
+            (1 : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)) =
+      0 := by
+  apply Matrix.exists_mulVec_eq_zero_iff.mp
+  refine ⟨Matrix.vec (fun i j => v i * w j : RMatFn m n),
+    vec_outer_product_ne_zero m n v w hv0 hw0, ?_⟩
+  rw [Matrix.sub_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec,
+    sylvesterVecCoeff_eigenpair_vecMul m n A B v w lam mu hv hw]
+  funext p
+  simp [Matrix.vec]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), shifted nonsingular
+    exclusion: if the shifted vec/Kronecker Sylvester coefficient at
+    `lam - mu` has nonzero determinant, then no supplied nonzero real
+    eigenpairs of `A` and `B^T` can have those eigenvalues. -/
+theorem no_real_eigenpair_difference_of_sylvesterVecCoeff_shifted_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (lam mu : Real)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterVecCoeff m n A B -
+          (lam - mu) •
+            (1 : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)) =
+        0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.mulVec (Matrix.transpose B) w = (fun j => mu * w j)) := by
+  rintro ⟨v, w, hv0, hw0, hv, hw⟩
+  exact hdet
+    (sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair
+      m n A B v w lam mu hv0 hw0 hv hw)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-facing shifted
+    nonsingular exclusion with the `B` eigenpair supplied in left-eigenvector
+    form. -/
+theorem no_real_left_eigenpair_difference_of_sylvesterVecCoeff_shifted_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (lam mu : Real)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterVecCoeff m n A B -
+          (lam - mu) •
+            (1 : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)) =
+        0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.vecMul w B = (fun j => mu * w j)) := by
+  rintro ⟨v, w, hv0, hw0, hv, hw⟩
+  exact hdet
+    (sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair_vecMul
+      m n A B v w lam mu hv0 hw0 hv hw)
+
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3) and the common-eigenvalue
     criterion, constructive direction: a shared real eigenvalue of `A` and
     `B^T` (equivalently of `B`) yields the nonzero kernel vector
