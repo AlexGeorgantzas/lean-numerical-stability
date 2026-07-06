@@ -2434,6 +2434,36 @@ theorem sylvesterVecCoeff_det_ne_zero_of_operator_sigmaMin
   exact sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    a Sylvester operator sigma-min certificate gives the exact trivial-kernel
+    statement for the vectorized coefficient. -/
+theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_operator_sigmaMin
+    (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y))
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B) x = 0 ↔ x = 0 := by
+  exact
+    sylvesterVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero n A B
+      (sylvesterVecCoeff_det_ne_zero_of_operator_sigmaMin
+        n A B sigma hsigma hSigmaMin)
+      x
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.26):
+    source-numbered form of the operator-sigma-min trivial-kernel route for the
+    vectorized Sylvester coefficient. -/
+theorem H16_eq16_26_sylvesterVecCoeff_mulVec_eq_zero_iff_of_operator_sigmaMin
+    (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y))
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B) x = 0 ↔ x = 0 := by
+  exact
+    sylvesterVecCoeff_mulVec_eq_zero_iff_of_operator_sigmaMin
+      n A B sigma hsigma hSigmaMin x
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     a Sylvester operator sigma-min certificate makes the vectorized
     coefficient solve bijective. -/
 theorem sylvesterVecCoeff_mulVec_bijective_of_operator_sigmaMin

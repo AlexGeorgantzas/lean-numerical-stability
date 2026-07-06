@@ -2308,6 +2308,146 @@ theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero (m n : Nat)
       (isUpperTriangularFn_of_strictBlockMap n S pB hpBstrict hSstrict)
       hshift
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: the strict supplied-factor
+    determinant certificate makes the vectorized Sylvester coefficient
+    injective. Scope: exact supplied factors only; no 2-by-2 block solve or
+    floating-point stability is claimed. -/
+theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_injective
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  have hdet :=
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift
+  intro x y hxy
+  have h := congrArg
+    (Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B))) hxy
+  rw [Matrix.mulVec_mulVec, Matrix.mulVec_mulVec,
+    Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+      (isUnit_iff_ne_zero.mpr hdet),
+    Matrix.one_mulVec, Matrix.one_mulVec] at h
+  exact h
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: the strict supplied-factor
+    determinant certificate makes the vectorized Sylvester coefficient
+    surjective, so every vectorized right-hand side is reachable in exact
+    arithmetic. -/
+theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_surjective
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  have hdet :=
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift
+  intro c
+  refine
+    ⟨Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c, ?_⟩
+  rw [Matrix.mulVec_mulVec,
+    Matrix.mul_nonsing_inv (sylvesterVecCoeff m n A B)
+      (isUnit_iff_ne_zero.mpr hdet),
+    Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: the vectorized Sylvester
+    coefficient solve is bijective under the exact supplied-factor
+    assumptions. -/
+theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_bijective
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff m n A B)) :=
+  ⟨sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_injective
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift,
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_surjective
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift⟩
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: every vectorized right-hand side
+    has a unique exact solution under the strict supplied-factor assumptions. -/
+theorem existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ∃! x : Prod (Fin n) (Fin m) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c := by
+  have hinj :=
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_injective
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift
+  have hsurj :=
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_surjective
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift
+  obtain ⟨x, hx⟩ := hsurj c
+  refine ⟨x, hx, ?_⟩
+  intro y hy
+  exact hinj (by rw [hy, hx])
+
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equation (16.3), strict
     real-quasi-Schur singleton-block nonsingularity excludes a supplied common
     real right/transpose eigenpair of `A` and `B`. -/
