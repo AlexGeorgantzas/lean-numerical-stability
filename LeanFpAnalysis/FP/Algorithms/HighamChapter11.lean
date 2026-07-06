@@ -1543,6 +1543,34 @@ theorem higham11_15_aasenChainDeltaA_abs_bound_of_entrywise
             _ ≤ ∑ q : Fin n, B p q :=
                   Finset.sum_le_sum (fun q _ => hentry p q)
 
+/-- Closed componentwise budget for the collapsed Aasen solve-chain
+perturbation, expressed as the summed scalar triple-product budget. -/
+noncomputable def higham11_15_aasenChainDeltaABound (n : ℕ)
+    (γ : ℝ) (BT L T U : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    ∑ p : Fin n, ∑ q : Fin n,
+      ((2 * γ + γ ^ 2) * |L i p| * |T p q| * |U q j| +
+        (1 + 2 * γ + γ ^ 2) * |L i p| * BT p q * |U q j|)
+
+/-- Componentwise bound for the collapsed Aasen solve-chain perturbation from
+relative outer-solve perturbations and a supplied middle perturbation budget. -/
+theorem higham11_15_aasenChainDeltaA_abs_bound_gamma
+    (n : ℕ) (L T U DeltaL DeltaT DeltaU BT : Fin n → Fin n → ℝ)
+    (γ : ℝ) (hγ : 0 ≤ γ) (hBT : ∀ p q : Fin n, 0 ≤ BT p q)
+    (hDeltaL : ∀ i j : Fin n, |DeltaL i j| ≤ γ * |L i j|)
+    (hDeltaT : ∀ i j : Fin n, |DeltaT i j| ≤ BT i j)
+    (hDeltaU : ∀ i j : Fin n, |DeltaU i j| ≤ γ * |U i j|) :
+    ∀ i j : Fin n,
+      |higham11_15_aasenChainDeltaA n L T U DeltaL DeltaT DeltaU i j| ≤
+        higham11_15_aasenChainDeltaABound n γ BT L T U i j := by
+  intro i j
+  unfold higham11_15_aasenChainDeltaABound
+  apply higham11_15_aasenChainDeltaA_abs_bound_of_entrywise
+  intro p q
+  exact higham11_15_aasenTripleTerm_abs_bound_gamma
+    (L i p) (T p q) (U q j) (DeltaL i p) (DeltaT p q) (DeltaU q j)
+    γ (BT p q) hγ (hBT p q) (hDeltaL i p) (hDeltaT p q) (hDeltaU q j)
+
 /-- **Equation (11.15) source backward-error algebra**.  If the three rounded
 solve-chain components satisfy perturbed equations and the unperturbed product
 is `A = L T U`, then the collapsed product perturbation gives a single source

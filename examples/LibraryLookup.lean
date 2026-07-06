@@ -15195,6 +15195,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham11_15_aasenTripleTerm_abs_bound
 #check higham11_15_aasenTripleTerm_abs_bound_gamma
 #check higham11_15_aasenChainDeltaA_abs_bound_of_entrywise
+#check higham11_15_aasenChainDeltaABound
+#check higham11_15_aasenChainDeltaA_abs_bound_gamma
 #check higham11_15_aasen_chain_source_backward_error_of_components
 #check higham11_15_fl_aasen_solve_chain_source_backward_error_of_delta_bound
 #check higham11_15_aasenSolveChain_identity_solve_of_product
