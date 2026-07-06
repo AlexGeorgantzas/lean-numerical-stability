@@ -1738,6 +1738,76 @@ theorem higham11_15_infNorm_le_of_aasenChainDeltaABound
         (1 + 2 * γ + γ ^ 2) * (infNorm L * infNorm BT * infNorm U) :=
           higham11_15_aasenChainDeltaABound_infNorm_le n hn γ BT L T U hγ hBT
 
+/-- Infinity-norm aggregation for a perturbation controlled by the sum of two
+closed Aasen chain budgets.  This is the normwise bridge needed after combining
+the Aasen factorization residual with the rounded solve-chain residual. -/
+theorem higham11_8_infNorm_le_of_sum_aasenChainDeltaABounds
+    (n : ℕ) (hn : 0 < n)
+    (γ1 γ2 : ℝ)
+    (BT1 L1 T1 U1 BT2 L2 T2 U2 DeltaA : Fin n → Fin n → ℝ)
+    (hγ1 : 0 ≤ γ1) (hBT1 : ∀ p q : Fin n, 0 ≤ BT1 p q)
+    (hγ2 : 0 ≤ γ2) (hBT2 : ∀ p q : Fin n, 0 ≤ BT2 p q)
+    (hDelta : ∀ i j : Fin n,
+      |DeltaA i j| ≤
+        higham11_15_aasenChainDeltaABound n γ1 BT1 L1 T1 U1 i j +
+        higham11_15_aasenChainDeltaABound n γ2 BT2 L2 T2 U2 i j) :
+    infNorm DeltaA ≤
+      ((2 * γ1 + γ1 ^ 2) * (infNorm L1 * infNorm T1 * infNorm U1) +
+        (1 + 2 * γ1 + γ1 ^ 2) * (infNorm L1 * infNorm BT1 * infNorm U1)) +
+      ((2 * γ2 + γ2 ^ 2) * (infNorm L2 * infNorm T2 * infNorm U2) +
+        (1 + 2 * γ2 + γ2 ^ 2) * (infNorm L2 * infNorm BT2 * infNorm U2)) := by
+  let B1 := higham11_15_aasenChainDeltaABound n γ1 BT1 L1 T1 U1
+  let B2 := higham11_15_aasenChainDeltaABound n γ2 BT2 L2 T2 U2
+  have hB1_nonneg : ∀ i j : Fin n, 0 ≤ B1 i j := by
+    intro i j
+    exact higham11_15_aasenChainDeltaABound_nonneg n γ1 BT1 L1 T1 U1 hγ1 hBT1 i j
+  have hB2_nonneg : ∀ i j : Fin n, 0 ≤ B2 i j := by
+    intro i j
+    exact higham11_15_aasenChainDeltaABound_nonneg n γ2 BT2 L2 T2 U2 hγ2 hBT2 i j
+  have hrow1 : ∀ i : Fin n, ∑ j : Fin n, B1 i j ≤ infNorm B1 := by
+    intro i
+    calc ∑ j : Fin n, B1 i j
+        = ∑ j : Fin n, |B1 i j| := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [abs_of_nonneg (hB1_nonneg i j)]
+      _ ≤ infNorm B1 := row_sum_le_infNorm B1 i
+  have hrow2 : ∀ i : Fin n, ∑ j : Fin n, B2 i j ≤ infNorm B2 := by
+    intro i
+    calc ∑ j : Fin n, B2 i j
+        = ∑ j : Fin n, |B2 i j| := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [abs_of_nonneg (hB2_nonneg i j)]
+      _ ≤ infNorm B2 := row_sum_le_infNorm B2 i
+  have hbase : infNorm DeltaA ≤ infNorm B1 + infNorm B2 := by
+    apply infNorm_le_of_row_sum_le
+    · intro i
+      calc ∑ j : Fin n, |DeltaA i j|
+          ≤ ∑ j : Fin n, (B1 i j + B2 i j) := by
+              apply Finset.sum_le_sum
+              intro j _
+              simpa [B1, B2] using hDelta i j
+        _ = (∑ j : Fin n, B1 i j) + ∑ j : Fin n, B2 i j := by
+              rw [Finset.sum_add_distrib]
+        _ ≤ infNorm B1 + infNorm B2 := add_le_add (hrow1 i) (hrow2 i)
+    · exact add_nonneg (infNorm_nonneg B1) (infNorm_nonneg B2)
+  have hnorm1 :
+      infNorm B1 ≤
+        (2 * γ1 + γ1 ^ 2) * (infNorm L1 * infNorm T1 * infNorm U1) +
+          (1 + 2 * γ1 + γ1 ^ 2) * (infNorm L1 * infNorm BT1 * infNorm U1) := by
+    simpa [B1] using
+      higham11_15_aasenChainDeltaABound_infNorm_le
+        n hn γ1 BT1 L1 T1 U1 hγ1 hBT1
+  have hnorm2 :
+      infNorm B2 ≤
+        (2 * γ2 + γ2 ^ 2) * (infNorm L2 * infNorm T2 * infNorm U2) +
+          (1 + 2 * γ2 + γ2 ^ 2) * (infNorm L2 * infNorm BT2 * infNorm U2) := by
+    simpa [B2] using
+      higham11_15_aasenChainDeltaABound_infNorm_le
+        n hn γ2 BT2 L2 T2 U2 hγ2 hBT2
+  exact hbase.trans (add_le_add hnorm1 hnorm2)
+
 /-- Product budget for the rounded Aasen factorization residual
 `L_hat * T_hat * L_hatᵀ - L * T * Lᵀ`, expressed from entrywise budgets for
 the outer factor and the tridiagonal middle factor. -/

@@ -15213,6 +15213,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham11_15_aasenChainDeltaABound_nonneg
 #check higham11_15_aasenChainDeltaABound_infNorm_le
 #check higham11_15_infNorm_le_of_aasenChainDeltaABound
+#check higham11_8_infNorm_le_of_sum_aasenChainDeltaABounds
 #check higham11_8_aasenFactorizationProductBudget
 #check higham11_8_aasen_factorization_product_abs_bound_of_entrywise_factor_bounds
 #check higham11_8_aasen_factorization_product_abs_bound_gamma
