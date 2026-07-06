@@ -1571,6 +1571,16 @@ theorem higham11_15_aasenChainDeltaA_abs_bound_gamma
     (L i p) (T p q) (U q j) (DeltaL i p) (DeltaT p q) (DeltaU q j)
     γ (BT p q) hγ (hBT p q) (hDeltaL i p) (hDeltaT p q) (hDeltaU q j)
 
+/-- Middle-solve componentwise budget used when collapsing the rounded Aasen
+solve chain.  This is the `f(γ_n)|L_T||U_T|` budget supplied by the Chapter 9
+tridiagonal solve aggregation. -/
+noncomputable def higham11_15_aasenMiddleSolveBudget
+    (fp : FPModel) (n : ℕ) (L_T_hat U_T_hat : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    higham9_14_f (gamma fp n) *
+      ∑ k : Fin n, |L_T_hat i k| * |U_T_hat k j|
+
 /-- **Equation (11.15) source backward-error algebra**.  If the three rounded
 solve-chain components satisfy perturbed equations and the unperturbed product
 is `A = L T U`, then the collapsed product perturbation gives a single source
@@ -1689,6 +1699,66 @@ theorem higham11_15_fl_aasen_solve_chain_source_backward_error_of_delta_bound
     hForward_outer hMiddle_backward hBack_outer
     (hbound DeltaL_outer DeltaU_outer DeltaT
       hDeltaL_outer (by simpa [U_outer] using hDeltaU_outer) hDeltaT_bound)
+
+/-- **Equation (11.15) rounded source backward-error theorem**, solve-chain
+part.  This instantiates the rounded component package, algebraic collapse,
+and closed componentwise `higham11_15_aasenChainDeltaABound` budget.  It is the
+solve-chain side of the Aasen Theorem 11.8 backward-error proof; the remaining
+global work is to combine this with the factorization/recurrence perturbation
+budget and simplify the bound to the printed normwise form. -/
+theorem higham11_15_fl_aasen_solve_chain_source_backward_error
+    (fp : FPModel) (n : ℕ)
+    (A Pmat L T L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hL_lower : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let bound := higham11_15_aasenChainDeltaABound n (gamma fp n) BT L T U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ bound i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) := by
+  intro rhs z_hat q_hat y_hat U_outer w_hat BT bound
+  apply higham11_15_fl_aasen_solve_chain_source_backward_error_of_delta_bound
+    fp n A Pmat L T L_T_hat U_T_hat b DeltaT_LU bound h20
+    hL_diag hL_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hprod
+  intro DeltaL_outer DeltaU_outer DeltaT hDeltaL_outer hDeltaU_outer hDeltaT
+  have hBT_nonneg :
+      ∀ p q : Fin n, 0 ≤ higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat p q := by
+    intro p q
+    exact mul_nonneg (higham9_14_f_nonneg (gamma_nonneg fp hn))
+      (Finset.sum_nonneg
+        (fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)))
+  have hDeltaT' :
+      ∀ i j : Fin n, |DeltaT i j| ≤
+        higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat i j := by
+    intro i j
+    simpa [higham11_15_aasenMiddleSolveBudget] using hDeltaT i j
+  have hDeltaU' :
+      ∀ i j : Fin n, |DeltaU_outer i j| ≤ gamma fp n * |U_outer i j| := by
+    intro i j
+    simpa [U_outer] using hDeltaU_outer i j
+  intro i j
+  simpa [bound, BT, U_outer] using
+    higham11_15_aasenChainDeltaA_abs_bound_gamma n L T U_outer
+      DeltaL_outer DeltaT DeltaU_outer
+      (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat)
+      (gamma fp n) (gamma_nonneg fp hn) hBT_nonneg
+      hDeltaL_outer hDeltaT' hDeltaU' i j
 
 /-- **Equation (11.15) exact solve-chain bridge**, unpermuted case.  If the
 exact Aasen product is `A = L T Lᵀ` and the three exact solves in the chain are
