@@ -168,6 +168,39 @@ theorem lyapunov_relative_aposteriori_bound_of_sigmaMin_total (n : Nat)
       hsigma hSigmaMin hExact
   exact div_le_div_of_nonneg_right hAbs (le_of_lt hX_pos)
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the total supplied sigma-min Lyapunov
+    a posteriori residual-error bound. -/
+theorem H16_eq16_28_lyapunov_aposteriori_bound_of_sigmaMin_total (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_of_sigmaMin_total n A C X Xhat sigma
+      hsigma hSigmaMin hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the total relative supplied sigma-min Lyapunov
+    a posteriori residual-error bound. -/
+theorem H16_eq16_28_lyapunov_relative_aposteriori_bound_of_sigmaMin_total
+    (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  exact
+    lyapunov_relative_aposteriori_bound_of_sigmaMin_total n
+      A C X Xhat sigma hsigma hSigmaMin hExact hX_pos
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
     Frobenius Lyapunov perturbation bound from a supplied positive
     singular-value lower bound on the Lyapunov operator.
@@ -223,6 +256,29 @@ theorem lyapunov_perturbation_bound_of_sigmaMin_total (n : Nat)
     lyapunov_perturbation_bound_of_sepLowerBound_total n
       A X DeltaA DeltaC DeltaX sigma hsigma
       (SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin)
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the total supplied sigma-min Lyapunov
+    perturbation bound. -/
+theorem H16_eq16_27_lyapunov_perturbation_bound_of_sigmaMin_total (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j) :
+    frobNorm DeltaX <=
+      (1 / sigma) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound_of_sigmaMin_total n
+      A X DeltaA DeltaC DeltaX sigma hsigma hSigmaMin
       alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
@@ -296,6 +352,31 @@ theorem lyapunov_relative_perturbation_of_sigmaMin_total (n : Nat)
       alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the total relative supplied sigma-min Lyapunov
+    perturbation bound. -/
+theorem H16_eq16_27_lyapunov_relative_perturbation_of_sigmaMin_total (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n A (fun i j => -matTranspose A i j) X
+        alpha alpha gamma sigma * eps := by
+  exact
+    lyapunov_relative_perturbation_of_sigmaMin_total n
+      A X DeltaA DeltaC DeltaX sigma hsigma hSigmaMin
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     raw first-order Lyapunov perturbation bound from a supplied positive
     singular-value lower bound on the Lyapunov operator.
 
@@ -321,6 +402,30 @@ theorem lyapunov_first_order_bound_of_sigmaMin (n : Nat)
     (lyapunovCond_of_sigmaMin_isLyapunovConditionFirstOrderBound n
       A X alpha gamma sigma halpha hgamma hsigma hX hSigmaMin)
       DeltaA DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the supplied sigma-min first-order Lyapunov
+    perturbation bound. -/
+theorem H16_eq16_27_lyapunov_first_order_bound_of_sigmaMin (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma)
+    (hX : 0 < frobNorm X)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX <=
+      lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) *
+        frobNorm X *
+        lyapunovScaledPerturbationPairNorm n DeltaA DeltaC alpha gamma := by
+  exact
+    lyapunov_first_order_bound_of_sigmaMin n
+      A X DeltaA DeltaC DeltaX alpha gamma sigma
+      halpha hgamma hsigma hX hSigmaMin hLin
 
 /-- Higham, 2nd ed., §16.3, eq (16.27) (p. 317):
     sigma-min Lyapunov first-order perturbation bound. If the Lyapunov operator
@@ -386,6 +491,32 @@ theorem lyapunov_relative_first_order_bound_of_sigmaMin (n : Nat)
         lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
   exact
     H16_eq16_27_lyapunov_condition_of_sigmaMin n
+      A X DeltaA DeltaC DeltaX alpha gamma sigma eps
+      halpha hgamma hsigma heps hX hSigmaMin
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the relative supplied sigma-min first-order
+    Lyapunov perturbation bound. -/
+theorem H16_eq16_27_lyapunov_relative_first_order_bound_of_sigmaMin (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
+  exact
+    lyapunov_relative_first_order_bound_of_sigmaMin n
       A X DeltaA DeltaC DeltaX alpha gamma sigma eps
       halpha hgamma hsigma heps hX hSigmaMin
       hDeltaA hDeltaC hLin

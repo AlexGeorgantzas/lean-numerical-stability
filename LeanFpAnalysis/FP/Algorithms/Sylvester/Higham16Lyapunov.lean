@@ -599,6 +599,102 @@ theorem lyapunov_relative_perturbation_of_pos_le_sylvesterSepInf_total (n : Nat)
         (fun i j => -matTranspose A i j) sigma hsigma hle)
       alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the total sep-certificate Lyapunov perturbation
+    bound. -/
+theorem H16_eq16_27_lyapunov_perturbation_bound_of_sepLowerBound_total
+    (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j) :
+    frobNorm DeltaX <=
+      (1 / sigma) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound_of_sepLowerBound_total n
+      A X DeltaA DeltaC DeltaX sigma hsigma hSep
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the total relative sep-certificate Lyapunov
+    perturbation bound. -/
+theorem H16_eq16_27_lyapunov_relative_perturbation_of_sepLowerBound_total
+    (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n A (fun i j => -matTranspose A i j) X
+        alpha alpha gamma sigma * eps := by
+  exact
+    lyapunov_relative_perturbation_of_sepLowerBound_total n
+      A X DeltaA DeltaC DeltaX sigma hsigma hSep
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total exact-infimum Lyapunov perturbation
+    bound. -/
+theorem H16_eq16_27_lyapunov_perturbation_bound_of_pos_le_sylvesterSepInf_total
+    (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j) :
+    frobNorm DeltaX <=
+      (1 / sigma) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound_of_pos_le_sylvesterSepInf_total n
+      A X DeltaA DeltaC DeltaX sigma hsigma hle
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total relative exact-infimum Lyapunov
+    perturbation bound. -/
+theorem H16_eq16_27_lyapunov_relative_perturbation_of_pos_le_sylvesterSepInf_total
+    (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n A (fun i' j' => -matTranspose A i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n A (fun i j => -matTranspose A i j) X
+        alpha alpha gamma sigma * eps := by
+  exact
+    lyapunov_relative_perturbation_of_pos_le_sylvesterSepInf_total n
+      A X DeltaA DeltaC DeltaX sigma hsigma hle
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hX_pos
+
 /-- Higham, 2nd ed., Section 16.3, equation (16.27):
     source-facing sep-based first-order Lyapunov bound before the
     `sqrt 2 * eps` relative wrapper. This simply applies the structured
@@ -762,6 +858,58 @@ theorem lyapunov_relative_first_order_bound_of_pos_le_sylvesterSepInf
         lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
   exact
     H16_eq16_27_lyapunov_condition_of_pos_le_sylvesterSepInf n
+      A X DeltaA DeltaC DeltaX alpha gamma sigma eps
+      halpha hgamma hsigma heps hX hle
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the relative first-order sep-certificate
+    Lyapunov perturbation bound. -/
+theorem H16_eq16_27_lyapunov_relative_first_order_bound_of_sepLowerBound
+    (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
+  exact
+    lyapunov_relative_first_order_bound_of_sepLowerBound n
+      A X DeltaA DeltaC DeltaX alpha gamma sigma eps
+      halpha hgamma hsigma heps hX hSep
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the relative first-order exact-infimum Lyapunov
+    perturbation bound. -/
+theorem H16_eq16_27_lyapunov_relative_first_order_bound_of_pos_le_sylvesterSepInf
+    (n : Nat)
+    (A X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma sigma eps : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n A DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 *
+        lyapunovCond_of_inverseOpBound n X alpha gamma (1 / sigma) * eps := by
+  exact
+    lyapunov_relative_first_order_bound_of_pos_le_sylvesterSepInf n
       A X DeltaA DeltaC DeltaX alpha gamma sigma eps
       halpha hgamma hsigma heps hX hle
       hDeltaA hDeltaC hLin
@@ -954,6 +1102,70 @@ theorem lyapunov_relative_aposteriori_bound_of_pos_le_sylvesterSepInf_total
       (SepLowerBound_of_pos_le_sylvesterSepInf n A
         (fun i j => -matTranspose A i j) sigma hsigma hle)
       hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the total sep-certificate Lyapunov a posteriori
+    residual-error bound. -/
+theorem H16_eq16_28_lyapunov_aposteriori_bound_of_sepLowerBound_total
+    (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_of_sepLowerBound_total n
+      A C X Xhat sigma hSep hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the total relative sep-certificate Lyapunov
+    a posteriori residual-error bound. -/
+theorem H16_eq16_28_lyapunov_relative_aposteriori_bound_of_sepLowerBound_total
+    (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  exact
+    lyapunov_relative_aposteriori_bound_of_sepLowerBound_total n
+      A C X Xhat sigma hSep hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the total exact-infimum Lyapunov a posteriori
+    residual-error bound. -/
+theorem H16_eq16_28_lyapunov_aposteriori_bound_of_pos_le_sylvesterSepInf_total
+    (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_of_pos_le_sylvesterSepInf_total n
+      A C X Xhat sigma hsigma hle hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the total relative exact-infimum Lyapunov
+    a posteriori residual-error bound. -/
+theorem H16_eq16_28_lyapunov_relative_aposteriori_bound_of_pos_le_sylvesterSepInf_total
+    (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  exact
+    lyapunov_relative_aposteriori_bound_of_pos_le_sylvesterSepInf_total n
+      A C X Xhat sigma hsigma hle hExact hX_pos
 
 -- ============================================================
 -- Diagonal-case condition-number realization
@@ -1163,6 +1375,57 @@ theorem lyapunov_relative_perturbation_diagonal_total (n : Nat)
       (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
       alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    source-numbered alias for the total diagonal Lyapunov perturbation
+    bound. -/
+theorem H16_eq16_27_lyapunov_perturbation_bound_diagonal_total
+    (n : Nat)
+    (a : Fin n -> Real) (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a)
+          (fun i' j' => -matTranspose (Matrix.diagonal a) i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j) :
+    frobNorm DeltaX <=
+      (1 / s) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound_diagonal_total n
+      a X DeltaA DeltaC DeltaX s hs hsep
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    source-numbered alias for the total relative diagonal Lyapunov
+    perturbation bound. -/
+theorem H16_eq16_27_lyapunov_relative_perturbation_diagonal_total
+    (n : Nat)
+    (a : Fin n -> Real) (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a)
+          (fun i' j' => -matTranspose (Matrix.diagonal a) i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n (Matrix.diagonal a)
+        (fun i j => -matTranspose (Matrix.diagonal a) i j) X
+        alpha alpha gamma s * eps := by
+  exact
+    lyapunov_relative_perturbation_diagonal_total n
+      a X DeltaA DeltaC DeltaX s hs hsep
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hX_pos
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal Lyapunov case:
     an entrywise lower bound on `|a_i + a_j|` gives the residual-error bound. -/
 theorem lyapunov_aposteriori_bound_diagonal (n : Nat)
@@ -1276,6 +1539,41 @@ theorem lyapunov_relative_aposteriori_bound_diagonal_total (n : Nat)
       (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
       hExact hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal case:
+    source-numbered alias for the total diagonal Lyapunov a posteriori
+    residual-error bound. -/
+theorem H16_eq16_28_lyapunov_aposteriori_bound_diagonal_total
+    (n : Nat)
+    (a : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (hExact : forall i j,
+      lyapunovOp n (Matrix.diagonal a) X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / s) * frobNorm (lyapunovResidual n (Matrix.diagonal a) C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_diagonal_total n
+      a C X Xhat s hs hsep hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal case:
+    source-numbered alias for the total relative diagonal Lyapunov
+    a posteriori residual-error bound. -/
+theorem H16_eq16_28_lyapunov_relative_aposteriori_bound_diagonal_total
+    (n : Nat)
+    (a : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (hExact : forall i j,
+      lyapunovOp n (Matrix.diagonal a) X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / s) *
+        frobNorm (lyapunovResidual n (Matrix.diagonal a) C Xhat)) /
+        frobNorm X := by
+  exact
+    lyapunov_relative_aposteriori_bound_diagonal_total n
+      a C X Xhat s hs hsep hExact hX_pos
+
 /-- Higham, 2nd ed., §16.3, eq (16.27), diagonal case (p. 317):
     the concrete structured Lyapunov condition number for the separated diagonal
     operator, with the explicit inverse-operator constant `1/s` coming from the
@@ -1370,6 +1668,31 @@ theorem lyapunov_relative_first_order_bound_diagonal (n : Nat)
       Real.sqrt 2 * lyapunovCondDiagonal n X alpha gamma s * eps := by
   exact
     H16_eq16_27_lyapunov_condition_diagonal n
+      a X DeltaA DeltaC DeltaX alpha gamma s eps
+      halpha hgamma hs heps hX hsep
+      hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    source-numbered alias for the relative first-order diagonal Lyapunov
+    perturbation bound with the concrete diagonal condition number. -/
+theorem H16_eq16_27_lyapunov_relative_first_order_bound_diagonal
+    (n : Nat)
+    (a : Fin n -> Real) (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha gamma s eps : Real)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hs : 0 < s) (heps : 0 <= eps)
+    (hX : 0 < frobNorm X)
+    (hsep : forall i j, s <= |a i + a j|)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      lyapunovOp n (Matrix.diagonal a) DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j -
+          matMul n X (matTranspose DeltaA) i j) :
+    frobNorm DeltaX / frobNorm X <=
+      Real.sqrt 2 * lyapunovCondDiagonal n X alpha gamma s * eps := by
+  exact
+    lyapunov_relative_first_order_bound_diagonal n
       a X DeltaA DeltaC DeltaX alpha gamma s eps
       halpha hgamma hs heps hX hsep
       hDeltaA hDeltaC hLin
