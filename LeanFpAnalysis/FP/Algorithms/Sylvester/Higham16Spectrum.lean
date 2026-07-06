@@ -310,6 +310,59 @@ theorem sylvesterVecCoeff_singular_of_common_eigenvalue (m n : Nat)
   funext p
   simp
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), left-eigenvector form:
+    a shared supplied real eigenvalue of `A` and `B`, with the `B` side given
+    as a left eigenpair `w^T B = lam w^T`, makes the vec/Kronecker Sylvester
+    coefficient singular.  This is the constructive common-eigenvalue
+    obstruction, not the full converse spectral theorem. -/
+theorem sylvesterVecCoeff_singular_of_common_left_eigenvalue (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real)
+    (hv0 : Not (v = 0)) (hw0 : Not (w = 0))
+    (hv : Matrix.mulVec A v = fun i => lam * v i)
+    (hw : Matrix.vecMul w B = fun j => lam * w j) :
+    Matrix.det (sylvesterVecCoeff m n A B) = 0 := by
+  apply Matrix.exists_mulVec_eq_zero_iff.mp
+  refine ⟨Matrix.vec (fun i j => v i * w j : RMatFn m n),
+    vec_outer_product_ne_zero m n v w hv0 hw0, ?_⟩
+  rw [sylvesterVecCoeff_eigenpair_vecMul m n A B v w lam lam hv hw]
+  funext p
+  simp
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), nonsingular exclusion:
+    if the vec/Kronecker Sylvester coefficient has nonzero determinant, then
+    there is no supplied nonzero real eigenpair of `A` and `B^T` with the same
+    eigenvalue.  This is the contrapositive of the constructive
+    common-eigenvalue obstruction and does not prove the full complex spectral
+    converse. -/
+theorem no_common_real_eigenpair_of_sylvesterVecCoeff_det_ne_zero (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.mulVec (Matrix.transpose B) w = (fun j => lam * w j)) := by
+  rintro ⟨v, w, lam, hv0, hw0, hv, hw⟩
+  exact hdet
+    (sylvesterVecCoeff_singular_of_common_eigenvalue
+      m n A B v w lam hv0 hw0 hv hw)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), nonsingular exclusion in
+    the source-facing left-eigenvector form: a nonzero determinant for the
+    vec/Kronecker Sylvester coefficient rules out supplied nonzero real
+    eigenpairs `A v = lam v` and `w^T B = lam w^T`. -/
+theorem no_common_real_left_eigenpair_of_sylvesterVecCoeff_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.vecMul w B = (fun j => lam * w j)) := by
+  rintro ⟨v, w, lam, hv0, hw0, hv, hw⟩
+  exact hdet
+    (sylvesterVecCoeff_singular_of_common_left_eigenvalue
+      m n A B v w lam hv0 hw0 hv hw)
+
 -- ============================================================
 -- (16.4)-(16.8): Bartels-Stewart supplied-triangular column solve
 -- ============================================================
