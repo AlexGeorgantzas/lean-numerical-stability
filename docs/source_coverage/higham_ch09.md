@@ -17,7 +17,14 @@
   pivoting upper bound eq. (9.14) [Wilkinson 1961], the rook-pivoting bound
   eq. (9.16) [Foster 1997], the banded GEPP growth Theorem 9.11 [Bohte 1975],
   and the full normwise/spectral Barrlund-Sun Theorem 9.15 self-majorant/Schur-
-  induction step. See the not-proved ledger below. (An earlier revision of this
+  induction step. See the not-proved ledger below. **UPDATE (2026-07-06, web-
+  authorized pass):** the *analytic core* of eq. (9.14) — Wilkinson's actual
+  1961 growth-factor bound — is now PROVED axiom-clean as
+  `higham9_14_wilkinson_ratio_bound` (given the Hadamard pivot constraint, the
+  pivot ratio is `≤ completePivotWilkinsonBound n`). (9.14) is thus reduced to a
+  Gaussian-elimination iterate-model bookkeeping layer, no longer citation-
+  blocked. The other three rows (9.16, 9.11, 9.15) remain open and each require
+  their own research-grade analytic-core formalization. (An earlier revision of this
   file recorded PASS with "no open items"; that overstated the Lean state and
   is corrected here per the project's documentation-honesty rule that a
   citation is not a proof and a conditional transfer does not close a stronger
