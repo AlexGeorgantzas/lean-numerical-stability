@@ -1200,6 +1200,42 @@ theorem sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_no_coupled_
     (sylvesterTwoColumnBlock_product_shift_kernel_to_coupled_block_action
       m n A T p q hsub hker)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), real-Schur
+    same-block spectral certificate: an adjacent same-labelled block in the
+    exported quasi-Schur block map supplies the two-column zero pattern, and a
+    supplied no-coupled-action separation condition makes the corresponding
+    two-column block coefficient nonsingular.  This is a source-shaped adapter
+    for downstream Bartels-Stewart block solves; it still assumes the
+    separation/no-action condition rather than proving it from a full real
+    Schur spectral theorem. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_no_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hsub : T q p ≠ 0)
+    (hno :
+      ∀ u : Fin m -> Real, u ≠ 0 ->
+        ¬ ∃ v : Fin m -> Real,
+          Matrix.mulVec (Matrix.of A) u =
+              (fun i => T p p * u i + T q p * v i) ∧
+          Matrix.mulVec (Matrix.of A) v =
+              (fun i => T p q * u i + T q q * v i)) :
+    IsAdjacentQuasiTriangularBlockFn n T p q ∧
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  refine ⟨?_, ?_⟩
+  · exact IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block
+      n T pmap p q hmono hcard hzero hpq hsame
+  · apply sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+    exact
+      sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_no_coupled_block_action
+        m n A T p q hsub hno
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
     determinant bridge for a supplied adjacent two-column block with zero
     coupling product: if the two scalar shifted column coefficients
