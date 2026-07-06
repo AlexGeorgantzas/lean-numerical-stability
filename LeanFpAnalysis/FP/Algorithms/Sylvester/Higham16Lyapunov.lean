@@ -750,6 +750,102 @@ theorem lyapunovInverseOpBound_diagonal (n : ℕ)
   exact frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le Y
     (lyapunovOp n (Matrix.diagonal a) Y) hMnn hentry
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal Lyapunov case:
+    an entrywise lower bound on all sums `|a_i + a_j|` gives a
+    `SepLowerBound` certificate for `(diag a, -(diag a)^T)`. -/
+theorem SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge (n : Nat)
+    (a : Fin n -> Real) (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|) :
+    SepLowerBound n (Matrix.diagonal a)
+      (fun i j => -matTranspose (Matrix.diagonal a) i j) s := by
+  have hB :
+      (fun i j => -matTranspose (Matrix.diagonal a) i j) =
+        (Matrix.diagonal fun k => -a k) := by
+    ext p q
+    simp only [matTranspose, Matrix.diagonal]
+    by_cases hpq : q = p
+    · subst hpq
+      simp
+    · have hpq' : p ≠ q := fun h => hpq h.symm
+      simp [hpq, hpq']
+  have hgap : forall i j, s <= |a i - (fun k : Fin n => -a k) j| := by
+    intro i j
+    simpa [sub_eq_add_neg] using hsep i j
+  rw [hB]
+  exact
+    SepLowerBound_diagonal_of_entrywise_abs_ge n a
+      (fun k : Fin n => -a k) s hs hgap
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal Lyapunov case:
+    in positive dimension, the same entrywise sum gap is below the exact
+    infimum model of `sep(diag a, -(diag a)^T)`. -/
+theorem sylvesterSepInf_lyapunov_diagonal_ge_of_entrywise_abs_ge (n : Nat)
+    (a : Fin n -> Real) (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (hn : 0 < n) :
+    s <= sylvesterSepInf n (Matrix.diagonal a)
+      (fun i j => -matTranspose (Matrix.diagonal a) i j) := by
+  exact
+    SepLowerBound_le_sylvesterSepInf_of_pos_dim n (Matrix.diagonal a)
+      (fun i j => -matTranspose (Matrix.diagonal a) i j) s
+      (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
+      hn
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27), diagonal
+    Lyapunov case: Frobenius perturbation bound from the entrywise certificate
+    `s <= |a_i + a_j|`. -/
+theorem lyapunov_perturbation_bound_diagonal (n : Nat)
+    (a : Fin n -> Real) (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a)
+          (fun i' j' => -matTranspose (Matrix.diagonal a) i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hDeltaX_ne : Not (frobNormSq DeltaX = 0)) :
+    frobNorm DeltaX <=
+      (1 / s) * (2 * alpha * frobNorm X + gamma) * eps := by
+  exact
+    lyapunov_perturbation_bound_of_sepLowerBound n (Matrix.diagonal a)
+      X DeltaA DeltaC DeltaX s hs
+      (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin hDeltaX_ne
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27), diagonal
+    Lyapunov case: relative perturbation bound from the entrywise certificate
+    `s <= |a_i + a_j|`. -/
+theorem lyapunov_relative_perturbation_diagonal (n : Nat)
+    (a : Fin n -> Real) (X DeltaA DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (alpha gamma eps : Real)
+    (halpha : 0 <= alpha) (hgamma : 0 <= gamma) (heps : 0 <= eps)
+    (hDeltaA : frobNorm DeltaA <= eps * alpha)
+    (hDeltaC : frobNorm DeltaC <= eps * gamma)
+    (hLin : forall i j,
+      sylvesterOp n (Matrix.diagonal a)
+          (fun i' j' => -matTranspose (Matrix.diagonal a) i' j') DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j +
+          matMul n X (fun i' j' => -matTranspose DeltaA i' j') i j)
+    (hDeltaX_ne : Not (frobNormSq DeltaX = 0))
+    (hX_ne : Not (frobNorm X = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm DeltaX / frobNorm X <=
+      condSylvester n (Matrix.diagonal a)
+        (fun i j => -matTranspose (Matrix.diagonal a) i j) X
+        alpha alpha gamma s * eps := by
+  exact
+    lyapunov_relative_perturbation_of_sepLowerBound n (Matrix.diagonal a)
+      X DeltaA DeltaC DeltaX s hs
+      (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
+      alpha gamma eps halpha hgamma heps hDeltaA hDeltaC hLin
+      hDeltaX_ne hX_ne hX_pos
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal Lyapunov case:
     an entrywise lower bound on `|a_i + a_j|` gives the residual-error bound. -/
 theorem lyapunov_aposteriori_bound_diagonal (n : Nat)
