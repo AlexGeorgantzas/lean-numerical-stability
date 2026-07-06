@@ -417,6 +417,28 @@ lemma sylvesterVecCoeffNonsingInv_abs_le_invAbs (m n : Nat)
   intro p q
   rfl
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), absolute max-entry
+    bridge: a nonnegative componentwise budget for `X - Xhat` bounds the
+    practical max-entry forward error before any relative normalization. -/
+theorem sylvester_practical_abs_error_bound_of_componentwise_budget (m n : Nat)
+    (X Xhat : RMatFn m n) (budget : Prod (Fin n) (Fin m) -> Real)
+    (hbudget : forall p, 0 <= budget p)
+    (hcert : forall i j, |X i j - Xhat i j| <= budget (j, i)) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) <=
+      sylvesterVecMaxNorm m n budget := by
+  unfold sylvesterMaxEntryNormRect
+  apply sylvesterVecMaxNorm_le_of_abs_le
+  · intro p
+    calc
+      |Matrix.vec (fun i j => X i j - Xhat i j) p|
+          = |X p.2 p.1 - Xhat p.2 p.1| := by
+            simp [Matrix.vec]
+      _ <= budget p := hcert p.2 p.1
+      _ = |budget p| := (abs_of_nonneg (hbudget p)).symm
+      _ <= sylvesterVecMaxNorm m n budget :=
+        abs_le_sylvesterVecMaxNorm m n budget p
+  · exact sylvesterVecMaxNorm_nonneg m n budget
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), max-entry norm bridge:
     a nonnegative componentwise budget for `X - Xhat` bounds the relative
     max-entry forward error in the source norm `||X|| := max_{i,j} |x_ij|`. -/
@@ -431,26 +453,17 @@ theorem sylvester_practical_error_bound_of_componentwise_budget (m n : Nat)
   have hnorm :
       sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) <=
         sylvesterVecMaxNorm m n budget := by
-    unfold sylvesterMaxEntryNormRect
-    apply sylvesterVecMaxNorm_le_of_abs_le
-    · intro p
-      calc
-        |Matrix.vec (fun i j => X i j - Xhat i j) p|
-            = |X p.2 p.1 - Xhat p.2 p.1| := by
-              simp [Matrix.vec]
-        _ <= budget p := hcert p.2 p.1
-        _ = |budget p| := (abs_of_nonneg (hbudget p)).symm
-        _ <= sylvesterVecMaxNorm m n budget :=
-          abs_le_sylvesterVecMaxNorm m n budget p
-    · exact sylvesterVecMaxNorm_nonneg m n budget
+    exact
+      sylvester_practical_abs_error_bound_of_componentwise_budget m n
+        X Xhat budget hbudget hcert
   exact div_le_div_of_nonneg_right hnorm (le_of_lt hXhat)
 
-/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), certificate form:
-    if the vectorized error is `P^{-1} r`, the inverse entries are bounded
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), absolute certificate
+    form: if the vectorized error is `P^{-1} r`, the inverse entries are bounded
     componentwise by `PinvAbs`, and the residual vector satisfies
-    `|r| <= |vec(Rhat)| + vec(Ru)`, then the practical `|P^{-1}|` budget
-    gives the relative max-entry forward-error bound. -/
-theorem sylvester_practical_error_bound_of_inverse_residual_budget (m n : Nat)
+    `|r| <= |vec(Rhat)| + vec(Ru)`, then the practical budget bounds the
+    unnormalized max-entry forward error. -/
+theorem sylvester_practical_abs_error_bound_of_inverse_residual_budget (m n : Nat)
     (X Xhat Rhat Ru : RMatFn m n)
     (Pinv PinvAbs :
       Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
@@ -459,17 +472,14 @@ theorem sylvester_practical_error_bound_of_inverse_residual_budget (m n : Nat)
       Matrix.mulVec Pinv r)
     (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
     (hRu : forall i j, 0 <= Ru i j)
-    (hr : forall q, |r q| <= |Matrix.vec Rhat q| + Matrix.vec Ru q)
-    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
-    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
-        sylvesterMaxEntryNormRect m n Xhat <=
+    (hr : forall q, |r q| <= |Matrix.vec Rhat q| + Matrix.vec Ru q) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) <=
       sylvesterVecMaxNorm m n
-        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) /
-        sylvesterMaxEntryNormRect m n Xhat := by
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) := by
   have hPinvAbs_nonneg : forall p q, 0 <= PinvAbs p q := by
     intro p q
     exact (abs_nonneg (Pinv p q)).trans (hPinvAbs p q)
-  apply sylvester_practical_error_bound_of_componentwise_budget
+  apply sylvester_practical_abs_error_bound_of_componentwise_budget
   · exact sylvesterPracticalBudgetVec_nonneg m n PinvAbs Rhat Ru hPinvAbs_nonneg hRu
   · intro i j
     let p : Prod (Fin n) (Fin m) := (j, i)
@@ -500,7 +510,35 @@ theorem sylvester_practical_error_bound_of_inverse_residual_budget (m n : Nat)
               (abs_nonneg (r q)) (hPinvAbs_nonneg p q)
       _ = sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru p := by
             rfl
-  · exact hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), certificate form:
+    if the vectorized error is `P^{-1} r`, the inverse entries are bounded
+    componentwise by `PinvAbs`, and the residual vector satisfies
+    `|r| <= |vec(Rhat)| + vec(Ru)`, then the practical `|P^{-1}|` budget
+    gives the relative max-entry forward-error bound. -/
+theorem sylvester_practical_error_bound_of_inverse_residual_budget (m n : Nat)
+    (X Xhat Rhat Ru : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (r : Prod (Fin n) (Fin m) -> Real)
+    (hErr : Matrix.vec (fun i j => X i j - Xhat i j) =
+      Matrix.mulVec Pinv r)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hr : forall q, |r q| <= |Matrix.vec Rhat q| + Matrix.vec Ru q)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  have hnorm :
+      sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) <=
+        sylvesterVecMaxNorm m n
+          (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) :=
+    sylvester_practical_abs_error_bound_of_inverse_residual_budget m n
+      X Xhat Rhat Ru Pinv PinvAbs r hErr hPinvAbs hRu hr
+  exact div_le_div_of_nonneg_right hnorm (le_of_lt hXhat)
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact residual identity:
     if `X` solves the Sylvester equation, then the exact residual of `Xhat`
@@ -677,6 +715,32 @@ theorem sylvester_practical_error_bound_of_computed_residual_certificate (m n : 
     sylvester_practical_error_bound_of_computed_residual_budget m n
       A B C X Xhat Rhat Ru Pinv PinvAbs hX hLeft hPinvAbs
       hBudget.1 hBudget.2 hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), absolute
+    computed-residual certificate endpoint: the same practical budget bounds
+    the unnormalized max-entry forward error, so no positive `||Xhat||`
+    denominator assumption is needed. -/
+theorem sylvester_practical_abs_error_bound_of_computed_residual_certificate
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat Rhat Ru : RMatFn m n)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs Rhat Ru) := by
+  exact
+    sylvester_practical_abs_error_bound_of_inverse_residual_budget m n
+      X Xhat Rhat Ru Pinv PinvAbs
+      (Matrix.vec (sylvesterResidualRect m n A B C Xhat))
+      (sylvester_vec_error_eq_inverse_residual_of_left_inverse
+        m n A B C X Xhat Pinv hX hLeft)
+      hPinvAbs hBudget.1
+      (sylvester_exact_residual_vec_abs_le_computed_residual_budget
+        m n (sylvesterResidualRect m n A B C Xhat) Rhat Ru hBudget.2)
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
     practical residual bound from a Frobenius residual-arithmetic model.
