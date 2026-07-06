@@ -2371,6 +2371,68 @@ theorem higham11_8_fl_aasen_solve_chain_source_normwise_backward_error
       simpa [BT, U_outer] using hchain_le i j)
     hbudget
 
+/-- Rounded Aasen factorization-plus-solve source backward error together
+with the printed Theorem 11.8 normwise predicate, under an explicit comparison
+from the summed factorization and solve-chain budgets to `η |T_hat|`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error
+    (fp : FPModel) (n : ℕ)
+    (A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor η γ15n25 : ℝ) (hγ_factor : 0 ≤ γ_factor) (hη : 0 ≤ η)
+    (hBT_factor : ∀ i j : Fin n, 0 ≤ BT_factor i j)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hLhat : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ_factor * |L i j|)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT_factor i j)
+    (hbudget_entry : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r) i j +
+        higham11_15_aasenChainDeltaABound n (gamma fp n)
+          (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat)
+          L_hat T_hat (fun r c => L_hat c r) i j ≤
+        η * |T_hat i j|)
+    (hη_le : η ≤ ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA) γ15n25
+        (infNorm T_hat) := by
+  intro rhs z_hat q_hat y_hat U_outer w_hat BT_solve B_factor B_solve
+  obtain ⟨DeltaA, hDeltaA, hsource⟩ :=
+    higham11_8_fl_aasen_factor_solve_source_backward_error
+      fp n A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor hγ_factor hBT_factor h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hprod hLhat hThat
+  refine ⟨DeltaA, hDeltaA, hsource, ?_⟩
+  apply higham11_8_aasenNormwiseBackwardBound_of_componentwise_T_bound
+    n DeltaA T_hat η γ15n25 hη
+  · intro i j
+    have hentry :
+        B_factor i j + B_solve i j ≤ η * |T_hat i j| := by
+      simpa [B_factor, B_solve, BT_solve, U_outer] using hbudget_entry i j
+    exact (hDeltaA i j).trans hentry
+  · simpa [mul_assoc] using
+      mul_le_mul_of_nonneg_right hη_le (infNorm_nonneg T_hat)
+
 /-- Aasen growth factor `rho_n = max_ij |t_ij| / max_ij |a_ij|`. -/
 noncomputable def higham11_8_aasenGrowthFactor
     (Tmax Amax : ℝ) : ℝ :=

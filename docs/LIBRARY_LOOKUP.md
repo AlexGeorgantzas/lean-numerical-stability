@@ -4869,6 +4869,7 @@ Source-facing Chapter 11 wrappers:
 - `higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound`
 - `higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound_coeff_le`
 - `higham11_8_fl_aasen_solve_chain_source_normwise_backward_error`
+- `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error`
 - `higham11_8_aasenGrowthFactor`
 - `higham11_8_aasenGrowthBound`
 - `higham11_16_IsSkewSymmetric`
