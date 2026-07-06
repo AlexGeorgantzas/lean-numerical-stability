@@ -458,6 +458,89 @@ theorem higham12_21_correction_infNorm_bound {n : ℕ} (hn : 0 < n)
       (fun _ _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)))
     c hc_lt hrow hcorr
 
+/-- **Theorem 12.4, fully solver-derived** (Higham §12.2, GE with `μ = γ(3n)`).
+
+The complete Theorem 12.4 for one step of fixed-precision iterative refinement:
+from the solver `(A + ΔA)d̂ = r̂` (`|ΔA| ≤ γ(3n)|A|`, Theorem 9.4), the residual
+and update models, and a nonnegative resolver `Ainv` for `A`, one obtains
+`|b − Aŷ|_i ≤ 2γ_{n+1}(|A||ŷ| + |b|)_i`.
+
+The correction bound is **derived end-to-end**, not assumed: the solver gives the
+componentwise Neumann inequality `(I − μ|A|Ainv)(|A||d̂|) ≤ (|A|Ainv)|r̂|`
+(`correction_neumann_inequality`); the row-sum contraction `‖μ|A|Ainv‖∞ ≤ c < 1`
+turns it into the ∞-norm bound `‖ |A||d̂| ‖∞ ≤ ‖(|A|Ainv)|r̂|‖∞ / (1−c)`
+(`higham12_21_correction_infNorm_bound`); the lower bound `m` on the scaled data
+with `‖…‖/(1−c) ≤ ρ·m` gives the componentwise correction bound
+(`correction_componentwise_of_infNorm`), fed to `lu_refinement_thm_11_4`.
+
+`Ainv` is the honest componentwise stand-in for `|A⁻¹|`; `c` (`= μ‖|A||A⁻¹|‖∞`, a
+`cond`-type quantity) and `(m, ρ)` are the explicit, non-asymptotic replacement for
+the source's approximate `f(t₁,t₂)` and `cond(A⁻¹)σ(A,ŷ)` sufficient condition. -/
+theorem higham12_4_from_solver (n : ℕ) (hn : 0 < n) (fp : FPModel)
+    (A Ainv : Fin n → Fin n → ℝ)
+    (x₀ d_hat r_hat b r : Fin n → ℝ)
+    (f₂ y : Fin n → ℝ)
+    (DeltaA_solve : Fin n → Fin n → ℝ)
+    (hAinv_nn : ∀ i j : Fin n, 0 ≤ Ainv i j)
+    (hAinv : ∀ (v w : Fin n → ℝ),
+      (∀ i : Fin n, ∑ j : Fin n, A i j * v j = w i) →
+      ∀ i : Fin n, |v i| ≤ ∑ j : Fin n, Ainv i j * |w j|)
+    (hr : ∀ i : Fin n, r i = b i - ∑ j : Fin n, A i j * x₀ j)
+    (hy : ∀ i : Fin n, y i = x₀ i + d_hat i + f₂ i)
+    (hsolve : ∀ i : Fin n,
+      ∑ j : Fin n, (A i j + DeltaA_solve i j) * d_hat j = r_hat i)
+    (hDeltaA : ∀ i j : Fin n, |DeltaA_solve i j| ≤ gamma fp (3 * n) * |A i j|)
+    (hres : ∀ i : Fin n, |r_hat i - r i| ≤
+      gamma fp (n + 1) * (|b i| + ∑ j : Fin n, |A i j| * |x₀ j|))
+    (hf₂ : ∀ j : Fin n, |f₂ j| ≤ fp.u * (|x₀ j| + |d_hat j|))
+    (hn1 : gammaValid fp (n + 1)) (hn3 : gammaValid fp (3 * n)) (hu_lt : fp.u < 1)
+    (c : ℝ) (hc_lt : c < 1)
+    (hrow : ∀ i : Fin n,
+      ∑ k : Fin n, gamma fp (3 * n) * (∑ j : Fin n, |A i j| * Ainv j k) ≤ c)
+    (m : ℝ) (hm_pos : 0 < m)
+    (ht_lb : ∀ i : Fin n, m ≤ ∑ j : Fin n, |A i j| * |y j| + |b i|)
+    (ρ : ℝ) (hρ_nn : 0 ≤ ρ)
+    (hcond : (infNormVec (fun i => ∑ k : Fin n,
+        (∑ j : Fin n, |A i j| * Ainv j k) * |r_hat k|)) / (1 - c) ≤ ρ * m)
+    (hρ_cond : (gamma fp (n + 1) + fp.u) +
+        ((gamma fp (n + 1) + fp.u) * (1 + fp.u) +
+         (1 - fp.u) * (gamma fp (3 * n) + fp.u)) * ρ ≤
+        (1 - fp.u) * (2 * gamma fp (n + 1))) :
+    ∀ i : Fin n,
+      |b i - ∑ j : Fin n, A i j * y j| ≤
+        2 * gamma fp (n + 1) * (∑ j : Fin n, |A i j| * |y j| + |b i|) := by
+  have hM_nn : ∀ i k : Fin n,
+      0 ≤ gamma fp (3 * n) * ∑ j : Fin n, |A i j| * Ainv j k := fun i k =>
+    mul_nonneg (gamma_nonneg fp hn3)
+      (Finset.sum_nonneg (fun j _ => mul_nonneg (abs_nonneg _) (hAinv_nn j k)))
+  have hneu := correction_neumann_inequality n A Ainv DeltaA_solve d_hat r_hat
+    (gamma fp (3 * n)) (gamma_nonneg fp hn3) hAinv_nn hAinv hDeltaA hsolve
+  have hcorr21 : ∀ i : Fin n,
+      (∑ j : Fin n, |A i j| * |d_hat j|) ≤
+        (∑ k : Fin n, (gamma fp (3 * n) * ∑ j : Fin n, |A i j| * Ainv j k)
+          * (∑ l : Fin n, |A k l| * |d_hat l|))
+        + (∑ k : Fin n, (∑ j : Fin n, |A i j| * Ainv j k) * |r_hat k|) := by
+    intro i
+    have hrw : gamma fp (3 * n) * ∑ k : Fin n,
+          (∑ j : Fin n, |A i j| * Ainv j k) * (∑ l : Fin n, |A k l| * |d_hat l|)
+        = ∑ k : Fin n, (gamma fp (3 * n) * ∑ j : Fin n, |A i j| * Ainv j k)
+          * (∑ l : Fin n, |A k l| * |d_hat l|) := by
+      rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro k _; ring
+    linarith [hneu i, hrw]
+  have hnorm := higham12_21_correction_infNorm_bound hn A d_hat
+    (fun i => ∑ k : Fin n, (∑ j : Fin n, |A i j| * Ainv j k) * |r_hat k|)
+    (fun i k => gamma fp (3 * n) * ∑ j : Fin n, |A i j| * Ainv j k)
+    hM_nn c hc_lt hrow hcorr21
+  have hcorr : ∀ i : Fin n, ∑ j : Fin n, |A i j| * |d_hat j| ≤
+      ρ * (∑ j : Fin n, |A i j| * |y j| + |b i|) :=
+    correction_componentwise_of_infNorm
+      (fun i => ∑ j : Fin n, |A i j| * |d_hat j|)
+      (fun i => ∑ j : Fin n, |A i j| * |y j| + |b i|)
+      _ ρ m hnorm hm_pos ht_lb hρ_nn hcond
+  exact lu_refinement_thm_11_4 n fp A x₀ d_hat b r r_hat f₂ y DeltaA_solve
+    hr hy hsolve hDeltaA hres hf₂ hn1 hn3 hu_lt ρ hρ_nn hcorr hρ_cond
+
+
 /-! ## Problems and Appendix A -/
 
 /-- Component skewness `max_i |x_i| / min_i |x_i|` used in Problem 12.1.

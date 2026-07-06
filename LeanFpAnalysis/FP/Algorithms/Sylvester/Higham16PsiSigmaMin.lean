@@ -56,6 +56,29 @@ theorem sylvester_first_order_bound_of_sigmaMin (n : ℕ)
       A B X alpha beta gamma sigma halpha hbeta hgamma hsigma hX hSigmaMin
       DeltaA DeltaB DeltaC DeltaX hLin
 
+/-- Higham, 2nd ed., §16.3, eq. (16.23) (p. 313):
+    source-numbered alias for the raw sigma-min first-order Sylvester
+    perturbation bound. -/
+theorem H16_eq16_23_sylvester_first_order_bound_of_sigmaMin (n : ℕ)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n → Fin n → ℝ)
+    (alpha beta gamma sigma : ℝ)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (hX : 0 < frobNorm X)
+    (hSigmaMin : ∀ Y : Fin n → Fin n → ℝ,
+      sigma * frobNorm Y ≤ frobNorm (sylvesterOp n A B Y))
+    (hLin : ∀ i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX ≤
+      sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) *
+        frobNorm X *
+        sylvesterScaledPerturbationTripleNorm n DeltaA DeltaB DeltaC
+          alpha beta gamma := by
+  exact
+    sylvester_first_order_bound_of_sigmaMin n
+      A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma sigma
+      halpha hbeta hgamma hsigma hX hSigmaMin hLin
+
 /-- Higham, 2nd ed., §16.3, eqs. (16.23)-(16.24) (p. 313):
     sigma-min structured first-order perturbation bound. If the Sylvester
     operator satisfies `sigma * ||Y||_F <= ||T(Y)||_F` for all `Y`, then the
@@ -98,5 +121,57 @@ theorem H16_eq16_24_structured_condition_of_sigmaMin (n : ℕ)
     A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma
     (sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma)) eps
     hPsi hX hPsinn halpha hbeta hgamma heps hDeltaA hDeltaB hDeltaC hLin
+
+/-- Higham, 2nd ed., §16.3, eqs. (16.23)-(16.24) (p. 313):
+    relative first-order Sylvester perturbation bound from a positive
+    sigma-min lower bound for the Sylvester operator. -/
+theorem sylvester_relative_first_order_bound_of_sigmaMin (n : ℕ)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n → Fin n → ℝ)
+    (alpha beta gamma sigma eps : ℝ)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 ≤ eps)
+    (hX : 0 < frobNorm X)
+    (hSigmaMin : ∀ Y : Fin n → Fin n → ℝ,
+      sigma * frobNorm Y ≤ frobNorm (sylvesterOp n A B Y))
+    (hDeltaA : frobNorm DeltaA ≤ eps * alpha)
+    (hDeltaB : frobNorm DeltaB ≤ eps * beta)
+    (hDeltaC : frobNorm DeltaC ≤ eps * gamma)
+    (hLin : ∀ i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX / frobNorm X ≤
+      Real.sqrt 3 *
+        sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) * eps := by
+  exact
+    H16_eq16_24_structured_condition_of_sigmaMin n
+      A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma sigma eps
+      halpha hbeta hgamma hsigma heps hX hSigmaMin
+      hDeltaA hDeltaB hDeltaC hLin
+
+/-- Higham, 2nd ed., §16.3, eq. (16.24) (p. 313):
+    source-numbered alias for the relative sigma-min first-order Sylvester
+    perturbation endpoint. -/
+theorem H16_eq16_24_sylvester_relative_first_order_bound_of_sigmaMin (n : ℕ)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n → Fin n → ℝ)
+    (alpha beta gamma sigma eps : ℝ)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (heps : 0 ≤ eps)
+    (hX : 0 < frobNorm X)
+    (hSigmaMin : ∀ Y : Fin n → Fin n → ℝ,
+      sigma * frobNorm Y ≤ frobNorm (sylvesterOp n A B Y))
+    (hDeltaA : frobNorm DeltaA ≤ eps * alpha)
+    (hDeltaB : frobNorm DeltaB ≤ eps * beta)
+    (hDeltaC : frobNorm DeltaC ≤ eps * gamma)
+    (hLin : ∀ i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX / frobNorm X ≤
+      Real.sqrt 3 *
+        sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) * eps := by
+  exact
+    sylvester_relative_first_order_bound_of_sigmaMin n
+      A B X DeltaA DeltaB DeltaC DeltaX alpha beta gamma sigma eps
+      halpha hbeta hgamma hsigma heps hX hSigmaMin
+      hDeltaA hDeltaB hDeltaC hLin
 
 end LeanFpAnalysis.FP
