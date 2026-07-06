@@ -1878,6 +1878,37 @@ theorem higham11_8_aasen_factorization_product_abs_bound_gamma
     rw [hsum]
   simpa [htarget, U] using hchain
 
+/-- Combine a factorization residual and a solve-chain residual into a single
+source backward-error perturbation.  If `A_fact` is close to the source matrix
+`A`, and `(A_fact + DeltaS) w = rhs`, then `(A + DeltaA) w = rhs` for a
+single perturbation bounded componentwise by the sum of the two budgets. -/
+theorem higham11_8_aasen_source_backward_error_of_factor_and_solve_residuals
+    (n : ℕ) (A A_fact DeltaS B_factor B_solve : Fin n → Fin n → ℝ)
+    (rhs w : Fin n → ℝ)
+    (hfactor : ∀ i j : Fin n, |A_fact i j - A i j| ≤ B_factor i j)
+    (hsolve : ∀ i j : Fin n, |DeltaS i j| ≤ B_solve i j)
+    (hsource : ∀ i : Fin n,
+      ∑ j : Fin n, (A_fact i j + DeltaS i j) * w j = rhs i) :
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w j = rhs i) := by
+  let DeltaA : Fin n → Fin n → ℝ := fun i j => (A_fact i j - A i j) + DeltaS i j
+  refine ⟨DeltaA, ?_, ?_⟩
+  · intro i j
+    calc |DeltaA i j|
+        = |(A_fact i j - A i j) + DeltaS i j| := rfl
+      _ ≤ |A_fact i j - A i j| + |DeltaS i j| := abs_add_le _ _
+      _ ≤ B_factor i j + B_solve i j := add_le_add (hfactor i j) (hsolve i j)
+  · intro i
+    calc ∑ j : Fin n, (A i j + DeltaA i j) * w j
+        = ∑ j : Fin n, (A_fact i j + DeltaS i j) * w j := by
+            apply Finset.sum_congr rfl
+            intro j _
+            congr 1
+            simp [DeltaA]
+            ring
+      _ = rhs i := hsource i
+
 /-- Middle-solve componentwise budget used when collapsing the rounded Aasen
 solve chain.  This is the `f(γ_n)|L_T||U_T|` budget supplied by the Chapter 9
 tridiagonal solve aggregation. -/
@@ -2066,6 +2097,66 @@ theorem higham11_15_fl_aasen_solve_chain_source_backward_error
       (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat)
       (gamma fp n) (gamma_nonneg fp hn) hBT_nonneg
       hDeltaL_outer hDeltaT' hDeltaU' i j
+
+/-- Rounded Aasen source backward-error wrapper that combines factorization
+and solve-chain residuals.  The first budget controls the residual
+`L_hat*T_hat*L_hatᵀ - A` from relative factor perturbations; the second is the
+closed solve-chain budget for solving with the computed factors. -/
+theorem higham11_8_fl_aasen_factor_solve_source_backward_error
+    (fp : FPModel) (n : ℕ)
+    (A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor : ℝ) (hγ_factor : 0 ≤ γ_factor)
+    (hBT_factor : ∀ i j : Fin n, 0 ≤ BT_factor i j)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hLhat : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ_factor * |L i j|)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT_factor i j) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) := by
+  intro rhs z_hat q_hat y_hat U_outer w_hat BT_solve B_factor B_solve
+  let A_fact : Fin n → Fin n → ℝ :=
+    fun i j => ∑ p : Fin n, ∑ q : Fin n, L_hat i p * T_hat p q * L_hat j q
+  have hprod_fact : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L_hat i p * T_hat p q * L_hat j q) =
+        A_fact i j := by
+    intro i j
+    rfl
+  obtain ⟨DeltaS, hDeltaS, hsource⟩ :=
+    higham11_15_fl_aasen_solve_chain_source_backward_error
+      fp n A_fact Pmat L_hat T_hat L_T_hat U_T_hat b DeltaT_LU h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn
+      hprod_fact
+  apply higham11_8_aasen_source_backward_error_of_factor_and_solve_residuals
+    n A A_fact DeltaS B_factor B_solve rhs w_hat
+  · intro i j
+    simpa [A_fact, B_factor] using
+      higham11_8_aasen_factorization_product_abs_bound_gamma
+        n A L T L_hat T_hat BT_factor γ_factor hγ_factor hBT_factor
+        hprod hLhat hThat i j
+  · exact hDeltaS
+  · exact hsource
 
 /-- **Equation (11.15) exact solve-chain bridge**, unpermuted case.  If the
 exact Aasen product is `A = L T Lᵀ` and the three exact solves in the chain are
