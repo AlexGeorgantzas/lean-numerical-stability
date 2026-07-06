@@ -4784,6 +4784,128 @@ theorem sylvester_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_
       hX hRu hRhat hX_pos hResidualCap
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equations (16.27)-(16.29), Lyapunov Frobenius endpoint: a supplied
+    Lyapunov operator sigma-min lower bound and raw computed-residual budget
+    give the clean relative Frobenius forward-error bound. -/
+theorem lyapunov_relative_error_le_of_operator_sigmaMin_computed_residual_budget
+    (n : Nat)
+    (A C X Xhat Rhat Ru : RMatFn n n) (sigma eta : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |lyapunovResidual n A C Xhat i j - Rhat i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  have hSigmaMinSylv : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <=
+        frobNorm (sylvesterOp n A (fun i j => -matTranspose A i j) Y) := by
+    intro Y
+    have h := hSigmaMin Y
+    rwa [lyapunovOp_eq_sylvesterOp n A Y] at h
+  have hXSylv :
+      IsSylvesterSolutionRect n n A (fun i j => -matTranspose A i j) C X := by
+    intro i j
+    change sylvesterOp n A (fun i j => -matTranspose A i j) X i j = C i j
+    have hij := hX i j
+    rw [lyapunovOp_eq_sylvesterOp] at hij
+    exact hij
+  have hRhatSylv : forall i j,
+      |sylvesterResidualRect n n A (fun i j => -matTranspose A i j) C Xhat i j -
+          Rhat i j| <= Ru i j := by
+    intro i j
+    simpa [lyapunovResidual_eq_sylvesterResidual_special n A C Xhat] using
+      hRhat i j
+  exact
+    sylvester_relative_error_le_of_operator_sigmaMin_computed_residual_budget
+      n A (fun i j => -matTranspose A i j) C X Xhat Rhat Ru sigma eta
+      hsigma hSigmaMinSylv hXSylv hRu hRhatSylv hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equations (16.27)-(16.29), Lyapunov Frobenius endpoint:
+    `SepLowerBound(A,-A^T)` discharges the operator lower-bound hypothesis of
+    the clean raw residual-budget theorem. -/
+theorem lyapunov_relative_error_le_of_sepLowerBound_computed_residual_budget
+    (n : Nat)
+    (A C X Xhat Rhat Ru : RMatFn n n) {sigma eta : Real}
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |lyapunovResidual n A C Xhat i j - Rhat i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    lyapunov_relative_error_le_of_operator_sigmaMin_computed_residual_budget
+      n A C X Xhat Rhat Ru sigma eta hSep.1
+      (lyapunovOp_sigmaMin_of_sepLowerBound n A sigma hSep)
+      hX hRu hRhat hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equations (16.27)-(16.29), Lyapunov Frobenius endpoint: a positive
+    lower bound on the exact `sep(A,-A^T)` infimum supplies the source
+    separation certificate and hence the clean residual-budget bound. -/
+theorem lyapunov_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_budget
+    (n : Nat)
+    (A C X Xhat Rhat Ru : RMatFn n n) {sigma eta : Real}
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |lyapunovResidual n A C Xhat i j - Rhat i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    lyapunov_relative_error_le_of_sepLowerBound_computed_residual_budget
+      n A C X Xhat Rhat Ru
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      hX hRu hRhat hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29), Lyapunov Frobenius residual-error-model endpoint:
+    an explicit `Rhat = residual + dR` model derives the raw residual-budget
+    hypothesis under a source `SepLowerBound(A,-A^T)` certificate. -/
+theorem lyapunov_relative_error_le_of_sepLowerBound_computed_residual_error_model
+    (n : Nat)
+    (A C X Xhat Rhat Ru dR : RMatFn n n) {sigma eta : Real}
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRhat : forall i j,
+      Rhat i j = lyapunovResidual n A C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  have hRhatBudget : forall i j,
+      |lyapunovResidual n A C Xhat i j - Rhat i j| <= Ru i j := by
+    intro i j
+    have hdiff :
+        lyapunovResidual n A C Xhat i j - Rhat i j = -dR i j := by
+      rw [hRhat i j]
+      ring
+    rw [hdiff, abs_neg]
+    exact hdR i j
+  exact
+    lyapunov_relative_error_le_of_sepLowerBound_computed_residual_budget
+      n A C X Xhat Rhat Ru hSep hX hRu hRhatBudget hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, eq (16.29), square arbitrary-coefficient raw residual-budget
     monotone endpoint: an operator sigma-min lower-bound certificate supplies
     determinant nonsingularity, while componentwise larger practical estimates

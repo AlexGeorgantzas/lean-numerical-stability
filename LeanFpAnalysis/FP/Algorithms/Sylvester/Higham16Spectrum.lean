@@ -771,6 +771,61 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_quadratic_det_ne_zero
       | inl i => simpa [u] using congrFun hu i
       | inr i => simpa [v] using congrFun hv i
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    determinant symmetry for the supplied adjacent two-column block: the two
+    quadratic coefficients have the same determinant.  This is exact algebra
+    (`det (Q * P - c I) = det (P * Q - c I)`) and reduces the structural
+    block nonsingularity route to a single product-shift determinant
+    certificate. -/
+theorem sylvesterTwoColumnBlockFirstQuadraticCoeff_det_eq_secondQuadraticCoeff_det
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n) :
+    Matrix.det (sylvesterTwoColumnBlockFirstQuadraticCoeff m n A T p q) =
+      Matrix.det (sylvesterTwoColumnBlockSecondQuadraticCoeff m n A T p q) := by
+  let P : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T p p)
+  let Q : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T q q)
+  let c : Real := T q p * T p q
+  have hchar := congrArg (fun f : Polynomial Real => f.eval c)
+    (Matrix.charpoly_mul_comm Q P)
+  change (Q * P).charpoly.eval c = (P * Q).charpoly.eval c at hchar
+  rw [Matrix.eval_charpoly, Matrix.eval_charpoly] at hchar
+  have hleft : Matrix.scalar (Fin m) c - Q * P = -(Q * P - Matrix.scalar (Fin m) c) := by
+    simp [neg_sub]
+  have hright : Matrix.scalar (Fin m) c - P * Q = -(P * Q - Matrix.scalar (Fin m) c) := by
+    simp [neg_sub]
+  rw [hleft, hright, Matrix.det_neg, Matrix.det_neg] at hchar
+  have hneg : Not ((-1 : Real) = 0) := by norm_num
+  have hfactor : Not (((-1 : Real) ^ Fintype.card (Fin m)) = 0) :=
+    pow_ne_zero (Fintype.card (Fin m)) hneg
+  have hdet : Matrix.det (Q * P - Matrix.scalar (Fin m) c) =
+      Matrix.det (P * Q - Matrix.scalar (Fin m) c) :=
+    (mul_eq_mul_left_iff.mp hchar).resolve_right hfactor
+  simpa [sylvesterTwoColumnBlockFirstQuadraticCoeff,
+    sylvesterTwoColumnBlockSecondQuadraticCoeff, P, Q, c, mul_comm] using hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
+    determinant bridge for a supplied adjacent two-column block: it is enough
+    to prove nonsingularity of one product-shift quadratic coefficient.  The
+    companion quadratic determinant condition follows from
+    `det (Q * P - c I) = det (P * Q - c I)`, so this is the one-certificate
+    block nonsingularity surface needed before deriving the product-shift
+    condition from real-Schur spectral separation data. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_first_quadratic_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hfirst :
+      Not (Matrix.det
+        (sylvesterTwoColumnBlockFirstQuadraticCoeff m n A T p q) = 0)) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  apply sylvesterTwoColumnBlockCoeff_det_ne_zero_of_quadratic_det_ne_zero
+    m n A T p q hfirst
+  intro hsecond
+  exact hfirst
+    ((sylvesterTwoColumnBlockFirstQuadraticCoeff_det_eq_secondQuadraticCoeff_det
+      m n A T p q).trans hsecond)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
     determinant bridge for a supplied adjacent two-column block with zero
     coupling product: if the two scalar shifted column coefficients
