@@ -826,6 +826,36 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_first_quadratic_det_ne_zero
     ((sylvesterTwoColumnBlockFirstQuadraticCoeff_det_eq_secondQuadraticCoeff_det
       m n A T p q).trans hsecond)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    spectral certificate for a supplied adjacent two-column block: if the
+    coupling product is not a root of the characteristic polynomial of the
+    product of the two shifted column coefficients, then the full block
+    coefficient is nonsingular.  This is the spectral-facing form of the
+    one-quadratic determinant certificate. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_charpoly
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hchar :
+      Not ((sylvesterTriangularShiftedCoeff m A (T q q) *
+        sylvesterTriangularShiftedCoeff m A (T p p)).charpoly.eval
+          (T q p * T p q) = 0)) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  apply sylvesterTwoColumnBlockCoeff_det_ne_zero_of_first_quadratic_det_ne_zero
+  intro hdet
+  let P : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T p p)
+  let Q : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T q q)
+  let c : Real := T q p * T p q
+  have hdet' : Matrix.det (Q * P - Matrix.scalar (Fin m) c) = 0 := by
+    simpa [sylvesterTwoColumnBlockFirstQuadraticCoeff, P, Q, c] using hdet
+  have hleft : Matrix.scalar (Fin m) c - Q * P =
+      -(Q * P - Matrix.scalar (Fin m) c) := by
+    simp [neg_sub]
+  have hcharzero : (Q * P).charpoly.eval c = 0 := by
+    rw [Matrix.eval_charpoly, hleft, Matrix.det_neg, hdet', mul_zero]
+  exact hchar (by simpa [P, Q, c] using hcharzero)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
     determinant bridge for a supplied adjacent two-column block with zero
     coupling product: if the two scalar shifted column coefficients
