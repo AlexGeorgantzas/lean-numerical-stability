@@ -3188,6 +3188,21 @@ theorem sylvesterSepInf_ge_of_vecCoeff_sigmaMin (n : Nat)
       (SepLowerBound_of_vecCoeff_sigmaMin n A B sigma hsigma hCoeff) hn
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
+    in positive dimension, a positive lower bound for the concrete vectorized
+    Sylvester coefficient makes the exact `sep` infimum strictly positive. -/
+theorem sylvesterSepInf_pos_of_vecCoeff_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x)) :
+    0 < sylvesterSepInf n A B := by
+  exact
+    lt_of_lt_of_le hsigma
+      (sylvesterSepInf_ge_of_vecCoeff_sigmaMin n A B sigma
+        hn hsigma hCoeff)
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
     a positive Gram-eigenvalue lower bound for the concrete vectorized
     Sylvester coefficient gives a `SepLowerBound` certificate. -/
 theorem SepLowerBound_of_vecCoeff_gram_eigenvalues (n : Nat)
@@ -3220,6 +3235,24 @@ theorem sylvesterSepInf_ge_of_vecCoeff_gram_eigenvalues (n : Nat)
   exact
     SepLowerBound_le_sylvesterSepInf_of_pos_dim n A B (Real.sqrt lam)
       (SepLowerBound_of_vecCoeff_gram_eigenvalues n A B hlam hEig) hn
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
+    in positive dimension, a positive Gram-eigenvalue lower bound for the
+    concrete vectorized Sylvester coefficient makes the exact `sep` infimum
+    strictly positive. -/
+theorem sylvesterSepInf_pos_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A B : Fin n -> Fin n -> Real) {lam : Real}
+    (hn : 0 < n) (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p) :
+    0 < sylvesterSepInf n A B := by
+  exact
+    lt_of_lt_of_le (Real.sqrt_pos.mpr hlam)
+      (sylvesterSepInf_ge_of_vecCoeff_gram_eigenvalues n A B
+        hn hlam hEig)
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
     a supplied concrete left inverse for the printed vec/Kronecker Sylvester
@@ -3257,6 +3290,22 @@ theorem sylvesterSepInf_ge_of_vecCoeff_left_inverse_finiteOpNorm2Le
       (SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
         n A B Pinv hM hLeft hPinv)
       hn
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
+    in positive dimension, a supplied concrete left inverse for the printed
+    vec/Kronecker Sylvester coefficient makes the exact `sep` infimum strictly
+    positive. -/
+theorem sylvesterSepInf_pos_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A B : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hn : 0 < n) (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    0 < sylvesterSepInf n A B := by
+  exact
+    lt_of_lt_of_le (one_div_pos.mpr hM)
+      (sylvesterSepInf_ge_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A B Pinv hn hM hLeft hPinv)
 
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
     in the diagonal case, a uniform lower bound on the coefficient magnitudes
@@ -4056,6 +4105,22 @@ theorem sylvesterSepInf_lyapunov_ge_of_vecCoeff_sigmaMin (n : Nat)
         n A sigma hsigma hCoeff)
       hn
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    in positive dimension, a positive lower bound for the concrete vectorized
+    Lyapunov coefficient makes the exact `sep(A, -A^T)` infimum strictly
+    positive. -/
+theorem sylvesterSepInf_lyapunov_pos_of_vecCoeff_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x)) :
+    0 < sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    lt_of_lt_of_le hsigma
+      (sylvesterSepInf_lyapunov_ge_of_vecCoeff_sigmaMin n A sigma
+        hn hsigma hCoeff)
+
 /-- A concrete left inverse and operator-2 radius for the printed Lyapunov
     vec/Kronecker coefficient gives the Lyapunov operator sigma-min lower
     bound. -/
@@ -4113,6 +4178,22 @@ theorem sylvesterSepInf_lyapunov_ge_of_vecCoeff_left_inverse_finiteOpNorm2Le
       (SepLowerBound_lyapunov_of_vecCoeff_left_inverse_finiteOpNorm2Le
         n A Pinv hM hLeft hPinv)
       hn
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    in positive dimension, a concrete left inverse and operator-2 radius for
+    the printed Lyapunov vec/Kronecker coefficient make the exact
+    `sep(A, -A^T)` infimum strictly positive. -/
+theorem sylvesterSepInf_lyapunov_pos_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hn : 0 < n) (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    0 < sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    lt_of_lt_of_le (one_div_pos.mpr hM)
+      (sylvesterSepInf_lyapunov_ge_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A Pinv hn hM hLeft hPinv)
 
 /-- A concrete left inverse and operator-2 radius for the printed Lyapunov
     vec/Kronecker coefficient gives the inverse-operator bound used by the
@@ -4201,6 +4282,24 @@ theorem sylvesterSepInf_lyapunov_ge_of_vecCoeff_gram_eigenvalues
       (SepLowerBound_lyapunov_of_vecCoeff_gram_eigenvalues
         n A hlam hsqrt hEig)
       hn
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    in positive dimension, a supplied Gram-eigenvalue lower bound for the
+    concrete vectorized Lyapunov coefficient makes the exact `sep(A, -A^T)`
+    infimum strictly positive. -/
+theorem sylvesterSepInf_lyapunov_pos_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A : Fin n -> Fin n -> Real) {lam : Real}
+    (hn : 0 < n) (hlam : 0 <= lam) (hsqrt : 0 < Real.sqrt lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p) :
+    0 < sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    lt_of_lt_of_le hsqrt
+      (sylvesterSepInf_lyapunov_ge_of_vecCoeff_gram_eigenvalues
+        n A hn hlam hsqrt hEig)
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
     a uniform lower bound on the diagonal Lyapunov coefficient magnitudes

@@ -517,6 +517,73 @@ def IsAdjacentQuasiTriangularBlockFn (n : Nat) (T : RMatFn n n)
     (∀ j : Fin n, q < j → T j p = 0) ∧
     (∀ j : Fin n, q < j → T j q = 0)
 
+/-- A size-at-most-two real quasi-Schur block map is strict after an adjacent
+    same-block pair.  This is the small order-theoretic adapter needed to turn
+    the exported block-map zeros of `real_quasi_schur_blocks` into the supplied
+    adjacent two-column zero pattern used by the real Bartels-Stewart block
+    recurrence. -/
+theorem quasiSchur_blockMap_strict_after_adjacent_same_block (n : Nat)
+    (pmap : Fin n -> Nat) (p q j : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hqj : q < j) :
+    pmap q < pmap j := by
+  have hle : pmap q <= pmap j := hmono (le_of_lt hqj)
+  refine lt_of_le_of_ne hle ?_
+  intro heq
+  have hpq_lt : p < q := Fin.lt_def.mpr (by omega)
+  have hp_ne_q : p ≠ q := ne_of_lt hpq_lt
+  have hp_ne_j : p ≠ j := ne_of_lt (lt_trans hpq_lt hqj)
+  have hq_ne_j : q ≠ j := ne_of_lt hqj
+  let fiber : Finset (Fin n) := Finset.univ.filter (fun i : Fin n => pmap i = pmap q)
+  have hsubset : ({p, q, j} : Finset (Fin n)) ⊆ fiber := by
+    intro x hx
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hx
+    rcases hx with hx | hx | hx
+    · subst x
+      simp [fiber, hsame]
+    · subst x
+      simp [fiber]
+    · subst x
+      simp [fiber, heq.symm]
+  have hthree : 3 <= fiber.card := by
+    have hcard_three : ({p, q, j} : Finset (Fin n)).card = 3 := by
+      simp [hp_ne_q, hp_ne_j, hq_ne_j]
+    calc
+      3 = ({p, q, j} : Finset (Fin n)).card := hcard_three.symm
+      _ <= fiber.card := Finset.card_le_card hsubset
+  have htwo : fiber.card <= 2 := hcard (pmap q)
+  omega
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): a same-labelled
+    adjacent two-column block in the exported real quasi-Schur block map gives
+    the supplied adjacent quasi-triangular block predicate used by the exact
+    two-column Bartels-Stewart recurrence.  The theorem supplies only the zero
+    pattern; nonsingularity of the induced `2 x 2` block coefficient remains a
+    separate spectral/block-separation certificate. -/
+theorem IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block (n : Nat)
+    (T : RMatFn n n) (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q) :
+    IsAdjacentQuasiTriangularBlockFn n T p q := by
+  refine ⟨hpq, ?_, ?_⟩
+  · intro j hqj
+    apply hzero j p
+    rw [hsame]
+    exact quasiSchur_blockMap_strict_after_adjacent_same_block
+      n pmap p q j hmono hcard hpq hsame hqj
+  · intro j hqj
+    apply hzero j q
+    exact quasiSchur_blockMap_strict_after_adjacent_same_block
+      n pmap p q j hmono hcard hpq hsame hqj
+
 private theorem two_column_block_sum_split (m n : Nat) (T : RMatFn n n)
     (X : RMatFn m n) (i : Fin m) (p q k : Fin n)
     (hpq : q.val = p.val + 1)
