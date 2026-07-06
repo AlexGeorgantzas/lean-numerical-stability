@@ -1332,6 +1332,113 @@ theorem theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_completed_accumula
         (hbrow0 k hk r hkr)
         (by simpa [kFin] using hbacc k r hkr)
 
+/-- Theorem 20.7 support: variant of the H19 active/completed accumulated-error
+    finite-ratio bridge where completed rows are supplied by completion-time
+    bounds plus preservation of already completed rows.
+
+The remaining QR-specific obligations are the completion-time bounds and
+preservation hypotheses, together with the row-sorting domination and
+accumulated-error assumptions consumed by the active suffix. -/
+theorem theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_completion_preservation_accumulated_error_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (phi err : ℝ)
+    (Arow0Bound brow0Bound : Fin m → ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (herr : 0 ≤ err)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAcomplete :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n,
+        |Ahat (i.val + 1) i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialRowMax hn A i)
+    (hApreserve :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        Ahat k i j = Ahat (i.val + 1) i j)
+    (hbcomplete :
+      ∀ i : Fin m, i.val + 1 < n →
+        |bhat (i.val + 1) i| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hbpreserve :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        bhat k i = bhat (i.val + 1) i)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        Arow0Bound s ≤ Arow0Bound ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAinitExact :
+      ∀ r : Fin m, ∀ j : Fin n, |Aexact 0 r j| ≤ Arow0Bound r)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        Arow0Bound ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ j : Fin n,
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        brow0Bound s ≤ brow0Bound ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbinitExact :
+      ∀ r : Fin m, |bexact 0 r| ≤ brow0Bound r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        brow0Bound ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |bhat 0 r - bexact 0 r| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r) :
+    theorem20_7_alphaBetaMax hm hn Ahat A bhat b phi ≤
+      Real.sqrt (m : ℝ) *
+        H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err := by
+  exact
+    theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_completed_accumulated_error_nat
+      hm hn hnm Ahat Aexact A bhat bexact b phi err Arow0Bound brow0Bound
+      AstepBudget bstepBudget hphi herr hdenA hdenW
+      (theorem20_7_completedA_bound_of_completion_preservation_nat
+        hn Ahat A err hAcomplete hApreserve)
+      (theorem20_7_completedB_bound_of_completion_preservation_nat
+        hn bhat A b phi err hphi hbcomplete hbpreserve)
+      hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc
+      hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
+
 /-- Theorem 20.7 bridge specialized to the Chapter 19.6 active-row Cox--Higham
     growth factor. -/
 theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
