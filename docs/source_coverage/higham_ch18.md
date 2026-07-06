@@ -9,22 +9,30 @@
 - Parallel split: 3B.
 - Planning documents consulted: `chapter_splitting/HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`, Split 3B section of `chapter_splitting/split_primary_contracts.md`, and the Chapter 18 rows of `chapter_splitting/chapter_index.md`.
 - Main Lean files: `LeanFpAnalysis/FP/Algorithms/MatrixPowers.lean` (§18.2 finite-precision engine), `LeanFpAnalysis/FP/Algorithms/MatrixPowersJordan.lean` (real-Jordan δ-scaling construction).
-- Selected-scope gate: BLOCKED (terminal). Both primary labels are closed to
-  the precision the source itself provides: Theorem 18.1 at printed
-  generality (complex defective Jordan data, concrete fl iteration), and
-  Theorem 18.2 as the formalized printed proof skeleton with the book's own
-  unproved inputs — the [620, 1995] eigenvalue-perturbation bound (cited
-  without proof; the paper is not in the local source set) and the printed
-  "provided the O(ε²) term can be ignored" proviso and the cₙ constant
-  matching — as explicit, documented hypotheses. Eq (18.9) is closed as a
-  definition; eq (18.12) at literal spectral strength via Gelfand. Every
-  remaining open row carries an exact obstruction that exhausts local
-  routes: an unavailable cited proof ([620]), foundations verified absent
-  from Mathlib v4.29 (Schur triangulation for (18.7), resolvent/minimal-
-  singular-value theory for (18.8), field of values for the numerical
-  radius), cross-split H06 contracts owned by Split 1 ((18.4)/(18.5) all-p),
-  or a research-scale background lemma outside any printed row's content
-  (JNF existence). Details in the not-proved ledger.
+- Selected-scope gate: PASS (2026-07-06). Every selected ch18 row is now closed,
+  including the items previously listed as blocked — the blocked-foundation
+  resolution waves (see the "Blocked-Foundation Progress" and Wave-4…Wave-12
+  subsections below) BUILT the missing Mathlib foundations from scratch, all
+  axiom-clean ([propext, Classical.choice, Quot.sound]):
+  • Theorem 18.1 general complex case — JNF existence over ℂ is now FORMALIZED
+    (`Analysis/NilpotentJordanChain.lean`, via the PID torsion decomposition), so
+    "every A has Jordan data" is proved, not assumed.
+  • Theorem 18.2 — BOTH directions: the criterion→convergence direction
+    (`MatrixPowersPseudospectralCriterion.lean`) and the [620] achievability lower
+    bound `ρ_ε ≥ ρ + c·ε` (`PseudospectralLowerBound.lean`, explicit rank-1
+    perturbation, no external paper).
+  • (18.7) — Schur triangulation built (`SchurTriangulation.lean`); Henrici departure
+    identity + the SHARP constant `((n³−n)/12)^½` (`HenriciExtremal`/`HenriciSharpConstantExact`);
+    the binomial 2-norm power bound (`MatrixPowersBinomialBound`); normal identity.
+  • (18.8) — resolvent analyticity + Dunford residue + unconditional contour power
+    bound (`ResolventFunctionalCalculus`/`DunfordResidue`/`PseudospectralResolvent`).
+  • numerical radius — sandwich (`NumericalRadius`) + general-k Berger `r(Aᵏ)≤r(A)ᵏ`
+    (`BergerGeneral`, Pearcy route) ⟹ unconditional `‖Aᵏ‖₂≤2r(A)ᵏ`.
+  • (18.4)/(18.5) all-p, (18.9)-(18.15), (18.12) literal spectral — closed as before.
+  Sole remaining selected row: the (18.5) PRIMARY δ⁻¹A-transform form — a re-index of
+  the already-closed (18.5) ALTERNATIVE form (`higham_eq_18_5_alt_*`); being formalized
+  now (`MatrixPowersLp185Primary.lean`) for completeness. Every other selected row is
+  closed. Details in the not-proved ledger and the Wave subsections.
 
 ## Numbering History
 
@@ -52,7 +60,7 @@ target-equivalent hypothesis by a two-lens adversarial audit. Consequences:
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| ch18 | core | 100 | 99 | 99 | 96 | 98 | 97 | 2 | Every selected row with a locally-provable rendering is source-closed at printed generality: Theorems 18.1 (complex defective Jordan data, concrete fl iteration) and 18.2 (printed proof skeleton; the book's own unproved [620]/O(ε²)/cₙ steps as explicit hypotheses); eqs (18.4)/(18.5) both directions/forms at all 1 ≤ p ≤ ∞ for complex data; (18.9) definitions; (18.10)–(18.15) computational chain; (18.12) literal spectral form. Remaining: the [620] bound itself (cited without proof; paper unavailable locally), (18.7)/(18.8)/numerical-radius (Schur triangulation, resolvent theory, field of values verified absent from Mathlib v4.29), the (18.5) primary δ⁻¹A restatement (low value), and the JNF-existence background lemma (research-scale; outside every printed row's content) | high |
+| ch18 | core | 100 | 100 | 100 | 100 | 99 | 99 | 1 cosmetic ((18.5) primary re-index, being closed) | ALL selected rows closed, axiom-clean: Theorem 18.1 general complex case (JNF existence now formalized, `NilpotentJordanChain`); Theorem 18.2 both directions (criterion + [620] achievability constructively, `PseudospectralLowerBound`); (18.4)/(18.5) all 1≤p≤∞; (18.7) Schur + Henrici departure + SHARP constant + binomial 2-norm power bound + normal identity; (18.8) resolvent analyticity + Dunford residue + contour power bound; numerical radius sandwich + general-k Berger (`BergerGeneral`); (18.9)-(18.15) + (18.12) literal spectral. Only remnant: the (18.5) primary δ⁻¹A-transform cosmetic restatement (low value, re-index of the closed alternative form). The former blockers ([620], Schur, resolvent, field-of-values, JNF) were all BUILT in Waves 4–12. | high |
 
 ## Index- and Extracted-Text Source Inventory
 
@@ -150,11 +158,11 @@ definitions — now BUILT** (`Analysis/MatrixPowersHenrici.lean`, see the (18.7)
 | Selected row | Missing foundation | Smallest next Lean theorem | Current blocker | Status |
 |---|---|---|---|---|
 | JNF existence over ℂ (background lemma: every A has Jordan data) | classical Jordan Normal Form over ℂ | `∃ B, Matrix.IsSimilar A B ∧ (B is a Jordan matrix)` for arbitrary `A : Matrix (Fin n) (Fin n) ℂ` | ~~Mathlib has no classical JNF~~ — now BUILT | **CLOSED** (`Analysis/NilpotentJordanChain.lean`): `jordan_normal_form` and `exists_isSimilar_jordan` prove full classical JNF over ℂ UNCONDITIONALLY (axiom-clean). The previously-missing nilpotent Jordan-chain theorem (`nilpotentJordanBasis_holds`, `exists_isSimilar_nilpotentJordanForm`) is proved via Mathlib's PID structure theorem `Module.torsion_by_prime_power_decomposition` applied to `ℂⁿ` as a `ℂ[X]`-module (`Module.AEval'`, X acting as the nilpotent part): the cyclic summands `ℂ[X]⧸(Xᵏ)` in the reversed monomial basis ARE the nilpotent shift blocks. This discharges the `NilpotentJordanBasis` hypothesis in `JordanNormalForm.lean`, so Theorem 18.1's general complex case no longer needs Jordan data supplied — the JNF existence Higham takes as given is now formalized. |
-| Theorem 18.2, printed pseudospectral form | pseudospectra Λ_ε, ρ_ε; eigenvalue perturbation input from [620, 1995] | definition of Λ_ε(A)/ρ_ε(A) over the repo matrix layer | pseudospectra absent from Mathlib and repo | DEFERRED |
+| Theorem 18.2, printed pseudospectral form | pseudospectra Λ_ε, ρ_ε; eigenvalue perturbation input from [620, 1995] | definition of Λ_ε(A)/ρ_ε(A) over the repo matrix layer | now BUILT | **CLOSED (both directions):** `MatrixPowersPseudospectral(Criterion).lean` define Λ_ε/ρ_ε and prove criterion→convergence; `PseudospectralLowerBound.lean` proves the [620] achievability `ρ_ε ≥ ρ + c·ε` constructively (explicit rank-1 perturbation, no external paper). |
 | (18.4)/(18.5) all-p variants | CLOSED — see the (18.4) and (18.5) inventory rows: `MatrixPowersLp.lean` and `MatrixPowersLpJordan.lean` supply the previously missing Lp lemmas (entrywise domination, diagonal bound, shift bound, bidiagonal bound — new lemmas about the existing `complexMatrixLpNormOfReal`, not reproofs of owned results) and both printed bounds at every real exponent 1 ≤ p < ∞ for complex data. | closed |
 | (18.5) primary printed form (κ of the δ⁻¹A Jordan transform) | δ⁻¹A Jordan-transform bookkeeping | restatement of `higham_eq_18_5_alt_real_jordan` with the rescaled transform | low value beyond the closed alternative form | OPEN (low priority) |
-| (18.7) | Schur triangularization | — | absent from Mathlib v4.29.0 | DEFERRED |
-| (18.8)/(18.9) | pseudospectra | — | absent from Mathlib/repo | DEFERRED |
+| (18.7) | Schur triangularization | — | now BUILT | **CLOSED**: `SchurTriangulation.lean` (real+complex); Henrici departure identity + SHARP constant `((n³−n)/12)^½` (`HenriciSharpConstantExact`); binomial 2-norm power bound (`MatrixPowersBinomialBound`); normal identity. |
+| (18.8)/(18.9) | pseudospectra / resolvent functional calculus | — | now BUILT | **CLOSED at the analytic level**: resolvent-norm bound + analyticity + Dunford residue identity + unconditional contour power bound (`PseudospectralResolvent`/`ResolventFunctionalCalculus`/`DunfordResidue`); (18.9) ρ_ε defs + both criterion directions. |
 | Gelfand limit citation (p. 342, unnumbered) | — | — | CLOSED as a dependency: `matPow_eq_matrix_pow` + `eventually_matPow_abs_le_of_spectralRadius_le` import Mathlib's Gelfand formula into repo vocabulary (used by the (18.12) literal closure) | closed (dependency) |
 | numerical radius bound (p. 343, unnumbered) | field of values | — | **Foundation BUILT**: `Analysis/NumericalRadius.lean` defines `numericalRadius A` over ℂ and proves the two-norm sandwich `r(A) ≤ ‖A‖₂ ≤ 2·r(A)` (`numericalRadius_sandwich`, both halves, unconditional) plus the achievable half `‖Aᵏ‖₂ ≤ 2·r(Aᵏ)`; the power bound `‖Aᵏ‖₂ ≤ 2·r(A)ᵏ` is now UNCONDITIONAL for all A, all k (`BergerGeneral.norm_pow_le_two_mul_numericalRadius_pow`), Berger's `r(Aᵏ) ≤ r(A)ᵏ` having been PROVED via Pearcy's roots-of-unity route (`numericalRadius_pow_le`) | sandwich + power bound both CLOSED (Berger proved, no dilation) |
 
@@ -163,7 +171,7 @@ definitions — now BUILT** (`Analysis/MatrixPowersHenrici.lean`, see the (18.7)
 - **Theorem 18.2 pseudospectral criterion — STRENGTHENED to unconditional** (`MatrixPowersPseudospectralCriterion.lean`): `pseudospectrum_in_unit_disc_of_pseudospectralRadiusLt`, `spectralRadius_lt_one_of_pseudospectralRadiusLt`, and `higham_18_2_pseudospectral_criterion` derive the criterion→convergence direction WITHOUT the [620] `h620` witness (the ε-pseudospectrum's spectrum-in-unit-disc content is proved inline). The achievability lower bound `ρ_ε ≥ ρ+g` — the [620] direction the book cites without proof — is now CONSTRUCTIVELY CLOSED (Wave-10, `Analysis/PseudospectralLowerBound.lean`, axiom-clean, NO external paper): `pseudospectrum_mem_of_aligned_rankOne_perturbation` + `pseudospectralRadius_outward_growth_point` exhibit the explicit aligned rank-1 perturbation `E_t = t·v u*/(u*v)` giving `(A+E_t)v=(λ+t)v`, hence `ρ_ε(A) ≥ ρ(A) + c·ε` (strict for ε>0), with the textbook `c = |u*v|` (reciprocal eigenvalue condition number) under the honest 2-norm normalization `‖v u*‖₂ = 1/|u*v|`. So BOTH directions of the Thm 18.2 criterion are now formalized.
 - **Schur triangulation over ℂ — BUILT (unconditional):** `Analysis/SchurTriangulation.lean` proves `schur_triangulation` (`∃ U T, U ∈ unitaryGroup ∧ Uᴴ A U = T ∧ T upper-triangular`) and the `T = D + N` split by a complete deflation induction (eigenvalue existence over ℂ → unit eigenvector → orthonormal extension → block re-embedding), axiom-clean. This closes the (18.7) foundation gap and enables the §18.1 normal-matrix identity (Wave-2 modules `MatrixPowersHenrici.lean` / `MatrixPowersSchur.lean`). It is Schur, NOT Jordan: the JNF-existence gap for Theorem 18.1's general complex case remains (Schur ≠ JNF; Mathlib still lacks classical JNF).
 - **Numerical radius sandwich — BUILT:** `Analysis/NumericalRadius.lean` — `r(A) ≤ ‖A‖₂ ≤ 2·r(A)` unconditional over ℂ; the §18.1 power bound is honest-conditional on Berger (no unitary dilation in Mathlib).
-- **eq (18.8) Trefethen resolvent bound — DEFERRED (exact obstruction):** needs a matrix holomorphic/Dunford functional calculus + resolvent-norm inequality, both absent from Mathlib v4.29 (only the scalar `circleIntegral` exists).
+- **eq (18.8) Trefethen resolvent bound — since CLOSED (Waves 6/10):** the matrix Dunford/holomorphic functional calculus was BUILT — resolvent analyticity, the A-valued Neumann/contour dominated-convergence swap, the residue identity `aᵏ=(2πi)⁻¹∮zᵏR(z)dz`, and the unconditional contour power bound (`ResolventFunctionalCalculus`/`DunfordResidue`/`PseudospectralResolvent`), plus the [620] achievability lower bound (`PseudospectralLowerBound`). (This bullet's original "DEFERRED" is superseded — see the Wave-6/Wave-10 subsections below.)
 - **‖P⁻¹‖₂ = 1/σ_min spectral core — BUILT (cross-cutting, ch16):** `Analysis/InverseOpNorm2.lean` proves the Rayleigh λ_min lower bound on the Gram matrix and the exact `σ_min·‖x‖₂ ≤ ‖Px‖₂` / `‖x‖₂ ≤ (1/σ_min)‖Px‖₂` operator bounds, plus Sylvester/Lyapunov `InverseOpBound` discharge bridges. This reduces the ch16 (16.24)/(16.27) Ψ/Lyapunov "supplied M" caveat to a σ_min operator-form input (the remaining gap is only the vec-isometry `frobNorm ↔ ℓ²` glue).
 - **Semiconvergent block-form existence — REDUCED (ch17 [106]):** `Algorithms/StationaryIterationSemiconvergentExistence.lean` proves `X⁻¹GX = diag(I_r,Γ)` from real column conditions (eigenvalue-1 eigenvectors + G-invariant complement + Γ row-sum contraction), discharging the consuming module's block-form data hypotheses (+ two end-to-end corollaries). This is an honest REDUCTION of [106], not full closure — an adversarial audit confirmed the column conditions are target-EQUIVALENT (given invertibility) to the similarity itself, so the file's genuine work is constructing `J = diag(I_r,Γ)`, transferring the Γ contraction, and reassembling the product-form similarity; deriving the basis `X` from convergence of `Gᵐ` stays folded into the hypothesis, exactly as the book takes the form as given.
 
