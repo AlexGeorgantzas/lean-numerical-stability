@@ -6344,6 +6344,224 @@ theorem sylvester_practical_error_bound_fl_of_pos_le_sylvesterSepInf_mono_scalar
       PinvAbs' eta hX hn2 hn1 hPinvAbs_le hRhat hRu_le
       heta hcomponent hXhat
 
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered alias for the
+    floating-point practical endpoint supplied by a positive `SepLowerBound`
+    certificate. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_fl_of_sepLowerBound
+    (fp : FPModel) (n : Nat)
+    (A B C X Xhat : RMatFn n n) {sigma : Real}
+    (hSep : SepLowerBound n A B sigma)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hn2 : gammaValid fp (n + 2)) (hn1 : gammaValid fp (n + 1))
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B)
+          (flSylvesterResidualRect fp n n A B C Xhat)
+          (flSylvesterResidualBudget fp n n A B C Xhat)) /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_fl_of_sepLowerBound fp n
+      A B C X Xhat hSep hX hn2 hn1 hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered scalar alias for the
+    floating-point practical endpoint supplied by a positive `SepLowerBound`
+    certificate. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_fl_of_sepLowerBound_scalar
+    (fp : FPModel) (n : Nat)
+    (A B C X Xhat : RMatFn n n) {sigma : Real}
+    (hSep : SepLowerBound n A B sigma)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hn2 : gammaValid fp (n + 2)) (hn1 : gammaValid fp (n + 1))
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec n n
+        (sylvesterVecCoeffNonsingInvAbs n n A B)
+        (flSylvesterResidualRect fp n n A B C Xhat)
+        (flSylvesterResidualBudget fp n n A B C Xhat) p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      eta / sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_fl_of_sepLowerBound_scalar fp n
+      A B C X Xhat hSep eta hX hn2 hn1 heta hcomponent hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered monotone alias for the
+    floating-point practical endpoint supplied by a positive `SepLowerBound`
+    certificate. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_fl_of_sepLowerBound_mono
+    (fp : FPModel) (n : Nat)
+    (A B C X Xhat Rhat' Ru' : RMatFn n n)
+    {sigma : Real} (hSep : SepLowerBound n A B sigma)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hn2 : gammaValid fp (n + 2)) (hn1 : gammaValid fp (n + 1))
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      |flSylvesterResidualRect fp n n A B C Xhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j,
+      flSylvesterResidualBudget fp n n A B C Xhat i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_fl_of_sepLowerBound_mono fp n
+      A B C X Xhat Rhat' Ru' hSep PinvAbs' hX hn2 hn1
+      hPinvAbs_le hRhat hRu_le hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered monotone scalar alias for
+    the floating-point practical endpoint supplied by a positive
+    `SepLowerBound` certificate. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_fl_of_sepLowerBound_mono_scalar
+    (fp : FPModel) (n : Nat)
+    (A B C X Xhat Rhat' Ru' : RMatFn n n)
+    {sigma : Real} (hSep : SepLowerBound n A B sigma)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hn2 : gammaValid fp (n + 2)) (hn1 : gammaValid fp (n + 1))
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      |flSylvesterResidualRect fp n n A B C Xhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j,
+      flSylvesterResidualBudget fp n n A B C Xhat i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      eta / sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_fl_of_sepLowerBound_mono_scalar fp n
+      A B C X Xhat Rhat' Ru' hSep PinvAbs' eta hX hn2 hn1
+      hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered alias for the
+    floating-point practical endpoint supplied by a positive lower bound on
+    `sylvesterSepInf`. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_fl_of_pos_le_sylvesterSepInf
+    (fp : FPModel) (n : Nat)
+    (A B C X Xhat : RMatFn n n) {sigma : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hn2 : gammaValid fp (n + 2)) (hn1 : gammaValid fp (n + 1))
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B)
+          (flSylvesterResidualRect fp n n A B C Xhat)
+          (flSylvesterResidualBudget fp n n A B C Xhat)) /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_fl_of_pos_le_sylvesterSepInf fp n
+      A B C X Xhat hsigma hle hX hn2 hn1 hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered scalar alias for the
+    floating-point practical endpoint supplied by a positive lower bound on
+    `sylvesterSepInf`. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_fl_of_pos_le_sylvesterSepInf_scalar
+    (fp : FPModel) (n : Nat)
+    (A B C X Xhat : RMatFn n n) {sigma : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hn2 : gammaValid fp (n + 2)) (hn1 : gammaValid fp (n + 1))
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec n n
+        (sylvesterVecCoeffNonsingInvAbs n n A B)
+        (flSylvesterResidualRect fp n n A B C Xhat)
+        (flSylvesterResidualBudget fp n n A B C Xhat) p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      eta / sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_fl_of_pos_le_sylvesterSepInf_scalar fp n
+      A B C X Xhat hsigma hle eta hX hn2 hn1 heta hcomponent hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered monotone alias for the
+    floating-point practical endpoint supplied by a positive lower bound on
+    `sylvesterSepInf`. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_fl_of_pos_le_sylvesterSepInf_mono
+    (fp : FPModel) (n : Nat)
+    (A B C X Xhat Rhat' Ru' : RMatFn n n)
+    {sigma : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hn2 : gammaValid fp (n + 2)) (hn1 : gammaValid fp (n + 1))
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      |flSylvesterResidualRect fp n n A B C Xhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j,
+      flSylvesterResidualBudget fp n n A B C Xhat i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_fl_of_pos_le_sylvesterSepInf_mono fp n
+      A B C X Xhat Rhat' Ru' hsigma hle PinvAbs' hX hn2 hn1
+      hPinvAbs_le hRhat hRu_le hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered monotone scalar alias for
+    the floating-point practical endpoint supplied by a positive lower bound on
+    `sylvesterSepInf`. -/
+theorem H16_eq16_29_sylvester_practical_error_bound_fl_of_pos_le_sylvesterSepInf_mono_scalar
+    (fp : FPModel) (n : Nat)
+    (A B C X Xhat Rhat' Ru' : RMatFn n n)
+    {sigma : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hn2 : gammaValid fp (n + 2)) (hn1 : gammaValid fp (n + 1))
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      |flSylvesterResidualRect fp n n A B C Xhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j,
+      flSylvesterResidualBudget fp n n A B C Xhat i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      eta / sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_fl_of_pos_le_sylvesterSepInf_mono_scalar fp n
+      A B C X Xhat Rhat' Ru' hsigma hle PinvAbs' eta hX hn2 hn1
+      hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
     eq (16.29), arbitrary-coefficient scalar endpoint: if a nonnegative scalar
     bounds every component of the practical budget formed from the supplied
