@@ -3614,6 +3614,213 @@ theorem sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_abs_ge
       (sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
         U A V B a b sigma hU hV hA hB hsigma hgap)
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    pairwise spectral-coordinate exclusion makes the original square
+    vec/Kronecker Sylvester coefficient nonsingular. -/
+theorem sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    (sylvesterVecCoeff n n A B).det ≠ 0 := by
+  obtain ⟨sigma, hsigma, hgap⟩ :=
+    exists_pos_sylvesterDiagonalGap_of_entrywise_ne n a b hn hsep
+  exact
+    sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_abs_ge n
+      U A V B a b sigma hU hV hA hB hsigma hgap
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion gives the exact trivial-kernel statement for
+    the original vec/Kronecker Sylvester coefficient. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_eq_zero_iff_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B) x = 0 ↔ x = 0 := by
+  exact
+    sylvesterVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero n A B
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+      x
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion makes the original vectorized coefficient
+    action injective. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_injective_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff n n A B)) := by
+  exact
+    finiteMatrix_mulVec_injective_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion makes the original vectorized coefficient
+    action surjective. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_surjective_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff n n A B)) := by
+  exact
+    finiteMatrix_mulVec_surjective_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion makes the original vectorized coefficient
+    solve bijective. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_bijective_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff n n A B)) := by
+  exact
+    finiteMatrix_mulVec_bijective_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion gives a unique vectorized coefficient
+    solution for every right-hand side. -/
+theorem existsUnique_sylvesterVecCoeff_schurDiagonal_mulVec_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    (c : Prod (Fin n) (Fin n) -> Real) :
+    ∃! x : Prod (Fin n) (Fin n) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff n n A B) x = c := by
+  exact
+    existsUnique_finiteMatrix_mulVec_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+      c
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion gives the right nonsingular-inverse action
+    for the original vectorized coefficient. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_nonsingInv_mulVec_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    (rhs : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B)
+        (Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹ rhs) =
+      rhs := by
+  exact
+    sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero n A B
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+      rhs
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion gives the left nonsingular-inverse action
+    for the original vectorized coefficient. -/
+theorem sylvesterVecCoeff_schurDiagonal_nonsingInv_mulVec_mulVec_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    (z : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹
+        (Matrix.mulVec (sylvesterVecCoeff n n A B) z) =
+      z := by
+  exact
+    sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero n A B
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+      z
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion identifies every exact vectorized coefficient
+    solution with the nonsingular-inverse vector. -/
+theorem sylvesterVecCoeff_schurDiagonal_eq_nonsingInv_mulVec_of_mulVec_eq_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    {z rhs : Prod (Fin n) (Fin n) -> Real}
+    (hz : Matrix.mulVec (sylvesterVecCoeff n n A B) z = rhs) :
+    z = Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹ rhs := by
+  exact
+    sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_det_ne_zero
+      n A B
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+      hz
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion gives the unique vectorized coefficient
+    solution together with its nonsingular-inverse formula. -/
+theorem existsUnique_sylvesterVecCoeff_schurDiagonal_nonsingInv_mulVec_solution_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    (c : Prod (Fin n) (Fin n) -> Real) :
+    ∃! x : Prod (Fin n) (Fin n) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff n n A B) x = c ∧
+        x = Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹ c := by
+  exact
+    existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_det_ne_zero
+      n A B
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+      c
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.26), supplied orthogonal
     diagonal Schur-coordinate case:
     a uniform Schur-coordinate gap gives a `SepLowerBound` certificate for

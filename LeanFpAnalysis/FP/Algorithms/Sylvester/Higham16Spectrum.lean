@@ -1488,6 +1488,149 @@ theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_
           (sylvesterTwoColumnBlockRhs m n T C X p q) := by
         rw [hz]
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    active-block injectivity: a trivial kernel for the eigen-equation of the
+    product of the two shifted column coefficients makes the supplied
+    two-column block `mulVec` action injective. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0) :
+    Function.Injective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact sylvesterTwoColumnBlockCoeff_mulVec_injective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    active-block surjectivity: the no-eigenvector product-shift certificate
+    makes every supplied two-column block right-hand side reachable. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0) :
+    Function.Surjective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    active-block bijectivity wrapper for the supplied two-column block. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0) :
+    Function.Bijective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    trivial-kernel wrapper for the supplied two-column block coefficient. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0)
+    (z : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0 <->
+      z = 0 := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_det_ne_zero
+    m n A T p q hdet z
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    active-block linear solve: the no-eigenvector product-shift certificate
+    gives existence and uniqueness for the supplied two-column block right-hand
+    side, with witness Mathlib's nonsingular inverse. -/
+theorem existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0) :
+    ExistsUnique fun z : Sum (Fin m) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_det_ne_zero
+    m n A T C X p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    active-block solution identification: any vector solving the supplied
+    two-column block system is the nonsingular-inverse solution once the
+    product-shift no-eigenvector certificate is available. -/
+theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0)
+    {z : Sum (Fin m) (Fin m) -> Real}
+    (hz :
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q) :
+    z =
+      Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact
+    sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_zero
+      m n A T C X p q hdet hz
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant-based
     column wrapper for the supplied adjacent two-column block solve: assigning
     columns `p` and `q` from the nonsingular-inverse block solution makes `X`
@@ -1512,6 +1655,38 @@ theorem sylvesterTwoColumnBlockSystem_of_nonsingInv_columns (m n : Nat)
       (sylvesterTwoColumnBlockRhs m n T C X p q)) ?_ hXp hXq
   exact sylvesterTwoColumnBlockCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
     m n A T p q hdet (sylvesterTwoColumnBlockRhs m n T C X p q)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    column wrapper for the supplied adjacent two-column block solve: assigning
+    columns `p` and `q` from the nonsingular-inverse block solution makes `X`
+    satisfy the supplied two-column block recurrence once the product-shift
+    no-eigenvector certificate is available. -/
+theorem sylvesterTwoColumnBlockSystem_of_nonsingInv_columns_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i)) :
+    IsSylvesterTwoColumnBlockSystem m n A T C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact sylvesterTwoColumnBlockSystem_of_nonsingInv_columns
+    m n A T C X p q hdet hXp hXq
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
     two-column block inverse consistency: any supplied left inverse and right
@@ -1833,6 +2008,77 @@ theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_nonsingInv_columns_of_
   have hcols :=
     sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_det_ne_zero_of_prev_columns_eq
       m n A T C X Y p q hdet hXp hXq hY hprev
+  funext r
+  cases r with
+  | inl i => simpa using hcols.1 i
+  | inr i => simpa using hcols.2 i
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    nonsingular-inverse solve/uniqueness bridge: if the supplied two-column
+    block columns of `X` are defined by the nonsingular-inverse solve and a
+    supplied block-system solution `Y` agrees with `X` on previous columns,
+    then the active columns agree under the product-shift no-eigenvector
+    certificate. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_product_shift_no_eigenvector_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_det_ne_zero_of_prev_columns_eq
+      m n A T C X Y p q hdet hXp hXq hY hprev
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), vector form of
+    the product-shift nonsingular-inverse solve/uniqueness bridge for supplied
+    adjacent two-column block systems. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_nonsingInv_columns_of_product_shift_no_eigenvector_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  have hcols :=
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_product_shift_no_eigenvector_of_prev_columns_eq
+      m n A T C X Y p q hker hXp hXq hY hprev
   funext r
   cases r with
   | inl i => simpa using hcols.1 i
