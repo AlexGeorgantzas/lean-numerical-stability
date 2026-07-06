@@ -1571,6 +1571,173 @@ theorem higham11_15_aasenChainDeltaA_abs_bound_gamma
     (L i p) (T p q) (U q j) (DeltaL i p) (DeltaT p q) (DeltaU q j)
     γ (BT p q) hγ (hBT p q) (hDeltaL i p) (hDeltaT p q) (hDeltaU q j)
 
+/-- Nonnegativity of the closed Aasen solve-chain budget. -/
+theorem higham11_15_aasenChainDeltaABound_nonneg
+    (n : ℕ) (γ : ℝ) (BT L T U : Fin n → Fin n → ℝ)
+    (hγ : 0 ≤ γ) (hBT : ∀ p q : Fin n, 0 ≤ BT p q) :
+    ∀ i j : Fin n, 0 ≤ higham11_15_aasenChainDeltaABound n γ BT L T U i j := by
+  have hcT : 0 ≤ 2 * γ + γ ^ 2 := by
+    nlinarith [mul_nonneg (by norm_num : 0 ≤ (2 : ℝ)) hγ, sq_nonneg γ]
+  have hcB : 0 ≤ 1 + 2 * γ + γ ^ 2 := by
+    nlinarith [sq_nonneg (γ + 1)]
+  intro i j
+  unfold higham11_15_aasenChainDeltaABound
+  apply Finset.sum_nonneg
+  intro p _
+  apply Finset.sum_nonneg
+  intro q _
+  apply add_nonneg
+  · exact mul_nonneg (mul_nonneg (mul_nonneg hcT (abs_nonneg _)) (abs_nonneg _))
+      (abs_nonneg _)
+  · exact mul_nonneg (mul_nonneg (mul_nonneg hcB (abs_nonneg _)) (hBT p q))
+      (abs_nonneg _)
+
+/-- Infinity-norm aggregation for the closed Aasen solve-chain budget.
+The componentwise scalar triple-product budget is bounded by two normwise
+triple products: the exact `|L||T||U|` contribution and the middle-solve
+budget contribution `|L| BT |U|`. -/
+theorem higham11_15_aasenChainDeltaABound_infNorm_le
+    (n : ℕ) (hn : 0 < n) (γ : ℝ) (BT L T U : Fin n → Fin n → ℝ)
+    (hγ : 0 ≤ γ) (hBT : ∀ p q : Fin n, 0 ≤ BT p q) :
+    infNorm (higham11_15_aasenChainDeltaABound n γ BT L T U) ≤
+      (2 * γ + γ ^ 2) * (infNorm L * infNorm T * infNorm U) +
+        (1 + 2 * γ + γ ^ 2) * (infNorm L * infNorm BT * infNorm U) := by
+  let cT : ℝ := 2 * γ + γ ^ 2
+  let cB : ℝ := 1 + 2 * γ + γ ^ 2
+  let M_T : Fin n → Fin n → ℝ :=
+    matMul n (absMatrix n L) (matMul n (absMatrix n T) (absMatrix n U))
+  let M_B : Fin n → Fin n → ℝ :=
+    matMul n (absMatrix n L) (matMul n BT (absMatrix n U))
+  have hcT : 0 ≤ cT := by
+    dsimp [cT]
+    nlinarith [mul_nonneg (by norm_num : 0 ≤ (2 : ℝ)) hγ, sq_nonneg γ]
+  have hcB : 0 ≤ cB := by
+    dsimp [cB]
+    nlinarith [sq_nonneg (γ + 1)]
+  have hM_T_nonneg : ∀ i j : Fin n, 0 ≤ M_T i j := by
+    intro i j
+    dsimp [M_T, matMul, absMatrix]
+    apply Finset.sum_nonneg
+    intro p _
+    apply mul_nonneg (abs_nonneg _)
+    apply Finset.sum_nonneg
+    intro q _
+    exact mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  have hM_B_nonneg : ∀ i j : Fin n, 0 ≤ M_B i j := by
+    intro i j
+    dsimp [M_B, matMul, absMatrix]
+    apply Finset.sum_nonneg
+    intro p _
+    apply mul_nonneg (abs_nonneg _)
+    apply Finset.sum_nonneg
+    intro q _
+    exact mul_nonneg (hBT p q) (abs_nonneg _)
+  have hbound_nonneg :
+      ∀ i j : Fin n, 0 ≤ higham11_15_aasenChainDeltaABound n γ BT L T U i j :=
+    higham11_15_aasenChainDeltaABound_nonneg n γ BT L T U hγ hBT
+  have hM_T_norm : infNorm M_T ≤ infNorm L * infNorm T * infNorm U := by
+    calc infNorm M_T
+        = infNorm (matMul n (absMatrix n L) (matMul n (absMatrix n T) (absMatrix n U))) := rfl
+      _ ≤ infNorm (absMatrix n L) * infNorm (matMul n (absMatrix n T) (absMatrix n U)) :=
+          infNorm_matMul_le hn (absMatrix n L) (matMul n (absMatrix n T) (absMatrix n U))
+      _ ≤ infNorm (absMatrix n L) * (infNorm (absMatrix n T) * infNorm (absMatrix n U)) :=
+          mul_le_mul_of_nonneg_left
+            (infNorm_matMul_le hn (absMatrix n T) (absMatrix n U))
+            (infNorm_nonneg (absMatrix n L))
+      _ = infNorm L * infNorm T * infNorm U := by
+          rw [infNorm_absMatrix hn L, infNorm_absMatrix hn T, infNorm_absMatrix hn U]
+          ring
+  have hM_B_norm : infNorm M_B ≤ infNorm L * infNorm BT * infNorm U := by
+    calc infNorm M_B
+        = infNorm (matMul n (absMatrix n L) (matMul n BT (absMatrix n U))) := rfl
+      _ ≤ infNorm (absMatrix n L) * infNorm (matMul n BT (absMatrix n U)) :=
+          infNorm_matMul_le hn (absMatrix n L) (matMul n BT (absMatrix n U))
+      _ ≤ infNorm (absMatrix n L) * (infNorm BT * infNorm (absMatrix n U)) :=
+          mul_le_mul_of_nonneg_left
+            (infNorm_matMul_le hn BT (absMatrix n U))
+            (infNorm_nonneg (absMatrix n L))
+      _ = infNorm L * infNorm BT * infNorm U := by
+          rw [infNorm_absMatrix hn L, infNorm_absMatrix hn U]
+          ring
+  have hrow_MT : ∀ i : Fin n, ∑ j : Fin n, M_T i j ≤ infNorm M_T := by
+    intro i
+    calc ∑ j : Fin n, M_T i j
+        = ∑ j : Fin n, |M_T i j| := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [abs_of_nonneg (hM_T_nonneg i j)]
+      _ ≤ infNorm M_T := row_sum_le_infNorm M_T i
+  have hrow_MB : ∀ i : Fin n, ∑ j : Fin n, M_B i j ≤ infNorm M_B := by
+    intro i
+    calc ∑ j : Fin n, M_B i j
+        = ∑ j : Fin n, |M_B i j| := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [abs_of_nonneg (hM_B_nonneg i j)]
+      _ ≤ infNorm M_B := row_sum_le_infNorm M_B i
+  have hrows : ∀ i : Fin n,
+      ∑ j : Fin n, |higham11_15_aasenChainDeltaABound n γ BT L T U i j| ≤
+        cT * infNorm M_T + cB * infNorm M_B := by
+    intro i
+    calc ∑ j : Fin n, |higham11_15_aasenChainDeltaABound n γ BT L T U i j|
+        = ∑ j : Fin n, higham11_15_aasenChainDeltaABound n γ BT L T U i j := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [abs_of_nonneg (hbound_nonneg i j)]
+      _ = cT * (∑ j : Fin n, M_T i j) + cB * (∑ j : Fin n, M_B i j) := by
+            simp [higham11_15_aasenChainDeltaABound, M_T, M_B, cT, cB, matMul,
+              absMatrix, Finset.sum_add_distrib, Finset.mul_sum, mul_add,
+              mul_assoc, mul_left_comm, mul_comm]
+      _ ≤ cT * infNorm M_T + cB * infNorm M_B :=
+            add_le_add
+              (mul_le_mul_of_nonneg_left (hrow_MT i) hcT)
+              (mul_le_mul_of_nonneg_left (hrow_MB i) hcB)
+  calc infNorm (higham11_15_aasenChainDeltaABound n γ BT L T U)
+      ≤ cT * infNorm M_T + cB * infNorm M_B :=
+        infNorm_le_of_row_sum_le
+          (A := higham11_15_aasenChainDeltaABound n γ BT L T U) hrows
+          (add_nonneg (mul_nonneg hcT (infNorm_nonneg M_T))
+            (mul_nonneg hcB (infNorm_nonneg M_B)))
+    _ ≤ cT * (infNorm L * infNorm T * infNorm U) +
+        cB * (infNorm L * infNorm BT * infNorm U) :=
+          add_le_add
+            (mul_le_mul_of_nonneg_left hM_T_norm hcT)
+            (mul_le_mul_of_nonneg_left hM_B_norm hcB)
+    _ = (2 * γ + γ ^ 2) * (infNorm L * infNorm T * infNorm U) +
+        (1 + 2 * γ + γ ^ 2) * (infNorm L * infNorm BT * infNorm U) := by
+          simp [cT, cB]
+
+/-- Any perturbation bounded componentwise by the closed Aasen solve-chain
+budget inherits the corresponding two-term normwise budget. -/
+theorem higham11_15_infNorm_le_of_aasenChainDeltaABound
+    (n : ℕ) (hn : 0 < n) (γ : ℝ) (BT L T U DeltaA : Fin n → Fin n → ℝ)
+    (hγ : 0 ≤ γ) (hBT : ∀ p q : Fin n, 0 ≤ BT p q)
+    (hDelta : ∀ i j : Fin n,
+      |DeltaA i j| ≤ higham11_15_aasenChainDeltaABound n γ BT L T U i j) :
+    infNorm DeltaA ≤
+      (2 * γ + γ ^ 2) * (infNorm L * infNorm T * infNorm U) +
+        (1 + 2 * γ + γ ^ 2) * (infNorm L * infNorm BT * infNorm U) := by
+  let bound := higham11_15_aasenChainDeltaABound n γ BT L T U
+  have hbound_nonneg : ∀ i j : Fin n, 0 ≤ bound i j := by
+    intro i j
+    exact higham11_15_aasenChainDeltaABound_nonneg n γ BT L T U hγ hBT i j
+  calc infNorm DeltaA
+      ≤ infNorm bound := by
+          apply infNorm_le_of_row_sum_le
+          · intro i
+            calc ∑ j : Fin n, |DeltaA i j|
+                ≤ ∑ j : Fin n, bound i j :=
+                    Finset.sum_le_sum (fun j _ => hDelta i j)
+              _ = ∑ j : Fin n, |bound i j| := by
+                    apply Finset.sum_congr rfl
+                    intro j _
+                    rw [abs_of_nonneg (hbound_nonneg i j)]
+              _ ≤ infNorm bound := row_sum_le_infNorm bound i
+          · exact infNorm_nonneg bound
+    _ ≤ (2 * γ + γ ^ 2) * (infNorm L * infNorm T * infNorm U) +
+        (1 + 2 * γ + γ ^ 2) * (infNorm L * infNorm BT * infNorm U) :=
+          higham11_15_aasenChainDeltaABound_infNorm_le n hn γ BT L T U hγ hBT
+
 /-- Middle-solve componentwise budget used when collapsing the rounded Aasen
 solve chain.  This is the `f(γ_n)|L_T||U_T|` budget supplied by the Chapter 9
 tridiagonal solve aggregation. -/
