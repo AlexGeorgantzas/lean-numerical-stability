@@ -11221,3 +11221,26 @@ These compile, but should not be treated as fully derived stability results:
   and `Quot.sound`.  Redirected public lookup printed the full first-tail
   theorem family and still failed only on unrelated pre-existing stale lookup
   rows.
+
+- 2026-07-06 Theorem 13.7 BDD first Schur-tail all-prefix table:
+  added
+  `higham13_algorithm13_3_first_schur_tail_all_leadingBlockPrefixes_nonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  This packages the
+  preceding full-tail nonsingularity and leading-principal handoffs for
+  `blockSchur A (pivotInv 0)` into the all-leading-prefix table shape
+  consumed by the BDD all-prefix diagonal-inverse theorem.  It is a small but
+  important recursive dependency: after the first canonical BDD pivot, the
+  first Schur tail now has the exact prefix-nonsingularity hypothesis format
+  needed by later tail-level diagonal inverse/pivot-certificate steps.  It
+  still does not construct the later active Schur-stage reciprocal/source
+  table, entrywise max-growth product/update route, Problem 13.4 all-tail
+  comparisons, or Theorem 13.6 cited implementation estimates.  Direct
+  `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`, touched Lean
+  marker scan, scratch proof bench, and scratch axiom audit passed.  The axiom
+  audit reported only standard Mathlib axioms `propext`, `Classical.choice`,
+  and `Quot.sound`.  Redirected public lookup printed the four first-tail
+  declarations including the new all-prefix table, with empty stderr; it still
+  failed only on unrelated pre-existing stale lookup rows later in
+  `examples/LibraryLookup.lean`.
