@@ -3358,6 +3358,35 @@ theorem sylvesterVecCoeff_diagonal_det_ne_zero_of_entrywise_abs_ge
       (sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
         a b sigma (le_of_lt hsigma) hgap)
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
+    in positive dimension, pairwise spectral-coordinate exclusion
+    `a_i != b_j` supplies a concrete positive minimum gap
+    `sigma <= |a_i - b_j|`. -/
+theorem exists_pos_sylvesterDiagonalGap_of_entrywise_ne (n : Nat)
+    (a b : Fin n -> Real) (hn : 0 < n)
+    (hsep : forall i j, a i ≠ b j) :
+    ∃ sigma : Real, 0 < sigma ∧ forall i j, sigma <= |a i - b j| := by
+  classical
+  let gaps : Finset Real :=
+    (Finset.univ : Finset (Prod (Fin n) (Fin n))).image
+      (fun p : Prod (Fin n) (Fin n) => |a p.1 - b p.2|)
+  have hgaps_ne : gaps.Nonempty := by
+    let i0 : Fin n := ⟨0, hn⟩
+    refine ⟨|a i0 - b i0|, ?_⟩
+    exact Finset.mem_image.mpr ⟨(i0, i0), by simp, rfl⟩
+  refine ⟨gaps.min' hgaps_ne, ?_, ?_⟩
+  · have hmem : gaps.min' hgaps_ne ∈ gaps := Finset.min'_mem gaps hgaps_ne
+    obtain ⟨p, _hp, hpval⟩ := Finset.mem_image.mp hmem
+    have hdiff_ne : a p.1 - b p.2 ≠ 0 := by
+      intro hzero
+      exact hsep p.1 p.2 (sub_eq_zero.mp hzero)
+    have hpos : 0 < |a p.1 - b p.2| := abs_pos.mpr hdiff_ne
+    simpa [hpval] using hpos
+  · intro i j
+    exact
+      Finset.min'_le gaps (|a i - b j|)
+        (Finset.mem_image.mpr ⟨(i, j), by simp, rfl⟩)
+
 /-- Higham, 2nd ed., Chapter 16.1 and equation (16.26), diagonal case:
     the concrete diagonal vec/Kronecker lower bound transfers to the
     Frobenius lower bound for the Sylvester operator. -/
@@ -3518,6 +3547,54 @@ theorem sylvesterVecCoeff_schurDiagonal_gram_eigenvalues_ge_of_entrywise_abs_ge
       (sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
         U A V B a b sigma hU hV hA hB hsigma hgap)
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
+    for supplied orthogonal diagonal Schur coordinates, spectral-coordinate
+    exclusion `a_i != b_j` supplies some positive sigma-min lower bound for the
+    original vec/Kronecker Sylvester coefficient. -/
+theorem exists_sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    ∃ sigma : Real, 0 < sigma ∧
+      forall x : Prod (Fin n) (Fin n) -> Real,
+        sigma * finiteVecNorm2 x <=
+          finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x) := by
+  obtain ⟨sigma, hsigma, hgap⟩ :=
+    exists_pos_sylvesterDiagonalGap_of_entrywise_ne n a b hn hsep
+  refine ⟨sigma, hsigma, ?_⟩
+  exact
+    sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
+      U A V B a b sigma hU hV hA hB hsigma hgap
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
+    for supplied orthogonal diagonal Schur coordinates, spectral-coordinate
+    exclusion `a_i != b_j` supplies a positive Gram-eigenvalue lower bound for
+    the original vec/Kronecker Sylvester coefficient. -/
+theorem exists_sylvesterVecCoeff_schurDiagonal_gram_eigenvalues_ge_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    ∃ sigma : Real, 0 < sigma ∧
+      forall p : Prod (Fin n) (Fin n),
+        sigma ^ 2 <= finiteHermitianEigenvalues
+          (finiteMatrixGram (sylvesterVecCoeff n n A B))
+          (isSymmetricFiniteMatrix_finiteMatrixGram
+            (sylvesterVecCoeff n n A B)) p := by
+  obtain ⟨sigma, hsigma, hgap⟩ :=
+    exists_pos_sylvesterDiagonalGap_of_entrywise_ne n a b hn hsep
+  refine ⟨sigma, hsigma, ?_⟩
+  exact
+    sylvesterVecCoeff_schurDiagonal_gram_eigenvalues_ge_of_entrywise_abs_ge n
+      U A V B a b sigma hU hV hA hB hsigma hgap
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
     orthogonal diagonal Schur-coordinate case: a positive coordinate gap makes
     the original square vec/Kronecker Sylvester coefficient nonsingular. -/
@@ -3595,6 +3672,44 @@ theorem sylvesterSepInf_schurDiagonal_ge_of_entrywise_abs_ge_of_pos_dim
       (SepLowerBound_schurDiagonal_of_entrywise_abs_ge n
         U A V B a b sigma hU hV hA hB hsigma hgap)
       hn
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), and equation
+    (16.26): for supplied orthogonal diagonal Schur coordinates, pairwise
+    spectral-coordinate exclusion gives some positive `SepLowerBound`
+    certificate for the original Sylvester operator. -/
+theorem exists_SepLowerBound_schurDiagonal_of_entrywise_ne (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    ∃ sigma : Real, SepLowerBound n A B sigma := by
+  obtain ⟨sigma, hsigma, hgap⟩ :=
+    exists_pos_sylvesterDiagonalGap_of_entrywise_ne n a b hn hsep
+  exact
+    ⟨sigma, SepLowerBound_schurDiagonal_of_entrywise_abs_ge n
+      U A V B a b sigma hU hV hA hB hsigma hgap⟩
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), and equation
+    (16.26): for supplied orthogonal diagonal Schur coordinates, pairwise
+    spectral-coordinate exclusion gives a positive lower bound on the exact
+    `sep(A,B)` infimum model. -/
+theorem exists_sylvesterSepInf_schurDiagonal_pos_lower_bound_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    ∃ sigma : Real, 0 < sigma ∧ sigma <= sylvesterSepInf n A B := by
+  obtain ⟨sigma, hsigma, hgap⟩ :=
+    exists_pos_sylvesterDiagonalGap_of_entrywise_ne n a b hn hsep
+  refine ⟨sigma, hsigma, ?_⟩
+  exact
+    sylvesterSepInf_schurDiagonal_ge_of_entrywise_abs_ge_of_pos_dim n
+      U A V B a b sigma hU hV hA hB hsigma hgap hn
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27),
     supplied orthogonal spectral-coordinate Lyapunov case:

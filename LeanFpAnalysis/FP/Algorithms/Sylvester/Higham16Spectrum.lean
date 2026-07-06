@@ -856,6 +856,73 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_charpoly
     rw [Matrix.eval_charpoly, hleft, Matrix.det_neg, hdet', mul_zero]
   exact hchar (by simpa [P, Q, c] using hcharzero)
 
+/-- Finite-matrix spectral kernel bridge: if the only vector satisfying
+    `M x = c x` is zero, then `c` is not a root of `M.charpoly`.  This is the
+    reusable determinant-free surface used below to turn a product-shift
+    no-eigenvector hypothesis into the Chapter 16 two-column block
+    nonsingularity certificate. -/
+theorem finiteMatrix_charpoly_eval_ne_zero_of_mulVec_no_eigenvector
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : Matrix ι ι Real) (c : Real)
+    (hker : forall x : ι -> Real,
+      Matrix.mulVec M x = (fun i => c * x i) -> x = 0) :
+    Not (M.charpoly.eval c = 0) := by
+  intro hchar
+  have hdet : Matrix.det (Matrix.scalar ι c - M) = 0 := by
+    simpa [Matrix.eval_charpoly] using hchar
+  obtain ⟨x, hxne, hxzero⟩ := Matrix.exists_mulVec_eq_zero_iff.mpr hdet
+  have hxM : Matrix.mulVec M x = fun i => c * x i := by
+    funext i
+    have hi := congrFun hxzero i
+    have hi' : c * x i - Matrix.mulVec M x i = 0 := by
+      simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hi
+    linarith
+  exact hxne (hker x hxM)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    spectral bridge for a supplied adjacent two-column block: a trivial kernel
+    for the eigen-equation of the product of the two shifted column
+    coefficients proves the characteristic-polynomial nonroot certificate. -/
+theorem sylvesterTwoColumnBlockCoeff_product_shift_charpoly_ne_zero_of_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0) :
+    Not ((sylvesterTriangularShiftedCoeff m A (T q q) *
+      sylvesterTriangularShiftedCoeff m A (T p p)).charpoly.eval
+        (T q p * T p q) = 0) := by
+  exact
+    finiteMatrix_charpoly_eval_ne_zero_of_mulVec_no_eigenvector
+      (sylvesterTriangularShiftedCoeff m A (T q q) *
+        sylvesterTriangularShiftedCoeff m A (T p p))
+      (T q p * T p q) hker
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
+    spectrum bridge for a supplied adjacent two-column block: if the
+    product-shift eigen-equation
+    `(A - T_qq I) (A - T_pp I) x = (T_qp T_pq) x` has only the zero solution,
+    then the full real-Schur two-column block coefficient is nonsingular. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  apply sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_charpoly
+  exact
+    sylvesterTwoColumnBlockCoeff_product_shift_charpoly_ne_zero_of_no_eigenvector
+      m n A T p q hker
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
     determinant bridge for a supplied adjacent two-column block with zero
     coupling product: if the two scalar shifted column coefficients
