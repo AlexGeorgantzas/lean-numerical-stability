@@ -1419,6 +1419,87 @@ noncomputable def higham11_15_aasenChainDeltaA (n : ℕ)
         (U q j + DeltaU q j)) -
     (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * U q j)
 
+/-- Scalar seven-term product perturbation bound for one `(p,q)` term in the
+collapsed Aasen solve-chain product. -/
+theorem higham11_15_aasenTripleTerm_abs_bound
+    (l t u dl dt du BL BT BU : ℝ)
+    (hBL : 0 ≤ BL) (hBT : 0 ≤ BT)
+    (hdl : |dl| ≤ BL) (hdt : |dt| ≤ BT) (hdu : |du| ≤ BU) :
+    |(l + dl) * (t + dt) * (u + du) - l * t * u| ≤
+      BL * |t| * |u| + |l| * BT * |u| + |l| * |t| * BU +
+      BL * BT * |u| + BL * |t| * BU + |l| * BT * BU + BL * BT * BU := by
+  have habs7 (a b c d e f g : ℝ) :
+      |a + b + c + d + e + f + g| ≤
+        |a| + |b| + |c| + |d| + |e| + |f| + |g| := by
+    have h1 := abs_add_le (((((a + b) + c) + d) + e) + f) g
+    have h2 := abs_add_le ((((a + b) + c) + d) + e) f
+    have h3 := abs_add_le (((a + b) + c) + d) e
+    have h4 := abs_add_le ((a + b) + c) d
+    have h5 := abs_add_le (a + b) c
+    have h6 := abs_add_le a b
+    nlinarith
+  have h1 : |dl * t * u| ≤ BL * |t| * |u| := by
+    calc |dl * t * u|
+        = |dl| * |t| * |u| := by rw [abs_mul, abs_mul]
+      _ ≤ BL * |t| * |u| := by gcongr
+  have h2 : |l * dt * u| ≤ |l| * BT * |u| := by
+    calc |l * dt * u|
+        = |l| * |dt| * |u| := by rw [abs_mul, abs_mul]
+      _ ≤ |l| * BT * |u| := by gcongr
+  have h3 : |l * t * du| ≤ |l| * |t| * BU := by
+    calc |l * t * du|
+        = |l| * |t| * |du| := by rw [abs_mul, abs_mul]
+      _ ≤ |l| * |t| * BU := by gcongr
+  have h4 : |dl * dt * u| ≤ BL * BT * |u| := by
+    calc |dl * dt * u|
+        = |dl| * |dt| * |u| := by rw [abs_mul, abs_mul]
+      _ ≤ BL * BT * |u| := by gcongr
+  have h5 : |dl * t * du| ≤ BL * |t| * BU := by
+    calc |dl * t * du|
+        = |dl| * |t| * |du| := by rw [abs_mul, abs_mul]
+      _ ≤ BL * |t| * BU := by gcongr
+  have h6 : |l * dt * du| ≤ |l| * BT * BU := by
+    calc |l * dt * du|
+        = |l| * |dt| * |du| := by rw [abs_mul, abs_mul]
+      _ ≤ |l| * BT * BU := by gcongr
+  have h7 : |dl * dt * du| ≤ BL * BT * BU := by
+    calc |dl * dt * du|
+        = |dl| * |dt| * |du| := by rw [abs_mul, abs_mul]
+      _ ≤ BL * BT * BU := by gcongr
+  have hsplit :
+      (l + dl) * (t + dt) * (u + du) - l * t * u =
+        dl * t * u + l * dt * u + l * t * du +
+        dl * dt * u + dl * t * du + l * dt * du + dl * dt * du := by
+    ring
+  rw [hsplit]
+  have habs := habs7 (dl * t * u) (l * dt * u) (l * t * du)
+    (dl * dt * u) (dl * t * du) (l * dt * du) (dl * dt * du)
+  nlinarith
+
+/-- Collected scalar product perturbation bound with symmetric outer relative
+coefficient `γ` and a supplied middle perturbation budget `BT`. -/
+theorem higham11_15_aasenTripleTerm_abs_bound_gamma
+    (l t u dl dt du γ BT : ℝ)
+    (hγ : 0 ≤ γ) (hBT : 0 ≤ BT)
+    (hdl : |dl| ≤ γ * |l|) (hdt : |dt| ≤ BT)
+    (hdu : |du| ≤ γ * |u|) :
+    |(l + dl) * (t + dt) * (u + du) - l * t * u| ≤
+      (2 * γ + γ ^ 2) * |l| * |t| * |u| +
+        (1 + 2 * γ + γ ^ 2) * |l| * BT * |u| := by
+  have hbase :=
+    higham11_15_aasenTripleTerm_abs_bound l t u dl dt du
+      (γ * |l|) BT (γ * |u|)
+      (mul_nonneg hγ (abs_nonneg _)) hBT
+      hdl hdt hdu
+  calc
+    |(l + dl) * (t + dt) * (u + du) - l * t * u|
+        ≤ (γ * |l|) * |t| * |u| + |l| * BT * |u| +
+            |l| * |t| * (γ * |u|) + (γ * |l|) * BT * |u| +
+            (γ * |l|) * |t| * (γ * |u|) + |l| * BT * (γ * |u|) +
+            (γ * |l|) * BT * (γ * |u|) := hbase
+    _ = (2 * γ + γ ^ 2) * |l| * |t| * |u| +
+          (1 + 2 * γ + γ ^ 2) * |l| * BT * |u| := by ring
+
 /-- Entrywise-to-matrix summation bridge for
 `higham11_15_aasenChainDeltaA`: to bound one collapsed source perturbation
 entry it suffices to bound each `(p,q)` triple-product perturbation term and
