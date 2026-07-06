@@ -877,6 +877,38 @@ theorem isLeast_lyapunovBackwardErrorValues_of_symmetric_spectral (n : ℕ)
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
     Chapter 16, Section 16.2.1, equation (16.21): exact-arithmetic
+    source-facing two-sided Lyapunov eta/xi infimum bound. This wrapper
+    bundles the existing one-sided symmetric-spectral infimum bounds. -/
+theorem lyapunovBackwardErrorInf_two_sided_sqrt_lyapunovXiSq_of_symmetric_spectral
+    (n : Nat)
+    (A C Y U : Fin n -> Fin n -> Real) (lam : Fin n -> Real)
+    (alpha gamma : Real)
+    (hY : Y = matMul n U (matMul n (diagMatrix lam) (matTranspose U)))
+    (hU : IsOrthogonal n U)
+    (hC : IsSymmetricFiniteMatrix C) (hYsym : IsSymmetricFiniteMatrix Y)
+    (halpha : 0 < alpha) (hgamma : 0 < gamma)
+    (hpos : forall i j : Fin n,
+      0 < 2 * alpha ^ 2 * (lam i ^ 2 + lam j ^ 2) + gamma ^ 2) :
+    Real.sqrt
+        (lyapunovXiSq n
+          (lyapunovSpectralTransform n U (lyapunovResidual n A C Y))
+          lam alpha gamma / 2) <=
+      lyapunovBackwardErrorInf n A C Y alpha gamma ∧
+    lyapunovBackwardErrorInf n A C Y alpha gamma <=
+      Real.sqrt
+        (lyapunovXiSq n
+          (lyapunovSpectralTransform n U (lyapunovResidual n A C Y))
+          lam alpha gamma) := by
+  constructor
+  · exact
+      sqrt_lyapunovXiSq_div_two_le_lyapunovBackwardErrorInf_of_symmetric_spectral
+        n A C Y U lam alpha gamma hY hU hC hYsym halpha hgamma hpos
+  · exact
+      lyapunovBackwardErrorInf_le_sqrt_lyapunovXiSq_of_symmetric_spectral
+        n A C Y U lam alpha gamma hY hU hC hYsym hpos
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Chapter 16, Section 16.2.1, equation (16.21): exact-arithmetic
     source-facing Lyapunov residual-ratio lower bound. This wrapper uses the
     symmetric-spectral optimizer to discharge the feasible-set nonemptiness
     hypothesis; it is not a rounded solver or estimator. -/
