@@ -14556,6 +14556,52 @@ theorem
     v
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-stacked-full-column-rank exact same-residual correction-vector
+    identity for the Moore--Penrose/transpose-range route. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_MP_transpose_range_lseStackedFullColumnRank_same_higham_residual_eq
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hsame : r = rHigh) :
+    (fun j : Fin n => y j - x j) =
+      fun j : Fin n =>
+        rectMatMulVec
+            (theorem20_8BAplus A B hB.rightInverse APplus)
+            (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) j +
+          rectMatMulVec APplus
+            (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i) j := by
+  have hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+          (fun k : Fin n => y k - x k) :=
+    LSEFullRowRank.theorem20_8_projected_action_of_MP_transpose_range_lseStackedFullColumnRank
+      A hB APplus hMP hBAPt hstack (fun k => y k - x k)
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_same_higham_residual_projected_action
+      A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y
+      r rHigh hAPaction hx hy hr hres hsame
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank projected-difference handoff for the
     Moore--Penrose/transpose-range route. -/
 theorem
