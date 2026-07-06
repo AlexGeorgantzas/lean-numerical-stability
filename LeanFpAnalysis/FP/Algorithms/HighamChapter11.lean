@@ -1738,6 +1738,90 @@ theorem higham11_15_infNorm_le_of_aasenChainDeltaABound
         (1 + 2 * γ + γ ^ 2) * (infNorm L * infNorm BT * infNorm U) :=
           higham11_15_aasenChainDeltaABound_infNorm_le n hn γ BT L T U hγ hBT
 
+/-- Product budget for the rounded Aasen factorization residual
+`L_hat * T_hat * L_hatᵀ - L * T * Lᵀ`, expressed from entrywise budgets for
+the outer factor and the tridiagonal middle factor. -/
+noncomputable def higham11_8_aasenFactorizationProductBudget (n : ℕ)
+    (L T BL BT : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    ∑ p : Fin n, ∑ q : Fin n,
+      (BL i p * |T p q| * |L j q| +
+        |L i p| * BT p q * |L j q| +
+        |L i p| * |T p q| * BL j q +
+        BL i p * BT p q * |L j q| +
+        BL i p * |T p q| * BL j q +
+        |L i p| * BT p q * BL j q +
+        BL i p * BT p q * BL j q)
+
+/-- Factorization-product perturbation bridge for Aasen's method.  If
+`L_hat` and `T_hat` are entrywise close to the exact factors `L` and `T`, then
+the residual in the product `L_hat * T_hat * L_hatᵀ` is controlled by the
+explicit seven-term product budget. -/
+theorem higham11_8_aasen_factorization_product_abs_bound_of_entrywise_factor_bounds
+    (n : ℕ) (A L T L_hat T_hat BL BT : Fin n → Fin n → ℝ)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hBL : ∀ i j : Fin n, 0 ≤ BL i j)
+    (hBT : ∀ i j : Fin n, 0 ≤ BT i j)
+    (hLhat : ∀ i j : Fin n, |L_hat i j - L i j| ≤ BL i j)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT i j) :
+    ∀ i j : Fin n,
+      |(∑ p : Fin n, ∑ q : Fin n, L_hat i p * T_hat p q * L_hat j q) -
+          A i j| ≤
+        higham11_8_aasenFactorizationProductBudget n L T BL BT i j := by
+  intro i j
+  let DeltaL : Fin n → Fin n → ℝ := fun r c => L_hat r c - L r c
+  let DeltaT : Fin n → Fin n → ℝ := fun r c => T_hat r c - T r c
+  let U : Fin n → Fin n → ℝ := fun r c => L c r
+  let DeltaU : Fin n → Fin n → ℝ := fun r c => L_hat c r - L c r
+  have hentry : ∀ p q : Fin n,
+      |(L i p + DeltaL i p) * (T p q + DeltaT p q) *
+          (U q j + DeltaU q j) - L i p * T p q * U q j| ≤
+        BL i p * |T p q| * |U q j| + |L i p| * BT p q * |U q j| +
+        |L i p| * |T p q| * BL j q + BL i p * BT p q * |U q j| +
+        BL i p * |T p q| * BL j q + |L i p| * BT p q * BL j q +
+        BL i p * BT p q * BL j q := by
+    intro p q
+    exact higham11_15_aasenTripleTerm_abs_bound
+      (L i p) (T p q) (U q j) (DeltaL i p) (DeltaT p q) (DeltaU q j)
+      (BL i p) (BT p q) (BL j q)
+      (hBL i p) (hBT p q)
+      (by simpa [DeltaL] using hLhat i p)
+      (by simpa [DeltaT] using hThat p q)
+      (by simpa [DeltaU] using hLhat j q)
+  have hchain :
+      |higham11_15_aasenChainDeltaA n L T U DeltaL DeltaT DeltaU i j| ≤
+        higham11_8_aasenFactorizationProductBudget n L T BL BT i j := by
+    unfold higham11_8_aasenFactorizationProductBudget
+    simpa [U] using
+      higham11_15_aasenChainDeltaA_abs_bound_of_entrywise
+        n L T U DeltaL DeltaT DeltaU i j
+        (fun p q =>
+          BL i p * |T p q| * |U q j| + |L i p| * BT p q * |U q j| +
+          |L i p| * |T p q| * BL j q + BL i p * BT p q * |U q j| +
+          BL i p * |T p q| * BL j q + |L i p| * BT p q * BL j q +
+          BL i p * BT p q * BL j q)
+        hentry
+  have htarget :
+      (∑ p : Fin n, ∑ q : Fin n, L_hat i p * T_hat p q * L_hat j q) -
+          A i j =
+        higham11_15_aasenChainDeltaA n L T U DeltaL DeltaT DeltaU i j := by
+    unfold higham11_15_aasenChainDeltaA DeltaL DeltaT DeltaU U
+    rw [← hprod i j]
+    have hsum :
+        (∑ p : Fin n, ∑ q : Fin n, L_hat i p * T_hat p q * L_hat j q) =
+          ∑ p : Fin n, ∑ q : Fin n,
+            (L i p + (L_hat i p - L i p)) *
+              (T p q + (T_hat p q - T p q)) *
+              (L j q + (L_hat j q - L j q)) := by
+      apply Finset.sum_congr rfl
+      intro p _
+      apply Finset.sum_congr rfl
+      intro q _
+      ring
+    rw [hsum]
+  simpa [htarget] using hchain
+
 /-- Middle-solve componentwise budget used when collapsing the rounded Aasen
 solve chain.  This is the `f(γ_n)|L_T||U_T|` budget supplied by the Chapter 9
 tridiagonal solve aggregation. -/
