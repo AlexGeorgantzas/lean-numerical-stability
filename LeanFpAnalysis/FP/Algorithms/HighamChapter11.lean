@@ -1151,6 +1151,46 @@ theorem higham11_14_fl_aasen_next_column_update_source_prefix_column_component_b
       n fp A L H hrec hHnz i next k hnext hk hvalSum hvalUpdate).trans
       (hβ k hk)
 
+/-- **Equation (11.14) source-prefix update**, relative next-column package.
+If the rounded updates define the computed `next` column below the first
+subdiagonal and the remaining entries are unchanged, then the source-prefix
+column budget supplies the relative factor hypothesis needed by the Aasen
+factorization-product residual theorem. -/
+theorem higham11_14_fl_aasen_next_column_source_prefix_Lhat_column_relative_bound_of_exact_recurrence
+    (n : ℕ) (fp : FPModel) (A L H L_hat : Fin n → Fin n → ℝ)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (i next : Fin n) (hnext : next.val = i.val + 1)
+    (hvalSum : gammaValid fp next.val) (hvalUpdate : gammaValid fp 2)
+    (γ_factor : ℝ) (hγ_factor : 0 ≤ γ_factor)
+    (hLhat_update : ∀ k : Fin n, i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed : ∀ k : Fin n, ¬ i.val + 2 ≤ k.val →
+      L_hat k next = L k next)
+    (hbudget_rel : ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ γ_factor * |L k next|) :
+    ∀ k : Fin n, |L_hat k next - L k next| ≤ γ_factor * |L k next| := by
+  intro k
+  by_cases hk : i.val + 2 ≤ k.val
+  · rw [hLhat_update k hk]
+    exact
+      higham11_14_fl_aasen_next_column_update_source_prefix_column_component_bound_of_exact_recurrence
+        n fp A L H hrec hHnz i next hnext hvalSum hvalUpdate
+        (fun k => γ_factor * |L k next|) hbudget_rel k hk
+  · rw [hLhat_fixed k hk]
+    simp [mul_nonneg hγ_factor (abs_nonneg (L k next))]
+
 /-- **Equation (11.14) floating-point next-column update with a formed sum**.
 Combines the rounded prefix dot-product formation error with the subsequent
 rounded subtraction/division update.  Under the exact Aasen recurrence, the
