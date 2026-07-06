@@ -2126,4 +2126,158 @@ theorem sylvester_practical_error_bound_fl_mono_scalar
         (Matrix.diagonal a) (Matrix.diagonal b) C Xhat hm hn)
       hRhat hRu_le heta hcomponent hXhat
 
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Chapter 16.4, equation (16.29), Lyapunov operator-sigma-min practical
+    residual endpoint: a Lyapunov operator lower bound for `A` supplies
+    nonsingularity of the Sylvester coefficient specialized as `B = -A^T`,
+    and a computed-residual certificate gives the practical relative
+    max-entry forward-error bound.  This is a source-facing alias over the
+    existing Sylvester practical-bound endpoint, not a rounded solver claim. -/
+theorem H16_eq16_29_lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate
+    (n : Nat)
+    (A C X Xhat Rhat Ru : RMatFn n n) {sigma : Real}
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : RMatFn n n,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hBudget : IsSylvesterComputedResidualBudget n n A
+      (fun i j => -matTranspose A i j) C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A
+            (fun i j => -matTranspose A i j)) Rhat Ru) /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  have hXSylv : IsSylvesterSolutionRect n n A
+      (fun i j => -matTranspose A i j) C X := by
+    intro i j
+    rw [sylvesterOpRect_square_eq_sylvesterOp]
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hX i j
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate
+      n A (fun i j => -matTranspose A i j) C X Xhat Rhat Ru
+      (sylvesterVecCoeff_lyapunovSpecial_det_ne_zero_of_operator_sigmaMin
+        n A sigma hsigma hSigmaMin)
+      hXSylv hBudget hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Chapter 16.4, equation (16.29), Lyapunov operator-sigma-min scalar
+    practical residual endpoint: a scalar cap on the practical budget gives
+    the source-shaped `eta / ||Xhat||` bound after the operator lower-bound
+    certificate supplies the specialized Sylvester nonsingularity. -/
+theorem H16_eq16_29_lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_scalar
+    (n : Nat)
+    (A C X Xhat Rhat Ru : RMatFn n n) {sigma : Real}
+    (hsigma : 0 < sigma) (eta : Real)
+    (hSigmaMin : forall Y : RMatFn n n,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hBudget : IsSylvesterComputedResidualBudget n n A
+      (fun i j => -matTranspose A i j) C Xhat Rhat Ru)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A
+            (fun i j => -matTranspose A i j)) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      eta / sylvesterMaxEntryNormRect n n Xhat := by
+  have hXSylv : IsSylvesterSolutionRect n n A
+      (fun i j => -matTranspose A i j) C X := by
+    intro i j
+    rw [sylvesterOpRect_square_eq_sylvesterOp]
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hX i j
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_scalar
+      n A (fun i j => -matTranspose A i j) C X Xhat Rhat Ru eta
+      (sylvesterVecCoeff_lyapunovSpecial_det_ne_zero_of_operator_sigmaMin
+        n A sigma hsigma hSigmaMin)
+      hXSylv hBudget heta hcomponent hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Chapter 16.4, equation (16.29), Lyapunov operator-sigma-min monotone
+    practical residual endpoint: componentwise larger inverse and residual
+    estimates preserve the practical relative max-entry bound.  This is
+    estimator-ready traceability infrastructure only. -/
+theorem H16_eq16_29_lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_mono
+    (n : Nat)
+    (A C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    (PinvAbs' : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {sigma : Real} (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : RMatFn n n,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hBudget : IsSylvesterComputedResidualBudget n n A
+      (fun i j => -matTranspose A i j) C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A
+          (fun i j => -matTranspose A i j) p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  have hXSylv : IsSylvesterSolutionRect n n A
+      (fun i j => -matTranspose A i j) C X := by
+    intro i j
+    rw [sylvesterOpRect_square_eq_sylvesterOp]
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hX i j
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono
+      n A (fun i j => -matTranspose A i j) C X Xhat Rhat Rhat' Ru Ru'
+      PinvAbs'
+      (sylvesterVecCoeff_lyapunovSpecial_det_ne_zero_of_operator_sigmaMin
+        n A sigma hsigma hSigmaMin)
+      hXSylv hBudget hPinvAbs_le hRhat hRu_le hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Chapter 16.4, equation (16.29), Lyapunov operator-sigma-min monotone
+    scalar practical residual endpoint: after estimator enlargement, a scalar
+    cap on the enlarged practical budget gives the source-shaped relative
+    max-entry bound. -/
+theorem H16_eq16_29_lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_mono_scalar
+    (n : Nat)
+    (A C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    (PinvAbs' : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {sigma : Real} (hsigma : 0 < sigma) (eta : Real)
+    (hSigmaMin : forall Y : RMatFn n n,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hBudget : IsSylvesterComputedResidualBudget n n A
+      (fun i j => -matTranspose A i j) C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A
+          (fun i j => -matTranspose A i j) p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      eta / sylvesterMaxEntryNormRect n n Xhat := by
+  have hXSylv : IsSylvesterSolutionRect n n A
+      (fun i j => -matTranspose A i j) C X := by
+    intro i j
+    rw [sylvesterOpRect_square_eq_sylvesterOp]
+    rw [<- lyapunovOp_eq_sylvesterOp n A X]
+    exact hX i j
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono_scalar
+      n A (fun i j => -matTranspose A i j) C X Xhat Rhat Rhat' Ru Ru'
+      PinvAbs' eta
+      (sylvesterVecCoeff_lyapunovSpecial_det_ne_zero_of_operator_sigmaMin
+        n A sigma hsigma hSigmaMin)
+      hXSylv hBudget hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
 end LeanFpAnalysis.FP

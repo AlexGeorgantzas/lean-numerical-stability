@@ -31,6 +31,31 @@ theorem sylvesterPsi_of_sigmaMin_isPsiFirstOrderBound (n : ℕ)
     A B X alpha beta gamma (1 / sigma)
     halpha hbeta hgamma hMnn hX hInv
 
+/-- Higham, 2nd ed., §16.3, eq (16.24) (p. 313):
+    source-facing sigma-min first-order Sylvester bound before the
+    `sqrt 3 * eps` relative wrapper. This simply applies the structured `Psi`
+    certificate instantiated by `sylvesterPsi_of_sigmaMin_isPsiFirstOrderBound`
+    to a supplied linearized perturbation equation. -/
+theorem sylvester_first_order_bound_of_sigmaMin (n : ℕ)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n → Fin n → ℝ)
+    (alpha beta gamma sigma : ℝ)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (hX : 0 < frobNorm X)
+    (hSigmaMin : ∀ Y : Fin n → Fin n → ℝ,
+      sigma * frobNorm Y ≤ frobNorm (sylvesterOp n A B Y))
+    (hLin : ∀ i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX ≤
+      sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) *
+        frobNorm X *
+        sylvesterScaledPerturbationTripleNorm n DeltaA DeltaB DeltaC
+          alpha beta gamma := by
+  exact
+    sylvesterPsi_of_sigmaMin_isPsiFirstOrderBound n
+      A B X alpha beta gamma sigma halpha hbeta hgamma hsigma hX hSigmaMin
+      DeltaA DeltaB DeltaC DeltaX hLin
+
 /-- Higham, 2nd ed., §16.3, eqs. (16.23)-(16.24) (p. 313):
     sigma-min structured first-order perturbation bound. If the Sylvester
     operator satisfies `sigma * ||Y||_F <= ||T(Y)||_F` for all `Y`, then the

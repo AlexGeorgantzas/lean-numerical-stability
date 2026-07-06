@@ -320,6 +320,69 @@ theorem sylvesterPsi_of_sepLowerBound_isPsiFirstOrderBound (n : ℕ)
   exact sylvesterPsi_of_inverseOpBound_isPsiFirstOrderBound n A B X α β γ
     (1 / sigma) hα hβ hγ hMnn hX hInv
 
+/-- Higham, 2nd ed., Section 16.3-16.4, equations (16.23)-(16.24):
+    a positive lower bound on the exact infimum model of `sep(A,B)` instantiates
+    the structured first-order Psi certificate through the safe reciprocal
+    condition value `1 / sigma`. -/
+theorem sylvesterPsi_of_pos_le_sylvesterSepInf_isPsiFirstOrderBound (n : Nat)
+    (A B X : Fin n -> Fin n -> Real) (alpha beta gamma sigma : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma)
+    (hX : 0 < frobNorm X)
+    (hle : sigma <= sylvesterSepInf n A B) :
+    SylvesterPsiFirstOrderBound n A B X alpha beta gamma
+      (sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma)) := by
+  exact
+    sylvesterPsi_of_sepLowerBound_isPsiFirstOrderBound n A B X alpha beta gamma sigma
+      halpha hbeta hgamma hsigma hX
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
+
+/-- Higham, 2nd ed., §16.3, eq (16.24) (p. 313):
+    source-facing sep-based first-order Sylvester bound before the
+    `sqrt 3 * eps` relative wrapper. This simply applies the structured `Psi`
+    certificate instantiated by `sylvesterPsi_of_sepLowerBound_isPsiFirstOrderBound`
+    to a supplied linearized perturbation equation. -/
+theorem sylvester_first_order_bound_of_sepLowerBound (n : ℕ)
+    (A B X ΔA ΔB ΔC ΔX : Fin n → Fin n → ℝ)
+    (α β γ sigma : ℝ)
+    (hα : 0 < α) (hβ : 0 < β) (hγ : 0 < γ)
+    (hsigma : 0 < sigma) (hX : 0 < frobNorm X)
+    (hSep : SepLowerBound n A B sigma)
+    (hLin : ∀ i j,
+      sylvesterOp n A B ΔX i j =
+        ΔC i j - matMul n ΔA X i j + matMul n X ΔB i j) :
+    frobNorm ΔX ≤
+      sylvesterPsi_of_inverseOpBound n X α β γ (1 / sigma) *
+        frobNorm X *
+        sylvesterScaledPerturbationTripleNorm n ΔA ΔB ΔC α β γ := by
+  exact
+    sylvesterPsi_of_sepLowerBound_isPsiFirstOrderBound n
+      A B X α β γ sigma hα hβ hγ hsigma hX hSep
+      ΔA ΔB ΔC ΔX hLin
+
+/-- Higham, 2nd ed., §16.3-§16.4, equations (16.23)-(16.24):
+    source-facing first-order Sylvester bound from a positive lower bound on
+    the exact infimum model of `sep(A,B)`, exposed before the relative
+    `sqrt 3 * eps` wrapper. -/
+theorem sylvester_first_order_bound_of_pos_le_sylvesterSepInf (n : Nat)
+    (A B X DeltaA DeltaB DeltaC DeltaX : Fin n -> Fin n -> Real)
+    (alpha beta gamma sigma : Real)
+    (halpha : 0 < alpha) (hbeta : 0 < beta) (hgamma : 0 < gamma)
+    (hsigma : 0 < sigma) (hX : 0 < frobNorm X)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hLin : forall i j,
+      sylvesterOp n A B DeltaX i j =
+        DeltaC i j - matMul n DeltaA X i j + matMul n X DeltaB i j) :
+    frobNorm DeltaX <=
+      sylvesterPsi_of_inverseOpBound n X alpha beta gamma (1 / sigma) *
+        frobNorm X *
+        sylvesterScaledPerturbationTripleNorm n DeltaA DeltaB DeltaC
+          alpha beta gamma := by
+  exact
+    sylvesterPsi_of_pos_le_sylvesterSepInf_isPsiFirstOrderBound n
+      A B X alpha beta gamma sigma halpha hbeta hgamma hsigma hX hle
+      DeltaA DeltaB DeltaC DeltaX hLin
+
 /-- Higham, 2nd ed., §16.3, eqs. (16.23)-(16.24) (p. 313):
     sep-based structured first-order perturbation bound. If
     `SepLowerBound A B sigma` holds, then the printed relative bound follows
