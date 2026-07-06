@@ -879,6 +879,52 @@ theorem finiteMatrix_charpoly_eval_ne_zero_of_mulVec_no_eigenvector
     linarith
   exact hxne (hker x hxM)
 
+/-- Finite-matrix nonroot kernel bridge: if `c` is not a root of
+    `M.charpoly`, then the eigen-equation `M x = c x` has only the zero
+    solution.  This is the source-shaped converse to
+    `finiteMatrix_charpoly_eval_ne_zero_of_mulVec_no_eigenvector`. -/
+theorem finiteMatrix_mulVec_no_eigenvector_of_charpoly_eval_ne_zero
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : Matrix ι ι Real) (c : Real)
+    (hchar : Not (M.charpoly.eval c = 0)) :
+    forall x : ι -> Real,
+      Matrix.mulVec M x = (fun i => c * x i) -> x = 0 := by
+  intro x hx
+  by_contra hxne
+  have hxzero : Matrix.mulVec (Matrix.scalar ι c - M) x = 0 := by
+    funext i
+    have hi := congrFun hx i
+    have hi' : c * x i - Matrix.mulVec M x i = 0 := by
+      rw [hi]
+      ring
+    simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hi'
+  have hdet : Matrix.det (Matrix.scalar ι c - M) = 0 :=
+    Matrix.exists_mulVec_eq_zero_iff.mp ⟨x, hxne, hxzero⟩
+  exact hchar (by simpa [Matrix.eval_charpoly] using hdet)
+
+/-- Finite-matrix product-shift determinant kernel bridge: nonsingularity of
+    `M - c I` rules out nonzero solutions of the eigen-equation `M x = c x`.
+    This is a determinant-facing route to the no-eigenvector hypothesis used
+    by the structural two-column block solve. -/
+theorem finiteMatrix_mulVec_no_eigenvector_of_det_sub_scalar_ne_zero
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : Matrix ι ι Real) (c : Real)
+    (hdet : Not (Matrix.det (M - Matrix.scalar ι c) = 0)) :
+    forall x : ι -> Real,
+      Matrix.mulVec M x = (fun i => c * x i) -> x = 0 := by
+  intro x hx
+  by_contra hxne
+  have hxzero : Matrix.mulVec (M - Matrix.scalar ι c) x = 0 := by
+    funext i
+    have hi := congrFun hx i
+    have hi' : Matrix.mulVec M x i - c * x i = 0 := by
+      rw [hi]
+      ring
+    simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hi'
+  have hsing : Matrix.det (M - Matrix.scalar ι c) = 0 :=
+    Matrix.exists_mulVec_eq_zero_iff.mp ⟨x, hxne, hxzero⟩
+  exact hdet hsing
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
     spectral bridge for a supplied adjacent two-column block: a trivial kernel
     for the eigen-equation of the product of the two shifted column
@@ -902,6 +948,54 @@ theorem sylvesterTwoColumnBlockCoeff_product_shift_charpoly_ne_zero_of_no_eigenv
         sylvesterTriangularShiftedCoeff m A (T p p))
       (T q p * T p q) hker
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    nonroot bridge for a supplied adjacent two-column block: the source-shaped
+    characteristic-polynomial exclusion for the shifted product implies the
+    no-eigenvector hypothesis used by the active-block solve wrappers. -/
+theorem sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_charpoly_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hchar :
+      Not ((sylvesterTriangularShiftedCoeff m A (T q q) *
+        sylvesterTriangularShiftedCoeff m A (T p p)).charpoly.eval
+          (T q p * T p q) = 0)) :
+    forall x : Fin m -> Real,
+      Matrix.mulVec
+          (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p)) x =
+        (fun i => (T q p * T p q) * x i) ->
+      x = 0 := by
+  exact
+    finiteMatrix_mulVec_no_eigenvector_of_charpoly_eval_ne_zero
+      (sylvesterTriangularShiftedCoeff m A (T q q) *
+        sylvesterTriangularShiftedCoeff m A (T p p))
+      (T q p * T p q) hchar
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    determinant bridge for a supplied adjacent two-column block: a nonsingular
+    shifted product `(A - T_qq I) (A - T_pp I) - T_qp T_pq I` gives the
+    no-eigenvector hypothesis needed by the existing block determinant and
+    solve consequences. -/
+theorem sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_product_shift_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p) -
+          Matrix.scalar (Fin m) (T q p * T p q)) = 0)) :
+    forall x : Fin m -> Real,
+      Matrix.mulVec
+          (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p)) x =
+        (fun i => (T q p * T p q) * x i) ->
+      x = 0 := by
+  exact
+    finiteMatrix_mulVec_no_eigenvector_of_det_sub_scalar_ne_zero
+      (sylvesterTriangularShiftedCoeff m A (T q q) *
+        sylvesterTriangularShiftedCoeff m A (T p p))
+      (T q p * T p q) hdet
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
     spectrum bridge for a supplied adjacent two-column block: if the
     product-shift eigen-equation
@@ -922,6 +1016,25 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
   exact
     sylvesterTwoColumnBlockCoeff_product_shift_charpoly_ne_zero_of_no_eigenvector
       m n A T p q hker
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    certificate through the no-eigenvector bridge: nonsingularity of the
+    product-shift matrix gives nonsingularity of the supplied two-column block
+    coefficient via the same product-shift kernel surface used by later solve
+    wrappers. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p) -
+          Matrix.scalar (Fin m) (T q p * T p q)) = 0)) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  apply sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+  exact
+    sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_product_shift_det_ne_zero
+      m n A T p q hdet
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
     determinant bridge for a supplied adjacent two-column block with zero

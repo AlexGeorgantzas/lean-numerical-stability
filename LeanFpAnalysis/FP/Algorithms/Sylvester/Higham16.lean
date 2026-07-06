@@ -3522,6 +3522,99 @@ theorem sylvester_practical_error_bound_of_schurDiagonal_computed_residual_error
         hRhat_model hRu hdR)
       hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), square supplied
+    diagonal Schur-coordinate case: pairwise spectral-coordinate exclusion
+    makes the vec/Kronecker Sylvester coefficient nonsingular.  The positive
+    dimension hypothesis keeps this wrapper aligned with the square
+    spectral-exclusion endpoints; the proof only needs the equivalent
+    subtraction form used by the supplied-factor certificate above. -/
+theorem sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne_square
+    (n : Nat)
+    (U A : RMatFn n n) (V B : RMatFn n n)
+    (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    Matrix.det (sylvesterVecCoeff n n A B) ≠ 0 := by
+  have _hn : 0 < n := hn
+  have hsep_sub : forall i j, Not (a i - b j = 0) := by
+    intro i j hzero
+    exact hsep i j (sub_eq_zero.mp hzero)
+  exact
+    sylvesterVecCoeff_schurDiagonal_det_ne_zero
+      n n U A V B a b hU hV hA hB hsep_sub
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square supplied diagonal
+    Schur-coordinate case under pairwise spectral-coordinate exclusion:
+    the raw computed-residual budget endpoint no longer needs a separately
+    supplied determinant or gap certificate.  Scope: exact supplied factors
+    only; this does not assert Schur existence or rounded residual arithmetic. -/
+theorem sylvester_practical_error_bound_of_schurDiagonal_entrywise_ne_computed_residual_budget
+    (n : Nat)
+    (U A : RMatFn n n) (V B : RMatFn n n)
+    (a b : Fin n -> Real)
+    (C X Xhat Rhat Ru : RMatFn n n)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget
+      n A B C X Xhat Rhat Ru
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne_square
+        n U A V B a b hn hU hV hA hB hsep)
+      hX hRu hRhat hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square supplied diagonal
+    Schur-coordinate case under pairwise spectral-coordinate exclusion:
+    a Frobenius residual-error model supplies the uniform practical residual
+    budget, while the spectral exclusion discharges nonsingularity.  Scope:
+    exact supplied factors only; this does not assert Schur existence,
+    rounded Schur arithmetic, or estimator production. -/
+theorem sylvester_practical_error_bound_of_schurDiagonal_entrywise_ne_computed_residual_frobenius_error_model
+    (n : Nat)
+    (U A : RMatFn n n) (V B : RMatFn n n)
+    (a b : Fin n -> Real)
+    (C X Xhat Rhat dR : RMatFn n n) (rho : Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect n n A B C Xhat i j + dR i j)
+    (hrho : 0 <= rho)
+    (hdR : frobNorm dR <= rho)
+    (hXhat : 0 < sylvesterMaxEntryNormRect n n Xhat) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect n n Xhat <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n
+          (sylvesterVecCoeffNonsingInvAbs n n A B) Rhat
+          (fun _ _ => rho)) /
+        sylvesterMaxEntryNormRect n n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_frobenius_error_model
+      n A B C X Xhat Rhat dR rho
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne_square
+        n U A V B a b hn hU hV hA hB hsep)
+      hX hRhat hrho hdR hXhat
+
 -- ============================================================
 -- Lyapunov specialization from Chapter 16.3
 -- ============================================================
