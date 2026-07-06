@@ -1822,6 +1822,62 @@ theorem higham11_8_aasen_factorization_product_abs_bound_of_entrywise_factor_bou
     rw [hsum]
   simpa [htarget] using hchain
 
+/-- Relative-factor specialization of the Aasen factorization product residual.
+If `L_hat` is componentwise relatively close to `L` with coefficient `γ`, and
+`T_hat` is bounded by the supplied middle budget `BT`, then the product
+residual is controlled by the same closed chain budget used for the rounded
+solve-chain collapse. -/
+theorem higham11_8_aasen_factorization_product_abs_bound_gamma
+    (n : ℕ) (A L T L_hat T_hat BT : Fin n → Fin n → ℝ)
+    (γ : ℝ) (hγ : 0 ≤ γ) (hBT : ∀ p q : Fin n, 0 ≤ BT p q)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hLhat : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ * |L i j|)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT i j) :
+    ∀ i j : Fin n,
+      |(∑ p : Fin n, ∑ q : Fin n, L_hat i p * T_hat p q * L_hat j q) -
+          A i j| ≤
+        higham11_15_aasenChainDeltaABound n γ BT L T (fun r c => L c r) i j := by
+  intro i j
+  let DeltaL : Fin n → Fin n → ℝ := fun r c => L_hat r c - L r c
+  let DeltaT : Fin n → Fin n → ℝ := fun r c => T_hat r c - T r c
+  let U : Fin n → Fin n → ℝ := fun r c => L c r
+  let DeltaU : Fin n → Fin n → ℝ := fun r c => L_hat c r - L c r
+  have hDeltaL : ∀ r c : Fin n, |DeltaL r c| ≤ γ * |L r c| := by
+    intro r c
+    simpa [DeltaL] using hLhat r c
+  have hDeltaT : ∀ r c : Fin n, |DeltaT r c| ≤ BT r c := by
+    intro r c
+    simpa [DeltaT] using hThat r c
+  have hDeltaU : ∀ r c : Fin n, |DeltaU r c| ≤ γ * |U r c| := by
+    intro r c
+    simpa [DeltaU, U] using hLhat c r
+  have hchain :
+      |higham11_15_aasenChainDeltaA n L T U DeltaL DeltaT DeltaU i j| ≤
+        higham11_15_aasenChainDeltaABound n γ BT L T U i j :=
+    higham11_15_aasenChainDeltaA_abs_bound_gamma
+      n L T U DeltaL DeltaT DeltaU BT γ hγ hBT
+      hDeltaL hDeltaT hDeltaU i j
+  have htarget :
+      (∑ p : Fin n, ∑ q : Fin n, L_hat i p * T_hat p q * L_hat j q) -
+          A i j =
+        higham11_15_aasenChainDeltaA n L T U DeltaL DeltaT DeltaU i j := by
+    unfold higham11_15_aasenChainDeltaA DeltaL DeltaT DeltaU U
+    rw [← hprod i j]
+    have hsum :
+        (∑ p : Fin n, ∑ q : Fin n, L_hat i p * T_hat p q * L_hat j q) =
+          ∑ p : Fin n, ∑ q : Fin n,
+            (L i p + (L_hat i p - L i p)) *
+              (T p q + (T_hat p q - T p q)) *
+              (L j q + (L_hat j q - L j q)) := by
+      apply Finset.sum_congr rfl
+      intro p _
+      apply Finset.sum_congr rfl
+      intro q _
+      ring
+    rw [hsum]
+  simpa [htarget, U] using hchain
+
 /-- Middle-solve componentwise budget used when collapsing the rounded Aasen
 solve chain.  This is the `f(γ_n)|L_T||U_T|` budget supplied by the Chapter 9
 tridiagonal solve aggregation. -/

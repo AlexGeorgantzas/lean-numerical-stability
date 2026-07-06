@@ -4852,6 +4852,7 @@ Source-facing Chapter 11 wrappers:
 - `higham11_15_infNorm_le_of_aasenChainDeltaABound`
 - `higham11_8_aasenFactorizationProductBudget`
 - `higham11_8_aasen_factorization_product_abs_bound_of_entrywise_factor_bounds`
+- `higham11_8_aasen_factorization_product_abs_bound_gamma`
 - `higham11_15_aasenMiddleSolveBudget`
 - `higham11_15_aasen_chain_source_backward_error_of_components`
 - `higham11_15_fl_aasen_solve_chain_source_backward_error_of_delta_bound`
