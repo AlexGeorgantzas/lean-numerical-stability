@@ -750,6 +750,79 @@ theorem lyapunovInverseOpBound_diagonal (n : ℕ)
   exact frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le Y
     (lyapunovOp n (Matrix.diagonal a) Y) hMnn hentry
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal Lyapunov case:
+    an entrywise lower bound on `|a_i + a_j|` gives the residual-error bound. -/
+theorem lyapunov_aposteriori_bound_diagonal (n : Nat)
+    (a : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (hExact : forall i j,
+      lyapunovOp n (Matrix.diagonal a) X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / s) * frobNorm (lyapunovResidual n (Matrix.diagonal a) C Xhat) := by
+  have hB :
+      (fun i j => -matTranspose (Matrix.diagonal a) i j) =
+        (Matrix.diagonal fun k => -a k) := by
+    ext p q
+    simp only [matTranspose, Matrix.diagonal]
+    by_cases hpq : q = p
+    · subst hpq
+      simp
+    · have hpq' : p ≠ q := fun h => hpq h.symm
+      simp [hpq, hpq']
+  have hgap : forall i j, s <= |a i - (fun k : Fin n => -a k) j| := by
+    intro i j
+    simpa [sub_eq_add_neg] using hsep i j
+  have hSep :
+      SepLowerBound n (Matrix.diagonal a)
+        (fun i j => -matTranspose (Matrix.diagonal a) i j) s := by
+    rw [hB]
+    exact
+      SepLowerBound_diagonal_of_entrywise_abs_ge n a
+        (fun k : Fin n => -a k) s hs hgap
+  exact
+    lyapunov_aposteriori_bound_of_sepLowerBound n (Matrix.diagonal a)
+      C X Xhat s hSep hExact hE_ne
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal Lyapunov case:
+    the relative residual-error bound follows from the same entrywise gap. -/
+theorem lyapunov_relative_aposteriori_bound_diagonal (n : Nat)
+    (a : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (s : Real) (hs : 0 < s)
+    (hsep : forall i j, s <= |a i + a j|)
+    (hExact : forall i j,
+      lyapunovOp n (Matrix.diagonal a) X i j = C i j)
+    (hE_ne : Not (frobNormSq (fun i j => X i j - Xhat i j) = 0))
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / s) *
+        frobNorm (lyapunovResidual n (Matrix.diagonal a) C Xhat)) /
+        frobNorm X := by
+  have hB :
+      (fun i j => -matTranspose (Matrix.diagonal a) i j) =
+        (Matrix.diagonal fun k => -a k) := by
+    ext p q
+    simp only [matTranspose, Matrix.diagonal]
+    by_cases hpq : q = p
+    · subst hpq
+      simp
+    · have hpq' : p ≠ q := fun h => hpq h.symm
+      simp [hpq, hpq']
+  have hgap : forall i j, s <= |a i - (fun k : Fin n => -a k) j| := by
+    intro i j
+    simpa [sub_eq_add_neg] using hsep i j
+  have hSep :
+      SepLowerBound n (Matrix.diagonal a)
+        (fun i j => -matTranspose (Matrix.diagonal a) i j) s := by
+    rw [hB]
+    exact
+      SepLowerBound_diagonal_of_entrywise_abs_ge n a
+        (fun k : Fin n => -a k) s hs hgap
+  exact
+    lyapunov_relative_aposteriori_bound_of_sepLowerBound n
+      (Matrix.diagonal a) C X Xhat s hSep hExact hE_ne hX_pos
+
 /-- Higham, 2nd ed., §16.3, eq (16.27), diagonal case (p. 317):
     the concrete structured Lyapunov condition number for the separated diagonal
     operator, with the explicit inverse-operator constant `1/s` coming from the

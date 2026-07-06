@@ -1616,6 +1616,140 @@ theorem lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound
       n A (lyapunovVecCoeff_det_ne_zero_of_sepLowerBound n A sigma hSep) hz
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a Lyapunov operator sigma-min certificate transfers to the vectorized
+    Lyapunov coefficient sigma-min route. -/
+theorem lyapunovVecCoeff_sigmaMin_of_operator_sigmaMin
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y)) :
+    forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x) := by
+  have hSep := SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin
+  exact lyapunovVecCoeff_sigmaMin_of_sepLowerBound n A sigma hSep
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a Lyapunov operator sigma-min certificate makes the vectorized coefficient
+    nonsingular. -/
+theorem lyapunovVecCoeff_det_ne_zero_of_operator_sigmaMin
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y)) :
+    Not ((lyapunovVecCoeff n A).det = 0) := by
+  have hSep := SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin
+  exact lyapunovVecCoeff_det_ne_zero_of_sepLowerBound n A sigma hSep
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a Lyapunov operator sigma-min certificate makes the vectorized coefficient
+    solve bijective. -/
+theorem lyapunovVecCoeff_mulVec_bijective_of_operator_sigmaMin
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y)) :
+    Function.Bijective (Matrix.mulVec (lyapunovVecCoeff n A)) := by
+  have hSep := SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin
+  exact lyapunovVecCoeff_mulVec_bijective_of_sepLowerBound n A sigma hSep
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a Lyapunov operator sigma-min certificate gives unique vectorized
+    coefficient solutions. -/
+theorem existsUnique_lyapunovVecCoeff_mulVec_of_operator_sigmaMin
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (c : Prod (Fin n) (Fin n) -> Real) :
+    ExistsUnique (fun x : Prod (Fin n) (Fin n) -> Real =>
+      Matrix.mulVec (lyapunovVecCoeff n A) x = c) := by
+  have hSep := SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin
+  exact existsUnique_lyapunovVecCoeff_mulVec_of_sepLowerBound n A sigma hSep c
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a Lyapunov operator sigma-min certificate gives the nonsingular-inverse
+    vectorized coefficient solution. -/
+theorem lyapunovVecCoeff_nonsingInv_mulVec_solution_of_operator_sigmaMin
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (c : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A)
+        (Matrix.mulVec (Inv.inv (lyapunovVecCoeff n A)) c) =
+      c := by
+  have hSep := SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin
+  exact
+    lyapunovVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound
+      n A sigma hSep c
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a Lyapunov operator sigma-min certificate uniquely characterizes the
+    nonsingular-inverse vectorized solution. -/
+theorem existsUnique_lyapunovVecCoeff_nonsingInv_mulVec_solution_of_operator_sigmaMin
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (c : Prod (Fin n) (Fin n) -> Real) :
+    ExistsUnique (fun x : Prod (Fin n) (Fin n) -> Real =>
+      Matrix.mulVec (lyapunovVecCoeff n A) x = c) := by
+  have hSep := SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin
+  exact
+    existsUnique_lyapunovVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound
+      n A sigma hSep c
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a Lyapunov operator sigma-min certificate gives the right inverse action. -/
+theorem lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_operator_sigmaMin
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (rhs : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (lyapunovVecCoeff n A)
+        (Matrix.mulVec (Inv.inv (lyapunovVecCoeff n A)) rhs) =
+      rhs := by
+  have hSep := SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin
+  exact
+    lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_sepLowerBound
+      n A sigma hSep rhs
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a Lyapunov operator sigma-min certificate gives the left inverse action. -/
+theorem lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_operator_sigmaMin
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (z : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (Inv.inv (lyapunovVecCoeff n A))
+        (Matrix.mulVec (lyapunovVecCoeff n A) z) =
+      z := by
+  have hSep := SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin
+  exact
+    lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_sepLowerBound
+      n A sigma hSep z
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a Lyapunov operator sigma-min certificate identifies exact vectorized
+    solutions with the nonsingular-inverse vector. -/
+theorem lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_operator_sigmaMin
+    (n : Nat) (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    {z rhs : Prod (Fin n) (Fin n) -> Real}
+    (hz : Matrix.mulVec (lyapunovVecCoeff n A) z = rhs) :
+    z =
+      Matrix.mulVec (Inv.inv (lyapunovVecCoeff n A)) rhs := by
+  have hSep := SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin
+  exact
+    lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound
+      n A sigma hSep hz
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
     a positive exact-`sylvesterSepInf` lower bound for `sep(A,-A^T)`
     instantiates the determinant-based left nonsingular-inverse action. -/
 theorem lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_pos_le_sylvesterSepInf
