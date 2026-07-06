@@ -4375,6 +4375,93 @@ theorem sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
       hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total source-facing Sylvester a posteriori error-residual bound from a
+    supplied exact `SepLowerBound` certificate.
+
+    This version removes the nonzero error side condition by proving the
+    zero-error case directly. -/
+theorem sylvester_aposteriori_bound_of_sepLowerBound_total (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSep : SepLowerBound n A B sigma)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) := by
+  by_cases hE_ne :
+      Not (frobNormSq (fun i j => X i j - Xhat i j) = 0)
+  case pos =>
+    exact
+      sylvester_aposteriori_bound_of_sepLowerBound n A B C X Xhat sigma
+        hSep hExact hE_ne
+  case neg =>
+    have hE_sq :
+        frobNormSq (fun i j => X i j - Xhat i j) = 0 :=
+      Classical.not_not.mp hE_ne
+    have hE :
+        frobNorm (fun i j => X i j - Xhat i j) = 0 := by
+      simp [frobNorm_eq_sqrt_frobNormSq, hE_sq]
+    have hsigma : 0 < sigma := hSep.1
+    rw [hE]
+    exact mul_nonneg (by positivity) (frobNorm_nonneg _)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    total relative Sylvester a posteriori error-residual bound from a supplied
+    exact `SepLowerBound` certificate.
+
+    The absolute total theorem handles zero error; this wrapper divides by
+    the positive Frobenius norm of the exact solution. -/
+theorem sylvester_relative_aposteriori_bound_of_sepLowerBound_total (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSep : SepLowerBound n A B sigma)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+        frobNorm X := by
+  have hAbs :=
+    sylvester_aposteriori_bound_of_sepLowerBound_total n A B C X Xhat sigma
+      hSep hExact
+  exact div_le_div_of_nonneg_right hAbs (le_of_lt hX_pos)
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    total Sylvester a posteriori error-residual bound from a positive lower
+    bound on the exact infimum model of `sep(A,B)`.
+
+    This routes through the total `SepLowerBound` wrapper. -/
+theorem sylvester_aposteriori_bound_of_pos_le_sylvesterSepInf_total (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_of_sepLowerBound_total n A B C X Xhat sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    total relative Sylvester a posteriori error-residual bound from a positive
+    lower bound on the exact infimum model of `sep(A,B)`.
+
+    This routes through the total `SepLowerBound` wrapper and divides by
+    `||X||_F`. -/
+theorem sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf_total
+    (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_of_sepLowerBound_total n
+      A B C X Xhat sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
+      hExact hX_pos
+
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
     diagonal case: a uniform diagonal-difference gap instantiates the
     Frobenius a posteriori error-residual bound. -/
