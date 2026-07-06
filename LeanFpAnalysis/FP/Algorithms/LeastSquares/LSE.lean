@@ -12280,6 +12280,39 @@ theorem theorem20_8_APplus_constraint_annihilates_of_projection_range
           simp
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if the columns of `(AP)^+` satisfy the constraint nullspace equation, then
+    the source projector `P = I - B^+B` fixes those columns. -/
+theorem theorem20_8_APplus_projection_range_of_constraint_annihilates
+    {m n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ)
+    (hBAPplus :
+      rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul (theorem20_8Projection B Bplus) APplus = APplus := by
+  apply rectMatMul_eq_of_forall_rectMatMulVec_eq
+  intro w
+  have hnull :
+      rectMatMulVec B (rectMatMulVec APplus w) = (fun _i : Fin p => 0) := by
+    calc
+      rectMatMulVec B (rectMatMulVec APplus w) =
+          rectMatMulVec (rectMatMul B APplus) w := by
+            exact (rectMatMulVec_rectMatMul B APplus w).symm
+      _ = rectMatMulVec (fun _i : Fin p => fun _j : Fin m => 0) w := by
+            rw [hBAPplus]
+      _ = (fun _i : Fin p => 0) := by
+            ext i
+            unfold rectMatMulVec
+            simp
+  calc
+    rectMatMulVec (rectMatMul (theorem20_8Projection B Bplus) APplus) w =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (rectMatMulVec APplus w) := by
+          exact rectMatMulVec_rectMatMul (theorem20_8Projection B Bplus) APplus w
+    _ = rectMatMulVec APplus w := by
+          exact theorem20_8Projection_apply_nullspace B Bplus
+            (rectMatMulVec APplus w) hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the reduced-operator left inverse follows from a Moore--Penrose certificate
     for `(AP)^+`, a projector-range certificate `P*(AP)^+ = (AP)^+`, source
     right-invertibility of `B^+`, and (20.24)'s null-intersection condition. -/
@@ -12316,6 +12349,19 @@ theorem LSEFullRowRank.theorem20_8_APplus_constraint_annihilates_of_projection_r
     rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0) :=
   _root_.LeanFpAnalysis.FP.theorem20_8_APplus_constraint_annihilates_of_projection_range
     B hB.rightInverse APplus hB.rightInverse_spec hProjAPplus
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source full row rank instantiates the annihilation-to-projector-range bridge
+    for the noncomputable right inverse obtained from `rank(B)=p`. -/
+theorem LSEFullRowRank.theorem20_8_APplus_projection_range_of_constraint_annihilates
+    {m n p : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hBAPplus :
+      rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul (theorem20_8Projection B hB.rightInverse) APplus = APplus :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_APplus_projection_range_of_constraint_annihilates
+    B hB.rightInverse APplus hBAPplus
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the current Moore--Penrose/projector-range
