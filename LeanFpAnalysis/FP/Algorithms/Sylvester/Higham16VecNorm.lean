@@ -4901,6 +4901,102 @@ theorem sylvester_relative_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise
         U A V B a b sigma hU hV hA hB hSigma hgap)
       hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
+    total diagonal case: a posteriori error-residual bound from the concrete
+    diagonal vec/Kronecker coefficient lower-bound certificate. -/
+theorem sylvester_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat) (a b : Fin n -> Real)
+    (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) *
+        frobNorm
+          (sylvesterResidual n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      (Matrix.diagonal a) (Matrix.diagonal b)
+      C X Xhat sigma hSigma
+      (sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a b sigma (le_of_lt hSigma) hgap)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
+    total diagonal case: relative a posteriori error-residual bound from the
+    concrete diagonal vec/Kronecker coefficient lower-bound certificate. -/
+theorem sylvester_relative_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat) (a b : Fin n -> Real)
+    (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) *
+        frobNorm
+          (sylvesterResidual n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      (Matrix.diagonal a) (Matrix.diagonal b)
+      C X Xhat sigma hSigma
+      (sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a b sigma (le_of_lt hSigma) hgap)
+      hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
+    total supplied orthogonal diagonal Schur-coordinate case:
+    a posteriori error-residual bound from the concrete Schur-diagonal
+    vec/Kronecker coefficient lower-bound certificate. -/
+theorem sylvester_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A B C X Xhat sigma hSigma
+      (sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
+        U A V B a b sigma hU hV hA hB hSigma hgap)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
+    total supplied orthogonal diagonal Schur-coordinate case:
+    relative a posteriori error-residual bound from the concrete
+    Schur-diagonal vec/Kronecker coefficient lower-bound certificate. -/
+theorem sylvester_relative_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A B C X Xhat sigma hSigma
+      (sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
+        U A V B a b sigma hU hV hA hB hSigma hgap)
+      hExact hX_pos
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
     Lyapunov a posteriori error-residual bound from a positive lower bound on
     the concrete vectorized Lyapunov coefficient. -/
@@ -5298,6 +5394,96 @@ theorem lyapunov_relative_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywi
       (lyapunovVecCoeff_spectralDiagonal_sigmaMin_of_entrywise_abs_ge n
         U A a sigma hU hA hSigma hgap)
       hExact hE_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), total diagonal case:
+    Lyapunov a posteriori error-residual bound from the concrete diagonal
+    vec/Kronecker coefficient lower-bound certificate. -/
+theorem lyapunov_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat) (a : Fin n -> Real)
+    (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hExact : forall i j,
+      lyapunovOp n (Matrix.diagonal a) X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) *
+        frobNorm (lyapunovResidual n (Matrix.diagonal a) C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      (Matrix.diagonal a) C X Xhat sigma hSigma
+      (lyapunovVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a sigma (le_of_lt hSigma) hgap)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), total diagonal case:
+    relative Lyapunov a posteriori error-residual bound from the concrete
+    diagonal vec/Kronecker coefficient lower-bound certificate. -/
+theorem lyapunov_relative_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat) (a : Fin n -> Real)
+    (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hExact : forall i j,
+      lyapunovOp n (Matrix.diagonal a) X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) *
+        frobNorm (lyapunovResidual n (Matrix.diagonal a) C Xhat)) /
+        frobNorm X := by
+  exact
+    lyapunov_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      (Matrix.diagonal a) C X Xhat sigma hSigma
+      (lyapunovVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
+        a sigma (le_of_lt hSigma) hgap)
+      hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), total supplied orthogonal
+    spectral-coordinate case:
+    Lyapunov a posteriori error-residual bound from the concrete
+    spectral-diagonal vec/Kronecker coefficient lower-bound certificate. -/
+theorem lyapunov_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) * frobNorm (lyapunovResidual n A C Xhat) := by
+  exact
+    lyapunov_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A C X Xhat sigma hSigma
+      (lyapunovVecCoeff_spectralDiagonal_sigmaMin_of_entrywise_abs_ge n
+        U A a sigma hU hA hSigma hgap)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), total supplied orthogonal
+    spectral-coordinate case:
+    relative Lyapunov a posteriori error-residual bound from the concrete
+    spectral-diagonal vec/Kronecker coefficient lower-bound certificate. -/
+theorem lyapunov_relative_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total
+    (n : Nat)
+    (U A : Fin n -> Fin n -> Real) (a : Fin n -> Real)
+    (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real)
+    (hU : IsOrthogonal n U)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i + a j|)
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) * frobNorm (lyapunovResidual n A C Xhat)) /
+        frobNorm X := by
+  exact
+    lyapunov_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total n
+      A C X Xhat sigma hSigma
+      (lyapunovVecCoeff_spectralDiagonal_sigmaMin_of_entrywise_abs_ge n
+        U A a sigma hU hA hSigma hgap)
+      hExact hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     the Lyapunov condition-number certificate follows from a positive lower

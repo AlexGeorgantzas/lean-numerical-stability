@@ -4505,6 +4505,48 @@ theorem sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge
       (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
       hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
+    diagonal case: the total Frobenius a posteriori error-residual bound
+    follows from a uniform lower bound on all diagonal differences. -/
+theorem sylvester_aposteriori_bound_diagonal_of_entrywise_abs_ge_total
+    (n : Nat)
+    (a b : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X i j = C i j) :
+    frobNorm (fun i j => X i j - Xhat i j) <=
+      (1 / sigma) *
+        frobNorm
+          (sylvesterResidual n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat) := by
+  exact
+    sylvester_aposteriori_bound_of_sepLowerBound_total n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat sigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
+      hExact
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
+    diagonal case: the total relative a posteriori error-residual bound
+    follows from a uniform lower bound on all diagonal differences. -/
+theorem sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge_total
+    (n : Nat)
+    (a b : Fin n -> Real) (C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hSigma : 0 < sigma)
+    (hgap : forall i j, sigma <= |a i - b j|)
+    (hExact : forall i j,
+      sylvesterOp n (Matrix.diagonal a) (Matrix.diagonal b) X i j = C i j)
+    (hX_pos : 0 < frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <=
+      ((1 / sigma) *
+          frobNorm
+            (sylvesterResidual n (Matrix.diagonal a) (Matrix.diagonal b) C Xhat)) /
+        frobNorm X := by
+  exact
+    sylvester_relative_aposteriori_bound_of_sepLowerBound_total n
+      (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat sigma
+      (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
+      hExact hX_pos
+
 -- ============================================================
 -- Generalized equations from Chapter 16.5
 -- ============================================================
