@@ -78,10 +78,21 @@
   (r = dim ker(G−I) derived, X'⁻¹GX' = diag(I_r,Γ), eigenvalue-1 eigenvector columns,
   ‖Γ‖∞ ≤ q < 1) with NO supplied basis/column/contraction data, plus the
   `Gᵐ → oneEigenProjector` corollary. The mechanical `basisActionMatrix↔toMatrix`
-  bridge is proved (`basisActionMatrix_complement_eq_toMatrix_restrict`). The general
-  complex case remains the honest ∞-norm-vs-2-norm distinction (proven: the repo's
-  ∞-norm form is impossible for a non-1 eigenvalue with |Reλ|+|Imλ|≥1; the book's
-  ρ(Γ)<1 / 2-norm object is the correct general one). The
+  bridge is proved (`basisActionMatrix_complement_eq_toMatrix_restrict`).
+  **GENERAL-complex LIMIT now FULLY CLOSED (`Analysis/SemiconvergentLimitGeneral.lean`,
+  axiom-clean):** `matPow_G_tendsto_oneEigenProjector_of_convergence` proves, for an
+  ARBITRARY real G (no real-spectrum restriction) and from convergence of every orbit
+  ALONE, that `Gᵐ → oneEigenProjector = X·diag(I_r,0)·X⁻¹` entrywise — the [106]/(17.22)
+  semiconvergence limit at full generality. It bypasses the ∞-norm entirely: the block
+  form `G X = X·diag(I_r,C)` comes from the primary splitting, and `Cᵐ → 0` follows
+  because `lim Cᵐ` is fixed by C yet the complement F contains no eigenvalue-1 vector
+  (`E₁∩F={0}`, `compBlock_no_comp_fixed`) — a pure real-linear-algebra fixed-point
+  argument, no spectral hypothesis needed. A second entry
+  `matPow_G_tendsto_oneEigenProjector_of_spectralRadius` gives the printed-(17.22)
+  route via `ρ(Γ)<1` + Gelfand. So the semiconvergence LIMIT is closed in general; the
+  repo's ∞-norm block-form *packaging* remains impossible for a non-1 eigenvalue with
+  |Reλ|+|Imλ|≥1 (proven) but is now UNNECESSARY (the limit is proved directly), and the
+  book's `ρ(Γ)<1` object is the correct general one. The
   `hne`/certificate hypotheses documented per-row (each
   mirrors an implicit assumption of the printed text); and the
   benchmark-reserved Problem 17.1 / Appendix A 17.1 rows.
