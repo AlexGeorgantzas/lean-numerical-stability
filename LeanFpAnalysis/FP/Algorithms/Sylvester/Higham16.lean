@@ -4938,6 +4938,54 @@ theorem sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_c
       (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
       hX hBudget heta hcomponent
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source
+    `SepLowerBound` absolute monotone certificate endpoint. -/
+theorem sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_certificate_mono
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    {sigma : Real} (hSep : SepLowerBound n A B sigma)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget n n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru') := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono
+      n A B C X Xhat Rhat Rhat' Ru Ru' PinvAbs'
+      (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+      hX hBudget hPinvAbs_le hRhat hRu_le
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source
+    `SepLowerBound` absolute monotone scalar certificate endpoint. -/
+theorem sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_certificate_mono_scalar
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    {sigma : Real} (hSep : SepLowerBound n A B sigma)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget n n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru' p <= eta) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <= eta := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono_scalar
+      n A B C X Xhat Rhat Rhat' Ru Ru' PinvAbs' eta
+      (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+      hX hBudget hPinvAbs_le hRhat hRu_le heta hcomponent
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), `SepLowerBound`
     certificate endpoint with monotone supplied inverse and residual
     estimates. -/
@@ -5101,6 +5149,58 @@ theorem sylvester_practical_error_bound_of_sepLowerBound_computed_residual_budge
       hX hRu hRhat_budget hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), `SepLowerBound`
+    absolute raw-budget endpoint with monotone supplied estimates. -/
+theorem sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_budget_mono
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    {sigma : Real} (hSep : SepLowerBound n A B sigma)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat_budget : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru') := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono
+      n A B C X Xhat Rhat Rhat' Ru Ru' PinvAbs'
+      (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+      hX hPinvAbs_le hRu hRhat_budget hRhat hRu_le
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), `SepLowerBound`
+    absolute raw-budget endpoint with monotone estimates and a scalar cap. -/
+theorem sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_budget_mono_scalar
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    {sigma : Real} (hSep : SepLowerBound n A B sigma)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat_budget : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru' p <= eta) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <= eta := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono_scalar
+      n A B C X Xhat Rhat Rhat' Ru Ru' PinvAbs' eta
+      (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+      hX hPinvAbs_le hRu hRhat_budget hRhat hRu_le heta hcomponent
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), `SepLowerBound`
     certificate endpoint for an explicit computed-residual error model. -/
 theorem sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error_model
     (n : Nat)
@@ -5212,6 +5312,60 @@ theorem sylvester_practical_error_bound_of_sepLowerBound_computed_residual_error
       (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
       hX hPinvAbs_le hRhat_eq hRu hdR hRhat_le hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), `SepLowerBound`
+    absolute residual error-model endpoint with monotone supplied estimates. -/
+theorem sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_error_model_mono
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn n n)
+    {sigma : Real} (hSep : SepLowerBound n A B sigma)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat_eq : forall i j,
+      Rhat i j = sylvesterResidualRect n n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru') := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono
+      n A B C X Xhat Rhat Rhat' Ru Ru' dR PinvAbs'
+      (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+      hX hPinvAbs_le hRhat_eq hRu hdR hRhat_le hRu_le
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), `SepLowerBound`
+    absolute residual error-model endpoint with monotone estimates and a scalar cap. -/
+theorem sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_error_model_mono_scalar
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn n n)
+    {sigma : Real} (hSep : SepLowerBound n A B sigma)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat_eq : forall i j,
+      Rhat i j = sylvesterResidualRect n n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru' p <= eta) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <= eta := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono_scalar
+      n A B C X Xhat Rhat Rhat' Ru Ru' dR PinvAbs' eta
+      (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+      hX hPinvAbs_le hRhat_eq hRu hdR hRhat_le hRu_le heta hcomponent
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact-infimum lower-bound
     endpoint for the practical computed-residual certificate. -/
 theorem sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate
@@ -5299,6 +5453,58 @@ theorem sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_r
       (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
         n A B sigma hsigma hle)
       hX hBudget heta hcomponent
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact-infimum
+    lower-bound absolute monotone certificate endpoint. -/
+theorem sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    {sigma : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget n n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru') := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono
+      n A B C X Xhat Rhat Rhat' Ru Ru' PinvAbs'
+      (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A B sigma hsigma hle)
+      hX hBudget hPinvAbs_le hRhat hRu_le
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact-infimum
+    lower-bound absolute monotone scalar certificate endpoint. -/
+theorem sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono_scalar
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    {sigma : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget n n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru' p <= eta) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <= eta := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono_scalar
+      n A B C X Xhat Rhat Rhat' Ru Ru' PinvAbs' eta
+      (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A B sigma hsigma hle)
+      hX hBudget hPinvAbs_le hRhat hRu_le heta hcomponent
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact-infimum endpoint
     with monotone supplied inverse and residual estimates. -/
@@ -5470,6 +5676,62 @@ theorem sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_resid
         n A B sigma hsigma hle)
       hX hRu hRhat_budget hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact-infimum absolute
+    raw-budget endpoint with monotone supplied estimates. -/
+theorem sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    {sigma : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat_budget : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru') := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono
+      n A B C X Xhat Rhat Rhat' Ru Ru' PinvAbs'
+      (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A B sigma hsigma hle)
+      hX hPinvAbs_le hRu hRhat_budget hRhat hRu_le
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact-infimum absolute
+    raw-budget endpoint with monotone estimates and a scalar cap. -/
+theorem sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono_scalar
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' : RMatFn n n)
+    {sigma : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat_budget : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru' p <= eta) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <= eta := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono_scalar
+      n A B C X Xhat Rhat Rhat' Ru Ru' PinvAbs' eta
+      (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A B sigma hsigma hle)
+      hX hPinvAbs_le hRu hRhat_budget hRhat hRu_le heta hcomponent
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact-infimum endpoint
     for an explicit computed-residual error model. -/
 theorem sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model
@@ -5585,6 +5847,64 @@ theorem sylvester_practical_error_bound_of_pos_le_sylvesterSepInf_computed_resid
       (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
         n A B sigma hsigma hle)
       hX hPinvAbs_le hRhat_eq hRu hdR hRhat_le hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact-infimum absolute
+    residual error-model endpoint with monotone supplied estimates. -/
+theorem sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn n n)
+    {sigma : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat_eq : forall i j,
+      Rhat i j = sylvesterResidualRect n n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <=
+      sylvesterVecMaxNorm n n
+        (sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru') := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono
+      n A B C X Xhat Rhat Rhat' Ru Ru' dR PinvAbs'
+      (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A B sigma hsigma hle)
+      hX hPinvAbs_le hRhat_eq hRu hdR hRhat_le hRu_le
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), exact-infimum absolute
+    residual error-model endpoint with monotone estimates and a scalar cap. -/
+theorem sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono_scalar
+    (n : Nat)
+    (A B C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn n n)
+    {sigma : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    (eta : Real)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs n n A B p q <= PinvAbs' p q)
+    (hRhat_eq : forall i j,
+      Rhat i j = sylvesterResidualRect n n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec n n PinvAbs' Rhat' Ru' p <= eta) :
+    sylvesterMaxEntryNormRect n n (fun i j => X i j - Xhat i j) <= eta := by
+  exact
+    sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono_scalar
+      n A B C X Xhat Rhat Rhat' Ru Ru' dR PinvAbs' eta
+      (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A B sigma hsigma hle)
+      hX hPinvAbs_le hRhat_eq hRu hdR hRhat_le hRu_le heta hcomponent
 
 -- ============================================================
 -- Equation (16.29) source-numbered practical endpoint aliases
