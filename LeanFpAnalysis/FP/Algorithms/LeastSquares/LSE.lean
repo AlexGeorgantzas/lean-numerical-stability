@@ -12313,6 +12313,41 @@ theorem theorem20_8_APplus_projection_range_of_constraint_annihilates
             (rectMatMulVec APplus w) hnull
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    a Moore--Penrose certificate for `AP` plus the transpose-range certificate
+    `B*AP^T = 0` gives the projector-range identity
+    `P*(AP)^+ = (AP)^+`. -/
+theorem theorem20_8_APplus_projection_range_of_MP_transpose_constraint
+    {m n p : ℕ}
+    (AP : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hMP : RectMoorePenrosePseudoinverse m n AP APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose AP) =
+        (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul (theorem20_8Projection B Bplus) APplus = APplus :=
+  theorem20_8_APplus_projection_range_of_constraint_annihilates B Bplus
+    APplus
+    (theorem20_8_APplus_constraint_annihilates_of_MP_transpose_constraint
+      AP B APplus hMP hBAPt)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source reduced-operator specialization of the MP/transpose-range
+    projector-range bridge for `AP = A(I-B^+B)`. -/
+theorem theorem20_8_APplus_projection_range_of_MP_transpose_range
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B Bplus) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B Bplus)) =
+        (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul (theorem20_8Projection B Bplus) APplus = APplus :=
+  theorem20_8_APplus_projection_range_of_MP_transpose_constraint
+    (theorem20_8AP A B Bplus) B Bplus APplus hMP hBAPt
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the reduced-operator left inverse follows from a Moore--Penrose certificate
     for `(AP)^+`, a projector-range certificate `P*(AP)^+ = (AP)^+`, source
     right-invertibility of `B^+`, and (20.24)'s null-intersection condition. -/
@@ -12362,6 +12397,24 @@ theorem LSEFullRowRank.theorem20_8_APplus_projection_range_of_constraint_annihil
     rectMatMul (theorem20_8Projection B hB.rightInverse) APplus = APplus :=
   _root_.LeanFpAnalysis.FP.theorem20_8_APplus_projection_range_of_constraint_annihilates
     B hB.rightInverse APplus hBAPplus
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-full-row-rank specialization of the MP/transpose-range
+    projector-range bridge for `AP = A(I-B^+B)`. -/
+theorem LSEFullRowRank.theorem20_8_APplus_projection_range_of_MP_transpose_range
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0)) :
+    rectMatMul (theorem20_8Projection B hB.rightInverse) APplus = APplus :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_APplus_projection_range_of_MP_transpose_range
+    A B hB.rightInverse APplus hMP hBAPt
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the current Moore--Penrose/projector-range
