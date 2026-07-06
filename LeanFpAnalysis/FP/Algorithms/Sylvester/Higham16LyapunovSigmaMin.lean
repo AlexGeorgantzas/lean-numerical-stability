@@ -53,6 +53,15 @@ theorem SepLowerBound_lyapunov_of_sigmaMin (n : Nat)
     sepLowerBound_of_sylvesterOp_sigmaMin n A
       (fun i j => -matTranspose A i j) sigma hsigma hSylv
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.26): source-numbered
+    alias for the Lyapunov sigma-min route to `SepLowerBound(A,-A^T)`. -/
+theorem H16_eq16_26_SepLowerBound_lyapunov_of_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y)) :
+    SepLowerBound n A (fun i j => -matTranspose A i j) sigma := by
+  exact SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
     a positive singular-value lower bound for the Lyapunov operator makes its
     exact kernel trivial.
@@ -148,6 +157,18 @@ theorem sylvesterSepInf_lyapunov_ge_of_sigmaMin (n : Nat)
       (fun i j => -matTranspose A i j) sigma
       (SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin)
       hn
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.26): source-numbered
+    alias for the Lyapunov sigma-min lower bound on the exact `sep(A,-A^T)`
+    infimum model. -/
+theorem H16_eq16_26_sylvesterSepInf_lyapunov_ge_of_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y)) :
+    sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact sylvesterSepInf_lyapunov_ge_of_sigmaMin n A sigma
+    hn hsigma hSigmaMin
 
 /-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
     in positive dimension, a supplied positive singular-value lower-bound
