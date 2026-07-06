@@ -18460,6 +18460,78 @@ theorem higham13_algorithm13_3_matrixStages_product_eq_of_pivot_left_inverse
     (higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivot_left_inverse
       A pivotInv hPivotLeft).product_eq
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    at Algorithm 13.3 stage zero, the active pivot is the original first
+    diagonal block, so the BDD all-prefix inverse table supplies its canonical
+    two-sided inverse. -/
+theorem
+    higham13_algorithm13_3_initial_pivot_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ} (hm : 0 < m)
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0) :
+    IsInverse r
+      (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+        ⟨0, hm⟩ ⟨0, hm⟩)
+      (nonsingInv r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+          ⟨0, hm⟩ ⟨0, hm⟩)) := by
+  have hDiag :=
+    higham13_diag_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+      A invDiagBound hPrefix hDom hBound ⟨0, hm⟩
+  simpa [higham13_algorithm13_3_schurStageMatrixBlock,
+    higham13_algorithm13_3_schurStageBlock] using hDiag
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    right-inverse projection of the BDD stage-zero canonical pivot inverse. -/
+theorem
+    higham13_algorithm13_3_initial_pivot_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ} (hm : 0 < m)
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0) :
+    IsRightInverse r
+      (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+        ⟨0, hm⟩ ⟨0, hm⟩)
+      (nonsingInv r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+          ⟨0, hm⟩ ⟨0, hm⟩)) :=
+  (higham13_algorithm13_3_initial_pivot_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    hm A pivotInv invDiagBound hPrefix hDom hBound).2
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    if Algorithm 13.3's supplied first pivot inverse is the canonical inverse
+    forced by the BDD all-prefix table, then the first active pivot has the
+    exact right-inverse certificate required by downstream pivot APIs. -/
+theorem
+    higham13_algorithm13_3_initial_pivot_right_inverse_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ} (hm : 0 < m)
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (hPivot0 : pivotInv 0 = nonsingInv r (A ⟨0, hm⟩ ⟨0, hm⟩)) :
+    IsRightInverse r
+      (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+        ⟨0, hm⟩ ⟨0, hm⟩)
+      (pivotInv 0) := by
+  have hRight :=
+    higham13_algorithm13_3_initial_pivot_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+      hm A pivotInv invDiagBound hPrefix hDom hBound
+  simpa [hPivot0, higham13_algorithm13_3_schurStageMatrixBlock,
+    higham13_algorithm13_3_schurStageBlock] using hRight
+
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
     exact pivot right-inverse certificates also provide the pivot-left
     certificates needed by the matrix-stage reconstruction theorem. -/
