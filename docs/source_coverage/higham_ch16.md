@@ -1072,6 +1072,15 @@ Latest open-row update:
   - `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean`: passed after merging the concurrent Chapter 9 update, with existing deprecation/unused-simp warnings only.
   - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16.lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Minimizers.lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: no matches after the recovered wrapper wave.
   - `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16.lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Minimizers.lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: passed for the recovered wrapper wave, with only the usual CRLF normalization warning before the commit.
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: passed after adding the degenerate same-block quasi-Schur determinant bridge and coverage update.
+  - `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder|TODO|FIXME)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: no matches after the degenerate same-block determinant bridge.
+  - `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean docs/source_coverage/higham_ch16.md`: passed for the degenerate same-block determinant bridge, with only the usual CRLF normalization warning before the commit.
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: passed after adding the zero-coupling same-block quasi-Schur active-block solve and block-system wrapper family.
+  - `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder|TODO|FIXME)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: no matches after the zero-coupling solve-wrapper family.
+  - `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean docs/source_coverage/higham_ch16.md`: passed for the zero-coupling solve-wrapper family, with only the usual CRLF normalization warning before the commit.
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: passed after adding the (16.4)-(16.5) real quasi-Schur source-numbered aliases.
+  - `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder|TODO|FIXME)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: no matches after the real quasi-Schur source-numbered alias wave.
+  - `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean docs/source_coverage/higham_ch16.md`: passed for the real quasi-Schur source-numbered alias wave, with only the usual CRLF normalization warning before the commit.
 
 ## Git and Local-Only Notes
 
