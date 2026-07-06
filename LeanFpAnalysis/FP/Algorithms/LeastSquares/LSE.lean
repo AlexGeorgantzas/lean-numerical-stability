@@ -12232,6 +12232,29 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_null
         (theorem20_8AP A B Bplus) B APplus hMP hBAPt)
       hnull
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.24):
+    Moore--Penrose/transpose-range route to the matrix identity
+    `(AP)^+ AP = P`.  The source rank conditions enter through the explicit
+    right-inverse and null-intersection hypotheses. -/
+theorem theorem20_8_APplus_AP_eq_projection_of_MP_transpose_range_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B Bplus) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B Bplus)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    rectMatMul APplus (theorem20_8AP A B Bplus) =
+      theorem20_8Projection B Bplus :=
+  theorem20_8_APplus_AP_eq_projection_of_AP_left_inverse_on_nullspace
+    A B Bplus APplus hright
+    (theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
+      A B Bplus APplus hMP hBAPt hnull)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a Moore--Penrose certificate for `(AP)^+`, matrix-level annihilation
     `B*(AP)^+ = 0`, and (20.24)'s null-intersection condition together give
@@ -12648,6 +12671,27 @@ theorem
           (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
   _root_.LeanFpAnalysis.FP.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
     A B hB.rightInverse APplus hMP hBAPt hnull
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24):
+    source-full-row-rank Moore--Penrose/transpose-range route to the matrix
+    identity `(AP)^+ AP = P`. -/
+theorem
+    LSEFullRowRank.theorem20_8_APplus_AP_eq_projection_of_MP_transpose_range_nullIntersection
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (APplus : Fin n → Fin m → ℝ)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hnull : LSENullIntersectionTrivial A B) :
+    rectMatMul APplus (theorem20_8AP A B hB.rightInverse) =
+      theorem20_8Projection B hB.rightInverse :=
+  _root_.LeanFpAnalysis.FP.theorem20_8_APplus_AP_eq_projection_of_MP_transpose_range_nullIntersection
+    A B hB.rightInverse APplus hB.rightInverse_spec hMP hBAPt hnull
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank projected-difference handoff from a Moore--Penrose
