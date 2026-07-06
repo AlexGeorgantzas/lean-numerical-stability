@@ -856,6 +856,104 @@ theorem theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_with_r
         (mul_le_mul_of_nonneg_right hfactorErr
           (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
 
+/-- Theorem 20.7 support: turn a completion-time row bound plus preservation of
+    already completed rows into the completed-row bound required by the
+    row-sorting split.
+
+This isolates the remaining QR-specific obligation: prove that the row is
+bounded when it is completed and unchanged on later stages. -/
+theorem theorem20_7_completedA_bound_of_completion_preservation_nat
+    {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ) (err : ℝ)
+    (hcomplete :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n,
+        |Astage (i.val + 1) i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialRowMax hn A i)
+    (hpreserve :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        Astage k i j = Astage (i.val + 1) i j) :
+    ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+      |Astage k i j| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialRowMax hn A i := by
+  intro i k hk hik j
+  have hsqrt_nonneg : 0 ≤ Real.sqrt (m : ℝ) := Real.sqrt_nonneg _
+  have hG1 : 1 ≤ H19.Theorem19_6.rowwise_step_growth_factor := by
+    dsimp [H19.Theorem19_6.rowwise_step_growth_factor]
+    exact le_add_of_nonneg_right (Real.sqrt_nonneg (2 : ℝ))
+  have hsucc_le : i.val + 1 ≤ k := Nat.succ_le_of_lt hik
+  have hi_succ_lt : i.val + 1 < n := lt_of_le_of_lt hsucc_le hk
+  have hpow :
+      H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) ≤
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k :=
+    pow_le_pow_right₀ hG1 hsucc_le
+  have hfactor :
+      Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+        err ≤
+        Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ k + err := by
+    simpa [add_comm, add_left_comm, add_assoc] using
+      add_le_add_right
+        (mul_le_mul_of_nonneg_left hpow hsqrt_nonneg) err
+  rw [hpreserve i k hk hik j]
+  exact
+    (hcomplete i hi_succ_lt j).trans
+      (mul_le_mul_of_nonneg_right hfactor
+        (theorem20_7_initialRowMax_nonneg hn A i))
+
+/-- Theorem 20.7 support: right-hand-side analogue of
+    `theorem20_7_completedA_bound_of_completion_preservation_nat` for the
+    weighted row scale used in the row-wise least-squares analysis. -/
+theorem theorem20_7_completedB_bound_of_completion_preservation_nat
+    {m n : ℕ} (hn : 0 < n)
+    (bstage : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (phi err : ℝ) (hphi : 0 ≤ phi)
+    (hcomplete :
+      ∀ i : Fin m, i.val + 1 < n →
+        |bstage (i.val + 1) i| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hpreserve :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        bstage k i = bstage (i.val + 1) i) :
+    ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+      |bstage k i| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  intro i k hk hik
+  have hsqrt_nonneg : 0 ≤ Real.sqrt (m : ℝ) := Real.sqrt_nonneg _
+  have hG1 : 1 ≤ H19.Theorem19_6.rowwise_step_growth_factor := by
+    dsimp [H19.Theorem19_6.rowwise_step_growth_factor]
+    exact le_add_of_nonneg_right (Real.sqrt_nonneg (2 : ℝ))
+  have hsucc_le : i.val + 1 ≤ k := Nat.succ_le_of_lt hik
+  have hi_succ_lt : i.val + 1 < n := lt_of_le_of_lt hsucc_le hk
+  have hpow :
+      H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) ≤
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k :=
+    pow_le_pow_right₀ hG1 hsucc_le
+  have hfactor :
+      Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+        err ≤
+        Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ k + err := by
+    simpa [add_comm, add_left_comm, add_assoc] using
+      add_le_add_right
+        (mul_le_mul_of_nonneg_left hpow hsqrt_nonneg) err
+  rw [hpreserve i k hk hik]
+  exact
+    (hcomplete i hi_succ_lt).trans
+      (mul_le_mul_of_nonneg_right hfactor
+        (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
+
 /-- Theorem 20.7 support: split the staged row-growth obligations into
     completed rows `i < k` and active rows `k <= i`.
 
