@@ -11201,3 +11201,23 @@ These compile, but should not be treated as fully derived stability results:
   axioms `propext`, `Classical.choice`, and `Quot.sound`.  Redirected public
   lookup printed both new Chapter 13 declarations and still failed only on
   unrelated pre-existing stale lookup rows.
+
+- 2026-07-06 Theorem 13.7 BDD first Schur-tail leading-prefix handoff: added
+  `higham13_algorithm13_3_first_schur_tail_leadingPrincipalBlockNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  This strengthens the
+  first Schur-tail nonsingularity bridge by transferring the full
+  `LeadingPrincipalBlockNonsingular13_2` condition to
+  `blockSchur A (pivotInv 0)` from the all-leading-prefix table and the
+  BDD-derived canonical first pivot inverse.  It is the recursive
+  leading-prefix handoff needed before later BDD/source-table work can iterate
+  on Schur tails.  Later active Schur-stage reciprocal/source-table data,
+  entrywise max-growth product/update routing, Problem 13.4 all-tail
+  comparisons, and Theorem 13.6 cited implementation estimates remain open.
+  Direct `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`, touched Lean
+  marker scan, scratch proof bench, and scratch axiom audit passed; the axiom
+  audit reported only standard Mathlib axioms `propext`, `Classical.choice`,
+  and `Quot.sound`.  Redirected public lookup printed the full first-tail
+  theorem family and still failed only on unrelated pre-existing stale lookup
+  rows.
