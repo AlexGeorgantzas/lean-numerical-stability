@@ -564,6 +564,74 @@ theorem existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair
       (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
       c
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors makes the real Sylvester vec coefficient action
+    injective. -/
+theorem sylvesterVecCoeff_mulVec_injective_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    sylvesterVecCoeff_mulVec_injective_of_no_common_complex_eigenpair
+      m n A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors gives the exact zero-kernel characterization for
+    the real Sylvester vec coefficient. -/
+theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (x : Prod (Fin n) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff m n A B) x = 0 <-> x = 0 := by
+  exact
+    sylvesterVecCoeff_mulVec_eq_zero_iff_of_no_common_complex_eigenpair
+      m n A B hno x
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors makes the real Sylvester vec coefficient action
+    surjective. -/
+theorem sylvesterVecCoeff_mulVec_surjective_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    sylvesterVecCoeff_mulVec_surjective_of_no_common_complex_eigenpair
+      m n A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors makes the real Sylvester vec coefficient solve
+    bijective. -/
+theorem sylvesterVecCoeff_mulVec_bijective_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    sylvesterVecCoeff_mulVec_bijective_of_no_common_complex_eigenpair
+      m n A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors gives a unique vectorized real Sylvester
+    coefficient solution for every right-hand side. -/
+theorem existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c := by
+  exact
+    existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair
+      m n A B hno c
+
 /-- A concrete left inverse and operator-2 radius for the printed Sylvester
     vec/Kronecker coefficient gives its sigma-min lower-bound route directly,
     without assuming the target coefficient lower-bound theorem. -/
