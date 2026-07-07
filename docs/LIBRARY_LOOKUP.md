@@ -3223,6 +3223,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_L_entry_path_continuousOn`
 - `higham9_15_U_entry_eq_minor_ratio`
 - `higham9_15_L_entry_eq_minor_ratio`
+- `higham9_15_opNorm2Le_smul_of_abs_le_one`
+- `higham9_15_path_G_opNorm2Le`
+- `higham9_15_path_lu_exists`
 - `higham9_15_normalized_G_factorization_matrix`
 - `higham9_15_normalized_Gtilde_factorization_matrix`
 - `higham9_15_strilPart`
