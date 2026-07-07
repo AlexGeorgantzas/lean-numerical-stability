@@ -1986,6 +1986,268 @@ theorem higham14_problem14_5_right_inverse_solve_residual_bound
     _ ≤ gamma fp (n + 1) * S :=
           mul_le_mul_of_nonneg_right hcoeff hS_nonneg
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.5, left-approximate-inverse
+    residual bound.
+
+If `Y` has a small left inverse residual, `|Y A - I| <= u |Y||A|`, and
+`b = A x`, `y_hat = fl(Y b)`, then
+`|A y_hat - b| <= gamma_{n+1} |A||Y||A||x|` componentwise. -/
+theorem higham14_problem14_5_left_inverse_solve_residual_bound
+    (n : ℕ) (fp : FPModel)
+    (A Y : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLeftRes : ∀ i j : Fin n,
+      |inverseLeftResidual n A Y i j| ≤
+        fp.u * ∑ k : Fin n, |Y i k| * |A k j|) :
+    let b := matMulVec n A x
+    let y_hat := fl_matVec fp n n Y b
+    ∀ i : Fin n,
+      |matMulVec n A y_hat i - b i| ≤
+        gamma fp (n + 1) *
+          matMulVec n (absMatrix n A)
+            (matMulVec n (absMatrix n Y)
+              (matMulVec n (absMatrix n A) (absVec n x))) i := by
+  intro b y_hat i
+  have hn : gammaValid fp n :=
+    gammaValid_mono fp (Nat.le_succ n) hn1
+  obtain ⟨ΔY, hΔY_bound, hΔY_eq⟩ :=
+    matVec_backward_error fp n n Y (matMulVec n A x) hn
+  change |matMulVec n A (fl_matVec fp n n Y (matMulVec n A x)) i -
+      matMulVec n A x i| ≤ _
+  let R := inverseLeftResidual n A Y
+  let S : ℝ :=
+    matMulVec n (absMatrix n A)
+      (matMulVec n (absMatrix n Y)
+        (matMulVec n (absMatrix n A) (absVec n x))) i
+  have hcoeff : fp.u + gamma fp n ≤ gamma fp (n + 1) :=
+    higham14_unit_roundoff_add_gamma_le_gamma_succ fp n hn1
+  have hS_nonneg : 0 ≤ S := by
+    simp only [S, matMulVec, absMatrix, absVec]
+    exact Finset.sum_nonneg (fun j _ =>
+      mul_nonneg (abs_nonneg _) (Finset.sum_nonneg (fun k _ =>
+        mul_nonneg (abs_nonneg _) (Finset.sum_nonneg (fun l _ =>
+          mul_nonneg (abs_nonneg _) (abs_nonneg _))))))
+  have hyhat_vec :
+      fl_matVec fp n n Y (matMulVec n A x) =
+        matMulVec n (fun i j => Y i j + ΔY i j) (matMulVec n A x) := by
+    ext j
+    simpa [matMulVec] using hΔY_eq j
+  have hYAx_split :
+      matMulVec n Y (matMulVec n A x) =
+        fun j => matMulVec n R x j + x j := by
+    ext j
+    rw [← matMulVec_matMul n Y A x j]
+    simp only [R, inverseLeftResidual, matMulVec, matMul, idMatrix]
+    have hdelta :
+        (∑ l : Fin n, (if j = l then (1 : ℝ) else 0) * x l) = x j := by
+      simp [Finset.sum_ite_eq, Finset.mem_univ]
+    calc
+      ∑ l : Fin n, (∑ k : Fin n, Y j k * A k l) * x l
+          = ∑ l : Fin n,
+              (((∑ k : Fin n, Y j k * A k l) -
+                (if j = l then (1 : ℝ) else 0)) * x l +
+                (if j = l then (1 : ℝ) else 0) * x l) := by
+            apply Finset.sum_congr rfl
+            intro l _
+            ring
+      _ = (∑ l : Fin n,
+              ((∑ k : Fin n, Y j k * A k l) -
+                (if j = l then (1 : ℝ) else 0)) * x l) +
+            ∑ l : Fin n, (if j = l then (1 : ℝ) else 0) * x l := by
+            rw [Finset.sum_add_distrib]
+      _ = (∑ l : Fin n,
+              ((∑ k : Fin n, Y j k * A k l) -
+                (if j = l then (1 : ℝ) else 0)) * x l) + x j := by
+            rw [hdelta]
+  have hmain :
+      matMulVec n A (fl_matVec fp n n Y (matMulVec n A x)) i -
+          matMulVec n A x i =
+        matMulVec n A (matMulVec n R x) i +
+          matMulVec n A (matMulVec n ΔY (matMulVec n A x)) i := by
+    calc
+      matMulVec n A (fl_matVec fp n n Y (matMulVec n A x)) i -
+          matMulVec n A x i
+          = matMulVec n A
+              (matMulVec n (fun j k => Y j k + ΔY j k) (matMulVec n A x)) i -
+              matMulVec n A x i := by
+                rw [hyhat_vec]
+      _ = matMulVec n A
+              (fun j => matMulVec n Y (matMulVec n A x) j +
+                matMulVec n ΔY (matMulVec n A x) j) i -
+              matMulVec n A x i := by
+                rw [matMulVec_add_left]
+      _ = (matMulVec n A (matMulVec n Y (matMulVec n A x)) i +
+              matMulVec n A (matMulVec n ΔY (matMulVec n A x)) i) -
+              matMulVec n A x i := by
+                rw [matMulVec_add_right]
+      _ = (matMulVec n A (fun j => matMulVec n R x j + x j) i +
+              matMulVec n A (matMulVec n ΔY (matMulVec n A x)) i) -
+              matMulVec n A x i := by
+                rw [hYAx_split]
+      _ = ((matMulVec n A (matMulVec n R x) i + matMulVec n A x i) +
+              matMulVec n A (matMulVec n ΔY (matMulVec n A x)) i) -
+              matMulVec n A x i := by
+                rw [matMulVec_add_right]
+      _ = matMulVec n A (matMulVec n R x) i +
+            matMulVec n A (matMulVec n ΔY (matMulVec n A x)) i := by
+              ring
+  have hres_part :
+      |matMulVec n A (matMulVec n R x) i| ≤ fp.u * S := by
+    calc
+      |matMulVec n A (matMulVec n R x) i|
+          ≤ ∑ j : Fin n, |A i j| * |matMulVec n R x j| :=
+            abs_matMulVec_le n A (matMulVec n R x) i
+      _ ≤ ∑ j : Fin n, |A i j| * (∑ k : Fin n, |R j k| * |x k|) := by
+            apply Finset.sum_le_sum
+            intro j _
+            exact mul_le_mul_of_nonneg_left
+              (abs_matMulVec_le n R x j) (abs_nonneg _)
+      _ ≤ ∑ j : Fin n, |A i j| *
+            (∑ k : Fin n, (fp.u * ∑ l : Fin n, |Y j l| * |A l k|) * |x k|) := by
+            apply Finset.sum_le_sum
+            intro j _
+            apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+            apply Finset.sum_le_sum
+            intro k _
+            exact mul_le_mul_of_nonneg_right
+              (by simpa [R] using hLeftRes j k) (abs_nonneg _)
+      _ = fp.u * S := by
+            simp only [S, matMulVec, absMatrix, absVec]
+            calc
+              ∑ j : Fin n, |A i j| *
+                  (∑ k : Fin n, (fp.u * ∑ l : Fin n, |Y j l| * |A l k|) *
+                    |x k|)
+                  = ∑ j : Fin n, |A i j| *
+                      (fp.u * ∑ l : Fin n, |Y j l| *
+                        (∑ k : Fin n, |A l k| * |x k|)) := by
+                    apply Finset.sum_congr rfl
+                    intro j _
+                    congr 1
+                    calc
+                      ∑ k : Fin n, (fp.u * ∑ l : Fin n, |Y j l| * |A l k|) *
+                          |x k|
+                          = ∑ k : Fin n, ∑ l : Fin n,
+                              fp.u * (|Y j l| * |A l k|) * |x k| := by
+                            apply Finset.sum_congr rfl
+                            intro k _
+                            rw [Finset.mul_sum, Finset.sum_mul]
+                      _ = ∑ l : Fin n, ∑ k : Fin n,
+                              fp.u * (|Y j l| * |A l k|) * |x k| := by
+                            rw [Finset.sum_comm]
+                      _ = fp.u * ∑ l : Fin n, |Y j l| *
+                              (∑ k : Fin n, |A l k| * |x k|) := by
+                            rw [Finset.mul_sum]
+                            apply Finset.sum_congr rfl
+                            intro l _
+                            calc
+                              ∑ k : Fin n, fp.u * (|Y j l| * |A l k|) * |x k|
+                                  = fp.u *
+                                      (∑ k : Fin n, |Y j l| * (|A l k| * |x k|)) := by
+                                    rw [Finset.mul_sum]
+                                    apply Finset.sum_congr rfl
+                                    intro k _
+                                    ring
+                              _ = fp.u * (|Y j l| *
+                                      (∑ k : Fin n, |A l k| * |x k|)) := by
+                                    congr 1
+                                    rw [← Finset.mul_sum]
+              _ = ∑ j : Fin n, fp.u *
+                    (|A i j| * ∑ l : Fin n, |Y j l| *
+                      (∑ k : Fin n, |A l k| * |x k|)) := by
+                    apply Finset.sum_congr rfl
+                    intro j _
+                    ring
+              _ = fp.u * ∑ j : Fin n, |A i j| *
+                    (∑ l : Fin n, |Y j l| *
+                      (∑ k : Fin n, |A l k| * |x k|)) := by
+                    rw [Finset.mul_sum]
+  have hround_part :
+      |matMulVec n A (matMulVec n ΔY (matMulVec n A x)) i| ≤
+        gamma fp n * S := by
+    calc
+      |matMulVec n A (matMulVec n ΔY (matMulVec n A x)) i|
+          ≤ ∑ j : Fin n, |A i j| *
+              |matMulVec n ΔY (matMulVec n A x) j| :=
+            abs_matMulVec_le n A (matMulVec n ΔY (matMulVec n A x)) i
+      _ ≤ ∑ j : Fin n, |A i j| *
+            (∑ k : Fin n, |ΔY j k| * |matMulVec n A x k|) := by
+            apply Finset.sum_le_sum
+            intro j _
+            exact mul_le_mul_of_nonneg_left
+              (abs_matMulVec_le n ΔY (matMulVec n A x) j) (abs_nonneg _)
+      _ ≤ ∑ j : Fin n, |A i j| *
+            (∑ k : Fin n, (gamma fp n * |Y j k|) *
+              (∑ l : Fin n, |A k l| * |x l|)) := by
+            apply Finset.sum_le_sum
+            intro j _
+            apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+            apply Finset.sum_le_sum
+            intro k _
+            exact mul_le_mul
+              (hΔY_bound j k)
+              (abs_matMulVec_le n A x k)
+              (abs_nonneg _)
+              (mul_nonneg (gamma_nonneg fp hn) (abs_nonneg _))
+      _ = gamma fp n * S := by
+            change
+              ∑ j : Fin n, |A i j| *
+                  (∑ k : Fin n, (gamma fp n * |Y j k|) *
+                    (∑ l : Fin n, |A k l| * |x l|)) =
+                gamma fp n * ∑ j : Fin n, |A i j| *
+                  (∑ k : Fin n, |Y j k| *
+                    (∑ l : Fin n, |A k l| * |x l|))
+            calc
+              ∑ j : Fin n, |A i j| *
+                  (∑ k : Fin n, (gamma fp n * |Y j k|) *
+                    (∑ l : Fin n, |A k l| * |x l|))
+                  = ∑ j : Fin n, gamma fp n *
+                      (|A i j| * ∑ k : Fin n, |Y j k| *
+                        (∑ l : Fin n, |A k l| * |x l|)) := by
+                    apply Finset.sum_congr rfl
+                    intro j _
+                    have hinner :
+                        (∑ k : Fin n, (gamma fp n * |Y j k|) *
+                          (∑ l : Fin n, |A k l| * |x l|)) =
+                        gamma fp n * ∑ k : Fin n, |Y j k| *
+                          (∑ l : Fin n, |A k l| * |x l|) := by
+                      calc
+                        ∑ k : Fin n, (gamma fp n * |Y j k|) *
+                            (∑ l : Fin n, |A k l| * |x l|)
+                            = ∑ k : Fin n, gamma fp n *
+                              (|Y j k| * (∑ l : Fin n, |A k l| * |x l|)) := by
+                              apply Finset.sum_congr rfl
+                              intro k _
+                              ring
+                        _ = gamma fp n * ∑ k : Fin n, |Y j k| *
+                              (∑ l : Fin n, |A k l| * |x l|) := by
+                              rw [Finset.mul_sum]
+                    rw [hinner]
+                    ring
+              _ = gamma fp n * ∑ j : Fin n, |A i j| *
+                    (∑ k : Fin n, |Y j k| *
+                      (∑ l : Fin n, |A k l| * |x l|)) := by
+                    rw [Finset.mul_sum]
+  have hfinal :
+      |matMulVec n A (fl_matVec fp n n Y (matMulVec n A x)) i -
+        matMulVec n A x i| ≤ gamma fp (n + 1) * S := by
+    calc
+      |matMulVec n A (fl_matVec fp n n Y (matMulVec n A x)) i -
+          matMulVec n A x i|
+          = |matMulVec n A (matMulVec n R x) i +
+              matMulVec n A (matMulVec n ΔY (matMulVec n A x)) i| := by
+            rw [hmain]
+      _ ≤ |matMulVec n A (matMulVec n R x) i| +
+            |matMulVec n A (matMulVec n ΔY (matMulVec n A x)) i| :=
+            abs_add_le _ _
+      _ ≤ fp.u * S + gamma fp n * S :=
+            add_le_add hres_part hround_part
+      _ = (fp.u + gamma fp n) * S := by ring
+      _ ≤ gamma fp (n + 1) * S :=
+            mul_le_mul_of_nonneg_right hcoeff hS_nonneg
+  change |matMulVec n A (fl_matVec fp n n Y (matMulVec n A x)) i -
+      matMulVec n A x i| ≤ gamma fp (n + 1) * S
+  exact hfinal
+
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
 theorem higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec
@@ -2004,6 +2266,45 @@ theorem higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec
     |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
       |∏ i : Fin n, U i i| := by
   rw [higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec hLU]
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.34), pivoted absolute-value
+    determinant product form.  A row permutation can change only the sign of
+    the determinant, so a `PA = L * U` certificate gives the same absolute
+    determinant product as the no-pivot core. -/
+theorem higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_PermutedLUFactSpec
+    {n : ℕ} {A L U : Fin n → Fin n → ℝ} {σ : Fin n → Fin n}
+    (hLU : PermutedLUFactSpec n A L U σ) :
+    |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+      |∏ i : Fin n, U i i| := by
+  let Aσ : Fin n → Fin n → ℝ := fun i j => A (σ i) j
+  have hLUσ : LUFactSpec n Aσ L U :=
+    { L_diag := hLU.L_diag
+      L_upper_zero := hLU.L_upper_zero
+      U_lower_zero := hLU.U_lower_zero
+      product_eq := by
+        intro i j
+        exact hLU.product_eq i j }
+  have hdetσ :
+      Matrix.det (Aσ : Matrix (Fin n) (Fin n) ℝ) =
+        ∏ i : Fin n, U i i :=
+    higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec hLUσ
+  let eSigma : Fin n ≃ Fin n := Equiv.ofBijective σ hLU.perm
+  have hAσ :
+      (Aσ : Matrix (Fin n) (Fin n) ℝ) =
+        Matrix.submatrix (A : Matrix (Fin n) (Fin n) ℝ)
+          eSigma (Equiv.refl (Fin n)) := by
+    ext i j
+    change A (σ i) j = A ((Equiv.ofBijective σ hLU.perm) i) j
+    rfl
+  have hAbs :
+      |Matrix.det (Aσ : Matrix (Fin n) (Fin n) ℝ)| =
+        |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| := by
+    rw [hAσ]
+    simpa using
+      (Matrix.abs_det_submatrix_equiv_equiv (R := ℝ)
+        eSigma (Equiv.refl (Fin n)) (A : Matrix (Fin n) (Fin n) ℝ))
+  rw [hdetσ] at hAbs
+  exact hAbs.symm
 
 /-- Entry perturbation used in Higham Chapter 14, Problem 14.10:
     replace `aᵢⱼ` by `aᵢⱼ + t`, leaving every other entry unchanged. -/
