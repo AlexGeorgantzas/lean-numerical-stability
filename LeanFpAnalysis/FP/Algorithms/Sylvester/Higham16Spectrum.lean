@@ -6383,6 +6383,132 @@ theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_nonsingInv_columns_of_
   | inl i => simpa using hcols.1 i
   | inr i => simpa using hcols.2 i
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), supplied
+    real-Schur same-block column wrapper: assigning columns `p` and `q` from
+    the nonsingular-inverse block solution makes `X` satisfy the supplied
+    Schur-coordinate two-column recurrence, when original-coordinate
+    no-common-complex-right-eigenvalue data is transported through the supplied
+    orthogonal Schur factors and the same-block two-block spectral API. -/
+theorem sylvesterTwoColumnBlockSystem_of_nonsingInv_columns_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+    (m n : Nat)
+    (U R Aorig : RMatFn m m) (V S Borig : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : Aorig = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : Borig = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex Aorig)
+        (realMatrixToComplex Borig))
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inr i)) :
+    IsSylvesterTwoColumnBlockSystem m n R S C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n R S p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+      m n U R Aorig V S Borig pmap p q hU hV hA hB hmono hcard hzero
+      hpq_adj hsame hspectral hnoOrig).2
+  exact sylvesterTwoColumnBlockSystem_of_nonsingInv_columns
+    m n R S C X p q hdet hXp hXq
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), supplied
+    real-Schur same-block nonsingular-inverse solve/uniqueness bridge: the
+    transported original-coordinate no-common hypothesis gives active-column
+    uniqueness once previous columns agree. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left_of_prev_columns_eq
+    (m n : Nat)
+    (U R Aorig : RMatFn m m) (V S Borig : RMatFn n n) (C X Y : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : Aorig = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : Borig = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex Aorig)
+        (realMatrixToComplex Borig))
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n R S C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    (forall i : Fin m, X i p = Y i p) ∧
+      (forall i : Fin m, X i q = Y i q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n R S p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+      m n U R Aorig V S Borig pmap p q hU hV hA hB hmono hcard hzero
+      hpq_adj hsame hspectral hnoOrig).2
+  exact
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_det_ne_zero_of_prev_columns_eq
+      m n R S C X Y p q hdet hXp hXq hY hprev
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), vector form of
+    the supplied real-Schur same-block nonsingular-inverse solve/uniqueness
+    bridge. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_nonsingInv_columns_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left_of_prev_columns_eq
+    (m n : Nat)
+    (U R Aorig : RMatFn m m) (V S Borig : RMatFn n n) (C X Y : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : Aorig = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : Borig = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex Aorig)
+        (realMatrixToComplex Borig))
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n R S C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  have hcols :=
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left_of_prev_columns_eq
+      m n U R Aorig V S Borig C X Y pmap p q hU hV hA hB hmono hcard hzero
+      hpq_adj hsame hspectral hnoOrig hXp hXq hY hprev
+  funext r
+  cases r with
+  | inl i => simpa using hcols.1 i
+  | inr i => simpa using hcols.2 i
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
     column wrapper for the supplied two-column block solve: assigning columns
     `p` and `q` from the nonsingular-inverse block solution makes `X` satisfy
