@@ -19,13 +19,12 @@
 --   Bartels-Stewart existence statement at the supplied-factor level.
 --
 -- Honest scope:
--- * The CONVERSE direction of (16.3) -- every eigenvalue of the Kronecker
---   coefficient is a difference `lam_i(A) - mu_j(B)`, hence nonsingularity
---   FROM the absence of common eigenvalues -- needs simultaneous unitary
---   triangularization (Schur form) over the complex numbers, which Mathlib
---   does not currently provide; it remains open here.  This module works
---   over the reals, so only real eigenpairs are covered; complex-conjugate
---   eigenvalue pairs of real matrices are outside the statements below.
+-- * The complex Schur route is imported to prove determinant nonsingularity
+--   of the real vec/Kronecker coefficient from a supplied no-common complex
+--   right-eigenpair hypothesis on the entrywise complexifications of `A` and
+--   `B`.  The full spectrum-characterization statement -- every eigenvalue of
+--   the Kronecker coefficient is a difference `lam_i(A) - mu_j(B)` -- is still
+--   not stated as a complete iff here.
 -- * The quasi-triangular (2x2 diagonal block, real-Schur) Bartels-Stewart
 --   route behind equations (16.4), (16.7), and (16.8) is represented by an
 --   imported real quasi-Schur existence wrapper plus supplied adjacent
@@ -36,6 +35,7 @@
 --   diagonal case of `Higham16.lean`.
 
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16
+import LeanFpAnalysis.FP.Analysis.SylvesterSchurExistence
 import LeanFpAnalysis.FP.Analysis.RealQuasiSchur
 import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
 
@@ -1220,6 +1220,59 @@ theorem realMatrixToComplex_mul {ι κ τ : Type*} [Fintype κ]
     realMatrixToComplex (A * B) =
       realMatrixToComplex A * realMatrixToComplex B := by
   simp [realMatrixToComplex]
+
+/-- Entrywise complexification sends the real Sylvester vec/Kronecker
+    coefficient `I_n kron A - B^T kron I_m` to its complex counterpart. -/
+theorem realMatrixToComplex_sylvesterVecCoeff (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) :
+    realMatrixToComplex (sylvesterVecCoeff m n A B) =
+      complexSylvesterVecCoeff (realMatrixToComplex A) (realMatrixToComplex B) := by
+  ext p q
+  by_cases hp : p.1 = q.1 <;> by_cases hq : p.2 = q.2 <;>
+    simp [realMatrixToComplex, sylvesterVecCoeff, complexSylvesterVecCoeff,
+      Matrix.kronecker, Matrix.transpose_apply, Matrix.one_apply, hp, hq]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), complex spectral
+    nonsingularity route for the real vec/Kronecker coefficient: if the
+    entrywise complexifications of the real matrices `A` and `B` have no
+    common supplied complex right eigenpair, then the real coefficient
+    `I_n kron A - B^T kron I_m` has nonzero determinant. -/
+theorem sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j))) :
+    Matrix.det (sylvesterVecCoeff m n A B) ≠ 0 := by
+  intro hdet
+  have hmap :
+      Matrix.det (realMatrixToComplex (sylvesterVecCoeff m n A B)) =
+        Complex.ofRealHom (Matrix.det (sylvesterVecCoeff m n A B)) := by
+    simpa [realMatrixToComplex] using
+      (RingHom.map_det Complex.ofRealHom (sylvesterVecCoeff m n A B)).symm
+  have hcomplexZero :
+      Matrix.det
+        (complexSylvesterVecCoeff (realMatrixToComplex A) (realMatrixToComplex B)) = 0 := by
+    rw [(realMatrixToComplex_sylvesterVecCoeff m n A B).symm, hmap, hdet]
+    simp
+  exact
+    (complexSylvesterVecCoeff_det_ne_zero_of_no_common_eigenpair
+      (realMatrixToComplex A) (realMatrixToComplex B) hno) hcomplexZero
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias for
+    the real vec/Kronecker determinant nonsingularity theorem obtained from no
+    common supplied complex right eigenpair of the entrywise complexified
+    Sylvester factors. -/
+theorem H16_eq16_3_sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j))) :
+    Matrix.det (sylvesterVecCoeff m n A B) ≠ 0 :=
+  sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno
 
 /-- A real matrix intertwining identity remains an intertwining identity after
     entrywise complexification. -/
