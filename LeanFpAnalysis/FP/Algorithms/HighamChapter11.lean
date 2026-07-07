@@ -3008,6 +3008,112 @@ theorem higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts
       (by simpa [α] using hSB)
       (by simpa [α] using hparts')
 
+/-- Monotonicity helper for coefficient terms with multiplier `2γ+γ^2`. -/
+theorem higham11_8_two_gamma_plus_sq_mul_le_of_le
+    (γ x y η : ℝ) (hγ : 0 ≤ γ) (hxy : x ≤ y)
+    (hyη : (2 * γ + γ ^ 2) * y ≤ η) :
+    (2 * γ + γ ^ 2) * x ≤ η := by
+  have hcoeff : 0 ≤ 2 * γ + γ ^ 2 := by
+    nlinarith [mul_nonneg (by norm_num : 0 ≤ (2 : ℝ)) hγ, sq_nonneg γ]
+  exact (mul_le_mul_of_nonneg_left hxy hcoeff).trans hyη
+
+/-- Monotonicity helper for coefficient terms with multiplier `1+2γ+γ^2`. -/
+theorem higham11_8_one_plus_two_gamma_plus_sq_mul_le_of_le
+    (γ x y η : ℝ) (hxy : x ≤ y)
+    (hyη : (1 + 2 * γ + γ ^ 2) * y ≤ η) :
+    (1 + 2 * γ + γ ^ 2) * x ≤ η := by
+  have hcoeff : 0 ≤ 1 + 2 * γ + γ ^ 2 := by
+    nlinarith [sq_nonneg (γ + 1)]
+  exact (mul_le_mul_of_nonneg_left hxy hcoeff).trans hyη
+
+/-- Transport a `2γ+γ^2` coefficient bound through a larger gamma radius and
+a larger nonnegative product cap. -/
+theorem higham11_8_two_gamma_plus_sq_mul_le_of_majorants
+    (γ γb x y η : ℝ) (hγ : 0 ≤ γ) (hγle : γ ≤ γb)
+    (hx : 0 ≤ x) (hxy : x ≤ y)
+    (hyη : (2 * γb + γb ^ 2) * y ≤ η) :
+    (2 * γ + γ ^ 2) * x ≤ η := by
+  have hγb : 0 ≤ γb := hγ.trans hγle
+  have hsquares : γ ^ 2 ≤ γb ^ 2 := by
+    nlinarith [mul_nonneg (sub_nonneg.mpr hγle) (add_nonneg hγb hγ)]
+  have hcoeff_le : 2 * γ + γ ^ 2 ≤ 2 * γb + γb ^ 2 := by
+    nlinarith
+  have hγbcoeff_nonneg : 0 ≤ 2 * γb + γb ^ 2 := by
+    nlinarith [mul_nonneg (by norm_num : 0 ≤ (2 : ℝ)) hγb, sq_nonneg γb]
+  have hleft :
+      (2 * γ + γ ^ 2) * x ≤ (2 * γb + γb ^ 2) * y := by
+    exact mul_le_mul hcoeff_le hxy hx hγbcoeff_nonneg
+  exact hleft.trans hyη
+
+/-- Transport a `1+2γ+γ^2` coefficient bound through a larger gamma radius and
+a larger nonnegative product cap. -/
+theorem higham11_8_one_plus_two_gamma_plus_sq_mul_le_of_majorants
+    (γ γb x y η : ℝ) (hγ : 0 ≤ γ) (hγle : γ ≤ γb)
+    (hx : 0 ≤ x) (hxy : x ≤ y)
+    (hyη : (1 + 2 * γb + γb ^ 2) * y ≤ η) :
+    (1 + 2 * γ + γ ^ 2) * x ≤ η := by
+  have hγb : 0 ≤ γb := hγ.trans hγle
+  have hsquares : γ ^ 2 ≤ γb ^ 2 := by
+    nlinarith [mul_nonneg (sub_nonneg.mpr hγle) (add_nonneg hγb hγ)]
+  have hcoeff_le : 1 + 2 * γ + γ ^ 2 ≤ 1 + 2 * γb + γb ^ 2 := by
+    nlinarith
+  have hγbcoeff_nonneg : 0 ≤ 1 + 2 * γb + γb ^ 2 := by
+    nlinarith [sq_nonneg (γb + 1)]
+  have hleft :
+      (1 + 2 * γ + γ ^ 2) * x ≤ (1 + 2 * γb + γb ^ 2) * y := by
+    exact mul_le_mul hcoeff_le hxy hx hγbcoeff_nonneg
+  exact hleft.trans hyη
+
+/-- Product-cap version of
+`higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts`.  Each of the four
+coefficient pieces may first be bounded by a simpler product cap, and the cap
+is then allocated to a share of the printed `(n-1)^2γ_{15n+25}` budget. -/
+theorem higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts_product_bounds
+    (n : ℕ)
+    (γ_factor γ_solve γ15n25 κL κLT κLhat κLhatT κT κBT κmid
+      ρFT ρFB ρST ρSB γFT γFB γST γSB : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hγ_solve : 0 ≤ γ_solve)
+    (hρFT : κL * κT * κLT ≤ ρFT)
+    (hρFB : κL * κBT * κLT ≤ ρFB)
+    (hρST : κLhat * κLhatT ≤ ρST)
+    (hρSB : κLhat * κmid * κLhatT ≤ ρSB)
+    (hFT :
+      (2 * γ_factor + γ_factor ^ 2) * ρFT ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γFT)
+    (hFB :
+      (1 + 2 * γ_factor + γ_factor ^ 2) * ρFB ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γFB)
+    (hST :
+      (2 * γ_solve + γ_solve ^ 2) * ρST ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γST)
+    (hSB :
+      (1 + 2 * γ_solve + γ_solve ^ 2) * ρSB ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γSB)
+    (hparts : γFT + γFB + γST + γSB ≤ γ15n25) :
+    (2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) +
+      (2 * γ_solve + γ_solve ^ 2) * (κLhat * κLhatT) +
+      (1 + 2 * γ_solve + γ_solve ^ 2) *
+        (κLhat * κmid * κLhatT) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 := by
+  exact
+    higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts
+      n γ_factor γ_solve γ15n25 κL κLT κLhat κLhatT κT κBT κmid
+      γFT γFB γST γSB
+      (higham11_8_two_gamma_plus_sq_mul_le_of_le γ_factor
+        (κL * κT * κLT) ρFT (((n - 1 : ℕ) : ℝ) ^ 2 * γFT)
+        hγ_factor hρFT hFT)
+      (higham11_8_one_plus_two_gamma_plus_sq_mul_le_of_le γ_factor
+        (κL * κBT * κLT) ρFB (((n - 1 : ℕ) : ℝ) ^ 2 * γFB)
+        hρFB hFB)
+      (higham11_8_two_gamma_plus_sq_mul_le_of_le γ_solve
+        (κLhat * κLhatT) ρST (((n - 1 : ℕ) : ℝ) ^ 2 * γST)
+        hγ_solve hρST hST)
+      (higham11_8_one_plus_two_gamma_plus_sq_mul_le_of_le γ_solve
+        (κLhat * κmid * κLhatT) ρSB (((n - 1 : ℕ) : ℝ) ^ 2 * γSB)
+        hρSB hSB)
+      hparts
+
 /-- Scalar reducer for the norm-budget hypothesis in the Aasen
 factorization-plus-solve wrapper.  It isolates the remaining printed
 coefficient bookkeeping from primitive infinity-norm bounds for the exact and
