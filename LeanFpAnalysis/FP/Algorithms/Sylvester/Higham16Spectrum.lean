@@ -4146,6 +4146,42 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_g
       (noCommonComplexRightEigenvalue_of_sameBlock_twoBlock_quasiSchur
         m n A T pmap p q hcard hBT hpq_adj hsame hnoGlobal)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): supplied real
+    orthogonal Schur factorizations transport original-coordinate
+    no-common-complex-right-eigenvalue data to the Schur-coordinate factors,
+    then feed the same-block two-block spectral determinant route for an
+    adjacent active `2 x 2` Bartels-Stewart block. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+    (m n : Nat)
+    (U R Aorig : RMatFn m m) (V S Borig : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : Aorig = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : Borig = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex Aorig)
+        (realMatrixToComplex Borig)) :
+    IsAdjacentQuasiTriangularBlockFn n S p q ∧
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n R S p q) = 0) := by
+  have hnoRS :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex R)
+        (realMatrixToComplex S) :=
+    noCommonComplexRightEigenvalue_realQuasiSchur_factors
+      m n U R Aorig V S Borig hU hV hA hB hnoOrig
+  exact
+    sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+      m n R S pmap p q hmono hcard hzero hpq_adj hsame hspectral
+      (by simpa [Matrix.of_apply] using hnoRS)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     determinant-shaped complex-separation route from a negative real
     discriminant: `sqrt (-disc)` supplies the complex root and no-real-line
