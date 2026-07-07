@@ -60,6 +60,7 @@ complex Schur primitive (`Uᴴ * A * U = T`) plugs in directly.
 -/
 
 import LeanFpAnalysis.FP.Analysis.SchurTriangulation
+import Mathlib.Data.Prod.Lex
 import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
 
@@ -87,11 +88,102 @@ def IsComplexSylvesterSolution {m n : ℕ}
     (C X : Matrix (Fin m) (Fin n) ℂ) : Prop :=
   complexSylvesterOp A B X = C
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2), complex vec/Kronecker
+    coefficient `I_n kron A - B^T kron I_m`.  The product index follows
+    Mathlib's column-stacking convention: `(j,i)` denotes entry `(i,j)`. -/
+noncomputable def complexSylvesterVecCoeff {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ) :
+    Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) ℂ :=
+  Matrix.kronecker (1 : Matrix (Fin n) (Fin n) ℂ) A -
+    Matrix.kronecker (Matrix.transpose B) (1 : Matrix (Fin m) (Fin m) ℂ)
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.4): upper triangularity for a
     complex square matrix (all strictly-below-diagonal entries vanish).  This is
     the structure produced unconditionally by `schur_triangulation` over `ℂ`. -/
 def IsUpperTriangularC {n : ℕ} (T : Matrix (Fin n) (Fin n) ℂ) : Prop :=
   ∀ i j : Fin n, j < i → T i j = 0
+
+private def complexSylvesterVecCoeffDualIndexEquiv (m n : ℕ) :
+    (Fin n × Fin m) ≃ ((Fin n)ᵒᵈ ×ₗ Fin m) :=
+  (Equiv.prodCongr OrderDual.toDual (Equiv.refl (Fin m))).trans toLex
+
+/-- Reversing the block coordinate makes the complex triangular Sylvester vec
+    coefficient upper triangular when both Schur factors are upper triangular. -/
+theorem complexSylvesterVecCoeff_reindex_upperTriangular {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B) :
+    (Matrix.reindex (complexSylvesterVecCoeffDualIndexEquiv m n)
+        (complexSylvesterVecCoeffDualIndexEquiv m n)
+        (complexSylvesterVecCoeff A B)).BlockTriangular id := by
+  let e := complexSylvesterVecCoeffDualIndexEquiv m n
+  intro x y hyx
+  rcases (Prod.Lex.lt_iff.mp hyx) with hblock | ⟨_, hrow⟩
+  · have hBzero :
+        B ((e.symm y).1) ((e.symm x).1) = 0 := by
+      exact hB _ _ (by simpa [e, complexSylvesterVecCoeffDualIndexEquiv] using hblock)
+    have hblock_ne :
+        (e.symm x).1 ≠ (e.symm y).1 := by
+      intro hxy
+      have : (ofLex y).1 = (ofLex x).1 := by
+        simpa [e, complexSylvesterVecCoeffDualIndexEquiv] using
+          congrArg OrderDual.toDual hxy.symm
+      exact ne_of_lt hblock this
+    simp [e, complexSylvesterVecCoeff, Matrix.reindex_apply, Matrix.sub_apply,
+      Matrix.kronecker, Matrix.transpose_apply, hBzero, hblock_ne]
+  · have hAzero :
+        A ((e.symm x).2) ((e.symm y).2) = 0 := by
+      exact hA _ _ hrow
+    have hrow_ne :
+        (e.symm x).2 ≠ (e.symm y).2 := by
+      intro hxy
+      have : (ofLex y).2 = (ofLex x).2 := by
+        simpa [e, complexSylvesterVecCoeffDualIndexEquiv] using hxy.symm
+      exact ne_of_lt hrow this
+    simp [e, complexSylvesterVecCoeff, Matrix.reindex_apply, Matrix.sub_apply,
+      Matrix.kronecker, Matrix.transpose_apply, hAzero, hrow_ne]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), supplied complex
+    triangular case: the vec/Kronecker Sylvester coefficient determinant is
+    the product of the pairwise Schur diagonal differences. -/
+theorem complexSylvesterVecCoeff_det_eq_prod_of_upperTriangular {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B) :
+    Matrix.det (complexSylvesterVecCoeff A B) =
+      ∏ p : Prod (Fin n) (Fin m), (A p.2 p.2 - B p.1 p.1) := by
+  let e := complexSylvesterVecCoeffDualIndexEquiv m n
+  have htri :
+      (Matrix.reindex e e (complexSylvesterVecCoeff A B)).BlockTriangular id :=
+    complexSylvesterVecCoeff_reindex_upperTriangular A B hA hB
+  have hdet_reindex :
+      Matrix.det (Matrix.reindex e e (complexSylvesterVecCoeff A B)) =
+        Matrix.det (complexSylvesterVecCoeff A B) :=
+    Matrix.det_reindex_self e (complexSylvesterVecCoeff A B)
+  rw [← hdet_reindex, Matrix.det_of_upperTriangular htri]
+  have hdiag :
+      (fun x : (Fin n)ᵒᵈ ×ₗ Fin m =>
+        Matrix.reindex e e (complexSylvesterVecCoeff A B) x x) =
+      fun x : (Fin n)ᵒᵈ ×ₗ Fin m =>
+        A ((e.symm x).2) ((e.symm x).2) -
+          B ((e.symm x).1) ((e.symm x).1) := by
+    funext x
+    simp [e, complexSylvesterVecCoeff, Matrix.reindex_apply, Matrix.kronecker,
+      Matrix.transpose_apply]
+  rw [hdiag]
+  exact e.symm.prod_comp
+    (fun p : Prod (Fin n) (Fin m) => A p.2 p.2 - B p.1 p.1)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), supplied complex
+    triangular determinant-nonsingularity consequence from pairwise diagonal
+    separation. -/
+theorem complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_diagonal_separation
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B)
+    (hsep : ∀ i : Fin m, ∀ j : Fin n, A i i ≠ B j j) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 := by
+  rw [complexSylvesterVecCoeff_det_eq_prod_of_upperTriangular A B hA hB]
+  exact Finset.prod_ne_zero_iff.mpr
+    (fun p _ => sub_ne_zero.mpr (hsep p.2 p.1))
 
 -- ============================================================
 -- Complex Schur factors exist unconditionally
