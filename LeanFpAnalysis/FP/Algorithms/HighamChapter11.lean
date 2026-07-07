@@ -3211,6 +3211,64 @@ theorem higham11_8_aasen_factor_solve_norm_budget_of_absLU_norm_coeff_parts
         (higham9_14_f (gamma fp n) * κmidLU) ηFT ηFB ηST ηSB
         hFT hFB hST hSB hparts
 
+/-- Scalar norm-budget reducer where the middle tridiagonal-solve budget is
+discharged by Chapter 9's column-dominant tridiagonal LU growth theorem,
+yielding the concrete middle coefficient `3 * f(γ_n)`. -/
+theorem higham11_8_aasen_factor_solve_norm_budget_of_colDiagDom_middle_coeff_parts
+    (fp : FPModel) (n : ℕ)
+    (L T L_hat T_hat L_T_hat U_T_hat BT_factor : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κLhat κLhatT κT κBT
+      ηFT ηFB ηST ηSB : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hn : gammaValid fp n)
+    (hκL : 0 ≤ κL) (hκLhat : 0 ≤ κLhat)
+    (hκT : 0 ≤ κT) (hκBT : 0 ≤ κBT)
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hdetT : Matrix.det (Matrix.of T_hat : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hT_tridiag : IsTridiagonal n T_hat)
+    (hColDom : IsDiagDominant n T_hat)
+    (hL : infNorm L ≤ κL)
+    (hLT : infNorm (fun r c => L c r) ≤ κLT)
+    (hLhat : infNorm L_hat ≤ κLhat)
+    (hLhatT : infNorm (fun r c => L_hat c r) ≤ κLhatT)
+    (hT : infNorm T ≤ κT * infNorm T_hat)
+    (hBT : infNorm BT_factor ≤ κBT * infNorm T_hat)
+    (hFT :
+      (2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT) ≤ ηFT)
+    (hFB :
+      (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) ≤ ηFB)
+    (hST :
+      (2 * gamma fp n + (gamma fp n) ^ 2) * (κLhat * κLhatT) ≤ ηST)
+    (hSB :
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (κLhat * (higham9_14_f (gamma fp n) * 3) * κLhatT) ≤ ηSB)
+    (hparts : ηFT + ηFB + ηST + ηSB ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    ((2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm T * infNorm (fun r c => L c r)) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm BT_factor * infNorm (fun r c => L c r))) +
+    ((2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat *
+          infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) *
+          infNorm (fun r c => L_hat c r))) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat := by
+  apply higham11_8_aasen_factor_solve_norm_budget_of_factor_norm_bounds
+    fp n L T L_hat T_hat L_T_hat U_T_hat BT_factor γ_factor γ15n25
+    κL κLT κLhat κLhatT κT κBT (higham9_14_f (gamma fp n) * 3)
+    hγ_factor hn hκL hκLhat hκT hκBT
+    (mul_nonneg (higham9_14_f_nonneg (gamma_nonneg fp hn)) (by norm_num))
+    hL hLT hLhat hLhatT hT hBT
+  · exact
+      higham11_15_aasenMiddleSolveBudget_infNorm_le_of_colDiagDom_LUFactSpec
+        fp n T_hat L_T_hat U_T_hat hn hLU hdetT hT_tridiag hColDom
+  · exact
+      higham11_8_aasen_factor_solve_coeff_le_of_parts n γ_factor
+        (gamma fp n) γ15n25 κL κLT κLhat κLhatT κT κBT
+        (higham9_14_f (gamma fp n) * 3) ηFT ηFB ηST ηSB
+        hFT hFB hST hSB hparts
+
 /-- Rounded Aasen factorization-plus-solve source backward error together
 with the printed Theorem 11.8 normwise predicate, using a single scalar
 normwise comparison for the summed factorization and solve-chain budgets. -/
