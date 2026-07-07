@@ -2526,6 +2526,237 @@ theorem higham14_problem14_5_left_inverse_solve_forward_error_bound
     gamma fp (n + 1) * S
   exact hfinal
 
+/-- Monotonicity of multiplication by an absolute-value matrix. -/
+lemma higham14_absMatrix_matMulVec_mono (n : ℕ)
+    (A : Fin n → Fin n → ℝ) {x y : Fin n → ℝ}
+    (hxy : ∀ i : Fin n, x i ≤ y i) :
+    ∀ i : Fin n,
+      matMulVec n (absMatrix n A) x i ≤
+        matMulVec n (absMatrix n A) y i := by
+  intro i
+  simp only [matMulVec, absMatrix]
+  apply Finset.sum_le_sum
+  intro j _
+  exact mul_le_mul_of_nonneg_left (hxy j) (abs_nonneg _)
+
+/-- Nonnegativity of multiplication by an absolute-value matrix against a
+    nonnegative vector. -/
+lemma higham14_absMatrix_matMulVec_nonneg (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (hx : ∀ i : Fin n, 0 ≤ x i) :
+    ∀ i : Fin n, 0 ≤ matMulVec n (absMatrix n A) x i := by
+  intro i
+  simp only [matMulVec, absMatrix]
+  exact Finset.sum_nonneg (fun j _ =>
+    mul_nonneg (abs_nonneg _) (hx j))
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
+    forward-error bound with an externally supplied first-order replacement
+    envelope for `|X|`. -/
+theorem higham14_problem14_5_right_inverse_solve_forward_error_bound_of_abs_X_le
+    (n : ℕ) (fp : FPModel)
+    (A A_inv X : Fin n → Fin n → ℝ) (x b : Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLeft : IsLeftInverse n A A_inv)
+    (hsolve : matMulVec n A x = b)
+    (hRightRes : ∀ i j : Fin n,
+      |inverseRightResidual n A X i j| ≤
+        fp.u * ∑ k : Fin n, |A i k| * |X k j|)
+    (X_bound : Fin n → Fin n → ℝ)
+    (hX_bound : ∀ i j : Fin n, |X i j| ≤ X_bound i j) :
+    let x_hat := fl_matVec fp n n X b
+    ∀ i : Fin n,
+      |x_hat i - x i| ≤
+        gamma fp (n + 1) *
+          matMulVec n (absMatrix n A_inv)
+            (matMulVec n (absMatrix n A)
+              (matMulVec n X_bound (absVec n b))) i := by
+  intro x_hat i
+  have hbase :=
+    higham14_problem14_5_right_inverse_solve_forward_error_bound
+      n fp A A_inv X x b hn1 hLeft hsolve hRightRes
+  have hX_mono : ∀ j : Fin n,
+      matMulVec n (absMatrix n X) (absVec n b) j ≤
+        matMulVec n X_bound (absVec n b) j := by
+    intro j
+    simp only [matMulVec, absMatrix, absVec]
+    apply Finset.sum_le_sum
+    intro k _
+    exact mul_le_mul_of_nonneg_right (hX_bound j k) (abs_nonneg _)
+  have hA_mono :=
+    higham14_absMatrix_matMulVec_mono n A hX_mono
+  have hAinv_mono :=
+    higham14_absMatrix_matMulVec_mono n A_inv hA_mono
+  calc
+    |x_hat i - x i|
+        ≤ gamma fp (n + 1) *
+          matMulVec n (absMatrix n A_inv)
+            (matMulVec n (absMatrix n A)
+              (matMulVec n (absMatrix n X) (absVec n b))) i := hbase i
+    _ ≤ gamma fp (n + 1) *
+          matMulVec n (absMatrix n A_inv)
+            (matMulVec n (absMatrix n A)
+              (matMulVec n X_bound (absVec n b))) i :=
+        mul_le_mul_of_nonneg_left (hAinv_mono i) (gamma_nonneg fp hn1)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
+    first-order replacement form: if `|X|` is bounded by `|A⁻¹|`, the forward
+    envelope uses `|A⁻¹||A||A⁻¹||b|`. -/
+theorem higham14_problem14_5_right_inverse_solve_forward_error_firstorder_replacement
+    (n : ℕ) (fp : FPModel)
+    (A A_inv X : Fin n → Fin n → ℝ) (x b : Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLeft : IsLeftInverse n A A_inv)
+    (hsolve : matMulVec n A x = b)
+    (hRightRes : ∀ i j : Fin n,
+      |inverseRightResidual n A X i j| ≤
+        fp.u * ∑ k : Fin n, |A i k| * |X k j|)
+    (hX_first : ∀ i j : Fin n, |X i j| ≤ |A_inv i j|) :
+    let x_hat := fl_matVec fp n n X b
+    ∀ i : Fin n,
+      |x_hat i - x i| ≤
+        gamma fp (n + 1) *
+          matMulVec n (absMatrix n A_inv)
+            (matMulVec n (absMatrix n A)
+              (matMulVec n (absMatrix n A_inv) (absVec n b))) i := by
+  exact
+    higham14_problem14_5_right_inverse_solve_forward_error_bound_of_abs_X_le
+      n fp A A_inv X x b hn1 hLeft hsolve hRightRes
+      (absMatrix n A_inv) (by
+        intro i j
+        simpa [absMatrix] using hX_first i j)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.5, left-approximate-inverse
+    forward-error bound with an externally supplied first-order replacement
+    envelope for `|Y|`. -/
+theorem higham14_problem14_5_left_inverse_solve_forward_error_bound_of_abs_Y_le
+    (n : ℕ) (fp : FPModel)
+    (A Y : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLeftRes : ∀ i j : Fin n,
+      |inverseLeftResidual n A Y i j| ≤
+        fp.u * ∑ k : Fin n, |Y i k| * |A k j|)
+    (Y_bound : Fin n → Fin n → ℝ)
+    (hY_bound : ∀ i j : Fin n, |Y i j| ≤ Y_bound i j) :
+    let b := matMulVec n A x
+    let y_hat := fl_matVec fp n n Y b
+    ∀ i : Fin n,
+      |y_hat i - x i| ≤
+        gamma fp (n + 1) *
+          matMulVec n Y_bound
+            (matMulVec n (absMatrix n A) (absVec n x)) i := by
+  intro b y_hat i
+  have hbase :=
+    higham14_problem14_5_left_inverse_solve_forward_error_bound
+      n fp A Y x hn1 hLeftRes
+  have hAx_nonneg : ∀ k : Fin n,
+      0 ≤ matMulVec n (absMatrix n A) (absVec n x) k :=
+    higham14_absMatrix_matMulVec_nonneg n A (absVec n x)
+      (fun k => abs_nonneg (x k))
+  have hY_mono : ∀ j : Fin n,
+      matMulVec n (absMatrix n Y)
+          (matMulVec n (absMatrix n A) (absVec n x)) j ≤
+        matMulVec n Y_bound
+          (matMulVec n (absMatrix n A) (absVec n x)) j := by
+    intro j
+    simp only [matMulVec, absMatrix]
+    apply Finset.sum_le_sum
+    intro k _
+    exact mul_le_mul_of_nonneg_right (hY_bound j k) (hAx_nonneg k)
+  calc
+    |y_hat i - x i|
+        ≤ gamma fp (n + 1) *
+          matMulVec n (absMatrix n Y)
+            (matMulVec n (absMatrix n A) (absVec n x)) i := hbase i
+    _ ≤ gamma fp (n + 1) *
+          matMulVec n Y_bound
+            (matMulVec n (absMatrix n A) (absVec n x)) i :=
+        mul_le_mul_of_nonneg_left (hY_mono i) (gamma_nonneg fp hn1)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.5, left-approximate-inverse
+    first-order replacement form: if `|Y|` is bounded by `|A⁻¹|`, the forward
+    envelope uses `|A⁻¹||A||x|`. -/
+theorem higham14_problem14_5_left_inverse_solve_forward_error_firstorder_replacement
+    (n : ℕ) (fp : FPModel)
+    (A A_inv Y : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLeftRes : ∀ i j : Fin n,
+      |inverseLeftResidual n A Y i j| ≤
+        fp.u * ∑ k : Fin n, |Y i k| * |A k j|)
+    (hY_first : ∀ i j : Fin n, |Y i j| ≤ |A_inv i j|) :
+    let b := matMulVec n A x
+    let y_hat := fl_matVec fp n n Y b
+    ∀ i : Fin n,
+      |y_hat i - x i| ≤
+        gamma fp (n + 1) *
+          matMulVec n (absMatrix n A_inv)
+            (matMulVec n (absMatrix n A) (absVec n x)) i := by
+  exact
+    higham14_problem14_5_left_inverse_solve_forward_error_bound_of_abs_Y_le
+      n fp A Y x hn1 hLeftRes (absMatrix n A_inv) (by
+        intro i j
+        simpa [absMatrix] using hY_first i j)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.5 interpretation:
+    with an exact right-hand side `b = A x`, the right first-order envelope
+    applies one extra nonnegative `|A⁻¹||A|` amplification to the left
+    first-order envelope.  Since `A⁻¹A = I`, the left envelope is
+    componentwise bounded by that amplified envelope. -/
+theorem higham14_problem14_5_left_firstorder_envelope_le_right_exact_rhs_envelope
+    (n : ℕ) (A A_inv : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (hLeft : IsLeftInverse n A A_inv) :
+    ∀ i : Fin n,
+      matMulVec n (absMatrix n A_inv)
+          (matMulVec n (absMatrix n A) (absVec n x)) i ≤
+        matMulVec n (absMatrix n A_inv)
+          (matMulVec n (absMatrix n A)
+            (matMulVec n (absMatrix n A_inv)
+              (matMulVec n (absMatrix n A) (absVec n x)))) i := by
+  intro i
+  let z : Fin n → ℝ :=
+    matMulVec n (absMatrix n A_inv)
+      (matMulVec n (absMatrix n A) (absVec n x))
+  have hAx_nonneg : ∀ k : Fin n,
+      0 ≤ matMulVec n (absMatrix n A) (absVec n x) k :=
+    higham14_absMatrix_matMulVec_nonneg n A (absVec n x)
+      (fun k => abs_nonneg (x k))
+  have hz_nonneg : ∀ k : Fin n, 0 ≤ z k :=
+    higham14_absMatrix_matMulVec_nonneg n A_inv
+      (matMulVec n (absMatrix n A) (absVec n x)) hAx_nonneg
+  have hdiag : 1 ≤ ∑ j : Fin n, |A_inv i j| * |A j i| := by
+    have hsum_eq : (∑ j : Fin n, A_inv i j * A j i) = 1 := by
+      simpa using hLeft i i
+    calc
+      1 = |∑ j : Fin n, A_inv i j * A j i| := by
+            rw [hsum_eq, abs_one]
+      _ ≤ ∑ j : Fin n, |A_inv i j * A j i| :=
+            Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ j : Fin n, |A_inv i j| * |A j i| := by
+            apply Finset.sum_congr rfl
+            intro j _
+            exact abs_mul _ _
+  change z i ≤
+    matMulVec n (absMatrix n A_inv) (matMulVec n (absMatrix n A) z) i
+  calc
+    z i = 1 * z i := by ring
+    _ ≤ (∑ j : Fin n, |A_inv i j| * |A j i|) * z i :=
+        mul_le_mul_of_nonneg_right hdiag (hz_nonneg i)
+    _ = ∑ j : Fin n, (|A_inv i j| * |A j i|) * z i := by
+        rw [Finset.sum_mul]
+    _ ≤ ∑ j : Fin n, |A_inv i j| * (∑ k : Fin n, |A j k| * z k) := by
+        apply Finset.sum_le_sum
+        intro j _
+        calc
+          (|A_inv i j| * |A j i|) * z i
+              = |A_inv i j| * (|A j i| * z i) := by ring
+          _ ≤ |A_inv i j| * (∑ k : Fin n, |A j k| * z k) := by
+              apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+              exact Finset.single_le_sum
+                (fun k _ => mul_nonneg (abs_nonneg _) (hz_nonneg k))
+                (Finset.mem_univ i)
+    _ = matMulVec n (absMatrix n A_inv) (matMulVec n (absMatrix n A) z) i := by
+        simp [matMulVec, absMatrix]
+
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
 theorem higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec
