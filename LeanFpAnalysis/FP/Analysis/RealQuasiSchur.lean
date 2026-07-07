@@ -857,6 +857,29 @@ lemma trailing_conj_preserves_trailing_entry
     (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b
   rw [hei, hej, hV, embedBlock_conj_apply_inr_inr, hQ']
 
+/-- The ordered `2 x 2` block on a trailing pair is exactly the corresponding
+    principal block of the recursively conjugated trailing Schur factor. -/
+lemma principalTwoBlock_trailing_conj_transports_trailing_two
+    {d m n : ℕ} (hnm : d + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {p q : Fin n} {a b : Fin m}
+    (hp : (p : ℕ) = d + (a : ℕ))
+    (hq : (q : ℕ) = d + (b : ℕ)) :
+    let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := d) U)
+    LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q =
+      LeanFpAnalysis.FP.principalTwoBlock
+        (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b := by
+  funext i j
+  fin_cases i <;> fin_cases j
+  · exact trailing_conj_preserves_trailing_entry hnm A Q U hp hp
+  · exact trailing_conj_preserves_trailing_entry hnm A Q U hp hq
+  · exact trailing_conj_preserves_trailing_entry hnm A Q U hq hp
+  · exact trailing_conj_preserves_trailing_entry hnm A Q U hq hq
+
 /-- The principal leading `2 x 2` block is unchanged when the trailing recursive
     conjugation is re-embedded. -/
 lemma principalTwoBlock_trailing_conj_preserves_leading_two
