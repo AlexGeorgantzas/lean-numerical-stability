@@ -172,11 +172,11 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 ## GitHub synchronization
 
 - Local branch: main
-- Latest remote base integrated: `origin/main` fast-forwarded from `0af482e1` to `8411b4d2` before theorem design, then merged `57d02bfd`, `5e10aea0`, `e6c81dbe`, and `c03d362f` after local Chapter 14 milestones; upstream `45c2e8b3` was present before the determinant-product milestone; upstream `3cf69465` was merged cleanly before the Problem 14.5 forward-use push.
-- Milestone commits and split prefixes: `6939f36a` (`Split 3A: start Ch14 matrix inversion inventory`), `63347956` (`Split 3A: formalize Ch14 residual ratio`), `90a50b13` (`Split 3A: formalize Ch14 inverse exercises`), `3d01123b` (`Split 3A: clean Ch14 inverse exercise report`), `a2234884` (`Split 3A: formalize Ch14 determinant product`), `1ce54698` (`Split 3A: formalize Ch14 inverse residual completion`), `6e01df40` (`Split 3A: formalize Ch14 inverse forward use`)
+- Latest remote base integrated: `origin/main` fast-forwarded from `0af482e1` to `8411b4d2` before theorem design, then merged `57d02bfd`, `5e10aea0`, `e6c81dbe`, and `c03d362f` after local Chapter 14 milestones; upstream `45c2e8b3` was present before the determinant-product milestone; upstream `3cf69465` was merged cleanly before the Problem 14.5 forward-use push; upstream `ecb2d4e2` was present before the Problem 14.5 first-order comparison push.
+- Milestone commits and split prefixes: `6939f36a` (`Split 3A: start Ch14 matrix inversion inventory`), `63347956` (`Split 3A: formalize Ch14 residual ratio`), `90a50b13` (`Split 3A: formalize Ch14 inverse exercises`), `3d01123b` (`Split 3A: clean Ch14 inverse exercise report`), `a2234884` (`Split 3A: formalize Ch14 determinant product`), `1ce54698` (`Split 3A: formalize Ch14 inverse residual completion`), `6e01df40` (`Split 3A: formalize Ch14 inverse forward use`), `24c19e41` (`Split 3A: formalize Ch14 inverse first-order comparison`)
 - Local merge commits before report-sync updates: `24f75fa4`, `30c972c4`, `3fd44412`, `ff90ea53`, `dc77d6aa`
-- Pushed to origin/main: yes, through `dc77d6aa` before this push-record update
-- Merge/conflict resolution: clean `ort` merges; latest upstream changed `LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean`, `LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`, `docs/source_coverage/higham_ch16.md`, and `docs/source_coverage/higham_ch20.md`
+- Pushed to origin/main: yes, through `24c19e41` before this push-record update
+- Merge/conflict resolution: clean `ort` merges; latest upstream changed `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, `docs/LIBRARY_LOOKUP.md`, and `examples/LibraryLookup.lean` before the first-order comparison milestone
 - New upstream imports or exported contracts: none
 
 ## Documentation
