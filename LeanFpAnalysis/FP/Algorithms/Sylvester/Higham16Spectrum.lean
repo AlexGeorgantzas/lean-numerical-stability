@@ -81,6 +81,43 @@ theorem sylvester_realQuasiSchur_factors (m n : Nat)
   · intro i j hij
     exact hBzero i j hij
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.4), real Schur form
+    packaged for the Sylvester equation with the source-side spectral
+    certificates for adjacent `2 x 2` blocks.  This strengthens
+    `sylvester_realQuasiSchur_factors` by exposing the
+    `HasRealQuasiSchurTwoBlockSpectral` data produced by the constructed real
+    quasi-Schur decomposition.  It still does not assert Sylvester separation,
+    the block solve, or any floating-point stability bound. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) :
+    ∃ (U R : Matrix (Fin m) (Fin m) Real)
+      (V S : Matrix (Fin n) (Fin n) Real)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      U ∈ Matrix.orthogonalGroup (Fin m) Real ∧
+      V ∈ Matrix.orthogonalGroup (Fin n) Real ∧
+      Matrix.transpose U * Matrix.of A * U = R ∧
+      Matrix.transpose V * Matrix.of B * V = S ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral R pA ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral S pB := by
+  obtain ⟨U, pA, hU, hpAmono, hpAcard, hAzero, hAspectral⟩ :=
+    real_quasi_schur_blocks_twoBlockSpectral (Matrix.of A)
+  obtain ⟨V, pB, hV, hpBmono, hpBcard, hBzero, hBspectral⟩ :=
+    real_quasi_schur_blocks_twoBlockSpectral (Matrix.of B)
+  refine ⟨U, Matrix.transpose U * Matrix.of A * U,
+    V, Matrix.transpose V * Matrix.of B * V, pA, pB,
+    hU, hV, rfl, rfl, hpAmono, hpAcard, ?_, hAspectral,
+    hpBmono, hpBcard, ?_, hBspectral⟩
+  · intro i j hij
+    exact hAzero i j hij
+  · intro i j hij
+    exact hBzero i j hij
+
 /-- Adapter from Mathlib's orthogonal-group predicate to the repository's
     function-matrix orthogonality predicate. -/
 theorem IsOrthogonal.of_mem_orthogonalGroup {n : Nat}
@@ -164,6 +201,104 @@ theorem sylvester_realQuasiSchur_transform_solution_iff (m n : Nat)
     hpAmono, hpAcard, hRzero, hpBmono, hpBcard, hSzero, ?_⟩
   exact sylvester_schur_transform_solution_iff m n U R A V S B C Y hU hV hA hB
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.5), real
+    quasi-Schur existence and exact Schur-coordinate equivalence, retaining
+    the constructed adjacent `2 x 2` spectral certificates for both Schur
+    factors.  Downstream Bartels-Stewart traversal theorems can use the
+    `B`-side certificate directly as
+    `HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB`. -/
+theorem sylvester_realQuasiSchur_transform_solution_iff_twoBlockSpectral
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C Y : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB ∧
+      (IsSylvesterSolutionRect m n A B C
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <->
+        IsSylvesterSolutionRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) := by
+  obtain ⟨Umat, pA, hUmat, hpAmono, hpAcard, hAzero, hAspectral⟩ :=
+    real_quasi_schur_blocks_twoBlockSpectral (Matrix.of A)
+  obtain ⟨Vmat, pB, hVmat, hpBmono, hpBcard, hBzero, hBspectral⟩ :=
+    real_quasi_schur_blocks_twoBlockSpectral (Matrix.of B)
+  let U : RMatFn m m := fun i j => Umat i j
+  let V : RMatFn n n := fun i j => Vmat i j
+  let R : RMatFn m m := rectMatMul (matTranspose U) (rectMatMul A U)
+  let S : RMatFn n n := rectMatMul (matTranspose V) (rectMatMul B V)
+  have hU : IsOrthogonal m U :=
+    IsOrthogonal.of_mem_orthogonalGroup Umat hUmat
+  have hV : IsOrthogonal n V :=
+    IsOrthogonal.of_mem_orthogonalGroup Vmat hVmat
+  have hA : A = rectMatMul U (rectMatMul R (matTranspose U)) :=
+    (rectMatMul_schur_coords_expand U U A hU hU).symm
+  have hB : B = rectMatMul V (rectMatMul S (matTranspose V)) :=
+    (rectMatMul_schur_coords_expand V V B hV hV).symm
+  have hRmat :
+      Matrix.of R = Matrix.transpose Umat * Matrix.of A * Umat := by
+    ext i j
+    have hassoc := rectMatMul_assoc (matTranspose U) A U
+    have hentry := congrFun (congrFun hassoc i) j
+    change rectMatMul (matTranspose U) (rectMatMul A U) i j =
+      (Matrix.transpose Umat * Matrix.of A * Umat) i j
+    rw [← hentry]
+    simp [U, rectMatMul, matTranspose, Matrix.mul_apply,
+      Matrix.transpose_apply, Matrix.of_apply]
+  have hSmat :
+      Matrix.of S = Matrix.transpose Vmat * Matrix.of B * Vmat := by
+    ext i j
+    have hassoc := rectMatMul_assoc (matTranspose V) B V
+    have hentry := congrFun (congrFun hassoc i) j
+    change rectMatMul (matTranspose V) (rectMatMul B V) i j =
+      (Matrix.transpose Vmat * Matrix.of B * Vmat) i j
+    rw [← hentry]
+    simp [V, rectMatMul, matTranspose, Matrix.mul_apply,
+      Matrix.transpose_apply, Matrix.of_apply]
+  have hRzero : ∀ i j : Fin m, pA j < pA i -> R i j = 0 := by
+    intro i j hij
+    have hleft :
+        rectMatMul (rectMatMul (matTranspose U) A) U i j = 0 := by
+      simpa [U, rectMatMul, matTranspose, Matrix.mul_apply,
+        Matrix.transpose_apply, Matrix.of_apply] using hAzero i j hij
+    have hassoc := rectMatMul_assoc (matTranspose U) A U
+    have hentry := congrFun (congrFun hassoc i) j
+    change (rectMatMul (matTranspose U) (rectMatMul A U)) i j = 0
+    rw [← hentry]
+    exact hleft
+  have hSzero : ∀ i j : Fin n, pB j < pB i -> S i j = 0 := by
+    intro i j hij
+    have hleft :
+        rectMatMul (rectMatMul (matTranspose V) B) V i j = 0 := by
+      simpa [V, rectMatMul, matTranspose, Matrix.mul_apply,
+        Matrix.transpose_apply, Matrix.of_apply] using hBzero i j hij
+    have hassoc := rectMatMul_assoc (matTranspose V) B V
+    have hentry := congrFun (congrFun hassoc i) j
+    change (rectMatMul (matTranspose V) (rectMatMul B V)) i j = 0
+    rw [← hentry]
+    exact hleft
+  have hRspectral :
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA := by
+    rw [hRmat]
+    exact hAspectral
+  have hSspectral :
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB := by
+    rw [hSmat]
+    exact hBspectral
+  refine ⟨U, R, V, S, pA, pB, hU, hV, hA, hB,
+    hpAmono, hpAcard, hRzero, hRspectral,
+    hpBmono, hpBcard, hSzero, hSspectral, ?_⟩
+  exact sylvester_schur_transform_solution_iff m n U R A V S B C Y hU hV hA hB
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.4), source-numbered alias:
     real quasi-Schur factors for both sides of the Sylvester equation, with
     block maps of size at most two.  This is only the factor-existence surface,
@@ -184,6 +319,28 @@ theorem H16_eq16_4_sylvester_realQuasiSchur_factors (m n : Nat)
       (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
       (∀ i j : Fin n, pB j < pB i -> S i j = 0) :=
   sylvester_realQuasiSchur_factors m n A B
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.4), source-numbered alias
+    for real quasi-Schur factors retaining adjacent `2 x 2` block spectral
+    certificates. -/
+theorem H16_eq16_4_sylvester_realQuasiSchur_factors_twoBlockSpectral (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) :
+    ∃ (U R : Matrix (Fin m) (Fin m) Real)
+      (V S : Matrix (Fin n) (Fin n) Real)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      U ∈ Matrix.orthogonalGroup (Fin m) Real ∧
+      V ∈ Matrix.orthogonalGroup (Fin n) Real ∧
+      Matrix.transpose U * Matrix.of A * U = R ∧
+      Matrix.transpose V * Matrix.of B * V = S ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral R pA ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral S pB :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral m n A B
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.5),
     source-numbered alias: choose real quasi-Schur coordinates and expose the
@@ -210,6 +367,32 @@ theorem H16_eq16_4_5_sylvester_realQuasiSchur_transform_solution_iff
         IsSylvesterSolutionRect m n R S
           (rectMatMul (matTranspose U) (rectMatMul C V)) Y) :=
   sylvester_realQuasiSchur_transform_solution_iff m n A B C Y
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.5),
+    source-numbered alias retaining the adjacent `2 x 2` block spectral
+    certificates alongside the exact Schur-coordinate solution equivalence. -/
+theorem H16_eq16_4_5_sylvester_realQuasiSchur_transform_solution_iff_twoBlockSpectral
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C Y : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB ∧
+      (IsSylvesterSolutionRect m n A B C
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <->
+        IsSylvesterSolutionRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) :=
+  sylvester_realQuasiSchur_transform_solution_iff_twoBlockSpectral m n A B C Y
 
 -- ============================================================
 -- (16.3): constructive spectral directions
