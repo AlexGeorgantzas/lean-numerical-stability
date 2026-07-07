@@ -543,6 +543,51 @@ lemma principalTwoBlock_disc_neg_of_frameSpan_two
       (matrixNoRealEigenline_principalTwoBlock_of_frameSpan_two
         A Q hp hq hQ W hQspan hWinv hWno)
 
+/-- A two-dimensional invariant subspace with no real eigenline can be framed by
+    the first two columns of an orthogonal matrix so that the leading principal
+    `2 x 2` block has both the no-real-eigenline and negative-discriminant
+    certificates. This packages the `d = 2` branch data before recursive
+    split/reindex threading. -/
+lemma exists_orthogonal_frame_two_principalBlock_noRealEigenline_disc_neg
+    (A : Matrix (Fin n) (Fin n) ℝ)
+    (W : Submodule ℝ (Fin n → ℝ))
+    (hd : finrank ℝ W = 2)
+    (hWinv : ∀ w ∈ W, A.mulVecLin w ∈ W)
+    (hWno :
+      ∀ w ∈ W, w ≠ 0 →
+        ¬ ∃ nu : ℝ, A *ᵥ w = nu • w) :
+    ∃ (Q : Matrix (Fin n) (Fin n) ℝ) (p q : Fin n),
+      Q ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+        (p : ℕ) = 0 ∧
+        (q : ℕ) = 1 ∧
+        Submodule.span ℝ
+          (Set.range
+            (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1))) = W ∧
+        LeanFpAnalysis.FP.MatrixNoRealEigenline
+          (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q) ∧
+        ((Qᵀ * A * Q) p p - (Qᵀ * A * Q) q q) ^ 2 +
+          4 * (Qᵀ * A * Q) p q * (Qᵀ * A * Q) q p < 0 := by
+  have hdn : 2 ≤ n := by
+    have hle : finrank ℝ W ≤ finrank ℝ (Fin n → ℝ) := Submodule.finrank_le W
+    rw [hd] at hle
+    simpa using hle
+  obtain ⟨Q, hQ, _hQmem, hQspan⟩ := exists_orthogonal_frame W 2 hd
+  let p : Fin n := ⟨0, by omega⟩
+  let q : Fin n := ⟨1, by omega⟩
+  have hp : (p : ℕ) = 0 := rfl
+  have hq : (q : ℕ) = 1 := rfl
+  have hno :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q) :=
+    matrixNoRealEigenline_principalTwoBlock_of_frameSpan_two
+      A Q hp hq hQ W hQspan hWinv hWno
+  have hdisc :
+      ((Qᵀ * A * Q) p p - (Qᵀ * A * Q) q q) ^ 2 +
+        4 * (Qᵀ * A * Q) p q * (Qᵀ * A * Q) q p < 0 :=
+    principalTwoBlock_disc_neg_of_frameSpan_two
+      A Q hp hq hQ W hQspan hWinv hWno
+  exact ⟨Q, p, q, hQ, hp, hq, hQspan, hno, hdisc⟩
+
 /-! ### Reindexing helpers: conjugation and orthogonality transport
 
 Transporting an orthogonal conjugation `Xᵀ A X` along an index equivalence
