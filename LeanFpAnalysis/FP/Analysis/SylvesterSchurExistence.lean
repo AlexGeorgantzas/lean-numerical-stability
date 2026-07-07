@@ -154,6 +154,45 @@ theorem complex_sylvester_vec_system_iff_solution {m n : ℕ}
   · intro h
     rw [complexSylvesterVecCoeff_mulVec_vec, h]
 
+/-- If the homogeneous complex Sylvester equation has a unique solution, then
+    the vec/Kronecker Sylvester coefficient matrix is nonsingular. -/
+theorem complexSylvesterVecCoeff_det_ne_zero_of_unique_homogeneous {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (huniq : ∃! X : Matrix (Fin m) (Fin n) ℂ,
+      IsComplexSylvesterSolution A B (0 : Matrix (Fin m) (Fin n) ℂ) X) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 := by
+  intro hdet
+  obtain ⟨v, hvne, hvzero⟩ :=
+    (Matrix.exists_mulVec_eq_zero_iff
+      (M := complexSylvesterVecCoeff A B)).mpr hdet
+  let X : Matrix (Fin m) (Fin n) ℂ := fun i j => v (j, i)
+  have hvecX : Matrix.vec X = v := by
+    ext p
+    cases p
+    rfl
+  have hXsol :
+      IsComplexSylvesterSolution A B (0 : Matrix (Fin m) (Fin n) ℂ) X := by
+    unfold IsComplexSylvesterSolution
+    have hcoeff := complexSylvesterVecCoeff_mulVec_vec A B X
+    rw [hvecX] at hcoeff
+    have hvecOp : Matrix.vec (complexSylvesterOp A B X) = 0 :=
+      hcoeff.symm.trans hvzero
+    ext i j
+    have hp := congrFun hvecOp (j, i)
+    simpa [Matrix.vec] using hp
+  have hzeroSol :
+      IsComplexSylvesterSolution A B (0 : Matrix (Fin m) (Fin n) ℂ)
+        (0 : Matrix (Fin m) (Fin n) ℂ) := by
+    simp [IsComplexSylvesterSolution, complexSylvesterOp]
+  obtain ⟨Y, _, huniqY⟩ := huniq
+  have hXeq0 : X = 0 := by
+    calc
+      X = Y := huniqY X hXsol
+      _ = 0 := (huniqY (0 : Matrix (Fin m) (Fin n) ℂ) hzeroSol).symm
+  apply hvne
+  rw [← hvecX, hXeq0]
+  simp
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.4): upper triangularity for a
     complex square matrix (all strictly-below-diagonal entries vanish).  This is
     the structure produced unconditionally by `schur_triangulation` over `ℂ`. -/
@@ -1067,6 +1106,36 @@ theorem H16_eq16_3_complexSylvester_exists_unique_of_no_common_eigenpair
             z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
     ∃! X : Matrix (Fin m) (Fin n) ℂ, IsComplexSylvesterSolution A B C X :=
   complexSylvester_exists_unique_of_no_common_eigenpair A B C hno
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.3), complex
+    route with factors supplied by Schur existence: if the original complex
+    matrices have no common supplied right eigenpair, then the vec/Kronecker
+    Sylvester coefficient `I_n kron A - B^T kron I_m` is nonsingular. -/
+theorem complexSylvesterVecCoeff_det_ne_zero_of_no_common_eigenpair {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 :=
+  complexSylvesterVecCoeff_det_ne_zero_of_unique_homogeneous A B
+    (complexSylvester_exists_unique_of_no_common_eigenpair A B
+      (0 : Matrix (Fin m) (Fin n) ℂ) hno)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.3):
+    source-numbered alias for the complex vec/Kronecker determinant
+    nonsingularity theorem from no common supplied right eigenpair. -/
+theorem H16_eq16_3_complexSylvesterVecCoeff_det_ne_zero_of_no_common_eigenpair
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 :=
+  complexSylvesterVecCoeff_det_ne_zero_of_no_common_eigenpair A B hno
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.6), complex path,
     HEADLINE unconditional-existence form.  For ANY complex square matrices
