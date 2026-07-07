@@ -197,6 +197,35 @@ theorem theorem20_7_initialWeightedRowMax_abs_b_le {m n : ℕ}
   dsimp [theorem20_7_initialWeightedRowMax]
   exact le_max_right _ _
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    weighted source-row sorting follows from sorting both the source row
+    maximum and the source right-hand-side magnitude.
+
+This isolates the weighted-LS row-sorting obligation used by the row-sorted
+QR handoff: once the source rows are ordered for `max_j |a_ij|` and `|b_i|`,
+the combined scale `max(phi max_j |a_ij|, |b_i|)` is ordered as well. -/
+theorem theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (hphi : 0 ≤ phi)
+    (hA :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hb :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+      theorem20_7_initialWeightedRowMax hn A b phi s ≤
+        theorem20_7_initialWeightedRowMax hn A b phi
+          ⟨k, lt_of_lt_of_le hk hnm⟩ := by
+  intro k hk s hks
+  dsimp [theorem20_7_initialWeightedRowMax]
+  exact
+    max_le_max
+      (mul_le_mul_of_nonneg_left (hA k hk s hks) hphi)
+      (hb k hk s hks)
+
 /-- Source-shaped nonzero-row hypotheses discharge both denominator
     positivity side conditions used by the Theorem 20.7 row-growth bridges. -/
 theorem theorem20_7_denominators_pos_of_rows_nonzero {m n : ℕ}
