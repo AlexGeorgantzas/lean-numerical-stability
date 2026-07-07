@@ -1192,6 +1192,47 @@ theorem realMatrixToComplex_intertwining_of_real
       realMatrixToComplex X * realMatrixToComplex B := by
   rw [← realMatrixToComplex_mul A X, hX, realMatrixToComplex_mul X B]
 
+/-- If a real matrix has trivial real kernel, then its entrywise
+    complexification has trivial complex kernel. -/
+theorem realMatrixToComplex_mulVec_eq_zero_of_real_kernel_trivial
+    {ι κ : Type*} [Fintype κ]
+    (U : Matrix ι κ Real)
+    (hker : ∀ x : κ -> Real, Matrix.mulVec U x = 0 -> x = 0)
+    {w : κ -> Complex}
+    (hw : Matrix.mulVec (realMatrixToComplex U) w = 0) :
+    w = 0 := by
+  have hre :
+      Matrix.mulVec U (fun k : κ => (w k).re) = 0 := by
+    ext i
+    have hcoord := congrFun hw i
+    have hcoord_re := congrArg Complex.re hcoord
+    simpa [Matrix.mulVec, dotProduct, realMatrixToComplex] using hcoord_re
+  have him :
+      Matrix.mulVec U (fun k : κ => (w k).im) = 0 := by
+    ext i
+    have hcoord := congrFun hw i
+    have hcoord_im := congrArg Complex.im hcoord
+    simpa [Matrix.mulVec, dotProduct, realMatrixToComplex] using hcoord_im
+  have hre0 := hker (fun k : κ => (w k).re) hre
+  have him0 := hker (fun k : κ => (w k).im) him
+  funext k
+  have hrek := congrFun hre0 k
+  have himk := congrFun him0 k
+  exact Complex.ext (by simpa using hrek) (by simpa using himk)
+
+/-- Nonzero complex vectors remain nonzero after a complexified real matrix
+    whose real kernel is trivial. -/
+theorem realMatrixToComplex_mulVec_ne_zero_of_real_kernel_trivial
+    {ι κ : Type*} [Fintype κ]
+    (U : Matrix ι κ Real)
+    (hker : ∀ x : κ -> Real, Matrix.mulVec U x = 0 -> x = 0)
+    {w : κ -> Complex}
+    (hw : w ≠ 0) :
+    Matrix.mulVec (realMatrixToComplex U) w ≠ 0 := by
+  intro hzero
+  exact hw
+    (realMatrixToComplex_mulVec_eq_zero_of_real_kernel_trivial U hker hzero)
+
 /-- Kernel invariance for a finite real-matrix intertwiner: if `A * X = X * B`,
     then the kernel of `X` is mapped into itself by `B`.  This is the real
     invariant-line algebra needed before the Chapter 16 `2 x 2` real-Schur
@@ -1612,6 +1653,35 @@ theorem sylvesterTwoColumnBlock_columnPair_mulVec_eq_zero_of_no_real_eigenvector
   finiteRealMatrix_intertwiner_mulVec_eq_zero_of_no_real_eigenvector
     (Matrix.of A) (sylvesterTwoColumnRealSchurBlock n T p q)
     (sylvesterTwoColumnBlockColumnPair m u v) hX hU hno
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), complexified
+    nonzero-image bridge for the two-column intertwiner: if the adjacent
+    `2 x 2` real Schur block has no real eigenvector and the active
+    column-pair map is nonzero, then every nonzero complex vector has nonzero
+    image under the complexified column-pair map. -/
+theorem sylvesterTwoColumnBlock_columnPair_complex_mulVec_ne_zero_of_no_real_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (u v : Fin m -> Real)
+    (hX :
+      Matrix.of A * sylvesterTwoColumnBlockColumnPair m u v =
+        sylvesterTwoColumnBlockColumnPair m u v *
+          sylvesterTwoColumnRealSchurBlock n T p q)
+    (hU : sylvesterTwoColumnBlockColumnPair m u v ≠ 0)
+    (hno :
+      ∀ x : Fin 2 -> Real, x ≠ 0 ->
+        ¬ ∃ mu : Real,
+          Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+            fun k => mu * x k)
+    {w : Fin 2 -> Complex}
+    (hw : w ≠ 0) :
+    Matrix.mulVec
+        (realMatrixToComplex (sylvesterTwoColumnBlockColumnPair m u v)) w ≠ 0 :=
+  realMatrixToComplex_mulVec_ne_zero_of_real_kernel_trivial
+    (sylvesterTwoColumnBlockColumnPair m u v)
+    (sylvesterTwoColumnBlock_columnPair_mulVec_eq_zero_of_no_real_eigenvector
+      m n A T p q u v hX hU hno)
+    hw
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-action
     packaging: the two coupled active-column equations are equivalent to
