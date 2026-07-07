@@ -3233,6 +3233,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_pathU_pivots_ne_zero`
 - `higham9_15_pathLU_unique`
 - `higham9_15_pathLU_zero`
+- `higham9_15_pathS`
+- `higham9_15_pathS_zero`
+- `higham9_15_frobNormRect_smul`
+- `higham9_15_pathS_selfMajorant`
 - `higham9_15_normalized_G_factorization_matrix`
 - `higham9_15_normalized_Gtilde_factorization_matrix`
 - `higham9_15_strilPart`
