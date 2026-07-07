@@ -5313,7 +5313,8 @@ a transfer or packaging result rather than a complete local analysis.
 
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
 Problem 14.3, the explicit residual-ratio family from Problem 14.4, the residual
-and forward-error consequences from Problem 14.5, Problem 14.7, the p.279
+and forward-error consequences from Problem 14.5, Problem 14.7, Problem 14.8's
+complex-to-real block inverse and HPD-to-SPD bridge, the p.279
 Hadamard determinant condition number, equation (14.34) in its exact
 no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
 Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence,
@@ -5350,6 +5351,18 @@ Problem 14.15's scalar product-radius support, the exact Hyman block identities
 - `higham14_problem14_5_left_firstorder_envelope_le_right_exact_rhs_envelope`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones`
+- `higham14_problem14_8_realBlockMatrix`
+- `higham14_problem14_8_realToComplexVec`
+- `higham14_problem14_8_complexToRealVec`
+- `higham14_problem14_8_complexQuadraticForm`
+- `higham14_problem14_8_realBlockSymPosDef`
+- `higham14_problem14_8_complexHermitianPosDef`
+- `higham14_problem14_8_realBlockMatrix_finiteMatVec_eq_complexToRealVec`
+- `higham14_problem14_8_realBlockMatrix_rightInverse_of_complex`
+- `higham14_problem14_8_realBlockMatrix_leftInverse_of_complex`
+- `higham14_problem14_8_realBlockMatrix_inverse_of_complex`
+- `higham14_problem14_8_realBlockMatrix_quadratic_eq_complexQuadratic`
+- `higham14_problem14_8_realBlockMatrix_symPosDef_of_complexHermitianPosDef`
 - `higham14_method2BBlockUpdateExact`
 - `higham14_method2BBlockUpdateDelta`
 - `higham14_eq14_14_method2B_block_update_decomposition`
