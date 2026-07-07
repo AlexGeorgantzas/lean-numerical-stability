@@ -9800,6 +9800,97 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_c
       m n U R A V S B C Cschur X pmap hU hV hA hB hCschur hmono hcard
       hzero hspectral hnoOrig hXsingle hXblock
 
+/-- Any exact Schur-coordinate solution satisfies the generated-step formula
+    oracle when the real quasi-Schur block map and original no-common spectrum
+    hypotheses provide the singleton and two-column nonsingularity
+    certificates.  This turns the packaged oracle into a consequence of exact
+    solvability, rather than a separate formula assumption. -/
+theorem isSylvesterQuasiSchurGeneratedStepFormula_of_solution_twoBlockSpectral_no_common
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B))
+    (hXsol : IsSylvesterSolutionRect m n R S C X) :
+    IsSylvesterQuasiSchurGeneratedStepFormula m n R S C X pmap := by
+  constructor
+  · intro p hprev hnext i
+    have hsingle :
+        forall q : Fin n, pmap q = pmap p -> q = p :=
+      quasiSchur_singleton_fiber_of_prev_next_not_same
+        n pmap p hmono hprev hnext
+    have hdet :
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0) :=
+      sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_singleton_no_common_complex_right_eigenvalue
+        m n U R A V S B pmap p hU hV hA hB hzero hsingle hnoOrig
+    have hbelow : forall j : Fin n, p < j -> S j p = 0 :=
+      quasiSchur_zero_below_of_singleton_successor
+        n S pmap p hmono hzero hnext
+    let M : Matrix (Fin m) (Fin m) Real :=
+      sylvesterTriangularShiftedCoeff m R (S p p)
+    let rhs : Fin m -> Real := fun i => C i p +
+      Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+        (fun j => S j p * X i j)
+    have hMx : Matrix.mulVec M (fun i : Fin m => X i p) = rhs := by
+      dsimp [M, rhs]
+      exact sylvester_column_equation_of_solution_zero_below
+        m n R S C X p hbelow hXsol
+    have hleft : Inv.inv M * M = 1 := by
+      dsimp [M]
+      exact sylvesterTriangularShiftedCoeff_nonsingInv_mul
+        m R (S p p) hdet
+    have hvec :
+        (fun i : Fin m => X i p) =
+          Matrix.mulVec (Inv.inv M) rhs := by
+      calc
+        (fun i : Fin m => X i p) =
+            Matrix.mulVec (1 : Matrix (Fin m) (Fin m) Real)
+              (fun i : Fin m => X i p) := by
+              simp
+        _ = Matrix.mulVec (Inv.inv M * M) (fun i : Fin m => X i p) := by
+              rw [hleft]
+        _ = Matrix.mulVec (Inv.inv M)
+              (Matrix.mulVec M (fun i : Fin m => X i p)) := by
+              rw [Matrix.mulVec_mulVec]
+        _ = Matrix.mulVec (Inv.inv M) rhs := by
+              rw [hMx]
+    exact congrFun hvec i
+  · intro p q hpq hsame
+    have hblockdet :=
+      sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+        m n U R A V S B pmap p q hU hV hA hB hmono hcard hzero
+        hpq hsame hspectral hnoOrig
+    have hsystem : IsSylvesterTwoColumnBlockSystem m n R S C X p q :=
+      sylvester_quasiTriangular_two_column_block_system_of_solution
+        m n R S C X p q hblockdet.1 hXsol
+    have hz :
+        Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n R S p q)
+            (Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q)) =
+          sylvesterTwoColumnBlockRhs m n S C X p q := by
+      have hz' :=
+        (sylvester_two_column_block_system_iff_blockCoeff_mulVec
+          m n R S C X p q).mp hsystem
+      simpa [sylvesterTwoColumnBlockRhs] using hz'
+    have hvec :=
+      sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_zero
+        m n R S C X p q hblockdet.2 hz
+    constructor
+    · intro i
+      exact congrFun hvec (Sum.inl i)
+    · intro i
+      exact congrFun hvec (Sum.inr i)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
     `A - t_kk I` nonsingular, two solutions of `AX - XT = C` coincide, by
