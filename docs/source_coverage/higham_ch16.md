@@ -1144,6 +1144,12 @@ Latest open-row update:
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: passed after adding the (16.3) source-numbered real constructive spectral aliases.
   - `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder|TODO|FIXME)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: no matches after the (16.3) source-numbered alias wave.
   - `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean docs/source_coverage/higham_ch16.md`: passed for the (16.3) source-numbered alias wave, with only the usual CRLF normalization warning before the commit.
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: passed after adding the direct discriminant, rotation-scaling, and no-real-eigenline real-Schur block-separation adapters.
+  - `lake env lean LeanFpAnalysis/FP/Analysis/RealInvariantSubspace.lean`: passed after adding `no_real_eigenvector_in_span_of_rotation_scaling` and again after adding `exists_real_invariant_subspace_dim_one_or_two_no_real_eigenline`.
+  - Merge validation after the concurrent Chapter 9 update: `lake env lean LeanFpAnalysis/FP/Analysis/RealInvariantSubspace.lean` passed cleanly, and `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` passed with existing deprecation/unused-simp warnings only.
+  - Downstream validation after the source irreducibility export: `lake env lean LeanFpAnalysis/FP/Analysis/RealQuasiSchur.lean` and `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean` passed cleanly.
+  - `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder)\b" LeanFpAnalysis/FP/Analysis/RealInvariantSubspace.lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: no matches after the discriminant/no-real-eigenline source and adapter wave.
+  - `git diff --check -- LeanFpAnalysis/FP/Analysis/RealInvariantSubspace.lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean docs/source_coverage/higham_ch16.md`: passed for the discriminant/no-real-eigenline source and adapter wave, with only the usual CRLF normalization warning before the commits.
 
 ## Git and Local-Only Notes
 
