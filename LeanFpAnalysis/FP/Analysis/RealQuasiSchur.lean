@@ -741,6 +741,74 @@ lemma embedBlock_conj_apply_inl_inl {d m : ℕ}
       M (Sum.inl a) (Sum.inl b) := by
   simp [embedBlock, Matrix.fromBlocks, Matrix.mul_apply, Matrix.one_apply]
 
+/-- Trailing recursive conjugation leaves entries in the leading `d = 2` block
+    unchanged after transporting back from the split index. -/
+lemma trailing_conj_preserves_leading_entry
+    {m n : ℕ} (hnm : 2 + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {i j : Fin n} (hi : (i : ℕ) < 2) (hj : (j : ℕ) < 2) :
+    let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := 2) U)
+    (Qfullᵀ * A * Qfull) i j = (Qᵀ * A * Q) i j := by
+  let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+  let Q' : Matrix (Fin 2 ⊕ Fin m) (Fin 2 ⊕ Fin m) ℝ := Matrix.reindex e e Q
+  let A' : Matrix (Fin 2 ⊕ Fin m) (Fin 2 ⊕ Fin m) ℝ := Matrix.reindex e e A
+  let E : Matrix (Fin 2 ⊕ Fin m) (Fin 2 ⊕ Fin m) ℝ := embedBlock (d := 2) U
+  let V : Matrix (Fin 2 ⊕ Fin m) (Fin 2 ⊕ Fin m) ℝ := Q' * E
+  have hQfull :
+      (Matrix.reindex e.symm e.symm V)ᵀ * A * Matrix.reindex e.symm e.symm V =
+        Matrix.reindex e.symm e.symm (Vᵀ * A' * V) := by
+    have h := reindex_conj e.symm A' V
+    rw [show Matrix.reindex e.symm e.symm A' = A by
+      simpa [A'] using reindex_symm_reindex e A] at h
+    exact h.symm
+  have hV :
+      Vᵀ * A' * V = Eᵀ * (Q'ᵀ * A' * Q') * E := by
+    dsimp [V]
+    rw [Matrix.transpose_mul]
+    simp only [mul_assoc]
+  have hQ' : Q'ᵀ * A' * Q' = Matrix.reindex e e (Qᵀ * A * Q) := by
+    exact (reindex_conj e A Q).symm
+  have hei : e i = Sum.inl ⟨(i : ℕ), hi⟩ := splitEquiv_eq_inl_of_lt hnm i hi
+  have hej : e j = Sum.inl ⟨(j : ℕ), hj⟩ := splitEquiv_eq_inl_of_lt hnm j hj
+  have hsym_i : e.symm (Sum.inl ⟨(i : ℕ), hi⟩) = i := by
+    rw [← hei]
+    exact e.symm_apply_apply i
+  have hsym_j : e.symm (Sum.inl ⟨(j : ℕ), hj⟩) = j := by
+    rw [← hej]
+    exact e.symm_apply_apply j
+  change (((Matrix.reindex e.symm e.symm V)ᵀ * A *
+      Matrix.reindex e.symm e.symm V) i j = (Qᵀ * A * Q) i j)
+  rw [hQfull]
+  simp only [Matrix.reindex_apply, Matrix.submatrix_apply]
+  change (Vᵀ * A' * V) (e i) (e j) = (Qᵀ * A * Q) i j
+  rw [hei, hej, hV, embedBlock_conj_apply_inl_inl, hQ']
+  simp [Matrix.reindex_apply, hsym_i, hsym_j]
+
+/-- The principal leading `2 x 2` block is unchanged when the trailing recursive
+    conjugation is re-embedded. -/
+lemma principalTwoBlock_trailing_conj_preserves_leading_two
+    {m n : ℕ} (hnm : 2 + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {p q : Fin n}
+    (hp : (p : ℕ) = 0) (hq : (q : ℕ) = 1) :
+    let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := 2) U)
+    LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q =
+      LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q := by
+  funext i j
+  fin_cases i <;> fin_cases j
+  · exact trailing_conj_preserves_leading_entry hnm A Q U (by omega) (by omega)
+  · exact trailing_conj_preserves_leading_entry hnm A Q U (by omega) (by omega)
+  · exact trailing_conj_preserves_leading_entry hnm A Q U (by omega) (by omega)
+  · exact trailing_conj_preserves_leading_entry hnm A Q U (by omega) (by omega)
+
 /-! ### The variable-`d` orthogonal deflation induction (Higham (16.4)) -/
 
 open RealInvariantSubspaceAux in
