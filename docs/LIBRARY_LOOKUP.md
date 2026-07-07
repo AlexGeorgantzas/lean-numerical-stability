@@ -5424,6 +5424,11 @@ Problem 14.15's scalar product-radius support, the exact Hyman block identities
 - `higham14_problem14_13_kappa_lt_two_mul_hadamardConditionNumber_of_unit_rows`
 - `prod_one_add_delta_abs_sub_one_le_gamma_radius`
 - `higham14_problem14_15_theta_product_bound`
+- `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_of_sub_rectOpNorm2Le`
+- `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le`
+- `higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt`
+- `higham14_problem14_15_opNorm2_add_le_of_opNorm2Le`
+- `higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le`
 - `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_perm_sign_mul_det_eq_prod_U_diag_of_PermutedLUFactSpec`

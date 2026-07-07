@@ -31,6 +31,7 @@ import LeanFpAnalysis.FP.Algorithms.LU.LUSolve
 import LeanFpAnalysis.FP.Algorithms.LU.GrowthFactor
 import LeanFpAnalysis.FP.Algorithms.HighamChapter8
 import LeanFpAnalysis.FP.Algorithms.HighamChapter9
+import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
 
 namespace LeanFpAnalysis.FP
 
@@ -4464,6 +4465,101 @@ theorem higham14_problem14_15_theta_product_bound {n : ℕ} (hnpos : 0 < n)
     |(∏ i : Fin n, (1 + theta i)) - 1| ≤
       ((n : ℝ) * eps) / (1 - (n : ℝ) * eps) :=
   prod_one_add_delta_abs_sub_one_le_gamma_radius n hnpos heps0 hsmall theta htheta
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    the smallest ordered singular value of a perturbed square matrix is bounded
+    below by `sigma_min(A) - delta` whenever `delta` bounds `B - A` in
+    operator 2-norm.  This is the extremal singular-value perturbation line
+    reused from the Chapter 20 Wedin infrastructure. -/
+theorem higham14_problem14_15_sigmaMin_sub_le_sigmaMin_of_sub_rectOpNorm2Le
+    {k : ℕ} (A B : Fin (k + 1) → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta) :
+    complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k) - delta ≤
+      complexMatrixSingularValue (realRectToCMatrix B) (Fin.last k) := by
+  simpa [wedinLemma20_11_sigmaMinCol] using
+    wedinLemma20_11_sigmaMinCol_sub_le_sigmaMinCol_of_sub_rectOpNorm2Le
+      A B hDelta
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    additive perturbation form of the smallest-singular-value lower bound. -/
+theorem higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le
+    {k : ℕ} (A Delta : Fin (k + 1) → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : rectOpNorm2Le Delta delta) :
+    complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k) - delta ≤
+      complexMatrixSingularValue
+        (realRectToCMatrix (fun i j => A i j + Delta i j)) (Fin.last k) := by
+  have hSub :
+      rectOpNorm2Le
+        (fun i j => (A i j + Delta i j) - A i j) delta := by
+    convert hDelta using 1
+    ext i j
+    ring
+  exact
+    higham14_problem14_15_sigmaMin_sub_le_sigmaMin_of_sub_rectOpNorm2Le
+      A (fun i j => A i j + Delta i j) hSub
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    a perturbation smaller than `sigma_min(A)` keeps the perturbed smallest
+    singular value positive. -/
+theorem higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt
+    {k : ℕ} (A Delta : Fin (k + 1) → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : rectOpNorm2Le Delta delta)
+    (hsmall :
+      delta <
+        complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k)) :
+    0 <
+      complexMatrixSingularValue
+        (realRectToCMatrix (fun i j => A i j + Delta i j)) (Fin.last k) := by
+  have hSub :
+      rectOpNorm2Le
+        (fun i j => (A i j + Delta i j) - A i j) delta := by
+    convert hDelta using 1
+    ext i j
+    ring
+  simpa [wedinLemma20_11_sigmaMinCol] using
+    wedinLemma20_11_sigmaMinCol_pos_of_sub_rectOpNorm2Le_lt
+      A (fun i j => A i j + Delta i j) hSub
+      (by simpa [wedinLemma20_11_sigmaMinCol] using hsmall)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    operator 2-norm triangle inequality for an additive perturbation. -/
+theorem higham14_problem14_15_opNorm2_add_le_of_opNorm2Le
+    {k : ℕ} (A Delta : Fin (k + 1) → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : opNorm2Le Delta delta) :
+    opNorm2 (fun i j => A i j + Delta i j) ≤ opNorm2 A + delta := by
+  have hdelta_nonneg : 0 ≤ delta :=
+    opNorm2Le_radius_nonneg Delta hDelta
+  refine opNorm2_le_of_opNorm2Le
+    (fun i j => A i j + Delta i j)
+    (add_nonneg (opNorm2_nonneg A) hdelta_nonneg) ?_
+  intro x
+  rw [matMulVec_add_left]
+  calc
+    vecNorm2 (fun i => matMulVec (k + 1) A x i + matMulVec (k + 1) Delta x i)
+        ≤ vecNorm2 (matMulVec (k + 1) A x) +
+            vecNorm2 (matMulVec (k + 1) Delta x) :=
+          vecNorm2_add_le _ _
+    _ ≤ opNorm2 A * vecNorm2 x + delta * vecNorm2 x :=
+          add_le_add (opNorm2Le_opNorm2 A x) (hDelta x)
+    _ = (opNorm2 A + delta) * vecNorm2 x := by
+          ring
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    largest-singular-value additive perturbation bound, expressed through the
+    Chapter 14 ordered-singular-value bridge. -/
+theorem higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le
+    {k : ℕ} (A Delta : Fin (k + 1) → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : opNorm2Le Delta delta) :
+    complexMatrixSingularValue
+        (realRectToCMatrix (fun i j => A i j + Delta i j))
+        ⟨0, Nat.succ_pos k⟩ ≤
+      complexMatrixSingularValue (realRectToCMatrix A)
+          ⟨0, Nat.succ_pos k⟩ + delta := by
+  rw [← higham14_problem14_13_opNorm2_eq_complex_top_singularValue
+      (Nat.succ_pos k) (fun i j => A i j + Delta i j),
+    ← higham14_problem14_13_opNorm2_eq_complex_top_singularValue
+      (Nat.succ_pos k) A]
+  exact higham14_problem14_15_opNorm2_add_le_of_opNorm2Le A Delta hDelta
 
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
