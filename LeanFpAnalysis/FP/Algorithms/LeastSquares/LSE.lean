@@ -10275,6 +10275,223 @@ theorem theorem20_7_deltaBEntry_bound_of_active_row_geometric_entry_growth_nat
       hm hn Astage A bstage b phi gammaTilde i hphi hgamma
       hdenA hdenW hA hb)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    positive `phi` and nonzero source rows discharge the denominator
+    assumptions in the active-row geometric `Delta A` budget bridge. -/
+theorem theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (gammaTilde : ℝ) (i : Fin m) (j : Fin n)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_deltaAEntryBudget gammaTilde
+        (theorem20_7_alpha hn Astage A i)
+        (theorem20_7_initialRowMax hn A i) j ≤
+      theorem20_7_deltaAEntryBudget gammaTilde
+        (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+        (theorem20_7_initialRowMax hn A i) j := by
+  have hden := theorem20_7_denominators_pos_of_rows_nonzero hn A b hphi hrows
+  exact
+    theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_nat
+      hm hn Astage A bstage b phi gammaTilde i j (le_of_lt hphi)
+      hgamma hden.1 hden.2 hA hb
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    positive `phi` and nonzero source rows discharge the denominator
+    assumptions in the active-row geometric `Delta b` budget bridge. -/
+theorem theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (gammaTilde : ℝ) (i : Fin m)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_deltaBEntryBudget n gammaTilde
+        (theorem20_7_beta hn Astage A bstage b phi i)
+        (theorem20_7_initialWeightedRowMax hn A b phi i) ≤
+      theorem20_7_deltaBEntryBudget n gammaTilde
+        (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+        (theorem20_7_initialWeightedRowMax hn A b phi i) := by
+  have hden := theorem20_7_denominators_pos_of_rows_nonzero hn A b hphi hrows
+  exact
+    theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_nat
+      hm hn Astage A bstage b phi gammaTilde i (le_of_lt hphi) hgamma
+      hden.1 hden.2 hA hb
+
+/-- A `Delta A` entry satisfying the printed row-ratio budget also satisfies
+    the active-row uniform budget under the source-shaped nonzero-row
+    hypotheses. -/
+theorem theorem20_7_deltaAEntry_bound_of_active_row_geometric_entry_growth_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (gammaTilde : ℝ) (DeltaA : Fin m → Fin n → ℝ)
+    (i : Fin m) (j : Fin n)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hDelta :
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (theorem20_7_alpha hn Astage A i)
+          (theorem20_7_initialRowMax hn A i) j) :
+    |DeltaA i j| ≤
+      theorem20_7_deltaAEntryBudget gammaTilde
+        (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+        (theorem20_7_initialRowMax hn A i) j :=
+  hDelta.trans
+    (theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_rows_nonzero_nat
+      hm hn Astage A bstage b gammaTilde i j hphi hgamma hrows hA hb)
+
+/-- A `Delta b` entry satisfying the printed row-ratio budget also satisfies
+    the active-row uniform budget under the source-shaped nonzero-row
+    hypotheses. -/
+theorem theorem20_7_deltaBEntry_bound_of_active_row_geometric_entry_growth_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (gammaTilde : ℝ) (Deltab : Fin m → ℝ) (i : Fin m)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hDelta :
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (theorem20_7_beta hn Astage A bstage b phi i)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    |Deltab i| ≤
+      theorem20_7_deltaBEntryBudget n gammaTilde
+        (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+        (theorem20_7_initialWeightedRowMax hn A b phi i) :=
+  hDelta.trans
+    (theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_rows_nonzero_nat
+      hm hn Astage A bstage b gammaTilde i hphi hgamma hrows hA hb)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    all-entry active-row geometric budget bridge with source-shaped
+    nonzero-row denominator hypotheses. -/
+theorem theorem20_7_deltaEntries_bound_all_of_active_row_geometric_entry_growth_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (gammaTilde : ℝ) (DeltaA : Fin m → Fin n → ℝ)
+    (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Astage A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Astage A bstage b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  constructor
+  · intro i j
+    exact
+      theorem20_7_deltaAEntry_bound_of_active_row_geometric_entry_growth_rows_nonzero_nat
+        hm hn Astage A bstage b gammaTilde DeltaA i j hphi hgamma
+        hrows hA hb (hDeltaA i j)
+  · intro i
+    exact
+      theorem20_7_deltaBEntry_bound_of_active_row_geometric_entry_growth_rows_nonzero_nat
+        hm hn Astage A bstage b gammaTilde Deltab i hphi hgamma
+        hrows hA hb (hDeltab i)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    source-shaped active-row geometric wrapper for a row-wise backward-error
+    certificate.  It packages the exact perturbed least-squares solution with
+    the active-row uniform perturbation budgets. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_row_geometric_entry_growth_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (gammaTilde : ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k i j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A i)
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k i| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Astage bstage phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  refine ⟨hcert.exact_solution, ?_⟩
+  exact
+    theorem20_7_deltaEntries_bound_all_of_active_row_geometric_entry_growth_rows_nonzero_nat
+      hm hn Astage A bstage b gammaTilde hcert.DeltaA hcert.Deltab hphi
+      hgamma hrows hA hb hcert.deltaA_bound hcert.deltab_bound
+
 -- ============================================================
 -- §20.9  Equality-constrained least squares
 -- ============================================================
