@@ -245,6 +245,96 @@ theorem H16_eq16_3_complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_diago
   complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_diagonal_separation
     A B hA hB hsep
 
+/-- A diagonal entry of a supplied complex upper-triangular matrix makes the
+    shifted matrix singular.  This is the finite-dimensional spectral fact
+    behind using Schur diagonal entries in Higham (16.3). -/
+theorem complexUpperTriangular_det_sub_diag_eq_zero {n : ℕ}
+    (T : Matrix (Fin n) (Fin n) ℂ) (hT : IsUpperTriangularC T) (i : Fin n) :
+    Matrix.det (T - Matrix.scalar (Fin n) (T i i)) = 0 := by
+  have htri : (T - Matrix.scalar (Fin n) (T i i)).BlockTriangular id := by
+    intro a b hba
+    have hzero : T a b = 0 := hT a b hba
+    have hscalar : Matrix.scalar (Fin n) (T i i) a b = 0 := by
+      rw [Matrix.scalar_apply]
+      exact Matrix.diagonal_apply_ne _ (ne_of_gt hba)
+    rw [Matrix.sub_apply, hzero, hscalar, sub_zero]
+  rw [Matrix.det_of_upperTriangular htri]
+  exact Finset.prod_eq_zero (Finset.mem_univ i)
+    (by rw [Matrix.sub_apply, Matrix.scalar_apply, Matrix.diagonal_apply_eq, sub_self])
+
+/-- Every diagonal entry of a supplied complex upper-triangular matrix is
+    realized by a nonzero right eigenvector. -/
+theorem complexUpperTriangular_exists_eigenpair_diag {n : ℕ}
+    (T : Matrix (Fin n) (Fin n) ℂ) (hT : IsUpperTriangularC T) (i : Fin n) :
+    ∃ y : Fin n → ℂ,
+      y ≠ 0 ∧ Matrix.mulVec T y = fun k => T i i * y k := by
+  obtain ⟨y, hyne, hyzero⟩ :=
+    Matrix.exists_mulVec_eq_zero_iff.mpr
+      (complexUpperTriangular_det_sub_diag_eq_zero T hT i)
+  refine ⟨y, hyne, ?_⟩
+  funext k
+  have hk := congrFun hyzero k
+  have hcoord : Matrix.mulVec T y k - T i i * y k = 0 := by
+    simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hk
+  exact sub_eq_zero.mp hcoord
+
+/-- Supplied complex upper-triangular spectral bridge: if two triangular factors
+    have no common supplied right eigenpair, then their diagonal entries are
+    pairwise separated. -/
+theorem complexUpperTriangular_diagonal_separation_of_no_common_eigenpair
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    ∀ i : Fin m, ∀ j : Fin n, A i i ≠ B j j := by
+  intro i j hij
+  have hAeig := complexUpperTriangular_exists_eigenpair_diag A hA i
+  have hBeig :
+      ∃ z : Fin n → ℂ,
+        z ≠ 0 ∧ Matrix.mulVec B z = fun k => A i i * z k := by
+    obtain ⟨z, hzne, hz⟩ := complexUpperTriangular_exists_eigenpair_diag B hB j
+    refine ⟨z, hzne, ?_⟩
+    simpa [hij] using hz
+  exact hno (A i i) ⟨hAeig, hBeig⟩
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), supplied complex
+    triangular spectral form: no common supplied right eigenpair of the two
+    triangular factors implies nonsingularity of the vec/Kronecker Sylvester
+    coefficient. -/
+theorem complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_no_common_eigenpair
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 :=
+  complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_diagonal_separation
+    A B hA hB
+    (complexUpperTriangular_diagonal_separation_of_no_common_eigenpair
+      A B hA hB hno)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered alias for
+    the supplied complex triangular no-common-eigenpair determinant route. -/
+theorem H16_eq16_3_complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_no_common_eigenpair
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 :=
+  complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_no_common_eigenpair
+    A B hA hB hno
+
 -- ============================================================
 -- Complex Schur factors exist unconditionally
 -- ============================================================
