@@ -8077,6 +8077,73 @@ theorem sylvester_quasiSchur_blockTraversal_solution_of_product_shift_det_fronti
       sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_det_ne_zero
         m n R S p q hprod
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), product-shift
+    determinant adapter for original-coordinate reconstruction from a
+    scheduled quasi-Schur traversal.  The adjacent two-column steps supply the
+    product-shift determinant certificate, which is converted internally to the
+    full two-column block determinant certificate used by the determinant
+    frontier theorem. -/
+theorem sylvester_quasiSchur_blockTraversal_original_solution_eq_of_product_shift_det_frontier_step_oracle
+    (m n r : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C Cschur X Yorig : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hCschur : Cschur = rectMatMul (matTranspose U) (rectMatMul C V))
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) /\
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => Cschur i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        Not (Matrix.det
+          (sylvesterTriangularShiftedCoeff m R (S q q) *
+              sylvesterTriangularShiftedCoeff m R (S p p) -
+            Matrix.scalar (Fin m) (S q p * S p q)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inr i))))
+    (hYorig : IsSylvesterSolutionRect m n A B C Yorig) :
+    rectMatMul U (rectMatMul X (matTranspose V)) = Yorig := by
+  apply
+    sylvester_quasiSchur_blockTraversal_original_solution_eq_of_det_frontier_step_oracle
+      m n r U R A V S B C Cschur X Yorig pmap frontier
+      hU hV hA hB hCschur hstart hend hmono hcard hzero ?_ hYorig
+  intro t ht
+  rcases hstep t ht with hsingle | hblock
+  · exact Or.inl hsingle
+  · rcases hblock with
+      ⟨p, q, hpval, hqval, hfront, hsame, hprod, hXp, hXq⟩
+    refine Or.inr ⟨p, q, hpval, hqval, hfront, hsame, ?_, hXp, hXq⟩
+    exact
+      sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_det_ne_zero
+        m n R S p q hprod
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     original-coordinate unique solvability from a scheduled quasi-Schur
     traversal whose two-column steps carry product-shift determinant
