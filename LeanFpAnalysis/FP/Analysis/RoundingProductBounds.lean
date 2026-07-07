@@ -22,6 +22,30 @@ then the product of factors `1 + delta_i` can be written as `1 + eta_n` with
 bound, separate from the more general `gamma` machinery in `Rounding.lean`.
 -/
 
+/-- Scalar relative-factor bridge used by perturbation reductions:
+    if every positive base value is approximated with additive error at most
+    `eps * base_i`, then the perturbed values can be written with
+    multiplicative factors `1 + theta_i` satisfying `|theta_i| <= eps`.
+
+This is only scalar algebra; matrix-specific work must still prove the
+additive relative bound, for example from singular-value perturbation
+inequalities. -/
+theorem exists_relative_theta_of_abs_sub_le_mul_pos {n : ℕ}
+    (base perturbed : Fin n → ℝ) {eps : ℝ}
+    (hpos : ∀ i : Fin n, 0 < base i)
+    (hrel : ∀ i : Fin n, |perturbed i - base i| ≤ eps * base i) :
+    ∃ theta : Fin n → ℝ,
+      (∀ i : Fin n, perturbed i = base i * (1 + theta i)) ∧
+        ∀ i : Fin n, |theta i| ≤ eps := by
+  refine ⟨fun i => (perturbed i - base i) / base i, ?_, ?_⟩
+  · intro i
+    field_simp [ne_of_gt (hpos i)]
+    ring
+  · intro i
+    rw [abs_div, abs_of_pos (hpos i)]
+    rw [div_le_iff₀ (hpos i)]
+    simpa [mul_comm] using hrel i
+
 /-- A product of factors `1 + delta_i`, with `|delta_i| <= u` and `u <= 1`,
 is squeezed between `(1-u)^n` and `(1+u)^n`. -/
 theorem prod_one_add_delta_bounds (n : ℕ) {u : ℝ}

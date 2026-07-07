@@ -5473,6 +5473,7 @@ simplification, the exact Hyman block identities
 - `higham14_problem14_13_hadamardConditionNumber_eq_inv_abs_det_of_rowNorm2_eq_one`
 - `higham14_problem14_13_two_over_abs_det_eq_two_mul_hadamardConditionNumber`
 - `higham14_problem14_13_kappa_lt_two_mul_hadamardConditionNumber_of_unit_rows`
+- `exists_relative_theta_of_abs_sub_le_mul_pos`
 - `prod_one_add_delta_abs_sub_one_le_gamma_radius`
 - `higham14_problem14_15_theta_product_bound`
 - `higham14_problem14_15_abs_det_add_rel_le_of_singularValue_theta`
