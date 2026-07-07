@@ -2991,6 +2991,72 @@ theorem sylvesterTwoColumnRealSchurBlockComplexRoot_det_separation_of_disc_no_co
       (sylvesterTwoColumnRealSchurBlockComplexRoot_hasComplexRightEigenvalue_of_disc_neg
         n T p q hdisc)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), named
+    no-common-complex-right-eigenvalue bridge to the no-block-action
+    certificate: no-real-eigenline supplies the nonreal block root, and a
+    left-matrix-first no-common hypothesis rules out the induced eigenpair of
+    `A`. -/
+theorem sylvesterTwoColumnBlock_no_block_action_of_no_real_eigenvector_no_common_complex_right_eigenvalue_left
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hnoReal :
+      ∀ x : Fin 2 -> Real, x ≠ 0 ->
+        ¬ ∃ nu : Real,
+          Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+            fun k => nu * x k)
+    (hnoCommon :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex (Matrix.of A))
+        (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q))) :
+    ∀ z : Sum (Fin m) (Fin m) -> Real, z ≠ 0 ->
+      ¬ Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) z =
+        Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q) z := by
+  let delta : Real :=
+    Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))
+  let mu : Complex := sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta
+  have hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0 :=
+    sylvesterTwoColumnRealSchurBlock_disc_neg_of_no_real_eigenvector
+      n T p q hnoReal
+  have hblockEig :
+      HasComplexRightEigenvalue
+        (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q)) mu := by
+    simpa [mu, delta] using
+      sylvesterTwoColumnRealSchurBlockComplexRoot_hasComplexRightEigenvalue_of_disc_neg
+        n T p q hdisc
+  rcases hblockEig with ⟨w, hwne, hwJ⟩
+  have hnoA :
+      ¬ ∃ y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i => mu * y i := by
+    intro hA
+    exact hnoCommon mu ⟨hA, ⟨w, hwne, hwJ⟩⟩
+  exact
+    sylvesterTwoColumnBlock_no_block_action_of_complex_eigenpair_separation
+      m n A T p q mu w hwne hwJ hnoReal hnoA
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    consequence of no-real-eigenline plus a local left-oriented
+    no-common-complex-right-eigenvalue hypothesis for the adjacent real
+    Schur block. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_no_real_eigenvector_no_common_complex_right_eigenvalue_left
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hnoReal :
+      ∀ x : Fin 2 -> Real, x ≠ 0 ->
+        ¬ ∃ nu : Real,
+          Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+            fun k => nu * x k)
+    (hnoCommon :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex (Matrix.of A))
+        (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q))) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+  sylvesterTwoColumnBlockCoeff_det_ne_zero_of_no_block_action m n A T p q
+    (sylvesterTwoColumnBlock_no_block_action_of_no_real_eigenvector_no_common_complex_right_eigenvalue_left
+      m n A T p q hnoReal hnoCommon)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     no-block-action certificate from a negative real discriminant and a
     shifted complex determinant separation certificate for `A`.  This is the
