@@ -18,7 +18,7 @@
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| 14 | core | 100 | 85 | 63 | 53 | 76 | 73 | about 20 selected rows/classes | Conditional floating-point interfaces for Method 2/2C, Method D, and GJE second-stage accumulation; Hadamard inequality/equality, Hyman, and problem rows still partly open | medium |
+| 14 | core | 100 | 87 | 66 | 57 | 80 | 74 | about 18 selected rows/classes | Conditional floating-point interfaces for Method 2/2C, Method D, and GJE second-stage accumulation; Hadamard equality/QR formulas, Hyman backward error, and problem rows still partly open | medium |
 
 ## Completed selected targets
 
@@ -37,8 +37,10 @@
 | Problem 14.4 | `higham14_problem14_4_right_over_left_ratio_arbitrarily_large` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Source two-by-two family with `||AX-I||_inf / ||XA-I||_inf` arbitrarily large as `eps -> 0`; support includes exact `XA`, exact `AX`, left-residual norm, and right-residual lower-bound theorems. | Closed for the infinity norm. |
 | Problem 14.5 residual, forward, and first-order comparison bounds | `higham14_problem14_5_right_inverse_solve_residual_bound`, `higham14_problem14_5_left_inverse_solve_residual_bound`, `higham14_problem14_5_forward_error_of_residual_bound`, `higham14_problem14_5_right_inverse_solve_forward_error_bound`, `higham14_problem14_5_left_inverse_solve_forward_error_bound`, `higham14_problem14_5_right_inverse_solve_forward_error_firstorder_replacement`, `higham14_problem14_5_left_inverse_solve_forward_error_firstorder_replacement`, `higham14_problem14_5_left_firstorder_envelope_le_right_exact_rhs_envelope` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Right- and left-approximate-inverse residual bounds, residual-to-forward-error transfer, exact right/left forward envelopes, explicit `|X|`/`|Y|` replacement wrappers, and the exact envelope comparison showing the right first-order exact-RHS envelope is the left envelope after one extra `|A_inv||A|` amplification. | Source comparison layer closed at explicit bounded-replacement strength; full asymptotic `O(u^2)` calculus remains open. |
 | Problem 14.7 | `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones`, `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Sum of all inverse entries is one when A has a row or column of ones. | New in this pass; proved. |
-| p.279 `psi(A)` | `higham14_hadamardConditionNumber`, `higham14_hadamardConditionNumberRaw`, `higham14_det_rowNormDiagonal_eq_prod_rowNorm2`, `higham14_hadamardConditionNumber_eq_det_rowNormDiagonal_div_abs_det`, `higham14_hadamardConditionNumberRaw_eq_conditionNumber_of_det_pos`, `higham14_hadamardConditionNumber_nonneg`, `higham14_hadamardConditionNumber_pos_of_det_ne_zero` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Row 2-norm diagonal determinant definition of the Hadamard determinant condition number, with a nonnegative `|det(A)|` denominator and a raw signed displayed-ratio bridge. | Definition row closed; Problem 14.11 still owns the Hadamard inequality and equality case. |
+| p.279 `psi(A)` | `higham14_hadamardConditionNumber`, `higham14_hadamardConditionNumberRaw`, `higham14_det_rowNormDiagonal_eq_prod_rowNorm2`, `higham14_hadamardConditionNumber_eq_det_rowNormDiagonal_div_abs_det`, `higham14_hadamardConditionNumberRaw_eq_conditionNumber_of_det_pos`, `higham14_hadamardConditionNumber_nonneg`, `higham14_hadamardConditionNumber_pos_of_det_ne_zero` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Row 2-norm diagonal determinant definition of the Hadamard determinant condition number, with a nonnegative `|det(A)|` denominator and a raw signed displayed-ratio bridge. | Definition row closed; Problem 14.11 now closes the inequality/`psi >= 1` consequence, with the equality case still open. |
+| Problem 14.11 inequality and `psi(A) >= 1` | `higham14_problem14_11_hadamard_det_sq_le_prod_rowNorm2_sq`, `higham14_problem14_11_abs_det_le_prod_rowNorm2`, `higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Hadamard determinant inequality in squared row-norm and absolute determinant forms, plus the nonsingular lower bound `1 <= psi(A)`. | Inequality half closed by reusing the Chapter 9 Gram determinant proof; equality characterization remains open. |
 | (14.34) | `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`, `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec`, `higham14_eq14_34_perm_sign_mul_det_eq_prod_U_diag_of_PermutedLUFactSpec`, `higham14_eq14_34_det_eq_perm_sign_mul_prod_U_diag_of_PermutedLUFactSpec`, `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_PermutedLUFactSpec` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Determinant/product-of-pivots identity for exact no-pivot/unit-lower LU certificates and signed/absolute determinant products for row-permuted LU certificates. | Equation (14.34) closed. |
+| (14.35)--(14.36) | `higham14_eq14_35_hyman_block_lu_factorization`, `higham14_eq14_36_hyman_det_cyclic_block`, `higham14_eq14_36_hyman_det_original_of_row_permutation` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Exact Hyman block LU factorization, determinant of the cyclically permuted block `H₁`, and signed row-permutation wrapper for the original Hessenberg matrix. | Exact determinant algebra closed; Problem 14.14 still owns the floating-point backward-error and scaling analysis. |
 | Problem 14.10 | `higham14_problem14_10_det_entry_perturb_eq`, `higham14_problem14_10_det_entry_independent_iff_adjugate_eq_zero` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Exact determinant entry-perturbation formula and iff condition for determinant independence from `a_ij`. | New after Problem 14.3; cofactor/adjugate condition is explicit. |
 | Theorem 14.5 composition | `gje_overall_residual`, `gje_overall_forward_error` | `LeanFpAnalysis/FP/Algorithms/GaussJordan.lean` | Composition from explicit GE and GJE second-stage hypotheses. | Partial source closure; printed constants still open. |
 
@@ -51,6 +53,7 @@
 | Triangular solve backward-error infrastructure | `forwardSub_backward_error`, related triangular solve APIs | `LeanFpAnalysis.FP.Algorithms.ForwardSub`, `TriangularSolve` |
 | LU backward-error interface | `LUBackwardError` | `LeanFpAnalysis.FP.Algorithms.LU.GaussianElimination` |
 | Floating-point gamma model | `gamma`, `gammaValid` | `LeanFpAnalysis.FP.Model` |
+| Hadamard determinant inequality | `higham9_hadamard_det_sq_le_prod_row_sq` | `LeanFpAnalysis.FP.Algorithms.HighamChapter9` |
 
 ## New dependencies
 
@@ -88,11 +91,20 @@
 | `higham14_hadamardConditionNumberRaw_eq_conditionNumber_of_det_pos` | Shows the raw displayed ratio agrees with the positive condition-number form when `det(A)>0`. | Hidden absolute-value audit. | implemented |
 | `higham14_hadamardConditionNumber_nonneg` | Nonnegativity of the positive `psi(A)` surface. | Problem 14.11 route. | implemented |
 | `higham14_hadamardConditionNumber_pos_of_det_ne_zero` | Positivity of `psi(A)` for nonsingular matrices. | Problem 14.11 route. | implemented |
+| `higham14_problem14_11_hadamard_det_sq_le_prod_rowNorm2_sq` | Chapter 14 squared row-norm Hadamard inequality wrapper. | Problem 14.11. | implemented |
+| `higham14_problem14_11_abs_det_le_prod_rowNorm2` | Absolute determinant form `|det(A)| <= prod_i ||A(i,:)||_2`. | Problem 14.11 and `psi(A) >= 1`. | implemented |
+| `higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero` | Lower bound `1 <= psi(A)` for nonsingular matrices under the nonnegative denominator convention. | Problem 14.11. | implemented |
 | `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec` | Source-facing Chapter 14 wrapper around the existing unit-lower LU determinant product identity. | Equation (14.34) no-pivot core. | implemented |
 | `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec` | Absolute-value form of the exact no-pivot LU determinant product. | Equation (14.34) no-pivot core. | implemented |
 | `higham14_eq14_34_perm_sign_mul_det_eq_prod_U_diag_of_PermutedLUFactSpec` | Direct row-permuted determinant relation `sign(σ) det(A) = ∏ᵢ uᵢᵢ` for `PA = LU`. | Equation (14.34) GEPP signed product. | implemented |
 | `higham14_eq14_34_det_eq_perm_sign_mul_prod_U_diag_of_PermutedLUFactSpec` | Source-oriented signed product `det(A) = sign(σ) ∏ᵢ uᵢᵢ`, using that permutation signs square to one. | Equation (14.34) GEPP signed product. | implemented |
 | `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_PermutedLUFactSpec` | Absolute-value determinant product for row-permuted LU certificates. | Equation (14.34) GEPP absolute-value product. | implemented |
+| `higham14_hymanRowTimesInv`, `higham14_hymanSchur`, `higham14_hymanBlockMatrix` | Source-facing Hyman row product, Schur scalar, and cyclically permuted block matrix `H₁`. | Equations (14.35)--(14.36). | implemented |
+| `higham14_hymanLowerFactor`, `higham14_hymanUpperFactor` | Source-facing Hyman lower and upper block factors. | Equation (14.35). | implemented |
+| `higham14_hymanRowTimesInv_mul_T` | Proves `(hᵀT⁻¹)T = hᵀ` from the explicit inverse certificate `T⁻¹T = I`. | Hyman block LU factorization. | implemented |
+| `higham14_eq14_35_hyman_block_lu_factorization` | Exact block LU factorization `H₁ = LU` for Hyman's cyclic block matrix. | Equation (14.35). | implemented |
+| `higham14_eq14_36_hyman_det_cyclic_block` | Determinant formula `det(H₁)=det(T)(η-hᵀT⁻¹y)`. | Equation (14.36) cyclic block step. | implemented |
+| `higham14_eq14_36_hyman_det_original_of_row_permutation` | Signed determinant wrapper for an original matrix whose row permutation is `H₁`. | Equation (14.36) source sign step. | implemented |
 | `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones` | Closes the row-ones half of Problem 14.7. | Chapter 14 inventory/report. | implemented |
 | `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones` | Closes the column-ones half of Problem 14.7. | Chapter 14 inventory/report. | implemented |
 
@@ -102,7 +114,7 @@
 |---|---|---|---|---|
 | Lemmas 14.1--14.3 and Method A--D bounds | Du Croz and Higham [357, 1992], exact locations not yet acquired | Detailed inverse-method error analyses | Partial interfaces only | open |
 | Theorem 14.5 second-stage GJE | Peters-Wilkinson [938, 1975] and Dekker-Hoffmann [303, 1989], exact locations not yet acquired | GJE second-stage proof route | Composition wrappers only | open |
-| Hyman method / Problem 14.14 | Wilkinson references cited in Notes 14.7; Appendix A solution 14.14 | Hyman determinant error route | none | open |
+| Hyman method / Problem 14.14 | Wilkinson references cited in Notes 14.7; Appendix A solution 14.14 | Hyman determinant error route | Exact determinant identities (14.35)--(14.36) closed; floating-point error route open | partial foundation |
 | Problem 14.15 | Godunov et al. [493, 1993] and singular-value inequalities cited in Appendix A | Determinant perturbation theorem | none | open |
 
 ## GPT-5.5 Pro browser consultations
@@ -142,8 +154,8 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 | Lemma 14.1 / (14.8) | Method 2 left residual | conditional transfer | Method 2 stage induction | Source-faithful Method 2 loop residual theorem |
 | (14.25)--(14.30) | GJE second-stage accumulation | conditional transfer | cumulative product induction | Exact (14.27)--(14.28) wrappers, then (14.29)--(14.30) |
 | Theorem 14.5 | Printed GJE constants | partial foundation | second-stage closure and first-order scalar simplification | Instantiate composition theorem to `8 n u`/`2 n u` source surfaces |
-| (14.35)--(14.36) | Hyman exact determinant identities | unstarted | block determinant algebra | Exact block LU/determinant wrappers |
-| Problem 14.11 | Hadamard determinant inequality and equality case for `psi(A)` | unstarted | QR/Gram determinant inequality | Reuse or prove a row-Gram/Hadamard inequality wrapper |
+| Problem 14.11 | Hadamard determinant inequality and equality case for `psi(A)` | partial foundation | Equality characterization and QR/column-orientation bridge | Prove the equality case, likely via orthogonal-row characterization or QR diagonal/product formula |
+| Problem 14.14 | Hyman backward-error bound and diagonal scaling effect | unstarted | triangular solve and inner-product error composition | Compose the exact (14.36) determinant identity with back-substitution and inner-product perturbation bounds |
 
 ## Hidden-hypothesis summary
 
@@ -152,7 +164,9 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 - The new Problem 14.5 theorems close both source residual bounds, the exact right/left forward-error consequences, explicit first-order replacement wrappers, and the exact envelope-comparison interpretation. The right residual theorem assumes `|AX-I| <= u|A||X|`; the right forward theorem additionally assumes a supplied left inverse `A_inv` and `Ax = b`. The first-order wrappers make the `|X| <= |A_inv|` and `|Y| <= |A_inv|` replacement assumptions explicit; the comparison theorem shows the exact-RHS right envelope is the left first-order envelope after one extra nonnegative `|A_inv||A|` amplification. Full asymptotic `O(u^2)` replacement calculus remains open.
 - The new Problem 14.10 theorem states the determinant-independence condition as `adj(A)_{ji}=0`. For a nonsingular matrix this is equivalent to the corresponding inverse-entry condition after multiplying by the nonzero determinant factor.
 - The new p.279 `psi(A)` definitions expose both the nonnegative condition-number surface with denominator `|det(A)|` and the signed raw displayed ratio. The report treats the missing absolute value in the printed display as an implicit convention/typo audit, not as license to state a signed quantity as a condition number.
+- The new Problem 14.11 theorems close Hadamard's determinant inequality and the lower bound `1 <= psi(A)` for nonsingular matrices by reusing the Chapter 9 Gram determinant theorem. They do not yet prove the equality characterization.
 - The new (14.34) determinant theorems include the no-pivot/unit-lower LU core, the direct and source-oriented signed row-permuted products, and the row-permuted absolute-value product.
+- The new Hyman theorems close exact algebra only: the block LU factorization assumes the source inverse certificate `T⁻¹T = I`; the original determinant formula is stated through an explicit row-permutation sign. They do not close Problem 14.14's floating-point backward-error or diagonal-scaling claims.
 - The new Problem 14.7 theorems assume the appropriate inverse side explicitly (`IsRightInverse` for a row of ones, `IsLeftInverse` for a column of ones); these are source/domain assumptions, not proof artifacts.
 - Existing Method 2, Method 2C, Method D, and GJE theorem surfaces still include hypotheses that are essentially the missing algorithmic analyses. They are recorded as conditional interfaces and do not close the source rows.
 - Existing `O(u^2)` source statements are not fully modeled unless a theorem explicitly exposes a first-order wrapper; the report does not count asymptotic endpoints as closed.
@@ -180,6 +194,9 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
   - stdin focused `#check`/`#print axioms` run for the new signed (14.34) parity wrappers
   - focused `lake build LeanFpAnalysis.FP.Algorithms.MatrixInversion` after adding the p.279 `psi(A)` definitions
   - stdin focused `#check`/`#print axioms` run for the new p.279 `psi(A)` definitions and wrappers
+  - `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` before reusing the Hadamard determinant theorem
+  - focused `lake build LeanFpAnalysis.FP.Algorithms.MatrixInversion` after adding the Problem 14.11 Hadamard wrappers
+  - stdin focused `#check`/`#print axioms` run for the new Problem 14.11 Hadamard wrappers
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.5 right-residual theorem
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.5 left-residual theorem
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.5 right and left forward-error theorems
@@ -187,11 +204,13 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.10 determinant-independence theorems
   - focused module build after the new (14.34) determinant wrappers
   - focused `#check`/`#print axioms` run for the new pivoted absolute-value (14.34) wrapper
+  - focused module build after adding the Hyman exact block LU and determinant wrappers
+  - stdin focused `#check`/`#print axioms` run for the new Hyman exact block LU and determinant wrappers
   - `lake env lean examples/LibraryLookup.lean`
-- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass before and after the upstream merge and after the Problem 14.3, Problem 14.4, Problem 14.5 residual/forward/first-order, Problem 14.10, p.279 `psi(A)`, and (14.34) additions; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
-- New theorem axiom surface: the new Problem 14.3, Problem 14.4, Problem 14.5 residual/forward/first-order, Problem 14.7, Problem 14.10, p.279 `psi(A)`, and (14.34) theorems use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`) when checked; the determinant wrappers inherit existing determinant/permutation/LU determinant facts.
+- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass before and after the upstream merge and after the Problem 14.3, Problem 14.4, Problem 14.5 residual/forward/first-order, Problem 14.10, p.279 `psi(A)`, Problem 14.11 inequality, (14.34), and Hyman (14.35)--(14.36) additions; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
+- New theorem axiom surface: the new Problem 14.3, Problem 14.4, Problem 14.5 residual/forward/first-order, Problem 14.7, Problem 14.10, p.279 `psi(A)`, Problem 14.11 inequality, (14.34), and Hyman (14.35)--(14.36) theorems use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`) when checked; the determinant wrappers inherit existing determinant/permutation/LU determinant facts.
 - Known verification issue: the full `examples/LibraryLookup.lean` run aborts with a stack overflow / exit 134 after producing large lookup output. Focused lookups for the new declarations pass, so this is recorded as a full-example scale issue rather than a failed declaration lookup.
-- New versus pre-existing warnings: a new unused-simp warning appeared during initial Problem 14.7 proof and was removed.
+- New versus pre-existing warnings: a new unused-simp warning appeared during initial Problem 14.7 proof and was removed; the focused HighamChapter9 replay emits pre-existing `Fin.coe_castLE` deprecation / unused-simp warnings and a `ring_nf` tactic suggestion, unrelated to the Chapter 14 wrappers.
 
 ## GitHub synchronization
 
@@ -214,4 +233,4 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 
 - Source-visible Problem 14.14 is omitted from the shared chapter problem ledger but appears in the PDF and Appendix A Split 3A ownership list. The inventory includes it.
 - Existing `CondEstimation.lean` and `LU/TridiagonalCond.lean` carry older `§14` labels for material now assigned to Chapter 15 by the split plan. They were not changed in this milestone.
-- Full source-strength completion of Chapter 14 requires proving several currently conditional floating-point interfaces and determinant/Hyman/problem rows.
+- Full source-strength completion of Chapter 14 requires proving several currently conditional floating-point interfaces, Hadamard/singular-value problem rows, and Hyman's backward-error exercise.

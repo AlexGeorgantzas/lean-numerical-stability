@@ -5315,8 +5315,9 @@ Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
 Problem 14.3, the explicit residual-ratio family from Problem 14.4, the residual
 and forward-error consequences from Problem 14.5, Problem 14.7, the p.279
 Hadamard determinant condition number, equation (14.34) in its exact
-no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms, and
-Problem 14.10:
+no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
+Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence,
+the exact Hyman block identities (14.35)--(14.36), and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
 - `higham14_problem14_3_right_residual_eq_mul_left_residual`
@@ -5357,11 +5358,23 @@ Problem 14.10:
 - `higham14_hadamardConditionNumber_nonneg`
 - `higham14_rowNorm2_pos_of_det_ne_zero`
 - `higham14_hadamardConditionNumber_pos_of_det_ne_zero`
+- `higham14_problem14_11_hadamard_det_sq_le_prod_rowNorm2_sq`
+- `higham14_problem14_11_abs_det_le_prod_rowNorm2`
+- `higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero`
 - `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_perm_sign_mul_det_eq_prod_U_diag_of_PermutedLUFactSpec`
 - `higham14_eq14_34_det_eq_perm_sign_mul_prod_U_diag_of_PermutedLUFactSpec`
 - `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_PermutedLUFactSpec`
+- `higham14_hymanRowTimesInv`
+- `higham14_hymanSchur`
+- `higham14_hymanBlockMatrix`
+- `higham14_hymanLowerFactor`
+- `higham14_hymanUpperFactor`
+- `higham14_hymanRowTimesInv_mul_T`
+- `higham14_eq14_35_hyman_block_lu_factorization`
+- `higham14_eq14_36_hyman_det_cyclic_block`
+- `higham14_eq14_36_hyman_det_original_of_row_permutation`
 - `matrixEntryPerturb`
 - `higham14_problem14_10_det_entry_perturb_eq`
 - `higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero`

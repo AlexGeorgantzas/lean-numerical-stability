@@ -28,6 +28,7 @@ import LeanFpAnalysis.FP.Algorithms.TriangularSolve
 import LeanFpAnalysis.FP.Algorithms.LU.GaussianElimination
 import LeanFpAnalysis.FP.Algorithms.LU.LUSolve
 import LeanFpAnalysis.FP.Algorithms.LU.GrowthFactor
+import LeanFpAnalysis.FP.Algorithms.HighamChapter9
 
 namespace LeanFpAnalysis.FP
 
@@ -3038,6 +3039,46 @@ theorem higham14_hadamardConditionNumber_pos_of_det_ne_zero {n : ℕ}
     (Finset.prod_pos fun i _ => higham14_rowNorm2_pos_of_det_ne_zero A hdet i)
     (abs_pos.mpr hdet)
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    Hadamard's determinant inequality in squared row-norm form.  This is a
+    Chapter 14 source-facing wrapper around the Chapter 9 Gram determinant
+    proof. -/
+theorem higham14_problem14_11_hadamard_det_sq_le_prod_rowNorm2_sq {n : ℕ}
+    (A : Fin n → Fin n → ℝ) :
+    (Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) ^ 2 ≤
+      ∏ i : Fin n, higham14_rowNorm2 A i ^ 2 := by
+  simpa [higham14_rowNorm2, vecNorm2_sq, vecNorm2Sq] using
+    (higham9_hadamard_det_sq_le_prod_row_sq
+      (A := (A : Matrix (Fin n) (Fin n) ℝ)))
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    Hadamard's determinant inequality in the form
+    `|det(A)| <= prod_i ||A(i,:)||_2`. -/
+theorem higham14_problem14_11_abs_det_le_prod_rowNorm2 {n : ℕ}
+    (A : Fin n → Fin n → ℝ) :
+    |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| ≤
+      ∏ i : Fin n, higham14_rowNorm2 A i := by
+  have hsquare :
+      (Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) ^ 2 ≤
+        (∏ i : Fin n, higham14_rowNorm2 A i) ^ 2 := by
+    rw [← Finset.prod_pow]
+    exact higham14_problem14_11_hadamard_det_sq_le_prod_rowNorm2_sq A
+  exact abs_le_of_sq_le_sq hsquare
+    (Finset.prod_nonneg fun i _ => higham14_rowNorm2_nonneg A i)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    nonsingular matrices have Hadamard determinant condition number at least
+    one, in the nonnegative `|det(A)|` denominator convention. -/
+theorem higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    1 ≤ higham14_hadamardConditionNumber A := by
+  have hden_pos : 0 < |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| :=
+    abs_pos.mpr hdet
+  unfold higham14_hadamardConditionNumber
+  exact (one_le_div hden_pos).mpr
+    (higham14_problem14_11_abs_det_le_prod_rowNorm2 A)
+
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
 theorem higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec
@@ -3174,6 +3215,160 @@ theorem higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_PermutedLUFactSpec
         eSigma (Equiv.refl (Fin n)) (A : Matrix (Fin n) (Fin n) ℝ))
   rw [hdetσ] at hAbs
   exact hAbs.symm
+
+/-- Higham, 2nd ed., Chapter 14, Section 14.6.1, printed p.280:
+    the row vector `hᵀ T⁻¹` in Hyman's method.  We model the
+    source `(n-1)`-by-`(n-1)` block as an arbitrary `Fin n` block. -/
+noncomputable def higham14_hymanRowTimesInv {n : ℕ}
+    (h : Fin n → ℝ) (Tinv : Matrix (Fin n) (Fin n) ℝ) : Fin n → ℝ :=
+  fun j => ∑ k : Fin n, h k * Tinv k j
+
+/-- Higham, 2nd ed., Chapter 14, Section 14.6.1, printed p.280:
+    the Schur scalar `η - hᵀ T⁻¹ y` appearing in (14.35)--(14.36). -/
+noncomputable def higham14_hymanSchur {n : ℕ}
+    (h y : Fin n → ℝ) (Tinv : Matrix (Fin n) (Fin n) ℝ) (η : ℝ) : ℝ :=
+  η - ∑ j : Fin n, higham14_hymanRowTimesInv h Tinv j * y j
+
+/-- Higham, 2nd ed., Chapter 14, Section 14.6.1, printed p.280:
+    the cyclically permuted Hessenberg block matrix
+    `H₁ = [[T, y], [hᵀ, η]]` used by Hyman's method. -/
+noncomputable def higham14_hymanBlockMatrix {n : ℕ}
+    (T : Matrix (Fin n) (Fin n) ℝ) (y h : Fin n → ℝ) (η : ℝ) :
+    Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ :=
+  Matrix.fromBlocks T (fun i (_ : Unit) => y i) (fun (_ : Unit) j => h j)
+    (fun _ _ => η)
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.35), printed p.280:
+    the lower block factor `[[I,0],[hᵀT⁻¹,1]]` in Hyman's LU factorization. -/
+noncomputable def higham14_hymanLowerFactor {n : ℕ}
+    (h : Fin n → ℝ) (Tinv : Matrix (Fin n) (Fin n) ℝ) :
+    Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ :=
+  Matrix.fromBlocks 1 0 (fun (_ : Unit) j => higham14_hymanRowTimesInv h Tinv j)
+    (1 : Matrix Unit Unit ℝ)
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.35), printed p.280:
+    the upper block factor `[[T,y],[0,η-hᵀT⁻¹y]]` in Hyman's LU factorization. -/
+noncomputable def higham14_hymanUpperFactor {n : ℕ}
+    (T : Matrix (Fin n) (Fin n) ℝ) (y h : Fin n → ℝ)
+    (Tinv : Matrix (Fin n) (Fin n) ℝ) (η : ℝ) :
+    Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ :=
+  Matrix.fromBlocks T (fun i (_ : Unit) => y i) 0
+    (fun _ _ => higham14_hymanSchur h y Tinv η)
+
+lemma higham14_hymanRowTimesInv_mul_T {n : ℕ}
+    (T Tinv : Matrix (Fin n) (Fin n) ℝ) (h : Fin n → ℝ)
+    (hTinv : IsLeftInverse n T Tinv) (j : Fin n) :
+    ∑ x : Fin n, higham14_hymanRowTimesInv h Tinv x * T x j = h j := by
+  calc
+    ∑ x : Fin n, higham14_hymanRowTimesInv h Tinv x * T x j
+        = ∑ x : Fin n, (∑ k : Fin n, h k * Tinv k x) * T x j := rfl
+    _ = ∑ k : Fin n, h k * (∑ x : Fin n, Tinv k x * T x j) := by
+        simp_rw [Finset.sum_mul, Finset.mul_sum]
+        rw [Finset.sum_comm]
+        apply Finset.sum_congr rfl
+        intro k _
+        apply Finset.sum_congr rfl
+        intro x _
+        ring
+    _ = ∑ k : Fin n, h k * (if k = j then (1 : ℝ) else 0) := by
+        apply Finset.sum_congr rfl
+        intro k _
+        rw [hTinv k j]
+    _ = h j := by
+        simp [Finset.sum_ite_eq', Finset.mem_univ]
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.35), printed p.280:
+    exact Hyman block LU factorization of the cyclically permuted Hessenberg
+    block matrix, assuming the displayed inverse certificate `T⁻¹T = I`. -/
+theorem higham14_eq14_35_hyman_block_lu_factorization {n : ℕ}
+    (T Tinv : Matrix (Fin n) (Fin n) ℝ) (y h : Fin n → ℝ) (η : ℝ)
+    (hTinv : IsLeftInverse n T Tinv) :
+    higham14_hymanBlockMatrix T y h η =
+      higham14_hymanLowerFactor h Tinv *
+        higham14_hymanUpperFactor T y h Tinv η := by
+  ext a b
+  cases a <;> cases b
+  · rename_i i j
+    simp [higham14_hymanBlockMatrix, higham14_hymanLowerFactor,
+      higham14_hymanUpperFactor, Matrix.mul_apply, Matrix.one_apply]
+  · rename_i i u
+    simp [higham14_hymanBlockMatrix, higham14_hymanLowerFactor,
+      higham14_hymanUpperFactor, Matrix.mul_apply, Matrix.one_apply]
+  · rename_i u j
+    simpa [higham14_hymanBlockMatrix, higham14_hymanLowerFactor,
+      higham14_hymanUpperFactor, Matrix.mul_apply]
+      using (higham14_hymanRowTimesInv_mul_T T Tinv h hTinv j).symm
+  · rename_i u v
+    simp [higham14_hymanBlockMatrix, higham14_hymanLowerFactor,
+      higham14_hymanUpperFactor, higham14_hymanSchur, Matrix.mul_apply]
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.36), printed p.280:
+    determinant of the cyclically permuted Hyman block matrix is
+    `det(T) * (η - hᵀT⁻¹y)`.  The separate cyclic-permutation sign converts
+    this to the determinant of the original Hessenberg matrix. -/
+theorem higham14_eq14_36_hyman_det_cyclic_block {n : ℕ}
+    (T Tinv : Matrix (Fin n) (Fin n) ℝ) (y h : Fin n → ℝ) (η : ℝ)
+    (hTinv : IsLeftInverse n T Tinv) :
+    Matrix.det (higham14_hymanBlockMatrix T y h η) =
+      Matrix.det T * higham14_hymanSchur h y Tinv η := by
+  rw [higham14_eq14_35_hyman_block_lu_factorization T Tinv y h η hTinv]
+  rw [Matrix.det_mul]
+  have hdetL : Matrix.det (higham14_hymanLowerFactor h Tinv) = 1 := by
+    rw [higham14_hymanLowerFactor, Matrix.det_fromBlocks_zero₁₂]
+    simp
+  have hdetU : Matrix.det (higham14_hymanUpperFactor T y h Tinv η) =
+      Matrix.det T * higham14_hymanSchur h y Tinv η := by
+    rw [higham14_hymanUpperFactor, Matrix.det_fromBlocks_zero₂₁]
+    simp
+  rw [hdetL, hdetU]
+  ring
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.36), printed p.280:
+    signed determinant formula for an original Hessenberg matrix whose row
+    permutation is the cyclic Hyman block matrix.  For the source's cyclic
+    permutation, the sign is the printed `(-1)^(n-1)` factor. -/
+theorem higham14_eq14_36_hyman_det_original_of_row_permutation {n : ℕ}
+    (H : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ)
+    (T Tinv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η : ℝ) (σ : Equiv.Perm (Fin n ⊕ Unit))
+    (hH :
+      higham14_hymanBlockMatrix T y h η =
+        Matrix.submatrix H σ (Equiv.refl (Fin n ⊕ Unit)))
+    (hTinv : IsLeftInverse n T Tinv) :
+    Matrix.det H =
+      (Equiv.Perm.sign σ : ℝ) *
+        Matrix.det T * higham14_hymanSchur h y Tinv η := by
+  have hperm_det :
+      Matrix.det (higham14_hymanBlockMatrix T y h η) =
+        (Equiv.Perm.sign σ : ℝ) * Matrix.det H := by
+    rw [hH]
+    simpa using
+      (Matrix.det_permute (R := ℝ) σ H)
+  have hcyclic :=
+    higham14_eq14_36_hyman_det_cyclic_block
+      T Tinv y h η hTinv
+  have hdirect :
+      (Equiv.Perm.sign σ : ℝ) * Matrix.det H =
+        Matrix.det T * higham14_hymanSchur h y Tinv η := by
+    rw [← hperm_det, hcyclic]
+  have hsq : (Equiv.Perm.sign σ : ℝ) *
+      (Equiv.Perm.sign σ : ℝ) = 1 := by
+    rcases Int.units_eq_one_or (Equiv.Perm.sign σ) with hsign | hsign <;>
+      simp [hsign]
+  calc
+    Matrix.det H = 1 * Matrix.det H := by ring
+    _ = ((Equiv.Perm.sign σ : ℝ) * (Equiv.Perm.sign σ : ℝ)) *
+          Matrix.det H := by
+          rw [hsq]
+    _ = (Equiv.Perm.sign σ : ℝ) *
+          ((Equiv.Perm.sign σ : ℝ) * Matrix.det H) := by
+          ring
+    _ = (Equiv.Perm.sign σ : ℝ) *
+          (Matrix.det T * higham14_hymanSchur h y Tinv η) := by
+          rw [hdirect]
+    _ = (Equiv.Perm.sign σ : ℝ) *
+          Matrix.det T * higham14_hymanSchur h y Tinv η := by
+          ring
 
 /-- Entry perturbation used in Higham Chapter 14, Problem 14.10:
     replace `aᵢⱼ` by `aᵢⱼ + t`, leaving every other entry unchanged. -/
