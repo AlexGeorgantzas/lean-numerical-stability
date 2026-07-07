@@ -2439,6 +2439,40 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_complex
       m n A T p q delta hsub hdelta hdelta_ne hdetA
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), real-Schur
+    same-block no-block-action certificate from a negative real discriminant
+    and a shifted complex determinant separation certificate.  The same-block
+    quasi-Schur data supplies the adjacent two-column zero pattern, while the
+    spectral obstruction is still an explicit supplied-certificate route. -/
+theorem sylvesterTwoColumnBlock_block_and_no_block_action_of_quasiSchur_complex_disc_det_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0)
+    (hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m)
+              (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
+    IsAdjacentQuasiTriangularBlockFn n T p q /\
+      (forall z : Sum (Fin m) (Fin m) -> Real, z ≠ 0 ->
+        Not (Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) z =
+          Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q) z)) := by
+  refine ⟨?_, ?_⟩
+  · exact IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block
+      n T pmap p q hmono hcard hzero hpq hsame
+  · exact sylvesterTwoColumnBlock_no_block_action_of_complex_disc_det_separation
+      m n A T p q hdisc hdetA
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), real-Schur
     same-block determinant-shaped complex-separation certificate from a
     negative real discriminant: the square-root `sqrt (-disc)` supplies the
     complex root used by the two-column block determinant bridge, and the
@@ -2466,11 +2500,12 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_complex
                 (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
     IsAdjacentQuasiTriangularBlockFn n T p q /\
       Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
-  refine ⟨?_, ?_⟩
-  · exact IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block
-      n T pmap p q hmono hcard hzero hpq hsame
-  · exact sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_disc_det_separation
-      m n A T p q hdisc hdetA
+  have hcert :=
+    sylvesterTwoColumnBlock_block_and_no_block_action_of_quasiSchur_complex_disc_det_separation
+      m n A T pmap p q hmono hcard hzero hpq hsame hdisc hdetA
+  exact ⟨hcert.1,
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_no_block_action
+      m n A T p q hcert.2⟩
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-local
     spectral obstruction for a supplied real `2 x 2` Schur block: a nonzero
