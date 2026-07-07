@@ -2558,6 +2558,29 @@ theorem sylvesterTwoColumnRealSchurBlockComplexRoot_det_separation_of_disc_no_co
       hnoA
   simpa [delta] using hdet
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): named
+    no-common-complex-right-eigenvalue version of the adjacent real-Schur
+    block shifted determinant certificate. -/
+theorem sylvesterTwoColumnRealSchurBlockComplexRoot_det_separation_of_disc_no_common_complex_right_eigenvalue
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0)
+    (hnoCommon :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q))
+        (realMatrixToComplex (Matrix.of A))) :
+    Not
+      ((Matrix.det
+        (realMatrixToComplex (Matrix.of A) -
+          Matrix.scalar (Fin m)
+            (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+              (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0)) := by
+  exact
+    sylvesterTwoColumnRealSchurBlockComplexRoot_det_separation_of_disc_no_common_complex_eigenpair
+      m n A T p q hdisc
+      (fun mu hblock hA => hnoCommon mu ⟨hblock, hA⟩)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     no-block-action certificate from a negative real discriminant and a
     shifted complex determinant separation certificate for `A`.  This is the
@@ -3016,6 +3039,31 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_n
   exact
     sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_det_separation
       m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral hdetA
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): named
+    no-common-complex-right-eigenvalue version of the two-block spectral route
+    to adjacent active-block shape and determinant nonsingularity. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_no_common_complex_right_eigenvalue
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of T) pmap)
+    (hnoCommon :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q))
+        (realMatrixToComplex (Matrix.of A))) :
+    IsAdjacentQuasiTriangularBlockFn n T p q ∧
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  exact
+    sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_no_common_complex_eigenpair
+      m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral
+      (fun mu hblock hA => hnoCommon mu ⟨hblock, hA⟩)
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     determinant-shaped complex-separation route from a negative real
