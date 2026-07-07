@@ -6351,6 +6351,16 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_problem14_5_left_firstorder_envelope_le_right_exact_rhs_envelope
 #check higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones
 #check higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones
+#check higham14_methodDProductDelta
+#check higham14_methodDLUBackwardDelta
+#check higham14_methodDXLLeftResidual
+#check higham14_methodDXULeftResidual
+#check higham14_eq14_20_methodD_product_decomposition
+#check higham14_eq14_20_methodD_productDelta_bound
+#check higham14_eq14_21_methodD_lu_substitution
+#check higham14_eq14_21_methodD_luDelta_bound
+#check higham14_eq14_22_methodD_left_residual_expansion
+#check higham14_eq14_23_methodD_left_residual_bound
 #check higham14_rowNorm2
 #check higham14_rowNormDiagonal
 #check higham14_hadamardConditionNumber

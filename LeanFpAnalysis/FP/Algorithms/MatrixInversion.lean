@@ -1436,6 +1436,130 @@ theorem methodC_forward_error (n : ℕ) (fp : FPModel)
 
 -- §14.3.4  Method D: compute L⁻¹ and U⁻¹ separately, form product
 
+/-- Product-formation perturbation for Higham's Method D, equation (14.20):
+    `X_hat = X_U * X_L + Delta`. -/
+noncomputable def higham14_methodDProductDelta {n : ℕ}
+    (X_hat X_U X_L : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => X_hat i j - matMul n X_U X_L i j
+
+/-- LU backward perturbation for Method D, using the repository sign convention
+    `Delta_A = L_hat * U_hat - A`. -/
+noncomputable def higham14_methodDLUBackwardDelta {n : ℕ}
+    (A L_hat U_hat : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => matMul n L_hat U_hat i j - A i j
+
+/-- Left residual of the computed lower-triangular inverse used by Method D:
+    `X_L * L_hat - I`. -/
+noncomputable def higham14_methodDXLLeftResidual {n : ℕ}
+    (X_L L_hat : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => matMul n X_L L_hat i j - if i = j then 1 else 0
+
+/-- Left residual of the computed upper-triangular inverse used by Method D:
+    `X_U * U_hat - I`. -/
+noncomputable def higham14_methodDXULeftResidual {n : ℕ}
+    (X_U U_hat : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => matMul n X_U U_hat i j - if i = j then 1 else 0
+
+/-- Higham equation (14.20), Method D product formation:
+    the computed product is the exact product plus an explicit perturbation. -/
+theorem higham14_eq14_20_methodD_product_decomposition {n : ℕ}
+    (X_hat X_U X_L : Fin n → Fin n → ℝ) (i j : Fin n) :
+    X_hat i j = matMul n X_U X_L i j +
+      higham14_methodDProductDelta X_hat X_U X_L i j := by
+  unfold higham14_methodDProductDelta
+  ring
+
+/-- The product perturbation in (14.20) inherits any `MatProdError` componentwise
+    bound supplied by the local floating-point multiplication analysis. -/
+theorem higham14_eq14_20_methodD_productDelta_bound {n : ℕ}
+    (X_hat X_U X_L : Fin n → Fin n → ℝ)
+    (ε : ℝ) (absProduct : Fin n → Fin n → ℝ)
+    (hProd : MatProdError n X_hat (matMul n X_U X_L) ε absProduct) :
+    ∀ i j : Fin n,
+      |higham14_methodDProductDelta X_hat X_U X_L i j| ≤ ε * absProduct i j := by
+  intro i j
+  simpa [higham14_methodDProductDelta] using hProd i j
+
+/-- Higham equation (14.21), Method D LU substitution:
+    using `A = L_hat * U_hat - Delta_A`, expand `X_hat * A`. -/
+theorem higham14_eq14_21_methodD_lu_substitution {n : ℕ}
+    (A L_hat U_hat X_hat : Fin n → Fin n → ℝ) (i j : Fin n) :
+    ∑ k : Fin n, X_hat i k * A k j =
+      ∑ k : Fin n, X_hat i k * (∑ l : Fin n, L_hat k l * U_hat l j) -
+        ∑ k : Fin n, X_hat i k *
+          higham14_methodDLUBackwardDelta A L_hat U_hat k j := by
+  simp [higham14_methodDLUBackwardDelta, matMul, mul_sub, Finset.sum_sub_distrib]
+
+/-- The LU perturbation in (14.21) inherits the componentwise LU backward-error
+    bound. -/
+theorem higham14_eq14_21_methodD_luDelta_bound {n : ℕ}
+    (A L_hat U_hat : Fin n → Fin n → ℝ) (ε : ℝ)
+    (hLU : LUBackwardError n A L_hat U_hat ε) :
+    ∀ i j : Fin n,
+      |higham14_methodDLUBackwardDelta A L_hat U_hat i j| ≤
+        ε * ∑ k : Fin n, |L_hat i k| * |U_hat k j| := by
+  intro i j
+  simpa [higham14_methodDLUBackwardDelta, matMul] using hLU.backward_bound i j
+
+/-- Higham equation (14.22), Method D left-residual expansion.
+
+    With the perturbations from (14.20) and (14.21), the left residual splits
+    into the upper-inverse residual, the lower-inverse residual propagated
+    through `X_U` and `U_hat`, the product-formation perturbation, and the LU
+    backward perturbation. -/
+theorem higham14_eq14_22_methodD_left_residual_expansion {n : ℕ}
+    (A L_hat U_hat X_U X_L X_hat : Fin n → Fin n → ℝ) (i j : Fin n) :
+    ∑ k : Fin n, X_hat i k * A k j - (if i = j then 1 else 0) =
+      higham14_methodDXULeftResidual X_U U_hat i j +
+      ∑ k₁ : Fin n, X_U i k₁ *
+        (∑ k₂ : Fin n,
+          higham14_methodDXLLeftResidual X_L L_hat k₁ k₂ * U_hat k₂ j) +
+      ∑ k₁ : Fin n, higham14_methodDProductDelta X_hat X_U X_L i k₁ *
+        (∑ k₂ : Fin n, L_hat k₁ k₂ * U_hat k₂ j) -
+      ∑ k : Fin n, X_hat i k *
+        higham14_methodDLUBackwardDelta A L_hat U_hat k j := by
+  have hAssoc :
+      ∑ k : Fin n, (∑ l : Fin n, X_U i l * X_L l k) *
+          (∑ m : Fin n, L_hat k m * U_hat m j) =
+        ∑ k : Fin n, X_U i k *
+          (∑ l : Fin n, (∑ m : Fin n, X_L k m * L_hat m l) * U_hat l j) := by
+    have h1 :
+        matMul n (matMul n X_U X_L) (matMul n L_hat U_hat) =
+          matMul n X_U (matMul n X_L (matMul n L_hat U_hat)) :=
+      matMul_assoc n X_U X_L (matMul n L_hat U_hat)
+    have h2 :
+        matMul n X_L (matMul n L_hat U_hat) =
+          matMul n (matMul n X_L L_hat) U_hat :=
+      (matMul_assoc n X_L L_hat U_hat).symm
+    have h :
+        matMul n (matMul n X_U X_L) (matMul n L_hat U_hat) =
+          matMul n X_U (matMul n (matMul n X_L L_hat) U_hat) := by
+      rw [h1, h2]
+    exact congrFun (congrFun h i) j
+  have hXU_res_expand :
+      higham14_methodDXULeftResidual X_U U_hat i j +
+        ∑ k₁ : Fin n, X_U i k₁ *
+          (∑ k₂ : Fin n,
+            higham14_methodDXLLeftResidual X_L L_hat k₁ k₂ * U_hat k₂ j) =
+        ∑ k : Fin n, X_U i k *
+          (∑ l : Fin n, (∑ m : Fin n, X_L k m * L_hat m l) * U_hat l j) -
+          (if i = j then 1 else 0) := by
+    simp [higham14_methodDXULeftResidual, higham14_methodDXLLeftResidual,
+      matMul, sub_mul, mul_sub, Finset.sum_sub_distrib]
+  have hXhat_decomp :
+      ∑ k : Fin n, X_hat i k * (∑ l : Fin n, L_hat k l * U_hat l j) =
+        ∑ k : Fin n, (∑ l : Fin n, X_U i l * X_L l k) *
+          (∑ m : Fin n, L_hat k m * U_hat m j) +
+        ∑ k : Fin n, higham14_methodDProductDelta X_hat X_U X_L i k *
+          (∑ m : Fin n, L_hat k m * U_hat m j) := by
+    simp [higham14_methodDProductDelta, matMul, sub_mul,
+      Finset.sum_sub_distrib]
+  have hA := higham14_eq14_21_methodD_lu_substitution A L_hat U_hat X_hat i j
+  rw [hA]
+  rw [hXhat_decomp]
+  rw [hAssoc]
+  linarith [hXU_res_expand]
+
 /-- **Abstract Method D left residual interface** (Higham eq. 14.20–14.23).
 
     Method D: compute X_L ≈ L⁻¹ and X_U ≈ U⁻¹ separately,
@@ -1477,6 +1601,36 @@ theorem methodD_left_residual (n : ℕ) (fp : FPModel)
         ∑ k₁ : Fin n, (∑ l₁ : Fin n, |X_U i l₁| * |X_L l₁ k₁|) *
           (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|) :=
   hLeftRes
+
+/-- Source-facing Higham equation (14.23) wrapper for the Method D left-residual
+    bound.  The detailed floating-point composition of the terms in (14.22) is
+    still supplied as the local hypothesis `hLeftRes`, while (14.20)--(14.22)
+    are exported above as exact algebra. -/
+theorem higham14_eq14_23_methodD_left_residual_bound (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (X_U X_L X_hat : Fin n → Fin n → ℝ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hXL_res : ∀ i j : Fin n,
+      |∑ k : Fin n, X_L i k * L_hat k j - if i = j then 1 else 0| ≤
+      gamma fp n * ∑ k : Fin n, |X_L i k| * |L_hat k j|)
+    (hXU_res : ∀ i j : Fin n,
+      |∑ k : Fin n, X_U i k * U_hat k j - if i = j then 1 else 0| ≤
+      gamma fp n * ∑ k : Fin n, |X_U i k| * |U_hat k j|)
+    (hProd : MatProdError n X_hat (matMul n X_U X_L) (gamma fp n)
+      (fun i j => ∑ k : Fin n, |X_U i k| * |X_L k j|))
+    (hLeftRes : ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * A k j - if i = j then 1 else 0| ≤
+      (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+        ∑ k₁ : Fin n, (∑ l₁ : Fin n, |X_U i l₁| * |X_L l₁ k₁|) *
+          (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|)) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * A k j - if i = j then 1 else 0| ≤
+      (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+        ∑ k₁ : Fin n, (∑ l₁ : Fin n, |X_U i l₁| * |X_L l₁ k₁|) *
+          (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|) :=
+  methodD_left_residual n fp A L_hat U_hat X_U X_L X_hat
+    hLU hn hXL_res hXU_res hProd hLeftRes
 
 /-- **Abstract Method D SPD specialization** (Higham §14.3.4, p. 274).
 
