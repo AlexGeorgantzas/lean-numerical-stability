@@ -880,6 +880,47 @@ lemma principalTwoBlock_trailing_conj_transports_trailing_two
   · exact trailing_conj_preserves_trailing_entry hnm A Q U hq hp
   · exact trailing_conj_preserves_trailing_entry hnm A Q U hq hq
 
+/-- No-real-eigenline and negative-discriminant certificates for a trailing
+    recursive `2 x 2` block transport back through the full re-embedded Schur
+    factor. -/
+lemma trailing_twoBlock_spectral_preserved_after_trailing_conj
+    {d m n : ℕ} (hnm : d + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {p q : Fin n} {a b : Fin m}
+    (hp : (p : ℕ) = d + (a : ℕ))
+    (hq : (q : ℕ) = d + (b : ℕ))
+    (hno :
+      let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock
+          (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b)) :
+    let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := d) U)
+    LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) ∧
+      ((Qfullᵀ * A * Qfull) p p - (Qfullᵀ * A * Qfull) q q) ^ 2 +
+        4 * (Qfullᵀ * A * Qfull) p q * (Qfullᵀ * A * Qfull) q p < 0 := by
+  let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+  let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+    Matrix.reindex e.symm e.symm
+      (Matrix.reindex e e Q * embedBlock (d := d) U)
+  have hblock :
+      LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q =
+        LeanFpAnalysis.FP.principalTwoBlock
+          (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b :=
+    principalTwoBlock_trailing_conj_transports_trailing_two hnm A Q U hp hq
+  have hno' :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) := by
+    rw [hblock]
+    simpa [e] using hno
+  exact ⟨hno',
+    LeanFpAnalysis.FP.principalTwoBlock_disc_neg_of_matrixNoRealEigenline
+      (Qfullᵀ * A * Qfull) p q hno'⟩
+
 /-- The principal leading `2 x 2` block is unchanged when the trailing recursive
     conjugation is re-embedded. -/
 lemma principalTwoBlock_trailing_conj_preserves_leading_two
