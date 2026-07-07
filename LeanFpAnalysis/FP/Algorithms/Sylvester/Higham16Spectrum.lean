@@ -2378,6 +2378,50 @@ theorem sylvesterTwoColumnBlock_no_block_action_of_complex_disc_det_separation
         n T p q delta hdelta)
       hnoReal hnoA
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), explicit
+    source-shaped separation certificate for a supplied adjacent real
+    `2 x 2` Schur block: the block discriminant is negative and the
+    complexified left coefficient has nonzero shifted determinant at the
+    standard complex root `sqrt (-disc)`.  This predicate records concrete
+    spectral data; it is not the no-block-action conclusion itself. -/
+def IsSylvesterTwoColumnRealSchurBlockSeparation
+    (m n : Nat) (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n) : Prop :=
+  (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0 ∧
+    Not
+      ((Matrix.det
+        (realMatrixToComplex (Matrix.of A) -
+          Matrix.scalar (Fin m)
+            (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+              (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), named
+    no-block-action bridge from the explicit real-Schur block-separation
+    certificate.  The remaining open source work is to derive
+    `IsSylvesterTwoColumnRealSchurBlockSeparation` automatically from the
+    stronger real-Schur block API, not from the current block-map predicate
+    alone. -/
+theorem sylvesterTwoColumnBlock_no_block_action_of_realSchur_block_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hsep : IsSylvesterTwoColumnRealSchurBlockSeparation m n A T p q) :
+    forall z : Sum (Fin m) (Fin m) -> Real, z ≠ 0 ->
+      Not (Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) z =
+        Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q) z) := by
+  exact sylvesterTwoColumnBlock_no_block_action_of_complex_disc_det_separation
+    m n A T p q hsep.1 hsep.2
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    consequence of the explicit real-Schur block-separation certificate. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_realSchur_block_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hsep : IsSylvesterTwoColumnRealSchurBlockSeparation m n A T p q) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  exact sylvesterTwoColumnBlockCoeff_det_ne_zero_of_no_block_action
+    m n A T p q
+    (sylvesterTwoColumnBlock_no_block_action_of_realSchur_block_separation
+      m n A T p q hsep)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     determinant-shaped complex-separation route from a negative real
     discriminant: `sqrt (-disc)` supplies the complex root and no-real-line
