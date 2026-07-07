@@ -61,6 +61,7 @@ complex Schur primitive (`Uᴴ * A * U = T`) plugs in directly.
 
 import LeanFpAnalysis.FP.Analysis.SchurTriangulation
 import Mathlib.Data.Prod.Lex
+import Mathlib.LinearAlgebra.Matrix.Vec
 import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
 
@@ -96,6 +97,62 @@ noncomputable def complexSylvesterVecCoeff {m n : ℕ}
     Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) ℂ :=
   Matrix.kronecker (1 : Matrix (Fin n) (Fin n) ℂ) A -
     Matrix.kronecker (Matrix.transpose B) (1 : Matrix (Fin m) (Fin m) ℂ)
+
+/-- Left multiplication by `A` in vectorized complex form, the
+    `I_n kron A` half of Higham, 2nd ed., Chapter 16.1, equation (16.2). -/
+theorem complex_vec_left_mul_rect {m k n : ℕ}
+    (A : Matrix (Fin m) (Fin k) ℂ)
+    (X : Matrix (Fin k) (Fin n) ℂ) :
+    Matrix.vec (A * X) =
+      Matrix.mulVec
+        (Matrix.kronecker (1 : Matrix (Fin n) (Fin n) ℂ) A)
+        (Matrix.vec X) := by
+  simpa [Matrix.kronecker] using Matrix.vec_mul_eq_mulVec A X
+
+/-- Right multiplication by `B` in vectorized complex form, the
+    `B^T kron I_m` half of Higham, 2nd ed., Chapter 16.1, equation (16.2). -/
+theorem complex_vec_right_mul_rect {m n p : ℕ}
+    (X : Matrix (Fin m) (Fin n) ℂ)
+    (B : Matrix (Fin n) (Fin p) ℂ) :
+    Matrix.vec (X * B) =
+      Matrix.mulVec
+        (Matrix.kronecker (Matrix.transpose B)
+          (1 : Matrix (Fin m) (Fin m) ℂ))
+        (Matrix.vec X) := by
+  simpa [Matrix.kronecker] using
+    (Matrix.kronecker_mulVec_vec (1 : Matrix (Fin m) (Fin m) ℂ)
+      X (Matrix.transpose B)).symm
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2), complex form:
+    applying `I_n kron A - B^T kron I_m` to `vec(X)` gives `vec(AX - XB)`. -/
+theorem complexSylvesterVecCoeff_mulVec_vec {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (X : Matrix (Fin m) (Fin n) ℂ) :
+    Matrix.mulVec (complexSylvesterVecCoeff A B) (Matrix.vec X) =
+      Matrix.vec (complexSylvesterOp A B X) := by
+  ext p
+  have hleft := congrFun (complex_vec_left_mul_rect A X) p
+  have hright := congrFun (complex_vec_right_mul_rect X B) p
+  unfold complexSylvesterVecCoeff
+  simp only [Pi.sub_apply, Matrix.sub_mulVec, hleft.symm, hright.symm]
+  simp [complexSylvesterOp, Matrix.vec, Matrix.mul_apply]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2), complex form:
+    the vectorized linear system is equivalent to the Sylvester equation. -/
+theorem complex_sylvester_vec_system_iff_solution {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (C X : Matrix (Fin m) (Fin n) ℂ) :
+    Matrix.mulVec (complexSylvesterVecCoeff A B) (Matrix.vec X) = Matrix.vec C ↔
+      IsComplexSylvesterSolution A B C X := by
+  constructor
+  · intro h
+    unfold IsComplexSylvesterSolution
+    ext i j
+    have hp := congrFun h (j, i)
+    rw [complexSylvesterVecCoeff_mulVec_vec] at hp
+    simpa [Matrix.vec] using hp
+  · intro h
+    rw [complexSylvesterVecCoeff_mulVec_vec, h]
 
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.4): upper triangularity for a
     complex square matrix (all strictly-below-diagonal entries vanish).  This is
