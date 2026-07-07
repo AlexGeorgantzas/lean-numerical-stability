@@ -2394,6 +2394,26 @@ def IsSylvesterTwoColumnRealSchurBlockSeparation
             (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
               (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), direct producer
+    for the explicit real-Schur block-separation predicate from the two
+    spectral certificates that a stronger real-Schur block API should export:
+    negative discriminant for the adjacent `2 x 2` block and shifted complex
+    determinant separation for `A`. -/
+theorem sylvesterTwoColumnRealSchurBlock_separation_of_disc_det_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0)
+    (hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m)
+              (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
+    IsSylvesterTwoColumnRealSchurBlockSeparation m n A T p q :=
+  ⟨hdisc, hdetA⟩
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), canonical
     real `2 x 2` rotation-scaling block algebra: if the adjacent block has
     entries `[[alpha, beta], [-beta, alpha]]` in the `(p,q)` order and
@@ -2433,9 +2453,11 @@ theorem sylvesterTwoColumnRealSchurBlock_separation_of_rotation_scaling_entries
                 (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
     IsSylvesterTwoColumnRealSchurBlockSeparation m n A T p q := by
   exact
-    ⟨sylvesterTwoColumnRealSchurBlock_disc_neg_of_rotation_scaling_entries
-      n T p q alpha beta hpp hqq hpq hqp hbeta,
-      hdetA⟩
+    sylvesterTwoColumnRealSchurBlock_separation_of_disc_det_separation
+      m n A T p q
+      (sylvesterTwoColumnRealSchurBlock_disc_neg_of_rotation_scaling_entries
+        n T p q alpha beta hpp hqq hpq hqp hbeta)
+      hdetA
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), named
     no-block-action bridge from the explicit real-Schur block-separation
@@ -2483,6 +2505,37 @@ def IsSylvesterTwoColumnRealQuasiSchurBlockSeparation
     IsSylvesterTwoColumnRealSchurBlockSeparation m n A T p q
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
+    real-quasi-Schur separation producer from block-map data, adjacent
+    same-block provenance, a negative-discriminant certificate for the block,
+    and shifted determinant separation for `A`.  This is the direct adapter
+    for a future strengthened `real_quasi_schur_blocks` theorem that exports
+    irreducible `2 x 2` block discriminants. -/
+theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_disc_det_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0)
+    (hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m)
+              (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
+    IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q := by
+  exact
+    ⟨hmono, hcard, hzero, hpq_adj, hsame,
+      sylvesterTwoColumnRealSchurBlock_separation_of_disc_det_separation
+        m n A T p q hdisc hdetA⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
     real-quasi-Schur block-separation producer from canonical rotation-scaling
     entries for the adjacent `2 x 2` block.  The current `real_quasi_schur_blocks`
     API does not export these entries; this theorem closes the algebra once a
@@ -2511,9 +2564,11 @@ theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_rotation_scaling_entr
                 (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
     IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q := by
   exact
-    ⟨hmono, hcard, hzero, hpq_adj, hsame,
-      sylvesterTwoColumnRealSchurBlock_separation_of_rotation_scaling_entries
-        m n A T p q alpha beta hpp hqq hpq_entry hqp hbeta hdetA⟩
+    sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_disc_det_separation
+      m n A T pmap p q hmono hcard hzero hpq_adj hsame
+      (sylvesterTwoColumnRealSchurBlock_disc_neg_of_rotation_scaling_entries
+        n T p q alpha beta hpp hqq hpq_entry hqp hbeta)
+      hdetA
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
     real-quasi-Schur block-separation bridge to the adjacent-block predicate
