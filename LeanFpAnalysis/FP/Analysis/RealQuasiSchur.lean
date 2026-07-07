@@ -30,6 +30,19 @@ open Module
 
 namespace LeanFpAnalysis.FP
 
+/-- Spectral certificates for adjacent `2 x 2` blocks in a constructed real
+    quasi-Schur block map.  For every adjacent pair in the same block, the
+    ordered principal block has no real eigenline, hence its discriminant is
+    negative.  This is the certificate layer needed before exporting
+    source-facing real `2 x 2` Schur block data from the recursive construction. -/
+def HasRealQuasiSchurTwoBlockSpectral {n : ℕ}
+    (R : Matrix (Fin n) (Fin n) ℝ) (pmap : Fin n → ℕ) : Prop :=
+  ∀ p q : Fin n,
+    (q : ℕ) = (p : ℕ) + 1 →
+    pmap p = pmap q →
+      MatrixNoRealEigenline (principalTwoBlock R p q) ∧
+        (R p p - R q q) ^ 2 + 4 * R p q * R q p < 0
+
 namespace RealQuasiSchurAux
 
 /-! ### The quasi-upper-triangular predicate (Higham (16.4))
@@ -920,6 +933,75 @@ lemma trailing_twoBlock_spectral_preserved_after_trailing_conj
   exact ⟨hno',
     LeanFpAnalysis.FP.principalTwoBlock_disc_neg_of_matrixNoRealEigenline
       (Qfullᵀ * A * Qfull) p q hno'⟩
+
+/-- A recursive trailing adjacent same-block spectral certificate lifts to the
+    parent block map after re-embedding the trailing Schur factor. -/
+lemma trailing_twoBlock_spectral_with_parentBlockMap_after_trailing_conj
+    {d m n : ℕ} (hnm : d + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    (p' : Fin m → ℕ) {a b : Fin m}
+    (hab : (b : ℕ) = (a : ℕ) + 1)
+    (hsame : p' a = p' b)
+    (hspectral :
+      let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+      HasRealQuasiSchurTwoBlockSpectral
+        (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) p') :
+    let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := d) U)
+    let pmap : Fin n → ℕ :=
+      fun i => Sum.elim (fun _ : Fin d => 0) (fun c : Fin m => p' c + 1) (e i)
+    let p : Fin n := e.symm (Sum.inr a)
+    let q : Fin n := e.symm (Sum.inr b)
+    (q : ℕ) = (p : ℕ) + 1 ∧
+      pmap p = pmap q ∧
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) ∧
+      ((Qfullᵀ * A * Qfull) p p - (Qfullᵀ * A * Qfull) q q) ^ 2 +
+        4 * (Qfullᵀ * A * Qfull) p q * (Qfullᵀ * A * Qfull) q p < 0 := by
+  let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+  let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+    Matrix.reindex e.symm e.symm
+      (Matrix.reindex e e Q * embedBlock (d := d) U)
+  let pmap : Fin n → ℕ :=
+    fun i => Sum.elim (fun _ : Fin d => 0) (fun c : Fin m => p' c + 1) (e i)
+  let p : Fin n := e.symm (Sum.inr a)
+  let q : Fin n := e.symm (Sum.inr b)
+  have hpval : (p : ℕ) = d + (a : ℕ) := by
+    have hsum : splitEquiv hnm p = Sum.inr a := by
+      dsimp [p, e]
+      exact (splitEquiv hnm).apply_symm_apply (Sum.inr a)
+    exact (splitEquiv_inr_val hnm hsum).symm
+  have hqval : (q : ℕ) = d + (b : ℕ) := by
+    have hsum : splitEquiv hnm q = Sum.inr b := by
+      dsimp [q, e]
+      exact (splitEquiv hnm).apply_symm_apply (Sum.inr b)
+    exact (splitEquiv_inr_val hnm hsum).symm
+  have hadj : (q : ℕ) = (p : ℕ) + 1 := by
+    omega
+  have hsame_parent : pmap p = pmap q := by
+    dsimp [pmap, p, q, e]
+    simp [hsame]
+  have htrail :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock
+          (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b) ∧
+        ((Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a a -
+            (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) b b) ^ 2 +
+          4 * (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b *
+            (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) b a < 0 := by
+    simpa [e] using hspectral a b hab hsame
+  have hfull :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+          (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) ∧
+        ((Qfullᵀ * A * Qfull) p p - (Qfullᵀ * A * Qfull) q q) ^ 2 +
+          4 * (Qfullᵀ * A * Qfull) p q * (Qfullᵀ * A * Qfull) q p < 0 := by
+    simpa [e, Qfull, p, q] using
+      trailing_twoBlock_spectral_preserved_after_trailing_conj
+        hnm A Q U hpval hqval htrail.1
+  exact ⟨hadj, hsame_parent, hfull.1, hfull.2⟩
 
 /-- The principal leading `2 x 2` block is unchanged when the trailing recursive
     conjugation is re-embedded. -/
