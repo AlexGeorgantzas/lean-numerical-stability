@@ -451,6 +451,98 @@ lemma principalTwoBlock_disc_neg_of_invariant_noRealEigenline_columnSpan
       (matrixNoRealEigenline_principalTwoBlock_of_invariant_noRealEigenline_columnSpan
         A Q hQ hpq W hWspan hWinv hWno)
 
+/-- The span of the first two columns of an orthogonal frame, represented by the
+    `{c // c < 2}` index set used by `exists_orthogonal_frame`, is the ordinary
+    pair-span of the columns whose values are `0` and `1`. -/
+lemma span_frame_lt_two_eq_span_pair_of_val_zero_one
+    (Q : Matrix (Fin n) (Fin n) ℝ) {p q : Fin n}
+    (hp : (p : ℕ) = 0) (hq : (q : ℕ) = 1) :
+    Submodule.span ℝ
+        (Set.range
+          (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1))) =
+      Submodule.span ℝ
+        ({(fun k : Fin n => Q k p), (fun k : Fin n => Q k q)}
+          : Set (Fin n → ℝ)) := by
+  have hrange :
+      Set.range
+          (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1)) =
+        ({(fun k : Fin n => Q k p), (fun k : Fin n => Q k q)}
+          : Set (Fin n → ℝ)) := by
+    ext v
+    constructor
+    · rintro ⟨c, rfl⟩
+      have hc : (c.1 : ℕ) = 0 ∨ (c.1 : ℕ) = 1 := by omega
+      rcases hc with h0 | h1
+      · left
+        have hcp : c.1 = p := Fin.ext (by rw [h0, hp])
+        funext k
+        change Q k c.1 = Q k p
+        rw [hcp]
+      · right
+        have hcq : c.1 = q := Fin.ext (by rw [h1, hq])
+        funext k
+        change Q k c.1 = Q k q
+        rw [hcq]
+    · rintro (rfl | rfl)
+      · exact ⟨⟨p, by omega⟩, rfl⟩
+      · exact ⟨⟨q, by omega⟩, rfl⟩
+  rw [hrange]
+
+/-- The `d = 2` frame-span form of the invariant-plane bridge: if the first two
+    frame columns span a no-real-eigenline invariant plane, then the corresponding
+    principal block of `Qᵀ * A * Q` has no real eigenline. -/
+lemma matrixNoRealEigenline_principalTwoBlock_of_frameSpan_two
+    (A Q : Matrix (Fin n) (Fin n) ℝ) {p q : Fin n}
+    (hp : (p : ℕ) = 0) (hq : (q : ℕ) = 1)
+    (hQ : Q ∈ Matrix.orthogonalGroup (Fin n) ℝ)
+    (W : Submodule ℝ (Fin n → ℝ))
+    (hQspan :
+      Submodule.span ℝ
+        (Set.range
+          (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1))) = W)
+    (hWinv : ∀ w ∈ W, A.mulVecLin w ∈ W)
+    (hWno :
+      ∀ w ∈ W, w ≠ 0 →
+        ¬ ∃ nu : ℝ, A *ᵥ w = nu • w) :
+    LeanFpAnalysis.FP.MatrixNoRealEigenline
+      (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q) := by
+  have hpq : p ≠ q := by
+    intro h
+    have hval := congrArg (fun r : Fin n => (r : ℕ)) h
+    omega
+  have hpair_span :
+      Submodule.span ℝ
+          ({(fun k : Fin n => Q k p), (fun k : Fin n => Q k q)}
+            : Set (Fin n → ℝ)) = W := by
+    rw [← span_frame_lt_two_eq_span_pair_of_val_zero_one Q hp hq]
+    exact hQspan
+  exact
+    matrixNoRealEigenline_principalTwoBlock_of_invariant_noRealEigenline_columnSpan
+      A Q hQ hpq W hpair_span hWinv hWno
+
+/-- The `d = 2` frame-span form of the discriminant bridge for a no-real-eigenline
+    invariant plane. -/
+lemma principalTwoBlock_disc_neg_of_frameSpan_two
+    (A Q : Matrix (Fin n) (Fin n) ℝ) {p q : Fin n}
+    (hp : (p : ℕ) = 0) (hq : (q : ℕ) = 1)
+    (hQ : Q ∈ Matrix.orthogonalGroup (Fin n) ℝ)
+    (W : Submodule ℝ (Fin n → ℝ))
+    (hQspan :
+      Submodule.span ℝ
+        (Set.range
+          (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1))) = W)
+    (hWinv : ∀ w ∈ W, A.mulVecLin w ∈ W)
+    (hWno :
+      ∀ w ∈ W, w ≠ 0 →
+        ¬ ∃ nu : ℝ, A *ᵥ w = nu • w) :
+    ((Qᵀ * A * Q) p p - (Qᵀ * A * Q) q q) ^ 2 +
+      4 * (Qᵀ * A * Q) p q * (Qᵀ * A * Q) q p < 0 := by
+  exact
+    LeanFpAnalysis.FP.principalTwoBlock_disc_neg_of_matrixNoRealEigenline
+      (Qᵀ * A * Q) p q
+      (matrixNoRealEigenline_principalTwoBlock_of_frameSpan_two
+        A Q hp hq hQ W hQspan hWinv hWno)
+
 /-! ### Reindexing helpers: conjugation and orthogonality transport
 
 Transporting an orthogonal conjugation `Xᵀ A X` along an index equivalence
