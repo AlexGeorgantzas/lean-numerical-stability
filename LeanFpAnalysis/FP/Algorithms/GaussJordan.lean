@@ -126,6 +126,81 @@ noncomputable def gje_cumulative_product (n : ℕ)
   else fun i j => if i = j then 1 else 0
 termination_by finish_ - start
 
+/-- Equation (14.27) base case for the GJE cumulative product:
+    an empty stage range is the identity. -/
+theorem gje_cumulative_product_base (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ) {start finish_ : ℕ}
+    (hfinish : finish_ ≤ start) :
+    gje_cumulative_product n N_hat start finish_ = idMatrix n := by
+  conv_lhs => unfold gje_cumulative_product
+  ext i j
+  simp [hfinish, idMatrix]
+
+/-- Equation (14.27) step case for the GJE cumulative product:
+    when the stage index `finish - 1` is valid, the product is obtained by
+    multiplying that stage on the left of the previous cumulative product. -/
+theorem gje_cumulative_product_step (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ) {start finish_ : ℕ}
+    (hstep : start < finish_) (hidx : finish_ - 1 < n) :
+    gje_cumulative_product n N_hat start finish_ =
+      matMul n (N_hat ⟨finish_ - 1, hidx⟩)
+        (gje_cumulative_product n N_hat start (finish_ - 1)) := by
+  conv_lhs => unfold gje_cumulative_product
+  ext i j
+  simp [not_le_of_gt hstep, hidx, matMul]
+
+/-- Out-of-range guard for the cumulative product: if the requested stage
+    `finish - 1` is not a valid `Fin n` index, the definition returns the
+    identity.  This keeps the total function honest outside the source range. -/
+theorem gje_cumulative_product_oob (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ) {start finish_ : ℕ}
+    (hstep : start < finish_) (hidx : ¬ finish_ - 1 < n) :
+    gje_cumulative_product n N_hat start finish_ = idMatrix n := by
+  conv_lhs => unfold gje_cumulative_product
+  ext i j
+  simp [not_le_of_gt hstep, hidx, idMatrix]
+
+/-- Entrywise nonnegative stage matrices have entrywise nonnegative GJE
+    cumulative products.  This is the basic monotonicity fact needed before
+    turning (14.27)--(14.28) into componentwise absolute-value bounds. -/
+theorem gje_cumulative_product_nonneg (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ)
+    (hN : ∀ k i j : Fin n, 0 ≤ N_hat k i j) :
+    ∀ start finish_ : ℕ, ∀ i j : Fin n,
+      0 ≤ gje_cumulative_product n N_hat start finish_ i j := by
+  intro start finish_
+  induction finish_ using Nat.strong_induction_on generalizing start with
+  | h finish_ ih =>
+      intro i j
+      by_cases hfinish : finish_ ≤ start
+      · rw [gje_cumulative_product_base n N_hat hfinish]
+        simp [idMatrix]
+        split <;> norm_num
+      · by_cases hidx : finish_ - 1 < n
+        · have hstep : start < finish_ := lt_of_not_ge hfinish
+          have hfinish_ne : finish_ ≠ 0 :=
+            Nat.ne_of_gt (lt_of_le_of_lt (Nat.zero_le start) hstep)
+          rw [gje_cumulative_product_step n N_hat hstep hidx]
+          simp [matMul]
+          exact Finset.sum_nonneg fun k _ =>
+            mul_nonneg (hN ⟨finish_ - 1, hidx⟩ i k)
+              (ih (finish_ - 1) (Nat.sub_one_lt hfinish_ne) start k j)
+        · have hstep : start < finish_ := lt_of_not_ge hfinish
+          rw [gje_cumulative_product_oob n N_hat hstep hidx]
+          simp [idMatrix]
+          split <;> norm_num
+
+/-- The absolute-value stage matrices used in the GJE error bounds have
+    nonnegative cumulative products. -/
+theorem gje_cumulative_product_abs_nonneg (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ) :
+    ∀ start finish_ : ℕ, ∀ i j : Fin n,
+      0 ≤ gje_cumulative_product n
+        (fun k i j => |N_hat k i j|) start finish_ i j :=
+  gje_cumulative_product_nonneg n
+    (fun k i j => |N_hat k i j|)
+    (fun _ _ _ => abs_nonneg _)
+
 -- ══════════════════════════════════════════════════════════════════════
 -- §14.4.4  Forward Error (eq. 14.29)
 -- ══════════════════════════════════════════════════════════════════════
