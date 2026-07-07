@@ -3114,6 +3114,86 @@ theorem higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts_product_bounds
         hρSB hSB)
       hparts
 
+/-- Product-cap and gamma-majorant version of
+`higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts` for the concrete
+middle-solve term `f(γ_solve) * κmidLU`.  The solve-chain middle term may be
+estimated at a larger radius `γ_mid_cap`; monotonicity of Chapter 9's
+`f(u)=4u+3u²+u³` transports that middle factor back to `γ_solve`. -/
+theorem higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts_product_majorants
+    (n : ℕ)
+    (γ_factor γ_factor_cap γ_solve γ_solve_cap γ_mid_cap γ15n25
+      κL κLT κLhat κLhatT κT κBT κmidLU
+      ρFT ρFB ρST ρSB γFT γFB γST γSB : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hγ_factor_le : γ_factor ≤ γ_factor_cap)
+    (hγ_solve : 0 ≤ γ_solve) (hγ_solve_le : γ_solve ≤ γ_solve_cap)
+    (hγ_mid_le : γ_solve ≤ γ_mid_cap)
+    (hκL : 0 ≤ κL) (hκLT : 0 ≤ κLT)
+    (hκLhat : 0 ≤ κLhat) (hκLhatT : 0 ≤ κLhatT)
+    (hκT : 0 ≤ κT) (hκBT : 0 ≤ κBT) (hκmidLU : 0 ≤ κmidLU)
+    (hρFT : κL * κT * κLT ≤ ρFT)
+    (hρFB : κL * κBT * κLT ≤ ρFB)
+    (hρST : κLhat * κLhatT ≤ ρST)
+    (hρSB :
+      κLhat * (higham9_14_f γ_mid_cap * κmidLU) * κLhatT ≤ ρSB)
+    (hFT :
+      (2 * γ_factor_cap + γ_factor_cap ^ 2) * ρFT ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γFT)
+    (hFB :
+      (1 + 2 * γ_factor_cap + γ_factor_cap ^ 2) * ρFB ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γFB)
+    (hST :
+      (2 * γ_solve_cap + γ_solve_cap ^ 2) * ρST ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γST)
+    (hSB :
+      (1 + 2 * γ_solve_cap + γ_solve_cap ^ 2) * ρSB ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γSB)
+    (hparts : γFT + γFB + γST + γSB ≤ γ15n25) :
+    (2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) +
+      (2 * γ_solve + γ_solve ^ 2) * (κLhat * κLhatT) +
+      (1 + 2 * γ_solve + γ_solve ^ 2) *
+        (κLhat * (higham9_14_f γ_solve * κmidLU) * κLhatT) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 := by
+  have hγ_mid : 0 ≤ γ_mid_cap := hγ_solve.trans hγ_mid_le
+  have hf_le : higham9_14_f γ_solve ≤ higham9_14_f γ_mid_cap :=
+    higham9_14_f_mono_nonneg hγ_solve hγ_mid_le
+  have hf_solve : 0 ≤ higham9_14_f γ_solve :=
+    higham9_14_f_nonneg hγ_solve
+  have hSBprod :
+      κLhat * (higham9_14_f γ_solve * κmidLU) * κLhatT ≤ ρSB := by
+    have hmid :
+        higham9_14_f γ_solve * κmidLU ≤
+          higham9_14_f γ_mid_cap * κmidLU :=
+      mul_le_mul_of_nonneg_right hf_le hκmidLU
+    have hleft :
+        κLhat * (higham9_14_f γ_solve * κmidLU) ≤
+          κLhat * (higham9_14_f γ_mid_cap * κmidLU) :=
+      mul_le_mul_of_nonneg_left hmid hκLhat
+    exact (mul_le_mul_of_nonneg_right hleft hκLhatT).trans hρSB
+  exact
+    higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts
+      n γ_factor γ_solve γ15n25 κL κLT κLhat κLhatT κT κBT
+      (higham9_14_f γ_solve * κmidLU) γFT γFB γST γSB
+      (higham11_8_two_gamma_plus_sq_mul_le_of_majorants
+        γ_factor γ_factor_cap (κL * κT * κLT) ρFT
+        (((n - 1 : ℕ) : ℝ) ^ 2 * γFT) hγ_factor hγ_factor_le
+        (mul_nonneg (mul_nonneg hκL hκT) hκLT) hρFT hFT)
+      (higham11_8_one_plus_two_gamma_plus_sq_mul_le_of_majorants
+        γ_factor γ_factor_cap (κL * κBT * κLT) ρFB
+        (((n - 1 : ℕ) : ℝ) ^ 2 * γFB) hγ_factor hγ_factor_le
+        (mul_nonneg (mul_nonneg hκL hκBT) hκLT) hρFB hFB)
+      (higham11_8_two_gamma_plus_sq_mul_le_of_majorants
+        γ_solve γ_solve_cap (κLhat * κLhatT) ρST
+        (((n - 1 : ℕ) : ℝ) ^ 2 * γST) hγ_solve hγ_solve_le
+        (mul_nonneg hκLhat hκLhatT) hρST hST)
+      (higham11_8_one_plus_two_gamma_plus_sq_mul_le_of_majorants
+        γ_solve γ_solve_cap
+        (κLhat * (higham9_14_f γ_solve * κmidLU) * κLhatT) ρSB
+        (((n - 1 : ℕ) : ℝ) ^ 2 * γSB) hγ_solve hγ_solve_le
+        (mul_nonneg (mul_nonneg hκLhat (mul_nonneg hf_solve hκmidLU)) hκLhatT)
+        hSBprod hSB)
+      hparts
+
 /-- Scalar reducer for the norm-budget hypothesis in the Aasen
 factorization-plus-solve wrapper.  It isolates the remaining printed
 coefficient bookkeeping from primitive infinity-norm bounds for the exact and
