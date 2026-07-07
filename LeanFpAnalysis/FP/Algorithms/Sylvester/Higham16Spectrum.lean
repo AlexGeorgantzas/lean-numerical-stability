@@ -690,6 +690,47 @@ theorem quasiSchur_blockMap_strict_after_adjacent_same_block (n : Nat)
   have htwo : fiber.card <= 2 := hcard (pmap q)
   omega
 
+/-- A size-at-most-two real quasi-Schur block map has no third index in a
+    same-labelled adjacent two-column block.  This is the finite-index
+    bookkeeping needed when a `2 x 2` real-Schur block is transported back to
+    a full quasi-Schur factor. -/
+theorem quasiSchur_blockMap_eq_left_or_right_of_adjacent_same_block (n : Nat)
+    (pmap : Fin n -> Nat) (p q i : Fin n)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hi : pmap i = pmap p) :
+    i = p \/ i = q := by
+  by_cases hip : i = p
+  · exact Or.inl hip
+  by_cases hiq : i = q
+  · exact Or.inr hiq
+  exfalso
+  have hpq_lt : p < q := Fin.lt_def.mpr (by omega)
+  have hp_ne_q : p ≠ q := ne_of_lt hpq_lt
+  have hp_ne_i : p ≠ i := fun h => hip h.symm
+  have hq_ne_i : q ≠ i := fun h => hiq h.symm
+  let fiber : Finset (Fin n) := Finset.univ.filter (fun i : Fin n => pmap i = pmap p)
+  have hsubset : ({p, q, i} : Finset (Fin n)) ⊆ fiber := by
+    intro x hx
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hx
+    rcases hx with hx | hx | hx
+    · subst x
+      simp [fiber]
+    · subst x
+      simp [fiber, hsame.symm]
+    · subst x
+      simp [fiber, hi]
+  have hthree : 3 <= fiber.card := by
+    have hcard_three : ({p, q, i} : Finset (Fin n)).card = 3 := by
+      simp [hp_ne_q, hp_ne_i, hq_ne_i]
+    calc
+      3 = ({p, q, i} : Finset (Fin n)).card := hcard_three.symm
+      _ <= fiber.card := Finset.card_le_card hsubset
+  have htwo : fiber.card <= 2 := hcard (pmap p)
+  omega
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): a same-labelled
     adjacent two-column block in the exported real quasi-Schur block map gives
     the supplied adjacent quasi-triangular block predicate used by the exact
@@ -2268,6 +2309,160 @@ theorem sylvesterTwoColumnBlock_coupled_block_action_iff_columnPair_intertwining
       simpa [Matrix.mul_apply, Matrix.mulVec, dotProduct, Matrix.of_apply,
         sylvesterTwoColumnBlockColumnPair, sylvesterTwoColumnRealSchurBlock,
         Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using hi
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): for a leading
+    same-labelled adjacent `2 x 2` real-quasi-Schur block, the two coordinate
+    columns intertwine the full Schur factor with its extracted principal
+    block.  The `hmin` hypothesis says that this block has no earlier block
+    labels; it is essential, since an interior upper-quasi-triangular block
+    can have nonzero couplings from earlier rows into these two columns. -/
+theorem sylvesterTwoColumnLeadingBlock_columnPair_intertwining_of_quasiSchur
+    (n : Nat) (T : RMatFn n n) (pmap : Fin n -> Nat) (p q : Fin n)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hmin : forall i : Fin n, Not (pmap i < pmap p)) :
+    Matrix.of T *
+        sylvesterTwoColumnBlockColumnPair n
+          (fun i : Fin n => if i = p then 1 else 0)
+          (fun i : Fin n => if i = q then 1 else 0) =
+      sylvesterTwoColumnBlockColumnPair n
+          (fun i : Fin n => if i = p then 1 else 0)
+          (fun i : Fin n => if i = q then 1 else 0) *
+        sylvesterTwoColumnRealSchurBlock n T p q := by
+  classical
+  let u : Fin n -> Real := fun i => if i = p then 1 else 0
+  let v : Fin n -> Real := fun i => if i = q then 1 else 0
+  have hpq_lt : p < q := Fin.lt_def.mpr (by omega)
+  have hp_ne_q : p ≠ q := ne_of_lt hpq_lt
+  have hzero_out :
+      forall i : Fin n, i ≠ p -> i ≠ q -> T i p = 0 /\ T i q = 0 := by
+    intro i hip hiq
+    have hlabel_ne : pmap i ≠ pmap p := by
+      intro hlabel
+      rcases quasiSchur_blockMap_eq_left_or_right_of_adjacent_same_block
+          n pmap p q i hcard hpq hsame hlabel with hleft | hright
+      · exact hip hleft
+      · exact hiq hright
+    have hle : pmap p <= pmap i := le_of_not_gt (hmin i)
+    have hlt : pmap p < pmap i := lt_of_le_of_ne hle hlabel_ne.symm
+    exact ⟨hzero i p hlt, hzero i q (by simpa [hsame] using hlt)⟩
+  have hcolp : Matrix.mulVec (Matrix.of T) u = fun i : Fin n => T i p := by
+    funext i
+    simp [Matrix.mulVec, dotProduct, Matrix.of_apply, u]
+  have hcolq : Matrix.mulVec (Matrix.of T) v = fun i : Fin n => T i q := by
+    funext i
+    simp [Matrix.mulVec, dotProduct, Matrix.of_apply, v]
+  apply
+    (sylvesterTwoColumnBlock_coupled_block_action_iff_columnPair_intertwining
+      n n T T p q u v).mp
+  constructor
+  · funext i
+    rw [hcolp]
+    by_cases hip : i = p
+    · subst i
+      simp [u, v, hp_ne_q]
+    by_cases hiq : i = q
+    · subst i
+      simp [u, v, hip]
+    have hz := hzero_out i hip hiq
+    simp [u, v, hip, hiq, hz.1]
+  · funext i
+    rw [hcolq]
+    by_cases hip : i = p
+    · subst i
+      simp [u, v, hp_ne_q]
+    by_cases hiq : i = q
+    · subst i
+      simp [u, v, hip]
+    have hz := hzero_out i hip hiq
+    simp [u, v, hip, hiq, hz.2]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): a complex right
+    eigenvalue of a leading real-quasi-Schur `2 x 2` block is a complex right
+    eigenvalue of the full complexified Schur factor.  This is the leading
+    block case of the spectral transport needed to turn global no-common
+    spectrum assumptions into local Bartels-Stewart block certificates. -/
+theorem hasComplexRightEigenvalue_realMatrixToComplex_of_leading_twoBlock_quasiSchur
+    (n : Nat) (T : RMatFn n n) (pmap : Fin n -> Nat) (p q : Fin n)
+    (mu : Complex)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hmin : forall i : Fin n, Not (pmap i < pmap p))
+    (hblock :
+      HasComplexRightEigenvalue
+        (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q)) mu) :
+    HasComplexRightEigenvalue (realMatrixToComplex (Matrix.of T)) mu := by
+  classical
+  rcases hblock with ⟨w, hwne, hw⟩
+  let u : Fin n -> Real := fun i => if i = p then 1 else 0
+  let v : Fin n -> Real := fun i => if i = q then 1 else 0
+  let X : Matrix (Fin n) (Fin 2) Real := sylvesterTwoColumnBlockColumnPair n u v
+  have hpq_lt : p < q := Fin.lt_def.mpr (by omega)
+  have hp_ne_q : p ≠ q := ne_of_lt hpq_lt
+  have hXreal :
+      Matrix.of T * X = X * sylvesterTwoColumnRealSchurBlock n T p q := by
+    simpa [X, u, v] using
+      sylvesterTwoColumnLeadingBlock_columnPair_intertwining_of_quasiSchur
+        n T pmap p q hcard hzero hpq hsame hmin
+  have hXc :
+      realMatrixToComplex (Matrix.of T) * realMatrixToComplex X =
+        realMatrixToComplex X *
+          realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q) :=
+    realMatrixToComplex_intertwining_of_real
+      (Matrix.of T) (sylvesterTwoColumnRealSchurBlock n T p q) X hXreal
+  have hXw : Matrix.mulVec (realMatrixToComplex X) w ≠ 0 := by
+    intro hzero
+    have hw0 : w 0 = 0 := by
+      have hpcoord := congrFun hzero p
+      simpa [X, u, v, sylvesterTwoColumnBlockColumnPair,
+        realMatrixToComplex, Matrix.mulVec, dotProduct, Fin.sum_univ_two,
+        hp_ne_q] using hpcoord
+    have hw1 : w 1 = 0 := by
+      have hqcoord := congrFun hzero q
+      simpa [X, u, v, sylvesterTwoColumnBlockColumnPair,
+        realMatrixToComplex, Matrix.mulVec, dotProduct, Fin.sum_univ_two,
+        Ne.symm hp_ne_q] using hqcoord
+    exact hwne (by
+      funext k
+      fin_cases k
+      · exact hw0
+      · exact hw1)
+  exact
+    finiteComplexMatrix_exists_mulVec_eigenpair_of_intertwiner_image_ne_zero
+      (realMatrixToComplex (Matrix.of T))
+      (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q))
+      (realMatrixToComplex X) mu w hXc hw hXw
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): leading-block
+    transport from a global no-common-complex-right-eigenvalue hypothesis for
+    the full Schur factor to the local no-common hypothesis for the extracted
+    adjacent `2 x 2` real-Schur block. -/
+theorem noCommonComplexRightEigenvalue_of_leading_twoBlock_quasiSchur
+    (m n : Nat) (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hmin : forall i : Fin n, Not (pmap i < pmap p))
+    (hno :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex (Matrix.of A))
+        (realMatrixToComplex (Matrix.of T))) :
+    NoCommonComplexRightEigenvalue
+      (realMatrixToComplex (Matrix.of A))
+      (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q)) := by
+  intro mu hpair
+  exact hno mu ⟨hpair.1,
+    hasComplexRightEigenvalue_realMatrixToComplex_of_leading_twoBlock_quasiSchur
+      n T pmap p q mu hcard hzero hpq hsame hmin hpair.2⟩
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), complexified
     two-column intertwining bridge: a real identity `A * U = U * J` for the
