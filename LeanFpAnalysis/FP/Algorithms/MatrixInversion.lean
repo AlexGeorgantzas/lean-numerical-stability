@@ -1986,6 +1986,25 @@ theorem higham14_problem14_5_right_inverse_solve_residual_bound
     _ ≤ gamma fp (n + 1) * S :=
           mul_le_mul_of_nonneg_right hcoeff hS_nonneg
 
+/-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
+    LU core: the determinant is the product of the diagonal entries of `U`. -/
+theorem higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec
+    {n : ℕ} {A L U : Fin n → Fin n → ℝ}
+    (hLU : LUFactSpec n A L U) :
+    Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) =
+      ∏ i : Fin n, U i i := by
+  simpa using hLU.det_eq_prod_U_diag
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.34), absolute-value no-pivot
+    determinant product form.  The row-interchange parity factor in GEPP is
+    absent here because the certificate is an exact `A = L * U` factorization. -/
+theorem higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec
+    {n : ℕ} {A L U : Fin n → Fin n → ℝ}
+    (hLU : LUFactSpec n A L U) :
+    |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+      |∏ i : Fin n, U i i| := by
+  rw [higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec hLU]
+
 /-- Entry perturbation used in Higham Chapter 14, Problem 14.10:
     replace `aᵢⱼ` by `aᵢⱼ + t`, leaving every other entry unchanged. -/
 noncomputable def matrixEntryPerturb (n : ℕ)
