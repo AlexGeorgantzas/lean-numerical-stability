@@ -1218,6 +1218,18 @@ def NoCommonComplexRightEigenvalue {ι κ : Type*} [Fintype ι] [Fintype κ]
   ∀ mu : Complex, ¬ (HasComplexRightEigenvalue A mu ∧
     HasComplexRightEigenvalue B mu)
 
+/-- A left-oriented no-common-eigenvalue hypothesis plus a supplied right
+    eigenvalue of `B` gives the shifted determinant separation for `A`.  This
+    is a small orientation adapter used by the real-Schur two-column route. -/
+theorem finiteComplexMatrix_det_sub_scalar_ne_zero_of_no_common_right_eigenvalue_left
+    {ι κ : Type*} [Fintype ι] [Fintype κ] [DecidableEq ι]
+    (A : Matrix ι ι Complex) (B : Matrix κ κ Complex) (mu : Complex)
+    (hno : NoCommonComplexRightEigenvalue A B)
+    (hB : HasComplexRightEigenvalue B mu) :
+    Not (Matrix.det (A - Matrix.scalar ι mu) = 0) := by
+  exact finiteComplexMatrix_det_sub_scalar_ne_zero_of_no_eigenpair A mu
+    (fun hA => hno mu ⟨hA, hB⟩)
+
 /-- Entrywise real-to-complex map for rectangular matrices.  This is the
     rectangular companion to the square complexification used in the real
     invariant-subspace development. -/
@@ -2695,6 +2707,38 @@ theorem sylvesterTwoColumnRealSchurBlock_no_real_eigenvector_of_disc_neg
     sylvesterTwoColumnRealSchurBlock_no_real_eigenvector_of_delta_sq_ne_zero
       n T p q delta hdelta hdelta_ne
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): if an adjacent
+    real Schur `2 x 2` block has negative discriminant, the standard complex
+    root `sqrt (-disc)` is a supplied complex right eigenvalue of the
+    complexified block. -/
+theorem sylvesterTwoColumnRealSchurBlockComplexRoot_hasComplexRightEigenvalue_of_disc_neg
+    (n : Nat) (T : RMatFn n n) (p q : Fin n)
+    (hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0) :
+    HasComplexRightEigenvalue
+      (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q))
+      (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+        (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p)))) := by
+  let delta : Real := Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))
+  have hsub : Not (T q p = 0) :=
+    sylvesterTwoColumnRealSchurBlock_subdiagonal_ne_zero_of_disc_neg
+      n T p q hdisc
+  have hdelta :
+      delta ^ 2 =
+        -((T p p - T q q) ^ 2 + 4 * T p q * T q p) := by
+    dsimp [delta]
+    rw [Real.sq_sqrt]
+    linarith
+  exact
+    ⟨sylvesterTwoColumnRealSchurBlockComplexRootVector n T p q
+        (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta),
+      sylvesterTwoColumnRealSchurBlockComplexRootVector_ne_zero
+        n T p q (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta) hsub,
+      sylvesterTwoColumnRealSchurBlockComplexRootVector_mulVec
+        n T p q (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta)
+        (sylvesterTwoColumnRealSchurBlockComplexRoot_root_of_delta_sq
+          n T p q delta hdelta)⟩
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): a
     no-common-complex-eigenpair hypothesis between the adjacent real-Schur
     block and the left matrix supplies the shifted determinant certificate at
@@ -2780,6 +2824,35 @@ theorem sylvesterTwoColumnRealSchurBlockComplexRoot_det_separation_of_disc_no_co
     sylvesterTwoColumnRealSchurBlockComplexRoot_det_separation_of_disc_no_common_complex_eigenpair
       m n A T p q hdisc
       (fun mu hblock hA => hnoCommon mu ⟨hblock, hA⟩)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): left-matrix-first
+    no-common-complex-right-eigenvalue version of the adjacent real-Schur
+    block shifted determinant certificate.  The block eigenvalue at the
+    standard complex root is produced locally from the negative discriminant. -/
+theorem sylvesterTwoColumnRealSchurBlockComplexRoot_det_separation_of_disc_no_common_complex_right_eigenvalue_left
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0)
+    (hnoCommon :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex (Matrix.of A))
+        (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q))) :
+    Not
+      ((Matrix.det
+        (realMatrixToComplex (Matrix.of A) -
+          Matrix.scalar (Fin m)
+            (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+              (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0)) := by
+  exact
+    finiteComplexMatrix_det_sub_scalar_ne_zero_of_no_common_right_eigenvalue_left
+      (realMatrixToComplex (Matrix.of A))
+      (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q))
+      (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+        (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))
+      hnoCommon
+      (sylvesterTwoColumnRealSchurBlockComplexRoot_hasComplexRightEigenvalue_of_disc_neg
+        n T p q hdisc)
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     no-block-action certificate from a negative real discriminant and a
@@ -3264,6 +3337,43 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_n
     sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_no_common_complex_eigenpair
       m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral
       (fun mu hblock hA => hnoCommon mu ⟨hblock, hA⟩)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): left-matrix-first
+    no-common-complex-right-eigenvalue version of the constructed
+    two-block-spectral route to adjacent active-block shape and determinant
+    nonsingularity. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_no_common_complex_right_eigenvalue_left
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of T) pmap)
+    (hnoCommon :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex (Matrix.of A))
+        (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q))) :
+    IsAdjacentQuasiTriangularBlockFn n T p q ∧
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  have hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0 := by
+    simpa [Matrix.of_apply] using (hspectral p q hpq_adj hsame).2
+  have hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m)
+              (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0)) :=
+    sylvesterTwoColumnRealSchurBlockComplexRoot_det_separation_of_disc_no_common_complex_right_eigenvalue_left
+      m n A T p q hdisc hnoCommon
+  exact
+    sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_det_separation
+      m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral hdetA
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     determinant-shaped complex-separation route from a negative real
