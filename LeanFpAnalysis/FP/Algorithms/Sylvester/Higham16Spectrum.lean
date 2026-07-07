@@ -2422,6 +2422,58 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_realSchur_block_separation
     (sylvesterTwoColumnBlock_no_block_action_of_realSchur_block_separation
       m n A T p q hsep)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
+    real-quasi-Schur two-column separation certificate: the exported
+    quasi-Schur block-map data identifies an adjacent same-block pair, and
+    the block carries the explicit real-Schur separation certificate used by
+    the no-block-action bridge.  This is a convenient supplied-certificate
+    surface; deriving it from `real_quasi_schur_blocks` alone remains open
+    because that API exports only block size and below-block zeros. -/
+def IsSylvesterTwoColumnRealQuasiSchurBlockSeparation
+    (m n : Nat) (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n) : Prop :=
+  Monotone pmap ∧
+    (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2) ∧
+    (forall i j : Fin n, pmap j < pmap i -> T i j = 0) ∧
+    q.val = p.val + 1 ∧
+    pmap p = pmap q ∧
+    IsSylvesterTwoColumnRealSchurBlockSeparation m n A T p q
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
+    real-quasi-Schur block-separation bridge to the adjacent-block predicate
+    and no-block-action certificate. -/
+theorem sylvesterTwoColumnBlock_block_and_no_block_action_of_realQuasiSchur_block_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hsep : IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q) :
+    IsAdjacentQuasiTriangularBlockFn n T p q /\
+      (forall z : Sum (Fin m) (Fin m) -> Real, z ≠ 0 ->
+        Not (Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) z =
+          Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q) z)) := by
+  rcases hsep with ⟨hmono, hcard, hzero, hpq, hsame, hblockSep⟩
+  refine ⟨?_, ?_⟩
+  · exact IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block
+      n T pmap p q hmono hcard hzero hpq hsame
+  · exact sylvesterTwoColumnBlock_no_block_action_of_realSchur_block_separation
+      m n A T p q hblockSep
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), determinant
+    consequence of the bundled real-quasi-Schur block-separation certificate. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_block_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hsep : IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q) :
+    IsAdjacentQuasiTriangularBlockFn n T p q /\
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  have hcert :=
+    sylvesterTwoColumnBlock_block_and_no_block_action_of_realQuasiSchur_block_separation
+      m n A T pmap p q hsep
+  exact ⟨hcert.1,
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_no_block_action
+      m n A T p q hcert.2⟩
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     determinant-shaped complex-separation route from a negative real
     discriminant: `sqrt (-disc)` supplies the complex root and no-real-line
