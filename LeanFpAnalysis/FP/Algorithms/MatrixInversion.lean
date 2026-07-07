@@ -690,6 +690,101 @@ theorem triInv_method1B_right_residual_from_spec (n N : ℕ) (fp : FPModel)
   triInv_method1B_right_residual n fp L X_hat hL_diag hLT hn
     hSpec.column_backward_error
 
+/-- Exact off-diagonal block used in Higham equation (14.14), Method 2B:
+    `-X22 * L21 * X11`.  Here `L21` is the lower-left rectangular block, and
+    `X11`, `X22` are diagonal-block inverse approximations/exact blocks. -/
+noncomputable def higham14_method2BBlockUpdateExact {m r : ℕ}
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ) : Fin r → Fin m → ℝ :=
+  fun i j => -rectMatMul (rectMatMul X22 L21) X11 i j
+
+/-- Method 2B off-diagonal block perturbation for equation (14.14):
+    `X21_hat = -X22 * L21 * X11 + Delta21`. -/
+noncomputable def higham14_method2BBlockUpdateDelta {m r : ℕ}
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ) : Fin r → Fin m → ℝ :=
+  fun i j => X21_hat i j -
+    higham14_method2BBlockUpdateExact X22 L21 X11 i j
+
+/-- Higham equation (14.14), Method 2B block-update decomposition:
+    the computed off-diagonal block is the exact block product plus an explicit
+    perturbation. -/
+theorem higham14_eq14_14_method2B_block_update_decomposition {m r : ℕ}
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ) (i : Fin r) (j : Fin m) :
+    X21_hat i j =
+      higham14_method2BBlockUpdateExact X22 L21 X11 i j +
+        higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11 i j := by
+  unfold higham14_method2BBlockUpdateDelta
+  ring
+
+/-- The Method 2B block-update perturbation inherits any supplied
+    componentwise product-error bound for the rectangular triple product in
+    equation (14.14). -/
+theorem higham14_eq14_14_method2B_block_update_delta_bound {m r : ℕ}
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ)
+    (ε : ℝ) (absBound : Fin r → Fin m → ℝ)
+    (hBound : ∀ i : Fin r, ∀ j : Fin m,
+      |X21_hat i j -
+        higham14_method2BBlockUpdateExact X22 L21 X11 i j| ≤
+          ε * absBound i j) :
+    ∀ i : Fin r, ∀ j : Fin m,
+      |higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11 i j| ≤
+        ε * absBound i j := by
+  intro i j
+  simpa [higham14_method2BBlockUpdateDelta] using hBound i j
+
+/-- Exact Method 2B off-diagonal block formula from the block equation
+    `X21 * L11 + X22 * L21 = 0` and the diagonal-block inverse certificate
+    `L11 * X11 = I`.  This is the exact algebra behind equation (14.14);
+    the rounded update is represented separately by
+    `higham14_method2BBlockUpdateDelta`. -/
+theorem higham14_eq14_14_method2B_exact_offdiag_block_update {m r : ℕ}
+    (L11 X11 : Fin m → Fin m → ℝ)
+    (L21 X21 : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ)
+    (hOffdiag : ∀ i : Fin r, ∀ j : Fin m,
+      rectMatMul X21 L11 i j + rectMatMul X22 L21 i j = 0)
+    (hX11 : IsRightInverse m L11 X11) :
+    ∀ i : Fin r, ∀ j : Fin m,
+      X21 i j = higham14_method2BBlockUpdateExact X22 L21 X11 i j := by
+  intro i j
+  have hzero :
+      rectMatMul
+          (fun a b => rectMatMul X21 L11 a b + rectMatMul X22 L21 a b)
+          X11 i j = 0 := by
+    unfold rectMatMul
+    apply Finset.sum_eq_zero
+    intro x _
+    have hx := hOffdiag i x
+    unfold rectMatMul at hx
+    change (∑ k : Fin m, X21 i k * L11 k x) +
+        (∑ k : Fin r, X22 i k * L21 k x) = 0 at hx
+    change ((∑ k : Fin m, X21 i k * L11 k x) +
+        (∑ k : Fin r, X22 i k * L21 k x)) * X11 x j = 0
+    rw [hx]
+    ring
+  have hsplit :
+      rectMatMul (rectMatMul X21 L11) X11 i j +
+        rectMatMul (rectMatMul X22 L21) X11 i j = 0 := by
+    simpa [rectMatMul_add_left] using hzero
+  have hassoc : rectMatMul (rectMatMul X21 L11) X11 =
+      rectMatMul X21 (rectMatMul L11 X11) :=
+    rectMatMul_assoc X21 L11 X11
+  have hright : rectMatMul L11 X11 = idMatrix m := by
+    ext a b
+    exact hX11 a b
+  have hleft : rectMatMul (rectMatMul X21 L11) X11 i j = X21 i j := by
+    rw [hassoc, hright]
+    exact congrFun (congrFun (rectMatMul_id_right X21) i) j
+  rw [hleft] at hsplit
+  unfold higham14_method2BBlockUpdateExact
+  linarith
+
 /-- **Abstract Lemma 14.3 interface**: Method 2C left residual.
 
     |X̂L − I| ≤ cₙu|X̂||L|.
@@ -1436,6 +1531,130 @@ theorem methodC_forward_error (n : ℕ) (fp : FPModel)
 
 -- §14.3.4  Method D: compute L⁻¹ and U⁻¹ separately, form product
 
+/-- Product-formation perturbation for Higham's Method D, equation (14.20):
+    `X_hat = X_U * X_L + Delta`. -/
+noncomputable def higham14_methodDProductDelta {n : ℕ}
+    (X_hat X_U X_L : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => X_hat i j - matMul n X_U X_L i j
+
+/-- LU backward perturbation for Method D, using the repository sign convention
+    `Delta_A = L_hat * U_hat - A`. -/
+noncomputable def higham14_methodDLUBackwardDelta {n : ℕ}
+    (A L_hat U_hat : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => matMul n L_hat U_hat i j - A i j
+
+/-- Left residual of the computed lower-triangular inverse used by Method D:
+    `X_L * L_hat - I`. -/
+noncomputable def higham14_methodDXLLeftResidual {n : ℕ}
+    (X_L L_hat : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => matMul n X_L L_hat i j - if i = j then 1 else 0
+
+/-- Left residual of the computed upper-triangular inverse used by Method D:
+    `X_U * U_hat - I`. -/
+noncomputable def higham14_methodDXULeftResidual {n : ℕ}
+    (X_U U_hat : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => matMul n X_U U_hat i j - if i = j then 1 else 0
+
+/-- Higham equation (14.20), Method D product formation:
+    the computed product is the exact product plus an explicit perturbation. -/
+theorem higham14_eq14_20_methodD_product_decomposition {n : ℕ}
+    (X_hat X_U X_L : Fin n → Fin n → ℝ) (i j : Fin n) :
+    X_hat i j = matMul n X_U X_L i j +
+      higham14_methodDProductDelta X_hat X_U X_L i j := by
+  unfold higham14_methodDProductDelta
+  ring
+
+/-- The product perturbation in (14.20) inherits any `MatProdError` componentwise
+    bound supplied by the local floating-point multiplication analysis. -/
+theorem higham14_eq14_20_methodD_productDelta_bound {n : ℕ}
+    (X_hat X_U X_L : Fin n → Fin n → ℝ)
+    (ε : ℝ) (absProduct : Fin n → Fin n → ℝ)
+    (hProd : MatProdError n X_hat (matMul n X_U X_L) ε absProduct) :
+    ∀ i j : Fin n,
+      |higham14_methodDProductDelta X_hat X_U X_L i j| ≤ ε * absProduct i j := by
+  intro i j
+  simpa [higham14_methodDProductDelta] using hProd i j
+
+/-- Higham equation (14.21), Method D LU substitution:
+    using `A = L_hat * U_hat - Delta_A`, expand `X_hat * A`. -/
+theorem higham14_eq14_21_methodD_lu_substitution {n : ℕ}
+    (A L_hat U_hat X_hat : Fin n → Fin n → ℝ) (i j : Fin n) :
+    ∑ k : Fin n, X_hat i k * A k j =
+      ∑ k : Fin n, X_hat i k * (∑ l : Fin n, L_hat k l * U_hat l j) -
+        ∑ k : Fin n, X_hat i k *
+          higham14_methodDLUBackwardDelta A L_hat U_hat k j := by
+  simp [higham14_methodDLUBackwardDelta, matMul, mul_sub, Finset.sum_sub_distrib]
+
+/-- The LU perturbation in (14.21) inherits the componentwise LU backward-error
+    bound. -/
+theorem higham14_eq14_21_methodD_luDelta_bound {n : ℕ}
+    (A L_hat U_hat : Fin n → Fin n → ℝ) (ε : ℝ)
+    (hLU : LUBackwardError n A L_hat U_hat ε) :
+    ∀ i j : Fin n,
+      |higham14_methodDLUBackwardDelta A L_hat U_hat i j| ≤
+        ε * ∑ k : Fin n, |L_hat i k| * |U_hat k j| := by
+  intro i j
+  simpa [higham14_methodDLUBackwardDelta, matMul] using hLU.backward_bound i j
+
+/-- Higham equation (14.22), Method D left-residual expansion.
+
+    With the perturbations from (14.20) and (14.21), the left residual splits
+    into the upper-inverse residual, the lower-inverse residual propagated
+    through `X_U` and `U_hat`, the product-formation perturbation, and the LU
+    backward perturbation. -/
+theorem higham14_eq14_22_methodD_left_residual_expansion {n : ℕ}
+    (A L_hat U_hat X_U X_L X_hat : Fin n → Fin n → ℝ) (i j : Fin n) :
+    ∑ k : Fin n, X_hat i k * A k j - (if i = j then 1 else 0) =
+      higham14_methodDXULeftResidual X_U U_hat i j +
+      ∑ k₁ : Fin n, X_U i k₁ *
+        (∑ k₂ : Fin n,
+          higham14_methodDXLLeftResidual X_L L_hat k₁ k₂ * U_hat k₂ j) +
+      ∑ k₁ : Fin n, higham14_methodDProductDelta X_hat X_U X_L i k₁ *
+        (∑ k₂ : Fin n, L_hat k₁ k₂ * U_hat k₂ j) -
+      ∑ k : Fin n, X_hat i k *
+        higham14_methodDLUBackwardDelta A L_hat U_hat k j := by
+  have hAssoc :
+      ∑ k : Fin n, (∑ l : Fin n, X_U i l * X_L l k) *
+          (∑ m : Fin n, L_hat k m * U_hat m j) =
+        ∑ k : Fin n, X_U i k *
+          (∑ l : Fin n, (∑ m : Fin n, X_L k m * L_hat m l) * U_hat l j) := by
+    have h1 :
+        matMul n (matMul n X_U X_L) (matMul n L_hat U_hat) =
+          matMul n X_U (matMul n X_L (matMul n L_hat U_hat)) :=
+      matMul_assoc n X_U X_L (matMul n L_hat U_hat)
+    have h2 :
+        matMul n X_L (matMul n L_hat U_hat) =
+          matMul n (matMul n X_L L_hat) U_hat :=
+      (matMul_assoc n X_L L_hat U_hat).symm
+    have h :
+        matMul n (matMul n X_U X_L) (matMul n L_hat U_hat) =
+          matMul n X_U (matMul n (matMul n X_L L_hat) U_hat) := by
+      rw [h1, h2]
+    exact congrFun (congrFun h i) j
+  have hXU_res_expand :
+      higham14_methodDXULeftResidual X_U U_hat i j +
+        ∑ k₁ : Fin n, X_U i k₁ *
+          (∑ k₂ : Fin n,
+            higham14_methodDXLLeftResidual X_L L_hat k₁ k₂ * U_hat k₂ j) =
+        ∑ k : Fin n, X_U i k *
+          (∑ l : Fin n, (∑ m : Fin n, X_L k m * L_hat m l) * U_hat l j) -
+          (if i = j then 1 else 0) := by
+    simp [higham14_methodDXULeftResidual, higham14_methodDXLLeftResidual,
+      matMul, sub_mul, mul_sub, Finset.sum_sub_distrib]
+  have hXhat_decomp :
+      ∑ k : Fin n, X_hat i k * (∑ l : Fin n, L_hat k l * U_hat l j) =
+        ∑ k : Fin n, (∑ l : Fin n, X_U i l * X_L l k) *
+          (∑ m : Fin n, L_hat k m * U_hat m j) +
+        ∑ k : Fin n, higham14_methodDProductDelta X_hat X_U X_L i k *
+          (∑ m : Fin n, L_hat k m * U_hat m j) := by
+    simp [higham14_methodDProductDelta, matMul, sub_mul,
+      Finset.sum_sub_distrib]
+  have hA := higham14_eq14_21_methodD_lu_substitution A L_hat U_hat X_hat i j
+  rw [hA]
+  rw [hXhat_decomp]
+  rw [hAssoc]
+  linarith [hXU_res_expand]
+
 /-- **Abstract Method D left residual interface** (Higham eq. 14.20–14.23).
 
     Method D: compute X_L ≈ L⁻¹ and X_U ≈ U⁻¹ separately,
@@ -1477,6 +1696,36 @@ theorem methodD_left_residual (n : ℕ) (fp : FPModel)
         ∑ k₁ : Fin n, (∑ l₁ : Fin n, |X_U i l₁| * |X_L l₁ k₁|) *
           (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|) :=
   hLeftRes
+
+/-- Source-facing Higham equation (14.23) wrapper for the Method D left-residual
+    bound.  The detailed floating-point composition of the terms in (14.22) is
+    still supplied as the local hypothesis `hLeftRes`, while (14.20)--(14.22)
+    are exported above as exact algebra. -/
+theorem higham14_eq14_23_methodD_left_residual_bound (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (X_U X_L X_hat : Fin n → Fin n → ℝ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hXL_res : ∀ i j : Fin n,
+      |∑ k : Fin n, X_L i k * L_hat k j - if i = j then 1 else 0| ≤
+      gamma fp n * ∑ k : Fin n, |X_L i k| * |L_hat k j|)
+    (hXU_res : ∀ i j : Fin n,
+      |∑ k : Fin n, X_U i k * U_hat k j - if i = j then 1 else 0| ≤
+      gamma fp n * ∑ k : Fin n, |X_U i k| * |U_hat k j|)
+    (hProd : MatProdError n X_hat (matMul n X_U X_L) (gamma fp n)
+      (fun i j => ∑ k : Fin n, |X_U i k| * |X_L k j|))
+    (hLeftRes : ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * A k j - if i = j then 1 else 0| ≤
+      (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+        ∑ k₁ : Fin n, (∑ l₁ : Fin n, |X_U i l₁| * |X_L l₁ k₁|) *
+          (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|)) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * A k j - if i = j then 1 else 0| ≤
+      (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+        ∑ k₁ : Fin n, (∑ l₁ : Fin n, |X_U i l₁| * |X_L l₁ k₁|) *
+          (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|) :=
+  methodD_left_residual n fp A L_hat U_hat X_U X_L X_hat
+    hLU hn hXL_res hXU_res hProd hLeftRes
 
 /-- **Abstract Method D SPD specialization** (Higham §14.3.4, p. 274).
 
@@ -3078,6 +3327,48 @@ theorem higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero
   unfold higham14_hadamardConditionNumber
   exact (one_le_div hden_pos).mpr
     (higham14_problem14_11_abs_det_le_prod_rowNorm2 A)
+
+/-- Source-facing predicate for Higham, Chapter 14, Problem 14.11:
+    the rows of `A` are pairwise orthogonal in the Euclidean inner product. -/
+def higham14_rowsOrthogonal {n : ℕ} (A : Fin n → Fin n → ℝ) : Prop :=
+  ∀ ⦃i j : Fin n⦄, i ≠ j → ∑ k : Fin n, A i k * A j k = 0
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    pairwise orthogonal rows attain equality in Hadamard's determinant
+    inequality.  This is the source equality direction that does not require
+    excluding zero rows. -/
+theorem higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (horth : higham14_rowsOrthogonal A) :
+    |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+      ∏ i : Fin n, higham14_rowNorm2 A i := by
+  have hgram :
+      let AM : Matrix (Fin n) (Fin n) ℝ := A
+      AM * Matrix.transpose AM =
+        Matrix.diagonal (fun i : Fin n => ∑ k : Fin n, A i k ^ 2) := by
+    dsimp only
+    ext i j
+    by_cases hij : i = j
+    · subst j
+      simp [Matrix.mul_apply, Matrix.transpose_apply, pow_two]
+    · simp [Matrix.mul_apply, Matrix.transpose_apply, hij, horth hij]
+  have hsquare :
+      (Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) ^ 2 =
+        (∏ i : Fin n, higham14_rowNorm2 A i) ^ 2 := by
+    have hdetGram :
+        let AM : Matrix (Fin n) (Fin n) ℝ := A
+        Matrix.det (AM * Matrix.transpose AM) =
+          (Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) ^ 2 := by
+      dsimp only
+      rw [Matrix.det_mul, Matrix.det_transpose]
+      ring
+    rw [← hdetGram, hgram, Matrix.det_diagonal]
+    rw [← Finset.prod_pow]
+    simp [higham14_rowNorm2, vecNorm2_sq, vecNorm2Sq]
+  exact (sq_eq_sq₀ (abs_nonneg _) (Finset.prod_nonneg fun i _ =>
+    higham14_rowNorm2_nonneg A i)).mp (by
+      rw [sq_abs]
+      exact hsquare)
 
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
