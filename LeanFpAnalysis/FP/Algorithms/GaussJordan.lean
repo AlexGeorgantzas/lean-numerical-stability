@@ -1,6 +1,6 @@
 -- Algorithms/GaussJordan.lean
 --
--- Higham Chapter 13, §13.4: Gauss–Jordan Elimination.
+-- Higham Chapter 14, §14.4: Gauss–Jordan Elimination.
 --
 -- The second stage of GJE reduces the upper triangular factor U from
 -- Gaussian elimination to diagonal form via matrices N_k.
@@ -26,10 +26,10 @@ namespace LeanFpAnalysis.FP
 open Finset BigOperators
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4  GJE second-stage cumulative error constant
+-- §14.4  GJE second-stage cumulative error constant
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **GJE second-stage cumulative error constant** (Higham §13.4).
+/-- **GJE second-stage cumulative error constant** (Higham §14.4).
 
     The accumulation of n−1 elimination steps, each introducing error γ₃
     with (1+γ₃) amplification per subsequent step, gives the cumulative
@@ -38,7 +38,7 @@ noncomputable def gje_c₃ (fp : FPModel) (n : ℕ) : ℝ :=
   ((n : ℝ) - 1) * gamma fp 3 * (1 + gamma fp 3) ^ (n - 2)
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.1  GJE Second Stage: Specification
+-- §14.4.1  GJE Second Stage: Specification
 -- ══════════════════════════════════════════════════════════════════════
 
 /-- **GJE second-stage Nₖ matrix specification**.
@@ -61,10 +61,10 @@ structure GJEStage2Spec (n : ℕ) (U : Fin n → Fin n → ℝ)
     i.val ≥ k.val → i ≠ k → N_hat k i k = 0
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.2  Error Recurrences (eqs. 13.25–13.26)
+-- §14.4.2  Error Recurrences (eqs. 14.25–14.26)
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Abstract Eq. 13.25a interface**: matrix recurrence error bound for
+/-- **Abstract Eq. 14.25a interface**: matrix recurrence error bound for
     the GJE second stage.
 
     At each step k, the computed upper triangular factor satisfies:
@@ -85,7 +85,7 @@ theorem gje_stage2_matrix_recurrence (n : ℕ) (fp : FPModel)
       gamma fp 3 * ∑ l : Fin n, |N_k i l| * |U_k l j| :=
   hComp
 
-/-- **Abstract Eq. 13.26 interface**: RHS recurrence error bound for the
+/-- **Abstract Eq. 14.26 interface**: RHS recurrence error bound for the
     GJE second stage.
 
     The computed right-hand side satisfies:
@@ -106,7 +106,7 @@ theorem gje_stage2_rhs_recurrence (n : ℕ) (fp : FPModel)
   hComp
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.3  Cumulative Product (eqs. 13.27–13.28)
+-- §14.4.3  Cumulative Product (eqs. 14.27–14.28)
 -- ══════════════════════════════════════════════════════════════════════
 
 /-- **Cumulative product of N̂ matrices** for the GJE second stage.
@@ -127,10 +127,10 @@ noncomputable def gje_cumulative_product (n : ℕ)
 termination_by finish_ - start
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.4  Forward Error (eq. 13.29)
+-- §14.4.4  Forward Error (eq. 14.29)
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Abstract Eq. 13.29 interface**: forward error bound for the GJE
+/-- **Abstract Eq. 14.29 interface**: forward error bound for the GJE
     second stage.
 
     The componentwise forward error for the second stage satisfies:
@@ -159,14 +159,14 @@ theorem gje_stage2_forward_error_bound (n : ℕ) (fp : FPModel)
   hErr
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.5  Backward Error (eq. 13.30)
+-- §14.4.5  Backward Error (eq. 14.30)
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Abstract Eq. 13.30 interface**: GJE second-stage backward error.
+/-- **Abstract Eq. 14.30 interface**: GJE second-stage backward error.
 
     The computed solution x̂ of Ux = y satisfies:
       (U + ΔU)x̂ = y + Δy
-    with componentwise bounds (eqs. 13.30b–c):
+    with componentwise bounds (eqs. 14.30b–c):
       |ΔU| ≤ (n−1)γ₃(1+γ₃)^{n−2} · |X̂| · |U|
       |Δy| ≤ (n−1)γ₃(1+γ₃)^{n−2} · |X̂| · |y|
 
@@ -195,13 +195,13 @@ theorem gje_stage2_backward_error (n : ℕ) (fp : FPModel)
   hBackward
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.6  Theorem 13.5: Overall GJE Error (eqs. 13.31–13.32)
+-- §14.4.6  Theorem 14.5: Overall GJE Error (eqs. 14.31–14.32)
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Theorem 13.5, eq. 13.31**: Overall GJE residual bound.
+/-- **Theorem 14.5, eq. 14.31**: Overall GJE residual bound.
 
     Combining the first-stage error (GE: A + ΔA = L̂Û with |ΔA| ≤ γₙ|L̂||Û|)
-    with the second-stage backward error (eq. 13.30), the residual satisfies:
+    with the second-stage backward error (eq. 14.30), the residual satisfies:
       |b − Ax̂| ≤ γₙ|L̂||Û||x̂| + c₃|L̂||X̂|(|Û||x̂| + |y|)
 
     where X̂ = |N̂ₙ|···|N̂₂| and c₃ = (n−1)γ₃(1+γ₃)^{n−2}.
@@ -361,12 +361,12 @@ theorem gje_overall_residual (n : ℕ) (fp : FPModel)
     rw [← Finset.sum_sub_distrib]
     apply Finset.sum_congr rfl; intro j _; ring]
 
-/-- **Theorem 13.5, eq. 13.32**: Overall GJE forward error.
+/-- **Theorem 14.5, eq. 14.32**: Overall GJE forward error.
 
     The forward error satisfies:
       |x − x̂| ≤ |A⁻¹| · |b − Ax̂|.
 
-    Combined with the residual bound (eq. 13.31), this gives:
+    Combined with the residual bound (eq. 14.31), this gives:
       |x − x̂| ≤ |A⁻¹| · (γₙ|L̂||Û||x̂| + c₃|L̂||X̂|(|Û||x̂| + |y|)). -/
 theorem gje_overall_forward_error (n : ℕ) (fp : FPModel)
     (A A_inv L_hat U_hat : Fin n → Fin n → ℝ)
@@ -446,10 +446,10 @@ theorem gje_overall_forward_error (n : ℕ) (fp : FPModel)
         exact mul_le_mul_of_nonneg_left (hResidual j) (abs_nonneg _)
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.7  Corollary 13.6: SPD Specialization
+-- §14.4.7  Corollary 14.6: SPD Specialization
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Abstract Corollary 13.6 interface** (Higham p. 275): GJE for SPD matrices.
+/-- **Abstract Corollary 14.6 interface** (Higham p. 277): GJE for SPD matrices.
 
     For SPD A with Cholesky factorization A + ΔA = R̂ᵀR̂, the GJE
     residual simplifies because L̂ = R̂ᵀ, Û = R̂, and the cumulative
@@ -458,7 +458,7 @@ theorem gje_overall_forward_error (n : ℕ) (fp : FPModel)
     The componentwise residual specializes to:
       |b − Ax̂| ≤ γₙ|R̂ᵀ||R̂||x̂| + c₃|R̂ᵀ||R̂⁻¹|(|R̂||x̂| + |y|)
 
-    which gives the normwise bound (Higham eq. 13.33):
+    which gives the normwise bound (Higham eq. 14.33):
       ‖b − Ax̂‖ / (‖A‖ · ‖x̂‖) ≤ 8n³u κ(A)^{1/2} + O(u²).
 
     The specialized residual is supplied as `hResidual`; the general
@@ -472,7 +472,7 @@ theorem gje_spd_residual (n : ℕ) (fp : FPModel)
     (_hn3 : gammaValid fp 3)
     -- Cholesky: A + ΔA = R̂ᵀR̂ (L̂ = R̂ᵀ, Û = R̂)
     (_hLU : LUBackwardError n A (fun i j => R_hat j i) R_hat (gamma fp n))
-    -- The overall residual bound specializing Theorem 13.5
+    -- The overall residual bound specializing Theorem 14.5
     -- with L̂ = R̂ᵀ, Û = R̂, X_abs = |R̂⁻¹|
     (hResidual : ∀ i : Fin n,
       |b i - ∑ j : Fin n, A i j * x_hat j| ≤

@@ -1,9 +1,9 @@
 -- Algorithms/MatrixInversion.lean
 --
--- Higham Chapter 13: Matrix Inversion.
--- §13.1: Ideal perturbation bounds for computed inverses.
--- §13.2: Triangular matrix inversion (Methods 1, 2, block variants).
--- §13.3: Full matrix inversion via LU factorization (Methods A, B, C, D).
+-- Higham Chapter 14: Matrix Inversion.
+-- §14.1: Ideal perturbation bounds for computed inverses.
+-- §14.2: Triangular matrix inversion (Methods 1, 2, block variants).
+-- §14.3: Full matrix inversion via LU factorization (Methods A, B, C, D).
 --
 -- The internally proved results derive residual/forward-error consequences
 -- from explicit componentwise contracts.  Some higher-level algorithmic
@@ -34,10 +34,10 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators
 
 -- ============================================================
--- §13.1  Δ-notation: product error bounds
+-- §14.1  Δ-notation: product error bounds
 -- ============================================================
 
-/-- **Matrix product error bound** (Δ-notation, Higham §13.1).
+/-- **Matrix product error bound** (Δ-notation, Higham §14.1).
 
     If Ĉ = fl(A₁ · A₂) then |Ĉ − A₁A₂| ≤ ε · (|A₁| · |A₂|).
     This predicate captures the general statement for any computed product. -/
@@ -47,16 +47,16 @@ def MatProdError (n : ℕ) (C_hat : Fin n → Fin n → ℝ)
   ∀ i j : Fin n, |C_hat i j - C_exact i j| ≤ ε * absProduct i j
 
 -- ============================================================
--- §13.1  Ideal perturbation bounds (eqs. 13.1–13.3)
+-- §14.1  Ideal perturbation bounds (eqs. 14.1–14.3)
 -- ============================================================
 
-/-- **Right residual of a computed inverse** (Higham eq. 13.1).
+/-- **Right residual of a computed inverse** (Higham eq. 14.1).
 
     If Y = (A + ΔA)⁻¹ with |ΔA| ≤ ε|A|, then AY − I = −ΔA · Y,
     so |AY − I| ≤ ε|A||Y|.
 
     We state the bound with |Y| rather than |A⁻¹| to avoid circularity;
-    the first-order version |A⁻¹| + O(ε) follows from eq. 13.3. -/
+    the first-order version |A⁻¹| + O(ε) follows from eq. 14.3. -/
 theorem ideal_right_residual (n : ℕ)
     (A Y : Fin n → Fin n → ℝ)
     (ΔA : Fin n → Fin n → ℝ)
@@ -91,7 +91,7 @@ theorem ideal_right_residual (n : ℕ)
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl; intro k _; ring
 
-/-- **Left residual of a computed inverse** (Higham eq. 13.2).
+/-- **Left residual of a computed inverse** (Higham eq. 14.2).
 
     If Y = (A + ΔA)⁻¹ with |ΔA| ≤ ε|A|, then YA − I = −Y · ΔA,
     so |YA − I| ≤ ε|Y||A|. -/
@@ -126,7 +126,7 @@ theorem ideal_left_residual (n : ℕ)
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl; intro k _; ring
 
-/-- **Forward error for a computed inverse** (Higham eq. 13.3).
+/-- **Forward error for a computed inverse** (Higham eq. 14.3).
 
     If Y = (A + ΔA)⁻¹ with |ΔA| ≤ ε|A|, and A_inv is the true inverse, then
     A⁻¹ − Y = A⁻¹ · ΔA · Y, so
@@ -243,10 +243,10 @@ theorem ideal_forward_error (n : ℕ)
         rw [this]; ring
 
 -- ============================================================
--- §13.1  Residual comparison: inversion vs GEPP
+-- §14.1  Residual comparison: inversion vs GEPP
 -- ============================================================
 
-/-- **Residual bound for solving via matrix inversion** (Higham §13.1, p. 262).
+/-- **Residual bound for solving via matrix inversion** (Higham §14.1, p. 262).
 
     If X = A⁻¹ is formed exactly and the only rounding is in x̂ = fl(Xb),
     then the best possible residual bound is
@@ -327,12 +327,12 @@ theorem inversion_residual_bound (n : ℕ) (fp : FPModel)
         rw [this]; ring
 
 -- ============================================================
--- §13.2  Triangular matrix inversion
+-- §14.2  Triangular matrix inversion
 -- ============================================================
 
--- §13.2.1  Method 1 (column-by-column forward substitution)
+-- §14.2.1  Method 1 (column-by-column forward substitution)
 
-/-- **Method 1 right residual for triangular inversion** (Higham eq. 13.4).
+/-- **Method 1 right residual for triangular inversion** (Higham eq. 14.4).
 
     Method 1 computes L⁻¹ by solving Lx̂ⱼ = eⱼ for each column j.
     From Theorem 8.5 (forwardSub_backward_error), each column satisfies
@@ -356,7 +356,7 @@ theorem triInv_method1_right_residual (n : ℕ) (fp : FPModel)
   intro X_hat j
   exact forwardSub_backward_error fp n L (fun k => if k = j then 1 else 0) hL_diag hLT hn
 
-/-- **Method 1 right residual — matrix form** (Higham eq. 13.4).
+/-- **Method 1 right residual — matrix form** (Higham eq. 14.4).
 
     Consequence: |LX̂ − I| ≤ γ(n)|L||X̂| componentwise. -/
 theorem triInv_method1_right_residual_matrix (n : ℕ) (fp : FPModel)
@@ -394,7 +394,7 @@ theorem triInv_method1_right_residual_matrix (n : ℕ) (fp : FPModel)
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl; intro k _; ring
 
-/-- **Method 1 forward error** (Higham eq. 13.5).
+/-- **Method 1 forward error** (Higham eq. 14.5).
 
     |X̂ − L⁻¹| ≤ γ(n)|L⁻¹||L||X̂|  (componentwise).
 
@@ -468,11 +468,11 @@ theorem triInv_method1_forward_error (n : ℕ) (fp : FPModel)
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl; intro k₁ _; ring
 
-/-- **Method 1 first-order forward error** (Higham eq. 13.6).
+/-- **Method 1 first-order forward error** (Higham eq. 14.6).
 
     |X̂ − L⁻¹| ≤ γ(n)|L⁻¹||L||L⁻¹| + O(u²).
 
-    Since X̂ = L⁻¹ + O(u), replacing |X̂| by |L⁻¹| in eq. 13.5 gives
+    Since X̂ = L⁻¹ + O(u), replacing |X̂| by |L⁻¹| in eq. 14.5 gives
     this first-order bound. We state the "pre-replacement" form:
     for any X̂_bound satisfying |X̂| ≤ X̂_bound, we get the bound
     with X̂_bound in place of |X̂|. -/
@@ -505,7 +505,7 @@ theorem triInv_method1_forward_error_firstorder (n : ℕ) (fp : FPModel)
         apply Finset.sum_le_sum; intro k₂ _
         exact mul_le_mul_of_nonneg_left (hBound k₂ j) (abs_nonneg _)
 
-/-- **Method 1 normwise forward error** (Higham eq. 13.7).
+/-- **Method 1 normwise forward error** (Higham eq. 14.7).
 
     ‖X̂ − L⁻¹‖∞ ≤ γ(n) · ‖|L⁻¹||L||X̂|‖∞.
 
@@ -558,7 +558,7 @@ theorem triInv_method1_normwise_error (n : ℕ) (_hn0 : 0 < n) (fp : FPModel)
           exact row_sum_le_infNorm M i
   · exact mul_nonneg (gamma_nonneg fp hgv) (infNorm_nonneg M)
 
--- §13.2.1  Method 2 (reverse-order column computation via mat-vec multiply)
+-- §14.2.1  Method 2 (reverse-order column computation via mat-vec multiply)
 
 /-- **Specification for Method 2 triangular inversion**.
 
@@ -584,7 +584,7 @@ structure Method2Spec (fp : FPModel) (n : ℕ)
   /-- Upper triangle is zero (since L is lower triangular, L⁻¹ is too). -/
   upper_zero : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0
 
-/-- **Abstract Lemma 13.1 interface** (Higham eq. 13.8): Method 2 left residual.
+/-- **Abstract Lemma 14.1 interface** (Higham eq. 14.8): Method 2 left residual.
 
     The computed inverse X̂ from Method 2 satisfies the left residual bound:
       |X̂L − I| ≤ c'ₙu · (|X̂| · |L|).
@@ -608,7 +608,7 @@ theorem triInv_method2_left_residual (n : ℕ) (fp : FPModel)
       gamma fp n * ∑ k : Fin n, |X_hat i k| * |L k j| :=
   hLeftRes
 
--- §13.2.2  Block methods
+-- §14.2.2  Block methods
 
 /-- **Specification for block triangular inversion (Method 1B)**.
 
@@ -632,7 +632,7 @@ structure BlockMethod1BSpec (fp : FPModel) (n N : ℕ)
     ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
       if i = j then 1 else 0
 
-/-- **Lemma 13.2** (Higham eq. 13.10): Method 1B right residual.
+/-- **Lemma 14.2** (Higham eq. 14.10): Method 1B right residual.
 
     |LX̂ − I| ≤ cₙu|L||X̂|.
 
@@ -689,7 +689,7 @@ theorem triInv_method1B_right_residual_from_spec (n N : ℕ) (fp : FPModel)
   triInv_method1B_right_residual n fp L X_hat hL_diag hLT hn
     hSpec.column_backward_error
 
-/-- **Abstract Lemma 13.3 interface**: Method 2C left residual.
+/-- **Abstract Lemma 14.3 interface**: Method 2C left residual.
 
     |X̂L − I| ≤ cₙu|X̂||L|.
 
@@ -714,10 +714,10 @@ theorem triInv_method2C_left_residual (n : ℕ) (fp : FPModel)
   hLeftRes
 
 -- ============================================================
--- §13.3  Full matrix inversion via LU factorization
+-- §14.3  Full matrix inversion via LU factorization
 -- ============================================================
 
--- §13.3.1  Method A: solve Ax̂ⱼ = eⱼ for each column
+-- §14.3.1  Method A: solve Ax̂ⱼ = eⱼ for each column
 
 /-- Computed inverse produced by Method A after an LU factorization: each
 column solves `L_hat y = e_j`, then `U_hat x = y`. -/
@@ -728,7 +728,7 @@ noncomputable def methodAComputedInverse (fp : FPModel) (n : ℕ)
     let y_hat := fl_forwardSub fp n L_hat b_j
     fl_backSub fp n U_hat y_hat i
 
-/-- **Method A column-wise backward error** (Higham eq. 13.15).
+/-- **Method A column-wise backward error** (Higham eq. 14.15).
 
     Method A computes X̂ ≈ A⁻¹ by solving Ax̂ⱼ = eⱼ for j = 1:n via LU.
     From Theorem 9.4, each column satisfies (A + ΔAⱼ)x̂ⱼ = eⱼ
@@ -821,7 +821,7 @@ theorem methodA_column_backward_error_computed_inverse_factor_bound
     methodA_column_backward_error_factor_bound n fp A L_hat U_hat
       hepsLU hL_diag hU_diag hLU hn j
 
-/-- **Method A right residual** (Higham eq. 13.16).
+/-- **Method A right residual** (Higham eq. 14.16).
 
     |AX̂ − I| ≤ c'ₙu|L̂||Û||X̂|.
 
@@ -911,7 +911,7 @@ theorem methodA_right_residual_of_column_bound (n : ℕ)
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl; intro k _; ring
 
-/-- **Method A forward error** (Higham eq. 13.17).
+/-- **Method A forward error** (Higham eq. 14.17).
 
     |X̂ − A⁻¹| ≤ c'ₙu|A⁻¹||L̂||Û||X̂|. -/
 theorem methodA_forward_error (n : ℕ) (fp : FPModel)
@@ -1127,9 +1127,9 @@ theorem methodA_computed_inverse_entry_abs_sub_nonsingInv_le_of_lu_factor_budget
   rw [abs_sub_comm]
   exact le_trans hFwd (hBudget i j)
 
--- §13.3.2  Method B: compute U⁻¹ then solve XL̂ = X_U
+-- §14.3.2  Method B: compute U⁻¹ then solve XL̂ = X_U
 
-/-- **Method B left residual** (Higham eq. 13.18).
+/-- **Method B left residual** (Higham eq. 14.18).
 
     Method B: compute X_U ≈ U⁻¹ (by an analogue of Method 2 or 2C for upper
     triangular matrices), then solve for X in XL̂ = X_U by back substitution
@@ -1138,7 +1138,7 @@ theorem methodA_computed_inverse_entry_abs_sub_nonsingInv_le_of_lu_factor_budget
     The left residual satisfies:
       |X̂A − I| ≤ c'ₙu|X̂||L̂||Û|.
 
-    Note: eq. 13.18 is the left residual analogue of eq. 13.16.
+    Note: eq. 14.18 is the left residual analogue of eq. 14.16.
     The LINPACK manual incorrectly states this as a right residual bound. -/
 theorem methodB_left_residual (n : ℕ) (fp : FPModel)
     (A L_hat U_hat : Fin n → Fin n → ℝ)
@@ -1296,9 +1296,9 @@ theorem methodB_left_residual (n : ℕ) (fp : FPModel)
     _ ≤ γ * (1 + γ) * B i j + γ * B i j + γ * B i j := by linarith
     _ = (3 * γ + γ ^ 2) * B i j := by ring
 
--- §13.3.3  Method C: solve UXL = I
+-- §14.3.3  Method C: solve UXL = I
 
-/-- **Abstract Method C mixed residual interface** (Higham eq. 13.19).
+/-- **Abstract Method C mixed residual interface** (Higham eq. 14.19).
 
     Method C solves UX̂L = I, computing X̂ a partial row and column at a time.
     The "mixed" residual satisfies:
@@ -1327,7 +1327,7 @@ theorem methodC_mixed_residual (n : ℕ) (fp : FPModel)
         (∑ k₂ : Fin n, |X_hat k₁ k₂| * |L_hat k₂ j|) :=
   hMixed
 
-/-- **Method C forward error relative to LU-inverse** (from eq. 13.19).
+/-- **Method C forward error relative to LU-inverse** (from eq. 14.19).
 
     From the mixed residual ÛX̂L̂ = I + E, multiplying by Û⁻¹ on the left
     and L̂⁻¹ on the right gives X̂ = Û⁻¹L̂⁻¹ + Û⁻¹EL̂⁻¹.
@@ -1433,15 +1433,15 @@ theorem methodC_forward_error (n : ℕ) (fp : FPModel)
           fun _ => by ring
         simp_rw [hfact, ← Finset.mul_sum]; ring
 
--- §13.3.4  Method D: compute L⁻¹ and U⁻¹ separately, form product
+-- §14.3.4  Method D: compute L⁻¹ and U⁻¹ separately, form product
 
-/-- **Abstract Method D left residual interface** (Higham eq. 13.20–13.23).
+/-- **Abstract Method D left residual interface** (Higham eq. 14.20–14.23).
 
     Method D: compute X_L ≈ L⁻¹ and X_U ≈ U⁻¹ separately,
     then form X̂ = fl(X_U · X_L).
 
-    From eq. 13.20: X̂ = X_U · X_L + Δ(X_U, X_L).
-    The left residual satisfies (eq. 13.23):
+    From eq. 14.20: X̂ = X_U · X_L + Δ(X_U, X_L).
+    The left residual satisfies (eq. 14.23):
       |X̂A − I| ≤ c''ₙu|U⁻¹||L⁻¹||L̂||Û|.
 
     This theorem records the named residual contract once the separate
@@ -1477,7 +1477,7 @@ theorem methodD_left_residual (n : ℕ) (fp : FPModel)
           (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|) :=
   hLeftRes
 
-/-- **Abstract Method D SPD specialization** (Higham §13.3.4, p. 274).
+/-- **Abstract Method D SPD specialization** (Higham §14.3.4, p. 274).
 
     For A = RᵀR (Cholesky), Method D computes X_R ≈ R⁻¹ and forms
     X̂ = X_R · X_Rᵀ.  Using the symmetry, the left residual satisfies
@@ -1518,9 +1518,9 @@ theorem methodD_spd_left_residual (n : ℕ) (fp : FPModel)
           (∑ k₂ : Fin n, |R_hat k₂ k₁| * |R_hat k₂ j|) :=
   hLeftRes
 
--- §13.3.5  Summary: all methods have comparable residual bounds
+-- §14.3.5  Summary: all methods have comparable residual bounds
 
-/-- **Eq. 13.24**: Bound on how left and right residuals of X_L can differ.
+/-- **Eq. 14.24**: Bound on how left and right residuals of X_L can differ.
 
     |X_L · L̂ − I| ≤ |L̂⁻¹| · |L̂ · X_L − I| · |L̂|.
 
@@ -1618,5 +1618,212 @@ theorem left_right_residual_comparison (n : ℕ)
             ≤ ∑ k₂ : Fin n, |E k₁ k₂ * L k₂ j| := Finset.abs_sum_le_sum_abs _ _
           _ = ∑ k₂ : Fin n, |E k₁ k₂| * |L k₂ j| := by
               apply Finset.sum_congr rfl; intro k _; exact abs_mul _ _
+
+/-- Right inverse residual `AX - I`, used in Higham Chapter 14 problems. -/
+noncomputable def inverseRightResidual (n : ℕ)
+    (A X : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => matMul n A X i j - idMatrix n i j
+
+/-- Left inverse residual `XA - I`, used in Higham Chapter 14 problems. -/
+noncomputable def inverseLeftResidual (n : ℕ)
+    (A X : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => matMul n X A i j - idMatrix n i j
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.3 algebraic identity:
+    `AX - I = A (XA - I) A⁻¹`. -/
+theorem higham14_problem14_3_right_residual_eq_mul_left_residual (n : ℕ)
+    (A A_inv X : Fin n → Fin n → ℝ)
+    (hRight : IsRightInverse n A A_inv) :
+    inverseRightResidual n A X =
+      matMul n (matMul n A (inverseLeftResidual n A X)) A_inv := by
+  let AM : Matrix (Fin n) (Fin n) ℝ := A
+  let AinvM : Matrix (Fin n) (Fin n) ℝ := A_inv
+  let XM : Matrix (Fin n) (Fin n) ℝ := X
+  have hAAinv : AM * AinvM = 1 := by
+    ext i j
+    simpa [AM, AinvM, Matrix.mul_apply] using hRight i j
+  have hmat :
+      AM * XM - 1 = AM * (XM * AM - 1) * AinvM := by
+    calc
+      AM * XM - 1
+          = AM * XM * (AM * AinvM) - AM * AinvM := by
+              rw [hAAinv]
+              simp
+      _ = AM * (XM * AM - 1) * AinvM := by
+              noncomm_ring
+  ext i j
+  have hentry := congrArg (fun M : Matrix (Fin n) (Fin n) ℝ => M i j) hmat
+  simpa [inverseRightResidual, inverseLeftResidual, matMul, idMatrix,
+    AM, AinvM, XM, Matrix.mul_apply, Matrix.sub_apply, Matrix.one_apply] using hentry
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.3 algebraic identity:
+    `XA - I = A⁻¹ (AX - I) A`. -/
+theorem higham14_problem14_3_left_residual_eq_mul_right_residual (n : ℕ)
+    (A A_inv X : Fin n → Fin n → ℝ)
+    (hLeft : IsLeftInverse n A A_inv) :
+    inverseLeftResidual n A X =
+      matMul n (matMul n A_inv (inverseRightResidual n A X)) A := by
+  let AM : Matrix (Fin n) (Fin n) ℝ := A
+  let AinvM : Matrix (Fin n) (Fin n) ℝ := A_inv
+  let XM : Matrix (Fin n) (Fin n) ℝ := X
+  have hAinvA : AinvM * AM = 1 := by
+    ext i j
+    simpa [AM, AinvM, Matrix.mul_apply] using hLeft i j
+  have hmat :
+      XM * AM - 1 = AinvM * (AM * XM - 1) * AM := by
+    calc
+      XM * AM - 1
+          = AinvM * AM * XM * AM - AinvM * AM := by
+              rw [hAinvA]
+              simp
+      _ = AinvM * (AM * XM - 1) * AM := by
+              noncomm_ring
+  ext i j
+  have hentry := congrArg (fun M : Matrix (Fin n) (Fin n) ℝ => M i j) hmat
+  simpa [inverseRightResidual, inverseLeftResidual, matMul, idMatrix,
+    AM, AinvM, XM, Matrix.mul_apply, Matrix.sub_apply, Matrix.one_apply] using hentry
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.3, infinity-norm half:
+    `‖AX - I‖∞ / ‖XA - I‖∞ ≤ κ∞(A)`. -/
+theorem higham14_problem14_3_right_over_left_residual_infNorm_le_kappa
+    (n : ℕ) (hn : 0 < n)
+    (A A_inv X : Fin n → Fin n → ℝ)
+    (hRight : IsRightInverse n A A_inv)
+    (hLeftResPos : 0 < infNorm (inverseLeftResidual n A X)) :
+    infNorm (inverseRightResidual n A X) /
+        infNorm (inverseLeftResidual n A X) ≤
+      kappaInf n hn A A_inv := by
+  have hres_eq :=
+    higham14_problem14_3_right_residual_eq_mul_left_residual
+      n A A_inv X hRight
+  have hnorm :
+      infNorm (inverseRightResidual n A X) ≤
+        (infNorm A * infNorm (inverseLeftResidual n A X)) * infNorm A_inv := by
+    calc
+      infNorm (inverseRightResidual n A X)
+          = infNorm (matMul n (matMul n A (inverseLeftResidual n A X)) A_inv) := by
+              rw [hres_eq]
+      _ ≤ infNorm (matMul n A (inverseLeftResidual n A X)) * infNorm A_inv :=
+              infNorm_matMul_le hn (matMul n A (inverseLeftResidual n A X)) A_inv
+      _ ≤ (infNorm A * infNorm (inverseLeftResidual n A X)) * infNorm A_inv := by
+              exact mul_le_mul_of_nonneg_right
+                (infNorm_matMul_le hn A (inverseLeftResidual n A X))
+                (infNorm_nonneg A_inv)
+  have hdiv := div_le_div_of_nonneg_right hnorm (le_of_lt hLeftResPos)
+  calc
+    infNorm (inverseRightResidual n A X) /
+        infNorm (inverseLeftResidual n A X)
+        ≤ ((infNorm A * infNorm (inverseLeftResidual n A X)) * infNorm A_inv) /
+            infNorm (inverseLeftResidual n A X) := hdiv
+    _ = infNorm A * infNorm A_inv := by
+        field_simp [ne_of_gt hLeftResPos]
+    _ = kappaInf n hn A A_inv := by
+        rw [kappaInf_eq_infNorm_mul_infNorm n hn A A_inv]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.3, infinity-norm half:
+    `‖XA - I‖∞ / ‖AX - I‖∞ ≤ κ∞(A)`. -/
+theorem higham14_problem14_3_left_over_right_residual_infNorm_le_kappa
+    (n : ℕ) (hn : 0 < n)
+    (A A_inv X : Fin n → Fin n → ℝ)
+    (hLeft : IsLeftInverse n A A_inv)
+    (hRightResPos : 0 < infNorm (inverseRightResidual n A X)) :
+    infNorm (inverseLeftResidual n A X) /
+        infNorm (inverseRightResidual n A X) ≤
+      kappaInf n hn A A_inv := by
+  have hres_eq :=
+    higham14_problem14_3_left_residual_eq_mul_right_residual
+      n A A_inv X hLeft
+  have hnorm :
+      infNorm (inverseLeftResidual n A X) ≤
+        (infNorm A_inv * infNorm (inverseRightResidual n A X)) * infNorm A := by
+    calc
+      infNorm (inverseLeftResidual n A X)
+          = infNorm (matMul n (matMul n A_inv (inverseRightResidual n A X)) A) := by
+              rw [hres_eq]
+      _ ≤ infNorm (matMul n A_inv (inverseRightResidual n A X)) * infNorm A :=
+              infNorm_matMul_le hn
+                (matMul n A_inv (inverseRightResidual n A X)) A
+      _ ≤ (infNorm A_inv * infNorm (inverseRightResidual n A X)) * infNorm A := by
+              exact mul_le_mul_of_nonneg_right
+                (infNorm_matMul_le hn A_inv (inverseRightResidual n A X))
+                (infNorm_nonneg A)
+  have hdiv := div_le_div_of_nonneg_right hnorm (le_of_lt hRightResPos)
+  calc
+    infNorm (inverseLeftResidual n A X) /
+        infNorm (inverseRightResidual n A X)
+        ≤ ((infNorm A_inv * infNorm (inverseRightResidual n A X)) * infNorm A) /
+            infNorm (inverseRightResidual n A X) := hdiv
+    _ = infNorm A_inv * infNorm A := by
+        field_simp [ne_of_gt hRightResPos]
+    _ = kappaInf n hn A A_inv := by
+        rw [kappaInf_eq_infNorm_mul_infNorm n hn A A_inv]
+        ring
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.3:
+    for nonzero left and right residuals,
+    `max (‖AX-I‖∞/‖XA-I‖∞) (‖XA-I‖∞/‖AX-I‖∞) ≤ κ∞(A)`. -/
+theorem higham14_problem14_3_max_residual_ratio_infNorm_le_kappa
+    (n : ℕ) (hn : 0 < n)
+    (A A_inv X : Fin n → Fin n → ℝ)
+    (hInv : IsInverse n A A_inv)
+    (hLeftResPos : 0 < infNorm (inverseLeftResidual n A X))
+    (hRightResPos : 0 < infNorm (inverseRightResidual n A X)) :
+    max
+        (infNorm (inverseRightResidual n A X) /
+          infNorm (inverseLeftResidual n A X))
+        (infNorm (inverseLeftResidual n A X) /
+          infNorm (inverseRightResidual n A X))
+      ≤ kappaInf n hn A A_inv := by
+  exact max_le
+    (higham14_problem14_3_right_over_left_residual_infNorm_le_kappa
+      n hn A A_inv X hInv.2 hLeftResPos)
+    (higham14_problem14_3_left_over_right_residual_infNorm_le_kappa
+      n hn A A_inv X hInv.1 hRightResPos)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.7:
+    if one row of a nonsingular matrix consists entirely of ones, then the
+    entries of its inverse sum to one. -/
+theorem higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones (n : ℕ)
+    (A A_inv : Fin n → Fin n → ℝ)
+    (hRight : IsRightInverse n A A_inv)
+    (i : Fin n)
+    (hrow : ∀ k : Fin n, A i k = 1) :
+    (∑ j : Fin n, ∑ k : Fin n, A_inv k j) = 1 := by
+  have hColSum : ∀ j : Fin n,
+      (∑ k : Fin n, A_inv k j) = if i = j then (1 : ℝ) else 0 := by
+    intro j
+    have h := hRight i j
+    simpa [hrow] using h
+  calc
+    (∑ j : Fin n, ∑ k : Fin n, A_inv k j)
+        = ∑ j : Fin n, (if i = j then (1 : ℝ) else 0) := by
+          apply Finset.sum_congr rfl
+          intro j _
+          exact hColSum j
+    _ = 1 := by
+          simp [Finset.mem_univ]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.7:
+    if one column of a nonsingular matrix consists entirely of ones, then the
+    entries of its inverse sum to one. -/
+theorem higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones (n : ℕ)
+    (A A_inv : Fin n → Fin n → ℝ)
+    (hLeft : IsLeftInverse n A A_inv)
+    (j : Fin n)
+    (hcol : ∀ k : Fin n, A k j = 1) :
+    (∑ i : Fin n, ∑ k : Fin n, A_inv i k) = 1 := by
+  have hRowSum : ∀ i : Fin n,
+      (∑ k : Fin n, A_inv i k) = if i = j then (1 : ℝ) else 0 := by
+    intro i
+    have h := hLeft i j
+    simpa [hcol] using h
+  calc
+    (∑ i : Fin n, ∑ k : Fin n, A_inv i k)
+        = ∑ i : Fin n, (if i = j then (1 : ℝ) else 0) := by
+          apply Finset.sum_congr rfl
+          intro i _
+          exact hRowSum i
+    _ = 1 := by
+          simp [Finset.mem_univ]
 
 end LeanFpAnalysis.FP
