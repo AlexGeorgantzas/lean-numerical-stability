@@ -7580,6 +7580,90 @@ theorem sylvester_quasiSchur_blockTraversal_columns_eq_of_solution_det_frontier_
   funext i k
   exact hfinal k (by simpa [hend] using k.isLt) i
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    original-coordinate reconstruction from a scheduled quasi-Schur traversal:
+    if the Schur-coordinate candidate `X` satisfies the determinant-certified
+    frontier traversal for the transformed right-hand side `Cschur`, then its
+    reconstruction `U*X*V^T` agrees with any original-coordinate exact solution.
+
+    This is still an exact-arithmetic schedule/certificate theorem.  It does
+    not claim rounded Bartels-Stewart arithmetic, automatic schedule
+    generation, or LAPACK-style estimator bounds. -/
+theorem sylvester_quasiSchur_blockTraversal_original_solution_eq_of_det_frontier_step_oracle
+    (m n r : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C Cschur X Yorig : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hCschur : Cschur = rectMatMul (matTranspose U) (rectMatMul C V))
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) /\
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => Cschur i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n R S p q) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inr i))))
+    (hYorig : IsSylvesterSolutionRect m n A B C Yorig) :
+    rectMatMul U (rectMatMul X (matTranspose V)) = Yorig := by
+  let Yschur : RMatFn m n :=
+    rectMatMul (matTranspose U) (rectMatMul Yorig V)
+  have hYexpand :
+      rectMatMul U (rectMatMul Yschur (matTranspose V)) = Yorig := by
+    dsimp [Yschur]
+    exact rectMatMul_schur_coords_expand U V Yorig hU hV
+  have hYorig_as_reconstructed :
+      IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul Yschur (matTranspose V))) := by
+    rw [hYexpand]
+    exact hYorig
+  have hYschur_transformed :
+      IsSylvesterSolutionRect m n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) Yschur :=
+    (sylvester_schur_transform_solution_iff m n U R A V S B C Yschur
+      hU hV hA hB).mp hYorig_as_reconstructed
+  have hYschur :
+      IsSylvesterSolutionRect m n R S Cschur Yschur := by
+    rw [hCschur]
+    exact hYschur_transformed
+  have hXY :
+      X = Yschur :=
+    sylvester_quasiSchur_blockTraversal_columns_eq_of_solution_det_frontier_step_oracle
+      m n r R S Cschur X Yschur pmap frontier
+      hstart hend hmono hcard hzero hstep hYschur
+  calc
+    rectMatMul U (rectMatMul X (matTranspose V))
+        = rectMatMul U (rectMatMul Yschur (matTranspose V)) := by
+            rw [hXY]
+    _ = Yorig := hYexpand
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
     `A - t_kk I` nonsingular, two solutions of `AX - XT = C` coincide, by
