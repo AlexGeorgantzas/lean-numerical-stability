@@ -978,6 +978,60 @@ lemma leading_twoBlock_spectral_preserved_after_trailing_conj
     LeanFpAnalysis.FP.principalTwoBlock_disc_neg_of_matrixNoRealEigenline
       (Qfullᵀ * A * Qfull) p q hno'⟩
 
+/-- A two-dimensional no-real-eigenline peel branch can be framed, recursively
+    re-embedded through an orthogonal trailing factor, and still expose the
+    leading `2 x 2` no-real-eigenline/negative-discriminant certificate. -/
+lemma exists_orthogonal_frame_two_principalBlock_spectral_after_trailing_conj
+    {m n : ℕ} (hnm : 2 + m = n)
+    (A : Matrix (Fin n) (Fin n) ℝ)
+    (W : Submodule ℝ (Fin n → ℝ))
+    (hd : finrank ℝ W = 2)
+    (hWinv : ∀ w ∈ W, A.mulVecLin w ∈ W)
+    (hWno :
+      ∀ w ∈ W, w ≠ 0 →
+        ¬ ∃ nu : ℝ, A *ᵥ w = nu • w)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    (hUorth : U ∈ Matrix.orthogonalGroup (Fin m) ℝ) :
+    ∃ (Q Qfull : Matrix (Fin n) (Fin n) ℝ) (p q : Fin n),
+      Q ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+        Qfull ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+        (p : ℕ) = 0 ∧
+        (q : ℕ) = 1 ∧
+        Submodule.span ℝ
+          (Set.range
+            (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1))) = W ∧
+        (let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+         Qfull =
+          Matrix.reindex e.symm e.symm
+            (Matrix.reindex e e Q * embedBlock (d := 2) U)) ∧
+        LeanFpAnalysis.FP.MatrixNoRealEigenline
+          (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) ∧
+        ((Qfullᵀ * A * Qfull) p p - (Qfullᵀ * A * Qfull) q q) ^ 2 +
+          4 * (Qfullᵀ * A * Qfull) p q * (Qfullᵀ * A * Qfull) q p < 0 := by
+  obtain ⟨Q, p, q, hQ, hp, hq, hQspan, hno, _hdisc⟩ :=
+    exists_orthogonal_frame_two_principalBlock_noRealEigenline_disc_neg
+      A W hd hWinv hWno
+  let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+  let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+    Matrix.reindex e.symm e.symm
+      (Matrix.reindex e e Q * embedBlock (d := 2) U)
+  have hQfullorth : Qfull ∈ Matrix.orthogonalGroup (Fin n) ℝ := by
+    change Matrix.reindex e.symm e.symm
+      (Matrix.reindex e e Q * embedBlock (d := 2) U) ∈ Matrix.orthogonalGroup (Fin n) ℝ
+    exact reindex_mem_orthogonal e.symm
+      (Submonoid.mul_mem _
+        (reindex_mem_orthogonal e hQ)
+        (embedBlock_mem_orthogonal (d := 2) hUorth))
+  have hspectral :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+          (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) ∧
+        ((Qfullᵀ * A * Qfull) p p - (Qfullᵀ * A * Qfull) q q) ^ 2 +
+          4 * (Qfullᵀ * A * Qfull) p q * (Qfullᵀ * A * Qfull) q p < 0 :=
+    leading_twoBlock_spectral_preserved_after_trailing_conj
+      hnm A Q U hp hq hno
+  exact ⟨Q, Qfull, p, q, hQ, hQfullorth, hp, hq, hQspan, rfl,
+    hspectral.1, hspectral.2⟩
+
 /-! ### The variable-`d` orthogonal deflation induction (Higham (16.4)) -/
 
 open RealInvariantSubspaceAux in
