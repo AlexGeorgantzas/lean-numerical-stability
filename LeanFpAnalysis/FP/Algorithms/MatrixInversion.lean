@@ -2248,6 +2248,284 @@ theorem higham14_problem14_5_left_inverse_solve_residual_bound
       matMulVec n A x i| ≤ gamma fp (n + 1) * S
   exact hfinal
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.5 support:
+    expanding the left inverse residual gives `Y(Ax) = (YA-I)x + x`. -/
+lemma higham14_inverseLeftResidual_mulVec_add_self (n : ℕ)
+    (A Y : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    matMulVec n Y (matMulVec n A x) =
+      fun j => matMulVec n (inverseLeftResidual n A Y) x j + x j := by
+  ext j
+  rw [← matMulVec_matMul n Y A x j]
+  simp only [inverseLeftResidual, matMulVec, matMul, idMatrix]
+  have hdelta :
+      (∑ l : Fin n, (if j = l then (1 : ℝ) else 0) * x l) = x j := by
+    simp [Finset.sum_ite_eq, Finset.mem_univ]
+  calc
+    ∑ l : Fin n, (∑ k : Fin n, Y j k * A k l) * x l
+        = ∑ l : Fin n,
+            (((∑ k : Fin n, Y j k * A k l) -
+              (if j = l then (1 : ℝ) else 0)) * x l +
+              (if j = l then (1 : ℝ) else 0) * x l) := by
+          apply Finset.sum_congr rfl
+          intro l _
+          ring
+    _ = (∑ l : Fin n,
+            ((∑ k : Fin n, Y j k * A k l) -
+              (if j = l then (1 : ℝ) else 0)) * x l) +
+          ∑ l : Fin n, (if j = l then (1 : ℝ) else 0) * x l := by
+          rw [Finset.sum_add_distrib]
+    _ = (∑ l : Fin n,
+            ((∑ k : Fin n, Y j k * A k l) -
+              (if j = l then (1 : ℝ) else 0)) * x l) + x j := by
+          rw [hdelta]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.5 support:
+    a componentwise residual envelope transfers to a componentwise forward-error
+    envelope by left multiplication with `|A⁻¹|`. -/
+theorem higham14_problem14_5_forward_error_of_residual_bound
+    (n : ℕ) (A A_inv : Fin n → Fin n → ℝ)
+    (x x_hat b Eres : Fin n → ℝ)
+    (hLeft : IsLeftInverse n A A_inv)
+    (hsolve : matMulVec n A x = b)
+    (hres : ∀ i : Fin n, |matMulVec n A x_hat i - b i| ≤ Eres i) :
+    ∀ i : Fin n,
+      |x_hat i - x i| ≤ matMulVec n (absMatrix n A_inv) Eres i := by
+  let r : Fin n → ℝ := fun k => matMulVec n A x_hat k - b k
+  let d : Fin n → ℝ := fun j => x_hat j - x j
+  have hr : r = matMulVec n A d := by
+    ext i
+    dsimp [r, d]
+    rw [← congrFun hsolve i]
+    unfold matMulVec
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  have hmat : matMul n A_inv A = idMatrix n := by
+    ext i j
+    exact hLeft i j
+  have hd : d = matMulVec n A_inv r := by
+    rw [hr]
+    ext i
+    rw [← matMulVec_matMul n A_inv A d i]
+    rw [hmat, matMulVec_id]
+  intro i
+  calc
+    |x_hat i - x i| = |d i| := rfl
+    _ = |matMulVec n A_inv r i| := by rw [hd]
+    _ ≤ ∑ j : Fin n, |A_inv i j| * |r j| :=
+        abs_matMulVec_le n A_inv r i
+    _ ≤ ∑ j : Fin n, |A_inv i j| * Eres j := by
+        apply Finset.sum_le_sum
+        intro j _
+        exact mul_le_mul_of_nonneg_left (hres j) (abs_nonneg _)
+    _ = matMulVec n (absMatrix n A_inv) Eres i := by
+        simp [matMulVec, absMatrix]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
+    forward-error consequence.
+
+If `X` has a small right inverse residual and `A x = b`, then the residual
+bound for `x_hat = fl(X b)` gives the componentwise forward-error envelope
+`|x_hat-x| <= gamma_{n+1} |A⁻¹||A||X||b|`. -/
+theorem higham14_problem14_5_right_inverse_solve_forward_error_bound
+    (n : ℕ) (fp : FPModel)
+    (A A_inv X : Fin n → Fin n → ℝ) (x b : Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLeft : IsLeftInverse n A A_inv)
+    (hsolve : matMulVec n A x = b)
+    (hRightRes : ∀ i j : Fin n,
+      |inverseRightResidual n A X i j| ≤
+        fp.u * ∑ k : Fin n, |A i k| * |X k j|) :
+    let x_hat := fl_matVec fp n n X b
+    ∀ i : Fin n,
+      |x_hat i - x i| ≤
+        gamma fp (n + 1) *
+          matMulVec n (absMatrix n A_inv)
+            (matMulVec n (absMatrix n A)
+              (matMulVec n (absMatrix n X) (absVec n b))) i := by
+  intro x_hat i
+  let E : Fin n → ℝ :=
+    matMulVec n (absMatrix n A)
+      (matMulVec n (absMatrix n X) (absVec n b))
+  have hres0 :=
+    higham14_problem14_5_right_inverse_solve_residual_bound
+      n fp A X b hn1 hRightRes
+  have hres : ∀ k : Fin n,
+      |matMulVec n A x_hat k - b k| ≤ gamma fp (n + 1) * E k := by
+    intro k
+    simpa [x_hat, E] using hres0 k
+  have hfwd :=
+    higham14_problem14_5_forward_error_of_residual_bound
+      n A A_inv x x_hat b (fun k => gamma fp (n + 1) * E k)
+      hLeft hsolve hres
+  calc
+    |x_hat i - x i|
+        ≤ matMulVec n (absMatrix n A_inv)
+            (fun k => gamma fp (n + 1) * E k) i := hfwd i
+    _ = gamma fp (n + 1) * matMulVec n (absMatrix n A_inv) E i := by
+        simp only [matMulVec, absMatrix]
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro k _
+        ring
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.5, left-approximate-inverse
+    forward-error consequence.
+
+If `Y` has a small left inverse residual and `b = A x`, then
+`y_hat = fl(Y b)` satisfies the componentwise forward-error envelope
+`|y_hat-x| <= gamma_{n+1} |Y||A||x|`. -/
+theorem higham14_problem14_5_left_inverse_solve_forward_error_bound
+    (n : ℕ) (fp : FPModel)
+    (A Y : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLeftRes : ∀ i j : Fin n,
+      |inverseLeftResidual n A Y i j| ≤
+        fp.u * ∑ k : Fin n, |Y i k| * |A k j|) :
+    let b := matMulVec n A x
+    let y_hat := fl_matVec fp n n Y b
+    ∀ i : Fin n,
+      |y_hat i - x i| ≤
+        gamma fp (n + 1) *
+          matMulVec n (absMatrix n Y)
+            (matMulVec n (absMatrix n A) (absVec n x)) i := by
+  intro b y_hat i
+  have hn : gammaValid fp n :=
+    gammaValid_mono fp (Nat.le_succ n) hn1
+  obtain ⟨ΔY, hΔY_bound, hΔY_eq⟩ :=
+    matVec_backward_error fp n n Y (matMulVec n A x) hn
+  change |fl_matVec fp n n Y (matMulVec n A x) i - x i| ≤ _
+  let R := inverseLeftResidual n A Y
+  let S : ℝ :=
+    matMulVec n (absMatrix n Y)
+      (matMulVec n (absMatrix n A) (absVec n x)) i
+  have hcoeff : fp.u + gamma fp n ≤ gamma fp (n + 1) :=
+    higham14_unit_roundoff_add_gamma_le_gamma_succ fp n hn1
+  have hS_nonneg : 0 ≤ S := by
+    simp only [S, matMulVec, absMatrix, absVec]
+    exact Finset.sum_nonneg (fun j _ =>
+      mul_nonneg (abs_nonneg _) (Finset.sum_nonneg (fun k _ =>
+        mul_nonneg (abs_nonneg _) (abs_nonneg _))))
+  have hyhat_vec :
+      fl_matVec fp n n Y (matMulVec n A x) =
+        matMulVec n (fun i j => Y i j + ΔY i j) (matMulVec n A x) := by
+    ext j
+    simpa [matMulVec] using hΔY_eq j
+  have hYAx_split :
+      matMulVec n Y (matMulVec n A x) =
+        fun j => matMulVec n R x j + x j := by
+    simpa [R] using higham14_inverseLeftResidual_mulVec_add_self n A Y x
+  have hmain :
+      fl_matVec fp n n Y (matMulVec n A x) i - x i =
+        matMulVec n R x i +
+          matMulVec n ΔY (matMulVec n A x) i := by
+    calc
+      fl_matVec fp n n Y (matMulVec n A x) i - x i
+          = matMulVec n
+              (fun j k => Y j k + ΔY j k) (matMulVec n A x) i - x i := by
+                rw [hyhat_vec]
+      _ = (matMulVec n Y (matMulVec n A x) i +
+              matMulVec n ΔY (matMulVec n A x) i) - x i := by
+                rw [matMulVec_add_left]
+      _ = ((matMulVec n R x i + x i) +
+              matMulVec n ΔY (matMulVec n A x) i) - x i := by
+                rw [hYAx_split]
+      _ = matMulVec n R x i +
+            matMulVec n ΔY (matMulVec n A x) i := by
+              ring
+  have hres_part :
+      |matMulVec n R x i| ≤ fp.u * S := by
+    calc
+      |matMulVec n R x i|
+          ≤ ∑ k : Fin n, |R i k| * |x k| :=
+            abs_matMulVec_le n R x i
+      _ ≤ ∑ k : Fin n, (fp.u * ∑ l : Fin n, |Y i l| * |A l k|) * |x k| := by
+            apply Finset.sum_le_sum
+            intro k _
+            exact mul_le_mul_of_nonneg_right
+              (by simpa [R] using hLeftRes i k) (abs_nonneg _)
+      _ = fp.u * S := by
+            simp only [S, matMulVec, absMatrix, absVec]
+            calc
+              ∑ k : Fin n, (fp.u * ∑ l : Fin n, |Y i l| * |A l k|) * |x k|
+                  = ∑ k : Fin n, ∑ l : Fin n,
+                      fp.u * (|Y i l| * |A l k|) * |x k| := by
+                    apply Finset.sum_congr rfl
+                    intro k _
+                    rw [Finset.mul_sum, Finset.sum_mul]
+              _ = ∑ l : Fin n, ∑ k : Fin n,
+                      fp.u * (|Y i l| * |A l k|) * |x k| := by
+                    rw [Finset.sum_comm]
+              _ = fp.u * ∑ l : Fin n, |Y i l| *
+                      (∑ k : Fin n, |A l k| * |x k|) := by
+                    rw [Finset.mul_sum]
+                    apply Finset.sum_congr rfl
+                    intro l _
+                    calc
+                      ∑ k : Fin n, fp.u * (|Y i l| * |A l k|) * |x k|
+                          = fp.u *
+                              (∑ k : Fin n, |Y i l| * (|A l k| * |x k|)) := by
+                            rw [Finset.mul_sum]
+                            apply Finset.sum_congr rfl
+                            intro k _
+                            ring
+                      _ = fp.u * (|Y i l| *
+                              (∑ k : Fin n, |A l k| * |x k|)) := by
+                            congr 1
+                            rw [← Finset.mul_sum]
+  have hround_part :
+      |matMulVec n ΔY (matMulVec n A x) i| ≤ gamma fp n * S := by
+    calc
+      |matMulVec n ΔY (matMulVec n A x) i|
+          ≤ ∑ k : Fin n, |ΔY i k| * |matMulVec n A x k| :=
+            abs_matMulVec_le n ΔY (matMulVec n A x) i
+      _ ≤ ∑ k : Fin n, (gamma fp n * |Y i k|) *
+            (∑ l : Fin n, |A k l| * |x l|) := by
+            apply Finset.sum_le_sum
+            intro k _
+            exact mul_le_mul
+              (hΔY_bound i k)
+              (abs_matMulVec_le n A x k)
+              (abs_nonneg _)
+              (mul_nonneg (gamma_nonneg fp hn) (abs_nonneg _))
+      _ = gamma fp n * S := by
+            change
+              ∑ k : Fin n, (gamma fp n * |Y i k|) *
+                  (∑ l : Fin n, |A k l| * |x l|) =
+                gamma fp n * ∑ k : Fin n, |Y i k| *
+                  (∑ l : Fin n, |A k l| * |x l|)
+            calc
+              ∑ k : Fin n, (gamma fp n * |Y i k|) *
+                  (∑ l : Fin n, |A k l| * |x l|)
+                  = ∑ k : Fin n, gamma fp n *
+                      (|Y i k| * (∑ l : Fin n, |A k l| * |x l|)) := by
+                    apply Finset.sum_congr rfl
+                    intro k _
+                    ring
+              _ = gamma fp n * ∑ k : Fin n, |Y i k| *
+                    (∑ l : Fin n, |A k l| * |x l|) := by
+                    rw [Finset.mul_sum]
+  have hfinal :
+      |fl_matVec fp n n Y (matMulVec n A x) i - x i| ≤
+        gamma fp (n + 1) * S := by
+    calc
+      |fl_matVec fp n n Y (matMulVec n A x) i - x i|
+          = |matMulVec n R x i +
+              matMulVec n ΔY (matMulVec n A x) i| := by
+            rw [hmain]
+      _ ≤ |matMulVec n R x i| +
+            |matMulVec n ΔY (matMulVec n A x) i| :=
+            abs_add_le _ _
+      _ ≤ fp.u * S + gamma fp n * S :=
+            add_le_add hres_part hround_part
+      _ = (fp.u + gamma fp n) * S := by ring
+      _ ≤ gamma fp (n + 1) * S :=
+            mul_le_mul_of_nonneg_right hcoeff hS_nonneg
+  change |fl_matVec fp n n Y (matMulVec n A x) i - x i| ≤
+    gamma fp (n + 1) * S
+  exact hfinal
+
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
 theorem higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec
