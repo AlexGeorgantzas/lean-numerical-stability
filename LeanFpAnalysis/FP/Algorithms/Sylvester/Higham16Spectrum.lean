@@ -8673,6 +8673,87 @@ theorem quasiSchur_singleton_fiber_of_prev_next_not_same
       exact hnext q hqnext hqeq
     · omega
 
+/-- A frontier index with no same-labelled immediate predecessor is either a
+    singleton step, certified by no same-labelled immediate successor, or the
+    left column of an adjacent same-labelled two-column step.  This is the
+    local branch-selection lemma needed for automatically generated
+    real-quasi-Schur traversal schedules. -/
+theorem quasiSchur_frontier_step_of_boundary
+    (n : Nat) (pmap : Fin n -> Nat) (k : Nat) (hk : k < n)
+    (hprev : forall q : Fin n, q.val + 1 = k -> pmap q ≠ pmap ⟨k, hk⟩) :
+    (exists p : Fin n,
+      p.val = k /\
+      (forall q : Fin n, q.val + 1 = p.val -> pmap q ≠ pmap p) /\
+      (forall q : Fin n, q.val = p.val + 1 -> pmap p ≠ pmap q))
+    \/
+    (exists p q : Fin n,
+      p.val = k /\
+      q.val = k + 1 /\
+      pmap p = pmap q) := by
+  let p : Fin n := ⟨k, hk⟩
+  by_cases hsucc : k + 1 < n
+  · let q : Fin n := ⟨k + 1, hsucc⟩
+    by_cases hsame : pmap p = pmap q
+    · exact Or.inr ⟨p, q, rfl, rfl, hsame⟩
+    · refine Or.inl ⟨p, rfl, ?_, ?_⟩
+      · intro q' hq'
+        exact hprev q' (by simpa [p] using hq')
+      · intro q' hq'
+        have hqeq : q' = q := Fin.ext (by
+          dsimp [q]
+          omega)
+        subst q'
+        exact hsame
+  · refine Or.inl ⟨p, rfl, ?_, ?_⟩
+    · intro q hq
+      exact hprev q (by simpa [p] using hq)
+    · intro q hq _
+      have hqval : q.val = k + 1 := by
+        simpa [p] using hq
+      have hq_lt := q.isLt
+      exact hsucc (by omega)
+
+/-- After a singleton frontier step, the next frontier again has no
+    same-labelled immediate predecessor. -/
+theorem quasiSchur_boundary_after_singleton_step
+    (n : Nat) (pmap : Fin n -> Nat) (p : Fin n)
+    (hnext : forall q : Fin n, q.val = p.val + 1 -> pmap p ≠ pmap q)
+    (hsucc : p.val + 1 < n) :
+    forall q : Fin n, q.val + 1 = p.val + 1 ->
+      pmap q ≠ pmap ⟨p.val + 1, hsucc⟩ := by
+  intro q hq
+  have hqp : q = p := Fin.ext (by omega)
+  subst q
+  exact hnext ⟨p.val + 1, hsucc⟩ rfl
+
+/-- After an adjacent same-labelled two-column frontier step, the frontier
+    after the pair again has no same-labelled immediate predecessor.  The
+    size-at-most-two fiber invariant rules out a third same-labelled column. -/
+theorem quasiSchur_boundary_after_adjacent_same_block
+    (n : Nat) (pmap : Fin n -> Nat) (p q : Fin n)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hnext : q.val + 1 < n) :
+    forall r : Fin n, r.val + 1 = q.val + 1 ->
+      pmap r ≠ pmap ⟨q.val + 1, hnext⟩ := by
+  intro r hr
+  have hrq : r = q := Fin.ext (by omega)
+  subst r
+  intro hqnext
+  let j : Fin n := ⟨q.val + 1, hnext⟩
+  have hjfiber : pmap j = pmap p := by
+    exact (hsame.trans hqnext).symm
+  rcases quasiSchur_blockMap_eq_left_or_right_of_adjacent_same_block
+      n pmap p q j hcard hpq hsame hjfiber with hjp | hjq
+  · have hval : j.val = p.val := congrArg Fin.val hjp
+    dsimp [j] at hval
+    omega
+  · have hval : j.val = q.val := congrArg Fin.val hjq
+    dsimp [j] at hval
+    omega
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     Schur-coordinate solvability from a scheduled quasi-Schur traversal whose
     singleton steps supply true singleton-fiber data and whose same-block
