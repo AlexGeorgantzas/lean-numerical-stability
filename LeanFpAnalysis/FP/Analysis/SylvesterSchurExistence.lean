@@ -61,6 +61,7 @@ complex Schur primitive (`Uᴴ * A * U = T`) plugs in directly.
 
 import LeanFpAnalysis.FP.Analysis.SchurTriangulation
 import Mathlib.Data.Prod.Lex
+import Mathlib.LinearAlgebra.Matrix.Vec
 import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
 
@@ -96,6 +97,101 @@ noncomputable def complexSylvesterVecCoeff {m n : ℕ}
     Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) ℂ :=
   Matrix.kronecker (1 : Matrix (Fin n) (Fin n) ℂ) A -
     Matrix.kronecker (Matrix.transpose B) (1 : Matrix (Fin m) (Fin m) ℂ)
+
+/-- Left multiplication by `A` in vectorized complex form, the
+    `I_n kron A` half of Higham, 2nd ed., Chapter 16.1, equation (16.2). -/
+theorem complex_vec_left_mul_rect {m k n : ℕ}
+    (A : Matrix (Fin m) (Fin k) ℂ)
+    (X : Matrix (Fin k) (Fin n) ℂ) :
+    Matrix.vec (A * X) =
+      Matrix.mulVec
+        (Matrix.kronecker (1 : Matrix (Fin n) (Fin n) ℂ) A)
+        (Matrix.vec X) := by
+  simpa [Matrix.kronecker] using Matrix.vec_mul_eq_mulVec A X
+
+/-- Right multiplication by `B` in vectorized complex form, the
+    `B^T kron I_m` half of Higham, 2nd ed., Chapter 16.1, equation (16.2). -/
+theorem complex_vec_right_mul_rect {m n p : ℕ}
+    (X : Matrix (Fin m) (Fin n) ℂ)
+    (B : Matrix (Fin n) (Fin p) ℂ) :
+    Matrix.vec (X * B) =
+      Matrix.mulVec
+        (Matrix.kronecker (Matrix.transpose B)
+          (1 : Matrix (Fin m) (Fin m) ℂ))
+        (Matrix.vec X) := by
+  simpa [Matrix.kronecker] using
+    (Matrix.kronecker_mulVec_vec (1 : Matrix (Fin m) (Fin m) ℂ)
+      X (Matrix.transpose B)).symm
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2), complex form:
+    applying `I_n kron A - B^T kron I_m` to `vec(X)` gives `vec(AX - XB)`. -/
+theorem complexSylvesterVecCoeff_mulVec_vec {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (X : Matrix (Fin m) (Fin n) ℂ) :
+    Matrix.mulVec (complexSylvesterVecCoeff A B) (Matrix.vec X) =
+      Matrix.vec (complexSylvesterOp A B X) := by
+  ext p
+  have hleft := congrFun (complex_vec_left_mul_rect A X) p
+  have hright := congrFun (complex_vec_right_mul_rect X B) p
+  unfold complexSylvesterVecCoeff
+  simp only [Pi.sub_apply, Matrix.sub_mulVec, hleft.symm, hright.symm]
+  simp [complexSylvesterOp, Matrix.vec, Matrix.mul_apply]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2), complex form:
+    the vectorized linear system is equivalent to the Sylvester equation. -/
+theorem complex_sylvester_vec_system_iff_solution {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (C X : Matrix (Fin m) (Fin n) ℂ) :
+    Matrix.mulVec (complexSylvesterVecCoeff A B) (Matrix.vec X) = Matrix.vec C ↔
+      IsComplexSylvesterSolution A B C X := by
+  constructor
+  · intro h
+    unfold IsComplexSylvesterSolution
+    ext i j
+    have hp := congrFun h (j, i)
+    rw [complexSylvesterVecCoeff_mulVec_vec] at hp
+    simpa [Matrix.vec] using hp
+  · intro h
+    rw [complexSylvesterVecCoeff_mulVec_vec, h]
+
+/-- If the homogeneous complex Sylvester equation has a unique solution, then
+    the vec/Kronecker Sylvester coefficient matrix is nonsingular. -/
+theorem complexSylvesterVecCoeff_det_ne_zero_of_unique_homogeneous {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (huniq : ∃! X : Matrix (Fin m) (Fin n) ℂ,
+      IsComplexSylvesterSolution A B (0 : Matrix (Fin m) (Fin n) ℂ) X) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 := by
+  intro hdet
+  obtain ⟨v, hvne, hvzero⟩ :=
+    (Matrix.exists_mulVec_eq_zero_iff
+      (M := complexSylvesterVecCoeff A B)).mpr hdet
+  let X : Matrix (Fin m) (Fin n) ℂ := fun i j => v (j, i)
+  have hvecX : Matrix.vec X = v := by
+    ext p
+    cases p
+    rfl
+  have hXsol :
+      IsComplexSylvesterSolution A B (0 : Matrix (Fin m) (Fin n) ℂ) X := by
+    unfold IsComplexSylvesterSolution
+    have hcoeff := complexSylvesterVecCoeff_mulVec_vec A B X
+    rw [hvecX] at hcoeff
+    have hvecOp : Matrix.vec (complexSylvesterOp A B X) = 0 :=
+      hcoeff.symm.trans hvzero
+    ext i j
+    have hp := congrFun hvecOp (j, i)
+    simpa [Matrix.vec] using hp
+  have hzeroSol :
+      IsComplexSylvesterSolution A B (0 : Matrix (Fin m) (Fin n) ℂ)
+        (0 : Matrix (Fin m) (Fin n) ℂ) := by
+    simp [IsComplexSylvesterSolution, complexSylvesterOp]
+  obtain ⟨Y, _, huniqY⟩ := huniq
+  have hXeq0 : X = 0 := by
+    calc
+      X = Y := huniqY X hXsol
+      _ = 0 := (huniqY (0 : Matrix (Fin m) (Fin n) ℂ) hzeroSol).symm
+  apply hvne
+  rw [← hvecX, hXeq0]
+  simp
 
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.4): upper triangularity for a
     complex square matrix (all strictly-below-diagonal entries vanish).  This is
@@ -244,6 +340,96 @@ theorem H16_eq16_3_complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_diago
     Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 :=
   complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_diagonal_separation
     A B hA hB hsep
+
+/-- A diagonal entry of a supplied complex upper-triangular matrix makes the
+    shifted matrix singular.  This is the finite-dimensional spectral fact
+    behind using Schur diagonal entries in Higham (16.3). -/
+theorem complexUpperTriangular_det_sub_diag_eq_zero {n : ℕ}
+    (T : Matrix (Fin n) (Fin n) ℂ) (hT : IsUpperTriangularC T) (i : Fin n) :
+    Matrix.det (T - Matrix.scalar (Fin n) (T i i)) = 0 := by
+  have htri : (T - Matrix.scalar (Fin n) (T i i)).BlockTriangular id := by
+    intro a b hba
+    have hzero : T a b = 0 := hT a b hba
+    have hscalar : Matrix.scalar (Fin n) (T i i) a b = 0 := by
+      rw [Matrix.scalar_apply]
+      exact Matrix.diagonal_apply_ne _ (ne_of_gt hba)
+    rw [Matrix.sub_apply, hzero, hscalar, sub_zero]
+  rw [Matrix.det_of_upperTriangular htri]
+  exact Finset.prod_eq_zero (Finset.mem_univ i)
+    (by rw [Matrix.sub_apply, Matrix.scalar_apply, Matrix.diagonal_apply_eq, sub_self])
+
+/-- Every diagonal entry of a supplied complex upper-triangular matrix is
+    realized by a nonzero right eigenvector. -/
+theorem complexUpperTriangular_exists_eigenpair_diag {n : ℕ}
+    (T : Matrix (Fin n) (Fin n) ℂ) (hT : IsUpperTriangularC T) (i : Fin n) :
+    ∃ y : Fin n → ℂ,
+      y ≠ 0 ∧ Matrix.mulVec T y = fun k => T i i * y k := by
+  obtain ⟨y, hyne, hyzero⟩ :=
+    Matrix.exists_mulVec_eq_zero_iff.mpr
+      (complexUpperTriangular_det_sub_diag_eq_zero T hT i)
+  refine ⟨y, hyne, ?_⟩
+  funext k
+  have hk := congrFun hyzero k
+  have hcoord : Matrix.mulVec T y k - T i i * y k = 0 := by
+    simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hk
+  exact sub_eq_zero.mp hcoord
+
+/-- Supplied complex upper-triangular spectral bridge: if two triangular factors
+    have no common supplied right eigenpair, then their diagonal entries are
+    pairwise separated. -/
+theorem complexUpperTriangular_diagonal_separation_of_no_common_eigenpair
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    ∀ i : Fin m, ∀ j : Fin n, A i i ≠ B j j := by
+  intro i j hij
+  have hAeig := complexUpperTriangular_exists_eigenpair_diag A hA i
+  have hBeig :
+      ∃ z : Fin n → ℂ,
+        z ≠ 0 ∧ Matrix.mulVec B z = fun k => A i i * z k := by
+    obtain ⟨z, hzne, hz⟩ := complexUpperTriangular_exists_eigenpair_diag B hB j
+    refine ⟨z, hzne, ?_⟩
+    simpa [hij] using hz
+  exact hno (A i i) ⟨hAeig, hBeig⟩
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), supplied complex
+    triangular spectral form: no common supplied right eigenpair of the two
+    triangular factors implies nonsingularity of the vec/Kronecker Sylvester
+    coefficient. -/
+theorem complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_no_common_eigenpair
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 :=
+  complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_diagonal_separation
+    A B hA hB
+    (complexUpperTriangular_diagonal_separation_of_no_common_eigenpair
+      A B hA hB hno)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered alias for
+    the supplied complex triangular no-common-eigenpair determinant route. -/
+theorem H16_eq16_3_complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_no_common_eigenpair
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 :=
+  complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_no_common_eigenpair
+    A B hA hB hno
 
 -- ============================================================
 -- Complex Schur factors exist unconditionally
@@ -771,6 +957,185 @@ theorem complexSylvester_exists_unique_of_schur_diagonal_separation {m n : ℕ}
     hU hV hA hB hStri
     (complexSylvester_shift_det_ne_zero_of_schur_diagonal_separation
       R S hRtri hsep)
+
+/-- Eigenpairs of a supplied complex Schur factor transfer back through the
+    unitary similarity to eigenpairs of the original matrix. -/
+theorem complexSchurFactor_eigenpair_to_original {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℂ) (U : Matrix (Fin n) (Fin n) ℂ)
+    (R : Matrix (Fin n) (Fin n) ℂ) (μ : ℂ) (y : Fin n → ℂ)
+    (hU : U ∈ Matrix.unitaryGroup (Fin n) ℂ)
+    (hR : Uᴴ * A * U = R)
+    (hyne : y ≠ 0)
+    (hy : Matrix.mulVec R y = fun i => μ * y i) :
+    (Matrix.mulVec U y) ≠ 0 ∧
+      Matrix.mulVec A (Matrix.mulVec U y) =
+        fun i => μ * Matrix.mulVec U y i := by
+  have hUU : U * Uᴴ = 1 := by
+    have := hU.2; rwa [Matrix.star_eq_conjTranspose] at this
+  have hUhU : Uᴴ * U = 1 := by
+    have := hU.1; rwa [Matrix.star_eq_conjTranspose] at this
+  have hAU : A * U = U * R := by
+    calc
+      A * U = (U * Uᴴ) * A * U := by rw [hUU, Matrix.one_mul]
+      _ = U * (Uᴴ * A * U) := by simp [Matrix.mul_assoc]
+      _ = U * R := by rw [hR]
+  constructor
+  · intro hUy
+    apply hyne
+    have hzero : Matrix.mulVec (Uᴴ * U) y = 0 := by
+      rw [← Matrix.mulVec_mulVec y Uᴴ U, hUy, Matrix.mulVec_zero]
+    simpa [hUhU] using hzero
+  · calc
+      Matrix.mulVec A (Matrix.mulVec U y)
+          = Matrix.mulVec (A * U) y := by rw [Matrix.mulVec_mulVec]
+      _ = Matrix.mulVec (U * R) y := by rw [hAU]
+      _ = Matrix.mulVec U (Matrix.mulVec R y) := by rw [Matrix.mulVec_mulVec]
+      _ = Matrix.mulVec U (μ • y) := by
+            rw [hy]
+            rfl
+      _ = μ • Matrix.mulVec U y := by rw [Matrix.mulVec_smul]
+      _ = fun i => μ * Matrix.mulVec U y i := rfl
+
+/-- Supplied complex Schur factors inherit diagonal separation from a
+    no-common-right-eigenpair hypothesis on the original matrices. -/
+theorem complexSchur_diagonal_separation_of_no_common_eigenpair {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (U : Matrix (Fin m) (Fin m) ℂ) (V : Matrix (Fin n) (Fin n) ℂ)
+    (R : Matrix (Fin m) (Fin m) ℂ) (S : Matrix (Fin n) (Fin n) ℂ)
+    (hU : U ∈ Matrix.unitaryGroup (Fin m) ℂ)
+    (hV : V ∈ Matrix.unitaryGroup (Fin n) ℂ)
+    (hR : Uᴴ * A * U = R) (hS : Vᴴ * B * V = S)
+    (hRtri : IsUpperTriangularC R)
+    (hStri : IsUpperTriangularC S)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    ∀ i : Fin m, ∀ j : Fin n, R i i ≠ S j j := by
+  apply complexUpperTriangular_diagonal_separation_of_no_common_eigenpair
+    R S hRtri hStri
+  intro μ hcommon
+  rcases hcommon with ⟨⟨y, hyne, hy⟩, ⟨z, hzne, hz⟩⟩
+  obtain ⟨hUy_ne, hUy⟩ :=
+    complexSchurFactor_eigenpair_to_original A U R μ y hU hR hyne hy
+  obtain ⟨hVz_ne, hVz⟩ :=
+    complexSchurFactor_eigenpair_to_original B V S μ z hV hS hzne hz
+  exact hno μ ⟨⟨Matrix.mulVec U y, hUy_ne, hUy⟩,
+    ⟨Matrix.mulVec V z, hVz_ne, hVz⟩⟩
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6), complex
+    Schur route from a no-common-right-eigenpair hypothesis: if the original
+    matrices have no common supplied complex right eigenpair, then supplied
+    unitary Schur factors have separated diagonals and the exact complex
+    Sylvester equation has a unique solution. -/
+theorem complexSylvester_exists_unique_of_schur_no_common_eigenpair {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (U : Matrix (Fin m) (Fin m) ℂ) (V : Matrix (Fin n) (Fin n) ℂ)
+    (R : Matrix (Fin m) (Fin m) ℂ) (S : Matrix (Fin n) (Fin n) ℂ)
+    (C : Matrix (Fin m) (Fin n) ℂ)
+    (hU : U ∈ Matrix.unitaryGroup (Fin m) ℂ)
+    (hV : V ∈ Matrix.unitaryGroup (Fin n) ℂ)
+    (hR : Uᴴ * A * U = R) (hS : Vᴴ * B * V = S)
+    (hRtri : IsUpperTriangularC R)
+    (hStri : IsUpperTriangularC S)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    ∃! X : Matrix (Fin m) (Fin n) ℂ, IsComplexSylvesterSolution A B C X :=
+  complexSylvester_exists_unique_of_schur_diagonal_separation A B U V R S C
+    hU hV hR hS hRtri hStri
+    (complexSchur_diagonal_separation_of_no_common_eigenpair
+      A B U V R S hU hV hR hS hRtri hStri hno)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the complex Schur unique-solve route from a
+    no-common-right-eigenpair hypothesis on the original matrices. -/
+theorem H16_eq16_3_complexSylvester_exists_unique_of_schur_no_common_eigenpair
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (U : Matrix (Fin m) (Fin m) ℂ) (V : Matrix (Fin n) (Fin n) ℂ)
+    (R : Matrix (Fin m) (Fin m) ℂ) (S : Matrix (Fin n) (Fin n) ℂ)
+    (C : Matrix (Fin m) (Fin n) ℂ)
+    (hU : U ∈ Matrix.unitaryGroup (Fin m) ℂ)
+    (hV : V ∈ Matrix.unitaryGroup (Fin n) ℂ)
+    (hR : Uᴴ * A * U = R) (hS : Vᴴ * B * V = S)
+    (hRtri : IsUpperTriangularC R)
+    (hStri : IsUpperTriangularC S)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    ∃! X : Matrix (Fin m) (Fin n) ℂ, IsComplexSylvesterSolution A B C X :=
+  complexSylvester_exists_unique_of_schur_no_common_eigenpair
+    A B U V R S C hU hV hR hS hRtri hStri hno
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6), complex
+    Schur route with factors supplied by existence: if the original complex
+    matrices have no common supplied right eigenpair, then the exact complex
+    Sylvester equation has a unique solution. -/
+theorem complexSylvester_exists_unique_of_no_common_eigenpair {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (C : Matrix (Fin m) (Fin n) ℂ)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    ∃! X : Matrix (Fin m) (Fin n) ℂ, IsComplexSylvesterSolution A B C X := by
+  obtain ⟨U, R, V, S, hU, hUR, hRtri, hV, hVS, hStri⟩ :=
+    complexSylvester_schur_factors_exist A B
+  exact complexSylvester_exists_unique_of_schur_no_common_eigenpair
+    A B U V R S C hU hV hUR hVS hRtri hStri hno
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the exact complex Sylvester unique-solve theorem
+    from no common supplied right eigenpair, with Schur factors obtained by
+    existence. -/
+theorem H16_eq16_3_complexSylvester_exists_unique_of_no_common_eigenpair
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (C : Matrix (Fin m) (Fin n) ℂ)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    ∃! X : Matrix (Fin m) (Fin n) ℂ, IsComplexSylvesterSolution A B C X :=
+  complexSylvester_exists_unique_of_no_common_eigenpair A B C hno
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.3), complex
+    route with factors supplied by Schur existence: if the original complex
+    matrices have no common supplied right eigenpair, then the vec/Kronecker
+    Sylvester coefficient `I_n kron A - B^T kron I_m` is nonsingular. -/
+theorem complexSylvesterVecCoeff_det_ne_zero_of_no_common_eigenpair {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 :=
+  complexSylvesterVecCoeff_det_ne_zero_of_unique_homogeneous A B
+    (complexSylvester_exists_unique_of_no_common_eigenpair A B
+      (0 : Matrix (Fin m) (Fin n) ℂ) hno)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.3):
+    source-numbered alias for the complex vec/Kronecker determinant
+    nonsingularity theorem from no common supplied right eigenpair. -/
+theorem H16_eq16_3_complexSylvesterVecCoeff_det_ne_zero_of_no_common_eigenpair
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 :=
+  complexSylvesterVecCoeff_det_ne_zero_of_no_common_eigenpair A B hno
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.6), complex path,
     HEADLINE unconditional-existence form.  For ANY complex square matrices

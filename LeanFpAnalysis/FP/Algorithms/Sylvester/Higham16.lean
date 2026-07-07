@@ -1821,6 +1821,112 @@ theorem H16_eq16_29_sylvester_practical_error_bound_of_computed_residual_error_m
       hX hLeft hPinvAbs hPinvAbs_le hRhat hRu hdR hRhat_le hRu_le
       heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), rectangular determinant
+    endpoint: nonsingularity of the rectangular vec/Kronecker Sylvester
+    coefficient supplies the actual inverse and its absolute-value budget for
+    the practical computed-residual certificate. -/
+theorem sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_rect
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hdet : Matrix.det (sylvesterVecCoeff m n A B) ≠ 0)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate m n
+      A B C X Xhat Rhat Ru
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hBudget hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), rectangular determinant
+    absolute endpoint: the determinant certificate supplies the actual inverse
+    budget, giving an unnormalized practical error bound. -/
+theorem sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_rect
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hdet : Matrix.det (sylvesterVecCoeff m n A B) ≠ 0)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) := by
+  exact
+    sylvester_practical_abs_error_bound_of_computed_residual_certificate m n
+      A B C X Xhat Rhat Ru
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hBudget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), rectangular determinant
+    raw computed-residual budget endpoint. -/
+theorem sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_rect
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hdet : Matrix.det (sylvesterVecCoeff m n A B) ≠ 0)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_rect
+      m n A B C X Xhat Rhat Ru hdet hX (And.intro hRu hRhat) hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), rectangular determinant
+    explicit residual-error-model endpoint. -/
+theorem sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_rect
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Ru dR : RMatFn m n)
+    (hdet : Matrix.det (sylvesterVecCoeff m n A B) ≠ 0)
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_error_model m n
+      A B C X Xhat Rhat Ru dR
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hRhat hRu hdR hXhat
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square determinant
     endpoint: nonsingularity of the vec/Kronecker Sylvester coefficient
     supplies the actual inverse and its absolute-value budget for the exact
