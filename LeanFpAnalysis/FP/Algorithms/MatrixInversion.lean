@@ -31,6 +31,7 @@ import LeanFpAnalysis.FP.Algorithms.LU.LUSolve
 import LeanFpAnalysis.FP.Algorithms.LU.GrowthFactor
 import LeanFpAnalysis.FP.Algorithms.HighamChapter8
 import LeanFpAnalysis.FP.Algorithms.HighamChapter9
+import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
 
 namespace LeanFpAnalysis.FP
 
@@ -4465,6 +4466,101 @@ theorem higham14_problem14_15_theta_product_bound {n : ℕ} (hnpos : 0 < n)
       ((n : ℝ) * eps) / (1 - (n : ℝ) * eps) :=
   prod_one_add_delta_abs_sub_one_le_gamma_radius n hnpos heps0 hsmall theta htheta
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    the smallest ordered singular value of a perturbed square matrix is bounded
+    below by `sigma_min(A) - delta` whenever `delta` bounds `B - A` in
+    operator 2-norm.  This is the extremal singular-value perturbation line
+    reused from the Chapter 20 Wedin infrastructure. -/
+theorem higham14_problem14_15_sigmaMin_sub_le_sigmaMin_of_sub_rectOpNorm2Le
+    {k : ℕ} (A B : Fin (k + 1) → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta) :
+    complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k) - delta ≤
+      complexMatrixSingularValue (realRectToCMatrix B) (Fin.last k) := by
+  simpa [wedinLemma20_11_sigmaMinCol] using
+    wedinLemma20_11_sigmaMinCol_sub_le_sigmaMinCol_of_sub_rectOpNorm2Le
+      A B hDelta
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    additive perturbation form of the smallest-singular-value lower bound. -/
+theorem higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le
+    {k : ℕ} (A Delta : Fin (k + 1) → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : rectOpNorm2Le Delta delta) :
+    complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k) - delta ≤
+      complexMatrixSingularValue
+        (realRectToCMatrix (fun i j => A i j + Delta i j)) (Fin.last k) := by
+  have hSub :
+      rectOpNorm2Le
+        (fun i j => (A i j + Delta i j) - A i j) delta := by
+    convert hDelta using 1
+    ext i j
+    ring
+  exact
+    higham14_problem14_15_sigmaMin_sub_le_sigmaMin_of_sub_rectOpNorm2Le
+      A (fun i j => A i j + Delta i j) hSub
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    a perturbation smaller than `sigma_min(A)` keeps the perturbed smallest
+    singular value positive. -/
+theorem higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt
+    {k : ℕ} (A Delta : Fin (k + 1) → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : rectOpNorm2Le Delta delta)
+    (hsmall :
+      delta <
+        complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k)) :
+    0 <
+      complexMatrixSingularValue
+        (realRectToCMatrix (fun i j => A i j + Delta i j)) (Fin.last k) := by
+  have hSub :
+      rectOpNorm2Le
+        (fun i j => (A i j + Delta i j) - A i j) delta := by
+    convert hDelta using 1
+    ext i j
+    ring
+  simpa [wedinLemma20_11_sigmaMinCol] using
+    wedinLemma20_11_sigmaMinCol_pos_of_sub_rectOpNorm2Le_lt
+      A (fun i j => A i j + Delta i j) hSub
+      (by simpa [wedinLemma20_11_sigmaMinCol] using hsmall)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    operator 2-norm triangle inequality for an additive perturbation. -/
+theorem higham14_problem14_15_opNorm2_add_le_of_opNorm2Le
+    {k : ℕ} (A Delta : Fin (k + 1) → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : opNorm2Le Delta delta) :
+    opNorm2 (fun i j => A i j + Delta i j) ≤ opNorm2 A + delta := by
+  have hdelta_nonneg : 0 ≤ delta :=
+    opNorm2Le_radius_nonneg Delta hDelta
+  refine opNorm2_le_of_opNorm2Le
+    (fun i j => A i j + Delta i j)
+    (add_nonneg (opNorm2_nonneg A) hdelta_nonneg) ?_
+  intro x
+  rw [matMulVec_add_left]
+  calc
+    vecNorm2 (fun i => matMulVec (k + 1) A x i + matMulVec (k + 1) Delta x i)
+        ≤ vecNorm2 (matMulVec (k + 1) A x) +
+            vecNorm2 (matMulVec (k + 1) Delta x) :=
+          vecNorm2_add_le _ _
+    _ ≤ opNorm2 A * vecNorm2 x + delta * vecNorm2 x :=
+          add_le_add (opNorm2Le_opNorm2 A x) (hDelta x)
+    _ = (opNorm2 A + delta) * vecNorm2 x := by
+          ring
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    largest-singular-value additive perturbation bound, expressed through the
+    Chapter 14 ordered-singular-value bridge. -/
+theorem higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le
+    {k : ℕ} (A Delta : Fin (k + 1) → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : opNorm2Le Delta delta) :
+    complexMatrixSingularValue
+        (realRectToCMatrix (fun i j => A i j + Delta i j))
+        ⟨0, Nat.succ_pos k⟩ ≤
+      complexMatrixSingularValue (realRectToCMatrix A)
+          ⟨0, Nat.succ_pos k⟩ + delta := by
+  rw [← higham14_problem14_13_opNorm2_eq_complex_top_singularValue
+      (Nat.succ_pos k) (fun i j => A i j + Delta i j),
+    ← higham14_problem14_13_opNorm2_eq_complex_top_singularValue
+      (Nat.succ_pos k) A]
+  exact higham14_problem14_15_opNorm2_add_le_of_opNorm2Le A Delta hDelta
+
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
 theorem higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec
@@ -4755,6 +4851,237 @@ theorem higham14_eq14_36_hyman_det_original_of_row_permutation {n : ℕ}
     _ = (Equiv.Perm.sign σ : ℝ) *
           Matrix.det T * higham14_hymanSchur h y Tinv η := by
           ring
+
+/-! ### Problem 14.8: complex inverse via a real block matrix -/
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.8:
+    real block representation of a complex matrix `A = B + i C`, using the
+    product index `Fin 2 x Fin n` for the source `2n x 2n` matrix
+    `[[B, -C], [C, B]]`. -/
+noncomputable def higham14_problem14_8_realBlockMatrix {n : ℕ}
+    (A : CMatrix n n) :
+    (Fin 2 × Fin n) → (Fin 2 × Fin n) → ℝ :=
+  fun p q =>
+    if p.1 = (0 : Fin 2) then
+      if q.1 = (0 : Fin 2) then (A p.2 q.2).re else -(A p.2 q.2).im
+    else
+      if q.1 = (0 : Fin 2) then (A p.2 q.2).im else (A p.2 q.2).re
+
+/-- Pack a real `2n` vector, indexed as real and imaginary blocks, into a
+    complex vector. -/
+noncomputable def higham14_problem14_8_realToComplexVec {n : ℕ}
+    (x : Fin 2 × Fin n → ℝ) : CVec n :=
+  fun i => ((x ((0 : Fin 2), i) : ℝ) : ℂ) +
+    Complex.I * ((x ((1 : Fin 2), i) : ℝ) : ℂ)
+
+/-- Unpack a complex vector into its real and imaginary blocks. -/
+noncomputable def higham14_problem14_8_complexToRealVec {n : ℕ}
+    (z : CVec n) : Fin 2 × Fin n → ℝ :=
+  fun p => if p.1 = (0 : Fin 2) then (z p.2).re else (z p.2).im
+
+/-- The real part of the Hermitian quadratic form `z^* A z`, written with the
+    repository's concrete complex matrix-vector action. -/
+noncomputable def higham14_problem14_8_complexQuadraticForm {n : ℕ}
+    (A : CMatrix n n) (z : CVec n) : ℝ :=
+  (∑ i : Fin n, star (z i) * complexMatrixVecMul A z i).re
+
+/-- Product-indexed symmetric positive definite predicate for the real block
+    matrix in Problem 14.8.  This is the `Fin 2 x Fin n` version of the
+    source's `2n x 2n` SPD statement. -/
+def higham14_problem14_8_realBlockSymPosDef {n : ℕ}
+    (M : (Fin 2 × Fin n) → (Fin 2 × Fin n) → ℝ) : Prop :=
+  IsSymmetricFiniteMatrix M ∧
+    ∀ x : Fin 2 × Fin n → ℝ, (∃ p : Fin 2 × Fin n, x p ≠ 0) →
+      0 < finiteQuadraticForm M x
+
+/-- Source-facing Hermitian positive definite predicate for the complex input
+    matrix in Problem 14.8.  Positivity is stated as positivity of the real
+    part of `z^* A z`. -/
+def higham14_problem14_8_complexHermitianPosDef {n : ℕ}
+    (A : CMatrix n n) : Prop :=
+  (∀ i j : Fin n, A i j = star (A j i)) ∧
+    ∀ z : CVec n, (∃ i : Fin n, z i ≠ 0) →
+      0 < higham14_problem14_8_complexQuadraticForm A z
+
+lemma higham14_problem14_8_complexToRealVec_realToComplexVec {n : ℕ}
+    (x : Fin 2 × Fin n → ℝ) :
+    higham14_problem14_8_complexToRealVec
+      (higham14_problem14_8_realToComplexVec x) = x := by
+  funext p
+  rcases p with ⟨b, i⟩
+  cases b using Fin.cases with
+  | zero =>
+      simp [higham14_problem14_8_complexToRealVec,
+        higham14_problem14_8_realToComplexVec]
+  | succ b =>
+      cases b using Fin.cases with
+      | zero =>
+          simp [higham14_problem14_8_complexToRealVec,
+            higham14_problem14_8_realToComplexVec]
+      | succ b => exact Fin.elim0 b
+
+lemma higham14_problem14_8_realToComplexVec_complexToRealVec {n : ℕ}
+    (z : CVec n) :
+    higham14_problem14_8_realToComplexVec
+      (higham14_problem14_8_complexToRealVec z) = z := by
+  funext i
+  apply Complex.ext <;>
+    simp [higham14_problem14_8_complexToRealVec,
+      higham14_problem14_8_realToComplexVec]
+
+/-- Matrix-vector action of the real block matrix is exactly the real/imaginary
+    unpacking of the complex matrix-vector action. -/
+theorem higham14_problem14_8_realBlockMatrix_finiteMatVec_eq_complexToRealVec
+    {n : ℕ} (A : CMatrix n n) (x : Fin 2 × Fin n → ℝ) :
+    finiteMatVec (higham14_problem14_8_realBlockMatrix A) x =
+      higham14_problem14_8_complexToRealVec
+        (complexMatrixVecMul A (higham14_problem14_8_realToComplexVec x)) := by
+  funext p
+  rcases p with ⟨b, i⟩
+  cases b using Fin.cases with
+  | zero =>
+      simp [finiteMatVec, higham14_problem14_8_realBlockMatrix,
+        higham14_problem14_8_complexToRealVec,
+        higham14_problem14_8_realToComplexVec, complexMatrixVecMul,
+        Fintype.sum_prod_type, Finset.sum_add_distrib, mul_add, sub_eq_add_neg]
+  | succ b =>
+      cases b using Fin.cases with
+      | zero =>
+          simp [finiteMatVec, higham14_problem14_8_realBlockMatrix,
+            higham14_problem14_8_complexToRealVec,
+            higham14_problem14_8_realToComplexVec, complexMatrixVecMul,
+            Fintype.sum_prod_type, Finset.sum_add_distrib, mul_add]
+      | succ b => exact Fin.elim0 b
+
+/-- Problem 14.8, inverse transfer, right-inverse direction:
+    if `Ainv` is a right inverse of the complex matrix `A`, then the real block
+    matrix of `Ainv` is a right inverse of the real block matrix of `A`. -/
+theorem higham14_problem14_8_realBlockMatrix_rightInverse_of_complex
+    {n : ℕ} {A Ainv : CMatrix n n}
+    (h : IsComplexMatrixRightInverse A Ainv) :
+    ∀ x : Fin 2 × Fin n → ℝ,
+      finiteMatVec (higham14_problem14_8_realBlockMatrix A)
+        (finiteMatVec (higham14_problem14_8_realBlockMatrix Ainv) x) = x := by
+  intro x
+  rw [higham14_problem14_8_realBlockMatrix_finiteMatVec_eq_complexToRealVec,
+    higham14_problem14_8_realBlockMatrix_finiteMatVec_eq_complexToRealVec,
+    higham14_problem14_8_realToComplexVec_complexToRealVec, h,
+    higham14_problem14_8_complexToRealVec_realToComplexVec]
+
+/-- Problem 14.8, inverse transfer, left-inverse direction:
+    if `Ainv` is a left inverse of the complex matrix `A`, then the real block
+    matrix of `Ainv` is a left inverse of the real block matrix of `A`. -/
+theorem higham14_problem14_8_realBlockMatrix_leftInverse_of_complex
+    {n : ℕ} {A Ainv : CMatrix n n}
+    (h : IsComplexMatrixLeftInverse A Ainv) :
+    ∀ x : Fin 2 × Fin n → ℝ,
+      finiteMatVec (higham14_problem14_8_realBlockMatrix Ainv)
+        (finiteMatVec (higham14_problem14_8_realBlockMatrix A) x) = x := by
+  intro x
+  rw [higham14_problem14_8_realBlockMatrix_finiteMatVec_eq_complexToRealVec,
+    higham14_problem14_8_realBlockMatrix_finiteMatVec_eq_complexToRealVec,
+    higham14_problem14_8_realToComplexVec_complexToRealVec, h,
+    higham14_problem14_8_complexToRealVec_realToComplexVec]
+
+/-- Problem 14.8, two-sided inverse transfer for the real block matrix
+    `[[Re A, -Im A], [Im A, Re A]]`. -/
+theorem higham14_problem14_8_realBlockMatrix_inverse_of_complex
+    {n : ℕ} {A Ainv : CMatrix n n}
+    (h : IsComplexMatrixInverse A Ainv) :
+    (∀ x : Fin 2 × Fin n → ℝ,
+      finiteMatVec (higham14_problem14_8_realBlockMatrix Ainv)
+        (finiteMatVec (higham14_problem14_8_realBlockMatrix A) x) = x) ∧
+    (∀ x : Fin 2 × Fin n → ℝ,
+      finiteMatVec (higham14_problem14_8_realBlockMatrix A)
+        (finiteMatVec (higham14_problem14_8_realBlockMatrix Ainv) x) = x) := by
+  exact ⟨higham14_problem14_8_realBlockMatrix_leftInverse_of_complex h.1,
+    higham14_problem14_8_realBlockMatrix_rightInverse_of_complex h.2⟩
+
+/-- The real block quadratic form is the real part of `z^* A z`, where
+    `z` is the complex vector packed from the real and imaginary blocks. -/
+theorem higham14_problem14_8_realBlockMatrix_quadratic_eq_complexQuadratic
+    {n : ℕ} (A : CMatrix n n) (x : Fin 2 × Fin n → ℝ) :
+    finiteQuadraticForm (higham14_problem14_8_realBlockMatrix A) x =
+      higham14_problem14_8_complexQuadraticForm A
+        (higham14_problem14_8_realToComplexVec x) := by
+  unfold finiteQuadraticForm higham14_problem14_8_complexQuadraticForm
+  rw [higham14_problem14_8_realBlockMatrix_finiteMatVec_eq_complexToRealVec]
+  simp [higham14_problem14_8_complexToRealVec,
+    higham14_problem14_8_realToComplexVec, complexMatrixVecMul,
+    Fintype.sum_prod_type, Finset.sum_add_distrib, mul_add, sub_eq_add_neg]
+  ring
+
+lemma higham14_problem14_8_realBlockMatrix_symmetric_of_hermitian
+    {n : ℕ} {A : CMatrix n n}
+    (hHerm : ∀ i j : Fin n, A i j = star (A j i)) :
+    IsSymmetricFiniteMatrix (higham14_problem14_8_realBlockMatrix A) := by
+  intro p q
+  rcases p with ⟨bp, i⟩
+  rcases q with ⟨bq, j⟩
+  cases bp using Fin.cases with
+  | zero =>
+      cases bq using Fin.cases with
+      | zero =>
+          change (A i j).re = (A j i).re
+          simpa using congrArg Complex.re (hHerm i j)
+      | succ bq =>
+          cases bq using Fin.cases with
+          | zero =>
+              change -(A i j).im = (A j i).im
+              have him : (A i j).im = -(A j i).im := by
+                simpa using congrArg Complex.im (hHerm i j)
+              linarith
+          | succ bq => exact Fin.elim0 bq
+  | succ bp =>
+      cases bp using Fin.cases with
+      | zero =>
+          cases bq using Fin.cases with
+          | zero =>
+              change (A i j).im = -(A j i).im
+              simpa using congrArg Complex.im (hHerm i j)
+          | succ bq =>
+              cases bq using Fin.cases with
+              | zero =>
+                  change (A i j).re = (A j i).re
+                  simpa using congrArg Complex.re (hHerm i j)
+              | succ bq => exact Fin.elim0 bq
+      | succ bp => exact Fin.elim0 bp
+
+lemma higham14_problem14_8_realToComplexVec_ne_zero_of_real_ne_zero
+    {n : ℕ} {x : Fin 2 × Fin n → ℝ} {p : Fin 2 × Fin n}
+    (hp : x p ≠ 0) :
+    ∃ i : Fin n, higham14_problem14_8_realToComplexVec x i ≠ 0 := by
+  rcases p with ⟨b, i⟩
+  refine ⟨i, ?_⟩
+  intro hz
+  apply hp
+  cases b using Fin.cases with
+  | zero =>
+      have hre := congrArg Complex.re hz
+      simpa [higham14_problem14_8_realToComplexVec] using hre
+  | succ b =>
+      cases b using Fin.cases with
+      | zero =>
+          have him := congrArg Complex.im hz
+          simpa [higham14_problem14_8_realToComplexVec] using him
+      | succ b => exact Fin.elim0 b
+
+/-- Problem 14.8, Hermitian positive definite transfer:
+    if the complex matrix is Hermitian positive definite, then its real block
+    representation `[[Re A, -Im A], [Im A, Re A]]` is SPD, in product-indexed
+    `2n` form. -/
+theorem higham14_problem14_8_realBlockMatrix_symPosDef_of_complexHermitianPosDef
+    {n : ℕ} {A : CMatrix n n}
+    (hA : higham14_problem14_8_complexHermitianPosDef A) :
+    higham14_problem14_8_realBlockSymPosDef
+      (higham14_problem14_8_realBlockMatrix A) := by
+  constructor
+  · exact higham14_problem14_8_realBlockMatrix_symmetric_of_hermitian hA.1
+  · intro x hx
+    rw [higham14_problem14_8_realBlockMatrix_quadratic_eq_complexQuadratic]
+    rcases hx with ⟨p, hp⟩
+    exact hA.2 (higham14_problem14_8_realToComplexVec x)
+      (higham14_problem14_8_realToComplexVec_ne_zero_of_real_ne_zero hp)
 
 /-- Entry perturbation used in Higham Chapter 14, Problem 14.10:
     replace `aᵢⱼ` by `aᵢⱼ + t`, leaving every other entry unchanged. -/
