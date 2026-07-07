@@ -3226,6 +3226,13 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_opNorm2Le_smul_of_abs_le_one`
 - `higham9_15_path_G_opNorm2Le`
 - `higham9_15_path_lu_exists`
+- `higham9_15_pathL`
+- `higham9_15_pathU`
+- `higham9_15_pathLU_spec`
+- `higham9_15_pathLU_spec_of_barrlund`
+- `higham9_15_pathU_pivots_ne_zero`
+- `higham9_15_pathLU_unique`
+- `higham9_15_pathLU_zero`
 - `higham9_15_normalized_G_factorization_matrix`
 - `higham9_15_normalized_Gtilde_factorization_matrix`
 - `higham9_15_strilPart`
