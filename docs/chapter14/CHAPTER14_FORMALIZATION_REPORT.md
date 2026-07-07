@@ -116,8 +116,7 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 ## Hidden-hypothesis summary
 
 - The new Problem 14.3 max-ratio theorem assumes both residual denominators are positive. The two one-sided ratio lemmas require only the denominator used by that ratio. This makes the source's implicit nonzero-ratio side condition explicit.
-- The new Problem 14.3 max-ratio theorem assumes both residual denominators are positive. The two one-sided ratio lemmas require only the denominator used by that ratio. This makes the source's implicit nonzero-ratio side condition explicit.
-- The new Problem 14.5 theorem closes only the right-approximate-inverse residual half and assumes the source residual budget for `X`; it does not yet prove the left-approximate-inverse residual bound or the forward-error comparison.
+- The new Problem 14.5 theorem closes only the right-approximate-inverse residual bound. It assumes the source residual budget `|AX-I| <= u|A||X|` and uses the repository's concrete `fl_matVec` model; left-residual and forward-error conclusions remain open.
 - The new Problem 14.10 theorem states the determinant-independence condition as `adj(A)_{ji}=0`. For a nonsingular matrix this is equivalent to the corresponding inverse-entry condition after multiplying by the nonzero determinant factor.
 - The new Problem 14.7 theorems assume the appropriate inverse side explicitly (`IsRightInverse` for a row of ones, `IsLeftInverse` for a column of ones); these are source/domain assumptions, not proof artifacts.
 - Existing Method 2, Method 2C, Method D, and GJE theorem surfaces still include hypotheses that are essentially the missing algorithmic analyses. They are recorded as conditional interfaces and do not close the source rows.
@@ -144,8 +143,8 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.5 right-residual theorem
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.10 determinant-independence theorems
   - `lake env lean examples/LibraryLookup.lean`
-- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass before and after the upstream merge and after the Problem 14.3, Problem 14.5, and Problem 14.10 additions; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
-- New theorem axiom surface: the new Problem 14.3, Problem 14.5, Problem 14.7, and Problem 14.10 theorems use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`).
+- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass before and after the upstream merge and after the Problem 14.3, Problem 14.5 right-residual, and Problem 14.10 additions; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
+- New theorem axiom surface: the new Problem 14.3, Problem 14.5 right-residual, Problem 14.7, and Problem 14.10 theorems use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`).
 - Known verification issue: the full `examples/LibraryLookup.lean` run aborts with a stack overflow / exit 134 after producing large lookup output. Focused lookups for the new declarations pass, so this is recorded as a full-example scale issue rather than a failed declaration lookup.
 - New versus pre-existing warnings: a new unused-simp warning appeared during initial Problem 14.7 proof and was removed.
 
