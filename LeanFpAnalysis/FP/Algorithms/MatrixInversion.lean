@@ -1780,6 +1780,280 @@ theorem higham14_problem14_3_max_residual_ratio_infNorm_le_kappa
     (higham14_problem14_3_left_over_right_residual_infNorm_le_kappa
       n hn A A_inv X hInv.1 hRightResPos)
 
+/-- Scalar gamma collapse used in Higham Chapter 14, Problem 14.5:
+    `u + gamma_n <= gamma_{n+1}`. -/
+lemma higham14_unit_roundoff_add_gamma_le_gamma_succ
+    (fp : FPModel) (n : ℕ) (hn1 : gammaValid fp (n + 1)) :
+    fp.u + gamma fp n ≤ gamma fp (n + 1) := by
+  have hvalid1 : gammaValid fp 1 :=
+    gammaValid_mono fp (by omega : 1 ≤ n + 1) hn1
+  have hvalidn : gammaValid fp n :=
+    gammaValid_mono fp (Nat.le_succ n) hn1
+  have hγ_sum : gamma fp 1 + gamma fp n + gamma fp 1 * gamma fp n ≤
+      gamma fp (n + 1) := by
+    have h := gamma_sum_le fp 1 n (by simpa [Nat.add_comm] using hn1)
+    simpa [Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using h
+  have hu_le_γ1 : fp.u ≤ gamma fp 1 :=
+    u_le_gamma fp one_pos hvalid1
+  have hγprod_nonneg : 0 ≤ gamma fp 1 * gamma fp n :=
+    mul_nonneg (gamma_nonneg fp hvalid1) (gamma_nonneg fp hvalidn)
+  linarith
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
+    residual bound.
+
+If `X` has a small right inverse residual, `|A X - I| <= u |A||X|`, and
+`x_hat = fl(X b)`, then
+`|A x_hat - b| <= gamma_{n+1} |A||X||b|` componentwise. -/
+theorem higham14_problem14_5_right_inverse_solve_residual_bound
+    (n : ℕ) (fp : FPModel)
+    (A X : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hRightRes : ∀ i j : Fin n,
+      |inverseRightResidual n A X i j| ≤
+        fp.u * ∑ k : Fin n, |A i k| * |X k j|) :
+    let x_hat := fl_matVec fp n n X b
+    ∀ i : Fin n,
+      |∑ j : Fin n, A i j * x_hat j - b i| ≤
+        gamma fp (n + 1) *
+          ∑ j : Fin n, |A i j| * (∑ k : Fin n, |X j k| * |b k|) := by
+  intro x_hat i
+  have hn : gammaValid fp n :=
+    gammaValid_mono fp (Nat.le_succ n) hn1
+  obtain ⟨ΔX, hΔX_bound, hΔX_eq⟩ := matVec_backward_error fp n n X b hn
+  change |∑ j : Fin n, A i j * fl_matVec fp n n X b j - b i| ≤ _
+  let S : ℝ := ∑ j : Fin n, |A i j| * (∑ k : Fin n, |X j k| * |b k|)
+  have hcoeff : fp.u + gamma fp n ≤ gamma fp (n + 1) :=
+    higham14_unit_roundoff_add_gamma_le_gamma_succ fp n hn1
+  have hS_nonneg : 0 ≤ S := by
+    exact Finset.sum_nonneg (fun j _ =>
+      mul_nonneg (abs_nonneg _) (Finset.sum_nonneg (fun k _ =>
+        mul_nonneg (abs_nonneg _) (abs_nonneg _))))
+  have hxhat : ∀ j : Fin n,
+      fl_matVec fp n n X b j =
+        ∑ k : Fin n, (X j k + ΔX j k) * b k := hΔX_eq
+  have hmain :
+      ∑ j : Fin n, A i j * fl_matVec fp n n X b j - b i =
+        (∑ k : Fin n, inverseRightResidual n A X i k * b k) +
+          ∑ j : Fin n, A i j * (∑ k : Fin n, ΔX j k * b k) := by
+    have hsplit :
+        ∑ j : Fin n, A i j * fl_matVec fp n n X b j =
+          ∑ j : Fin n, A i j * (∑ k : Fin n, X j k * b k) +
+            ∑ j : Fin n, A i j * (∑ k : Fin n, ΔX j k * b k) := by
+      rw [← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro j _
+      rw [hxhat j, ← mul_add]
+      congr 1
+      rw [← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro k _
+      ring
+    have hAXb :
+        ∑ j : Fin n, A i j * (∑ k : Fin n, X j k * b k) =
+          ∑ k : Fin n, (∑ j : Fin n, A i j * X j k) * b k := by
+      simp_rw [Finset.mul_sum, ← mul_assoc]
+      rw [Finset.sum_comm]
+      simp_rw [Finset.sum_mul]
+    have hb :
+        b i = ∑ k : Fin n, (if i = k then (1 : ℝ) else 0) * b k := by
+      simp [Finset.sum_ite_eq, Finset.mem_univ]
+    have hresExpand :
+        (∑ k : Fin n, (∑ j : Fin n, A i j * X j k) * b k) -
+          ∑ k : Fin n, (if i = k then (1 : ℝ) else 0) * b k =
+        ∑ k : Fin n, inverseRightResidual n A X i k * b k := by
+      rw [← Finset.sum_sub_distrib]
+      apply Finset.sum_congr rfl
+      intro k _
+      simp [inverseRightResidual, matMul, idMatrix]
+      by_cases h : i = k
+      · subst i
+        simp
+        ring_nf
+      · simp [h]
+    calc
+      ∑ j : Fin n, A i j * fl_matVec fp n n X b j - b i
+          = (∑ k : Fin n, (∑ j : Fin n, A i j * X j k) * b k +
+              ∑ j : Fin n, A i j * (∑ k : Fin n, ΔX j k * b k)) -
+              ∑ k : Fin n, (if i = k then (1 : ℝ) else 0) * b k := by
+            rw [hsplit, hAXb, hb]
+      _ = ((∑ k : Fin n, (∑ j : Fin n, A i j * X j k) * b k) -
+              ∑ k : Fin n, (if i = k then (1 : ℝ) else 0) * b k) +
+            ∑ j : Fin n, A i j * (∑ k : Fin n, ΔX j k * b k) := by
+            ring
+      _ = (∑ k : Fin n, inverseRightResidual n A X i k * b k) +
+            ∑ j : Fin n, A i j * (∑ k : Fin n, ΔX j k * b k) := by
+            rw [hresExpand]
+  have hres_part :
+      |∑ k : Fin n, inverseRightResidual n A X i k * b k| ≤ fp.u * S := by
+    calc
+      |∑ k : Fin n, inverseRightResidual n A X i k * b k|
+          ≤ ∑ k : Fin n, |inverseRightResidual n A X i k * b k| :=
+            Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ k : Fin n, |inverseRightResidual n A X i k| * |b k| := by
+            apply Finset.sum_congr rfl
+            intro k _
+            exact abs_mul _ _
+      _ ≤ ∑ k : Fin n, (fp.u * ∑ j : Fin n, |A i j| * |X j k|) * |b k| := by
+            apply Finset.sum_le_sum
+            intro k _
+            exact mul_le_mul_of_nonneg_right (hRightRes i k) (abs_nonneg _)
+      _ = fp.u * S := by
+            simp only [S]
+            calc
+              ∑ k : Fin n, (fp.u * ∑ j : Fin n, |A i j| * |X j k|) * |b k|
+                  = ∑ k : Fin n, ∑ j : Fin n,
+                      fp.u * (|A i j| * |X j k|) * |b k| := by
+                    apply Finset.sum_congr rfl
+                    intro k _
+                    rw [Finset.mul_sum, Finset.sum_mul]
+              _ = ∑ j : Fin n, ∑ k : Fin n,
+                      fp.u * (|A i j| * |X j k|) * |b k| := by
+                    rw [Finset.sum_comm]
+              _ = ∑ j : Fin n, fp.u * (|A i j| * ∑ k : Fin n, |X j k| * |b k|) := by
+                    apply Finset.sum_congr rfl
+                    intro j _
+                    calc
+                      ∑ k : Fin n, fp.u * (|A i j| * |X j k|) * |b k|
+                          = ∑ k : Fin n, fp.u * (|A i j| * (|X j k| * |b k|)) := by
+                            apply Finset.sum_congr rfl
+                            intro k _
+                            ring
+                      _ = fp.u * (∑ k : Fin n, |A i j| * (|X j k| * |b k|)) := by
+                            rw [← Finset.mul_sum]
+                      _ = fp.u * (|A i j| * ∑ k : Fin n, |X j k| * |b k|) := by
+                            congr 1
+                            rw [← Finset.mul_sum]
+              _ = fp.u * ∑ j : Fin n, |A i j| * (∑ k : Fin n, |X j k| * |b k|) := by
+                    rw [Finset.mul_sum]
+  have hround_part :
+      |∑ j : Fin n, A i j * (∑ k : Fin n, ΔX j k * b k)| ≤
+        gamma fp n * S := by
+    calc
+      |∑ j : Fin n, A i j * (∑ k : Fin n, ΔX j k * b k)|
+          ≤ ∑ j : Fin n, |A i j * (∑ k : Fin n, ΔX j k * b k)| :=
+            Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ j : Fin n, |A i j| * |∑ k : Fin n, ΔX j k * b k| := by
+            apply Finset.sum_congr rfl
+            intro j _
+            exact abs_mul _ _
+      _ ≤ ∑ j : Fin n, |A i j| * (∑ k : Fin n, |ΔX j k| * |b k|) := by
+            apply Finset.sum_le_sum
+            intro j _
+            apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+            calc
+              |∑ k : Fin n, ΔX j k * b k|
+                  ≤ ∑ k : Fin n, |ΔX j k * b k| :=
+                    Finset.abs_sum_le_sum_abs _ _
+              _ = ∑ k : Fin n, |ΔX j k| * |b k| := by
+                    apply Finset.sum_congr rfl
+                    intro k _
+                    exact abs_mul _ _
+      _ ≤ ∑ j : Fin n, |A i j| *
+            (∑ k : Fin n, (gamma fp n * |X j k|) * |b k|) := by
+            apply Finset.sum_le_sum
+            intro j _
+            apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+            apply Finset.sum_le_sum
+            intro k _
+            exact mul_le_mul_of_nonneg_right (hΔX_bound j k) (abs_nonneg _)
+      _ = gamma fp n * S := by
+            simp only [S]
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro j _
+            calc
+              |A i j| * (∑ k : Fin n, gamma fp n * |X j k| * |b k|)
+                  = |A i j| * (gamma fp n * (∑ k : Fin n, |X j k| * |b k|)) := by
+                    congr 1
+                    rw [Finset.mul_sum]
+                    apply Finset.sum_congr rfl
+                    intro k _
+                    ring
+              _ = gamma fp n * (|A i j| * ∑ k : Fin n, |X j k| * |b k|) := by
+                    ring
+  calc
+    |∑ j : Fin n, A i j * fl_matVec fp n n X b j - b i|
+        = |(∑ k : Fin n, inverseRightResidual n A X i k * b k) +
+            ∑ j : Fin n, A i j * (∑ k : Fin n, ΔX j k * b k)| := by
+          rw [hmain]
+    _ ≤ |∑ k : Fin n, inverseRightResidual n A X i k * b k| +
+          |∑ j : Fin n, A i j * (∑ k : Fin n, ΔX j k * b k)| :=
+          abs_add_le _ _
+    _ ≤ fp.u * S + gamma fp n * S :=
+          add_le_add hres_part hround_part
+    _ = (fp.u + gamma fp n) * S := by ring
+    _ ≤ gamma fp (n + 1) * S :=
+          mul_le_mul_of_nonneg_right hcoeff hS_nonneg
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
+    LU core: the determinant is the product of the diagonal entries of `U`. -/
+theorem higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec
+    {n : ℕ} {A L U : Fin n → Fin n → ℝ}
+    (hLU : LUFactSpec n A L U) :
+    Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) =
+      ∏ i : Fin n, U i i := by
+  simpa using hLU.det_eq_prod_U_diag
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.34), absolute-value no-pivot
+    determinant product form.  The row-interchange parity factor in GEPP is
+    absent here because the certificate is an exact `A = L * U` factorization. -/
+theorem higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec
+    {n : ℕ} {A L U : Fin n → Fin n → ℝ}
+    (hLU : LUFactSpec n A L U) :
+    |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+      |∏ i : Fin n, U i i| := by
+  rw [higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec hLU]
+
+/-- Entry perturbation used in Higham Chapter 14, Problem 14.10:
+    replace `aᵢⱼ` by `aᵢⱼ + t`, leaving every other entry unchanged. -/
+noncomputable def matrixEntryPerturb (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (i j : Fin n) (t : ℝ) :
+    Matrix (Fin n) (Fin n) ℝ :=
+  Matrix.updateRow (A : Matrix (Fin n) (Fin n) ℝ) i
+    ((A : Matrix (Fin n) (Fin n) ℝ) i +
+      t • (Pi.single j (1 : ℝ) : Fin n → ℝ))
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.10, cofactor form:
+    changing entry `aᵢⱼ` by `t` changes the determinant by
+    `t * adj(A)ⱼᵢ`. -/
+theorem higham14_problem14_10_det_entry_perturb_eq
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (i j : Fin n) (t : ℝ) :
+    Matrix.det (matrixEntryPerturb n A i j t) =
+      Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) +
+        t * Matrix.adjugate (A : Matrix (Fin n) (Fin n) ℝ) j i := by
+  unfold matrixEntryPerturb
+  rw [Matrix.det_updateRow_add, Matrix.det_updateRow_smul,
+    Matrix.updateRow_eq_self, Matrix.adjugate_apply]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.10:
+    if the `(j,i)` cofactor/adjugate entry vanishes, then `det(A)` is
+    independent of the entry `aᵢⱼ`. -/
+theorem higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (i j : Fin n)
+    (hAdj : Matrix.adjugate (A : Matrix (Fin n) (Fin n) ℝ) j i = 0) :
+    ∀ t : ℝ,
+      Matrix.det (matrixEntryPerturb n A i j t) =
+        Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) := by
+  intro t
+  rw [higham14_problem14_10_det_entry_perturb_eq n A i j t, hAdj, mul_zero, add_zero]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.10:
+    the determinant is independent of `aᵢⱼ` for all additive perturbations iff
+    the `(j,i)` adjugate entry is zero. -/
+theorem higham14_problem14_10_det_entry_independent_iff_adjugate_eq_zero
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (i j : Fin n) :
+    (∀ t : ℝ,
+      Matrix.det (matrixEntryPerturb n A i j t) =
+        Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) ↔
+      Matrix.adjugate (A : Matrix (Fin n) (Fin n) ℝ) j i = 0 := by
+  constructor
+  · intro h
+    have h1 := h 1
+    rw [higham14_problem14_10_det_entry_perturb_eq n A i j 1] at h1
+    linarith
+  · exact higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero n A i j
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.7:
     if one row of a nonsingular matrix consists entirely of ones, then the
     entries of its inverse sum to one. -/

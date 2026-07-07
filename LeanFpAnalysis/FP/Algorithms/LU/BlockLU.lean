@@ -18564,6 +18564,39 @@ theorem
     higham13_algorithm13_3_schurStageBlock] using hRight
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    if the supplied first pivot inverse is the BDD-forced canonical inverse,
+    then it is also Mathlib's `⅟` inverse for the first-split pivot block.
+
+    This bridges the BDD `nonsingInv` route to active-suffix APIs that state
+    pivot identities using `⅟(blockMatrixFirstSplitA11 ...)`. -/
+theorem
+    higham13_algorithm13_3_initial_pivot_eq_invOf_blockMatrixFirstSplitA11_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin (m + 1) → ℝ)
+    [Invertible (blockMatrixFirstSplitA11 A)]
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol (m + 1) (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin (m + 1), invDiagBound j ≤ 0)
+    (hPivot0 : pivotInv 0 = nonsingInv r (A 0 0)) :
+    pivotInv 0 = ⅟(blockMatrixFirstSplitA11 A) := by
+  have hRightStage :=
+    higham13_algorithm13_3_initial_pivot_right_inverse_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+      (Nat.succ_pos m) A pivotInv invDiagBound hPrefix hDom hBound hPivot0
+  have hRight :
+      IsRightInverse r (blockMatrixFirstSplitA11 A) (pivotInv 0) := by
+    simpa [blockMatrixFirstSplitA11, higham13_algorithm13_3_schurStageMatrixBlock,
+      higham13_algorithm13_3_schurStageBlock] using hRightStage
+  symm
+  change (⅟(blockMatrixFirstSplitA11 A) : Matrix (Fin r) (Fin r) ℝ) =
+    (pivotInv 0 : Matrix (Fin r) (Fin r) ℝ)
+  apply invOf_eq_right_inv
+  ext i j
+  simpa [Matrix.mul_apply] using hRight i j
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
     the first Schur tail in Algorithm 13.3 is block-nonsingular when the
     original matrix has all nonsingular leading prefixes and the first pivot
     inverse is the BDD-forced canonical inverse of the first diagonal block.
@@ -18914,6 +18947,56 @@ theorem
       hTailDom hTailBound (0 : Fin (m + 1))
   rw [hstage]
   simpa [hPivot1] using hTail
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    if the supplied stage-1 pivot inverse is the BDD-forced canonical inverse
+    of the first Schur tail's leading block, then it is also Mathlib's `⅟`
+    inverse for that first-split tail block. -/
+theorem
+    higham13_algorithm13_3_stage1_pivot_eq_invOf_first_schur_tail_of_pivotInv_eq_nonsingInv_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin ((m + 1) + 1) → ℝ)
+    (tailInvDiagBound : Fin (m + 1) → ℝ)
+    [Invertible (blockMatrixFirstSplitA11 (blockSchur A (pivotInv 0)))]
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < (m + 1) + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol ((m + 1) + 1)
+      (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin ((m + 1) + 1), invDiagBound j ≤ 0)
+    (hPivot0 :
+      pivotInv 0 =
+        nonsingInv r
+          (A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1))))
+    (hTailDom : IsBlockDiagDomCol (m + 1)
+      (fun i j => ‖blockSchur A (pivotInv 0) i j‖) tailInvDiagBound)
+    (hTailBound : ∀ j : Fin (m + 1), tailInvDiagBound j ≤ 0)
+    (hPivot1 :
+      pivotInv 1 =
+        nonsingInv r
+          ((blockSchur A (pivotInv 0))
+            (0 : Fin (m + 1)) (0 : Fin (m + 1)))) :
+    pivotInv 1 = ⅟(blockMatrixFirstSplitA11 (blockSchur A (pivotInv 0))) := by
+  have hRightStage :=
+    higham13_algorithm13_3_stage1_pivot_right_inverse_of_pivotInv_eq_nonsingInv_first_schur_tail_blockDiagDomCol_diagBound_nonpos
+      A pivotInv invDiagBound tailInvDiagBound hPrefix hDom hBound hPivot0
+      hTailDom hTailBound hPivot1
+  have hstage :=
+    higham13_algorithm13_3_stage1_pivot_eq_first_schur_tail_diag A pivotInv
+  have hRight :
+      IsRightInverse r
+        (blockMatrixFirstSplitA11 (blockSchur A (pivotInv 0))) (pivotInv 1) := by
+    rw [hstage] at hRightStage
+    simpa [blockMatrixFirstSplitA11] using hRightStage
+  symm
+  change
+    (⅟(blockMatrixFirstSplitA11 (blockSchur A (pivotInv 0))) :
+      Matrix (Fin r) (Fin r) ℝ) =
+    (pivotInv 1 : Matrix (Fin r) (Fin r) ℝ)
+  apply invOf_eq_right_inv
+  ext i j
+  simpa [Matrix.mul_apply] using hRight i j
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
     determinant nonsingularity of the stage-1 Algorithm 13.3 pivot from a BDD
