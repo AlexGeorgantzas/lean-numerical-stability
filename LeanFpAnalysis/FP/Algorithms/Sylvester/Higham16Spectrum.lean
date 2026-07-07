@@ -7458,6 +7458,128 @@ theorem sylvester_quasiSchur_blockTraversal_columns_eq_of_solution_step_oracle
   funext i k
   exact hcol n k k.isLt i
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), scheduled
+    quasi-Schur traversal uniqueness skeleton with determinant certificates:
+    if a frontier schedule starts at column `0`, ends at `n`, and each step is
+    justified either by the singleton recurrence or by an adjacent same-block
+    two-column determinant solve, then the scheduled candidate `X` agrees with
+    any exact Schur-coordinate solution `Y`.
+
+    This is the determinant-only companion to the global real-Schur
+    step-oracle theorem above.  It carries only the local nonsingularity
+    certificate needed by the two-column block solve; separate adapters may
+    manufacture that certificate from spectral or original-factor hypotheses. -/
+theorem sylvester_quasiSchur_blockTraversal_columns_eq_of_solution_det_frontier_step_oracle
+    (m n r : Nat)
+    (R : RMatFn m m) (S : RMatFn n n) (C X Y : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) /\
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => C i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n R S p q) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inr i))))
+    (hYsol : IsSylvesterSolutionRect m n R S C Y) :
+    X = Y := by
+  let Prefix : Nat -> Prop := fun t =>
+    forall k : Fin n, k.val < frontier t -> forall i : Fin m, X i k = Y i k
+  have hprefix : forall t : Nat, t <= r -> Prefix t := by
+    intro t
+    induction t with
+    | zero =>
+        intro _ k hk
+        rw [hstart] at hk
+        exact absurd hk (Nat.not_lt_zero _)
+    | succ t ih =>
+        intro ht k hk
+        have htlt : t < r := Nat.lt_of_succ_le ht
+        have ihprefix : Prefix t := ih (Nat.le_of_succ_le ht)
+        rcases hstep t htlt with hsingle | hblock
+        · rcases hsingle with ⟨p, hpval, hfront, hnext, hdet, hXp⟩
+          by_cases hdone : k.val < frontier t
+          · exact ihprefix k hdone
+          · have hk_succ : k.val < frontier (t + 1) := by
+              simpa [Nat.succ_eq_add_one] using hk
+            rw [hfront] at hk_succ
+            have hkval : k.val = frontier t := by omega
+            have hk_eq_p : k = p := by
+              apply Fin.ext
+              omega
+            subst k
+            have hprev : forall j : Fin n, j < p -> forall i : Fin m,
+                X i j = Y i j := by
+              intro j hjp
+              have hjpNat : j.val < p.val := Fin.lt_def.mp hjp
+              have hjold : j.val < frontier t := by omega
+              exact ihprefix j hjold
+            exact
+              sylvester_quasiSchur_singleton_column_eq_of_nonsingInv_of_solution_prev_columns_eq
+                m n R S C X Y pmap p hmono hzero hnext hdet hXp hYsol hprev
+        · rcases hblock with ⟨p, q, hpval, hqval, hfront, hsame, hdet, hXp, hXq⟩
+          by_cases hdone : k.val < frontier t
+          · exact ihprefix k hdone
+          · have hk_succ : k.val < frontier (t + 1) := by
+              simpa [Nat.succ_eq_add_one] using hk
+            rw [hfront] at hk_succ
+            have hkcases : k.val = frontier t \/ k.val = frontier t + 1 := by omega
+            have hpq_adj : q.val = p.val + 1 := by omega
+            have hblockAdj : IsAdjacentQuasiTriangularBlockFn n S p q :=
+              IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block
+                n S pmap p q hmono hcard hzero hpq_adj hsame
+            have hYblock : IsSylvesterTwoColumnBlockSystem m n R S C Y p q :=
+              sylvester_quasiTriangular_two_column_block_system_of_solution
+                m n R S C Y p q hblockAdj hYsol
+            have hprev : forall j : Fin n, j < p -> forall i : Fin m,
+                X i j = Y i j := by
+              intro j hjp
+              have hjpNat : j.val < p.val := Fin.lt_def.mp hjp
+              have hjold : j.val < frontier t := by omega
+              exact ihprefix j hjold
+            have hcols :=
+              sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_det_ne_zero_of_prev_columns_eq
+                m n R S C X Y p q hdet hXp hXq hYblock hprev
+            rcases hkcases with hkp | hkq
+            · have hk_eq_p : k = p := by
+                apply Fin.ext
+                omega
+              subst k
+              exact hcols.1
+            · have hk_eq_q : k = q := by
+                apply Fin.ext
+                omega
+              subst k
+              exact hcols.2
+  have hfinal : Prefix r := hprefix r (le_rfl)
+  funext i k
+  exact hfinal k (by simpa [hend] using k.isLt) i
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
     `A - t_kk I` nonsingular, two solutions of `AX - XT = C` coincide, by
