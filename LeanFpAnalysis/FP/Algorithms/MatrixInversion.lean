@@ -2944,6 +2944,100 @@ theorem higham14_problem14_5_left_firstorder_envelope_le_right_exact_rhs_envelop
     _ = matMulVec n (absMatrix n A_inv) (matMulVec n (absMatrix n A) z) i := by
         simp [matMulVec, absMatrix]
 
+/-- Higham, 2nd ed., Chapter 14, Section 14.6, printed p.279:
+    Euclidean norm of row `i`, the quantity `||A(i,:)||₂` used in the
+    determinant normalization defining the Hadamard condition number. -/
+noncomputable def higham14_rowNorm2 {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (i : Fin n) : ℝ :=
+  vecNorm2 (fun j : Fin n => A i j)
+
+/-- Higham, 2nd ed., Chapter 14, Section 14.6, printed p.279:
+    diagonal matrix whose diagonal entries are the row 2-norms of `A`. -/
+noncomputable def higham14_rowNormDiagonal {n : ℕ}
+    (A : Fin n → Fin n → ℝ) : Matrix (Fin n) (Fin n) ℝ :=
+  Matrix.diagonal (fun i : Fin n => higham14_rowNorm2 A i)
+
+/-- Higham, 2nd ed., Chapter 14, Section 14.6, printed p.279:
+    Hadamard determinant condition number `ψ(A)`, modeled in the positive
+    form used by the subsequent Hadamard-inequality statement.  The printed
+    display omits absolute-value bars on `det(A)`, while the condition-number
+    interpretation requires `|det(A)|` in the denominator. -/
+noncomputable def higham14_hadamardConditionNumber {n : ℕ}
+    (A : Fin n → Fin n → ℝ) : ℝ :=
+  (∏ i : Fin n, higham14_rowNorm2 A i) /
+    |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)|
+
+/-- Higham, 2nd ed., Chapter 14, Section 14.6, printed p.279:
+    signed raw version of the displayed ratio `det(D)/det(A)`.  Use
+    `higham14_hadamardConditionNumber` for the nonnegative condition-number
+    surface that matches the following Hadamard inequality discussion. -/
+noncomputable def higham14_hadamardConditionNumberRaw {n : ℕ}
+    (A : Fin n → Fin n → ℝ) : ℝ :=
+  (∏ i : Fin n, higham14_rowNorm2 A i) /
+    Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)
+
+lemma higham14_rowNorm2_nonneg {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (i : Fin n) :
+    0 ≤ higham14_rowNorm2 A i :=
+  vecNorm2_nonneg _
+
+/-- The row-norm diagonal has determinant equal to the product of the row
+    2-norms, the numerator in Higham's `ψ(A)`. -/
+theorem higham14_det_rowNormDiagonal_eq_prod_rowNorm2 {n : ℕ}
+    (A : Fin n → Fin n → ℝ) :
+    Matrix.det (higham14_rowNormDiagonal A) =
+      ∏ i : Fin n, higham14_rowNorm2 A i := by
+  simp [higham14_rowNormDiagonal]
+
+/-- Source-facing bridge from the diagonal determinant notation to the
+    product-of-row-norms definition of `ψ(A)`. -/
+theorem higham14_hadamardConditionNumber_eq_det_rowNormDiagonal_div_abs_det
+    {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    higham14_hadamardConditionNumber A =
+      Matrix.det (higham14_rowNormDiagonal A) /
+        |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| := by
+  rw [higham14_det_rowNormDiagonal_eq_prod_rowNorm2]
+  rfl
+
+/-- When `det(A)` is positive, the raw displayed ratio agrees with the
+    nonnegative Hadamard condition-number form. -/
+theorem higham14_hadamardConditionNumberRaw_eq_conditionNumber_of_det_pos
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : 0 < Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) :
+    higham14_hadamardConditionNumberRaw A =
+      higham14_hadamardConditionNumber A := by
+  simp [higham14_hadamardConditionNumberRaw,
+    higham14_hadamardConditionNumber, abs_of_pos hdet]
+
+theorem higham14_hadamardConditionNumber_nonneg {n : ℕ}
+    (A : Fin n → Fin n → ℝ) :
+    0 ≤ higham14_hadamardConditionNumber A := by
+  unfold higham14_hadamardConditionNumber
+  exact div_nonneg
+    (Finset.prod_nonneg fun i _ => higham14_rowNorm2_nonneg A i)
+    (abs_nonneg _)
+
+lemma higham14_rowNorm2_pos_of_det_ne_zero {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (i : Fin n) :
+    0 < higham14_rowNorm2 A i := by
+  have hne : higham14_rowNorm2 A i ≠ 0 := by
+    intro hzero
+    have hrow : ∀ j : Fin n, A i j = 0 :=
+      (vecNorm2_eq_zero_iff (fun j : Fin n => A i j)).mp hzero
+    exact hdet (Matrix.det_eq_zero_of_row_eq_zero i hrow)
+  exact lt_of_le_of_ne (higham14_rowNorm2_nonneg A i) (Ne.symm hne)
+
+theorem higham14_hadamardConditionNumber_pos_of_det_ne_zero {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    0 < higham14_hadamardConditionNumber A := by
+  unfold higham14_hadamardConditionNumber
+  exact div_pos
+    (Finset.prod_pos fun i _ => higham14_rowNorm2_pos_of_det_ne_zero A hdet i)
+    (abs_pos.mpr hdet)
+
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
 theorem higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec
