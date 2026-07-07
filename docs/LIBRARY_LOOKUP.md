@@ -5391,6 +5391,14 @@ the exact Hyman block identities (14.35)--(14.36), and Problem 14.10:
 - `higham14_problem14_12_peiMatrix_prod_rowNorm2`
 - `higham14_problem14_12_hadamardConditionNumber_peiMatrix_abs`
 - `higham14_problem14_12_hadamardConditionNumber_peiMatrix`
+- `higham14_problem14_13_amgm_prod_le_pow_sum_div_card`
+- `higham14_problem14_13_gej_squared_bound_from_amgm`
+- `higham14_problem14_13_gej_bound_from_squared`
+- `higham14_problem14_13_gej_bound_from_amgm_certificate`
+- `higham14_problem14_13_frobNorm_eq_sqrt_card_of_rowNorm2_eq_one`
+- `higham14_problem14_13_hadamardConditionNumber_eq_inv_abs_det_of_rowNorm2_eq_one`
+- `higham14_problem14_13_two_over_abs_det_eq_two_mul_hadamardConditionNumber`
+- `higham14_problem14_13_kappa_lt_two_mul_hadamardConditionNumber_of_unit_rows`
 - `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_perm_sign_mul_det_eq_prod_U_diag_of_PermutedLUFactSpec`
