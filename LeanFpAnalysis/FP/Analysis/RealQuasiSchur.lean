@@ -811,6 +811,116 @@ lemma trailing_conj_preserves_leading_entry
   rw [hei, hej, hV, embedBlock_conj_apply_inl_inl, hQ']
   simp [Matrix.reindex_apply, hsym_i, hsym_j]
 
+/-- Trailing recursive conjugation transports entries in the trailing block to
+    the conjugated recursive block after splitting by an arbitrary leading
+    dimension `d`.  This is the entrywise algebra needed before recursive
+    spectral certificates can be threaded through the Schur construction. -/
+lemma trailing_conj_preserves_trailing_entry
+    {d m n : ℕ} (hnm : d + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {i j : Fin n} {a b : Fin m}
+    (hi : (i : ℕ) = d + (a : ℕ)) (hj : (j : ℕ) = d + (b : ℕ)) :
+    let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := d) U)
+    (Qfullᵀ * A * Qfull) i j =
+      (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b := by
+  let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+  let Q' : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Matrix.reindex e e Q
+  let A' : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Matrix.reindex e e A
+  let E : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := embedBlock (d := d) U
+  let V : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Q' * E
+  have hQfull :
+      (Matrix.reindex e.symm e.symm V)ᵀ * A * Matrix.reindex e.symm e.symm V =
+        Matrix.reindex e.symm e.symm (Vᵀ * A' * V) := by
+    have h := reindex_conj e.symm A' V
+    rw [show Matrix.reindex e.symm e.symm A' = A by
+      simp [A']] at h
+    exact h.symm
+  have hV :
+      Vᵀ * A' * V = Eᵀ * (Q'ᵀ * A' * Q') * E := by
+    dsimp [V]
+    rw [Matrix.transpose_mul]
+    simp only [mul_assoc]
+  have hQ' : Q'ᵀ * A' * Q' = Matrix.reindex e e (Qᵀ * A * Q) := by
+    exact (reindex_conj e A Q).symm
+  have hei : e i = Sum.inr a := splitEquiv_eq_inr_of_eq_add hnm i a hi
+  have hej : e j = Sum.inr b := splitEquiv_eq_inr_of_eq_add hnm j b hj
+  change (((Matrix.reindex e.symm e.symm V)ᵀ * A *
+      Matrix.reindex e.symm e.symm V) i j =
+        (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b)
+  rw [hQfull]
+  simp only [Matrix.reindex_apply, Matrix.submatrix_apply]
+  change (Vᵀ * A' * V) (e i) (e j) =
+    (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b
+  rw [hei, hej, hV, embedBlock_conj_apply_inr_inr, hQ']
+
+/-- The ordered `2 x 2` block on a trailing pair is exactly the corresponding
+    principal block of the recursively conjugated trailing Schur factor. -/
+lemma principalTwoBlock_trailing_conj_transports_trailing_two
+    {d m n : ℕ} (hnm : d + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {p q : Fin n} {a b : Fin m}
+    (hp : (p : ℕ) = d + (a : ℕ))
+    (hq : (q : ℕ) = d + (b : ℕ)) :
+    let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := d) U)
+    LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q =
+      LeanFpAnalysis.FP.principalTwoBlock
+        (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b := by
+  funext i j
+  fin_cases i <;> fin_cases j
+  · exact trailing_conj_preserves_trailing_entry hnm A Q U hp hp
+  · exact trailing_conj_preserves_trailing_entry hnm A Q U hp hq
+  · exact trailing_conj_preserves_trailing_entry hnm A Q U hq hp
+  · exact trailing_conj_preserves_trailing_entry hnm A Q U hq hq
+
+/-- No-real-eigenline and negative-discriminant certificates for a trailing
+    recursive `2 x 2` block transport back through the full re-embedded Schur
+    factor. -/
+lemma trailing_twoBlock_spectral_preserved_after_trailing_conj
+    {d m n : ℕ} (hnm : d + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {p q : Fin n} {a b : Fin m}
+    (hp : (p : ℕ) = d + (a : ℕ))
+    (hq : (q : ℕ) = d + (b : ℕ))
+    (hno :
+      let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock
+          (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b)) :
+    let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := d) U)
+    LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) ∧
+      ((Qfullᵀ * A * Qfull) p p - (Qfullᵀ * A * Qfull) q q) ^ 2 +
+        4 * (Qfullᵀ * A * Qfull) p q * (Qfullᵀ * A * Qfull) q p < 0 := by
+  let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+  let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+    Matrix.reindex e.symm e.symm
+      (Matrix.reindex e e Q * embedBlock (d := d) U)
+  have hblock :
+      LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q =
+        LeanFpAnalysis.FP.principalTwoBlock
+          (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b :=
+    principalTwoBlock_trailing_conj_transports_trailing_two hnm A Q U hp hq
+  have hno' :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) := by
+    rw [hblock]
+    simpa [e] using hno
+  exact ⟨hno',
+    LeanFpAnalysis.FP.principalTwoBlock_disc_neg_of_matrixNoRealEigenline
+      (Qfullᵀ * A * Qfull) p q hno'⟩
+
 /-- The principal leading `2 x 2` block is unchanged when the trailing recursive
     conjugation is re-embedded. -/
 lemma principalTwoBlock_trailing_conj_preserves_leading_two
