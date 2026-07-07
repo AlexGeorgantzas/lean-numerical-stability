@@ -1203,6 +1203,21 @@ theorem finiteComplexMatrix_det_sub_scalar_ne_zero_of_no_eigenpair
       simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hi
     exact sub_eq_zero.mp hcoord⟩
 
+/-- A source-facing right-eigenvalue predicate over complex matrices: `mu` is
+    realized by a supplied nonzero right eigenvector of `A`. -/
+def HasComplexRightEigenvalue {ι : Type*} [Fintype ι]
+    (A : Matrix ι ι Complex) (mu : Complex) : Prop :=
+  ∃ y : ι -> Complex,
+    y ≠ 0 ∧ Matrix.mulVec A y = fun i => mu * y i
+
+/-- Source-facing no-common-complex-right-eigenvalue predicate for two complex
+    matrices, matching Higham's spectral-separation condition for the exact
+    Sylvester equation. -/
+def NoCommonComplexRightEigenvalue {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (A : Matrix ι ι Complex) (B : Matrix κ κ Complex) : Prop :=
+  ∀ mu : Complex, ¬ (HasComplexRightEigenvalue A mu ∧
+    HasComplexRightEigenvalue B mu)
+
 /-- Entrywise real-to-complex map for rectangular matrices.  This is the
     rectangular companion to the square complexification used in the real
     invariant-subspace development. -/
@@ -1273,6 +1288,26 @@ theorem H16_eq16_3_sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair
             z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j))) :
     Matrix.det (sylvesterVecCoeff m n A B) ≠ 0 :=
   sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), named spectral-separation
+    form: if the entrywise complexifications of the real Sylvester factors have
+    no common complex right eigenvalue, then the real vec/Kronecker Sylvester
+    coefficient is nonsingular. -/
+theorem sylvesterVecCoeff_det_ne_zero_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    Matrix.det (sylvesterVecCoeff m n A B) ≠ 0 :=
+  sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias for
+    the named no-common-complex-right-eigenvalue determinant route. -/
+theorem H16_eq16_3_sylvesterVecCoeff_det_ne_zero_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    Matrix.det (sylvesterVecCoeff m n A B) ≠ 0 :=
+  sylvesterVecCoeff_det_ne_zero_of_no_common_complex_right_eigenvalue m n A B hno
 
 /-- A real matrix intertwining identity remains an intertwining identity after
     entrywise complexification. -/
