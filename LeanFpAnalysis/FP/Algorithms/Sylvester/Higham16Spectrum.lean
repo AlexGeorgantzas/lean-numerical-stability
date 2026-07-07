@@ -8608,6 +8608,214 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_c
         m n U R A V S B pmap p q hU hV hA hB hmono hcard hzero
         hpq_adj hsame hspectral hnoOrig).2
 
+/-- A true singleton fiber in the real-quasi-Schur block map rules out a
+    same-block immediate successor. -/
+theorem quasiSchur_singleton_successor_not_same_of_singleton_fiber
+    (n : Nat) (pmap : Fin n -> Nat) (p : Fin n)
+    (hsingle : forall i : Fin n, pmap i = pmap p -> i = p) :
+    forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q) := by
+  intro q hq hsame
+  have hqp : q = p := hsingle q hsame.symm
+  have hval : q.val = p.val := congrArg Fin.val hqp
+  omega
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    Schur-coordinate solvability from a scheduled quasi-Schur traversal whose
+    singleton steps supply true singleton-fiber data and whose same-block
+    two-column steps use supplied real-Schur two-block spectral data plus the
+    original-coordinate no-common-complex-right-eigenvalue hypothesis. -/
+theorem sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_singleton_frontier_step_oracle
+    (m n r : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B))
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall i : Fin n, pmap i = pmap p -> i = p) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => C i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inr i)))) :
+    IsSylvesterSolutionRect m n R S C X := by
+  apply
+    sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_frontier_step_oracle
+      m n r U R A V S B C X pmap frontier
+      hU hV hA hB hstart hend hmono hcard hzero hspectral hnoOrig ?_
+  intro t ht
+  rcases hstep t ht with hsingle | hblock
+  · rcases hsingle with ⟨p, hpval, hfront, hsingle, hXp⟩
+    refine Or.inl ⟨p, hpval, hfront, ?_, ?_, hXp⟩
+    · exact quasiSchur_singleton_successor_not_same_of_singleton_fiber
+        n pmap p hsingle
+    · exact
+        sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_singleton_no_common_complex_right_eigenvalue
+          m n U R A V S B pmap p hU hV hA hB hzero hsingle hnoOrig
+  · exact Or.inr hblock
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    original-coordinate reconstruction from a scheduled quasi-Schur traversal
+    whose singleton steps derive shifted determinants from true singleton
+    fibers plus original-coordinate no-common spectrum. -/
+theorem sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_no_common_singleton_frontier_step_oracle
+    (m n r : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C Cschur X Yorig : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hCschur : Cschur = rectMatMul (matTranspose U) (rectMatMul C V))
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B))
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall i : Fin n, pmap i = pmap p -> i = p) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => Cschur i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inr i))))
+    (hYorig : IsSylvesterSolutionRect m n A B C Yorig) :
+    rectMatMul U (rectMatMul X (matTranspose V)) = Yorig := by
+  apply
+    sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_no_common_frontier_step_oracle
+      m n r U R A V S B C Cschur X Yorig pmap frontier
+      hU hV hA hB hCschur hstart hend hmono hcard hzero hspectral hnoOrig ?_
+      hYorig
+  intro t ht
+  rcases hstep t ht with hsingle | hblock
+  · rcases hsingle with ⟨p, hpval, hfront, hsingle, hXp⟩
+    refine Or.inl ⟨p, hpval, hfront, ?_, ?_, hXp⟩
+    · exact quasiSchur_singleton_successor_not_same_of_singleton_fiber
+        n pmap p hsingle
+    · exact
+        sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_singleton_no_common_complex_right_eigenvalue
+          m n U R A V S B pmap p hU hV hA hB hzero hsingle hnoOrig
+  · exact Or.inr hblock
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    original-coordinate unique solvability from a scheduled quasi-Schur
+    traversal whose singleton shifted determinants are derived internally from
+    true singleton-fiber data plus original-coordinate no-common spectrum. -/
+theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_singleton_frontier_step_oracle
+    (m n r : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C Cschur X : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hCschur : Cschur = rectMatMul (matTranspose U) (rectMatMul C V))
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B))
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall i : Fin n, pmap i = pmap p -> i = p) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => Cschur i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inr i)))) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  apply
+    existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_frontier_step_oracle
+      m n r U R A V S B C Cschur X pmap frontier
+      hU hV hA hB hCschur hstart hend hmono hcard hzero hspectral hnoOrig ?_
+  intro t ht
+  rcases hstep t ht with hsingle | hblock
+  · rcases hsingle with ⟨p, hpval, hfront, hsingle, hXp⟩
+    refine Or.inl ⟨p, hpval, hfront, ?_, ?_, hXp⟩
+    · exact quasiSchur_singleton_successor_not_same_of_singleton_fiber
+        n pmap p hsingle
+    · exact
+        sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_singleton_no_common_complex_right_eigenvalue
+          m n U R A V S B pmap p hU hV hA hB hzero hsingle hnoOrig
+  · exact Or.inr hblock
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
     `A - t_kk I` nonsingular, two solutions of `AX - XT = C` coincide, by
