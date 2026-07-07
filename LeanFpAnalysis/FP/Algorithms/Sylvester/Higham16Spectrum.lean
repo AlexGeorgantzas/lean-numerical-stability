@@ -2394,6 +2394,49 @@ def IsSylvesterTwoColumnRealSchurBlockSeparation
             (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
               (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), canonical
+    real `2 x 2` rotation-scaling block algebra: if the adjacent block has
+    entries `[[alpha, beta], [-beta, alpha]]` in the `(p,q)` order and
+    `beta != 0`, then its real Schur discriminant is negative.  This is the
+    local algebraic bridge needed by a future stronger real-Schur export. -/
+theorem sylvesterTwoColumnRealSchurBlock_disc_neg_of_rotation_scaling_entries
+    (n : Nat) (T : RMatFn n n) (p q : Fin n) (alpha beta : Real)
+    (hpp : T p p = alpha)
+    (hqq : T q q = alpha)
+    (hpq : T p q = beta)
+    (hqp : T q p = -beta)
+    (hbeta : beta ≠ 0) :
+    (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0 := by
+  have hbeta_sq_pos : 0 < beta ^ 2 := sq_pos_of_ne_zero hbeta
+  rw [hpp, hqq, hpq, hqp]
+  nlinarith
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), canonical
+    real `2 x 2` block producer for the explicit block-separation predicate:
+    rotation-scaling block entries provide the negative discriminant, while
+    the shifted determinant separation for `A` remains an explicit spectral
+    certificate. -/
+theorem sylvesterTwoColumnRealSchurBlock_separation_of_rotation_scaling_entries
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n) (alpha beta : Real)
+    (hpp : T p p = alpha)
+    (hqq : T q q = alpha)
+    (hpq : T p q = beta)
+    (hqp : T q p = -beta)
+    (hbeta : beta ≠ 0)
+    (hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m)
+              (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
+    IsSylvesterTwoColumnRealSchurBlockSeparation m n A T p q := by
+  exact
+    ⟨sylvesterTwoColumnRealSchurBlock_disc_neg_of_rotation_scaling_entries
+      n T p q alpha beta hpp hqq hpq hqp hbeta,
+      hdetA⟩
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), named
     no-block-action bridge from the explicit real-Schur block-separation
     certificate.  The remaining open source work is to derive
@@ -2438,6 +2481,39 @@ def IsSylvesterTwoColumnRealQuasiSchurBlockSeparation
     q.val = p.val + 1 ∧
     pmap p = pmap q ∧
     IsSylvesterTwoColumnRealSchurBlockSeparation m n A T p q
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
+    real-quasi-Schur block-separation producer from canonical rotation-scaling
+    entries for the adjacent `2 x 2` block.  The current `real_quasi_schur_blocks`
+    API does not export these entries; this theorem closes the algebra once a
+    stronger real-Schur construction provides them. -/
+theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_rotation_scaling_entries
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n) (alpha beta : Real)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpp : T p p = alpha)
+    (hqq : T q q = alpha)
+    (hpq_entry : T p q = beta)
+    (hqp : T q p = -beta)
+    (hbeta : beta ≠ 0)
+    (hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m)
+              (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
+    IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q := by
+  exact
+    ⟨hmono, hcard, hzero, hpq_adj, hsame,
+      sylvesterTwoColumnRealSchurBlock_separation_of_rotation_scaling_entries
+        m n A T p q alpha beta hpp hqq hpq_entry hqp hbeta hdetA⟩
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
     real-quasi-Schur block-separation bridge to the adjacent-block predicate
@@ -3370,6 +3446,94 @@ theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_
         Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
           (sylvesterTwoColumnBlockRhs m n T C X p q) := by
         rw [hz]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), active-block
+    injectivity from the bundled real-quasi-Schur block-separation predicate. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_realQuasiSchur_block_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hsep : IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q) :
+    Function.Injective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_block_separation
+      m n A T pmap p q hsep).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_injective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), active-block
+    surjectivity from the bundled real-quasi-Schur block-separation predicate. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_realQuasiSchur_block_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hsep : IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q) :
+    Function.Surjective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_block_separation
+      m n A T pmap p q hsep).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), active-block
+    bijectivity from the bundled real-quasi-Schur block-separation predicate. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_realQuasiSchur_block_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hsep : IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q) :
+    Function.Bijective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_block_separation
+      m n A T pmap p q hsep).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), active-block
+    unique solve from the bundled real-quasi-Schur block-separation predicate. -/
+theorem existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_realQuasiSchur_block_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hsep : IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q) :
+    ExistsUnique fun z : Sum (Fin m) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_block_separation
+      m n A T pmap p q hsep).2
+  exact existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_det_ne_zero
+    m n A T C X p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), active-block
+    solution identification from the bundled real-quasi-Schur
+    block-separation predicate. -/
+theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_realQuasiSchur_block_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hsep : IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q)
+    {z : Sum (Fin m) (Fin m) -> Real}
+    (hz :
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q) :
+    z =
+      Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_block_separation
+      m n A T pmap p q hsep).2
+  exact
+    sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_zero
+      m n A T C X p q hdet hz
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
     active-block injectivity: a trivial kernel for the eigen-equation of the
