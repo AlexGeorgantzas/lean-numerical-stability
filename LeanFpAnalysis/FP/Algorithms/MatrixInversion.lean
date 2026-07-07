@@ -28,6 +28,7 @@ import LeanFpAnalysis.FP.Algorithms.TriangularSolve
 import LeanFpAnalysis.FP.Algorithms.LU.GaussianElimination
 import LeanFpAnalysis.FP.Algorithms.LU.LUSolve
 import LeanFpAnalysis.FP.Algorithms.LU.GrowthFactor
+import LeanFpAnalysis.FP.Algorithms.HighamChapter8
 import LeanFpAnalysis.FP.Algorithms.HighamChapter9
 
 namespace LeanFpAnalysis.FP
@@ -3369,6 +3370,241 @@ theorem higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal
     higham14_rowNorm2_nonneg A i)).mp (by
       rw [sq_abs]
       exact hsquare)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.12:
+    Euclidean norm of column `j`, the quantity `rho_j = ||R(:,j)||_2` in the
+    QR formula for the Hadamard condition number. -/
+noncomputable def higham14_colNorm2 {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (j : Fin n) : ℝ :=
+  vecNorm2 (fun i : Fin n => A i j)
+
+/-- Orthogonal real matrices have determinant of absolute value one. -/
+lemma higham14_abs_det_eq_one_of_isOrthogonal {n : ℕ}
+    {Q : Fin n → Fin n → ℝ} (hQ : IsOrthogonal n Q) :
+    |Matrix.det (Q : Matrix (Fin n) (Fin n) ℝ)| = 1 := by
+  let QM : Matrix (Fin n) (Fin n) ℝ := Q
+  have hmat :
+      Matrix.transpose QM * QM = 1 := by
+    ext i j
+    simpa [QM, Matrix.mul_apply, Matrix.transpose_apply, matTranspose, idMatrix]
+      using hQ.left_inv i j
+  have hsquare : Matrix.det QM ^ 2 = 1 := by
+    have hdet := congrArg Matrix.det hmat
+    simpa [Matrix.det_mul, Matrix.det_transpose, pow_two] using hdet
+  have habs_square : |Matrix.det QM| ^ 2 = 1 := by
+    rw [sq_abs, hsquare]
+  rcases (sq_eq_one_iff.mp habs_square) with h | h
+  · simpa [QM] using h
+  · have hnonneg : 0 ≤ |Matrix.det QM| := abs_nonneg _
+    linarith
+
+/-- Left multiplication by an orthogonal matrix preserves each column
+    Euclidean norm. -/
+lemma higham14_colNorm2_matMul_orthogonal_left {n : ℕ}
+    (Q R : Fin n → Fin n → ℝ) (hQ : IsOrthogonal n Q) (j : Fin n) :
+    higham14_colNorm2 (matMul n Q R) j = higham14_colNorm2 R j := by
+  unfold higham14_colNorm2 matMul
+  exact vecNorm2_orthogonal Q (fun k : Fin n => R k j) hQ
+
+/-- In a QR factorization of `A^T`, row norms of `A` are column norms of `R`. -/
+lemma higham14_rowNorm2_eq_colNorm2_of_transpose_qr {n : ℕ}
+    (A Q R : Fin n → Fin n → ℝ)
+    (hQR : ∀ i j : Fin n, A j i = matMul n Q R i j)
+    (hQ : IsOrthogonal n Q) (i : Fin n) :
+    higham14_rowNorm2 A i = higham14_colNorm2 R i := by
+  calc
+    higham14_rowNorm2 A i = higham14_colNorm2 (matMul n Q R) i := by
+      unfold higham14_rowNorm2 higham14_colNorm2
+      congr 1
+      ext j
+      exact hQR j i
+    _ = higham14_colNorm2 R i :=
+        higham14_colNorm2_matMul_orthogonal_left Q R hQ i
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.12(a):
+    if `A^T = Q R` with `Q` orthogonal and `det(R) = prod_i r_ii`, then the
+    Hadamard condition number satisfies
+    `psi(A) = prod_i rho_i / |r_ii|`, where `rho_i = ||R(:,i)||_2`.
+
+    The determinant-product hypothesis is separated out so callers can use any
+    triangular or otherwise suitable QR certificate. -/
+theorem higham14_problem14_12_hadamardConditionNumber_eq_prod_colNorm2_div_abs_diag_of_transpose_qr_det_product
+    {n : ℕ} (A Q R : Fin n → Fin n → ℝ)
+    (hQR : ∀ i j : Fin n, A j i = matMul n Q R i j)
+    (hQ : IsOrthogonal n Q)
+    (hdetR : Matrix.det (R : Matrix (Fin n) (Fin n) ℝ) = ∏ i : Fin n, R i i) :
+    higham14_hadamardConditionNumber A =
+      ∏ i : Fin n, higham14_colNorm2 R i / |R i i| := by
+  have hrow : ∀ i : Fin n, higham14_rowNorm2 A i = higham14_colNorm2 R i :=
+    higham14_rowNorm2_eq_colNorm2_of_transpose_qr A Q R hQR hQ
+  have hQRmat :
+      let AM : Matrix (Fin n) (Fin n) ℝ := A
+      let QM : Matrix (Fin n) (Fin n) ℝ := Q
+      let RM : Matrix (Fin n) (Fin n) ℝ := R
+      Matrix.transpose AM = QM * RM := by
+    dsimp only
+    ext i j
+    simpa [Matrix.mul_apply, Matrix.transpose_apply, matMul] using hQR i j
+  have hdetA :
+      Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) =
+        Matrix.det (Q : Matrix (Fin n) (Fin n) ℝ) * (∏ i : Fin n, R i i) := by
+    let AM : Matrix (Fin n) (Fin n) ℝ := A
+    let QM : Matrix (Fin n) (Fin n) ℝ := Q
+    let RM : Matrix (Fin n) (Fin n) ℝ := R
+    have hdet_trans :
+        Matrix.det (Matrix.transpose AM) = Matrix.det (QM * RM) := by
+      simpa [AM, QM, RM] using congrArg Matrix.det hQRmat
+    rw [Matrix.det_transpose, Matrix.det_mul] at hdet_trans
+    simpa [AM, QM, RM, hdetR] using hdet_trans
+  have hden :
+      |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+        ∏ i : Fin n, |R i i| := by
+    rw [hdetA, abs_mul, higham14_abs_det_eq_one_of_isOrthogonal hQ, one_mul,
+      Finset.abs_prod]
+  unfold higham14_hadamardConditionNumber
+  rw [Finset.prod_congr rfl (fun i _ => hrow i), hden]
+  rw [← Finset.prod_div_distrib]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.12(a):
+    source-shaped QR formula for `psi(A)` when `A^T = Q R`, `Q` is orthogonal,
+    and `R` is upper triangular. -/
+theorem higham14_problem14_12_hadamardConditionNumber_eq_prod_colNorm2_div_abs_diag_of_transpose_qr
+    {n : ℕ} (A Q R : Fin n → Fin n → ℝ)
+    (hQR : ∀ i j : Fin n, A j i = matMul n Q R i j)
+    (hQ : IsOrthogonal n Q)
+    (hRupper : (show Matrix (Fin n) (Fin n) ℝ from R).BlockTriangular id) :
+    higham14_hadamardConditionNumber A =
+      ∏ i : Fin n, higham14_colNorm2 R i / |R i i| :=
+  higham14_problem14_12_hadamardConditionNumber_eq_prod_colNorm2_div_abs_diag_of_transpose_qr_det_product
+    A Q R hQR hQ (Matrix.det_of_upperTriangular hRupper)
+
+private lemma higham14_problem14_12_prod_nat_sub_eq_factorial (n : ℕ) :
+    (∏ i ∈ Finset.range n, (n - i)) = Nat.factorial n := by
+  calc
+    (∏ i ∈ Finset.range n, (n - i))
+        = ∏ i ∈ Finset.range n, ((n - 1 - i) + 1) := by
+            apply Finset.prod_congr rfl
+            intro i hi
+            have hi_lt : i < n := Finset.mem_range.mp hi
+            omega
+    _ = ∏ i ∈ Finset.range n, (i + 1) := by
+            rw [Finset.prod_range_reflect (fun i : ℕ => i + 1) n]
+    _ = Nat.factorial n := by
+            rw [Finset.prod_range_add_one_eq_factorial]
+
+private lemma higham14_problem14_12_prod_fin_nat_sub_eq_factorial (n : ℕ) :
+    (∏ i : Fin n, (n - i.val)) = Nat.factorial n := by
+  rw [Fin.prod_univ_eq_prod_range]
+  exact higham14_problem14_12_prod_nat_sub_eq_factorial n
+
+private lemma higham14_problem14_12_stressUpper_one_upper (n : ℕ) :
+    (show Matrix (Fin n) (Fin n) ℝ from higham8_3_stressUpper n 1).BlockTriangular id := by
+  intro i j hji
+  have hv : j.val < i.val := by simpa using hji
+  have hij : i ≠ j := by
+    intro h
+    subst j
+    exact (lt_irrefl i.val) hv
+  have hnot : ¬ i.val < j.val := by omega
+  simp [higham8_3_stressUpper, hij, hnot]
+
+private lemma higham14_problem14_12_det_stressUpper_one (n : ℕ) :
+    Matrix.det (higham8_3_stressUpper n 1 : Matrix (Fin n) (Fin n) ℝ) = 1 := by
+  rw [Matrix.det_of_upperTriangular (higham14_problem14_12_stressUpper_one_upper n)]
+  simp [higham8_3_stressUpper]
+
+private lemma higham14_problem14_12_sum_tail_one (n : ℕ) (i : Fin n) :
+    (∑ j : Fin n, if i.val ≤ j.val then (1 : ℝ) else 0) =
+      (n - i.val : ℝ) := by
+  have hlt :
+      (Finset.univ.filter (fun j : Fin n => j.val < i.val)).card = i.val := by
+    simpa [Nat.min_eq_right (Nat.le_of_lt i.isLt)] using
+      (Fin.card_filter_val_lt (n := n) (m := i.val))
+  have hpart :=
+    Finset.card_filter_add_card_filter_not
+      (s := (Finset.univ : Finset (Fin n))) (p := fun j : Fin n => j.val < i.val)
+  have htail :
+      (Finset.univ.filter (fun j : Fin n => ¬ j.val < i.val)).card = n - i.val := by
+    rw [Finset.card_univ, Fintype.card_fin] at hpart
+    omega
+  have htail' :
+      (Finset.univ.filter (fun j : Fin n => i.val ≤ j.val)).card = n - i.val := by
+    simpa only [not_lt] using htail
+  rw [← Finset.sum_filter]
+  simp only [Finset.sum_const, nsmul_eq_mul, mul_one]
+  rw [htail']
+  exact Nat.cast_sub (Nat.le_of_lt i.isLt)
+
+private lemma higham14_problem14_12_rowNorm2_sq_stressUpper_one
+    (n : ℕ) (i : Fin n) :
+    higham14_rowNorm2 (higham8_3_stressUpper n 1) i ^ 2 =
+      (n - i.val : ℝ) := by
+  rw [higham14_rowNorm2, vecNorm2_sq, vecNorm2Sq]
+  have hsquare : ∀ j : Fin n,
+      higham8_3_stressUpper n 1 i j ^ 2 =
+        if i.val ≤ j.val then (1 : ℝ) else 0 := by
+    intro j
+    by_cases hle : i.val ≤ j.val
+    · by_cases hij : i = j
+      · subst j
+        simp [higham8_3_stressUpper]
+      · have hlt : i.val < j.val := by
+          exact lt_of_le_of_ne hle (by
+            intro hval
+            exact hij (Fin.ext hval))
+        simp [higham8_3_stressUpper, hij, hlt, hle]
+    · have hij : i ≠ j := by
+        intro h
+        subst j
+        exact hle (le_refl i.val)
+      have hnotlt : ¬ i.val < j.val := by omega
+      simp [higham8_3_stressUpper, hij, hnotlt, hle]
+  simp_rw [hsquare]
+  rw [higham14_problem14_12_sum_tail_one n i]
+
+private lemma higham14_problem14_12_rowNorm2_stressUpper_one
+    (n : ℕ) (i : Fin n) :
+    higham14_rowNorm2 (higham8_3_stressUpper n 1) i =
+      Real.sqrt ((n - i.val : ℕ) : ℝ) := by
+  exact
+    (sq_eq_sq₀
+      (higham14_rowNorm2_nonneg (higham8_3_stressUpper n 1) i)
+      (Real.sqrt_nonneg _)).mp (by
+        rw [higham14_problem14_12_rowNorm2_sq_stressUpper_one n i,
+          Real.sq_sqrt (Nat.cast_nonneg _)]
+        exact (Nat.cast_sub (Nat.le_of_lt i.isLt)).symm)
+
+private lemma higham14_problem14_12_prod_rowNorm2_stressUpper_one (n : ℕ) :
+    (∏ i : Fin n, higham14_rowNorm2 (higham8_3_stressUpper n 1) i) =
+      Real.sqrt (Nat.factorial n : ℝ) := by
+  calc
+    (∏ i : Fin n, higham14_rowNorm2 (higham8_3_stressUpper n 1) i)
+        = ∏ i : Fin n, Real.sqrt ((n - i.val : ℕ) : ℝ) := by
+            apply Finset.prod_congr rfl
+            intro i _
+            exact higham14_problem14_12_rowNorm2_stressUpper_one n i
+    _ = Real.sqrt (∏ i : Fin n, ((n - i.val : ℕ) : ℝ)) := by
+            exact (Real.sqrt_prod Finset.univ
+              (fun i _ => Nat.cast_nonneg (n - i.val))).symm
+    _ = Real.sqrt (Nat.factorial n : ℝ) := by
+            have hprod :
+                (∏ i : Fin n, ((n - i.val : ℕ) : ℝ)) =
+                  (Nat.factorial n : ℝ) := by
+              exact_mod_cast higham14_problem14_12_prod_fin_nat_sub_eq_factorial n
+            rw [hprod]
+
+/-- Higham, 2nd ed., Appendix A, Problem 14.12(b), printed p.560:
+    for the Chapter 8 stress matrix `U(1)`, the Hadamard determinant condition
+    number is `sqrt(n!)`.  Lean indexes rows as `0, ..., n-1`, so row `i` has
+    `n - i` unit entries. -/
+theorem higham14_problem14_12_hadamardConditionNumber_stressUpper_one_eq_sqrt_factorial
+    (n : ℕ) :
+    higham14_hadamardConditionNumber (higham8_3_stressUpper n 1) =
+      Real.sqrt (Nat.factorial n : ℝ) := by
+  unfold higham14_hadamardConditionNumber
+  rw [higham14_problem14_12_prod_rowNorm2_stressUpper_one n,
+    higham14_problem14_12_det_stressUpper_one n]
+  norm_num
 
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
