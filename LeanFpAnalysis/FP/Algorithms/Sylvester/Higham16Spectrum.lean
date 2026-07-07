@@ -6556,6 +6556,30 @@ theorem isUpperTriangularFn_of_strictBlockMap (n : Nat)
   exact hSstrict i j (hpstrict hji)
 
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    `B`-side singleton-block real-quasi-Schur case: supplied orthogonal
+    factors, a strictly increasing `B`-side block map, and nonsingular shifted
+    column coefficients make the original vec/Kronecker Sylvester coefficient
+    nonsingular.  This is the minimal strict-block-map determinant surface; no
+    left block-map data is needed. -/
+theorem sylvesterVecCoeff_realQuasiSchur_strictBBlockMap_det_ne_zero
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Not (Matrix.det (sylvesterVecCoeff m n A B) = 0) := by
+  exact
+    sylvesterVecCoeff_schurTriangular_det_ne_zero
+      m n U R A V S B hU hV hA hB
+      (isUpperTriangularFn_of_strictBlockMap n S pB hpBstrict hSstrict)
+      hshift
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
     real-quasi-Schur singleton-block case: supplied real quasi-Schur factors
     whose `B`-side block map is strictly increasing reduce to the supplied
     Schur-triangular determinant theorem, so the original vec/Kronecker
@@ -6586,10 +6610,8 @@ theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero (m n : Nat)
   have _hpBmono := hpBmono
   have _hpBcard := hpBcard
   exact
-    sylvesterVecCoeff_schurTriangular_det_ne_zero
-      m n U R A V S B hU hV hA hB
-      (isUpperTriangularFn_of_strictBlockMap n S pB hpBstrict hSstrict)
-      hshift
+    sylvesterVecCoeff_realQuasiSchur_strictBBlockMap_det_ne_zero
+      m n U R A V S B pB hU hV hA hB hpBstrict hSstrict hshift
 
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
     real-quasi-Schur singleton-block case: the strict supplied-factor
