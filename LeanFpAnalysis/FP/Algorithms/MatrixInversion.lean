@@ -3747,6 +3747,212 @@ theorem higham14_problem14_12_hadamardConditionNumber_peiMatrix
   rw [higham14_problem14_12_hadamardConditionNumber_peiMatrix_abs n α hn hαne,
     abs_of_pos hden_pos]
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    finite AM-GM in the product form used by Appendix A.  For nonnegative
+    `z_i`, `prod_i z_i <= ((sum_i z_i)/n)^n`. -/
+theorem higham14_problem14_13_amgm_prod_le_pow_sum_div_card {n : ℕ} (hn : 0 < n)
+    (z : Fin n → ℝ) (hz : ∀ i, 0 ≤ z i) :
+    (∏ i : Fin n, z i) ≤ ((∑ i : Fin n, z i) / (n : ℝ)) ^ n := by
+  let S : ℝ := ∑ i : Fin n, z i
+  by_cases hS : S = 0
+  · have hz_zero : ∀ i, z i = 0 := by
+      have hsum_zero : ∑ i : Fin n, z i = 0 := by simpa [S] using hS
+      have hterms := (Finset.sum_eq_zero_iff_of_nonneg
+        (s := (Finset.univ : Finset (Fin n))) (f := z)
+        (by intro i _; exact hz i)).mp hsum_zero
+      intro i
+      exact hterms i (Finset.mem_univ i)
+    have hprod_zero : ∏ i : Fin n, z i = 0 := by
+      let i : Fin n := ⟨0, hn⟩
+      rw [Finset.prod_eq_zero (Finset.mem_univ i) (hz_zero i)]
+    have hsum_zero : ∑ i : Fin n, z i = 0 := by simpa [S] using hS
+    rw [hprod_zero, hsum_zero]
+    exact pow_nonneg (div_nonneg le_rfl (Nat.cast_nonneg n)) n
+  · have hS_nonneg : 0 ≤ S := by
+      dsimp [S]
+      exact Finset.sum_nonneg (fun i _ => hz i)
+    have hS_pos : 0 < S := lt_of_le_of_ne hS_nonneg (Ne.symm hS)
+    let y : Fin n → ℝ := fun i => (n : ℝ) / S * z i
+    have hy_nonneg : ∀ i, 0 ≤ y i := by
+      intro i
+      exact mul_nonneg (div_nonneg (Nat.cast_nonneg n) hS_nonneg) (hz i)
+    have hy_sum : ∑ i : Fin n, y i = n := by
+      dsimp [y]
+      rw [← Finset.mul_sum]
+      change ((n : ℝ) / S) * S = (n : ℝ)
+      field_simp [hS]
+    have hy_prod_le_one : ∏ i : Fin n, y i ≤ 1 :=
+      higham9_amgm_prod_le_one_of_sum_eq_card hn y hy_nonneg hy_sum
+    have hy_prod :
+        ∏ i : Fin n, y i = ((n : ℝ) / S) ^ n * ∏ i : Fin n, z i := by
+      dsimp [y]
+      rw [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ,
+        Fintype.card_fin]
+    have hscale_pos : 0 < (S / (n : ℝ)) ^ n :=
+      pow_pos (div_pos hS_pos (Nat.cast_pos.mpr hn)) n
+    have hmain :
+        ((n : ℝ) / S) ^ n * ∏ i : Fin n, z i ≤ 1 := by
+      rwa [← hy_prod]
+    have hmul := mul_le_mul_of_nonneg_left hmain hscale_pos.le
+    have hcancel :
+        (S / (n : ℝ)) ^ n * (((n : ℝ) / S) ^ n * ∏ i : Fin n, z i) =
+          ∏ i : Fin n, z i := by
+      have hfac : (S / (n : ℝ)) * ((n : ℝ) / S) = 1 := by
+        field_simp [hS, Nat.cast_ne_zero.mpr hn.ne']
+      calc
+        (S / (n : ℝ)) ^ n * (((n : ℝ) / S) ^ n * ∏ i : Fin n, z i)
+            = ((S / (n : ℝ)) ^ n * ((n : ℝ) / S) ^ n) *
+                ∏ i : Fin n, z i := by ring
+        _ = (((S / (n : ℝ)) * ((n : ℝ) / S)) ^ n) *
+                ∏ i : Fin n, z i := by rw [mul_pow]
+        _ = ∏ i : Fin n, z i := by rw [hfac]; simp
+    have hrhs :
+        (S / (n : ℝ)) ^ n * 1 = (S / (n : ℝ)) ^ n := by ring
+    simpa [S] using (by rwa [hcancel, hrhs] at hmul)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    the Appendix A AM-GM algebra in squared form.  The family `z` represents
+    the `n` numbers whose geometric mean is
+    `(kappa * |det(A)| / 2)^(2/n)` in the source proof. -/
+theorem higham14_problem14_13_gej_squared_bound_from_amgm {n : ℕ} (hn : 0 < n)
+    (z : Fin n → ℝ) (hz : ∀ i, 0 ≤ z i)
+    {p frob : ℝ}
+    (hprod : (∏ i : Fin n, z i) = p ^ 2)
+    (hsum_lt : (∑ i : Fin n, z i) < frob ^ 2) :
+    p ^ 2 < (frob ^ 2 / (n : ℝ)) ^ n := by
+  have hprod_le :=
+    higham14_problem14_13_amgm_prod_le_pow_sum_div_card hn z hz
+  have hsum_nonneg : 0 ≤ ∑ i : Fin n, z i :=
+    Finset.sum_nonneg (fun i _ => hz i)
+  have hdiv_lt :
+      (∑ i : Fin n, z i) / (n : ℝ) < frob ^ 2 / (n : ℝ) :=
+    div_lt_div_of_pos_right hsum_lt (Nat.cast_pos.mpr hn)
+  have hdiv_nonneg : 0 ≤ (∑ i : Fin n, z i) / (n : ℝ) :=
+    div_nonneg hsum_nonneg (Nat.cast_nonneg n)
+  have hpow_lt :
+      ((∑ i : Fin n, z i) / (n : ℝ)) ^ n <
+        (frob ^ 2 / (n : ℝ)) ^ n :=
+    pow_lt_pow_left₀ hdiv_lt hdiv_nonneg hn.ne'
+  calc
+    p ^ 2 = ∏ i : Fin n, z i := hprod.symm
+    _ ≤ ((∑ i : Fin n, z i) / (n : ℝ)) ^ n := hprod_le
+    _ < (frob ^ 2 / (n : ℝ)) ^ n := hpow_lt
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    convert the squared GEJ AM-GM conclusion to the printed inequality shape
+    `kappa < 2/|det(A)| * (||A||_F/sqrt(n))^n`. -/
+theorem higham14_problem14_13_gej_bound_from_squared
+    {n : ℕ} (hn : 0 < n) {kappa detAbs frob : ℝ}
+    (hdet_pos : 0 < detAbs)
+    (hkappa_nonneg : 0 ≤ kappa)
+    (hfrob_nonneg : 0 ≤ frob)
+    (hsq :
+      (kappa * detAbs / 2) ^ 2 < (frob ^ 2 / (n : ℝ)) ^ n) :
+    kappa < (2 / detAbs) * (frob / Real.sqrt (n : ℝ)) ^ n := by
+  have hnR_pos : 0 < (n : ℝ) := Nat.cast_pos.mpr hn
+  have hsqrtn_pos : 0 < Real.sqrt (n : ℝ) :=
+    Real.sqrt_pos.mpr hnR_pos
+  have hbase_nonneg : 0 ≤ frob / Real.sqrt (n : ℝ) :=
+    div_nonneg hfrob_nonneg hsqrtn_pos.le
+  have hrhs_nonneg : 0 ≤ (frob / Real.sqrt (n : ℝ)) ^ n :=
+    pow_nonneg hbase_nonneg n
+  have hp_nonneg : 0 ≤ kappa * detAbs / 2 := by
+    positivity
+  have hrhs_sq :
+      ((frob / Real.sqrt (n : ℝ)) ^ n) ^ 2 =
+        (frob ^ 2 / (n : ℝ)) ^ n := by
+    calc
+      ((frob / Real.sqrt (n : ℝ)) ^ n) ^ 2
+          = ((frob / Real.sqrt (n : ℝ)) ^ 2) ^ n := by
+              rw [← pow_mul, ← pow_mul, Nat.mul_comm]
+      _ = (frob ^ 2 / (n : ℝ)) ^ n := by
+              rw [div_pow, Real.sq_sqrt (Nat.cast_nonneg n)]
+  have hp_lt :
+      kappa * detAbs / 2 < (frob / Real.sqrt (n : ℝ)) ^ n :=
+    (sq_lt_sq₀ hp_nonneg hrhs_nonneg).mp (by
+      simpa [hrhs_sq] using hsq)
+  have hscale_pos : 0 < 2 / detAbs := div_pos (by norm_num) hdet_pos
+  have hmul := mul_lt_mul_of_pos_left hp_lt hscale_pos
+  have hleft : (2 / detAbs) * (kappa * detAbs / 2) = kappa := by
+    field_simp [hdet_pos.ne']
+  rwa [hleft] at hmul
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    source-shaped AM-GM certificate theorem.  Supplying the singular-value
+    product certificate and the strict Frobenius-sum comparison yields the GEJ
+    determinant/condition inequality. -/
+theorem higham14_problem14_13_gej_bound_from_amgm_certificate
+    {n : ℕ} (hn : 0 < n) (z : Fin n → ℝ)
+    {kappa detAbs frob : ℝ}
+    (hdet_pos : 0 < detAbs)
+    (hkappa_nonneg : 0 ≤ kappa)
+    (hfrob_nonneg : 0 ≤ frob)
+    (hz : ∀ i, 0 ≤ z i)
+    (hprod : (∏ i : Fin n, z i) = (kappa * detAbs / 2) ^ 2)
+    (hsum_lt : (∑ i : Fin n, z i) < frob ^ 2) :
+    kappa < (2 / detAbs) * (frob / Real.sqrt (n : ℝ)) ^ n :=
+  higham14_problem14_13_gej_bound_from_squared hn hdet_pos hkappa_nonneg
+    hfrob_nonneg
+    (higham14_problem14_13_gej_squared_bound_from_amgm hn z hz hprod hsum_lt)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13(b) support:
+    if every row has Euclidean norm one, then the Frobenius norm is
+    `sqrt(n)`. -/
+theorem higham14_problem14_13_frobNorm_eq_sqrt_card_of_rowNorm2_eq_one
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hrow : ∀ i : Fin n, higham14_rowNorm2 A i = 1) :
+    frobNorm A = Real.sqrt (n : ℝ) := by
+  refine (sq_eq_sq₀ (frobNorm_nonneg A) (Real.sqrt_nonneg _)).mp ?_
+  rw [frobNorm_sq, Real.sq_sqrt (Nat.cast_nonneg n)]
+  unfold frobNormSq
+  calc
+    (∑ i : Fin n, ∑ j : Fin n, A i j ^ 2)
+        = ∑ i : Fin n, higham14_rowNorm2 A i ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro i _
+            simp [higham14_rowNorm2, vecNorm2_sq, vecNorm2Sq]
+    _ = ∑ _i : Fin n, (1 : ℝ) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [hrow i, one_pow]
+    _ = (n : ℝ) := by
+            simp [Fintype.card_fin]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13(b) support:
+    for unit row norms, the Hadamard condition number is `1 / |det(A)|`. -/
+theorem higham14_problem14_13_hadamardConditionNumber_eq_inv_abs_det_of_rowNorm2_eq_one
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hrow : ∀ i : Fin n, higham14_rowNorm2 A i = 1) :
+    higham14_hadamardConditionNumber A =
+      1 / |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| := by
+  unfold higham14_hadamardConditionNumber
+  have hprod : (∏ i : Fin n, higham14_rowNorm2 A i) = 1 := by
+    simpa using Finset.prod_eq_one (fun i _ => hrow i)
+  rw [hprod]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13(b) support:
+    the `2/|det(A)|` endpoint is the same as `2 * psi(A)` when all row norms
+    are one. -/
+theorem higham14_problem14_13_two_over_abs_det_eq_two_mul_hadamardConditionNumber
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hrow : ∀ i : Fin n, higham14_rowNorm2 A i = 1) :
+    2 / |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+      2 * higham14_hadamardConditionNumber A := by
+  rw [higham14_problem14_13_hadamardConditionNumber_eq_inv_abs_det_of_rowNorm2_eq_one
+    A hrow]
+  ring
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13(b) support:
+    combine a supplied `kappa < 2/|det(A)|` bound with the unit-row
+    Hadamard-condition-number identity. -/
+theorem higham14_problem14_13_kappa_lt_two_mul_hadamardConditionNumber_of_unit_rows
+    {n : ℕ} (A : Fin n → Fin n → ℝ) {kappa : ℝ}
+    (hrow : ∀ i : Fin n, higham14_rowNorm2 A i = 1)
+    (hkappa : kappa < 2 / |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)|) :
+    kappa < 2 * higham14_hadamardConditionNumber A := by
+  rwa [higham14_problem14_13_two_over_abs_det_eq_two_mul_hadamardConditionNumber
+    A hrow] at hkappa
+
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
 theorem higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec
