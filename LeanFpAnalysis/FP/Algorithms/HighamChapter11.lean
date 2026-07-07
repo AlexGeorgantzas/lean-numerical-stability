@@ -2818,6 +2818,32 @@ theorem higham11_8_infNorm_le_mul_of_componentwise_T_bound (n : ℕ)
             mul_le_mul_of_nonneg_left (row_sum_le_infNorm T_hat i) hη
     · exact mul_nonneg hη (infNorm_nonneg T_hat)
 
+/-- A relative entrywise factor perturbation controls the perturbed factor's
+infinity norm by `(1+γ)` times the source factor norm. -/
+theorem higham11_8_infNorm_factor_le_of_relative_entry_bound (n : ℕ)
+    (L L_hat : Fin n → Fin n → ℝ) (γ : ℝ) (hγ : 0 ≤ γ)
+    (hentry : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ * |L i j|) :
+    infNorm L_hat ≤ (1 + γ) * infNorm L := by
+  have hγ1 : 0 ≤ 1 + γ := by linarith
+  apply higham11_8_infNorm_le_mul_of_componentwise_T_bound n L_hat L (1 + γ) hγ1
+  intro i j
+  calc
+    |L_hat i j| = |(L_hat i j - L i j) + L i j| := by ring_nf
+    _ ≤ |L_hat i j - L i j| + |L i j| := abs_add_le _ _
+    _ ≤ γ * |L i j| + |L i j| := add_le_add (hentry i j) le_rfl
+    _ = (1 + γ) * |L i j| := by ring
+
+/-- Transposed form of
+`higham11_8_infNorm_factor_le_of_relative_entry_bound`. -/
+theorem higham11_8_infNorm_factorTranspose_le_of_relative_entry_bound (n : ℕ)
+    (L L_hat : Fin n → Fin n → ℝ) (γ : ℝ) (hγ : 0 ≤ γ)
+    (hentry : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ * |L i j|) :
+    infNorm (fun r c => L_hat c r) ≤
+      (1 + γ) * infNorm (fun r c => L c r) :=
+  higham11_8_infNorm_factor_le_of_relative_entry_bound n
+    (fun r c => L c r) (fun r c => L_hat c r) γ hγ
+    (fun i j => by simpa using hentry j i)
+
 /-- Direct bridge from a relative componentwise `T_hat` perturbation budget to
 the printed Theorem 11.8 normwise predicate. -/
 theorem higham11_8_aasenNormwiseBackwardBound_of_componentwise_T_bound
