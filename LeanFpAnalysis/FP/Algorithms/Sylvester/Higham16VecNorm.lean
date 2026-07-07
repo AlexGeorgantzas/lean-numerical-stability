@@ -632,6 +632,19 @@ theorem existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_right_eigenva
     existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair
       m n A B hno c
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the named no-common-complex-right-eigenvalue
+    real vec/Kronecker unique-solve route. -/
+theorem H16_eq16_3_existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c :=
+  existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_right_eigenvalue
+    m n A B hno c
+
 /-- A concrete left inverse and operator-2 radius for the printed Sylvester
     vec/Kronecker coefficient gives its sigma-min lower-bound route directly,
     without assuming the target coefficient lower-bound theorem. -/
