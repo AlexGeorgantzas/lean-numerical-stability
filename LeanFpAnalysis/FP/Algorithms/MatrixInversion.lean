@@ -28,6 +28,7 @@ import LeanFpAnalysis.FP.Algorithms.TriangularSolve
 import LeanFpAnalysis.FP.Algorithms.LU.GaussianElimination
 import LeanFpAnalysis.FP.Algorithms.LU.LUSolve
 import LeanFpAnalysis.FP.Algorithms.LU.GrowthFactor
+import LeanFpAnalysis.FP.Algorithms.HighamChapter8
 import LeanFpAnalysis.FP.Algorithms.HighamChapter9
 
 namespace LeanFpAnalysis.FP
@@ -3476,6 +3477,134 @@ theorem higham14_problem14_12_hadamardConditionNumber_eq_prod_colNorm2_div_abs_d
       ∏ i : Fin n, higham14_colNorm2 R i / |R i i| :=
   higham14_problem14_12_hadamardConditionNumber_eq_prod_colNorm2_div_abs_diag_of_transpose_qr_det_product
     A Q R hQR hQ (Matrix.det_of_upperTriangular hRupper)
+
+private lemma higham14_problem14_12_prod_nat_sub_eq_factorial (n : ℕ) :
+    (∏ i ∈ Finset.range n, (n - i)) = Nat.factorial n := by
+  calc
+    (∏ i ∈ Finset.range n, (n - i))
+        = ∏ i ∈ Finset.range n, ((n - 1 - i) + 1) := by
+            apply Finset.prod_congr rfl
+            intro i hi
+            have hi_lt : i < n := Finset.mem_range.mp hi
+            omega
+    _ = ∏ i ∈ Finset.range n, (i + 1) := by
+            rw [Finset.prod_range_reflect (fun i : ℕ => i + 1) n]
+    _ = Nat.factorial n := by
+            rw [Finset.prod_range_add_one_eq_factorial]
+
+private lemma higham14_problem14_12_prod_fin_nat_sub_eq_factorial (n : ℕ) :
+    (∏ i : Fin n, (n - i.val)) = Nat.factorial n := by
+  rw [Fin.prod_univ_eq_prod_range]
+  exact higham14_problem14_12_prod_nat_sub_eq_factorial n
+
+private lemma higham14_problem14_12_stressUpper_one_upper (n : ℕ) :
+    (show Matrix (Fin n) (Fin n) ℝ from higham8_3_stressUpper n 1).BlockTriangular id := by
+  intro i j hji
+  have hv : j.val < i.val := by simpa using hji
+  have hij : i ≠ j := by
+    intro h
+    subst j
+    exact (lt_irrefl i.val) hv
+  have hnot : ¬ i.val < j.val := by omega
+  simp [higham8_3_stressUpper, hij, hnot]
+
+private lemma higham14_problem14_12_det_stressUpper_one (n : ℕ) :
+    Matrix.det (higham8_3_stressUpper n 1 : Matrix (Fin n) (Fin n) ℝ) = 1 := by
+  rw [Matrix.det_of_upperTriangular (higham14_problem14_12_stressUpper_one_upper n)]
+  simp [higham8_3_stressUpper]
+
+private lemma higham14_problem14_12_sum_tail_one (n : ℕ) (i : Fin n) :
+    (∑ j : Fin n, if i.val ≤ j.val then (1 : ℝ) else 0) =
+      (n - i.val : ℝ) := by
+  have hlt :
+      (Finset.univ.filter (fun j : Fin n => j.val < i.val)).card = i.val := by
+    simpa [Nat.min_eq_right (Nat.le_of_lt i.isLt)] using
+      (Fin.card_filter_val_lt (n := n) (m := i.val))
+  have hpart :=
+    Finset.card_filter_add_card_filter_not
+      (s := (Finset.univ : Finset (Fin n))) (p := fun j : Fin n => j.val < i.val)
+  have htail :
+      (Finset.univ.filter (fun j : Fin n => ¬ j.val < i.val)).card = n - i.val := by
+    rw [Finset.card_univ, Fintype.card_fin] at hpart
+    omega
+  have htail' :
+      (Finset.univ.filter (fun j : Fin n => i.val ≤ j.val)).card = n - i.val := by
+    simpa only [not_lt] using htail
+  rw [← Finset.sum_filter]
+  simp only [Finset.sum_const, nsmul_eq_mul, mul_one]
+  rw [htail']
+  exact Nat.cast_sub (Nat.le_of_lt i.isLt)
+
+private lemma higham14_problem14_12_rowNorm2_sq_stressUpper_one
+    (n : ℕ) (i : Fin n) :
+    higham14_rowNorm2 (higham8_3_stressUpper n 1) i ^ 2 =
+      (n - i.val : ℝ) := by
+  rw [higham14_rowNorm2, vecNorm2_sq, vecNorm2Sq]
+  have hsquare : ∀ j : Fin n,
+      higham8_3_stressUpper n 1 i j ^ 2 =
+        if i.val ≤ j.val then (1 : ℝ) else 0 := by
+    intro j
+    by_cases hle : i.val ≤ j.val
+    · by_cases hij : i = j
+      · subst j
+        simp [higham8_3_stressUpper]
+      · have hlt : i.val < j.val := by
+          exact lt_of_le_of_ne hle (by
+            intro hval
+            exact hij (Fin.ext hval))
+        simp [higham8_3_stressUpper, hij, hlt, hle]
+    · have hij : i ≠ j := by
+        intro h
+        subst j
+        exact hle (le_refl i.val)
+      have hnotlt : ¬ i.val < j.val := by omega
+      simp [higham8_3_stressUpper, hij, hnotlt, hle]
+  simp_rw [hsquare]
+  rw [higham14_problem14_12_sum_tail_one n i]
+
+private lemma higham14_problem14_12_rowNorm2_stressUpper_one
+    (n : ℕ) (i : Fin n) :
+    higham14_rowNorm2 (higham8_3_stressUpper n 1) i =
+      Real.sqrt ((n - i.val : ℕ) : ℝ) := by
+  exact
+    (sq_eq_sq₀
+      (higham14_rowNorm2_nonneg (higham8_3_stressUpper n 1) i)
+      (Real.sqrt_nonneg _)).mp (by
+        rw [higham14_problem14_12_rowNorm2_sq_stressUpper_one n i,
+          Real.sq_sqrt (Nat.cast_nonneg _)]
+        exact (Nat.cast_sub (Nat.le_of_lt i.isLt)).symm)
+
+private lemma higham14_problem14_12_prod_rowNorm2_stressUpper_one (n : ℕ) :
+    (∏ i : Fin n, higham14_rowNorm2 (higham8_3_stressUpper n 1) i) =
+      Real.sqrt (Nat.factorial n : ℝ) := by
+  calc
+    (∏ i : Fin n, higham14_rowNorm2 (higham8_3_stressUpper n 1) i)
+        = ∏ i : Fin n, Real.sqrt ((n - i.val : ℕ) : ℝ) := by
+            apply Finset.prod_congr rfl
+            intro i _
+            exact higham14_problem14_12_rowNorm2_stressUpper_one n i
+    _ = Real.sqrt (∏ i : Fin n, ((n - i.val : ℕ) : ℝ)) := by
+            exact (Real.sqrt_prod Finset.univ
+              (fun i _ => Nat.cast_nonneg (n - i.val))).symm
+    _ = Real.sqrt (Nat.factorial n : ℝ) := by
+            have hprod :
+                (∏ i : Fin n, ((n - i.val : ℕ) : ℝ)) =
+                  (Nat.factorial n : ℝ) := by
+              exact_mod_cast higham14_problem14_12_prod_fin_nat_sub_eq_factorial n
+            rw [hprod]
+
+/-- Higham, 2nd ed., Appendix A, Problem 14.12(b), printed p.560:
+    for the Chapter 8 stress matrix `U(1)`, the Hadamard determinant condition
+    number is `sqrt(n!)`.  Lean indexes rows as `0, ..., n-1`, so row `i` has
+    `n - i` unit entries. -/
+theorem higham14_problem14_12_hadamardConditionNumber_stressUpper_one_eq_sqrt_factorial
+    (n : ℕ) :
+    higham14_hadamardConditionNumber (higham8_3_stressUpper n 1) =
+      Real.sqrt (Nat.factorial n : ℝ) := by
+  unfold higham14_hadamardConditionNumber
+  rw [higham14_problem14_12_prod_rowNorm2_stressUpper_one n,
+    higham14_problem14_12_det_stressUpper_one n]
+  norm_num
 
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
