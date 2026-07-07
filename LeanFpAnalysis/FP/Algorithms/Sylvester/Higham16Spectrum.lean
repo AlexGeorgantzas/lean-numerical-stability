@@ -2670,6 +2670,41 @@ theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_no_real_eigenvector_d
       hdetA
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
+    real-quasi-Schur separation producer from the constructed spectral
+    certificate exported by `real_quasi_schur_blocks_twoBlockSpectral`, plus
+    the still-explicit shifted determinant separation for the left matrix. -/
+theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_det_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of T) pmap)
+    (hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m)
+              (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
+    IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q := by
+  have hno :
+      forall x : Fin 2 -> Real, x ≠ 0 ->
+        Not (exists nu : Real,
+          Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+            fun k => nu * x k) := by
+    simpa [HasRealQuasiSchurTwoBlockSpectral, MatrixNoRealEigenline,
+      principalTwoBlock, sylvesterTwoColumnRealSchurBlock, Matrix.of_apply] using
+      (hspectral p q hpq_adj hsame).1
+  exact
+    sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_no_real_eigenvector_det_separation
+      m n A T pmap p q hmono hcard hzero hpq_adj hsame hno hdetA
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
     real-quasi-Schur block-separation producer from canonical rotation-scaling
     entries for the adjacent `2 x 2` block.  The current `real_quasi_schur_blocks`
     API does not export these entries; this theorem closes the algebra once a
