@@ -501,6 +501,16 @@ theorem existsUnique_isSylvesterSolutionRect_of_sylvesterVecCoeff_det_ne_zero
       (sylvester_vec_system_iff_solution m n A B C Y).mpr hY
     rw [huniq (Matrix.vec Y) hYvec, hXvec]
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.3):
+    source-numbered alias for the determinant-to-matrix Sylvester unique-solve
+    bridge. -/
+theorem H16_eq16_3_existsUnique_isSylvesterSolutionRect_of_sylvesterVecCoeff_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hdet : Matrix.det (sylvesterVecCoeff m n A B) ≠ 0) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_sylvesterVecCoeff_det_ne_zero
+    m n A B C hdet
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
     supplied complex right eigenpair for the complexified real factors makes
     the real Sylvester vec coefficient action injective. -/
