@@ -140,11 +140,11 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 ## GitHub synchronization
 
 - Local branch: main
-- Latest remote base integrated: `origin/main` fast-forwarded from `0af482e1` to `8411b4d2` before theorem design, then merged `57d02bfd` after the Chapter 14 milestone commit.
-- Milestone commit and split prefix: `6939f36a` (`Split 3A: start Ch14 matrix inversion inventory`)
-- Local merge commit before report-sync update: `24f75fa4`
-- Pushed to origin/main: yes, through `3f182f74` before this push-record update
-- Merge/conflict resolution: clean `ort` merge; upstream changed `LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean` and `docs/source_coverage/higham_ch20.md`
+- Latest remote base integrated: `origin/main` fast-forwarded from `0af482e1` to `8411b4d2` before theorem design, then merged `57d02bfd` and `5e10aea0` after local Chapter 14 milestones.
+- Milestone commits and split prefixes: `6939f36a` (`Split 3A: start Ch14 matrix inversion inventory`), `63347956` (`Split 3A: formalize Ch14 residual ratio`)
+- Local merge commits before report-sync updates: `24f75fa4`, `30c972c4`
+- Pushed to origin/main: yes, through `30c972c4` before this push-record update
+- Merge/conflict resolution: clean `ort` merges; upstream changed `LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean` and `docs/source_coverage/higham_ch20.md`
 - New upstream imports or exported contracts: none
 
 ## Documentation
