@@ -1085,6 +1085,12 @@ Latest open-row update:
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: passed after adding the (16.4)-(16.5) real quasi-Schur source-numbered aliases.
   - `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder|TODO|FIXME)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: no matches after the real quasi-Schur source-numbered alias wave.
   - `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean docs/source_coverage/higham_ch16.md`: passed for the real quasi-Schur source-numbered alias wave, with only the usual CRLF normalization warning before the commit.
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: passed after adding the direct shifted-determinant/product-zero active-block solve and block-system wrapper family.
+  - `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder|TODO|FIXME)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: no matches after the direct zero-coupling solve-wrapper family.
+  - `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean docs/source_coverage/higham_ch16.md`: passed for the direct zero-coupling solve-wrapper family, with only the usual CRLF normalization warning before the commit.
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: passed after adding the (16.3) source-numbered real constructive spectral aliases.
+  - `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder|TODO|FIXME)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: no matches after the (16.3) source-numbered alias wave.
+  - `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean docs/source_coverage/higham_ch16.md`: passed for the (16.3) source-numbered alias wave, with only the usual CRLF normalization warning before the commit.
 
 ## Git and Local-Only Notes
 
