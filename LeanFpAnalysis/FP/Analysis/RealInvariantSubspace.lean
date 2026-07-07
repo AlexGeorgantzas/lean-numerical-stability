@@ -412,6 +412,69 @@ theorem real_peel_one_or_two {n : ℕ} (hn : 0 < n) (A : Matrix (Fin n) (Fin n) 
     right
     exact ⟨μ.re, μ.im, x, y, hβ, reIm_linearIndependent_of_im_ne A hveqn hvne hβ, hAx, hAy⟩
 
+/-- A genuine real rotation-scaling invariant plane has no real eigenline
+    inside that plane.  This packages the irreducibility content of the
+    nonreal branch of `real_peel_one_or_two` before the Schur deflation step
+    forgets the chosen basis. -/
+theorem no_real_eigenvector_in_span_of_rotation_scaling {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ)
+    (α β : ℝ) (x y : Fin n → ℝ)
+    (hβ : β ≠ 0)
+    (hind : LinearIndependent ℝ ![x, y])
+    (hAx : A *ᵥ x = α • x - β • y)
+    (hAy : A *ᵥ y = β • x + α • y) :
+    ∀ a b : ℝ, (a • x + b • y : Fin n → ℝ) ≠ 0 ->
+      ¬ ∃ ν : ℝ, A *ᵥ (a • x + b • y : Fin n → ℝ) =
+        ν • (a • x + b • y : Fin n → ℝ) := by
+  intro a b hab hEig
+  rcases hEig with ⟨ν, hν⟩
+  have hνlin :
+      A.mulVecLin (a • x + b • y : Fin n → ℝ) =
+        ν • (a • x + b • y : Fin n → ℝ) := by
+    simpa [Matrix.mulVecLin_apply] using hν
+  have hcoeff_eq :
+      a • (α • x - β • y) + b • (β • x + α • y) =
+        ν • (a • x + b • y : Fin n → ℝ) := by
+    calc
+      a • (α • x - β • y) + b • (β • x + α • y)
+          = A.mulVecLin (a • x + b • y : Fin n → ℝ) := by
+            simp [map_add, map_smul, hAx, hAy]
+      _ = ν • (a • x + b • y : Fin n → ℝ) := hνlin
+  have hzero :
+      ((a * α + b * β - ν * a) • x +
+        ((-a * β + b * α - ν * b) • y) : Fin n → ℝ) = 0 := by
+    funext k
+    have hk := congrFun hcoeff_eq k
+    simp only [Pi.add_apply, Pi.sub_apply, Pi.smul_apply, smul_eq_mul] at hk ⊢
+    calc
+      (a * α + b * β - ν * a) * x k + (-a * β + b * α - ν * b) * y k
+          = a * (α * x k - β * y k) + b * (β * x k + α * y k) -
+              ν * (a * x k + b * y k) := by
+            ring
+      _ = 0 := by
+            rw [hk]
+            ring
+  rw [LinearIndependent.pair_iff] at hind
+  have hcoeff := hind
+    (a * α + b * β - ν * a)
+    (-a * β + b * α - ν * b) hzero
+  have ha_eq : a * α + b * β - ν * a = 0 := hcoeff.1
+  have hb_eq : -a * β + b * α - ν * b = 0 := hcoeff.2
+  have hsumsq : β * (a ^ 2 + b ^ 2) = 0 := by
+    have h1 : (a * α + b * β - ν * a) * b = 0 := by
+      rw [ha_eq]
+      ring
+    have h2 : (-a * β + b * α - ν * b) * a = 0 := by
+      rw [hb_eq]
+      ring
+    nlinarith [h1, h2]
+  have habsq : a ^ 2 + b ^ 2 = 0 := by
+    exact (mul_eq_zero.mp hsumsq).resolve_left hβ
+  have ha0 : a = 0 := by nlinarith [sq_nonneg a, sq_nonneg b, habsq]
+  have hb0 : b = 0 := by nlinarith [sq_nonneg a, sq_nonneg b, habsq]
+  apply hab
+  simp [ha0, hb0]
+
 /-- **Exact-dimension form of the descent.**  Every nonempty real square matrix
     has a real invariant subspace whose dimension is *exactly* `1` or *exactly*
     `2` — the `1×1` / `2×2` blocks of the real quasi-triangular Schur form
@@ -463,6 +526,76 @@ theorem exists_real_invariant_subspace_dim_one_or_two {n : ℕ} (hn : 0 < n)
           (Submodule.smul_mem _ _ (Submodule.subset_span (by simp)))
       exact mulVecLin_maps_span_pair A hx hy
 
+/-- **Exact-dimension descent with irreducible two-dimensional branch.**  Every
+    nonempty real square matrix has an invariant subspace of dimension `1` or
+    `2`; in the `2`-dimensional nonreal branch, the subspace has no nonzero real
+    eigenline.  This is the source-side payload that a stronger real
+    quasi-Schur export can thread through the deflation recursion. -/
+theorem exists_real_invariant_subspace_dim_one_or_two_no_real_eigenline
+    {n : ℕ} (hn : 0 < n) (A : Matrix (Fin n) (Fin n) ℝ) :
+    ∃ W : Submodule ℝ (Fin n → ℝ),
+      (finrank ℝ W = 1 ∨
+        (finrank ℝ W = 2 ∧
+          ∀ w ∈ W, w ≠ 0 ->
+            ¬ ∃ ν : ℝ, A *ᵥ w = ν • w)) ∧
+        ∀ w ∈ W, A.mulVecLin w ∈ W := by
+  rcases real_peel_one_or_two hn A with
+    ⟨μ, x, hxne, hAx⟩ | ⟨α, β, x, y, hβ, hind, hAx, hAy⟩
+  · -- 1-dimensional: W = span {x}, with A x = μ • x
+    refine ⟨Submodule.span ℝ {x}, Or.inl (finrank_span_singleton hxne), ?_⟩
+    intro w hw
+    have hmap : Submodule.map A.mulVecLin (Submodule.span ℝ {x})
+        ≤ Submodule.span ℝ {x} := by
+      rw [Submodule.map_span_le]
+      intro m hm
+      simp only [Set.mem_singleton_iff] at hm
+      rw [hm, Matrix.mulVecLin_apply, hAx]
+      exact Submodule.smul_mem _ _ (Submodule.mem_span_singleton_self x)
+    exact hmap (Submodule.mem_map_of_mem hw)
+  · -- 2-dimensional: W = span {x, y}, with no real eigenline
+    have hrange : (Set.range ![x, y]) = ({x, y} : Set (Fin n → ℝ)) := by
+      ext z
+      simp only [Set.mem_range, Set.mem_insert_iff, Set.mem_singleton_iff]
+      constructor
+      · rintro ⟨i, rfl⟩
+        fin_cases i
+        · exact Or.inl rfl
+        · exact Or.inr rfl
+      · rintro (rfl | rfl)
+        · exact ⟨0, rfl⟩
+        · exact ⟨1, rfl⟩
+    refine ⟨Submodule.span ℝ ({x, y} : Set (Fin n → ℝ)), Or.inr ?_, ?_⟩
+    · refine ⟨?_, ?_⟩
+      · have h2 : finrank ℝ (Submodule.span ℝ (Set.range ![x, y])) =
+            Fintype.card (Fin 2) :=
+          finrank_span_eq_card hind
+        rw [hrange] at h2
+        simpa using h2
+      · intro w hw hwne hEig
+        rcases (Submodule.mem_span_pair.mp hw) with ⟨a, b, hrepr⟩
+        have hcomb_ne : (a • x + b • y : Fin n → ℝ) ≠ 0 := by
+          intro hzero
+          apply hwne
+          rw [← hrepr]
+          exact hzero
+        exact
+          no_real_eigenvector_in_span_of_rotation_scaling
+            A α β x y hβ hind hAx hAy a b hcomb_ne
+            (by
+              rcases hEig with ⟨ν, hν⟩
+              exact ⟨ν, by simpa [hrepr] using hν⟩)
+    · have hx : A *ᵥ x ∈ Submodule.span ℝ ({x, y} : Set (Fin n → ℝ)) := by
+        rw [hAx]
+        exact Submodule.sub_mem _
+          (Submodule.smul_mem _ _ (Submodule.subset_span (by simp)))
+          (Submodule.smul_mem _ _ (Submodule.subset_span (by simp)))
+      have hy : A *ᵥ y ∈ Submodule.span ℝ ({x, y} : Set (Fin n → ℝ)) := by
+        rw [hAy]
+        exact Submodule.add_mem _
+          (Submodule.smul_mem _ _ (Submodule.subset_span (by simp)))
+          (Submodule.smul_mem _ _ (Submodule.subset_span (by simp)))
+      exact mulVecLin_maps_span_pair A hx hy
+
 -- ============================================================
 -- §16.2 (16.4) / §17.4 [106].  STATUS after this module.
 -- ============================================================
@@ -474,6 +607,9 @@ theorem exists_real_invariant_subspace_dim_one_or_two {n : ℕ} (hn : 0 < n)
 --     a real `A`-invariant subspace with `0 < finrank ≤ 2`.
 --   • `exists_real_invariant_subspace_dim_one_or_two` — the sharpened
 --     `finrank = 1 ∨ finrank = 2` version (the `1×1`/`2×2` blocks of (16.4)).
+--   • `exists_real_invariant_subspace_dim_one_or_two_no_real_eigenline` — the
+--     same exact-dimension descent with the two-dimensional branch retaining the
+--     no-real-eigenline irreducibility certificate.
 --   • `real_peel_one_or_two` — the explicit, DEFLATION-READY dichotomy: either a
 --     real eigenvalue with a real eigenvector (`1×1` block), or `α ± β i`,
 --     `β ≠ 0`, with two `ℝ`-linearly independent real vectors on which `A` acts
