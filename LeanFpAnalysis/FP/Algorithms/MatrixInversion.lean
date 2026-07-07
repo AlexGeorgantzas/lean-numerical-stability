@@ -1658,6 +1658,222 @@ theorem higham14_eq14_22_methodD_left_residual_expansion {n : ℕ}
   rw [hAssoc]
   linarith [hXU_res_expand]
 
+/-- Higham equation (14.22), Method D:
+    the exact residual expansion gives an unconditional componentwise
+    absolute-value budget by the triangle inequality. -/
+theorem higham14_eq14_22_methodD_left_residual_abs_le_expanded_terms {n : ℕ}
+    (A L_hat U_hat X_U X_L X_hat : Fin n → Fin n → ℝ) (i j : Fin n) :
+    |∑ k : Fin n, X_hat i k * A k j - (if i = j then 1 else 0)| ≤
+      |higham14_methodDXULeftResidual X_U U_hat i j| +
+      ∑ k₁ : Fin n, |X_U i k₁| *
+        (∑ k₂ : Fin n,
+          |higham14_methodDXLLeftResidual X_L L_hat k₁ k₂| * |U_hat k₂ j|) +
+      ∑ k₁ : Fin n,
+        |higham14_methodDProductDelta X_hat X_U X_L i k₁| *
+          (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|) +
+      ∑ k : Fin n,
+        |X_hat i k| * |higham14_methodDLUBackwardDelta A L_hat U_hat k j| := by
+  rw [higham14_eq14_22_methodD_left_residual_expansion]
+  let rU := higham14_methodDXULeftResidual X_U U_hat i j
+  let rL := ∑ k₁ : Fin n, X_U i k₁ *
+    (∑ k₂ : Fin n,
+      higham14_methodDXLLeftResidual X_L L_hat k₁ k₂ * U_hat k₂ j)
+  let rP := ∑ k₁ : Fin n,
+    higham14_methodDProductDelta X_hat X_U X_L i k₁ *
+      (∑ k₂ : Fin n, L_hat k₁ k₂ * U_hat k₂ j)
+  let rA := ∑ k : Fin n,
+    X_hat i k * higham14_methodDLUBackwardDelta A L_hat U_hat k j
+  let bL := ∑ k₁ : Fin n, |X_U i k₁| *
+    (∑ k₂ : Fin n,
+      |higham14_methodDXLLeftResidual X_L L_hat k₁ k₂| * |U_hat k₂ j|)
+  let bP := ∑ k₁ : Fin n,
+    |higham14_methodDProductDelta X_hat X_U X_L i k₁| *
+      (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|)
+  let bA := ∑ k : Fin n,
+    |X_hat i k| * |higham14_methodDLUBackwardDelta A L_hat U_hat k j|
+  change |rU + rL + rP - rA| ≤ |rU| + bL + bP + bA
+  have hsplit : |rU + rL + rP - rA| ≤ |rU| + |rL| + |rP| + |rA| := by
+    calc
+      |rU + rL + rP - rA| = |((rU + rL) + rP) + (-rA)| := by ring_nf
+      _ ≤ |(rU + rL) + rP| + |-rA| := abs_add_le _ _
+      _ ≤ (|rU + rL| + |rP|) + |rA| := by
+        have h := abs_add_le (rU + rL) rP
+        rw [abs_neg]
+        linarith
+      _ ≤ ((|rU| + |rL|) + |rP|) + |rA| := by
+        have h := abs_add_le rU rL
+        linarith
+      _ = |rU| + |rL| + |rP| + |rA| := by ring
+  have hLinner : ∀ k₁ : Fin n,
+      |∑ k₂ : Fin n,
+        higham14_methodDXLLeftResidual X_L L_hat k₁ k₂ * U_hat k₂ j| ≤
+        ∑ k₂ : Fin n,
+          |higham14_methodDXLLeftResidual X_L L_hat k₁ k₂| * |U_hat k₂ j| := by
+    intro k₁
+    calc
+      |∑ k₂ : Fin n,
+        higham14_methodDXLLeftResidual X_L L_hat k₁ k₂ * U_hat k₂ j|
+          ≤ ∑ k₂ : Fin n,
+              |higham14_methodDXLLeftResidual X_L L_hat k₁ k₂ * U_hat k₂ j| :=
+            Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ k₂ : Fin n,
+            |higham14_methodDXLLeftResidual X_L L_hat k₁ k₂| * |U_hat k₂ j| :=
+          Finset.sum_abs_mul
+            (fun k₂ : Fin n => higham14_methodDXLLeftResidual X_L L_hat k₁ k₂)
+            (fun k₂ : Fin n => U_hat k₂ j)
+  have hL : |rL| ≤ bL := by
+    dsimp [rL, bL]
+    calc
+      |∑ k₁ : Fin n, X_U i k₁ *
+        (∑ k₂ : Fin n,
+          higham14_methodDXLLeftResidual X_L L_hat k₁ k₂ * U_hat k₂ j)|
+          ≤ ∑ k₁ : Fin n,
+              |X_U i k₁ *
+                (∑ k₂ : Fin n,
+                  higham14_methodDXLLeftResidual X_L L_hat k₁ k₂ *
+                    U_hat k₂ j)| :=
+            Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ k₁ : Fin n, |X_U i k₁| *
+            |∑ k₂ : Fin n,
+              higham14_methodDXLLeftResidual X_L L_hat k₁ k₂ * U_hat k₂ j| := by
+          apply Finset.sum_congr rfl
+          intro k₁ _
+          exact abs_mul (X_U i k₁)
+            (∑ k₂ : Fin n,
+              higham14_methodDXLLeftResidual X_L L_hat k₁ k₂ * U_hat k₂ j)
+      _ ≤ ∑ k₁ : Fin n, |X_U i k₁| *
+            (∑ k₂ : Fin n,
+              |higham14_methodDXLLeftResidual X_L L_hat k₁ k₂| *
+                |U_hat k₂ j|) := by
+          apply Finset.sum_le_sum
+          intro k₁ _
+          exact mul_le_mul_of_nonneg_left (hLinner k₁) (abs_nonneg _)
+  have hPinner : ∀ k₁ : Fin n,
+      |∑ k₂ : Fin n, L_hat k₁ k₂ * U_hat k₂ j| ≤
+        ∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j| := by
+    intro k₁
+    calc
+      |∑ k₂ : Fin n, L_hat k₁ k₂ * U_hat k₂ j|
+          ≤ ∑ k₂ : Fin n, |L_hat k₁ k₂ * U_hat k₂ j| :=
+            Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j| :=
+          Finset.sum_abs_mul (fun k₂ : Fin n => L_hat k₁ k₂)
+            (fun k₂ : Fin n => U_hat k₂ j)
+  have hP : |rP| ≤ bP := by
+    dsimp [rP, bP]
+    calc
+      |∑ k₁ : Fin n,
+        higham14_methodDProductDelta X_hat X_U X_L i k₁ *
+          (∑ k₂ : Fin n, L_hat k₁ k₂ * U_hat k₂ j)|
+          ≤ ∑ k₁ : Fin n,
+              |higham14_methodDProductDelta X_hat X_U X_L i k₁ *
+                (∑ k₂ : Fin n, L_hat k₁ k₂ * U_hat k₂ j)| :=
+            Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ k₁ : Fin n,
+            |higham14_methodDProductDelta X_hat X_U X_L i k₁| *
+              |∑ k₂ : Fin n, L_hat k₁ k₂ * U_hat k₂ j| := by
+          apply Finset.sum_congr rfl
+          intro k₁ _
+          exact abs_mul (higham14_methodDProductDelta X_hat X_U X_L i k₁)
+            (∑ k₂ : Fin n, L_hat k₁ k₂ * U_hat k₂ j)
+      _ ≤ ∑ k₁ : Fin n,
+            |higham14_methodDProductDelta X_hat X_U X_L i k₁| *
+              (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|) := by
+          apply Finset.sum_le_sum
+          intro k₁ _
+          exact mul_le_mul_of_nonneg_left (hPinner k₁) (abs_nonneg _)
+  have hA : |rA| ≤ bA := by
+    dsimp [rA, bA]
+    calc
+      |∑ k : Fin n,
+        X_hat i k * higham14_methodDLUBackwardDelta A L_hat U_hat k j|
+          ≤ ∑ k : Fin n,
+              |X_hat i k * higham14_methodDLUBackwardDelta A L_hat U_hat k j| :=
+            Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ k : Fin n,
+            |X_hat i k| * |higham14_methodDLUBackwardDelta A L_hat U_hat k j| :=
+          Finset.sum_abs_mul (fun k : Fin n => X_hat i k)
+            (fun k : Fin n => higham14_methodDLUBackwardDelta A L_hat U_hat k j)
+  linarith
+
+/-- Higham equation (14.23), dependency form:
+    combine the exact (14.22) residual budget with the already exposed
+    product, LU, and triangular-inverse componentwise error hypotheses.  This
+    leaves only the scalar simplification to the printed `(4γ + 2γ^2)` envelope
+    open. -/
+theorem higham14_eq14_23_methodD_left_residual_expanded_budget {n : ℕ}
+    (fp : FPModel)
+    (A L_hat U_hat X_U X_L X_hat : Fin n → Fin n → ℝ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hXL_res : ∀ i j : Fin n,
+      |higham14_methodDXLLeftResidual X_L L_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_L i k| * |L_hat k j|)
+    (hXU_res : ∀ i j : Fin n,
+      |higham14_methodDXULeftResidual X_U U_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_U i k| * |U_hat k j|)
+    (hProd : MatProdError n X_hat (matMul n X_U X_L) (gamma fp n)
+      (fun i j => ∑ k : Fin n, |X_U i k| * |X_L k j|)) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * A k j - (if i = j then 1 else 0)| ≤
+        gamma fp n * ∑ k : Fin n, |X_U i k| * |U_hat k j| +
+        ∑ k₁ : Fin n, |X_U i k₁| *
+          (∑ k₂ : Fin n,
+            (gamma fp n * ∑ l : Fin n, |X_L k₁ l| * |L_hat l k₂|) *
+              |U_hat k₂ j|) +
+        ∑ k₁ : Fin n,
+          (gamma fp n * ∑ l : Fin n, |X_U i l| * |X_L l k₁|) *
+            (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|) +
+        ∑ k : Fin n,
+          |X_hat i k| *
+            (gamma fp n * ∑ l : Fin n, |L_hat k l| * |U_hat l j|) := by
+  intro i j
+  have hbase :=
+    higham14_eq14_22_methodD_left_residual_abs_le_expanded_terms
+      A L_hat U_hat X_U X_L X_hat i j
+  have hU := hXU_res i j
+  have hL :
+      (∑ k₁ : Fin n, |X_U i k₁| *
+        (∑ k₂ : Fin n,
+          |higham14_methodDXLLeftResidual X_L L_hat k₁ k₂| * |U_hat k₂ j|)) ≤
+      ∑ k₁ : Fin n, |X_U i k₁| *
+        (∑ k₂ : Fin n,
+          (gamma fp n * ∑ l : Fin n, |X_L k₁ l| * |L_hat l k₂|) *
+            |U_hat k₂ j|) := by
+    apply Finset.sum_le_sum
+    intro k₁ _
+    apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+    apply Finset.sum_le_sum
+    intro k₂ _
+    exact mul_le_mul_of_nonneg_right (hXL_res k₁ k₂) (abs_nonneg _)
+  have hP :
+      (∑ k₁ : Fin n,
+        |higham14_methodDProductDelta X_hat X_U X_L i k₁| *
+          (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|)) ≤
+      ∑ k₁ : Fin n,
+        (gamma fp n * ∑ l : Fin n, |X_U i l| * |X_L l k₁|) *
+          (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|) := by
+    apply Finset.sum_le_sum
+    intro k₁ _
+    apply mul_le_mul_of_nonneg_right
+      (higham14_eq14_20_methodD_productDelta_bound X_hat X_U X_L
+        (gamma fp n) (fun i j => ∑ k : Fin n, |X_U i k| * |X_L k j|)
+        hProd i k₁)
+    exact Finset.sum_nonneg fun k₂ _ =>
+      mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  have hA :
+      (∑ k : Fin n,
+        |X_hat i k| * |higham14_methodDLUBackwardDelta A L_hat U_hat k j|) ≤
+      ∑ k : Fin n,
+        |X_hat i k| *
+          (gamma fp n * ∑ l : Fin n, |L_hat k l| * |U_hat l j|) := by
+    apply Finset.sum_le_sum
+    intro k _
+    exact mul_le_mul_of_nonneg_left
+      (higham14_eq14_21_methodD_luDelta_bound A L_hat U_hat
+        (gamma fp n) hLU k j)
+      (abs_nonneg _)
+  linarith
+
 /-- **Abstract Method D left residual interface** (Higham eq. 14.20–14.23).
 
     Method D: compute X_L ≈ L⁻¹ and X_U ≈ U⁻¹ separately,
