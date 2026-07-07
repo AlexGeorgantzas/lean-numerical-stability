@@ -2306,6 +2306,58 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_complex
   · exact sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_delta_root_det_separation
       m n A T p q delta hsub hdelta hdelta_ne hdetA
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), real-Schur
+    same-block determinant-shaped complex-separation certificate from a
+    negative real discriminant: the square-root `sqrt (-disc)` supplies the
+    complex root used by the two-column block determinant bridge, and the
+    negative discriminant also forces the subdiagonal coupling `T q p` to be
+    nonzero.  The shifted complex determinant separation for `A` remains an
+    explicit supplied certificate. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_complex_disc_det_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0)
+    (hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m)
+              (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
+    IsAdjacentQuasiTriangularBlockFn n T p q /\
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  let delta : Real := Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))
+  have hsub : Not (T q p = 0) := by
+    intro hzero_qp
+    have hsq : 0 <= (T p p - T q q) ^ 2 :=
+      sq_nonneg (T p p - T q q)
+    have hdisc_nonneg :
+        0 <= (T p p - T q q) ^ 2 + 4 * T p q * T q p := by
+      simpa [hzero_qp] using hsq
+    linarith
+  have hdelta :
+      delta ^ 2 =
+        -((T p p - T q q) ^ 2 + 4 * T p q * T q p) := by
+    dsimp [delta]
+    rw [Real.sq_sqrt]
+    linarith
+  have hdelta_ne : Not (delta = 0) := by
+    intro hzero_delta
+    rw [hzero_delta] at hdelta
+    norm_num at hdelta
+    linarith
+  exact
+    sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_complex_delta_root_det_separation
+      m n A T pmap p q hmono hcard hzero hpq hsame delta hsub hdelta hdelta_ne hdetA
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-local
     spectral obstruction for a supplied real `2 x 2` Schur block: a nonzero
     product-shift kernel vector yields two real vectors satisfying the same
