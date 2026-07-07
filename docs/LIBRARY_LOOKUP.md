@@ -5313,9 +5313,10 @@ a transfer or packaging result rather than a complete local analysis.
 
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
 Problem 14.3, the explicit residual-ratio family from Problem 14.4, the residual
-and forward-error consequences from Problem 14.5, Problem 14.7, equation
-(14.34) in its exact no-pivot/unit-lower LU form plus signed and
-absolute-value pivoted forms, and Problem 14.10:
+and forward-error consequences from Problem 14.5, Problem 14.7, the p.279
+Hadamard determinant condition number, equation (14.34) in its exact
+no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms, and
+Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
 - `higham14_problem14_3_right_residual_eq_mul_left_residual`
@@ -5346,6 +5347,16 @@ absolute-value pivoted forms, and Problem 14.10:
 - `higham14_problem14_5_left_firstorder_envelope_le_right_exact_rhs_envelope`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones`
+- `higham14_rowNorm2`
+- `higham14_rowNormDiagonal`
+- `higham14_hadamardConditionNumber`
+- `higham14_hadamardConditionNumberRaw`
+- `higham14_det_rowNormDiagonal_eq_prod_rowNorm2`
+- `higham14_hadamardConditionNumber_eq_det_rowNormDiagonal_div_abs_det`
+- `higham14_hadamardConditionNumberRaw_eq_conditionNumber_of_det_pos`
+- `higham14_hadamardConditionNumber_nonneg`
+- `higham14_rowNorm2_pos_of_det_ne_zero`
+- `higham14_hadamardConditionNumber_pos_of_det_ne_zero`
 - `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_perm_sign_mul_det_eq_prod_U_diag_of_PermutedLUFactSpec`
