@@ -1855,6 +1855,115 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_no_block_action
     ((sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_leftAction_eq_schurAction
       m n A T p q z).mp hzero)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
+    complex-separation bridge to the no-block-action certificate: if the
+    adjacent real `2 x 2` block has no real eigenline, has a supplied complex
+    eigenpair `(mu, w)`, and `A` has no complex eigenvector for that same
+    `mu`, then no nonzero two-column block-action witness can exist. -/
+theorem sylvesterTwoColumnBlock_no_block_action_of_complex_eigenpair_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (mu : Complex) (w : Fin 2 -> Complex)
+    (hwne : w ≠ 0)
+    (hwJ :
+      Matrix.mulVec (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q)) w =
+        fun k => mu * w k)
+    (hnoReal :
+      ∀ x : Fin 2 -> Real, x ≠ 0 ->
+        ¬ ∃ nu : Real,
+          Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+            fun k => nu * x k)
+    (hnoA :
+      ¬ ∃ y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i => mu * y i) :
+    ∀ z : Sum (Fin m) (Fin m) -> Real, z ≠ 0 ->
+      ¬ Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) z =
+        Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q) z := by
+  intro z hz hblock
+  let u : Fin m -> Real := fun i => z (Sum.inl i)
+  let v : Fin m -> Real := fun i => z (Sum.inr i)
+  have hz_sum : z = Sum.elim u v := by
+    funext r
+    cases r <;> rfl
+  have hblock_uv :
+      Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) (Sum.elim u v) =
+        Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q)
+          (Sum.elim u v) := by
+    simpa [hz_sum] using hblock
+  have hcoupled :
+      Matrix.mulVec (Matrix.of A) u =
+          (fun i => T p p * u i + T q p * v i) ∧
+        Matrix.mulVec (Matrix.of A) v =
+          (fun i => T p q * u i + T q q * v i) :=
+    (sylvesterTwoColumnBlock_coupled_block_action_iff_leftAction_eq_schurAction
+      m n A T p q u v).mpr hblock_uv
+  have hX :
+      Matrix.of A * sylvesterTwoColumnBlockColumnPair m u v =
+        sylvesterTwoColumnBlockColumnPair m u v *
+          sylvesterTwoColumnRealSchurBlock n T p q :=
+    (sylvesterTwoColumnBlock_coupled_block_action_iff_columnPair_intertwining
+      m n A T p q u v).mp hcoupled
+  have hU : sylvesterTwoColumnBlockColumnPair m u v ≠ 0 := by
+    intro hzero
+    apply hz
+    rw [hz_sum]
+    funext r
+    cases r with
+    | inl i =>
+        have hentry := congrFun (congrFun hzero i) (0 : Fin 2)
+        simpa [u, sylvesterTwoColumnBlockColumnPair] using hentry
+    | inr i =>
+        have hentry := congrFun (congrFun hzero i) (1 : Fin 2)
+        simpa [v, sylvesterTwoColumnBlockColumnPair] using hentry
+  have hXc :
+      realMatrixToComplex (Matrix.of A) *
+          realMatrixToComplex (sylvesterTwoColumnBlockColumnPair m u v) =
+        realMatrixToComplex (sylvesterTwoColumnBlockColumnPair m u v) *
+          realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q) :=
+    sylvesterTwoColumnBlock_columnPair_intertwining_complexification
+      m n A T p q u v hX
+  have hXw :
+      Matrix.mulVec
+          (realMatrixToComplex (sylvesterTwoColumnBlockColumnPair m u v)) w ≠ 0 :=
+    sylvesterTwoColumnBlock_columnPair_complex_mulVec_ne_zero_of_no_real_eigenvector
+      m n A T p q u v hX hU hnoReal hwne
+  exact hnoA
+    (finiteComplexMatrix_exists_mulVec_eigenpair_of_intertwiner_image_ne_zero
+      (realMatrixToComplex (Matrix.of A))
+      (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q))
+      (realMatrixToComplex (sylvesterTwoColumnBlockColumnPair m u v))
+      mu w hXc hwJ hXw)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    consequence of a supplied complex eigenpair/separation certificate for the
+    adjacent real `2 x 2` block.  This is still a supplied-certificates route:
+    it does not construct the complex eigenpair or no-common-spectrum
+    hypothesis from a full Schur spectral theorem. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_eigenpair_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (mu : Complex) (w : Fin 2 -> Complex)
+    (hwne : w ≠ 0)
+    (hwJ :
+      Matrix.mulVec (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q)) w =
+        fun k => mu * w k)
+    (hnoReal :
+      ∀ x : Fin 2 -> Real, x ≠ 0 ->
+        ¬ ∃ nu : Real,
+          Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+            fun k => nu * x k)
+    (hnoA :
+      ¬ ∃ y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i => mu * y i) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+  sylvesterTwoColumnBlockCoeff_det_ne_zero_of_no_block_action m n A T p q
+    (sylvesterTwoColumnBlock_no_block_action_of_complex_eigenpair_separation
+      m n A T p q mu w hwne hwJ hnoReal hnoA)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-local
     spectral obstruction for a supplied real `2 x 2` Schur block: a nonzero
     product-shift kernel vector yields two real vectors satisfying the same
