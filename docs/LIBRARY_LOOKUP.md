@@ -3194,6 +3194,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_opNorm2Le_leadingSubmatrix`
 - `higham9_15_det_one_add_ne_zero_of_opNorm2Le_lt_one`
 - `higham9_15_perturbed_leading_minor_ne_zero`
+- `higham9_15_selfMajorant_band_avoidance`
+- `higham9_15_selfMajorant_path_small_branch`
 - `higham9_15_normalized_G_factorization_matrix`
 - `higham9_15_normalized_Gtilde_factorization_matrix`
 - `higham9_15_strilPart`
