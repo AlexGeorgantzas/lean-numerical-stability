@@ -474,6 +474,91 @@ theorem no_common_real_left_eigenpair_of_sylvesterVecCoeff_det_ne_zero
     (sylvesterVecCoeff_singular_of_common_left_eigenvalue
       m n A B v w lam hv0 hw0 hv hw)
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias:
+    supplied real eigenpairs `A v = lam v` and `w^T B = mu w^T` give the
+    forward vec/Kronecker eigen-identity with eigenvalue difference
+    `lam - mu`.  This is the constructive real left-eigenpair direction only;
+    it does not assert the full complex spectral converse. -/
+theorem H16_eq16_3_sylvesterVecCoeff_eigenpair_vecMul :
+    forall (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+      (v : Fin m -> Real) (w : Fin n -> Real) (lam mu : Real),
+      Matrix.mulVec A v = (fun i => lam * v i) ->
+      Matrix.vecMul w B = (fun j => mu * w j) ->
+      Matrix.mulVec (sylvesterVecCoeff m n A B)
+          (Matrix.vec (fun i j => v i * w j : RMatFn m n)) =
+        fun p => (lam - mu) * (v p.2 * w p.1) :=
+  fun m n A B v w lam mu hv hw =>
+    sylvesterVecCoeff_eigenpair_vecMul m n A B v w lam mu hv hw
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias:
+    for supplied nonzero real eigenpairs of `A` and a left eigenpair of `B`,
+    the shifted vec/Kronecker Sylvester coefficient at `lam - mu` is singular.
+    This proves the real constructive inclusion, not the reverse spectral
+    characterization. -/
+theorem H16_eq16_3_sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair_vecMul :
+    forall (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+      (v : Fin m -> Real) (w : Fin n -> Real) (lam mu : Real),
+      Not (v = 0) -> Not (w = 0) ->
+      Matrix.mulVec A v = (fun i => lam * v i) ->
+      Matrix.vecMul w B = (fun j => mu * w j) ->
+      Matrix.det
+          (sylvesterVecCoeff m n A B -
+            (lam - mu) •
+              (1 : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)) =
+        0 :=
+  fun m n A B v w lam mu hv0 hw0 hv hw =>
+    sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair_vecMul
+      m n A B v w lam mu hv0 hw0 hv hw
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias:
+    a supplied common real eigenvalue of `A` and `B`, with the `B` eigenpair in
+    left-eigenvector form, makes the vectorized Sylvester coefficient singular.
+    This is the constructive obstruction direction only. -/
+theorem H16_eq16_3_sylvesterVecCoeff_singular_of_common_left_eigenvalue :
+    forall (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+      (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) -> Not (w = 0) ->
+      Matrix.mulVec A v = (fun i => lam * v i) ->
+      Matrix.vecMul w B = (fun j => lam * w j) ->
+      Matrix.det (sylvesterVecCoeff m n A B) = 0 :=
+  fun m n A B v w lam hv0 hw0 hv hw =>
+    sylvesterVecCoeff_singular_of_common_left_eigenvalue
+      m n A B v w lam hv0 hw0 hv hw
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias:
+    nonzero determinant of the shifted vec/Kronecker coefficient rules out
+    supplied nonzero real left-eigenpair data with eigenvalue difference
+    `lam - mu`. -/
+theorem H16_eq16_3_no_real_left_eigenpair_difference_of_shifted_det_ne_zero :
+    forall (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (lam mu : Real),
+      Not (Matrix.det
+        (sylvesterVecCoeff m n A B -
+          (lam - mu) •
+            (1 : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)) =
+        0) ->
+      Not (exists (v : Fin m -> Real) (w : Fin n -> Real),
+        Not (v = 0) /\ Not (w = 0) /\
+          Matrix.mulVec A v = (fun i => lam * v i) /\
+          Matrix.vecMul w B = (fun j => mu * w j)) :=
+  fun m n A B lam mu hdet =>
+    no_real_left_eigenpair_difference_of_sylvesterVecCoeff_shifted_det_ne_zero
+      m n A B lam mu hdet
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias:
+    determinant nonsingularity of the vec/Kronecker Sylvester coefficient rules
+    out supplied common real eigenpairs in source-facing left-eigenvector form.
+    This does not prove the full complex no-common-spectrum converse. -/
+theorem H16_eq16_3_no_common_real_left_eigenpair_of_det_ne_zero :
+    forall (m n : Nat) (A : RMatFn m m) (B : RMatFn n n),
+      Not (Matrix.det (sylvesterVecCoeff m n A B) = 0) ->
+      Not (exists (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+        Not (v = 0) /\ Not (w = 0) /\
+          Matrix.mulVec A v = (fun i => lam * v i) /\
+          Matrix.vecMul w B = (fun j => lam * w j)) :=
+  fun m n A B hdet =>
+    no_common_real_left_eigenpair_of_sylvesterVecCoeff_det_ne_zero
+      m n A B hdet
+
 -- ============================================================
 -- (16.4)-(16.8): Bartels-Stewart supplied-triangular column solve
 -- ============================================================
