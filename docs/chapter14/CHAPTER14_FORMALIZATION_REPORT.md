@@ -156,11 +156,11 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 ## GitHub synchronization
 
 - Local branch: main
-- Latest remote base integrated: `origin/main` fast-forwarded from `0af482e1` to `8411b4d2` before theorem design, then merged `57d02bfd`, `5e10aea0`, `e6c81dbe`, and `c03d362f` after local Chapter 14 milestones.
-- Milestone commits and split prefixes: `6939f36a` (`Split 3A: start Ch14 matrix inversion inventory`), `63347956` (`Split 3A: formalize Ch14 residual ratio`), `90a50b13` (`Split 3A: formalize Ch14 inverse exercises`), `3d01123b` (`Split 3A: clean Ch14 inverse exercise report`)
+- Latest remote base integrated: `origin/main` fast-forwarded from `0af482e1` to `8411b4d2` before theorem design, then merged `57d02bfd`, `5e10aea0`, `e6c81dbe`, and `c03d362f` after local Chapter 14 milestones; upstream `45c2e8b3` was present before the determinant-product milestone.
+- Milestone commits and split prefixes: `6939f36a` (`Split 3A: start Ch14 matrix inversion inventory`), `63347956` (`Split 3A: formalize Ch14 residual ratio`), `90a50b13` (`Split 3A: formalize Ch14 inverse exercises`), `3d01123b` (`Split 3A: clean Ch14 inverse exercise report`), `a2234884` (`Split 3A: formalize Ch14 determinant product`)
 - Local merge commits before report-sync updates: `24f75fa4`, `30c972c4`, `3fd44412`, `ff90ea53`
-- Pushed to origin/main: yes, through `ff90ea53` before this push-record update
-- Merge/conflict resolution: clean `ort` merges; upstream changed `LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean`, `docs/source_coverage/higham_ch16.md`, `docs/source_coverage/higham_ch20.md`, and `examples/LibraryLookup.lean`
+- Pushed to origin/main: yes, through `a2234884` before this push-record update
+- Merge/conflict resolution: clean `ort` merges; upstream changed `LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean`, `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, `docs/source_coverage/higham_ch16.md`, `docs/source_coverage/higham_ch20.md`, and `examples/LibraryLookup.lean`
 - New upstream imports or exported contracts: none
 
 ## Documentation
