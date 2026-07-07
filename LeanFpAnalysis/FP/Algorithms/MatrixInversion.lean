@@ -4199,6 +4199,178 @@ theorem higham14_problem14_13_gej_bound_from_matrix_amgm_certificate
       (frobNorm_nonneg A)
       hz hprod hsum_lt
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 / equation (14.37):
+    the source AM-GM family for dimensions `k + 2`.  Its entries are
+    `sigma_1^2/2`, `sigma_1^2/2`, and then `sigma_2^2, ..., sigma_{n-1}^2`,
+    using zero-based ordered singular-value indices. -/
+noncomputable def higham14_problem14_13_gejAmgmFamily
+    {k : ℕ} (A : Fin (k + 2) → Fin (k + 2) → ℝ) :
+    Fin (k + 2) → ℝ :=
+  let sigma := fun i : Fin (k + 2) =>
+    complexMatrixSingularValue (realRectToCMatrix A) i
+  Fin.cons (sigma 0 ^ 2 / 2)
+    (Fin.cons (sigma 0 ^ 2 / 2)
+      (fun i : Fin k => sigma i.castSucc.succ ^ 2))
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    the source GEJ AM-GM family is nonnegative. -/
+theorem higham14_problem14_13_gejAmgmFamily_nonneg
+    {k : ℕ} (A : Fin (k + 2) → Fin (k + 2) → ℝ) :
+    ∀ i, 0 ≤ higham14_problem14_13_gejAmgmFamily A i := by
+  intro i
+  refine Fin.cases ?h0 ?hs i
+  · simp [higham14_problem14_13_gejAmgmFamily]
+    positivity
+  · intro j
+    refine Fin.cases ?h1 ?ht j
+    · simp [higham14_problem14_13_gejAmgmFamily]
+      positivity
+    · intro t
+      simp [higham14_problem14_13_gejAmgmFamily]
+      positivity
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    a supplied right inverse makes the last ordered singular value positive. -/
+theorem higham14_problem14_13_last_singularValue_pos_of_isRightInverse
+    {k : ℕ} (A Ainv : Fin (k + 2) → Fin (k + 2) → ℝ)
+    (hRight : IsRightInverse (k + 2) A Ainv) :
+    0 <
+      complexMatrixSingularValue (realRectToCMatrix A) (Fin.last (k + 1)) := by
+  let sigma := fun i : Fin (k + 2) =>
+    complexMatrixSingularValue (realRectToCMatrix A) i
+  have hdet_pos :=
+    higham14_problem14_13_abs_det_pos_of_isRightInverse A Ainv hRight
+  have hprod_pos : 0 < ∏ i : Fin (k + 2), sigma i := by
+    rwa [higham14_problem14_13_abs_det_eq_prod_complex_singularValue A] at hdet_pos
+  have hprod_ne : (∏ i : Fin (k + 2), sigma i) ≠ 0 := ne_of_gt hprod_pos
+  have hlast_ne : sigma (Fin.last (k + 1)) ≠ 0 := by
+    exact (Finset.prod_ne_zero_iff.mp hprod_ne)
+      (Fin.last (k + 1)) (Finset.mem_univ _)
+  exact lt_of_le_of_ne
+    (complexMatrixSingularValue_nonneg (realRectToCMatrix A) (Fin.last (k + 1)))
+    (Ne.symm hlast_ne)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    product certificate for the source GEJ AM-GM family. -/
+theorem higham14_problem14_13_gejAmgmFamily_prod
+    {k : ℕ} (A Ainv : Fin (k + 2) → Fin (k + 2) → ℝ)
+    (hRight : IsRightInverse (k + 2) A Ainv) :
+    (∏ i : Fin (k + 2), higham14_problem14_13_gejAmgmFamily A i) =
+      (kappa2 A Ainv *
+        |Matrix.det (A : Matrix (Fin (k + 2)) (Fin (k + 2)) ℝ)| / 2) ^ 2 := by
+  let sigma := fun i : Fin (k + 2) =>
+    complexMatrixSingularValue (realRectToCMatrix A) i
+  let midProd : ℝ := ∏ i : Fin k, sigma i.castSucc.succ
+  have hlast_pos :=
+    higham14_problem14_13_last_singularValue_pos_of_isRightInverse A Ainv hRight
+  have hlast_ne : sigma (Fin.last (k + 1)) ≠ 0 := ne_of_gt hlast_pos
+  have hmid_sq :
+      (∏ i : Fin k, sigma i.castSucc.succ ^ 2) = midProd ^ 2 := by
+    dsimp [midProd]
+    rw [← Finset.prod_pow]
+  have hprodz :
+      (∏ i : Fin (k + 2), higham14_problem14_13_gejAmgmFamily A i) =
+        (sigma 0 ^ 2 * midProd / 2) ^ 2 := by
+    rw [Fin.prod_univ_succ, Fin.prod_univ_succ]
+    simp [higham14_problem14_13_gejAmgmFamily, sigma, hmid_sq]
+    ring
+  have hprefixprod :
+      (∏ i : Fin (k + 1), sigma (Fin.castSucc i)) = sigma 0 * midProd := by
+    rw [Fin.prod_univ_succ]
+    simp [midProd]
+  have hprod_all :
+      (∏ i : Fin (k + 2), sigma i) =
+        (sigma 0 * midProd) * sigma (Fin.last (k + 1)) := by
+    rw [Fin.prod_univ_castSucc]
+    rw [hprefixprod]
+  have hdet :
+      |Matrix.det (A : Matrix (Fin (k + 2)) (Fin (k + 2)) ℝ)| =
+        (sigma 0 * midProd) * sigma (Fin.last (k + 1)) := by
+    rw [higham14_problem14_13_abs_det_eq_prod_complex_singularValue A]
+    exact hprod_all
+  have hkappa :=
+    higham14_problem14_13_kappa2_eq_top_div_last_singularValue_of_rightInverse
+      A Ainv hRight
+  calc
+    (∏ i : Fin (k + 2), higham14_problem14_13_gejAmgmFamily A i)
+        = (sigma 0 ^ 2 * midProd / 2) ^ 2 := hprodz
+    _ = (kappa2 A Ainv *
+          |Matrix.det (A : Matrix (Fin (k + 2)) (Fin (k + 2)) ℝ)| / 2) ^ 2 := by
+        rw [hkappa, hdet]
+        dsimp [sigma]
+        field_simp [hlast_ne]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    the source GEJ AM-GM sum misses exactly the positive last singular-value
+    square from the Frobenius-square sum. -/
+theorem higham14_problem14_13_gejAmgmFamily_sum_add_last_singularValue_sq
+    {k : ℕ} (A : Fin (k + 2) → Fin (k + 2) → ℝ) :
+    (∑ i : Fin (k + 2), higham14_problem14_13_gejAmgmFamily A i) +
+        complexMatrixSingularValue (realRectToCMatrix A) (Fin.last (k + 1)) ^ 2 =
+      frobNorm A ^ 2 := by
+  let sigma := fun i : Fin (k + 2) =>
+    complexMatrixSingularValue (realRectToCMatrix A) i
+  have hsumz :
+      (∑ i : Fin (k + 2), higham14_problem14_13_gejAmgmFamily A i) =
+        sigma 0 ^ 2 + ∑ i : Fin k, sigma i.castSucc.succ ^ 2 := by
+    rw [Fin.sum_univ_succ, Fin.sum_univ_succ]
+    simp [higham14_problem14_13_gejAmgmFamily, sigma]
+    ring
+  have hprefix :
+      (∑ i : Fin (k + 1), sigma (Fin.castSucc i) ^ 2) =
+        sigma 0 ^ 2 + ∑ i : Fin k, sigma i.castSucc.succ ^ 2 := by
+    rw [Fin.sum_univ_succ]
+    simp [sigma]
+  calc
+    (∑ i : Fin (k + 2), higham14_problem14_13_gejAmgmFamily A i) +
+        sigma (Fin.last (k + 1)) ^ 2
+        = (∑ i : Fin (k + 1), sigma (Fin.castSucc i) ^ 2) +
+            sigma (Fin.last (k + 1)) ^ 2 := by
+            rw [hsumz, hprefix]
+    _ = ∑ i : Fin (k + 2), sigma i ^ 2 := by
+        rw [Fin.sum_univ_castSucc (fun i : Fin (k + 2) => sigma i ^ 2)]
+    _ = frobNorm A ^ 2 := by
+        rw [higham14_problem14_13_frobNorm_sq_eq_sum_complex_singularValue_sq A]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    strict Frobenius-sum certificate for the source GEJ AM-GM family. -/
+theorem higham14_problem14_13_gejAmgmFamily_sum_lt_frobNorm_sq
+    {k : ℕ} (A Ainv : Fin (k + 2) → Fin (k + 2) → ℝ)
+    (hRight : IsRightInverse (k + 2) A Ainv) :
+    (∑ i : Fin (k + 2), higham14_problem14_13_gejAmgmFamily A i) <
+      frobNorm A ^ 2 := by
+  let sigma := fun i : Fin (k + 2) =>
+    complexMatrixSingularValue (realRectToCMatrix A) i
+  have hlast_pos :=
+    higham14_problem14_13_last_singularValue_pos_of_isRightInverse A Ainv hRight
+  have hlast_sq_pos : 0 < sigma (Fin.last (k + 1)) ^ 2 :=
+    pow_pos hlast_pos 2
+  have hsum_add :=
+    higham14_problem14_13_gejAmgmFamily_sum_add_last_singularValue_sq A
+  calc
+    (∑ i : Fin (k + 2), higham14_problem14_13_gejAmgmFamily A i)
+        < (∑ i : Fin (k + 2), higham14_problem14_13_gejAmgmFamily A i) +
+            sigma (Fin.last (k + 1)) ^ 2 :=
+            lt_add_of_pos_right _ hlast_sq_pos
+    _ = frobNorm A ^ 2 := hsum_add
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 / equation (14.37):
+    Guggenheimer-Edelman-Johnson determinant/condition inequality for
+    matrices of dimension at least two, represented as `k + 2`. -/
+theorem higham14_problem14_13_gej_bound_of_isRightInverse
+    {k : ℕ} (A Ainv : Fin (k + 2) → Fin (k + 2) → ℝ)
+    (hRight : IsRightInverse (k + 2) A Ainv) :
+    kappa2 A Ainv <
+      (2 / |Matrix.det (A : Matrix (Fin (k + 2)) (Fin (k + 2)) ℝ)|) *
+        (frobNorm A / Real.sqrt ((k + 2 : ℕ) : ℝ)) ^ (k + 2) := by
+  exact
+    higham14_problem14_13_gej_bound_from_matrix_amgm_certificate
+      (Nat.succ_pos (k + 1)) A Ainv
+      (higham14_problem14_13_gejAmgmFamily A) hRight
+      (higham14_problem14_13_gejAmgmFamily_nonneg A)
+      (higham14_problem14_13_gejAmgmFamily_prod A Ainv hRight)
+      (higham14_problem14_13_gejAmgmFamily_sum_lt_frobNorm_sq A Ainv hRight)
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.13(b) support:
     if every row has Euclidean norm one, then the Frobenius norm is
     `sqrt(n)`. -/
@@ -4256,6 +4428,26 @@ theorem higham14_problem14_13_kappa_lt_two_mul_hadamardConditionNumber_of_unit_r
     kappa < 2 * higham14_hadamardConditionNumber A := by
   rwa [higham14_problem14_13_two_over_abs_det_eq_two_mul_hadamardConditionNumber
     A hrow] at hkappa
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13(b):
+    if the rows are normalized to unit Euclidean norm, the GEJ inequality gives
+    `kappa_2(A) < 2 * psi(A)` for dimensions at least two. -/
+theorem higham14_problem14_13_kappa2_lt_two_mul_hadamardConditionNumber_of_unit_rows
+    {k : ℕ} (A Ainv : Fin (k + 2) → Fin (k + 2) → ℝ)
+    (hRight : IsRightInverse (k + 2) A Ainv)
+    (hrow : ∀ i : Fin (k + 2), higham14_rowNorm2 A i = 1) :
+    kappa2 A Ainv < 2 * higham14_hadamardConditionNumber A := by
+  refine
+    higham14_problem14_13_kappa_lt_two_mul_hadamardConditionNumber_of_unit_rows
+      A hrow ?_
+  have hgej := higham14_problem14_13_gej_bound_of_isRightInverse A Ainv hRight
+  have hfrob :=
+    higham14_problem14_13_frobNorm_eq_sqrt_card_of_rowNorm2_eq_one A hrow
+  have hsqrt_pos : 0 < Real.sqrt (((k + 2 : ℕ) : ℝ)) :=
+    Real.sqrt_pos.mpr (Nat.cast_pos.mpr (Nat.succ_pos (k + 1)))
+  rw [hfrob] at hgej
+  rw [div_self hsqrt_pos.ne', one_pow, mul_one] at hgej
+  exact hgej
 
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
