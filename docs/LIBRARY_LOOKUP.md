@@ -5312,8 +5312,9 @@ hypothesis already contains the algorithmic stability conclusion, the theorem is
 a transfer or packaging result rather than a complete local analysis.
 
 Chapter 14 GJE declarations in `Algorithms/GaussJordan.lean` include the
-cumulative-product support for (14.27), abstract second-stage interfaces, and
-the proved overall composition wrappers:
+cumulative-product and exact recurrence-accumulation support for
+(14.27)--(14.28), abstract second-stage interfaces, and the proved overall
+composition wrappers:
 
 - `gje_c₃`
 - `GJEStage2Spec`
@@ -5325,6 +5326,8 @@ the proved overall composition wrappers:
 - `gje_cumulative_product_oob`
 - `gje_cumulative_product_nonneg`
 - `gje_cumulative_product_abs_nonneg`
+- `gje_cumulative_product_matrix_accumulation`
+- `gje_cumulative_product_rhs_accumulation`
 - `gje_stage2_forward_error_bound`
 - `gje_stage2_backward_error`
 - `gje_overall_residual`

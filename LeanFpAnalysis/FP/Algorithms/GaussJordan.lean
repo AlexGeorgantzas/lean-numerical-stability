@@ -201,6 +201,107 @@ theorem gje_cumulative_product_abs_nonneg (n : ℕ)
     (fun k i j => |N_hat k i j|)
     (fun _ _ _ => abs_nonneg _)
 
+/-- Equation (14.27) accumulation algebra for the GJE second-stage matrix
+    recurrence.  If the exact stage matrices obey
+    `U_{start+t+1} = N_{start+t} U_{start+t}` for `steps` valid stages, then
+    the last stage is the cumulative product times the initial stage. -/
+theorem gje_cumulative_product_matrix_accumulation (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ)
+    (U_stage : ℕ → Fin n → Fin n → ℝ)
+    (start steps : ℕ)
+    (hidx : ∀ t : ℕ, t < steps → start + t < n)
+    (hrec : ∀ t : ℕ, (ht : t < steps) →
+      U_stage (start + (t + 1)) =
+        matMul n (N_hat ⟨start + t, hidx t ht⟩) (U_stage (start + t))) :
+    U_stage (start + steps) =
+      matMul n (gje_cumulative_product n N_hat start (start + steps))
+        (U_stage start) := by
+  induction steps with
+  | zero =>
+      simp
+      rw [gje_cumulative_product_base n N_hat (le_refl start), matMul_id_left]
+  | succ steps ih =>
+      have hidx_prev : ∀ t : ℕ, t < steps → start + t < n := by
+        intro t ht
+        exact hidx t (Nat.lt_trans ht (Nat.lt_succ_self steps))
+      have hrec_prev : ∀ t : ℕ, (ht : t < steps) →
+          U_stage (start + (t + 1)) =
+            matMul n (N_hat ⟨start + t, hidx_prev t ht⟩)
+              (U_stage (start + t)) := by
+        intro t ht
+        simpa [hidx_prev] using hrec t (Nat.lt_trans ht (Nat.lt_succ_self steps))
+      have ih' := ih hidx_prev hrec_prev
+      have hstage := hrec steps (Nat.lt_succ_self steps)
+      have hstep : start < start + (steps + 1) :=
+        Nat.lt_add_of_pos_right (Nat.succ_pos steps)
+      have hfinish_eq : start + (steps + 1) - 1 = start + steps := by
+        simp
+      have hfinish_idx : start + (steps + 1) - 1 < n := by
+        simpa [hfinish_eq] using hidx steps (Nat.lt_succ_self steps)
+      have hfin : (⟨start + (steps + 1) - 1, hfinish_idx⟩ : Fin n) =
+          ⟨start + steps, hidx steps (Nat.lt_succ_self steps)⟩ := by
+        apply Fin.ext
+        simp
+      have hcp_prev :
+          gje_cumulative_product n N_hat start (start + (steps + 1) - 1) =
+            gje_cumulative_product n N_hat start (start + steps) := by
+        rw [hfinish_eq]
+      have hcp := gje_cumulative_product_step n N_hat hstep hfinish_idx
+      rw [hstage, ih', hcp, hfin, hcp_prev, matMul_assoc]
+
+/-- Equation (14.28) accumulation algebra for the GJE second-stage right-hand
+    side recurrence.  If the exact stage vectors obey
+    `x_{start+t+1} = N_{start+t} x_{start+t}` for `steps` valid stages, then
+    the last vector is the cumulative product applied to the initial vector. -/
+theorem gje_cumulative_product_rhs_accumulation (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ)
+    (x_stage : ℕ → Fin n → ℝ)
+    (start steps : ℕ)
+    (hidx : ∀ t : ℕ, t < steps → start + t < n)
+    (hrec : ∀ t : ℕ, (ht : t < steps) →
+      x_stage (start + (t + 1)) =
+        matMulVec n (N_hat ⟨start + t, hidx t ht⟩) (x_stage (start + t))) :
+    x_stage (start + steps) =
+      matMulVec n (gje_cumulative_product n N_hat start (start + steps))
+        (x_stage start) := by
+  induction steps with
+  | zero =>
+      simp
+      rw [gje_cumulative_product_base n N_hat (le_refl start), matMulVec_id]
+  | succ steps ih =>
+      have hidx_prev : ∀ t : ℕ, t < steps → start + t < n := by
+        intro t ht
+        exact hidx t (Nat.lt_trans ht (Nat.lt_succ_self steps))
+      have hrec_prev : ∀ t : ℕ, (ht : t < steps) →
+          x_stage (start + (t + 1)) =
+            matMulVec n (N_hat ⟨start + t, hidx_prev t ht⟩)
+              (x_stage (start + t)) := by
+        intro t ht
+        simpa [hidx_prev] using hrec t (Nat.lt_trans ht (Nat.lt_succ_self steps))
+      have ih' := ih hidx_prev hrec_prev
+      have hstage := hrec steps (Nat.lt_succ_self steps)
+      have hstep : start < start + (steps + 1) :=
+        Nat.lt_add_of_pos_right (Nat.succ_pos steps)
+      have hfinish_eq : start + (steps + 1) - 1 = start + steps := by
+        simp
+      have hfinish_idx : start + (steps + 1) - 1 < n := by
+        simpa [hfinish_eq] using hidx steps (Nat.lt_succ_self steps)
+      have hfin : (⟨start + (steps + 1) - 1, hfinish_idx⟩ : Fin n) =
+          ⟨start + steps, hidx steps (Nat.lt_succ_self steps)⟩ := by
+        apply Fin.ext
+        simp
+      have hcp_prev :
+          gje_cumulative_product n N_hat start (start + (steps + 1) - 1) =
+            gje_cumulative_product n N_hat start (start + steps) := by
+        rw [hfinish_eq]
+      have hcp := gje_cumulative_product_step n N_hat hstep hfinish_idx
+      rw [hstage, ih', hcp, hfin, hcp_prev]
+      ext i
+      exact (matMulVec_matMul n
+        (N_hat ⟨start + steps, hidx steps (Nat.lt_succ_self steps)⟩)
+        (gje_cumulative_product n N_hat start (start + steps))
+        (x_stage start) i).symm
+
 -- ══════════════════════════════════════════════════════════════════════
 -- §14.4.4  Forward Error (eq. 14.29)
 -- ══════════════════════════════════════════════════════════════════════
