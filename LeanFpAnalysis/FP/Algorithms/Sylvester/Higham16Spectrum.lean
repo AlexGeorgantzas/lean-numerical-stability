@@ -1311,6 +1311,125 @@ theorem sylvesterTwoColumnBlock_coupled_block_action_iff_leftAction_eq_schurActi
         Pi.add_apply] at hi
       simpa [add_comm, add_left_comm, add_assoc] using hi
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), active-block
+    kernel packaging: the supplied two-column block coefficient kills the
+    concatenated vector `(u, v)` exactly when the two coupled column-action
+    equations hold. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_sumElim_eq_zero_iff_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (u v : Fin m -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+        (Sum.elim u v) = 0 ↔
+      Matrix.mulVec (Matrix.of A) u =
+          (fun i => T p p * u i + T q p * v i) ∧
+        Matrix.mulVec (Matrix.of A) v =
+          (fun i => T p q * u i + T q q * v i) := by
+  constructor
+  · intro hzero
+    constructor
+    · funext i
+      have hi := congrFun hzero (Sum.inl i)
+      have hi' :
+          Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T p p)) u i +
+              (-(T q p)) * v i = 0 := by
+        simpa [sylvesterTwoColumnBlockCoeff, Matrix.fromBlocks_mulVec,
+          Matrix.smul_mulVec, Matrix.one_mulVec] using hi
+      have hP := sylvesterTriangularShiftedCoeff_mulVec_apply m A (T p p) u i
+      have hP' :
+          Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T p p)) u i =
+            Matrix.mulVec (Matrix.of A) u i - T p p * u i := by
+        simpa [Matrix.mulVec, dotProduct, Matrix.of_apply] using hP
+      linarith
+    · funext i
+      have hi := congrFun hzero (Sum.inr i)
+      have hi' :
+          Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T q q)) v i +
+              (-(T p q)) * u i = 0 := by
+        simpa [sylvesterTwoColumnBlockCoeff, Matrix.fromBlocks_mulVec,
+          Matrix.smul_mulVec, Matrix.one_mulVec, add_comm, add_left_comm, add_assoc]
+          using hi
+      have hQ := sylvesterTriangularShiftedCoeff_mulVec_apply m A (T q q) v i
+      have hQ' :
+          Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T q q)) v i =
+            Matrix.mulVec (Matrix.of A) v i - T q q * v i := by
+        simpa [Matrix.mulVec, dotProduct, Matrix.of_apply] using hQ
+      linarith
+  · intro haction
+    rcases haction with ⟨hu, hv⟩
+    funext r
+    cases r with
+    | inl i =>
+        have hi := congrFun hu i
+        have hP := sylvesterTriangularShiftedCoeff_mulVec_apply m A (T p p) u i
+        have hP' :
+            Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T p p)) u i =
+              Matrix.mulVec (Matrix.of A) u i - T p p * u i := by
+          simpa [Matrix.mulVec, dotProduct, Matrix.of_apply] using hP
+        have hgoal :
+            Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T p p)) u i +
+                (-(T q p)) * v i = 0 := by
+          linarith
+        simpa [sylvesterTwoColumnBlockCoeff, Matrix.fromBlocks_mulVec,
+          Matrix.smul_mulVec, Matrix.one_mulVec] using hgoal
+    | inr i =>
+        have hi := congrFun hv i
+        have hQ := sylvesterTriangularShiftedCoeff_mulVec_apply m A (T q q) v i
+        have hQ' :
+            Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T q q)) v i =
+              Matrix.mulVec (Matrix.of A) v i - T q q * v i := by
+          simpa [Matrix.mulVec, dotProduct, Matrix.of_apply] using hQ
+        have hgoal :
+            Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T q q)) v i +
+                (-(T p q)) * u i = 0 := by
+          linarith
+        simpa [sylvesterTwoColumnBlockCoeff, Matrix.fromBlocks_mulVec,
+          Matrix.smul_mulVec, Matrix.one_mulVec, add_comm, add_left_comm, add_assoc]
+          using hgoal
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-kernel
+    separation packaging: the supplied two-column coefficient has a nonzero
+    kernel vector exactly when the left `A` block action agrees with the
+    supplied `2 x 2` Schur-block action on a nonzero concatenated vector. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_leftAction_eq_schurAction
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (z : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0 ↔
+      Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) z =
+        Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q) z := by
+  let u : Fin m -> Real := fun i => z (Sum.inl i)
+  let v : Fin m -> Real := fun i => z (Sum.inr i)
+  have hz : z = Sum.elim u v := by
+    funext r
+    cases r <;> rfl
+  rw [hz]
+  exact
+    (sylvesterTwoColumnBlockCoeff_mulVec_sumElim_eq_zero_iff_coupled_block_action
+      m n A T p q u v).trans
+      (sylvesterTwoColumnBlock_coupled_block_action_iff_leftAction_eq_schurAction
+        m n A T p q u v)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
+    block-action separation certificate: if no nonzero concatenated two-column
+    vector makes the left `A` action agree with the supplied `2 x 2`
+    Schur-block action, then the supplied two-column block coefficient is
+    nonsingular.  This is the determinant-facing form of the still-open
+    spectral-separation target. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_no_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hno :
+      ∀ z : Sum (Fin m) (Fin m) -> Real, z ≠ 0 ->
+        ¬ Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) z =
+          Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q) z) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  intro hdet
+  obtain ⟨z, hz_ne, hzero⟩ := Matrix.exists_mulVec_eq_zero_iff.mpr hdet
+  exact hno z hz_ne
+    ((sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_leftAction_eq_schurAction
+      m n A T p q z).mp hzero)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-local
     spectral obstruction for a supplied real `2 x 2` Schur block: a nonzero
     product-shift kernel vector yields two real vectors satisfying the same
