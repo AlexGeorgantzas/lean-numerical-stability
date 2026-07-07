@@ -1430,6 +1430,56 @@ theorem theorem20_7_completionB_bound_of_h19_stored_rhs_step_budget_nat
         theorem20_7_initialWeightedRowMax hn A b phi i :=
           hbudget i hi
 
+/-- Theorem 20.7 support: completion-time right-hand-side row bounds for
+    signed stored-QR stages.
+
+This specializes the generic stored-RHS completion adapter to the signed
+Householder vectors used by the Chapter 19 stored-QR loop.  The remaining
+obligations are exactly the RHS same-reflector growth bound and compact-budget
+domination at the completion stage. -/
+theorem theorem20_7_completionB_bound_of_h19_signed_stage_budget_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Astage : ℕ → Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) (phi err : ℝ) (B : Fin m → ℝ)
+    (hm : gammaValid fp m)
+    (hStep : ∀ k, k < n →
+      bstage (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Astage alpha k)
+          (storedQRSignedStageBeta hnm Astage alpha k)
+          (bstage k))
+    (hexact :
+      ∀ i : Fin m, i.val + 1 < n →
+        |matMulVec m
+            (householder m
+              (storedQRSignedStageVector hnm Astage alpha i.val)
+              (storedQRSignedStageBeta hnm Astage alpha i.val))
+            (bstage i.val) i| ≤
+          H19.Theorem19_6.active_row_growth_factor m * B i)
+    (hbudget :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * B i +
+            householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Astage alpha i.val)
+              (storedQRSignedStageBeta hnm Astage alpha i.val)
+              (bstage i.val) i ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i) :
+    ∀ i : Fin m, i.val + 1 < n →
+      |bstage (i.val + 1) i| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completionB_bound_of_h19_stored_rhs_step_budget_nat
+      hn fp (fun k => storedQRSignedStageVector hnm Astage alpha k)
+      (fun k => storedQRSignedStageBeta hnm Astage alpha k)
+      bstage A b phi err B hm hStep hexact hbudget
+
 /-- Theorem 20.7 support: stored RHS steps preserve completed rows.
 
 Once row `i` has been processed, every later stored RHS step has active pivot
