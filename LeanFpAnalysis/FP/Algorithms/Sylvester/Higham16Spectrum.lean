@@ -8754,6 +8754,190 @@ theorem quasiSchur_boundary_after_adjacent_same_block
     dsimp [j] at hval
     omega
 
+/-- Internal schedule constructor for Higham, 2nd ed., Chapter 16.2,
+    equations (16.4)-(16.8): starting from a boundary index whose immediate
+    predecessor, when present, has a different block label, recursively build a
+    finite frontier schedule.  Each step is either a singleton with both
+    neighbor-label separations or an adjacent same-labelled two-column block. -/
+theorem quasiSchur_exists_frontier_schedule_from_boundary
+    (n : Nat) (pmap : Fin n -> Nat)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (k : Nat) (hk : k <= n)
+    (hboundary : forall hklt : k < n, forall q : Fin n,
+      q.val + 1 = k -> pmap q ≠ pmap ⟨k, hklt⟩) :
+    exists (r : Nat) (frontier : Nat -> Nat),
+      frontier 0 = k /\
+      frontier r = n /\
+      (forall t : Nat, t < r -> frontier t < n) /\
+      (forall t : Nat, t < r ->
+        (exists p : Fin n,
+          p.val = frontier t /\
+          frontier (t + 1) = frontier t + 1 /\
+          (forall q : Fin n, q.val + 1 = p.val -> pmap q ≠ pmap p) /\
+          (forall q : Fin n, q.val = p.val + 1 -> pmap p ≠ pmap q))
+        \/
+        (exists p q : Fin n,
+          p.val = frontier t /\
+          q.val = frontier t + 1 /\
+          frontier (t + 1) = frontier t + 2 /\
+          pmap p = pmap q)) := by
+  have H : forall d k : Nat, k <= n -> n - k = d ->
+      (forall hklt : k < n, forall q : Fin n,
+        q.val + 1 = k -> pmap q ≠ pmap ⟨k, hklt⟩) ->
+      exists (r : Nat) (frontier : Nat -> Nat),
+        frontier 0 = k /\
+        frontier r = n /\
+        (forall t : Nat, t < r -> frontier t < n) /\
+        (forall t : Nat, t < r ->
+          (exists p : Fin n,
+            p.val = frontier t /\
+            frontier (t + 1) = frontier t + 1 /\
+            (forall q : Fin n, q.val + 1 = p.val -> pmap q ≠ pmap p) /\
+            (forall q : Fin n, q.val = p.val + 1 -> pmap p ≠ pmap q))
+          \/
+          (exists p q : Fin n,
+            p.val = frontier t /\
+            q.val = frontier t + 1 /\
+            frontier (t + 1) = frontier t + 2 /\
+            pmap p = pmap q)) := by
+    intro d
+    induction d using Nat.strongRecOn with
+    | ind d ih =>
+        intro k hk hdist hboundary
+        by_cases hklt : k < n
+        · rcases quasiSchur_frontier_step_of_boundary n pmap k hklt
+              (hboundary hklt) with hsingle | hblock
+          · rcases hsingle with ⟨p, hpval, hprev, hnext⟩
+            have hk1 : k + 1 <= n := by omega
+            have hboundary1 : forall hk1lt : k + 1 < n, forall q : Fin n,
+                q.val + 1 = k + 1 -> pmap q ≠ pmap ⟨k + 1, hk1lt⟩ := by
+              intro hk1lt q hq
+              have hsuccp : p.val + 1 < n := by omega
+              have hb := quasiSchur_boundary_after_singleton_step
+                n pmap p hnext hsuccp q (by omega)
+              simpa [hpval] using hb
+            have hfuel1 : n - (k + 1) < d := by omega
+            rcases ih (n - (k + 1)) hfuel1 (k + 1) hk1 rfl hboundary1 with
+              ⟨rTail, tail, htail0, htailEnd, htailLt, htailStep⟩
+            let frontier : Nat -> Nat := fun t =>
+              match t with
+              | 0 => k
+              | s + 1 => tail s
+            refine ⟨rTail + 1, frontier, rfl, ?_, ?_, ?_⟩
+            · change frontier (rTail + 1) = n
+              simpa [frontier, Nat.succ_eq_add_one] using htailEnd
+            · intro t ht
+              cases t with
+              | zero =>
+                  simpa [frontier] using hklt
+              | succ s =>
+                  have hs : s < rTail := by omega
+                  simpa [frontier] using htailLt s hs
+            · intro t ht
+              cases t with
+              | zero =>
+                  refine Or.inl ⟨p, ?_, ?_, hprev, hnext⟩
+                  · simpa [frontier] using hpval
+                  · simpa [frontier, hpval, Nat.succ_eq_add_one] using htail0
+              | succ s =>
+                  have hs : s < rTail := by omega
+                  rcases htailStep s hs with htailSingle | htailBlock
+                  · rcases htailSingle with ⟨p', hpval', hfront', hprev', hnext'⟩
+                    refine Or.inl ⟨p', ?_, ?_, hprev', hnext'⟩
+                    · simpa [frontier] using hpval'
+                    · simpa [frontier, Nat.succ_eq_add_one] using hfront'
+                  · rcases htailBlock with ⟨p', q', hpval', hqval', hfront', hsame'⟩
+                    refine Or.inr ⟨p', q', ?_, ?_, ?_, hsame'⟩
+                    · simpa [frontier] using hpval'
+                    · simpa [frontier, Nat.succ_eq_add_one] using hqval'
+                    · simpa [frontier, Nat.succ_eq_add_one] using hfront'
+          · rcases hblock with ⟨p, q, hpval, hqval, hsame⟩
+            have hk2 : k + 2 <= n := by
+              have hq_lt := q.isLt
+              omega
+            have hboundary2 : forall hk2lt : k + 2 < n, forall r : Fin n,
+                r.val + 1 = k + 2 -> pmap r ≠ pmap ⟨k + 2, hk2lt⟩ := by
+              intro hk2lt r hr
+              have hpq : q.val = p.val + 1 := by omega
+              have hnextq : q.val + 1 < n := by omega
+              have hb := quasiSchur_boundary_after_adjacent_same_block
+                n pmap p q hcard hpq hsame hnextq r (by omega)
+              simpa [hpval, hqval] using hb
+            have hfuel2 : n - (k + 2) < d := by omega
+            rcases ih (n - (k + 2)) hfuel2 (k + 2) hk2 rfl hboundary2 with
+              ⟨rTail, tail, htail0, htailEnd, htailLt, htailStep⟩
+            let frontier : Nat -> Nat := fun t =>
+              match t with
+              | 0 => k
+              | s + 1 => tail s
+            refine ⟨rTail + 1, frontier, rfl, ?_, ?_, ?_⟩
+            · change frontier (rTail + 1) = n
+              simpa [frontier, Nat.succ_eq_add_one] using htailEnd
+            · intro t ht
+              cases t with
+              | zero =>
+                  simpa [frontier] using hklt
+              | succ s =>
+                  have hs : s < rTail := by omega
+                  simpa [frontier] using htailLt s hs
+            · intro t ht
+              cases t with
+              | zero =>
+                  refine Or.inr ⟨p, q, ?_, ?_, ?_, hsame⟩
+                  · simpa [frontier] using hpval
+                  · simpa [frontier, Nat.succ_eq_add_one] using hqval
+                  · simpa [frontier, hpval, Nat.succ_eq_add_one] using htail0
+              | succ s =>
+                  have hs : s < rTail := by omega
+                  rcases htailStep s hs with htailSingle | htailBlock
+                  · rcases htailSingle with ⟨p', hpval', hfront', hprev', hnext'⟩
+                    refine Or.inl ⟨p', ?_, ?_, hprev', hnext'⟩
+                    · simpa [frontier] using hpval'
+                    · simpa [frontier, Nat.succ_eq_add_one] using hfront'
+                  · rcases htailBlock with ⟨p', q', hpval', hqval', hfront', hsame'⟩
+                    refine Or.inr ⟨p', q', ?_, ?_, ?_, hsame'⟩
+                    · simpa [frontier] using hpval'
+                    · simpa [frontier, Nat.succ_eq_add_one] using hqval'
+                    · simpa [frontier, Nat.succ_eq_add_one] using hfront'
+        · have hkn : k = n := by omega
+          subst k
+          refine ⟨0, fun _ => n, rfl, rfl, ?_, ?_⟩
+          · intro t ht
+            omega
+          · intro t ht
+            omega
+  exact H (n - k) k hk rfl hboundary
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): every
+    size-at-most-two real-quasi-Schur block map admits a finite frontier
+    schedule whose steps are singleton columns with local neighbor separation
+    or adjacent same-labelled two-column blocks. -/
+theorem quasiSchur_exists_frontier_schedule
+    (n : Nat) (pmap : Fin n -> Nat)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2) :
+    exists (r : Nat) (frontier : Nat -> Nat),
+      frontier 0 = 0 /\
+      frontier r = n /\
+      (forall t : Nat, t < r -> frontier t < n) /\
+      (forall t : Nat, t < r ->
+        (exists p : Fin n,
+          p.val = frontier t /\
+          frontier (t + 1) = frontier t + 1 /\
+          (forall q : Fin n, q.val + 1 = p.val -> pmap q ≠ pmap p) /\
+          (forall q : Fin n, q.val = p.val + 1 -> pmap p ≠ pmap q))
+        \/
+        (exists p q : Fin n,
+          p.val = frontier t /\
+          q.val = frontier t + 1 /\
+          frontier (t + 1) = frontier t + 2 /\
+          pmap p = pmap q)) := by
+  refine quasiSchur_exists_frontier_schedule_from_boundary
+    n pmap hcard 0 (Nat.zero_le n) ?_
+  intro h0lt q hq
+  omega
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     Schur-coordinate solvability from a scheduled quasi-Schur traversal whose
     singleton steps supply true singleton-fiber data and whose same-block
