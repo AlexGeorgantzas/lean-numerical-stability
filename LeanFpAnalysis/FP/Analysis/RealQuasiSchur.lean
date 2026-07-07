@@ -716,6 +716,20 @@ lemma splitEquiv_eq_inl_of_lt {d m n : ℕ} (hnm : d + m = n)
   · have hval : d + (b : ℕ) = (i : ℕ) := splitEquiv_inr_val hnm hsum
     omega
 
+/-- `splitEquiv` sends an index whose value is `d + a` to the corresponding
+    right summand.  This is the pointwise form of the trailing-block side of the
+    variable-`d` deflation split. -/
+lemma splitEquiv_eq_inr_of_eq_add {d m n : ℕ} (hnm : d + m = n)
+    (i : Fin n) (a : Fin m) (hi : (i : ℕ) = d + (a : ℕ)) :
+    splitEquiv hnm i = Sum.inr a := by
+  rcases hsum : splitEquiv hnm i with b | b
+  · have hval := splitEquiv_inl_val hnm hsum
+    have hb := b.2
+    omega
+  · have hval : d + (b : ℕ) = (i : ℕ) := splitEquiv_inr_val hnm hsum
+    have hba : b = a := Fin.ext (by omega)
+    rw [hba]
+
 /-! ### Block conjugation by the re-embedded trailing orthogonal matrix -/
 
 /-- Conjugating a block matrix `[[P, Bu], [0, D]]` (zero lower-left) by the block
@@ -740,6 +754,15 @@ lemma embedBlock_conj_apply_inl_inl {d m : ℕ}
     ((embedBlock (d := d) U)ᵀ * M * embedBlock (d := d) U) (Sum.inl a) (Sum.inl b) =
       M (Sum.inl a) (Sum.inl b) := by
   simp [embedBlock, Matrix.fromBlocks, Matrix.mul_apply, Matrix.one_apply]
+
+/-- Re-embedding a trailing orthogonal factor turns the trailing block into the
+    conjugated trailing block. -/
+lemma embedBlock_conj_apply_inr_inr {d m : ℕ}
+    (M : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ) (a b : Fin m) :
+    ((embedBlock (d := d) U)ᵀ * M * embedBlock (d := d) U) (Sum.inr a) (Sum.inr b) =
+      (Uᵀ * M.toBlocks₂₂ * U) a b := by
+  simp [embedBlock, Matrix.fromBlocks, Matrix.toBlocks₂₂, Matrix.mul_apply]
 
 /-- Trailing recursive conjugation leaves entries in the leading `d = 2` block
     unchanged after transporting back from the split index. -/
