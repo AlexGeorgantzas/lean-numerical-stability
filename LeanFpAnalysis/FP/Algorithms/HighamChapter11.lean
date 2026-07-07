@@ -2132,6 +2132,17 @@ noncomputable def higham11_15_aasenMiddleSolveBudget
     higham9_14_f (gamma fp n) *
       ∑ k : Fin n, |L_T_hat i k| * |U_T_hat k j|
 
+/-- Nonnegativity of the middle tridiagonal-solve budget used in the Aasen
+solve chain. -/
+theorem higham11_15_aasenMiddleSolveBudget_nonneg
+    (fp : FPModel) (n : ℕ) (L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n) :
+    ∀ i j : Fin n, 0 ≤ higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat i j := by
+  intro i j
+  exact mul_nonneg (higham9_14_f_nonneg (gamma_nonneg fp hn))
+    (Finset.sum_nonneg
+      (fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)))
+
 /-- **Equation (11.15) source backward-error algebra**.  If the three rounded
 solve-chain components satisfy perturbed equations and the unperturbed product
 is `A = L T U`, then the collapsed product perturbation gives a single source
@@ -2618,6 +2629,100 @@ theorem higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound_coeff_le
     n DeltaA L T U BT T_hat γ η γ15n25 hη hDelta hchain_le
   simpa [mul_assoc] using
     mul_le_mul_of_nonneg_right hη_le (infNorm_nonneg T_hat)
+
+/-- Direct bridge from the summed factorization and solve-chain closed Aasen
+budgets to the printed Theorem 11.8 normwise predicate.  This is the scalar
+norm-budget sibling of the entrywise `η |T_hat|` bridge. -/
+theorem higham11_8_aasenNormwiseBackwardBound_of_sum_aasenChainDeltaABounds
+    (n : ℕ) (hn : 0 < n)
+    (γ1 γ2 γ15n25 : ℝ)
+    (BT1 L1 T1 U1 BT2 L2 T2 U2 DeltaA T_hat : Fin n → Fin n → ℝ)
+    (hγ1 : 0 ≤ γ1) (hBT1 : ∀ p q : Fin n, 0 ≤ BT1 p q)
+    (hγ2 : 0 ≤ γ2) (hBT2 : ∀ p q : Fin n, 0 ≤ BT2 p q)
+    (hDelta : ∀ i j : Fin n,
+      |DeltaA i j| ≤
+        higham11_15_aasenChainDeltaABound n γ1 BT1 L1 T1 U1 i j +
+        higham11_15_aasenChainDeltaABound n γ2 BT2 L2 T2 U2 i j)
+    (hbudget :
+      ((2 * γ1 + γ1 ^ 2) * (infNorm L1 * infNorm T1 * infNorm U1) +
+          (1 + 2 * γ1 + γ1 ^ 2) * (infNorm L1 * infNorm BT1 * infNorm U1)) +
+        ((2 * γ2 + γ2 ^ 2) * (infNorm L2 * infNorm T2 * infNorm U2) +
+          (1 + 2 * γ2 + γ2 ^ 2) * (infNorm L2 * infNorm BT2 * infNorm U2)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat) :
+    higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA) γ15n25
+      (infNorm T_hat) :=
+  (higham11_8_infNorm_le_of_sum_aasenChainDeltaABounds
+    n hn γ1 γ2 BT1 L1 T1 U1 BT2 L2 T2 U2 DeltaA
+    hγ1 hBT1 hγ2 hBT2 hDelta).trans hbudget
+
+/-- Rounded Aasen factorization-plus-solve source backward error together
+with the printed Theorem 11.8 normwise predicate, using a single scalar
+normwise comparison for the summed factorization and solve-chain budgets. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_norm_budget
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n)
+    (A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 : ℝ) (hγ_factor : 0 ≤ γ_factor)
+    (hBT_factor : ∀ i j : Fin n, 0 ≤ BT_factor i j)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hLhat : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ_factor * |L i j|)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT_factor i j)
+    (hbudget_norm :
+      ((2 * γ_factor + γ_factor ^ 2) *
+          (infNorm L * infNorm T * infNorm (fun r c => L c r)) +
+        (1 + 2 * γ_factor + γ_factor ^ 2) *
+          (infNorm L * infNorm BT_factor * infNorm (fun r c => L c r))) +
+      ((2 * gamma fp n + (gamma fp n) ^ 2) *
+          (infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)) +
+        (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+          (infNorm L_hat *
+            infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) *
+            infNorm (fun r c => L_hat c r))) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA) γ15n25
+        (infNorm T_hat) := by
+  intro rhs z_hat q_hat y_hat U_outer w_hat BT_solve B_factor B_solve
+  obtain ⟨DeltaA, hDeltaA, hsource⟩ :=
+    higham11_8_fl_aasen_factor_solve_source_backward_error
+      fp n A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor hγ_factor hBT_factor h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hprod hLhat hThat
+  refine ⟨DeltaA, hDeltaA, hsource, ?_⟩
+  apply higham11_8_aasenNormwiseBackwardBound_of_sum_aasenChainDeltaABounds
+    n hn_pos γ_factor (gamma fp n) γ15n25
+    BT_factor L T (fun r c => L c r)
+    BT_solve L_hat T_hat U_outer DeltaA T_hat
+    hγ_factor hBT_factor (gamma_nonneg fp hn)
+  · intro p q
+    simpa [BT_solve] using
+      higham11_15_aasenMiddleSolveBudget_nonneg fp n L_T_hat U_T_hat hn p q
+  · intro i j
+    simpa [B_factor, B_solve, BT_solve, U_outer] using hDeltaA i j
+  · simpa [BT_solve, U_outer] using hbudget_norm
 
 /-- Rounded Aasen solve-chain source equation plus the printed Theorem 11.8
 normwise shape, under an explicit comparison from the closed chain budget to
