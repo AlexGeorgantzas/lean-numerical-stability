@@ -311,6 +311,68 @@ theorem matrixNoRealEigenline_principalTwoBlock_of_rotation_scaling_entries
     (by simpa using hqq)
     hβ
 
+/-- A real `2 x 2` matrix with no real eigenline has negative discriminant.
+    This is the source-side spectral certificate needed before the Sylvester
+    block-separation layer consumes such blocks. -/
+theorem matrixNoRealEigenline_fin_two_disc_neg
+    (B : Matrix (Fin 2) (Fin 2) ℝ)
+    (hno : MatrixNoRealEigenline B) :
+    (B 0 0 - B 1 1) ^ 2 + 4 * B 0 1 * B 1 0 < 0 := by
+  by_contra hnot
+  have hdisc : 0 ≤ (B 0 0 - B 1 1) ^ 2 + 4 * B 0 1 * B 1 0 := by
+    linarith
+  by_cases hsub : B 1 0 = 0
+  · let x : Fin 2 → ℝ := fun k => if k = 0 then 1 else 0
+    have hxne : x ≠ 0 := by
+      intro hx
+      have hcoord := congrFun hx (0 : Fin 2)
+      norm_num [x] at hcoord
+    have hEig : ∃ ν : ℝ, B *ᵥ x = ν • x := by
+      refine ⟨B 0 0, ?_⟩
+      funext k
+      fin_cases k
+      · simp [x, Matrix.mulVec, dotProduct]
+      · simp [x, Matrix.mulVec, dotProduct, hsub]
+    exact hno x hxne hEig
+  · let disc : ℝ := (B 0 0 - B 1 1) ^ 2 + 4 * B 0 1 * B 1 0
+    let ν : ℝ := (B 0 0 + B 1 1 + Real.sqrt disc) / 2
+    let x : Fin 2 → ℝ := fun k => if k = 0 then ν - B 1 1 else B 1 0
+    have hdisc_nonneg : 0 ≤ disc := by
+      dsimp [disc]
+      exact hdisc
+    have hsqrt : (Real.sqrt disc) ^ 2 = disc := Real.sq_sqrt hdisc_nonneg
+    have hroot : (B 0 0 - ν) * (B 1 1 - ν) - B 0 1 * B 1 0 = 0 := by
+      dsimp [ν, disc] at hsqrt ⊢
+      nlinarith [hsqrt]
+    have hxne : x ≠ 0 := by
+      intro hx
+      have hcoord := congrFun hx (1 : Fin 2)
+      exact hsub (by simpa [x] using hcoord)
+    have hEig : ∃ μ : ℝ, B *ᵥ x = μ • x := by
+      refine ⟨ν, ?_⟩
+      funext k
+      fin_cases k
+      · have hcoord :
+            B 0 0 * (ν - B 1 1) + B 0 1 * B 1 0 =
+              ν * (ν - B 1 1) := by
+          nlinarith [hroot]
+        simpa [x, Matrix.mulVec, dotProduct, Fin.sum_univ_two] using hcoord
+      · have hcoord :
+            B 1 0 * (ν - B 1 1) + B 1 1 * B 1 0 =
+              ν * B 1 0 := by
+          ring
+        simpa [x, Matrix.mulVec, dotProduct, Fin.sum_univ_two] using hcoord
+    exact hno x hxne hEig
+
+/-- A principal `2 x 2` block with no real eigenline has negative discriminant
+    in the ambient matrix entries. -/
+theorem principalTwoBlock_disc_neg_of_matrixNoRealEigenline
+    {n : ℕ} (A : Matrix (Fin n) (Fin n) ℝ) (p q : Fin n)
+    (hno : MatrixNoRealEigenline (principalTwoBlock A p q)) :
+    (A p p - A q q) ^ 2 + 4 * A p q * A q p < 0 := by
+  simpa using
+    matrixNoRealEigenline_fin_two_disc_neg (principalTwoBlock A p q) hno
+
 open RealInvariantSubspaceAux in
 /-- **ℂ→ℝ real invariant-subspace descent (dimension `1` or `2`).**
 
