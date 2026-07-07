@@ -5320,7 +5320,8 @@ no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
 Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence,
 Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
 Problem 14.15's scalar product-radius support, Method D's expanded
-componentwise residual-budget dependency, the exact Hyman block identities
+componentwise residual-budget dependency and printed-coefficient scalar
+simplification, the exact Hyman block identities
 (14.35)--(14.36), and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
@@ -5386,6 +5387,11 @@ componentwise residual-budget dependency, the exact Hyman block identities
 - `higham14_eq14_22_methodD_left_residual_expansion`
 - `higham14_eq14_22_methodD_left_residual_abs_le_expanded_terms`
 - `higham14_eq14_23_methodD_left_residual_expanded_budget`
+- `higham14_methodD_abs_product_assoc`
+- `higham14_methodD_abs_XL_L_diag_ge_inv_scale`
+- `higham14_methodD_abs_XU_U_le_scaled_abs_product`
+- `higham14_methodD_abs_Xhat_le_scaled_abs_product`
+- `higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget`
 - `higham14_eq14_23_methodD_left_residual_bound`
 - `higham14_rowNorm2`
 - `higham14_rowNormDiagonal`

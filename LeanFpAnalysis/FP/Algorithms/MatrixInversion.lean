@@ -2013,6 +2013,277 @@ theorem higham14_eq14_23_methodD_left_residual_expanded_budget {n : ℕ}
       (abs_nonneg _)
   linarith
 
+/-- Method D absolute-product associativity:
+    `|X_U||X_L||L_hat||U_hat|` can be read either as the source product
+    `( |X_U||X_L| ) ( |L_hat||U_hat| )` or as
+    `|X_U| ( |X_L||L_hat| ) |U_hat|`. -/
+theorem higham14_methodD_abs_product_assoc {n : ℕ}
+    (X_U X_L L_hat U_hat : Fin n → Fin n → ℝ) (i j : Fin n) :
+    (∑ q : Fin n, |X_U i q| *
+        (∑ r : Fin n,
+          (∑ p : Fin n, |X_L q p| * |L_hat p r|) * |U_hat r j|)) =
+      ∑ p : Fin n,
+        (∑ q : Fin n, |X_U i q| * |X_L q p|) *
+          (∑ r : Fin n, |L_hat p r| * |U_hat r j|) := by
+  let XUa := absMatrix n X_U
+  let XLa := absMatrix n X_L
+  let La := absMatrix n L_hat
+  let Ua := absMatrix n U_hat
+  have hassoc₁ :
+      matMul n (matMul n XUa XLa) (matMul n La Ua) =
+        matMul n XUa (matMul n XLa (matMul n La Ua)) :=
+    matMul_assoc n XUa XLa (matMul n La Ua)
+  have hassoc₂ :
+      matMul n XLa (matMul n La Ua) =
+        matMul n (matMul n XLa La) Ua :=
+    (matMul_assoc n XLa La Ua).symm
+  have hassoc :
+      matMul n (matMul n XUa XLa) (matMul n La Ua) =
+        matMul n XUa (matMul n (matMul n XLa La) Ua) := by
+    rw [hassoc₁, hassoc₂]
+  have hentry := congrFun (congrFun hassoc i) j
+  simpa [XUa, XLa, La, Ua, matMul, absMatrix, mul_assoc, mul_left_comm,
+    mul_comm] using hentry.symm
+
+/-- Method D diagonal lower bound:
+    a componentwise left-residual certificate for `X_L * L_hat - I` implies
+    `1 <= (1+gamma) * (|X_L||L_hat|)_{qq}` on each diagonal. -/
+theorem higham14_methodD_abs_XL_L_diag_ge_inv_scale {n : ℕ}
+    {γ : ℝ} (X_L L_hat : Fin n → Fin n → ℝ)
+    (hXL_res : ∀ i j : Fin n,
+      |higham14_methodDXLLeftResidual X_L L_hat i j| ≤
+        γ * ∑ k : Fin n, |X_L i k| * |L_hat k j|)
+    (q : Fin n) :
+    1 ≤ (1 + γ) * ∑ p : Fin n, |X_L q p| * |L_hat p q| := by
+  let S := ∑ p : Fin n, |X_L q p| * |L_hat p q|
+  let x := matMul n X_L L_hat q q
+  have hx_abs : |x| ≤ S := by
+    calc
+      |x| = |∑ p : Fin n, X_L q p * L_hat p q| := by
+        simp [x, matMul]
+      _ ≤ ∑ p : Fin n, |X_L q p * L_hat p q| :=
+        Finset.abs_sum_le_sum_abs _ _
+      _ = S := by
+        simp [S]
+  have hres : |x - 1| ≤ γ * S := by
+    simpa [x, S, higham14_methodDXLLeftResidual, matMul] using hXL_res q q
+  have htri : (1 : ℝ) ≤ |x| + |x - 1| := by
+    have h := abs_add_le x (1 - x)
+    have hone : |(1 : ℝ)| ≤ |x| + |1 - x| := by
+      calc
+        |(1 : ℝ)| = |x + (1 - x)| := by
+          congr 1
+          ring_nf
+        _ ≤ |x| + |1 - x| := h
+    simpa [abs_of_nonneg zero_le_one, abs_sub_comm] using hone
+  calc
+    (1 : ℝ) ≤ |x| + |x - 1| := htri
+    _ ≤ S + γ * S := add_le_add hx_abs hres
+    _ = (1 + γ) * S := by ring_nf
+
+/-- Method D scalar bridge:
+    the direct upper-residual product `|X_U||U_hat|` is dominated by
+    `(1+gamma)|X_U||X_L||L_hat||U_hat|` when the lower inverse has the
+    componentwise left-residual certificate. -/
+theorem higham14_methodD_abs_XU_U_le_scaled_abs_product {n : ℕ}
+    {γ : ℝ} (hγ : 0 ≤ γ)
+    (X_U X_L L_hat U_hat : Fin n → Fin n → ℝ)
+    (hXL_res : ∀ i j : Fin n,
+      |higham14_methodDXLLeftResidual X_L L_hat i j| ≤
+        γ * ∑ k : Fin n, |X_L i k| * |L_hat k j|)
+    (i j : Fin n) :
+    (∑ q : Fin n, |X_U i q| * |U_hat q j|) ≤
+      (1 + γ) *
+        ∑ p : Fin n,
+          (∑ q : Fin n, |X_U i q| * |X_L q p|) *
+            (∑ r : Fin n, |L_hat p r| * |U_hat r j|) := by
+  let D := ∑ q : Fin n,
+    |X_U i q| *
+      ((∑ p : Fin n, |X_L q p| * |L_hat p q|) * |U_hat q j|)
+  have hterm : (∑ q : Fin n, |X_U i q| * |U_hat q j|) ≤
+      (1 + γ) * D := by
+    calc
+      (∑ q : Fin n, |X_U i q| * |U_hat q j|)
+          ≤ ∑ q : Fin n,
+              (1 + γ) *
+                (|X_U i q| *
+                  ((∑ p : Fin n, |X_L q p| * |L_hat p q|) *
+                    |U_hat q j|)) := by
+            apply Finset.sum_le_sum
+            intro q _
+            have hdiag :=
+              higham14_methodD_abs_XL_L_diag_ge_inv_scale
+                X_L L_hat hXL_res q
+            have hnonneg : 0 ≤ |X_U i q| * |U_hat q j| :=
+              mul_nonneg (abs_nonneg _) (abs_nonneg _)
+            have hmul := mul_le_mul_of_nonneg_right hdiag hnonneg
+            nlinarith [hmul]
+      _ = (1 + γ) * D := by
+            simp [D, Finset.mul_sum]
+  have hD_le_product : D ≤
+      ∑ q : Fin n, |X_U i q| *
+        (∑ r : Fin n,
+          (∑ p : Fin n, |X_L q p| * |L_hat p r|) * |U_hat r j|) := by
+    apply Finset.sum_le_sum
+    intro q _
+    apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+    have hnonneg_r : ∀ r ∈ (Finset.univ : Finset (Fin n)),
+        0 ≤ (∑ p : Fin n, |X_L q p| * |L_hat p r|) * |U_hat r j| := by
+      intro r _
+      exact mul_nonneg
+        (Finset.sum_nonneg fun p _ =>
+          mul_nonneg (abs_nonneg _) (abs_nonneg _))
+        (abs_nonneg _)
+    simpa using Finset.single_le_sum hnonneg_r (Finset.mem_univ q)
+  have hscale : (1 + γ) * D ≤
+      (1 + γ) *
+        ∑ q : Fin n, |X_U i q| *
+          (∑ r : Fin n,
+            (∑ p : Fin n, |X_L q p| * |L_hat p r|) * |U_hat r j|) :=
+    mul_le_mul_of_nonneg_left hD_le_product (by nlinarith)
+  have hassoc :=
+    higham14_methodD_abs_product_assoc X_U X_L L_hat U_hat i j
+  calc
+    (∑ q : Fin n, |X_U i q| * |U_hat q j|)
+        ≤ (1 + γ) * D := hterm
+    _ ≤ (1 + γ) *
+        ∑ q : Fin n, |X_U i q| *
+          (∑ r : Fin n,
+            (∑ p : Fin n, |X_L q p| * |L_hat p r|) * |U_hat r j|) := hscale
+    _ = (1 + γ) *
+        ∑ p : Fin n,
+          (∑ q : Fin n, |X_U i q| * |X_L q p|) *
+            (∑ r : Fin n, |L_hat p r| * |U_hat r j|) := by
+          rw [hassoc]
+
+/-- The product-formation certificate gives a usable absolute bound on entries
+    of the computed Method D product. -/
+theorem higham14_methodD_abs_Xhat_le_scaled_abs_product {n : ℕ}
+    {γ : ℝ} (X_hat X_U X_L : Fin n → Fin n → ℝ)
+    (hProd : MatProdError n X_hat (matMul n X_U X_L) γ
+      (fun i j => ∑ k : Fin n, |X_U i k| * |X_L k j|))
+    (i j : Fin n) :
+    |X_hat i j| ≤
+      (1 + γ) * ∑ k : Fin n, |X_U i k| * |X_L k j| := by
+  let S := ∑ k : Fin n, |X_U i k| * |X_L k j|
+  let x := matMul n X_U X_L i j
+  have hx_abs : |x| ≤ S := by
+    calc
+      |x| = |∑ k : Fin n, X_U i k * X_L k j| := by
+        simp [x, matMul]
+      _ ≤ ∑ k : Fin n, |X_U i k * X_L k j| :=
+        Finset.abs_sum_le_sum_abs _ _
+      _ = S := by
+        simp [S]
+  have hdiff : |X_hat i j - x| ≤ γ * S := by
+    simpa [x, S] using hProd i j
+  calc
+    |X_hat i j| = |x + (X_hat i j - x)| := by ring_nf
+    _ ≤ |x| + |X_hat i j - x| := abs_add_le _ _
+    _ ≤ S + γ * S := add_le_add hx_abs hdiff
+    _ = (1 + γ) * S := by ring_nf
+
+/-- Higham equation (14.23), scalar coefficient form:
+    the expanded Method D budget from (14.22), together with the lower/upper
+    triangular inverse residual certificates, product error, and LU backward
+    error, implies the printed `(4γ + 2γ^2)` componentwise envelope. -/
+theorem higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget {n : ℕ}
+    (fp : FPModel)
+    (A L_hat U_hat X_U X_L X_hat : Fin n → Fin n → ℝ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hXL_res : ∀ i j : Fin n,
+      |higham14_methodDXLLeftResidual X_L L_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_L i k| * |L_hat k j|)
+    (hXU_res : ∀ i j : Fin n,
+      |higham14_methodDXULeftResidual X_U U_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_U i k| * |U_hat k j|)
+    (hProd : MatProdError n X_hat (matMul n X_U X_L) (gamma fp n)
+      (fun i j => ∑ k : Fin n, |X_U i k| * |X_L k j|)) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * A k j - (if i = j then 1 else 0)| ≤
+        (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+          ∑ p : Fin n,
+            (∑ q : Fin n, |X_U i q| * |X_L q p|) *
+              (∑ r : Fin n, |L_hat p r| * |U_hat r j|) := by
+  intro i j
+  let γ := gamma fp n
+  let P :=
+    ∑ p : Fin n,
+      (∑ q : Fin n, |X_U i q| * |X_L q p|) *
+        (∑ r : Fin n, |L_hat p r| * |U_hat r j|)
+  let Uterm := γ * ∑ q : Fin n, |X_U i q| * |U_hat q j|
+  let Lterm := ∑ q : Fin n, |X_U i q| *
+    (∑ r : Fin n,
+      (γ * ∑ p : Fin n, |X_L q p| * |L_hat p r|) * |U_hat r j|)
+  let Pterm := ∑ p : Fin n,
+    (γ * ∑ q : Fin n, |X_U i q| * |X_L q p|) *
+      (∑ r : Fin n, |L_hat p r| * |U_hat r j|)
+  let Aterm := ∑ p : Fin n,
+    |X_hat i p| * (γ * ∑ r : Fin n, |L_hat p r| * |U_hat r j|)
+  have hγ : 0 ≤ γ := gamma_nonneg fp hn
+  have hbase :
+      |∑ k : Fin n, X_hat i k * A k j - (if i = j then 1 else 0)| ≤
+        Uterm + Lterm + Pterm + Aterm := by
+    simpa [γ, Uterm, Lterm, Pterm, Aterm] using
+      higham14_eq14_23_methodD_left_residual_expanded_budget
+        fp A L_hat U_hat X_U X_L X_hat hLU hXL_res hXU_res hProd i j
+  have hU_core :
+      (∑ q : Fin n, |X_U i q| * |U_hat q j|) ≤ (1 + γ) * P := by
+    simpa [γ, P] using
+      higham14_methodD_abs_XU_U_le_scaled_abs_product
+        hγ X_U X_L L_hat U_hat hXL_res i j
+  have hU : Uterm ≤ (γ * (1 + γ)) * P := by
+    calc
+      Uterm ≤ γ * ((1 + γ) * P) := by
+        simpa [Uterm] using mul_le_mul_of_nonneg_left hU_core hγ
+      _ = (γ * (1 + γ)) * P := by ring_nf
+  have hassoc := higham14_methodD_abs_product_assoc X_U X_L L_hat U_hat i j
+  have hL_eq : Lterm = γ * P := by
+    calc
+      Lterm =
+          γ * (∑ q : Fin n, |X_U i q| *
+            (∑ r : Fin n,
+              (∑ p : Fin n, |X_L q p| * |L_hat p r|) *
+                |U_hat r j|)) := by
+            simp [Lterm, Finset.mul_sum, mul_assoc,
+              mul_left_comm, mul_comm]
+      _ = γ * P := by
+            rw [hassoc]
+  have hL : Lterm ≤ γ * P := le_of_eq hL_eq
+  have hPterm_eq : Pterm = γ * P := by
+    simp [Pterm, P, Finset.mul_sum, Finset.sum_mul]
+    ring_nf
+  have hPterm : Pterm ≤ γ * P := le_of_eq hPterm_eq
+  have hA_step : Aterm ≤
+      ∑ p : Fin n,
+        ((1 + γ) * ∑ q : Fin n, |X_U i q| * |X_L q p|) *
+          (γ * ∑ r : Fin n, |L_hat p r| * |U_hat r j|) := by
+    apply Finset.sum_le_sum
+    intro p _
+    apply mul_le_mul_of_nonneg_right
+      (higham14_methodD_abs_Xhat_le_scaled_abs_product
+        X_hat X_U X_L hProd i p)
+    exact mul_nonneg hγ
+      (Finset.sum_nonneg fun r _ =>
+        mul_nonneg (abs_nonneg _) (abs_nonneg _))
+  have hA_rhs_eq :
+      (∑ p : Fin n,
+        ((1 + γ) * ∑ q : Fin n, |X_U i q| * |X_L q p|) *
+          (γ * ∑ r : Fin n, |L_hat p r| * |U_hat r j|)) =
+        (γ * (1 + γ)) * P := by
+    simp [P, Finset.mul_sum, Finset.sum_mul]
+    ring_nf
+  have hA : Aterm ≤ (γ * (1 + γ)) * P :=
+    hA_step.trans (le_of_eq hA_rhs_eq)
+  calc
+    |∑ k : Fin n, X_hat i k * A k j - (if i = j then 1 else 0)|
+        ≤ Uterm + Lterm + Pterm + Aterm := hbase
+    _ ≤ (γ * (1 + γ)) * P + γ * P + γ * P +
+        (γ * (1 + γ)) * P := by
+          nlinarith [hU, hL, hPterm, hA]
+    _ = (4 * γ + 2 * γ ^ 2) * P := by ring_nf
+
 /-- **Abstract Method D left residual interface** (Higham eq. 14.20–14.23).
 
     Method D: compute X_L ≈ L⁻¹ and X_U ≈ U⁻¹ separately,

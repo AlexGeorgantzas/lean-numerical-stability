@@ -6385,6 +6385,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_eq14_22_methodD_left_residual_expansion
 #check higham14_eq14_22_methodD_left_residual_abs_le_expanded_terms
 #check higham14_eq14_23_methodD_left_residual_expanded_budget
+#check higham14_methodD_abs_product_assoc
+#check higham14_methodD_abs_XL_L_diag_ge_inv_scale
+#check higham14_methodD_abs_XU_U_le_scaled_abs_product
+#check higham14_methodD_abs_Xhat_le_scaled_abs_product
+#check higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget
 #check higham14_eq14_23_methodD_left_residual_bound
 #check higham14_rowNorm2
 #check higham14_rowNormDiagonal
