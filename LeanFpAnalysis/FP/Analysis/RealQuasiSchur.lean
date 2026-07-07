@@ -809,6 +809,42 @@ lemma principalTwoBlock_trailing_conj_preserves_leading_two
   · exact trailing_conj_preserves_leading_entry hnm A Q U (by omega) (by omega)
   · exact trailing_conj_preserves_leading_entry hnm A Q U (by omega) (by omega)
 
+/-- No-real-eigenline and negative-discriminant certificates for the leading
+    `2 x 2` block survive the trailing recursive conjugation. -/
+lemma leading_twoBlock_spectral_preserved_after_trailing_conj
+    {m n : ℕ} (hnm : 2 + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {p q : Fin n}
+    (hp : (p : ℕ) = 0) (hq : (q : ℕ) = 1)
+    (hno :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q)) :
+    let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := 2) U)
+    LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) ∧
+      ((Qfullᵀ * A * Qfull) p p - (Qfullᵀ * A * Qfull) q q) ^ 2 +
+        4 * (Qfullᵀ * A * Qfull) p q * (Qfullᵀ * A * Qfull) q p < 0 := by
+  let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+  let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+    Matrix.reindex e.symm e.symm
+      (Matrix.reindex e e Q * embedBlock (d := 2) U)
+  have hblock :
+      LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q =
+        LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q :=
+    principalTwoBlock_trailing_conj_preserves_leading_two hnm A Q U hp hq
+  have hno' :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) := by
+    rw [hblock]
+    exact hno
+  exact ⟨hno',
+    LeanFpAnalysis.FP.principalTwoBlock_disc_neg_of_matrixNoRealEigenline
+      (Qfullᵀ * A * Qfull) p q hno'⟩
+
 /-! ### The variable-`d` orthogonal deflation induction (Higham (16.4)) -/
 
 open RealInvariantSubspaceAux in
