@@ -5348,6 +5348,16 @@ the exact Hyman block identities (14.35)--(14.36), and Problem 14.10:
 - `higham14_problem14_5_left_firstorder_envelope_le_right_exact_rhs_envelope`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones`
+- `higham14_methodDProductDelta`
+- `higham14_methodDLUBackwardDelta`
+- `higham14_methodDXLLeftResidual`
+- `higham14_methodDXULeftResidual`
+- `higham14_eq14_20_methodD_product_decomposition`
+- `higham14_eq14_20_methodD_productDelta_bound`
+- `higham14_eq14_21_methodD_lu_substitution`
+- `higham14_eq14_21_methodD_luDelta_bound`
+- `higham14_eq14_22_methodD_left_residual_expansion`
+- `higham14_eq14_23_methodD_left_residual_bound`
 - `higham14_rowNorm2`
 - `higham14_rowNormDiagonal`
 - `higham14_hadamardConditionNumber`
