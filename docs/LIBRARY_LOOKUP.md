@@ -5387,8 +5387,8 @@ hypothesis already contains the algorithmic stability conclusion, the theorem is
 a transfer or packaging result rather than a complete local analysis.
 
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
-Problem 14.3, part of Problem 14.5, Problem 14.7, equation (14.34) in its
-exact no-pivot/unit-lower LU form, and Problem 14.10:
+Problem 14.3, the residual bounds from Problem 14.5, Problem 14.7, equation (14.34) in
+its exact no-pivot/unit-lower LU form and pivoted absolute-value form, and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
 - `higham14_problem14_3_right_residual_eq_mul_left_residual`
@@ -5398,10 +5398,12 @@ exact no-pivot/unit-lower LU form, and Problem 14.10:
 - `higham14_problem14_3_max_residual_ratio_infNorm_le_kappa`
 - `higham14_unit_roundoff_add_gamma_le_gamma_succ`
 - `higham14_problem14_5_right_inverse_solve_residual_bound`
+- `higham14_problem14_5_left_inverse_solve_residual_bound`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones`
 - `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec`
+- `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_PermutedLUFactSpec`
 - `matrixEntryPerturb`
 - `higham14_problem14_10_det_entry_perturb_eq`
 - `higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero`
