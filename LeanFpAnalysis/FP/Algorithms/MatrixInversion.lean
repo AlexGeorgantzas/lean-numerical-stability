@@ -50,6 +50,63 @@ def MatProdError (n : ℕ) (C_hat : Fin n → Fin n → ℝ)
     (absProduct : Fin n → Fin n → ℝ) : Prop :=
   ∀ i j : Fin n, |C_hat i j - C_exact i j| ≤ ε * absProduct i j
 
+/-- Componentwise matrix-product-shaped bounds imply an infinity-norm bound
+    with the absolute product retained. -/
+theorem higham14_infNorm_le_of_componentwise_abs_matmul_bound {n : ℕ}
+    {R A B : Fin n → Fin n → ℝ} {ε : ℝ}
+    (hε : 0 ≤ ε)
+    (hR : ∀ i j : Fin n,
+      |R i j| ≤ ε * ∑ k : Fin n, |A i k| * |B k j|) :
+    infNorm R ≤
+      ε * infNorm (matMul n (absMatrix n A) (absMatrix n B)) := by
+  let M := matMul n (absMatrix n A) (absMatrix n B)
+  have hM_nonneg : ∀ i j : Fin n, 0 ≤ M i j := by
+    intro i j
+    dsimp [M, matMul, absMatrix]
+    exact Finset.sum_nonneg fun k _ =>
+      mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc
+      ∑ j : Fin n, |R i j|
+          ≤ ∑ j : Fin n, ε * M i j := by
+            apply Finset.sum_le_sum
+            intro j _
+            simpa [M, matMul, absMatrix] using hR i j
+      _ = ε * ∑ j : Fin n, M i j := by
+            rw [Finset.mul_sum]
+      _ = ε * ∑ j : Fin n, |M i j| := by
+            congr 1
+            apply Finset.sum_congr rfl
+            intro j _
+            exact (abs_of_nonneg (hM_nonneg i j)).symm
+      _ ≤ ε * infNorm M := by
+            exact mul_le_mul_of_nonneg_left (row_sum_le_infNorm M i) hε
+  · exact mul_nonneg hε (infNorm_nonneg M)
+
+/-- Componentwise matrix-product-shaped bounds imply an infinity-norm bound
+    in terms of the two ordinary infinity norms. -/
+theorem higham14_infNorm_le_of_componentwise_matmul_bound {n : ℕ}
+    (hn : 0 < n) {R A B : Fin n → Fin n → ℝ} {ε : ℝ}
+    (hε : 0 ≤ ε)
+    (hR : ∀ i j : Fin n,
+      |R i j| ≤ ε * ∑ k : Fin n, |A i k| * |B k j|) :
+    infNorm R ≤ ε * infNorm A * infNorm B := by
+  have hbase :=
+    higham14_infNorm_le_of_componentwise_abs_matmul_bound
+      (n := n) (R := R) (A := A) (B := B) hε hR
+  have hmul :
+      infNorm (matMul n (absMatrix n A) (absMatrix n B)) ≤
+        infNorm A * infNorm B := by
+    simpa [infNorm_absMatrix hn A, infNorm_absMatrix hn B] using
+      infNorm_matMul_le hn (absMatrix n A) (absMatrix n B)
+  calc
+    infNorm R ≤
+        ε * infNorm (matMul n (absMatrix n A) (absMatrix n B)) := hbase
+    _ ≤ ε * (infNorm A * infNorm B) :=
+        mul_le_mul_of_nonneg_left hmul hε
+    _ = ε * infNorm A * infNorm B := by ring
+
 -- ============================================================
 -- §14.1  Ideal perturbation bounds (eqs. 14.1–14.3)
 -- ============================================================
@@ -612,6 +669,28 @@ theorem triInv_method2_left_residual (n : ℕ) (fp : FPModel)
       gamma fp n * ∑ k : Fin n, |X_hat i k| * |L k j| :=
   hLeftRes
 
+/-- Problem 14.2 / Lemma 14.1 normwise form:
+    Method 2's componentwise left-residual interface implies the corresponding
+    infinity-norm residual bound. -/
+theorem triInv_method2_left_residual_normwise (n : ℕ) (hn0 : 0 < n)
+    (fp : FPModel)
+    (L : Fin n → Fin n → ℝ) (X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hLeftRes : ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * L k j - if i = j then 1 else 0| ≤
+      gamma fp n * ∑ k : Fin n, |X_hat i k| * |L k j|) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, X_hat i k * L k j - if i = j then 1 else 0) ≤
+      gamma fp n * infNorm X_hat * infNorm L := by
+  have hComp :=
+    triInv_method2_left_residual n fp L X_hat hL_diag hLT hn hLeftRes
+  exact higham14_infNorm_le_of_componentwise_matmul_bound hn0
+    (R := fun i j => ∑ k : Fin n, X_hat i k * L k j -
+      if i = j then 1 else 0)
+    (A := X_hat) (B := L) (gamma_nonneg fp hn) hComp
+
 -- §14.2.2  Block methods
 
 /-- **Specification for block triangular inversion (Method 1B)**.
@@ -692,6 +771,44 @@ theorem triInv_method1B_right_residual_from_spec (n N : ℕ) (fp : FPModel)
       gamma fp n * ∑ k : Fin n, |L i k| * |X_hat k j| :=
   triInv_method1B_right_residual n fp L X_hat hL_diag hLT hn
     hSpec.column_backward_error
+
+/-- Problem 14.2 / Lemma 14.2 normwise form:
+    Method 1B's componentwise right-residual bound implies the corresponding
+    infinity-norm residual bound. -/
+theorem triInv_method1B_right_residual_normwise (n : ℕ) (hn0 : 0 < n)
+    (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hCol : ∀ j : Fin n, ∃ ΔL : Fin n → Fin n → ℝ,
+      (∀ i k, |ΔL i k| ≤ gamma fp n * |L i k|) ∧
+      ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
+        if i = j then 1 else 0) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, L i k * X_hat k j - if i = j then 1 else 0) ≤
+      gamma fp n * infNorm L * infNorm X_hat := by
+  have hComp :=
+    triInv_method1B_right_residual n fp L X_hat hL_diag hLT hn hCol
+  exact higham14_infNorm_le_of_componentwise_matmul_bound hn0
+    (R := fun i j => ∑ k : Fin n, L i k * X_hat k j -
+      if i = j then 1 else 0)
+    (A := L) (B := X_hat) (gamma_nonneg fp hn) hComp
+
+/-- Method 1B normwise right-residual bound obtained from the block-method
+    specification. -/
+theorem triInv_method1B_right_residual_normwise_from_spec
+    (n N : ℕ) (hn0 : 0 < n) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hSpec : BlockMethod1BSpec fp n N L X_hat) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, L i k * X_hat k j - if i = j then 1 else 0) ≤
+      gamma fp n * infNorm L * infNorm X_hat :=
+  triInv_method1B_right_residual_normwise n hn0 fp L X_hat
+    hL_diag hLT hn hSpec.column_backward_error
 
 /-- Exact off-diagonal block used in Higham equation (14.14), Method 2B:
     `-X22 * L21 * X11`.  Here `L21` is the lower-left rectangular block, and
@@ -811,6 +928,28 @@ theorem triInv_method2C_left_residual (n : ℕ) (fp : FPModel)
       |∑ k : Fin n, X_hat i k * L k j - if i = j then 1 else 0| ≤
       gamma fp n * ∑ k : Fin n, |X_hat i k| * |L k j| :=
   hLeftRes
+
+/-- Problem 14.2 / Lemma 14.3 normwise form:
+    Method 2C's componentwise left-residual interface implies the corresponding
+    infinity-norm residual bound. -/
+theorem triInv_method2C_left_residual_normwise (n : ℕ) (hn0 : 0 < n)
+    (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hLeftRes : ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * L k j - if i = j then 1 else 0| ≤
+      gamma fp n * ∑ k : Fin n, |X_hat i k| * |L k j|) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, X_hat i k * L k j - if i = j then 1 else 0) ≤
+      gamma fp n * infNorm X_hat * infNorm L := by
+  have hComp :=
+    triInv_method2C_left_residual n fp L X_hat hL_diag hLT hn hLeftRes
+  exact higham14_infNorm_le_of_componentwise_matmul_bound hn0
+    (R := fun i j => ∑ k : Fin n, X_hat i k * L k j -
+      if i = j then 1 else 0)
+    (A := X_hat) (B := L) (gamma_nonneg fp hn) hComp
 
 -- ============================================================
 -- §14.3  Full matrix inversion via LU factorization
