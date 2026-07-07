@@ -5319,7 +5319,8 @@ Hadamard determinant condition number, equation (14.34) in its exact
 no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
 Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence,
 Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
-Problem 14.15's scalar product-radius support, the exact Hyman block identities
+Problem 14.15's scalar product-radius support, Method D's expanded
+componentwise residual-budget dependency, the exact Hyman block identities
 (14.35)--(14.36), and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
@@ -5377,6 +5378,8 @@ Problem 14.15's scalar product-radius support, the exact Hyman block identities
 - `higham14_eq14_21_methodD_lu_substitution`
 - `higham14_eq14_21_methodD_luDelta_bound`
 - `higham14_eq14_22_methodD_left_residual_expansion`
+- `higham14_eq14_22_methodD_left_residual_abs_le_expanded_terms`
+- `higham14_eq14_23_methodD_left_residual_expanded_budget`
 - `higham14_eq14_23_methodD_left_residual_bound`
 - `higham14_rowNorm2`
 - `higham14_rowNormDiagonal`
