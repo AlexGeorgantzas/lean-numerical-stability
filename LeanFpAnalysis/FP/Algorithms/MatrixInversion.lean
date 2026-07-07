@@ -3079,6 +3079,48 @@ theorem higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero
   exact (one_le_div hden_pos).mpr
     (higham14_problem14_11_abs_det_le_prod_rowNorm2 A)
 
+/-- Source-facing predicate for Higham, Chapter 14, Problem 14.11:
+    the rows of `A` are pairwise orthogonal in the Euclidean inner product. -/
+def higham14_rowsOrthogonal {n : ℕ} (A : Fin n → Fin n → ℝ) : Prop :=
+  ∀ ⦃i j : Fin n⦄, i ≠ j → ∑ k : Fin n, A i k * A j k = 0
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    pairwise orthogonal rows attain equality in Hadamard's determinant
+    inequality.  This is the source equality direction that does not require
+    excluding zero rows. -/
+theorem higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (horth : higham14_rowsOrthogonal A) :
+    |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+      ∏ i : Fin n, higham14_rowNorm2 A i := by
+  have hgram :
+      let AM : Matrix (Fin n) (Fin n) ℝ := A
+      AM * Matrix.transpose AM =
+        Matrix.diagonal (fun i : Fin n => ∑ k : Fin n, A i k ^ 2) := by
+    dsimp only
+    ext i j
+    by_cases hij : i = j
+    · subst j
+      simp [Matrix.mul_apply, Matrix.transpose_apply, pow_two]
+    · simp [Matrix.mul_apply, Matrix.transpose_apply, hij, horth hij]
+  have hsquare :
+      (Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) ^ 2 =
+        (∏ i : Fin n, higham14_rowNorm2 A i) ^ 2 := by
+    have hdetGram :
+        let AM : Matrix (Fin n) (Fin n) ℝ := A
+        Matrix.det (AM * Matrix.transpose AM) =
+          (Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) ^ 2 := by
+      dsimp only
+      rw [Matrix.det_mul, Matrix.det_transpose]
+      ring
+    rw [← hdetGram, hgram, Matrix.det_diagonal]
+    rw [← Finset.prod_pow]
+    simp [higham14_rowNorm2, vecNorm2_sq, vecNorm2Sq]
+  exact (sq_eq_sq₀ (abs_nonneg _) (Finset.prod_nonneg fun i _ =>
+    higham14_rowNorm2_nonneg A i)).mp (by
+      rw [sq_abs]
+      exact hsquare)
+
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
 theorem higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec

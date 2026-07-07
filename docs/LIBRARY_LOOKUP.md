@@ -5361,6 +5361,8 @@ the exact Hyman block identities (14.35)--(14.36), and Problem 14.10:
 - `higham14_problem14_11_hadamard_det_sq_le_prod_rowNorm2_sq`
 - `higham14_problem14_11_abs_det_le_prod_rowNorm2`
 - `higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero`
+- `higham14_rowsOrthogonal`
+- `higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal`
 - `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_perm_sign_mul_det_eq_prod_U_diag_of_PermutedLUFactSpec`
