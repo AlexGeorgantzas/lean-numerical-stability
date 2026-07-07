@@ -428,6 +428,29 @@ lemma matrixNoRealEigenline_principalTwoBlock_of_invariant_noRealEigenline_colum
       (by simpa [cq] using hres_dotq)
   exact hWno w hwW hwne ⟨nu, sub_eq_zero.mp hres_zero⟩
 
+/-- A framed invariant plane with no real eigenline gives the negative
+    discriminant certificate for the corresponding principal `2 x 2` block of
+    `Qᵀ * A * Q`. -/
+lemma principalTwoBlock_disc_neg_of_invariant_noRealEigenline_columnSpan
+    (A Q : Matrix (Fin n) (Fin n) ℝ) {p q : Fin n}
+    (hQ : Q ∈ Matrix.orthogonalGroup (Fin n) ℝ) (hpq : p ≠ q)
+    (W : Submodule ℝ (Fin n → ℝ))
+    (hWspan :
+      Submodule.span ℝ
+        ({(fun k : Fin n => Q k p), (fun k : Fin n => Q k q)}
+          : Set (Fin n → ℝ)) = W)
+    (hWinv : ∀ w ∈ W, A.mulVecLin w ∈ W)
+    (hWno :
+      ∀ w ∈ W, w ≠ 0 →
+        ¬ ∃ nu : ℝ, A *ᵥ w = nu • w) :
+    ((Qᵀ * A * Q) p p - (Qᵀ * A * Q) q q) ^ 2 +
+      4 * (Qᵀ * A * Q) p q * (Qᵀ * A * Q) q p < 0 := by
+  exact
+    LeanFpAnalysis.FP.principalTwoBlock_disc_neg_of_matrixNoRealEigenline
+      (Qᵀ * A * Q) p q
+      (matrixNoRealEigenline_principalTwoBlock_of_invariant_noRealEigenline_columnSpan
+        A Q hQ hpq W hWspan hWinv hWno)
+
 /-! ### Reindexing helpers: conjugation and orthogonality transport
 
 Transporting an orthogonal conjugation `Xᵀ A X` along an index equivalence
