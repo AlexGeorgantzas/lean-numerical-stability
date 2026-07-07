@@ -5311,6 +5311,26 @@ The safest way to classify a theorem is to inspect the statement. If a
 hypothesis already contains the algorithmic stability conclusion, the theorem is
 a transfer or packaging result rather than a complete local analysis.
 
+Chapter 14 GJE declarations in `Algorithms/GaussJordan.lean` include the
+cumulative-product support for (14.27), abstract second-stage interfaces, and
+the proved overall composition wrappers:
+
+- `gje_c₃`
+- `GJEStage2Spec`
+- `gje_stage2_matrix_recurrence`
+- `gje_stage2_rhs_recurrence`
+- `gje_cumulative_product`
+- `gje_cumulative_product_base`
+- `gje_cumulative_product_step`
+- `gje_cumulative_product_oob`
+- `gje_cumulative_product_nonneg`
+- `gje_cumulative_product_abs_nonneg`
+- `gje_stage2_forward_error_bound`
+- `gje_stage2_backward_error`
+- `gje_overall_residual`
+- `gje_overall_forward_error`
+- `gje_spd_residual`
+
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
 Problem 14.3, the explicit residual-ratio family from Problem 14.4, the residual
 and forward-error consequences from Problem 14.5, Problem 14.7, Problem 14.8's
