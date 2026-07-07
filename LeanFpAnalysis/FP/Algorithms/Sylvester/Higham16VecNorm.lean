@@ -477,6 +477,30 @@ theorem existsUnique_finiteMatrix_mulVec_of_det_ne_zero
   intro y hy
   exact hinj (by rw [hy, hx])
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.3):
+    determinant nonsingularity of the Sylvester vec/Kronecker coefficient
+    gives a unique exact real Sylvester matrix solution for every right-hand
+    side. -/
+theorem existsUnique_isSylvesterSolutionRect_of_sylvesterVecCoeff_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hdet : Matrix.det (sylvesterVecCoeff m n A B) ≠ 0) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  obtain ⟨x, hx, huniq⟩ :=
+    existsUnique_finiteMatrix_mulVec_of_det_ne_zero
+      (sylvesterVecCoeff m n A B) hdet (Matrix.vec C)
+  obtain ⟨X, hXvec⟩ := Matrix.vec_bijective.surjective x
+  refine ⟨X, ?_, ?_⟩
+  · exact
+      (sylvester_vec_system_iff_solution m n A B C X).mp
+        (by rw [hXvec]; exact hx)
+  · intro Y hY
+    apply Matrix.vec_inj.mp
+    have hYvec :
+        Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec Y) =
+          Matrix.vec C :=
+      (sylvester_vec_system_iff_solution m n A B C Y).mpr hY
+    rw [huniq (Matrix.vec Y) hYvec, hXvec]
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
     supplied complex right eigenpair for the complexified real factors makes
     the real Sylvester vec coefficient action injective. -/
