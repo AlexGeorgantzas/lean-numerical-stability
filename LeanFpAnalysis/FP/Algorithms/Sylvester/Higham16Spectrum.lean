@@ -9686,6 +9686,120 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_c
     rcases hXblock p q hpq hsame with ⟨hXp, hXq⟩
     exact Or.inr ⟨p, q, hpval, hqval, hfront, hsame, hXp, hXq⟩
 
+/-- Generated-frontier Bartels-Stewart candidate formula oracle for a real
+    quasi-Schur block map.  Singleton columns are supplied by the shifted
+    inverse recurrence when both neighbor labels differ; adjacent same-block
+    columns are supplied by the two-column block inverse recurrence. -/
+def IsSylvesterQuasiSchurGeneratedStepFormula (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C X : RMatFn m n) (pmap : Fin n -> Nat) : Prop :=
+  (forall p : Fin n,
+    (forall q : Fin n, q.val + 1 = p.val -> pmap q ≠ pmap p) ->
+    (forall q : Fin n, q.val = p.val + 1 -> pmap p ≠ pmap q) ->
+    forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+          (fun i => C i p +
+            Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+              (fun j => S j p * X i j)) i) ∧
+  (forall p q : Fin n,
+    q.val = p.val + 1 ->
+    pmap p = pmap q ->
+    (forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inl i)) ∧
+    (forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inr i)))
+
+/-- Predicate-packaged version of
+    `sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_generated_frontier_step_oracle`. -/
+theorem sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_generated_step_formula
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B))
+    (hXformula : IsSylvesterQuasiSchurGeneratedStepFormula m n R S C X pmap) :
+    IsSylvesterSolutionRect m n R S C X := by
+  rcases hXformula with ⟨hXsingle, hXblock⟩
+  exact
+    sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_generated_frontier_step_oracle
+      m n U R A V S B C X pmap hU hV hA hB hmono hcard hzero hspectral
+      hnoOrig hXsingle hXblock
+
+/-- Predicate-packaged version of the generated-frontier original-coordinate
+    reconstruction theorem. -/
+theorem sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_no_common_generated_step_formula
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C Cschur X Yorig : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hCschur : Cschur = rectMatMul (matTranspose U) (rectMatMul C V))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B))
+    (hXformula :
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S Cschur X pmap)
+    (hYorig : IsSylvesterSolutionRect m n A B C Yorig) :
+    rectMatMul U (rectMatMul X (matTranspose V)) = Yorig := by
+  rcases hXformula with ⟨hXsingle, hXblock⟩
+  exact
+    sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_no_common_generated_frontier_step_oracle
+      m n U R A V S B C Cschur X Yorig pmap hU hV hA hB hCschur
+      hmono hcard hzero hspectral hnoOrig hXsingle hXblock hYorig
+
+/-- Predicate-packaged version of the generated-frontier original-coordinate
+    unique-solvability theorem. -/
+theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_generated_step_formula
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C Cschur X : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hCschur : Cschur = rectMatMul (matTranspose U) (rectMatMul C V))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B))
+    (hXformula :
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S Cschur X pmap) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  rcases hXformula with ⟨hXsingle, hXblock⟩
+  exact
+    existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_generated_frontier_step_oracle
+      m n U R A V S B C Cschur X pmap hU hV hA hB hCschur hmono hcard
+      hzero hspectral hnoOrig hXsingle hXblock
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
     `A - t_kk I` nonsingular, two solutions of `AX - XT = C` coincide, by
