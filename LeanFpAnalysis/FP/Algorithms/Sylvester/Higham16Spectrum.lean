@@ -1235,6 +1235,82 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_det_ne_zero
     sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_product_shift_det_ne_zero
       m n A T p q hdet
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block action
+    of the left Sylvester factor on the two active columns.  This packages
+    the exact operation `A [u v]` as one block-vector matrix action; it is
+    only algebraic infrastructure for the real-Schur two-column route. -/
+noncomputable def sylvesterTwoColumnBlockLeftAction (m : Nat)
+    (A : RMatFn m m) :
+    Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real :=
+  Matrix.fromBlocks (Matrix.of A) 0 0 (Matrix.of A)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block action
+    of the supplied adjacent `2 x 2` real-Schur diagonal block on the two
+    active columns.  The top-right and bottom-left scalar identity blocks
+    follow the column equations
+    `A u = T_pp u + T_qp v` and `A v = T_pq u + T_qq v`. -/
+noncomputable def sylvesterTwoColumnBlockSchurAction (m n : Nat)
+    (T : RMatFn n n) (p q : Fin n) :
+    Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real :=
+  Matrix.fromBlocks
+    ((T p p) • (1 : Matrix (Fin m) (Fin m) Real))
+    ((T q p) • (1 : Matrix (Fin m) (Fin m) Real))
+    ((T p q) • (1 : Matrix (Fin m) (Fin m) Real))
+    ((T q q) • (1 : Matrix (Fin m) (Fin m) Real))
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-action
+    packaging: the two coupled active-column equations are equivalent to
+    equality of the left `A` action and the supplied `2 x 2` Schur-block
+    action on the concatenated vector `(u, v)`.  This is the algebraic target
+    that a future real-Schur spectral-separation theorem can rule out. -/
+theorem sylvesterTwoColumnBlock_coupled_block_action_iff_leftAction_eq_schurAction
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (u v : Fin m -> Real) :
+    (Matrix.mulVec (Matrix.of A) u =
+          (fun i => T p p * u i + T q p * v i) ∧
+        Matrix.mulVec (Matrix.of A) v =
+          (fun i => T p q * u i + T q q * v i)) ↔
+      Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A)
+          (Sum.elim u v) =
+        Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q)
+          (Sum.elim u v) := by
+  constructor
+  · intro h
+    rcases h with ⟨hu, hv⟩
+    funext r
+    cases r with
+    | inl i =>
+        have hi := congrFun hu i
+        rw [sylvesterTwoColumnBlockLeftAction, sylvesterTwoColumnBlockSchurAction,
+          Matrix.fromBlocks_mulVec, Matrix.fromBlocks_mulVec]
+        simp only [Sum.elim_inl, Matrix.smul_mulVec, Matrix.one_mulVec,
+          Pi.add_apply]
+        simpa using hi
+    | inr i =>
+        have hi := congrFun hv i
+        rw [sylvesterTwoColumnBlockLeftAction, sylvesterTwoColumnBlockSchurAction,
+          Matrix.fromBlocks_mulVec, Matrix.fromBlocks_mulVec]
+        simp only [Sum.elim_inr, Matrix.smul_mulVec, Matrix.one_mulVec,
+          Pi.add_apply]
+        simpa [add_comm, add_left_comm, add_assoc] using hi
+  · intro h
+    constructor
+    · funext i
+      have hi := congrFun h (Sum.inl i)
+      rw [sylvesterTwoColumnBlockLeftAction, sylvesterTwoColumnBlockSchurAction,
+        Matrix.fromBlocks_mulVec, Matrix.fromBlocks_mulVec] at hi
+      simp only [Sum.elim_inl, Matrix.smul_mulVec, Matrix.one_mulVec,
+        Pi.add_apply] at hi
+      simpa using hi
+    · funext i
+      have hi := congrFun h (Sum.inr i)
+      rw [sylvesterTwoColumnBlockLeftAction, sylvesterTwoColumnBlockSchurAction,
+        Matrix.fromBlocks_mulVec, Matrix.fromBlocks_mulVec] at hi
+      simp only [Sum.elim_inr, Matrix.smul_mulVec, Matrix.one_mulVec,
+        Pi.add_apply] at hi
+      simpa [add_comm, add_left_comm, add_assoc] using hi
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-local
     spectral obstruction for a supplied real `2 x 2` Schur block: a nonzero
     product-shift kernel vector yields two real vectors satisfying the same
@@ -1331,6 +1407,45 @@ theorem sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_no_coupled_
   exact hno u hune
     (sylvesterTwoColumnBlock_product_shift_kernel_to_coupled_block_action
       m n A T p q hsub hker)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-action
+    separation bridge: if no nonzero concatenated two-column vector can make
+    the left `A` action equal the supplied `2 x 2` Schur-block action, then
+    the product-shift eigen-equation has only the zero solution.  This is the
+    block-matrix target for the still-open spectral-separation proof; it does
+    not itself derive separation from eigenvalue disjointness. -/
+theorem sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_no_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hsub : T q p ≠ 0)
+    (hno :
+      ∀ z : Sum (Fin m) (Fin m) -> Real, z ≠ 0 ->
+        ¬ Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) z =
+          Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q) z) :
+    forall u : Fin m -> Real,
+      Matrix.mulVec
+          (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p)) u =
+        (fun i => (T q p * T p q) * u i) ->
+      u = 0 := by
+  intro u hker
+  by_contra hune
+  obtain ⟨v, haction⟩ :=
+    sylvesterTwoColumnBlock_product_shift_kernel_to_coupled_block_action
+      m n A T p q hsub hker
+  have hz_ne : Sum.elim u v ≠ 0 := by
+    intro hz
+    apply hune
+    funext i
+    have hi := congrFun hz (Sum.inl i)
+    simpa using hi
+  have hblock :
+      Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) (Sum.elim u v) =
+        Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q)
+          (Sum.elim u v) :=
+    (sylvesterTwoColumnBlock_coupled_block_action_iff_leftAction_eq_schurAction
+      m n A T p q u v).mp haction
+  exact hno (Sum.elim u v) hz_ne hblock
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), real-Schur
     same-block spectral certificate: an adjacent same-labelled block in the
