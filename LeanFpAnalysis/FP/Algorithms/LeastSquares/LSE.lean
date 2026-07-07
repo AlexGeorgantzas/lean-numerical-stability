@@ -2056,6 +2056,181 @@ theorem theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_completion_preserv
       hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc
       hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
 
+/-- Theorem 20.7 support: signed stored-QR completion and preservation
+    handoff for the finite row-ratio bound.
+
+This wrapper specializes
+`theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_completion_preservation_accumulated_error_nat`
+to the signed stored-QR stage vectors and betas.  It discharges the generic
+completion-time and completed-row preservation fields using the signed-stage
+completion adapters plus the stored-panel/RHS preservation adapters.  Row
+sorting, exact same-reflector growth, compact-budget domination, and accumulated
+computed/exact error domination remain explicit obligations. -/
+theorem theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_signed_stage_completion_preservation_accumulated_error_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) (phi err : ℝ)
+    (AcompletionBudget bcompletionBudget : Fin m → ℝ)
+    (Arow0Bound brow0Bound : Fin m → ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hrowStep :
+      ∀ k, k < n → ∀ i : Fin m, i.val < k → ∀ j : Fin n,
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k) i j =
+          Ahat k i j)
+    (hAexactCompletion :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        |matMulVec m
+            (householder m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val))
+            (fun r => Ahat i.val r j) i| ≤
+          H19.Theorem19_6.active_row_growth_factor m *
+            AcompletionBudget i)
+    (hAbudgetCompletion :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        H19.Theorem19_6.active_row_growth_factor m *
+              AcompletionBudget i +
+            householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val)
+              (fun r => Ahat i.val r j) i ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbexactCompletion :
+      ∀ i : Fin m, i.val + 1 < n →
+        |matMulVec m
+            (householder m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val))
+            (bhat i.val) i| ≤
+          H19.Theorem19_6.active_row_growth_factor m *
+            bcompletionBudget i)
+    (hbbudgetCompletion :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              bcompletionBudget i +
+            householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val)
+              (bhat i.val) i ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        Arow0Bound s ≤ Arow0Bound ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAinitExact :
+      ∀ r : Fin m, ∀ j : Fin n, |Aexact 0 r j| ≤ Arow0Bound r)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        Arow0Bound ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ j : Fin n,
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        brow0Bound s ≤ brow0Bound ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbinitExact :
+      ∀ r : Fin m, |bexact 0 r| ≤ brow0Bound r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        brow0Bound ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |bhat 0 r - bexact 0 r| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r) :
+    theorem20_7_alphaBetaMax hm hn Ahat A bhat b phi ≤
+      Real.sqrt (m : ℝ) *
+        H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err := by
+  exact
+    theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_completion_preservation_accumulated_error_nat
+      hm hn hnm Ahat Aexact A bhat bexact b phi err
+      Arow0Bound brow0Bound AstepBudget bstepBudget hphi herr hdenA hdenW
+      (theorem20_7_completionA_bound_of_h19_signed_stage_budget_nat
+        hn hnm fp Ahat A alpha err AcompletionBudget herr hmfp hStepA
+        hAlphaDef htrailingPos hAexactCompletion hAbudgetCompletion)
+      (theorem20_7_completedA_preservation_of_stored_panel_step_row_preservation_nat
+        fp (fun k => storedQRSignedStageVector hnm Ahat alpha k)
+        (fun k => storedQRSignedStageBeta hnm Ahat alpha k) Ahat hStepA
+        hrowStep)
+      (theorem20_7_completionB_bound_of_h19_signed_stage_budget_nat
+        hn hnm fp Ahat bhat A b alpha phi err bcompletionBudget hmfp
+        hStepB hbexactCompletion hbbudgetCompletion)
+      (theorem20_7_completedB_preservation_of_stored_rhs_steps_nat
+        fp (fun k => storedQRSignedStageVector hnm Ahat alpha k)
+        (fun k => storedQRSignedStageBeta hnm Ahat alpha k) bhat hStepB)
+      hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc
+      hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
+
 /-- Theorem 20.7 bridge specialized to the Chapter 19.6 active-row Cox--Higham
     growth factor. -/
 theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
