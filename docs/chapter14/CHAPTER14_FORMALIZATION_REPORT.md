@@ -18,7 +18,7 @@
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| 14 | core | 100 | 82 | 60 | 50 | 74 | 71 | about 23 selected rows/classes | Conditional floating-point interfaces for Method 2/2C, Method D, and GJE second-stage accumulation; signed determinant parity, Hadamard/Hyman/problem rows still partly open | medium |
+| 14 | core | 100 | 83 | 61 | 51 | 75 | 72 | about 22 selected rows/classes | Conditional floating-point interfaces for Method 2/2C, Method D, and GJE second-stage accumulation; signed determinant parity, Hadamard/Hyman/problem rows still partly open | medium |
 
 ## Completed selected targets
 
@@ -34,6 +34,7 @@
 | (14.19) | `methodC_mixed_residual`, `methodC_forward_error` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Mixed-residual interface and forward-error consequence. | Mixed residual is assumed; forward consequence proved. |
 | (14.24) | `left_right_residual_comparison` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Exact comparison of left and right residuals through a left inverse. | Proved. |
 | Problem 14.3 | `higham14_problem14_3_right_over_left_residual_infNorm_le_kappa`, `higham14_problem14_3_left_over_right_residual_infNorm_le_kappa`, `higham14_problem14_3_max_residual_ratio_infNorm_le_kappa` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Infinity-norm residual-ratio bound by `kappaInf`; includes exact identities `AX-I = A(XA-I)A_inv` and `XA-I = A_inv(AX-I)A`. | New after the initial milestone; denominators are explicit positivity hypotheses. |
+| Problem 14.4 | `higham14_problem14_4_right_over_left_ratio_arbitrarily_large` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Source two-by-two family with `||AX-I||_inf / ||XA-I||_inf` arbitrarily large as `eps -> 0`; support includes exact `XA`, exact `AX`, left-residual norm, and right-residual lower-bound theorems. | Closed for the infinity norm. |
 | Problem 14.5 residual, forward, and first-order comparison bounds | `higham14_problem14_5_right_inverse_solve_residual_bound`, `higham14_problem14_5_left_inverse_solve_residual_bound`, `higham14_problem14_5_forward_error_of_residual_bound`, `higham14_problem14_5_right_inverse_solve_forward_error_bound`, `higham14_problem14_5_left_inverse_solve_forward_error_bound`, `higham14_problem14_5_right_inverse_solve_forward_error_firstorder_replacement`, `higham14_problem14_5_left_inverse_solve_forward_error_firstorder_replacement`, `higham14_problem14_5_left_firstorder_envelope_le_right_exact_rhs_envelope` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Right- and left-approximate-inverse residual bounds, residual-to-forward-error transfer, exact right/left forward envelopes, explicit `|X|`/`|Y|` replacement wrappers, and the exact envelope comparison showing the right first-order exact-RHS envelope is the left envelope after one extra `|A_inv||A|` amplification. | Source comparison layer closed at explicit bounded-replacement strength; full asymptotic `O(u^2)` calculus remains open. |
 | Problem 14.7 | `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones`, `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Sum of all inverse entries is one when A has a row or column of ones. | New in this pass; proved. |
 | (14.34) partial | `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`, `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec`, `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_PermutedLUFactSpec` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Determinant/product-of-pivots identity for exact no-pivot/unit-lower LU certificates and absolute-value determinant product for row-permuted LU certificates. | Partial closure; signed row-interchange parity and `psi(A)` remain open. |
@@ -58,6 +59,9 @@
 | `higham14_problem14_3_right_residual_eq_mul_left_residual` | Exact identity `AX-I = A(XA-I)A_inv`. | Problem 14.3 right-over-left ratio. | implemented |
 | `higham14_problem14_3_left_residual_eq_mul_right_residual` | Exact identity `XA-I = A_inv(AX-I)A`. | Problem 14.3 left-over-right ratio. | implemented |
 | `higham14_problem14_3_max_residual_ratio_infNorm_le_kappa` | Closes the printed max residual-ratio inequality for `infNorm` under nonzero residual denominators. | Chapter 14 inventory/report. | implemented |
+| `higham14_problem14_4_A`, `higham14_problem14_4_X` | Source two-by-two family from Appendix A Problem 14.4. | Problem 14.4 residual-ratio counterexample. | implemented |
+| `higham14_problem14_4_XA_eq`, `higham14_problem14_4_AX_eq` | Exact products for the displayed family. | Problem 14.4 residual norm bounds. | implemented |
+| `higham14_problem14_4_right_over_left_ratio_arbitrarily_large` | Closes the arbitrarily-large right-over-left residual ratio. | Chapter 14 inventory/report. | implemented |
 | `higham14_unit_roundoff_add_gamma_le_gamma_succ` | Scalar gamma collapse `u + gamma_n <= gamma_(n+1)`. | Problem 14.5 residual bound. | implemented |
 | `higham14_problem14_5_right_inverse_solve_residual_bound` | Closes the right-approximate-inverse residual half of Problem 14.5. | Chapter 14 inventory/report. | implemented |
 | `higham14_problem14_5_left_inverse_solve_residual_bound` | Closes the left-approximate-inverse residual half of Problem 14.5 with `b = Ax`. | Chapter 14 inventory/report. | implemented |
@@ -131,6 +135,7 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 ## Hidden-hypothesis summary
 
 - The new Problem 14.3 max-ratio theorem assumes both residual denominators are positive. The two one-sided ratio lemmas require only the denominator used by that ratio. This makes the source's implicit nonzero-ratio side condition explicit.
+- The new Problem 14.4 theorem closes the Appendix A two-by-two family in infinity norm. It proves exact `XA`, exact `AX`, `||XA-I||_inf = 2 eps`, a right-residual lower bound, and an arbitrary-large right-over-left ratio for `0 < eps <= 1`.
 - The new Problem 14.5 theorems close both source residual bounds, the exact right/left forward-error consequences, explicit first-order replacement wrappers, and the exact envelope-comparison interpretation. The right residual theorem assumes `|AX-I| <= u|A||X|`; the right forward theorem additionally assumes a supplied left inverse `A_inv` and `Ax = b`. The first-order wrappers make the `|X| <= |A_inv|` and `|Y| <= |A_inv|` replacement assumptions explicit; the comparison theorem shows the exact-RHS right envelope is the left first-order envelope after one extra nonnegative `|A_inv||A|` amplification. Full asymptotic `O(u^2)` replacement calculus remains open.
 - The new Problem 14.10 theorem states the determinant-independence condition as `adj(A)_{ji}=0`. For a nonsingular matrix this is equivalent to the corresponding inverse-entry condition after multiplying by the nonzero determinant factor.
 - The new (14.34) determinant theorems include the no-pivot/unit-lower LU core and the row-permuted absolute-value product. They do not yet include a signed row-interchange parity formula and do not define the Hadamard determinant condition number `psi(A)`.
@@ -156,6 +161,7 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
   - focused `#check` file for the two new Problem 14.7 theorems
   - focused `#print axioms` file for the two new Problem 14.7 theorems
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.3 residual-ratio theorems
+  - stdin focused `#check`/`#print axioms` run for the new Problem 14.4 residual-ratio family theorem
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.5 right-residual theorem
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.5 left-residual theorem
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.5 right and left forward-error theorems
@@ -164,8 +170,8 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
   - focused module build after the new (14.34) determinant wrappers
   - focused `#check`/`#print axioms` run for the new pivoted absolute-value (14.34) wrapper
   - `lake env lean examples/LibraryLookup.lean`
-- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass before and after the upstream merge and after the Problem 14.3, Problem 14.5 residual/forward/first-order, Problem 14.10, and (14.34) additions; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
-- New theorem axiom surface: the new Problem 14.3, Problem 14.5 residual/forward/first-order, Problem 14.7, Problem 14.10, and (14.34) theorems use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`) when checked; the (14.34) wrappers inherit existing determinant/permutation/LU determinant facts.
+- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass before and after the upstream merge and after the Problem 14.3, Problem 14.4, Problem 14.5 residual/forward/first-order, Problem 14.10, and (14.34) additions; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
+- New theorem axiom surface: the new Problem 14.3, Problem 14.4, Problem 14.5 residual/forward/first-order, Problem 14.7, Problem 14.10, and (14.34) theorems use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`) when checked; the (14.34) wrappers inherit existing determinant/permutation/LU determinant facts.
 - Known verification issue: the full `examples/LibraryLookup.lean` run aborts with a stack overflow / exit 134 after producing large lookup output. Focused lookups for the new declarations pass, so this is recorded as a full-example scale issue rather than a failed declaration lookup.
 - New versus pre-existing warnings: a new unused-simp warning appeared during initial Problem 14.7 proof and was removed.
 
