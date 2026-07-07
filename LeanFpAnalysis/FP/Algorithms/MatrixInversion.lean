@@ -690,6 +690,101 @@ theorem triInv_method1B_right_residual_from_spec (n N : ℕ) (fp : FPModel)
   triInv_method1B_right_residual n fp L X_hat hL_diag hLT hn
     hSpec.column_backward_error
 
+/-- Exact off-diagonal block used in Higham equation (14.14), Method 2B:
+    `-X22 * L21 * X11`.  Here `L21` is the lower-left rectangular block, and
+    `X11`, `X22` are diagonal-block inverse approximations/exact blocks. -/
+noncomputable def higham14_method2BBlockUpdateExact {m r : ℕ}
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ) : Fin r → Fin m → ℝ :=
+  fun i j => -rectMatMul (rectMatMul X22 L21) X11 i j
+
+/-- Method 2B off-diagonal block perturbation for equation (14.14):
+    `X21_hat = -X22 * L21 * X11 + Delta21`. -/
+noncomputable def higham14_method2BBlockUpdateDelta {m r : ℕ}
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ) : Fin r → Fin m → ℝ :=
+  fun i j => X21_hat i j -
+    higham14_method2BBlockUpdateExact X22 L21 X11 i j
+
+/-- Higham equation (14.14), Method 2B block-update decomposition:
+    the computed off-diagonal block is the exact block product plus an explicit
+    perturbation. -/
+theorem higham14_eq14_14_method2B_block_update_decomposition {m r : ℕ}
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ) (i : Fin r) (j : Fin m) :
+    X21_hat i j =
+      higham14_method2BBlockUpdateExact X22 L21 X11 i j +
+        higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11 i j := by
+  unfold higham14_method2BBlockUpdateDelta
+  ring
+
+/-- The Method 2B block-update perturbation inherits any supplied
+    componentwise product-error bound for the rectangular triple product in
+    equation (14.14). -/
+theorem higham14_eq14_14_method2B_block_update_delta_bound {m r : ℕ}
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ)
+    (ε : ℝ) (absBound : Fin r → Fin m → ℝ)
+    (hBound : ∀ i : Fin r, ∀ j : Fin m,
+      |X21_hat i j -
+        higham14_method2BBlockUpdateExact X22 L21 X11 i j| ≤
+          ε * absBound i j) :
+    ∀ i : Fin r, ∀ j : Fin m,
+      |higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11 i j| ≤
+        ε * absBound i j := by
+  intro i j
+  simpa [higham14_method2BBlockUpdateDelta] using hBound i j
+
+/-- Exact Method 2B off-diagonal block formula from the block equation
+    `X21 * L11 + X22 * L21 = 0` and the diagonal-block inverse certificate
+    `L11 * X11 = I`.  This is the exact algebra behind equation (14.14);
+    the rounded update is represented separately by
+    `higham14_method2BBlockUpdateDelta`. -/
+theorem higham14_eq14_14_method2B_exact_offdiag_block_update {m r : ℕ}
+    (L11 X11 : Fin m → Fin m → ℝ)
+    (L21 X21 : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ)
+    (hOffdiag : ∀ i : Fin r, ∀ j : Fin m,
+      rectMatMul X21 L11 i j + rectMatMul X22 L21 i j = 0)
+    (hX11 : IsRightInverse m L11 X11) :
+    ∀ i : Fin r, ∀ j : Fin m,
+      X21 i j = higham14_method2BBlockUpdateExact X22 L21 X11 i j := by
+  intro i j
+  have hzero :
+      rectMatMul
+          (fun a b => rectMatMul X21 L11 a b + rectMatMul X22 L21 a b)
+          X11 i j = 0 := by
+    unfold rectMatMul
+    apply Finset.sum_eq_zero
+    intro x _
+    have hx := hOffdiag i x
+    unfold rectMatMul at hx
+    change (∑ k : Fin m, X21 i k * L11 k x) +
+        (∑ k : Fin r, X22 i k * L21 k x) = 0 at hx
+    change ((∑ k : Fin m, X21 i k * L11 k x) +
+        (∑ k : Fin r, X22 i k * L21 k x)) * X11 x j = 0
+    rw [hx]
+    ring
+  have hsplit :
+      rectMatMul (rectMatMul X21 L11) X11 i j +
+        rectMatMul (rectMatMul X22 L21) X11 i j = 0 := by
+    simpa [rectMatMul_add_left] using hzero
+  have hassoc : rectMatMul (rectMatMul X21 L11) X11 =
+      rectMatMul X21 (rectMatMul L11 X11) :=
+    rectMatMul_assoc X21 L11 X11
+  have hright : rectMatMul L11 X11 = idMatrix m := by
+    ext a b
+    exact hX11 a b
+  have hleft : rectMatMul (rectMatMul X21 L11) X11 i j = X21 i j := by
+    rw [hassoc, hright]
+    exact congrFun (congrFun (rectMatMul_id_right X21) i) j
+  rw [hleft] at hsplit
+  unfold higham14_method2BBlockUpdateExact
+  linarith
+
 /-- **Abstract Lemma 14.3 interface**: Method 2C left residual.
 
     |X̂L − I| ≤ cₙu|X̂||L|.

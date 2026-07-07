@@ -18,7 +18,7 @@
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| 14 | core | 100 | 90 | 69 | 60 | 82 | 76 | about 19 selected rows/classes | Conditional floating-point interfaces for Method 2/2C, Method D final-bound composition, and GJE second-stage accumulation; Hadamard equality converse/QR formulas, Hyman backward error, and problem rows still partly open | medium |
+| 14 | core | 100 | 91 | 70 | 61 | 83 | 77 | about 20 selected rows/classes | Conditional floating-point interfaces for Method 2/2C, Method D final-bound composition, and GJE second-stage accumulation; Method 2B instability route, Hadamard equality converse/QR formulas, Hyman backward error, and problem rows still partly open | medium |
 
 ## Completed selected targets
 
@@ -29,6 +29,7 @@
 | (14.4) | `triInv_method1_right_residual_matrix` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Method 1 right-residual bound via Ch8 triangular solve. | Proved from existing triangular solve theorem. |
 | (14.5) | `triInv_method1_forward_error` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Componentwise forward-error bound for Method 1. | Proved. |
 | (14.7) | `triInv_method1_normwise_error` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Legacy infinity-norm wrapper. | Proved. |
+| (14.14) Method 2B block update | `higham14_method2BBlockUpdateExact`, `higham14_method2BBlockUpdateDelta`, `higham14_eq14_14_method2B_block_update_decomposition`, `higham14_eq14_14_method2B_block_update_delta_bound`, `higham14_eq14_14_method2B_exact_offdiag_block_update` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Exact off-diagonal block formula `X21 = -X22 L21 X11` from the block equation and `L11 X11 = I`, plus the computed-update delta decomposition and inherited delta bound. | Exact algebra/delta wrapper closed; the source instability analysis remains open. |
 | (14.15)--(14.17) | `methodA_column_backward_error*`, `methodA_right_residual*`, `methodA_forward_error*` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Method A column, residual, and forward-error wrappers. | Proved from explicit specs/budgets. |
 | (14.18) | `methodB_left_residual` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Method B left-residual bound from supplied triangular-inverse/solve specs. | Conditional but internally proved from stated hypotheses. |
 | (14.19) | `methodC_mixed_residual`, `methodC_forward_error` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Mixed-residual interface and forward-error consequence. | Mixed residual is assumed; forward consequence proved. |
@@ -80,6 +81,9 @@
 | `higham14_problem14_5_left_inverse_solve_forward_error_bound_of_abs_Y_le` | Replaces `|Y|` in the left forward envelope by any caller-supplied componentwise upper bound. | Problem 14.5 first-order replacement. | implemented |
 | `higham14_problem14_5_left_inverse_solve_forward_error_firstorder_replacement` | Specializes the left forward envelope to `|A_inv||A||x|` under `|Y| <= |A_inv|`. | Chapter 14 inventory/report. | implemented |
 | `higham14_problem14_5_left_firstorder_envelope_le_right_exact_rhs_envelope` | Formalizes the comparison: with `b = Ax`, the right first-order exact-RHS envelope applies an extra `|A_inv||A|` amplification to the left envelope. | Problem 14.5 interpretation. | implemented |
+| `higham14_method2BBlockUpdateExact`, `higham14_method2BBlockUpdateDelta` | Source-facing exact off-diagonal Method 2B block update and computed-update delta. | Equation (14.14). | implemented |
+| `higham14_eq14_14_method2B_block_update_decomposition`, `higham14_eq14_14_method2B_block_update_delta_bound` | Computed block-update decomposition and inherited componentwise delta bound. | Equation (14.14). | implemented |
+| `higham14_eq14_14_method2B_exact_offdiag_block_update` | Exact block formula from `X21 L11 + X22 L21 = 0` and `L11 X11 = I`. | Equation (14.14) exact algebra. | implemented |
 | `higham14_methodDProductDelta`, `higham14_methodDLUBackwardDelta` | Source-facing perturbation matrices for Method D product formation and LU backward error. | Equations (14.20)--(14.21). | implemented |
 | `higham14_methodDXLLeftResidual`, `higham14_methodDXULeftResidual` | Source-facing residual deltas for the lower and upper triangular inverse factors in Method D. | Equation (14.22). | implemented |
 | `higham14_eq14_20_methodD_product_decomposition`, `higham14_eq14_20_methodD_productDelta_bound` | Exact product decomposition and inherited componentwise product-error bound. | Equation (14.20). | implemented |
@@ -171,6 +175,7 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 - The new Problem 14.3 max-ratio theorem assumes both residual denominators are positive. The two one-sided ratio lemmas require only the denominator used by that ratio. This makes the source's implicit nonzero-ratio side condition explicit.
 - The new Problem 14.4 theorem closes the Appendix A two-by-two family in infinity norm. It proves exact `XA`, exact `AX`, `||XA-I||_inf = 2 eps`, a right-residual lower bound, and an arbitrary-large right-over-left ratio for `0 < eps <= 1`.
 - The new Problem 14.5 theorems close both source residual bounds, the exact right/left forward-error consequences, explicit first-order replacement wrappers, and the exact envelope-comparison interpretation. The right residual theorem assumes `|AX-I| <= u|A||X|`; the right forward theorem additionally assumes a supplied left inverse `A_inv` and `Ax = b`. The first-order wrappers make the `|X| <= |A_inv|` and `|Y| <= |A_inv|` replacement assumptions explicit; the comparison theorem shows the exact-RHS right envelope is the left first-order envelope after one extra nonnegative `|A_inv||A|` amplification. Full asymptotic `O(u^2)` replacement calculus remains open.
+- The new Method 2B theorem for (14.14) assumes the off-diagonal block equation `X21 L11 + X22 L21 = 0` and the right-inverse certificate `L11 X11 = I`; it closes the exact formula and computed-delta wrapper, not the source instability analysis.
 - The new Problem 14.10 theorem states the determinant-independence condition as `adj(A)_{ji}=0`. For a nonsingular matrix this is equivalent to the corresponding inverse-entry condition after multiplying by the nonzero determinant factor.
 - The new p.279 `psi(A)` definitions expose both the nonnegative condition-number surface with denominator `|det(A)|` and the signed raw displayed ratio. The report treats the missing absolute value in the printed display as an implicit convention/typo audit, not as license to state a signed quantity as a condition number.
 - The new Problem 14.11 theorems close Hadamard's determinant inequality and the lower bound `1 <= psi(A)` for nonsingular matrices by reusing the Chapter 9 Gram determinant theorem. They also prove equality when rows are pairwise orthogonal; the converse/equivalence side of the equality characterization remains open.
@@ -212,6 +217,8 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.5 right and left forward-error theorems
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.5 first-order replacement and envelope-comparison theorems
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.10 determinant-independence theorems
+  - focused module build after adding the Method 2B exact (14.14) block-update wrappers
+  - stdin focused `#check`/`#print axioms` run for the new Method 2B (14.14) declarations
   - focused module build after the new (14.34) determinant wrappers
   - focused `#check`/`#print axioms` run for the new pivoted absolute-value (14.34) wrapper
   - focused module build after adding the Hyman exact block LU and determinant wrappers
@@ -219,8 +226,8 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
   - focused module build after adding the Method D exact (14.20)--(14.22) wrappers
   - stdin focused `#check`/`#print axioms` run for the new Method D (14.20)--(14.23) declarations
   - `lake env lean examples/LibraryLookup.lean`
-- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass before and after the upstream merge and after the Problem 14.3, Problem 14.4, Problem 14.5 residual/forward/first-order, Problem 14.10, p.279 `psi(A)`, Problem 14.11 inequality/equality-direction, Method D (14.20)--(14.23), (14.34), and Hyman (14.35)--(14.36) additions; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
-- New theorem axiom surface: the new Problem 14.3, Problem 14.4, Problem 14.5 residual/forward/first-order, Problem 14.7, Problem 14.10, p.279 `psi(A)`, Problem 14.11 inequality/equality-direction, Method D (14.20)--(14.23), (14.34), and Hyman (14.35)--(14.36) theorems use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`) when checked; the determinant wrappers inherit existing determinant/permutation/LU determinant facts.
+- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass before and after the upstream merge and after the Problem 14.3, Problem 14.4, Problem 14.5 residual/forward/first-order, Problem 14.10, p.279 `psi(A)`, Problem 14.11 inequality/equality-direction, Method 2B (14.14), Method D (14.20)--(14.23), (14.34), and Hyman (14.35)--(14.36) additions; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
+- New theorem axiom surface: the new Problem 14.3, Problem 14.4, Problem 14.5 residual/forward/first-order, Problem 14.7, Problem 14.10, p.279 `psi(A)`, Problem 14.11 inequality/equality-direction, Method 2B (14.14), Method D (14.20)--(14.23), (14.34), and Hyman (14.35)--(14.36) theorems use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`) when checked; the determinant wrappers inherit existing determinant/permutation/LU determinant facts.
 - Known verification issue: the full `examples/LibraryLookup.lean` run aborts with a stack overflow / exit 134 after producing large lookup output. Focused lookups for the new declarations pass, so this is recorded as a full-example scale issue rather than a failed declaration lookup.
 - New versus pre-existing warnings: a new unused-simp warning appeared during initial Problem 14.7 proof and was removed; the focused HighamChapter9 replay emits pre-existing `Fin.coe_castLE` deprecation / unused-simp warnings and a `ring_nf` tactic suggestion, unrelated to the Chapter 14 wrappers.
 
