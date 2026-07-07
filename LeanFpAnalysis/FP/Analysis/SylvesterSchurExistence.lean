@@ -173,6 +173,25 @@ theorem complexSylvesterVecCoeff_det_eq_prod_of_upperTriangular {m n : ℕ}
     (fun p : Prod (Fin n) (Fin m) => A p.2 p.2 - B p.1 p.1)
 
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3), supplied complex
+    triangular case: determinant nonsingularity is equivalent to pairwise
+    separation of the triangular diagonal entries. -/
+theorem complexSylvesterVecCoeff_det_ne_zero_iff_of_upperTriangular_diagonal_separation
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 ↔
+      ∀ i : Fin m, ∀ j : Fin n, A i i ≠ B j j := by
+  rw [complexSylvesterVecCoeff_det_eq_prod_of_upperTriangular A B hA hB]
+  constructor
+  · intro hdet i j hij
+    have hfactor :=
+      (Finset.prod_ne_zero_iff.mp hdet) (j, i) (Finset.mem_univ _)
+    exact hfactor (sub_eq_zero.mpr hij)
+  · intro hsep
+    exact Finset.prod_ne_zero_iff.mpr
+      (fun p _ => sub_ne_zero.mpr (hsep p.2 p.1))
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), supplied complex
     triangular determinant-nonsingularity consequence from pairwise diagonal
     separation. -/
 theorem complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_diagonal_separation
@@ -181,9 +200,50 @@ theorem complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_diagonal_separat
     (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B)
     (hsep : ∀ i : Fin m, ∀ j : Fin n, A i i ≠ B j j) :
     Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 := by
-  rw [complexSylvesterVecCoeff_det_eq_prod_of_upperTriangular A B hA hB]
-  exact Finset.prod_ne_zero_iff.mpr
-    (fun p _ => sub_ne_zero.mpr (hsep p.2 p.1))
+  exact
+    (complexSylvesterVecCoeff_det_ne_zero_iff_of_upperTriangular_diagonal_separation
+      A B hA hB).mpr hsep
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias for
+    the complex vec/Kronecker Sylvester coefficient. -/
+theorem H16_eq16_2_complexSylvesterVecCoeff {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ) :
+    complexSylvesterVecCoeff A B =
+      Matrix.kronecker (1 : Matrix (Fin n) (Fin n) ℂ) A -
+        Matrix.kronecker (Matrix.transpose B) (1 : Matrix (Fin m) (Fin m) ℂ) :=
+  rfl
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered alias for
+    the supplied complex triangular vec/Kronecker determinant product. -/
+theorem H16_eq16_3_complexSylvesterVecCoeff_det_eq_prod_of_upperTriangular
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B) :
+    Matrix.det (complexSylvesterVecCoeff A B) =
+      ∏ p : Prod (Fin n) (Fin m), (A p.2 p.2 - B p.1 p.1) :=
+  complexSylvesterVecCoeff_det_eq_prod_of_upperTriangular A B hA hB
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered alias for
+    the supplied complex triangular determinant/separation equivalence. -/
+theorem H16_eq16_3_complexSylvesterVecCoeff_det_ne_zero_iff_of_upperTriangular_diagonal_separation
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 ↔
+      ∀ i : Fin m, ∀ j : Fin n, A i i ≠ B j j :=
+  complexSylvesterVecCoeff_det_ne_zero_iff_of_upperTriangular_diagonal_separation
+    A B hA hB
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered alias for
+    supplied complex triangular nonsingularity from diagonal separation. -/
+theorem H16_eq16_3_complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_diagonal_separation
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B)
+    (hsep : ∀ i : Fin m, ∀ j : Fin n, A i i ≠ B j j) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 :=
+  complexSylvesterVecCoeff_det_ne_zero_of_upperTriangular_diagonal_separation
+    A B hA hB hsep
 
 -- ============================================================
 -- Complex Schur factors exist unconditionally
