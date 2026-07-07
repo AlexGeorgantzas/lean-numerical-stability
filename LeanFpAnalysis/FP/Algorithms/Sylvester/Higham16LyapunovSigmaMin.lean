@@ -53,6 +53,92 @@ theorem SepLowerBound_lyapunov_of_sigmaMin (n : Nat)
     sepLowerBound_of_sylvesterOp_sigmaMin n A
       (fun i j => -matTranspose A i j) sigma hsigma hSylv
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.26): source-numbered
+    alias for the Lyapunov sigma-min route to `SepLowerBound(A,-A^T)`. -/
+theorem H16_eq16_26_SepLowerBound_lyapunov_of_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y)) :
+    SepLowerBound n A (fun i j => -matTranspose A i j) sigma := by
+  exact SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a positive singular-value lower bound for the Lyapunov operator makes its
+    exact kernel trivial.
+
+    This is an operator-level invertibility consequence of the supplied
+    sigma-min certificate. It does not assume a separate `SepLowerBound`
+    certificate or a vectorized coefficient determinant. -/
+theorem lyapunovOp_eq_zero_iff_of_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (Y : Fin n -> Fin n -> Real) :
+    (forall i j, lyapunovOp n A Y i j = 0) <->
+      forall i j, Y i j = 0 := by
+  constructor
+  · intro hYop
+    have hOpNorm : frobNorm (lyapunovOp n A Y) = 0 :=
+      (frobNorm_eq_zero_iff (lyapunovOp n A Y)).mpr hYop
+    have hLower := hSigmaMin Y
+    rw [hOpNorm] at hLower
+    have hYnorm_nonneg : 0 <= frobNorm Y := frobNorm_nonneg Y
+    have hYnorm : frobNorm Y = 0 := by
+      nlinarith
+    exact (frobNorm_eq_zero_iff Y).mp hYnorm
+  · intro hY i j
+    unfold lyapunovOp matMul
+    simp [hY]
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    a positive Lyapunov operator sigma-min certificate eliminates the separate
+    `SepLowerBound` assumption in the local uniqueness API: two exact solutions
+    of `A X + X A^T = C` are equal.
+
+    Scope: exact arithmetic and certificate transfer only. Existence still
+    depends on the vectorized finite-dimensional solve infrastructure. -/
+theorem lyapunov_unique_solution_of_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (C X1 X2 : Fin n -> Fin n -> Real)
+    (hX1 : forall i j, lyapunovOp n A X1 i j = C i j)
+    (hX2 : forall i j, lyapunovOp n A X2 i j = C i j) :
+    forall i j, X1 i j = X2 i j := by
+  exact
+    lyapunov_unique_solution_of_sep n A sigma
+      (SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin)
+      C X1 X2 hX1 hX2
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and 16.3, equations (16.26)-(16.27):
+    under a positive Lyapunov operator sigma-min certificate, zero exact
+    Lyapunov residual norm certifies that the residual-zero candidate is the
+    unique exact solution.
+
+    Scope: exact arithmetic and certificate transfer only. This removes the
+    separate `SepLowerBound` assumption from the residual-zero uniqueness route;
+    it does not construct the sigma-min certificate or model rounded residual
+    arithmetic. -/
+theorem lyapunov_solution_eq_of_residual_norm_zero_sigmaMin (n : Nat)
+    (A C X Xhat : Fin n -> Fin n -> Real)
+    (sigma : Real) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hExact : forall i j, lyapunovOp n A X i j = C i j)
+    (hResidual : frobNorm (lyapunovResidual n A C Xhat) = 0) :
+    forall i j, X i j = Xhat i j := by
+  have hResidual_entries :
+      forall i j, lyapunovResidual n A C Xhat i j = 0 :=
+    (frobNorm_eq_zero_iff (lyapunovResidual n A C Xhat)).mp hResidual
+  have hXhat : forall i j, lyapunovOp n A Xhat i j = C i j := by
+    intro i j
+    have hzero := hResidual_entries i j
+    unfold lyapunovResidual at hzero
+    exact (sub_eq_zero.mp hzero).symm
+  exact
+    lyapunov_unique_solution_of_sigmaMin n A sigma hsigma hSigmaMin
+      C X Xhat hExact hXhat
+
 /-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
     in positive dimension, a supplied positive singular-value lower-bound
     certificate for the Lyapunov operator lower-bounds the exact infimum model
@@ -71,6 +157,62 @@ theorem sylvesterSepInf_lyapunov_ge_of_sigmaMin (n : Nat)
       (fun i j => -matTranspose A i j) sigma
       (SepLowerBound_lyapunov_of_sigmaMin n A sigma hsigma hSigmaMin)
       hn
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.26): source-numbered
+    alias for the Lyapunov sigma-min lower bound on the exact `sep(A,-A^T)`
+    infimum model. -/
+theorem H16_eq16_26_sylvesterSepInf_lyapunov_ge_of_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y)) :
+    sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact sylvesterSepInf_lyapunov_ge_of_sigmaMin n A sigma
+    hn hsigma hSigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
+    in positive dimension, a supplied positive singular-value lower-bound
+    certificate for the Lyapunov operator makes the exact infimum model of
+    `sep(A, -A^T)` strictly positive.
+
+    Scope: exact arithmetic and certificate transfer only. This theorem does
+    not construct `sigma` from spectral data, a Schur form, or a numerical
+    estimator. -/
+theorem sylvesterSepInf_lyapunov_pos_of_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y)) :
+    0 < sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    lt_of_lt_of_le hsigma
+      (sylvesterSepInf_lyapunov_ge_of_sigmaMin n A sigma
+        hn hsigma hSigmaMin)
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.26): source-numbered
+    alias for strict positivity of the Lyapunov exact `sep(A,-A^T)` infimum
+    from a supplied positive Lyapunov operator sigma-min certificate. -/
+theorem H16_eq16_26_sylvesterSepInf_lyapunov_pos_of_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y)) :
+    0 < sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact sylvesterSepInf_lyapunov_pos_of_sigmaMin n A sigma
+    hn hsigma hSigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
+    source-numbered alias for strict positivity of `sep(A, -A^T)` from a
+    supplied positive Lyapunov operator sigma-min certificate. -/
+theorem H16_eq16_27_sylvesterSepInf_lyapunov_pos_of_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y)) :
+    0 < sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    sylvesterSepInf_lyapunov_pos_of_sigmaMin n A sigma
+      hn hsigma hSigmaMin
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
     a supplied positive singular-value lower-bound certificate for the

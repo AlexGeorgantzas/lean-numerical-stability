@@ -15451,3 +15451,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check norm_pow_le_two_mul_numericalRadius_pow
 #check numericalRadiusCLM_pow_le
 #check numericalRadiusCLM_pow_pointwise_le_of_le_one
+-- Split-3B Wave-12: general-complex [106] semiconvergence limit (spectral-radius / norm-free)
+#check matPow_G_tendsto_oneEigenProjector_of_convergence
+#check matPow_G_tendsto_oneEigenProjector_of_spectralRadius
+#check matPow_blockJ_tendsto_topProjector_of_spectralRadius

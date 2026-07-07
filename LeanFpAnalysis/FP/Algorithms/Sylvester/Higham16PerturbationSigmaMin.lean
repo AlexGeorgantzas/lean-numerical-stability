@@ -330,6 +330,96 @@ theorem sylvester_relative_aposteriori_bound_of_sigmaMin_total (n : Nat)
   exact div_le_div_of_nonneg_right hAbs (le_of_lt hX_pos)
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    a supplied exact `SepLowerBound` plus an exact residual budget gives a
+    relative Frobenius forward-error budget for an approximate Sylvester
+    solution. -/
+theorem sylvester_relative_error_le_of_sepLowerBound_residual_budget (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma eta : Real) (hSep : SepLowerBound n A B sigma)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidual :
+      frobNorm (sylvesterResidual n A B C Xhat) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  have hRel :=
+    sylvester_relative_aposteriori_bound_of_sepLowerBound_total n
+      A B C X Xhat sigma hSep hExact hX_pos
+  have hScaled :
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+          frobNorm X <= eta := by
+    rw [div_le_iff₀ hX_pos]
+    rw [show (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) =
+        frobNorm (sylvesterResidual n A B C Xhat) / sigma by ring]
+    rw [div_le_iff₀ hSep.1]
+    calc
+      frobNorm (sylvesterResidual n A B C Xhat)
+          <= eta * sigma * frobNorm X := hResidual
+      _ = eta * frobNorm X * sigma := by ring
+  exact le_trans hRel hScaled
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    a sigma-min lower bound plus an exact residual budget gives a clean
+    relative Frobenius forward-error budget for an approximate Sylvester
+    solution. -/
+theorem sylvester_relative_error_le_of_sigmaMin_residual_budget (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma eta : Real) (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidual :
+      frobNorm (sylvesterResidual n A B C Xhat) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  have hRel :=
+    sylvester_relative_aposteriori_bound_of_sigmaMin_total n
+      A B C X Xhat sigma hSigma hSigmaMin hExact hX_pos
+  have hScaled :
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+          frobNorm X <= eta := by
+    rw [div_le_iff₀ hX_pos]
+    rw [show (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) =
+        frobNorm (sylvesterResidual n A B C Xhat) / sigma by ring]
+    rw [div_le_iff₀ hSigma]
+    calc
+      frobNorm (sylvesterResidual n A B C Xhat)
+          <= eta * sigma * frobNorm X := hResidual
+      _ = eta * frobNorm X * sigma := by ring
+  exact le_trans hRel hScaled
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    a positive lower bound on the exact `sep(A,B)` infimum plus a Frobenius
+    residual budget gives the source-shaped relative forward-error bound. -/
+theorem sylvester_relative_error_le_of_pos_le_sylvesterSepInf_residual_budget
+    (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma eta : Real) (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidual :
+      frobNorm (sylvesterResidual n A B C Xhat) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  have hRel :=
+    sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf_total n
+      A B C X Xhat sigma hSigma hle hExact hX_pos
+  have hScaled :
+      ((1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat)) /
+          frobNorm X <= eta := by
+    rw [div_le_iff₀ hX_pos]
+    rw [show (1 / sigma) * frobNorm (sylvesterResidual n A B C Xhat) =
+        frobNorm (sylvesterResidual n A B C Xhat) / sigma by ring]
+    rw [div_le_iff₀ hSigma]
+    calc
+      frobNorm (sylvesterResidual n A B C Xhat)
+          <= eta * sigma * frobNorm X := hResidual
+      _ = eta * frobNorm X * sigma := by ring
+  exact le_trans hRel hScaled
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
     source-numbered alias for the total relative sigma-min a posteriori bound. -/
 theorem H16_eq16_28_sylvester_relative_aposteriori_bound_of_sigmaMin_total
     (n : Nat)
@@ -345,5 +435,59 @@ theorem H16_eq16_28_sylvester_relative_aposteriori_bound_of_sigmaMin_total
   exact
     sylvester_relative_aposteriori_bound_of_sigmaMin_total n
       A B C X Xhat sigma hSigma hSigmaMin hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the exact-`sep(A,B)` residual-budget relative
+    Frobenius forward-error bound. -/
+theorem H16_eq16_28_sylvester_relative_error_le_of_pos_le_sylvesterSepInf_residual_budget
+    (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma eta : Real) (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidual :
+      frobNorm (sylvesterResidual n A B C Xhat) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_pos_le_sylvesterSepInf_residual_budget n
+      A B C X Xhat sigma eta hSigma hle hExact hX_pos hResidual
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the `SepLowerBound` residual-budget relative
+    Frobenius forward-error bound. -/
+theorem H16_eq16_28_sylvester_relative_error_le_of_sepLowerBound_residual_budget
+    (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma eta : Real) (hSep : SepLowerBound n A B sigma)
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidual :
+      frobNorm (sylvesterResidual n A B C Xhat) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_sepLowerBound_residual_budget n
+      A B C X Xhat sigma eta hSep hExact hX_pos hResidual
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the supplied-operator-sigma-min residual-budget
+    relative Frobenius forward-error bound. -/
+theorem H16_eq16_28_sylvester_relative_error_le_of_sigmaMin_residual_budget
+    (n : Nat)
+    (A B C X Xhat : Fin n -> Fin n -> Real)
+    (sigma eta : Real) (hSigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidual :
+      frobNorm (sylvesterResidual n A B C Xhat) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_sigmaMin_residual_budget n
+      A B C X Xhat sigma eta hSigma hSigmaMin hExact hX_pos hResidual
 
 end LeanFpAnalysis.FP

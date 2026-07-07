@@ -7,6 +7,7 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16PerturbationSigmaMin
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16PsiSigmaMin
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16LyapunovSigmaMin
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Spectrum
 
 namespace LeanFpAnalysis.FP
 
@@ -475,6 +476,310 @@ theorem existsUnique_finiteMatrix_mulVec_of_det_ne_zero
   refine ⟨x, hx, ?_⟩
   intro y hy
   exact hinj (by rw [hy, hx])
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.3):
+    determinant nonsingularity of the Sylvester vec/Kronecker coefficient
+    gives a unique exact real Sylvester matrix solution for every right-hand
+    side. -/
+theorem existsUnique_isSylvesterSolutionRect_of_sylvesterVecCoeff_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hdet : Matrix.det (sylvesterVecCoeff m n A B) ≠ 0) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  obtain ⟨x, hx, huniq⟩ :=
+    existsUnique_finiteMatrix_mulVec_of_det_ne_zero
+      (sylvesterVecCoeff m n A B) hdet (Matrix.vec C)
+  obtain ⟨X, hXvec⟩ := Matrix.vec_bijective.surjective x
+  refine ⟨X, ?_, ?_⟩
+  · exact
+      (sylvester_vec_system_iff_solution m n A B C X).mp
+        (by rw [hXvec]; exact hx)
+  · intro Y hY
+    apply Matrix.vec_inj.mp
+    have hYvec :
+        Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec Y) =
+          Matrix.vec C :=
+      (sylvester_vec_system_iff_solution m n A B C Y).mpr hY
+    rw [huniq (Matrix.vec Y) hYvec, hXvec]
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.3):
+    source-numbered alias for the determinant-to-matrix Sylvester unique-solve
+    bridge. -/
+theorem H16_eq16_3_existsUnique_isSylvesterSolutionRect_of_sylvesterVecCoeff_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hdet : Matrix.det (sylvesterVecCoeff m n A B) ≠ 0) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_sylvesterVecCoeff_det_ne_zero
+    m n A B C hdet
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
+    supplied complex right eigenpair for the complexified real factors makes
+    the real Sylvester vec coefficient action injective. -/
+theorem sylvesterVecCoeff_mulVec_injective_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j))) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    finiteMatrix_mulVec_injective_of_det_ne_zero
+      (sylvesterVecCoeff m n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
+    supplied complex right eigenpair for the complexified real factors gives
+    the exact zero-kernel characterization for the real Sylvester vec
+    coefficient. -/
+theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j)))
+    (x : Prod (Fin n) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff m n A B) x = 0 ↔ x = 0 := by
+  exact
+    finiteMatrix_mulVec_eq_zero_iff_of_det_ne_zero
+      (sylvesterVecCoeff m n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
+      x
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
+    supplied complex right eigenpair for the complexified real factors makes
+    the real Sylvester vec coefficient action surjective. -/
+theorem sylvesterVecCoeff_mulVec_surjective_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j))) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    finiteMatrix_mulVec_surjective_of_det_ne_zero
+      (sylvesterVecCoeff m n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
+    supplied complex right eigenpair for the complexified real factors makes
+    the real Sylvester vec coefficient solve bijective. -/
+theorem sylvesterVecCoeff_mulVec_bijective_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j))) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    finiteMatrix_mulVec_bijective_of_det_ne_zero
+      (sylvesterVecCoeff m n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
+    supplied complex right eigenpair for the complexified real factors gives a
+    unique vectorized real Sylvester coefficient solution for every right-hand
+    side. -/
+theorem existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j)))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ∃! x : Prod (Fin n) (Fin m) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c := by
+  exact
+    existsUnique_finiteMatrix_mulVec_of_det_ne_zero
+      (sylvesterVecCoeff m n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
+      c
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
+    supplied complex right eigenpair for the complexified real factors gives a
+    unique vectorized real Sylvester coefficient solution whose witness is
+    Mathlib's nonsingular-inverse vector formula. -/
+theorem existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j)))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c ∧
+        x = Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c := by
+  exact
+    existsUnique_finiteMatrix_nonsingInv_mulVec_solution_of_det_ne_zero
+      (sylvesterVecCoeff m n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
+      c
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors makes the real Sylvester vec coefficient action
+    injective. -/
+theorem sylvesterVecCoeff_mulVec_injective_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    sylvesterVecCoeff_mulVec_injective_of_no_common_complex_eigenpair
+      m n A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors gives the exact zero-kernel characterization for
+    the real Sylvester vec coefficient. -/
+theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (x : Prod (Fin n) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff m n A B) x = 0 <-> x = 0 := by
+  exact
+    sylvesterVecCoeff_mulVec_eq_zero_iff_of_no_common_complex_eigenpair
+      m n A B hno x
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors makes the real Sylvester vec coefficient action
+    surjective. -/
+theorem sylvesterVecCoeff_mulVec_surjective_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    sylvesterVecCoeff_mulVec_surjective_of_no_common_complex_eigenpair
+      m n A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors makes the real Sylvester vec coefficient solve
+    bijective. -/
+theorem sylvesterVecCoeff_mulVec_bijective_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    sylvesterVecCoeff_mulVec_bijective_of_no_common_complex_eigenpair
+      m n A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors gives a unique vectorized real Sylvester
+    coefficient solution for every right-hand side. -/
+theorem existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c := by
+  exact
+    existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair
+      m n A B hno c
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors gives a unique vectorized solution whose witness
+    is Mathlib's nonsingular-inverse vector formula. -/
+theorem existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c ∧
+        x = Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c := by
+  exact
+    existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_eigenpair
+      m n A B hno c
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the named no-common-complex-right-eigenvalue
+    real vec/Kronecker unique-solve route. -/
+theorem H16_eq16_3_existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c :=
+  existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_right_eigenvalue
+    m n A B hno c
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the named no-common-complex-right-eigenvalue
+    real vec/Kronecker unique-solve route with the explicit nonsingular-inverse
+    vector formula. -/
+theorem H16_eq16_3_existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c ∧
+        x = Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c :=
+  existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_right_eigenvalue
+    m n A B hno c
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.6): no common
+    supplied complex right eigenpair for the complexified real factors gives a
+    unique exact real Sylvester matrix solution for every right-hand side. -/
+theorem existsUnique_isSylvesterSolutionRect_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j))) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  obtain ⟨x, hx, huniq⟩ :=
+    existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair
+      m n A B hno (Matrix.vec C)
+  obtain ⟨X, hXvec⟩ := Matrix.vec_bijective.surjective x
+  refine ⟨X, ?_, ?_⟩
+  · exact
+      (sylvester_vec_system_iff_solution m n A B C X).mp
+        (by rw [hXvec]; exact hx)
+  · intro Y hY
+    apply Matrix.vec_inj.mp
+    have hYvec :
+        Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec Y) =
+          Matrix.vec C :=
+      (sylvester_vec_system_iff_solution m n A B C Y).mpr hY
+    rw [huniq (Matrix.vec Y) hYvec, hXvec]
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.6), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors gives a unique exact real Sylvester matrix
+    solution for every right-hand side. -/
+theorem existsUnique_isSylvesterSolutionRect_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  exact existsUnique_isSylvesterSolutionRect_of_no_common_complex_eigenpair
+    m n A B C hno
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the named no-common-complex-right-eigenvalue
+    exact real Sylvester matrix unique-solve route. -/
+theorem H16_eq16_3_existsUnique_isSylvesterSolutionRect_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_no_common_complex_right_eigenvalue
+    m n A B C hno
 
 /-- A concrete left inverse and operator-2 radius for the printed Sylvester
     vec/Kronecker coefficient gives its sigma-min lower-bound route directly,
@@ -2465,6 +2770,36 @@ theorem H16_eq16_26_sylvesterVecCoeff_mulVec_eq_zero_iff_of_operator_sigmaMin
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     a Sylvester operator sigma-min certificate makes the vectorized
+    coefficient map injective. -/
+theorem sylvesterVecCoeff_mulVec_injective_of_operator_sigmaMin
+    (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff n n A B)) := by
+  exact
+    finiteMatrix_mulVec_injective_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_operator_sigmaMin
+        n A B sigma hsigma hSigmaMin)
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    a Sylvester operator sigma-min certificate makes the vectorized
+    coefficient map surjective. -/
+theorem sylvesterVecCoeff_mulVec_surjective_of_operator_sigmaMin
+    (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff n n A B)) := by
+  exact
+    finiteMatrix_mulVec_surjective_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_operator_sigmaMin
+        n A B sigma hsigma hSigmaMin)
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    a Sylvester operator sigma-min certificate makes the vectorized
     coefficient solve bijective. -/
 theorem sylvesterVecCoeff_mulVec_bijective_of_operator_sigmaMin
     (n : Nat) (A B : Fin n -> Fin n -> Real) (sigma : Real)
@@ -3158,6 +3493,21 @@ theorem sylvesterSepInf_ge_of_vecCoeff_sigmaMin (n : Nat)
       (SepLowerBound_of_vecCoeff_sigmaMin n A B sigma hsigma hCoeff) hn
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
+    in positive dimension, a positive lower bound for the concrete vectorized
+    Sylvester coefficient makes the exact `sep` infimum strictly positive. -/
+theorem sylvesterSepInf_pos_of_vecCoeff_sigmaMin (n : Nat)
+    (A B : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x)) :
+    0 < sylvesterSepInf n A B := by
+  exact
+    lt_of_lt_of_le hsigma
+      (sylvesterSepInf_ge_of_vecCoeff_sigmaMin n A B sigma
+        hn hsigma hCoeff)
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
     a positive Gram-eigenvalue lower bound for the concrete vectorized
     Sylvester coefficient gives a `SepLowerBound` certificate. -/
 theorem SepLowerBound_of_vecCoeff_gram_eigenvalues (n : Nat)
@@ -3190,6 +3540,24 @@ theorem sylvesterSepInf_ge_of_vecCoeff_gram_eigenvalues (n : Nat)
   exact
     SepLowerBound_le_sylvesterSepInf_of_pos_dim n A B (Real.sqrt lam)
       (SepLowerBound_of_vecCoeff_gram_eigenvalues n A B hlam hEig) hn
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
+    in positive dimension, a positive Gram-eigenvalue lower bound for the
+    concrete vectorized Sylvester coefficient makes the exact `sep` infimum
+    strictly positive. -/
+theorem sylvesterSepInf_pos_of_vecCoeff_gram_eigenvalues (n : Nat)
+    (A B : Fin n -> Fin n -> Real) {lam : Real}
+    (hn : 0 < n) (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p) :
+    0 < sylvesterSepInf n A B := by
+  exact
+    lt_of_lt_of_le (Real.sqrt_pos.mpr hlam)
+      (sylvesterSepInf_ge_of_vecCoeff_gram_eigenvalues n A B
+        hn hlam hEig)
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
     a supplied concrete left inverse for the printed vec/Kronecker Sylvester
@@ -3227,6 +3595,22 @@ theorem sylvesterSepInf_ge_of_vecCoeff_left_inverse_finiteOpNorm2Le
       (SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
         n A B Pinv hM hLeft hPinv)
       hn
+
+/-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
+    in positive dimension, a supplied concrete left inverse for the printed
+    vec/Kronecker Sylvester coefficient makes the exact `sep` infimum strictly
+    positive. -/
+theorem sylvesterSepInf_pos_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A B : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hn : 0 < n) (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    0 < sylvesterSepInf n A B := by
+  exact
+    lt_of_lt_of_le (one_div_pos.mpr hM)
+      (sylvesterSepInf_ge_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A B Pinv hn hM hLeft hPinv)
 
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
     in the diagonal case, a uniform lower bound on the coefficient magnitudes
@@ -3327,6 +3711,35 @@ theorem sylvesterVecCoeff_diagonal_det_ne_zero_of_entrywise_abs_ge
       (Matrix.diagonal a) (Matrix.diagonal b) hsigma
       (sylvesterVecCoeff_diagonal_sigmaMin_of_entrywise_abs_ge n
         a b sigma (le_of_lt hsigma) hgap)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
+    in positive dimension, pairwise spectral-coordinate exclusion
+    `a_i != b_j` supplies a concrete positive minimum gap
+    `sigma <= |a_i - b_j|`. -/
+theorem exists_pos_sylvesterDiagonalGap_of_entrywise_ne (n : Nat)
+    (a b : Fin n -> Real) (hn : 0 < n)
+    (hsep : forall i j, a i ≠ b j) :
+    ∃ sigma : Real, 0 < sigma ∧ forall i j, sigma <= |a i - b j| := by
+  classical
+  let gaps : Finset Real :=
+    (Finset.univ : Finset (Prod (Fin n) (Fin n))).image
+      (fun p : Prod (Fin n) (Fin n) => |a p.1 - b p.2|)
+  have hgaps_ne : gaps.Nonempty := by
+    let i0 : Fin n := ⟨0, hn⟩
+    refine ⟨|a i0 - b i0|, ?_⟩
+    exact Finset.mem_image.mpr ⟨(i0, i0), by simp, rfl⟩
+  refine ⟨gaps.min' hgaps_ne, ?_, ?_⟩
+  · have hmem : gaps.min' hgaps_ne ∈ gaps := Finset.min'_mem gaps hgaps_ne
+    obtain ⟨p, _hp, hpval⟩ := Finset.mem_image.mp hmem
+    have hdiff_ne : a p.1 - b p.2 ≠ 0 := by
+      intro hzero
+      exact hsep p.1 p.2 (sub_eq_zero.mp hzero)
+    have hpos : 0 < |a p.1 - b p.2| := abs_pos.mpr hdiff_ne
+    simpa [hpval] using hpos
+  · intro i j
+    exact
+      Finset.min'_le gaps (|a i - b j|)
+        (Finset.mem_image.mpr ⟨(i, j), by simp, rfl⟩)
 
 /-- Higham, 2nd ed., Chapter 16.1 and equation (16.26), diagonal case:
     the concrete diagonal vec/Kronecker lower bound transfers to the
@@ -3488,6 +3901,54 @@ theorem sylvesterVecCoeff_schurDiagonal_gram_eigenvalues_ge_of_entrywise_abs_ge
       (sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
         U A V B a b sigma hU hV hA hB hsigma hgap)
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
+    for supplied orthogonal diagonal Schur coordinates, spectral-coordinate
+    exclusion `a_i != b_j` supplies some positive sigma-min lower bound for the
+    original vec/Kronecker Sylvester coefficient. -/
+theorem exists_sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    ∃ sigma : Real, 0 < sigma ∧
+      forall x : Prod (Fin n) (Fin n) -> Real,
+        sigma * finiteVecNorm2 x <=
+          finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x) := by
+  obtain ⟨sigma, hsigma, hgap⟩ :=
+    exists_pos_sylvesterDiagonalGap_of_entrywise_ne n a b hn hsep
+  refine ⟨sigma, hsigma, ?_⟩
+  exact
+    sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
+      U A V B a b sigma hU hV hA hB hsigma hgap
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
+    for supplied orthogonal diagonal Schur coordinates, spectral-coordinate
+    exclusion `a_i != b_j` supplies a positive Gram-eigenvalue lower bound for
+    the original vec/Kronecker Sylvester coefficient. -/
+theorem exists_sylvesterVecCoeff_schurDiagonal_gram_eigenvalues_ge_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    ∃ sigma : Real, 0 < sigma ∧
+      forall p : Prod (Fin n) (Fin n),
+        sigma ^ 2 <= finiteHermitianEigenvalues
+          (finiteMatrixGram (sylvesterVecCoeff n n A B))
+          (isSymmetricFiniteMatrix_finiteMatrixGram
+            (sylvesterVecCoeff n n A B)) p := by
+  obtain ⟨sigma, hsigma, hgap⟩ :=
+    exists_pos_sylvesterDiagonalGap_of_entrywise_ne n a b hn hsep
+  refine ⟨sigma, hsigma, ?_⟩
+  exact
+    sylvesterVecCoeff_schurDiagonal_gram_eigenvalues_ge_of_entrywise_abs_ge n
+      U A V B a b sigma hU hV hA hB hsigma hgap
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
     orthogonal diagonal Schur-coordinate case: a positive coordinate gap makes
     the original square vec/Kronecker Sylvester coefficient nonsingular. -/
@@ -3506,6 +3967,213 @@ theorem sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_abs_ge
       A B hsigma
       (sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_abs_ge n
         U A V B a b sigma hU hV hA hB hsigma hgap)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    pairwise spectral-coordinate exclusion makes the original square
+    vec/Kronecker Sylvester coefficient nonsingular. -/
+theorem sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    (sylvesterVecCoeff n n A B).det ≠ 0 := by
+  obtain ⟨sigma, hsigma, hgap⟩ :=
+    exists_pos_sylvesterDiagonalGap_of_entrywise_ne n a b hn hsep
+  exact
+    sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_abs_ge n
+      U A V B a b sigma hU hV hA hB hsigma hgap
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion gives the exact trivial-kernel statement for
+    the original vec/Kronecker Sylvester coefficient. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_eq_zero_iff_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    (x : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B) x = 0 ↔ x = 0 := by
+  exact
+    sylvesterVecCoeff_mulVec_eq_zero_iff_of_det_ne_zero n A B
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+      x
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion makes the original vectorized coefficient
+    action injective. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_injective_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff n n A B)) := by
+  exact
+    finiteMatrix_mulVec_injective_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion makes the original vectorized coefficient
+    action surjective. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_surjective_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff n n A B)) := by
+  exact
+    finiteMatrix_mulVec_surjective_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion makes the original vectorized coefficient
+    solve bijective. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_bijective_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff n n A B)) := by
+  exact
+    finiteMatrix_mulVec_bijective_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion gives a unique vectorized coefficient
+    solution for every right-hand side. -/
+theorem existsUnique_sylvesterVecCoeff_schurDiagonal_mulVec_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    (c : Prod (Fin n) (Fin n) -> Real) :
+    ∃! x : Prod (Fin n) (Fin n) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff n n A B) x = c := by
+  exact
+    existsUnique_finiteMatrix_mulVec_of_det_ne_zero
+      (sylvesterVecCoeff n n A B)
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+      c
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion gives the right nonsingular-inverse action
+    for the original vectorized coefficient. -/
+theorem sylvesterVecCoeff_schurDiagonal_mulVec_nonsingInv_mulVec_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    (rhs : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B)
+        (Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹ rhs) =
+      rhs := by
+  exact
+    sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero n A B
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+      rhs
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion gives the left nonsingular-inverse action
+    for the original vectorized coefficient. -/
+theorem sylvesterVecCoeff_schurDiagonal_nonsingInv_mulVec_mulVec_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    (z : Prod (Fin n) (Fin n) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹
+        (Matrix.mulVec (sylvesterVecCoeff n n A B) z) =
+      z := by
+  exact
+    sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_det_ne_zero n A B
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+      z
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion identifies every exact vectorized coefficient
+    solution with the nonsingular-inverse vector. -/
+theorem sylvesterVecCoeff_schurDiagonal_eq_nonsingInv_mulVec_of_mulVec_eq_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    {z rhs : Prod (Fin n) (Fin n) -> Real}
+    (hz : Matrix.mulVec (sylvesterVecCoeff n n A B) z = rhs) :
+    z = Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹ rhs := by
+  exact
+    sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_det_ne_zero
+      n A B
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+      hz
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5), supplied
+    orthogonal diagonal Schur-coordinate case:
+    spectral-coordinate exclusion gives the unique vectorized coefficient
+    solution together with its nonsingular-inverse formula. -/
+theorem existsUnique_sylvesterVecCoeff_schurDiagonal_nonsingInv_mulVec_solution_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j)
+    (c : Prod (Fin n) (Fin n) -> Real) :
+    ∃! x : Prod (Fin n) (Fin n) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff n n A B) x = c ∧
+        x = Matrix.mulVec (sylvesterVecCoeff n n A B)⁻¹ c := by
+  exact
+    existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_det_ne_zero
+      n A B
+      (sylvesterVecCoeff_schurDiagonal_det_ne_zero_of_entrywise_ne n
+        U A V B a b hn hU hV hA hB hsep)
+      c
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.26), supplied orthogonal
     diagonal Schur-coordinate case:
@@ -3565,6 +4233,44 @@ theorem sylvesterSepInf_schurDiagonal_ge_of_entrywise_abs_ge_of_pos_dim
       (SepLowerBound_schurDiagonal_of_entrywise_abs_ge n
         U A V B a b sigma hU hV hA hB hsigma hgap)
       hn
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), and equation
+    (16.26): for supplied orthogonal diagonal Schur coordinates, pairwise
+    spectral-coordinate exclusion gives some positive `SepLowerBound`
+    certificate for the original Sylvester operator. -/
+theorem exists_SepLowerBound_schurDiagonal_of_entrywise_ne (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    ∃ sigma : Real, SepLowerBound n A B sigma := by
+  obtain ⟨sigma, hsigma, hgap⟩ :=
+    exists_pos_sylvesterDiagonalGap_of_entrywise_ne n a b hn hsep
+  exact
+    ⟨sigma, SepLowerBound_schurDiagonal_of_entrywise_abs_ge n
+      U A V B a b sigma hU hV hA hB hsigma hgap⟩
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), and equation
+    (16.26): for supplied orthogonal diagonal Schur coordinates, pairwise
+    spectral-coordinate exclusion gives a positive lower bound on the exact
+    `sep(A,B)` infimum model. -/
+theorem exists_sylvesterSepInf_schurDiagonal_pos_lower_bound_of_entrywise_ne
+    (n : Nat)
+    (U A V B : Fin n -> Fin n -> Real) (a b : Fin n -> Real)
+    (hn : 0 < n)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul (Matrix.diagonal a) (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul (Matrix.diagonal b) (matTranspose V)))
+    (hsep : forall i j, a i ≠ b j) :
+    ∃ sigma : Real, 0 < sigma ∧ sigma <= sylvesterSepInf n A B := by
+  obtain ⟨sigma, hsigma, hgap⟩ :=
+    exists_pos_sylvesterDiagonalGap_of_entrywise_ne n a b hn hsep
+  refine ⟨sigma, hsigma, ?_⟩
+  exact
+    sylvesterSepInf_schurDiagonal_ge_of_entrywise_abs_ge_of_pos_dim n
+      U A V B a b sigma hU hV hA hB hsigma hgap hn
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27),
     supplied orthogonal spectral-coordinate Lyapunov case:
@@ -3704,6 +4410,22 @@ theorem sylvesterSepInf_lyapunov_ge_of_vecCoeff_sigmaMin (n : Nat)
         n A sigma hsigma hCoeff)
       hn
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    in positive dimension, a positive lower bound for the concrete vectorized
+    Lyapunov coefficient makes the exact `sep(A, -A^T)` infimum strictly
+    positive. -/
+theorem sylvesterSepInf_lyapunov_pos_of_vecCoeff_sigmaMin (n : Nat)
+    (A : Fin n -> Fin n -> Real) (sigma : Real)
+    (hn : 0 < n) (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (lyapunovVecCoeff n A) x)) :
+    0 < sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    lt_of_lt_of_le hsigma
+      (sylvesterSepInf_lyapunov_ge_of_vecCoeff_sigmaMin n A sigma
+        hn hsigma hCoeff)
+
 /-- A concrete left inverse and operator-2 radius for the printed Lyapunov
     vec/Kronecker coefficient gives the Lyapunov operator sigma-min lower
     bound. -/
@@ -3761,6 +4483,22 @@ theorem sylvesterSepInf_lyapunov_ge_of_vecCoeff_left_inverse_finiteOpNorm2Le
       (SepLowerBound_lyapunov_of_vecCoeff_left_inverse_finiteOpNorm2Le
         n A Pinv hM hLeft hPinv)
       hn
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    in positive dimension, a concrete left inverse and operator-2 radius for
+    the printed Lyapunov vec/Kronecker coefficient make the exact
+    `sep(A, -A^T)` infimum strictly positive. -/
+theorem sylvesterSepInf_lyapunov_pos_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A : Fin n -> Fin n -> Real)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hn : 0 < n) (hM : 0 < M)
+    (hLeft : Pinv * lyapunovVecCoeff n A = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    0 < sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    lt_of_lt_of_le (one_div_pos.mpr hM)
+      (sylvesterSepInf_lyapunov_ge_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A Pinv hn hM hLeft hPinv)
 
 /-- A concrete left inverse and operator-2 radius for the printed Lyapunov
     vec/Kronecker coefficient gives the inverse-operator bound used by the
@@ -3849,6 +4587,24 @@ theorem sylvesterSepInf_lyapunov_ge_of_vecCoeff_gram_eigenvalues
       (SepLowerBound_lyapunov_of_vecCoeff_gram_eigenvalues
         n A hlam hsqrt hEig)
       hn
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    in positive dimension, a supplied Gram-eigenvalue lower bound for the
+    concrete vectorized Lyapunov coefficient makes the exact `sep(A, -A^T)`
+    infimum strictly positive. -/
+theorem sylvesterSepInf_lyapunov_pos_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A : Fin n -> Fin n -> Real) {lam : Real}
+    (hn : 0 < n) (hlam : 0 <= lam) (hsqrt : 0 < Real.sqrt lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (lyapunovVecCoeff n A))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (lyapunovVecCoeff n A)) p) :
+    0 < sylvesterSepInf n A (fun i j => -matTranspose A i j) := by
+  exact
+    lt_of_lt_of_le hsqrt
+      (sylvesterSepInf_lyapunov_ge_of_vecCoeff_gram_eigenvalues
+        n A hn hlam hsqrt hEig)
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
     a uniform lower bound on the diagonal Lyapunov coefficient magnitudes
