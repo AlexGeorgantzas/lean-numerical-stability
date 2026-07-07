@@ -1698,6 +1698,78 @@ theorem sylvesterTwoColumnRealSchurBlock_no_real_eigenvector_of_delta_sq_ne_zero
   have hsquare_nonneg : 0 ≤ (T p p + T q q - 2 * nu) ^ 2 := sq_nonneg _
   nlinarith
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), converse
+    two-by-two spectral certificate: a nonnegative real discriminant for the
+    adjacent real Schur block gives a concrete real eigenline.  This is the
+    algebraic obstruction to treating such a block as a genuine irreducible
+    real `2 x 2` block. -/
+theorem sylvesterTwoColumnRealSchurBlock_exists_real_eigenvector_of_disc_nonneg
+    (n : Nat) (T : RMatFn n n) (p q : Fin n)
+    (hdisc :
+      0 ≤ (T p p - T q q) ^ 2 + 4 * T p q * T q p) :
+    exists x : Fin 2 -> Real, x ≠ 0 ∧
+      exists nu : Real,
+        Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+          fun k => nu * x k := by
+  by_cases hsub : T q p = 0
+  · let x : Fin 2 -> Real := fun k => if k = 0 then 1 else 0
+    refine ⟨x, ?_, T p p, ?_⟩
+    · intro hx
+      have hcoord := congrFun hx (0 : Fin 2)
+      norm_num [x] at hcoord
+    · funext k
+      fin_cases k
+      · simp [x, Matrix.mulVec, dotProduct, sylvesterTwoColumnRealSchurBlock]
+      · simp [x, Matrix.mulVec, dotProduct, sylvesterTwoColumnRealSchurBlock,
+          hsub]
+  · let disc : Real := (T p p - T q q) ^ 2 + 4 * T p q * T q p
+    let nu : Real := (T p p + T q q + Real.sqrt disc) / 2
+    let x : Fin 2 -> Real := fun k => if k = 0 then nu - T q q else T q p
+    have hdisc_nonneg : 0 ≤ disc := by
+      dsimp [disc]
+      exact hdisc
+    have hsqrt : (Real.sqrt disc) ^ 2 = disc := Real.sq_sqrt hdisc_nonneg
+    have hroot : (T p p - nu) * (T q q - nu) - T p q * T q p = 0 := by
+      dsimp [nu, disc] at hsqrt ⊢
+      nlinarith [hsqrt]
+    refine ⟨x, ?_, nu, ?_⟩
+    · intro hx
+      have hcoord := congrFun hx (1 : Fin 2)
+      exact hsub (by simpa [x] using hcoord)
+    · funext k
+      fin_cases k
+      · have hcoord :
+            T p p * (nu - T q q) + T p q * T q p =
+              nu * (nu - T q q) := by
+          nlinarith [hroot]
+        simpa [x, Matrix.mulVec, dotProduct, sylvesterTwoColumnRealSchurBlock,
+          Fin.sum_univ_two] using hcoord
+      · have hcoord :
+            T q p * (nu - T q q) + T q q * T q p =
+              nu * T q p := by
+          ring
+        simpa [x, Matrix.mulVec, dotProduct, sylvesterTwoColumnRealSchurBlock,
+          Fin.sum_univ_two] using hcoord
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), irreducible
+    real `2 x 2` block discriminant certificate: if the adjacent real Schur
+    block has no nonzero real eigenline, then its discriminant is negative. -/
+theorem sylvesterTwoColumnRealSchurBlock_disc_neg_of_no_real_eigenvector
+    (n : Nat) (T : RMatFn n n) (p q : Fin n)
+    (hno :
+      forall x : Fin 2 -> Real, x ≠ 0 ->
+        Not (exists nu : Real,
+          Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+            fun k => nu * x k)) :
+    (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0 := by
+  by_contra hnot
+  have hdisc :
+      0 ≤ (T p p - T q q) ^ 2 + 4 * T p q * T q p := by
+    linarith
+  rcases sylvesterTwoColumnRealSchurBlock_exists_real_eigenvector_of_disc_nonneg
+      n T p q hdisc with ⟨x, hxne, nu, hnu⟩
+  exact hno x hxne ⟨nu, hnu⟩
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), matrix
     intertwining form: the coupled active-column equations are equivalent to
     `A * U = U * J`, where `U` is the two-column matrix `(u, v)` and `J` is
