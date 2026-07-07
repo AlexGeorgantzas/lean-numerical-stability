@@ -11268,3 +11268,28 @@ These compile, but should not be treated as fully derived stability results:
   axioms `propext`, `Classical.choice`, and `Quot.sound`; lookup stderr was
   empty and the later nonzero exit was still from unrelated stale
   non-Chapter-13 lookup rows.
+
+- 2026-07-07 Theorem 13.7 BDD stage-1 active-pivot bridge: added
+  `higham13_algorithm13_3_stage1_pivot_eq_first_schur_tail_diag`,
+  `higham13_algorithm13_3_stage1_pivot_nonsingInv_isInverse_of_first_schur_tail_blockDiagDomCol_diagBound_nonpos`,
+  `higham13_algorithm13_3_stage1_pivot_right_inverse_of_pivotInv_eq_nonsingInv_first_schur_tail_blockDiagDomCol_diagBound_nonpos`,
+  and
+  `higham13_algorithm13_3_stage1_pivot_det_ne_zero_of_first_schur_tail_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These identify the
+  original Algorithm 13.3 stage-1 active pivot with the first diagonal block
+  of `blockSchur A (pivotInv 0)` and transport the first Schur-tail BDD
+  diagonal inverse handoff back to the original stage-indexed pivot surface.
+  The right-inverse wrapper accepts
+  `pivotInv 1 = nonsingInv r ((blockSchur A (pivotInv 0)) 0 0)`, giving the
+  exact stage-1 pivot certificate consumed by downstream matrix-stage APIs.
+  This closes a stage-index bridge only; the source-strength tail BDD/source
+  reciprocal table, entrywise max-growth product/update data, Problem 13.4
+  all-tail comparisons, and Theorem 13.6 cited implementation estimates
+  remain open.  Verification passed: focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU:olean`, `git diff --check`, touched
+  Lean marker scan, scratch prototype, expanded scratch axiom audit, and
+  redirected public lookup presence.  The axiom audit reported only standard
+  Mathlib axioms `propext`, `Classical.choice`, and `Quot.sound`; lookup
+  stderr was empty and the later nonzero exit was still from unrelated stale
+  non-Chapter-13 lookup rows.
