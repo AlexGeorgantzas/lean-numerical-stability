@@ -2124,9 +2124,11 @@ This wrapper specializes
 `theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_completion_preservation_accumulated_error_nat`
 to the signed stored-QR stage vectors and betas.  It discharges the generic
 completion-time and completed-row preservation fields using the signed-stage
-completion adapters plus the stored-panel/RHS preservation adapters.  Row
-sorting, exact same-reflector growth, compact-budget domination, and accumulated
-computed/exact error domination remain explicit obligations. -/
+completion adapters plus the stored-panel/RHS preservation adapters.  Matrix
+completed-row preservation is derived from the signed-stage zero prefix and the
+exact subtract-by-zero copy convention.  Row sorting, exact same-reflector
+growth, compact-budget domination, and accumulated computed/exact error
+domination remain explicit obligations. -/
 theorem theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_signed_stage_completion_preservation_accumulated_error_nat
     {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
     (fp : FPModel)
@@ -2165,13 +2167,7 @@ theorem theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_signed_stage_compl
       0 < householderTrailingNorm2Sq m
           (Fin.mk t (lt_of_lt_of_le ht hnm))
           (fun a => Ahat t a (Fin.mk t ht)))
-    (hrowStep :
-      ∀ k, k < n → ∀ i : Fin m, i.val < k → ∀ j : Fin n,
-        fl_householderStoredPanelStep fp m n k
-          (storedQRSignedStageVector hnm Ahat alpha k)
-          (storedQRSignedStageBeta hnm Ahat alpha k)
-          (Ahat k) i j =
-          Ahat k i j)
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
     (hAexactCompletion :
       ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
         |matMulVec m
@@ -2279,10 +2275,8 @@ theorem theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_signed_stage_compl
       (theorem20_7_completionA_bound_of_h19_signed_stage_budget_nat
         hn hnm fp Ahat A alpha err AcompletionBudget herr hmfp hStepA
         hAlphaDef htrailingPos hAexactCompletion hAbudgetCompletion)
-      (theorem20_7_completedA_preservation_of_stored_panel_step_row_preservation_nat
-        fp (fun k => storedQRSignedStageVector hnm Ahat alpha k)
-        (fun k => storedQRSignedStageBeta hnm Ahat alpha k) Ahat hStepA
-        hrowStep)
+      (theorem20_7_completedA_preservation_of_signed_stage_subtractZeroExact_nat
+        hnm fp Ahat alpha hcopy hStepA)
       (theorem20_7_completionB_bound_of_h19_signed_stage_budget_nat
         hn hnm fp Ahat bhat A b alpha phi err bcompletionBudget hmfp
         hStepB hbexactCompletion hbbudgetCompletion)
