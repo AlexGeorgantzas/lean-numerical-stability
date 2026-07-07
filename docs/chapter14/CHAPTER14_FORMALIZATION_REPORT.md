@@ -125,7 +125,7 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
   - focused `#check` file for the two new Problem 14.7 theorems
   - focused `#print axioms` file for the two new Problem 14.7 theorems
   - `lake env lean examples/LibraryLookup.lean`
-- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
+- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass before and after the upstream merge; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
 - New theorem axiom surface: both new Problem 14.7 theorems use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`).
 - Known verification issue: the full `examples/LibraryLookup.lean` run aborts with a stack overflow / exit 134 after producing large lookup output. The focused lookup file for the two new declarations passes, so this is recorded as a full-example scale issue rather than a failed declaration lookup.
 - New versus pre-existing warnings: a new unused-simp warning appeared during initial Problem 14.7 proof and was removed.
@@ -133,10 +133,11 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 ## GitHub synchronization
 
 - Local branch: main
-- Latest remote base integrated: `origin/main` fast-forwarded from `0af482e1` to `8411b4d2` before theorem design.
-- Milestone commit and split prefix: pending
-- Pushed to origin/main: no, pending final verification/commit
-- Merge/conflict resolution: none
+- Latest remote base integrated: `origin/main` fast-forwarded from `0af482e1` to `8411b4d2` before theorem design, then merged `57d02bfd` after the Chapter 14 milestone commit.
+- Milestone commit and split prefix: `6939f36a` (`Split 3A: start Ch14 matrix inversion inventory`)
+- Local merge commit before report-sync update: `24f75fa4`
+- Pushed to origin/main: pending report-sync commit and final push
+- Merge/conflict resolution: clean `ort` merge; upstream changed `LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean` and `docs/source_coverage/higham_ch20.md`
 - New upstream imports or exported contracts: none
 
 ## Documentation
