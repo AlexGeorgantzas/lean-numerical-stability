@@ -1265,6 +1265,140 @@ theorem theorem20_7_signed_stage_exact_completionA_bound_of_active_stage_bounds_
       (fun r hr => hcolBound i hi r hr j hij)
   simpa [H19.Theorem19_6.active_row_growth_factor] using hbase
 
+/-- Theorem 20.7 support: signed-stage exact same-reflector right-hand-side
+    growth from active RHS stage bounds.
+
+For the completion row `i`, the signed Householder vector has zero prefix, so
+the pivot-row exact RHS update depends only on the trailing part of `bstage i`.
+Orthogonality of the exact signed reflector reduces the update to a trailing
+Euclidean-norm bound, and the active entry budget supplies the Cox--Higham
+`sqrt(m)` contribution absorbed by the Chapter 19 active-row factor. -/
+theorem theorem20_7_signed_stage_exact_completionB_bound_of_active_stage_bounds_nat
+    {m n : ℕ} (hnm : n ≤ m)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (alpha : ℕ → ℝ) (B : Fin m → ℝ)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hB : ∀ i : Fin m, 0 ≤ B i)
+    (hbBound :
+      ∀ i : Fin m, i.val + 1 < n → ∀ r : Fin m, i.val ≤ r.val →
+        |bstage i.val r| ≤ B i) :
+    ∀ i : Fin m, i.val + 1 < n →
+      |matMulVec m
+          (householder m
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val))
+          (bstage i.val) i| ≤
+        H19.Theorem19_6.active_row_growth_factor m * B i := by
+  intro i hi
+  have hit : i.val < n := by omega
+  let pivot : Fin m := Fin.mk i.val (lt_of_lt_of_le hit hnm)
+  let pivotCol : Fin n := Fin.mk i.val hit
+  have hAlphaSq :
+      alpha i.val * alpha i.val =
+        householderTrailingNorm2Sq m pivot
+          (fun r => Astage i.val r pivotCol) := by
+    rw [hAlphaDef i.val hit]
+    simpa [pivot, pivotCol] using
+      signedHouseholderAlpha_sqrt_trailingNorm2Sq_sq
+        m pivot (fun r => Astage i.val r pivotCol)
+  have hsign :
+      alpha i.val * Astage i.val pivot pivotCol ≤ 0 := by
+    rw [hAlphaDef i.val hit]
+    simpa [pivot, pivotCol] using
+      signedHouseholderAlpha_sqrt_trailingNorm2Sq_mul_pivot_nonpos
+        m pivot (fun r => Astage i.val r pivotCol)
+  have hnorm :
+      0 < householderTrailingNorm2Sq m pivot
+          (fun r => Astage i.val r pivotCol) := by
+    simpa [pivot, pivotCol] using htrailingPos i.val hit
+  have hden :
+      (∑ r : Fin m,
+        storedQRSignedStageVector hnm Astage alpha i.val r *
+          storedQRSignedStageVector hnm Astage alpha i.val r) ≠ 0 := by
+    have hden0 :
+        (∑ r : Fin m,
+          householderTrailingActiveVector m pivot
+            (fun a => Astage i.val a pivotCol) (alpha i.val) r *
+            householderTrailingActiveVector m pivot
+              (fun a => Astage i.val a pivotCol) (alpha i.val) r) ≠ 0 :=
+      householderTrailingActiveVector_inner_self_ne_zero_of_trailingNorm2Sq_pos_mul_nonpos
+        m pivot (fun a => Astage i.val a pivotCol) (alpha i.val)
+        hAlphaSq hnorm hsign
+    simpa [storedQRSignedStageVector, hit, pivot, pivotCol] using hden0
+  have hbeta :
+      storedQRSignedStageBeta hnm Astage alpha i.val *
+          (∑ r : Fin m,
+            storedQRSignedStageVector hnm Astage alpha i.val r *
+              storedQRSignedStageVector hnm Astage alpha i.val r) = 2 := by
+    simpa [storedQRSignedStageBeta] using
+      householderBeta_mul_inner_self_eq_two m
+        (storedQRSignedStageVector hnm Astage alpha i.val) hden
+  have horth :
+      IsOrthogonal m
+        (householder m
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)) :=
+    householder_orthogonal m
+      (storedQRSignedStageVector hnm Astage alpha i.val)
+      (storedQRSignedStageBeta hnm Astage alpha i.val) hbeta
+  have hvprefix :
+      ∀ r : Fin m, r.val < i.val →
+        storedQRSignedStageVector hnm Astage alpha i.val r = 0 := by
+    intro r hr
+    simpa [storedQRSignedStageVector, hit, pivot, pivotCol] using
+      householderTrailingActiveVector_zero_prefix
+        m pivot (fun a => Astage i.val a pivotCol) (alpha i.val) r hr
+  have htailCoord :
+      ∀ r : Fin m, |householderTrailingPart m i (bstage i.val) r| ≤ B i := by
+    intro r
+    by_cases hr : r.val < i.val
+    · have hzero : |(0 : ℝ)| ≤ B i := by
+        simpa using hB i
+      simpa [householderTrailingPart, hr] using hzero
+    · have hir : i.val ≤ r.val := Nat.le_of_not_gt hr
+      simpa [householderTrailingPart, hr] using hbBound i hi r hir
+  have htailNorm :
+      vecNorm2 (householderTrailingPart m i (bstage i.val)) ≤
+        Real.sqrt (m : ℝ) * B i :=
+    vecNorm2_le_sqrt_card_mul_of_abs_le
+      (householderTrailingPart m i (bstage i.val)) (hB i) htailCoord
+  have hfactor :
+      Real.sqrt (m : ℝ) ≤ H19.Theorem19_6.active_row_growth_factor m := by
+    simp [H19.Theorem19_6.active_row_growth_factor,
+      coxHighamActiveRowGrowthFactor]
+  have hreflect :
+      |matMulVec m
+          (householder m
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val))
+          (bstage i.val) i| ≤
+        vecNorm2 (householderTrailingPart m i (bstage i.val)) :=
+    abs_matMulVec_householder_pivot_le_trailing_vecNorm2_of_zero_prefix_orthogonal
+      m i (storedQRSignedStageVector hnm Astage alpha i.val)
+      (storedQRSignedStageBeta hnm Astage alpha i.val)
+      (bstage i.val) hvprefix horth
+  calc
+    |matMulVec m
+        (householder m
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val))
+        (bstage i.val) i|
+        ≤ vecNorm2 (householderTrailingPart m i (bstage i.val)) := hreflect
+    _ ≤ Real.sqrt (m : ℝ) * B i := htailNorm
+    _ ≤ H19.Theorem19_6.active_row_growth_factor m * B i :=
+        mul_le_mul_of_nonneg_right hfactor (hB i)
+
 /-- Theorem 20.7 support: active/trailing completion-time `A` row bounds for
     signed stored-QR stages.
 
@@ -1621,6 +1755,64 @@ theorem theorem20_7_completionB_bound_of_h19_signed_stage_budget_nat
       hn fp (fun k => storedQRSignedStageVector hnm Astage alpha k)
       (fun k => storedQRSignedStageBeta hnm Astage alpha k)
       bstage A b phi err B hm hStep hexact hbudget
+
+/-- Theorem 20.7 support: completion-time right-hand-side row bounds for
+    signed stored-QR stages from active RHS stage bounds.
+
+This composes the signed-stage exact RHS growth bridge with the generic
+stored-RHS completion adapter.  The remaining visible obligation is the
+compact Householder RHS budget domination for the completion row. -/
+theorem theorem20_7_completionB_bound_of_h19_signed_stage_active_stage_budget_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Astage : ℕ → Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) (phi err : ℝ) (B : Fin m → ℝ)
+    (hm : gammaValid fp m)
+    (hStep : ∀ k, k < n →
+      bstage (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Astage alpha k)
+          (storedQRSignedStageBeta hnm Astage alpha k)
+          (bstage k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hB : ∀ i : Fin m, 0 ≤ B i)
+    (hbBound :
+      ∀ i : Fin m, i.val + 1 < n → ∀ r : Fin m, i.val ≤ r.val →
+        |bstage i.val r| ≤ B i)
+    (hbudget :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * B i +
+            householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Astage alpha i.val)
+              (storedQRSignedStageBeta hnm Astage alpha i.val)
+              (bstage i.val) i ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i) :
+    ∀ i : Fin m, i.val + 1 < n →
+      |bstage (i.val + 1) i| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completionB_bound_of_h19_signed_stage_budget_nat
+      hn hnm fp Astage bstage A b alpha phi err B hm hStep
+      (theorem20_7_signed_stage_exact_completionB_bound_of_active_stage_bounds_nat
+        hnm Astage bstage alpha B hAlphaDef htrailingPos hB hbBound)
+      hbudget
 
 /-- Theorem 20.7 support: stored RHS steps preserve completed rows.
 
