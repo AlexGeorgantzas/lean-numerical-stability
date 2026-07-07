@@ -731,6 +731,38 @@ theorem quasiSchur_blockMap_eq_left_or_right_of_adjacent_same_block (n : Nat)
   have htwo : fiber.card <= 2 := hcard (pmap p)
   omega
 
+/-- A same-labelled adjacent `2 x 2` real quasi-Schur block is exactly the
+    fiber of its block label.  The equivalence is ordered so `0` names the
+    left column `p` and `1` names the right column `q`; this is the index
+    bridge used when comparing Mathlib's `toSquareBlock` fiber matrix with the
+    repository's concrete `Fin 2` active block. -/
+noncomputable def adjacentSameBlockFiberEquiv (n : Nat)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q) :
+    Fin 2 ≃ { i : Fin n // pmap i = pmap p } where
+  toFun k := if k = 0 then ⟨p, rfl⟩ else ⟨q, hsame.symm⟩
+  invFun s := if s.1 = p then 0 else 1
+  left_inv := by
+    intro k
+    have hpq_lt : p < q := Fin.lt_def.mpr (by omega)
+    have hq_ne_p : q ≠ p := ne_of_gt hpq_lt
+    fin_cases k
+    · simp
+    · simp [hq_ne_p]
+  right_inv := by
+    intro s
+    have hpq_lt : p < q := Fin.lt_def.mpr (by omega)
+    have hq_ne_p : q ≠ p := ne_of_gt hpq_lt
+    rcases quasiSchur_blockMap_eq_left_or_right_of_adjacent_same_block
+        n pmap p q s.1 hcard hpq hsame s.2 with hleft | hright
+    · ext
+      simp [hleft]
+    · ext
+      simp [hright, hq_ne_p]
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): a same-labelled
     adjacent two-column block in the exported real quasi-Schur block map gives
     the supplied adjacent quasi-triangular block predicate used by the exact
@@ -1250,6 +1282,56 @@ def HasComplexRightEigenvalue {ι : Type*} [Fintype ι]
     (A : Matrix ι ι Complex) (mu : Complex) : Prop :=
   ∃ y : ι -> Complex,
     y ≠ 0 ∧ Matrix.mulVec A y = fun i => mu * y i
+
+/-- Finite complex matrices have a supplied right eigenvector at `mu`
+    exactly when `mu` is a root of the characteristic polynomial.  This is the
+    reusable bridge between source-facing eigenvector predicates and Mathlib's
+    block-triangular characteristic-polynomial API. -/
+theorem finiteComplexMatrix_hasComplexRightEigenvalue_iff_charpoly_eval_eq_zero
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : Matrix ι ι Complex) (mu : Complex) :
+    HasComplexRightEigenvalue M mu ↔ M.charpoly.eval mu = 0 := by
+  constructor
+  · rintro ⟨y, hyne, hy⟩
+    have hzero :
+        Matrix.mulVec (Matrix.scalar ι mu - M) y = 0 := by
+      funext i
+      have hi := congrFun hy i
+      have hcoord : mu * y i - Matrix.mulVec M y i = 0 := by
+        rw [hi]
+        ring
+      simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hcoord
+    have hdet : Matrix.det (Matrix.scalar ι mu - M) = 0 :=
+      Matrix.exists_mulVec_eq_zero_iff.mp ⟨y, hyne, hzero⟩
+    simpa [Matrix.eval_charpoly] using hdet
+  · intro hchar
+    have hdet : Matrix.det (Matrix.scalar ι mu - M) = 0 := by
+      simpa [Matrix.eval_charpoly] using hchar
+    rcases Matrix.exists_mulVec_eq_zero_iff.mpr hdet with ⟨y, hyne, hyzero⟩
+    refine ⟨y, hyne, ?_⟩
+    funext i
+    have hi := congrFun hyzero i
+    have hcoord : mu * y i - Matrix.mulVec M y i = 0 := by
+      simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hi
+    exact (sub_eq_zero.mp hcoord).symm
+
+/-- Reindexing a finite complex matrix preserves supplied right eigenvalues.
+    This is a charpoly-based transport lemma, avoiding brittle finite-sum
+    manipulation of reindexed eigenvectors. -/
+theorem hasComplexRightEigenvalue_reindex
+    {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
+    (e : ι ≃ κ) (M : Matrix ι ι Complex) (mu : Complex)
+    (h : HasComplexRightEigenvalue M mu) :
+    HasComplexRightEigenvalue (Matrix.reindex e e M) mu := by
+  have hchar :
+      M.charpoly.eval mu = 0 :=
+    (finiteComplexMatrix_hasComplexRightEigenvalue_iff_charpoly_eval_eq_zero
+      M mu).mp h
+  apply
+    (finiteComplexMatrix_hasComplexRightEigenvalue_iff_charpoly_eval_eq_zero
+      (Matrix.reindex e e M) mu).mpr
+  rw [Matrix.charpoly_reindex]
+  exact hchar
 
 /-- Finite complex block-triangular spectral lift: an eigenvalue of any
     diagonal block of a block-triangular matrix is an eigenvalue of the full
@@ -2511,6 +2593,98 @@ theorem noCommonComplexRightEigenvalue_of_leading_twoBlock_quasiSchur
   exact hno mu ⟨hpair.1,
     hasComplexRightEigenvalue_realMatrixToComplex_of_leading_twoBlock_quasiSchur
       n T pmap p q mu hcard hzero hpq hsame hmin hpair.2⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): the `toSquareBlock`
+    fiber of a same-labelled adjacent real-quasi-Schur `2 x 2` block is the
+    concrete adjacent block used by the two-column Sylvester recurrence, after
+    reindexing the fiber by `0 ↦ p`, `1 ↦ q`. -/
+theorem realMatrixToComplex_toSquareBlock_sameBlock_reindex
+    (n : Nat) (T : RMatFn n n) (pmap : Fin n -> Nat) (p q : Fin n)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q) :
+    Matrix.reindex
+        (adjacentSameBlockFiberEquiv n pmap p q hcard hpq hsame).symm
+        (adjacentSameBlockFiberEquiv n pmap p q hcard hpq hsame).symm
+        ((realMatrixToComplex (Matrix.of T)).toSquareBlock pmap (pmap p)) =
+      realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q) := by
+  ext r c
+  fin_cases r <;> fin_cases c <;>
+    simp [Matrix.reindex_apply, Matrix.toSquareBlock_def,
+      adjacentSameBlockFiberEquiv, realMatrixToComplex,
+      sylvesterTwoColumnRealSchurBlock, Matrix.of_apply]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): an eigenvalue of
+    an arbitrary same-labelled adjacent `2 x 2` real-quasi-Schur block is an
+    eigenvalue of the full complexified Schur factor.  Unlike the leading-block
+    transport above, this proof uses Mathlib's block-triangular charpoly
+    factorization, so it also handles interior blocks with upper couplings from
+    earlier Schur blocks. -/
+theorem hasComplexRightEigenvalue_realMatrixToComplex_of_sameBlock_twoBlock_quasiSchur
+    (n : Nat) (T : RMatFn n n) (pmap : Fin n -> Nat) (p q : Fin n)
+    (mu : Complex)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hBT :
+      (realMatrixToComplex (Matrix.of T)).BlockTriangular pmap)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hblock :
+      HasComplexRightEigenvalue
+        (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q)) mu) :
+    HasComplexRightEigenvalue (realMatrixToComplex (Matrix.of T)) mu := by
+  classical
+  let e := adjacentSameBlockFiberEquiv n pmap p q hcard hpq hsame
+  let M : Matrix (Fin n) (Fin n) Complex := realMatrixToComplex (Matrix.of T)
+  let N : Matrix { i : Fin n // pmap i = pmap p } { i : Fin n // pmap i = pmap p } Complex :=
+    M.toSquareBlock pmap (pmap p)
+  let B : Matrix (Fin 2) (Fin 2) Complex :=
+    realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q)
+  have hreindex : Matrix.reindex e.symm e.symm N = B := by
+    simpa [e, M, N, B] using
+      realMatrixToComplex_toSquareBlock_sameBlock_reindex
+        n T pmap p q hcard hpq hsame
+  have hBchar : B.charpoly.eval mu = 0 :=
+    (finiteComplexMatrix_hasComplexRightEigenvalue_iff_charpoly_eval_eq_zero
+      B mu).mp (by simpa [B] using hblock)
+  have hNchar : N.charpoly.eval mu = 0 := by
+    have hcharReindex :=
+      congrArg (fun P : Polynomial Complex => P.eval mu)
+        (Matrix.charpoly_reindex e.symm N)
+    rw [hreindex] at hcharReindex
+    exact hcharReindex.symm.trans hBchar
+  have hN :
+      HasComplexRightEigenvalue N mu :=
+    (finiteComplexMatrix_hasComplexRightEigenvalue_iff_charpoly_eval_eq_zero
+      N mu).mpr hNchar
+  exact
+    hasComplexRightEigenvalue_of_blockTriangular_toSquareBlock
+      M pmap (pmap p) mu (by simpa [M] using hBT) hN
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): transport a
+    global no-common-complex-right-eigenvalue hypothesis for the full Schur
+    factor to an arbitrary same-labelled adjacent `2 x 2` block. -/
+theorem noCommonComplexRightEigenvalue_of_sameBlock_twoBlock_quasiSchur
+    (m n : Nat) (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hBT :
+      (realMatrixToComplex (Matrix.of T)).BlockTriangular pmap)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hno :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex (Matrix.of A))
+        (realMatrixToComplex (Matrix.of T))) :
+    NoCommonComplexRightEigenvalue
+      (realMatrixToComplex (Matrix.of A))
+      (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q)) := by
+  intro mu hpair
+  exact hno mu ⟨hpair.1,
+    hasComplexRightEigenvalue_realMatrixToComplex_of_sameBlock_twoBlock_quasiSchur
+      n T pmap p q mu hcard hBT hpq hsame hpair.2⟩
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), complexified
     two-column intertwining bridge: a real identity `A * U = U * J` for the
@@ -3820,6 +3994,37 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_n
   exact
     sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_det_separation
       m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral hdetA
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): full Schur-factor
+    no-common-complex-right-eigenvalue version of the constructed
+    two-block-spectral route.  The block-triangular charpoly lift transports
+    the global spectral separation to the local adjacent `2 x 2` block before
+    applying the existing determinant/nonsingularity bridge. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of T) pmap)
+    (hnoGlobal :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex (Matrix.of A))
+        (realMatrixToComplex (Matrix.of T))) :
+    IsAdjacentQuasiTriangularBlockFn n T p q ∧
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  have hBT : (realMatrixToComplex (Matrix.of T)).BlockTriangular pmap := by
+    intro i j hij
+    simp [realMatrixToComplex, Matrix.of_apply, hzero i j hij]
+  exact
+    sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_no_common_complex_right_eigenvalue_left
+      m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral
+      (noCommonComplexRightEigenvalue_of_sameBlock_twoBlock_quasiSchur
+        m n A T pmap p q hcard hBT hpq_adj hsame hnoGlobal)
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     determinant-shaped complex-separation route from a negative real
