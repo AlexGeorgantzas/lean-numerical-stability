@@ -5318,7 +5318,8 @@ Hadamard determinant condition number, equation (14.34) in its exact
 no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
 Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence,
 Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
-the exact Hyman block identities (14.35)--(14.36), and Problem 14.10:
+Problem 14.15's scalar product-radius support, the exact Hyman block identities
+(14.35)--(14.36), and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
 - `higham14_problem14_3_right_residual_eq_mul_left_residual`
@@ -5421,6 +5422,8 @@ the exact Hyman block identities (14.35)--(14.36), and Problem 14.10:
 - `higham14_problem14_13_hadamardConditionNumber_eq_inv_abs_det_of_rowNorm2_eq_one`
 - `higham14_problem14_13_two_over_abs_det_eq_two_mul_hadamardConditionNumber`
 - `higham14_problem14_13_kappa_lt_two_mul_hadamardConditionNumber_of_unit_rows`
+- `prod_one_add_delta_abs_sub_one_le_gamma_radius`
+- `higham14_problem14_15_theta_product_bound`
 - `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_perm_sign_mul_det_eq_prod_U_diag_of_PermutedLUFactSpec`

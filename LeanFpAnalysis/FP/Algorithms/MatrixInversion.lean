@@ -19,6 +19,7 @@ import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
 import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
+import LeanFpAnalysis.FP.Analysis.RoundingProductBounds
 import LeanFpAnalysis.FP.Analysis.ForwardError
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Algorithms.MatVec
@@ -4448,6 +4449,21 @@ theorem higham14_problem14_13_kappa2_lt_two_mul_hadamardConditionNumber_of_unit_
   rw [hfrob] at hgej
   rw [div_self hsqrt_pos.ne', one_pow, mul_one] at hgej
   exact hgej
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15, Appendix A support:
+    after the singular-value argument has produced scalar factors
+    `1 + theta_i` with `|theta_i| <= eps`, Lemma 3.1 gives the determinant
+    perturbation product radius `n*eps/(1-n*eps)`.
+
+The guard is stated as `n*eps < 1`; it is the positivity condition needed for
+the displayed denominator in the printed bound. -/
+theorem higham14_problem14_15_theta_product_bound {n : ℕ} (hnpos : 0 < n)
+    {eps : ℝ} (heps0 : 0 ≤ eps)
+    (hsmall : (n : ℝ) * eps < (1 : ℝ)) (theta : Fin n → ℝ)
+    (htheta : ∀ i : Fin n, |theta i| ≤ eps) :
+    |(∏ i : Fin n, (1 + theta i)) - 1| ≤
+      ((n : ℝ) * eps) / (1 - (n : ℝ) * eps) :=
+  prod_one_add_delta_abs_sub_one_le_gamma_radius n hnpos heps0 hsmall theta htheta
 
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
