@@ -164,6 +164,53 @@ theorem sylvester_realQuasiSchur_transform_solution_iff (m n : Nat)
     hpAmono, hpAcard, hRzero, hpBmono, hpBcard, hSzero, ?_⟩
   exact sylvester_schur_transform_solution_iff m n U R A V S B C Y hU hV hA hB
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.4), source-numbered alias:
+    real quasi-Schur factors for both sides of the Sylvester equation, with
+    block maps of size at most two.  This is only the factor-existence surface,
+    not the block solve or floating-point stability theorem. -/
+theorem H16_eq16_4_sylvester_realQuasiSchur_factors (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) :
+    ∃ (U R : Matrix (Fin m) (Fin m) Real)
+      (V S : Matrix (Fin n) (Fin n) Real)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      U ∈ Matrix.orthogonalGroup (Fin m) Real ∧
+      V ∈ Matrix.orthogonalGroup (Fin n) Real ∧
+      Matrix.transpose U * Matrix.of A * U = R ∧
+      Matrix.transpose V * Matrix.of B * V = S ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) :=
+  sylvester_realQuasiSchur_factors m n A B
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.5),
+    source-numbered alias: choose real quasi-Schur coordinates and expose the
+    exact equivalence between the original Sylvester equation and the
+    transformed Schur-coordinate equation.  The subsequent block recurrence
+    and floating-point analysis remain separate certificate surfaces. -/
+theorem H16_eq16_4_5_sylvester_realQuasiSchur_transform_solution_iff
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C Y : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      (IsSylvesterSolutionRect m n A B C
+          (rectMatMul U (rectMatMul Y (matTranspose V))) ↔
+        IsSylvesterSolutionRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) :=
+  sylvester_realQuasiSchur_transform_solution_iff m n A B C Y
+
 -- ============================================================
 -- (16.3): constructive spectral directions
 -- ============================================================
@@ -286,6 +333,70 @@ theorem sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair (m n : Nat)
   funext p
   simp [Matrix.vec]
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), shifted determinant form
+    with the `B`-side eigenpair supplied as a left eigenpair `w^T B = mu w^T`.
+    The supplied real eigenpair difference `lam - mu` makes the shifted
+    vec/Kronecker Sylvester coefficient singular. -/
+theorem sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair_vecMul (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (v : Fin m -> Real) (w : Fin n -> Real) (lam mu : Real)
+    (hv0 : Not (v = 0)) (hw0 : Not (w = 0))
+    (hv : Matrix.mulVec A v = fun i => lam * v i)
+    (hw : Matrix.vecMul w B = fun j => mu * w j) :
+    Matrix.det
+        (sylvesterVecCoeff m n A B -
+          (lam - mu) •
+            (1 : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)) =
+      0 := by
+  apply Matrix.exists_mulVec_eq_zero_iff.mp
+  refine ⟨Matrix.vec (fun i j => v i * w j : RMatFn m n),
+    vec_outer_product_ne_zero m n v w hv0 hw0, ?_⟩
+  rw [Matrix.sub_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec,
+    sylvesterVecCoeff_eigenpair_vecMul m n A B v w lam mu hv hw]
+  funext p
+  simp [Matrix.vec]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), shifted nonsingular
+    exclusion: if the shifted vec/Kronecker Sylvester coefficient at
+    `lam - mu` has nonzero determinant, then no supplied nonzero real
+    eigenpairs of `A` and `B^T` can have those eigenvalues. -/
+theorem no_real_eigenpair_difference_of_sylvesterVecCoeff_shifted_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (lam mu : Real)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterVecCoeff m n A B -
+          (lam - mu) •
+            (1 : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)) =
+        0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.mulVec (Matrix.transpose B) w = (fun j => mu * w j)) := by
+  rintro ⟨v, w, hv0, hw0, hv, hw⟩
+  exact hdet
+    (sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair
+      m n A B v w lam mu hv0 hw0 hv hw)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-facing shifted
+    nonsingular exclusion with the `B` eigenpair supplied in left-eigenvector
+    form. -/
+theorem no_real_left_eigenpair_difference_of_sylvesterVecCoeff_shifted_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (lam mu : Real)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterVecCoeff m n A B -
+          (lam - mu) •
+            (1 : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)) =
+        0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.vecMul w B = (fun j => mu * w j)) := by
+  rintro ⟨v, w, hv0, hw0, hv, hw⟩
+  exact hdet
+    (sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair_vecMul
+      m n A B v w lam mu hv0 hw0 hv hw)
+
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3) and the common-eigenvalue
     criterion, constructive direction: a shared real eigenvalue of `A` and
     `B^T` (equivalently of `B`) yields the nonzero kernel vector
@@ -309,6 +420,144 @@ theorem sylvesterVecCoeff_singular_of_common_eigenvalue (m n : Nat)
   rw [sylvesterVecCoeff_eigenpair m n A B v w lam lam hv hw]
   funext p
   simp
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), left-eigenvector form:
+    a shared supplied real eigenvalue of `A` and `B`, with the `B` side given
+    as a left eigenpair `w^T B = lam w^T`, makes the vec/Kronecker Sylvester
+    coefficient singular.  This is the constructive common-eigenvalue
+    obstruction, not the full converse spectral theorem. -/
+theorem sylvesterVecCoeff_singular_of_common_left_eigenvalue (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real)
+    (hv0 : Not (v = 0)) (hw0 : Not (w = 0))
+    (hv : Matrix.mulVec A v = fun i => lam * v i)
+    (hw : Matrix.vecMul w B = fun j => lam * w j) :
+    Matrix.det (sylvesterVecCoeff m n A B) = 0 := by
+  apply Matrix.exists_mulVec_eq_zero_iff.mp
+  refine ⟨Matrix.vec (fun i j => v i * w j : RMatFn m n),
+    vec_outer_product_ne_zero m n v w hv0 hw0, ?_⟩
+  rw [sylvesterVecCoeff_eigenpair_vecMul m n A B v w lam lam hv hw]
+  funext p
+  simp
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), nonsingular exclusion:
+    if the vec/Kronecker Sylvester coefficient has nonzero determinant, then
+    there is no supplied nonzero real eigenpair of `A` and `B^T` with the same
+    eigenvalue.  This is the contrapositive of the constructive
+    common-eigenvalue obstruction and does not prove the full complex spectral
+    converse. -/
+theorem no_common_real_eigenpair_of_sylvesterVecCoeff_det_ne_zero (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.mulVec (Matrix.transpose B) w = (fun j => lam * w j)) := by
+  rintro ⟨v, w, lam, hv0, hw0, hv, hw⟩
+  exact hdet
+    (sylvesterVecCoeff_singular_of_common_eigenvalue
+      m n A B v w lam hv0 hw0 hv hw)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), nonsingular exclusion in
+    the source-facing left-eigenvector form: a nonzero determinant for the
+    vec/Kronecker Sylvester coefficient rules out supplied nonzero real
+    eigenpairs `A v = lam v` and `w^T B = lam w^T`. -/
+theorem no_common_real_left_eigenpair_of_sylvesterVecCoeff_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.vecMul w B = (fun j => lam * w j)) := by
+  rintro ⟨v, w, lam, hv0, hw0, hv, hw⟩
+  exact hdet
+    (sylvesterVecCoeff_singular_of_common_left_eigenvalue
+      m n A B v w lam hv0 hw0 hv hw)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias:
+    supplied real eigenpairs `A v = lam v` and `w^T B = mu w^T` give the
+    forward vec/Kronecker eigen-identity with eigenvalue difference
+    `lam - mu`.  This is the constructive real left-eigenpair direction only;
+    it does not assert the full complex spectral converse. -/
+theorem H16_eq16_3_sylvesterVecCoeff_eigenpair_vecMul :
+    forall (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+      (v : Fin m -> Real) (w : Fin n -> Real) (lam mu : Real),
+      Matrix.mulVec A v = (fun i => lam * v i) ->
+      Matrix.vecMul w B = (fun j => mu * w j) ->
+      Matrix.mulVec (sylvesterVecCoeff m n A B)
+          (Matrix.vec (fun i j => v i * w j : RMatFn m n)) =
+        fun p => (lam - mu) * (v p.2 * w p.1) :=
+  fun m n A B v w lam mu hv hw =>
+    sylvesterVecCoeff_eigenpair_vecMul m n A B v w lam mu hv hw
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias:
+    for supplied nonzero real eigenpairs of `A` and a left eigenpair of `B`,
+    the shifted vec/Kronecker Sylvester coefficient at `lam - mu` is singular.
+    This proves the real constructive inclusion, not the reverse spectral
+    characterization. -/
+theorem H16_eq16_3_sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair_vecMul :
+    forall (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+      (v : Fin m -> Real) (w : Fin n -> Real) (lam mu : Real),
+      Not (v = 0) -> Not (w = 0) ->
+      Matrix.mulVec A v = (fun i => lam * v i) ->
+      Matrix.vecMul w B = (fun j => mu * w j) ->
+      Matrix.det
+          (sylvesterVecCoeff m n A B -
+            (lam - mu) •
+              (1 : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)) =
+        0 :=
+  fun m n A B v w lam mu hv0 hw0 hv hw =>
+    sylvesterVecCoeff_shifted_det_eq_zero_of_eigenpair_vecMul
+      m n A B v w lam mu hv0 hw0 hv hw
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias:
+    a supplied common real eigenvalue of `A` and `B`, with the `B` eigenpair in
+    left-eigenvector form, makes the vectorized Sylvester coefficient singular.
+    This is the constructive obstruction direction only. -/
+theorem H16_eq16_3_sylvesterVecCoeff_singular_of_common_left_eigenvalue :
+    forall (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+      (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) -> Not (w = 0) ->
+      Matrix.mulVec A v = (fun i => lam * v i) ->
+      Matrix.vecMul w B = (fun j => lam * w j) ->
+      Matrix.det (sylvesterVecCoeff m n A B) = 0 :=
+  fun m n A B v w lam hv0 hw0 hv hw =>
+    sylvesterVecCoeff_singular_of_common_left_eigenvalue
+      m n A B v w lam hv0 hw0 hv hw
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias:
+    nonzero determinant of the shifted vec/Kronecker coefficient rules out
+    supplied nonzero real left-eigenpair data with eigenvalue difference
+    `lam - mu`. -/
+theorem H16_eq16_3_no_real_left_eigenpair_difference_of_shifted_det_ne_zero :
+    forall (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (lam mu : Real),
+      Not (Matrix.det
+        (sylvesterVecCoeff m n A B -
+          (lam - mu) •
+            (1 : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)) =
+        0) ->
+      Not (exists (v : Fin m -> Real) (w : Fin n -> Real),
+        Not (v = 0) /\ Not (w = 0) /\
+          Matrix.mulVec A v = (fun i => lam * v i) /\
+          Matrix.vecMul w B = (fun j => mu * w j)) :=
+  fun m n A B lam mu hdet =>
+    no_real_left_eigenpair_difference_of_sylvesterVecCoeff_shifted_det_ne_zero
+      m n A B lam mu hdet
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias:
+    determinant nonsingularity of the vec/Kronecker Sylvester coefficient rules
+    out supplied common real eigenpairs in source-facing left-eigenvector form.
+    This does not prove the full complex no-common-spectrum converse. -/
+theorem H16_eq16_3_no_common_real_left_eigenpair_of_det_ne_zero :
+    forall (m n : Nat) (A : RMatFn m m) (B : RMatFn n n),
+      Not (Matrix.det (sylvesterVecCoeff m n A B) = 0) ->
+      Not (exists (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+        Not (v = 0) /\ Not (w = 0) /\
+          Matrix.mulVec A v = (fun i => lam * v i) /\
+          Matrix.vecMul w B = (fun j => lam * w j)) :=
+  fun m n A B hdet =>
+    no_common_real_left_eigenpair_of_sylvesterVecCoeff_det_ne_zero
+      m n A B hdet
 
 -- ============================================================
 -- (16.4)-(16.8): Bartels-Stewart supplied-triangular column solve
@@ -399,6 +648,73 @@ def IsAdjacentQuasiTriangularBlockFn (n : Nat) (T : RMatFn n n)
   q.val = p.val + 1 ∧
     (∀ j : Fin n, q < j → T j p = 0) ∧
     (∀ j : Fin n, q < j → T j q = 0)
+
+/-- A size-at-most-two real quasi-Schur block map is strict after an adjacent
+    same-block pair.  This is the small order-theoretic adapter needed to turn
+    the exported block-map zeros of `real_quasi_schur_blocks` into the supplied
+    adjacent two-column zero pattern used by the real Bartels-Stewart block
+    recurrence. -/
+theorem quasiSchur_blockMap_strict_after_adjacent_same_block (n : Nat)
+    (pmap : Fin n -> Nat) (p q j : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hqj : q < j) :
+    pmap q < pmap j := by
+  have hle : pmap q <= pmap j := hmono (le_of_lt hqj)
+  refine lt_of_le_of_ne hle ?_
+  intro heq
+  have hpq_lt : p < q := Fin.lt_def.mpr (by omega)
+  have hp_ne_q : p ≠ q := ne_of_lt hpq_lt
+  have hp_ne_j : p ≠ j := ne_of_lt (lt_trans hpq_lt hqj)
+  have hq_ne_j : q ≠ j := ne_of_lt hqj
+  let fiber : Finset (Fin n) := Finset.univ.filter (fun i : Fin n => pmap i = pmap q)
+  have hsubset : ({p, q, j} : Finset (Fin n)) ⊆ fiber := by
+    intro x hx
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hx
+    rcases hx with hx | hx | hx
+    · subst x
+      simp [fiber, hsame]
+    · subst x
+      simp [fiber]
+    · subst x
+      simp [fiber, heq.symm]
+  have hthree : 3 <= fiber.card := by
+    have hcard_three : ({p, q, j} : Finset (Fin n)).card = 3 := by
+      simp [hp_ne_q, hp_ne_j, hq_ne_j]
+    calc
+      3 = ({p, q, j} : Finset (Fin n)).card := hcard_three.symm
+      _ <= fiber.card := Finset.card_le_card hsubset
+  have htwo : fiber.card <= 2 := hcard (pmap q)
+  omega
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): a same-labelled
+    adjacent two-column block in the exported real quasi-Schur block map gives
+    the supplied adjacent quasi-triangular block predicate used by the exact
+    two-column Bartels-Stewart recurrence.  The theorem supplies only the zero
+    pattern; nonsingularity of the induced `2 x 2` block coefficient remains a
+    separate spectral/block-separation certificate. -/
+theorem IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block (n : Nat)
+    (T : RMatFn n n) (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q) :
+    IsAdjacentQuasiTriangularBlockFn n T p q := by
+  refine ⟨hpq, ?_, ?_⟩
+  · intro j hqj
+    apply hzero j p
+    rw [hsame]
+    exact quasiSchur_blockMap_strict_after_adjacent_same_block
+      n pmap p q j hmono hcard hpq hsame hqj
+  · intro j hqj
+    apply hzero j q
+    exact quasiSchur_blockMap_strict_after_adjacent_same_block
+      n pmap p q j hmono hcard hpq hsame hqj
 
 private theorem two_column_block_sum_split (m n : Nat) (T : RMatFn n n)
     (X : RMatFn m n) (i : Fin m) (p q k : Fin n)
@@ -505,6 +821,1049 @@ noncomputable def sylvesterTwoColumnBlockCoeff (m n : Nat)
     ((- (T q p)) • (1 : Matrix (Fin m) (Fin m) Real))
     ((- (T p q)) • (1 : Matrix (Fin m) (Fin m) Real))
     (sylvesterTriangularShiftedCoeff m A (T q q))
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), first-column
+    quadratic coefficient induced by the supplied adjacent two-column block.
+    A zero vector for the full block coefficient forces the first active
+    column through this product-shift coefficient. -/
+noncomputable def sylvesterTwoColumnBlockFirstQuadraticCoeff (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n) :
+    Matrix (Fin m) (Fin m) Real :=
+  sylvesterTriangularShiftedCoeff m A (T q q) *
+      sylvesterTriangularShiftedCoeff m A (T p p) -
+    Matrix.scalar (Fin m) (T q p * T p q)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), second-column
+    quadratic coefficient induced by the supplied adjacent two-column block.
+    This is the companion product-shift condition for the second active
+    column. -/
+noncomputable def sylvesterTwoColumnBlockSecondQuadraticCoeff (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n) :
+    Matrix (Fin m) (Fin m) Real :=
+  sylvesterTriangularShiftedCoeff m A (T p p) *
+      sylvesterTriangularShiftedCoeff m A (T q q) -
+    Matrix.scalar (Fin m) (T p q * T q p)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
+    kernel reduction for the supplied adjacent two-column block: a vector in
+    the kernel of the `2 x 2` block coefficient has first and second active
+    components in the kernels of the two product-shift quadratic coefficients.
+    This is exact block algebra and does not use a supplied inverse. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_quadratic (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (z : Sum (Fin m) (Fin m) -> Real)
+    (hz : Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0) :
+    Matrix.mulVec (sylvesterTwoColumnBlockFirstQuadraticCoeff m n A T p q)
+        (fun i : Fin m => z (Sum.inl i)) = 0 /\
+      Matrix.mulVec (sylvesterTwoColumnBlockSecondQuadraticCoeff m n A T p q)
+        (fun i : Fin m => z (Sum.inr i)) = 0 := by
+  let u : Fin m -> Real := fun i => z (Sum.inl i)
+  let v : Fin m -> Real := fun i => z (Sum.inr i)
+  let P : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T p p)
+  let Q : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T q q)
+  have hP : Matrix.mulVec P u = fun i : Fin m => T q p * v i := by
+    funext i
+    have hi := congrFun hz (Sum.inl i)
+    have hi' : Matrix.mulVec P u i + (-(T q p)) * v i = 0 := by
+      simpa [sylvesterTwoColumnBlockCoeff, P, Q, u, v,
+        Matrix.fromBlocks_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec] using hi
+    linarith
+  have hQ : Matrix.mulVec Q v = fun i : Fin m => T p q * u i := by
+    funext i
+    have hi := congrFun hz (Sum.inr i)
+    have hi' : Matrix.mulVec Q v i + (-(T p q)) * u i = 0 := by
+      simpa [sylvesterTwoColumnBlockCoeff, P, Q, u, v,
+        Matrix.fromBlocks_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec,
+        add_comm, add_left_comm, add_assoc] using hi
+    linarith
+  constructor
+  case left =>
+    funext i
+    have hsmul : Matrix.mulVec Q (fun i : Fin m => T q p * v i) =
+        fun i : Fin m => T q p * Matrix.mulVec Q v i := by
+      simpa using Matrix.mulVec_smul Q (T q p) v
+    calc
+      Matrix.mulVec (sylvesterTwoColumnBlockFirstQuadraticCoeff m n A T p q) u i =
+          Matrix.mulVec Q (Matrix.mulVec P u) i - (T q p * T p q) * u i := by
+        simp [sylvesterTwoColumnBlockFirstQuadraticCoeff, P, Q, Matrix.sub_mulVec,
+          Matrix.mulVec_mulVec, Matrix.scalar_apply]
+      _ = Matrix.mulVec Q (fun i : Fin m => T q p * v i) i -
+            (T q p * T p q) * u i := by rw [hP]
+      _ = T q p * Matrix.mulVec Q v i - (T q p * T p q) * u i := by rw [hsmul]
+      _ = T q p * (T p q * u i) - (T q p * T p q) * u i := by rw [hQ]
+      _ = 0 := by ring
+  case right =>
+    funext i
+    have hsmul : Matrix.mulVec P (fun i : Fin m => T p q * u i) =
+        fun i : Fin m => T p q * Matrix.mulVec P u i := by
+      simpa using Matrix.mulVec_smul P (T p q) u
+    calc
+      Matrix.mulVec (sylvesterTwoColumnBlockSecondQuadraticCoeff m n A T p q) v i =
+          Matrix.mulVec P (Matrix.mulVec Q v) i - (T p q * T q p) * v i := by
+        simp [sylvesterTwoColumnBlockSecondQuadraticCoeff, P, Q, Matrix.sub_mulVec,
+          Matrix.mulVec_mulVec, Matrix.scalar_apply]
+      _ = Matrix.mulVec P (fun i : Fin m => T p q * u i) i -
+            (T p q * T q p) * v i := by rw [hQ]
+      _ = T p q * Matrix.mulVec P u i - (T p q * T q p) * v i := by rw [hsmul]
+      _ = T p q * (T q p * v i) - (T p q * T q p) * v i := by rw [hP]
+      _ = 0 := by ring
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    bridge for the supplied adjacent two-column block: nonsingularity of the
+    two induced product-shift quadratic coefficients rules out a kernel vector
+    of the full `2 x 2` block coefficient. This removes the need for a
+    supplied left/right inverse certificate at this local block step; the
+    remaining source-level route is to derive these quadratic determinant
+    hypotheses from the real-Schur scalar block separation data. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_quadratic_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hfirst :
+      Not (Matrix.det
+        (sylvesterTwoColumnBlockFirstQuadraticCoeff m n A T p q) = 0))
+    (hsecond :
+      Not (Matrix.det
+        (sylvesterTwoColumnBlockSecondQuadraticCoeff m n A T p q) = 0)) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  intro hdet
+  cases Matrix.exists_mulVec_eq_zero_iff.mpr hdet with
+  | intro z hz =>
+      have hzne : Not (z = 0) := hz.1
+      have hzzero :
+          Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0 := hz.2
+      have hquad :=
+        sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_quadratic
+          m n A T p q z hzzero
+      let u : Fin m -> Real := fun i => z (Sum.inl i)
+      let v : Fin m -> Real := fun i => z (Sum.inr i)
+      let M1 : Matrix (Fin m) (Fin m) Real :=
+        sylvesterTwoColumnBlockFirstQuadraticCoeff m n A T p q
+      let M2 : Matrix (Fin m) (Fin m) Real :=
+        sylvesterTwoColumnBlockSecondQuadraticCoeff m n A T p q
+      have hinj1 : Function.Injective (Matrix.mulVec M1) := by
+        intro x y hxy
+        have h := congrArg (Matrix.mulVec (Inv.inv M1)) hxy
+        rw [Matrix.mulVec_mulVec, Matrix.mulVec_mulVec,
+          Matrix.nonsing_inv_mul M1
+            (isUnit_iff_ne_zero.mpr (by simpa [M1] using hfirst)),
+          Matrix.one_mulVec, Matrix.one_mulVec] at h
+        exact h
+      have hinj2 : Function.Injective (Matrix.mulVec M2) := by
+        intro x y hxy
+        have h := congrArg (Matrix.mulVec (Inv.inv M2)) hxy
+        rw [Matrix.mulVec_mulVec, Matrix.mulVec_mulVec,
+          Matrix.nonsing_inv_mul M2
+            (isUnit_iff_ne_zero.mpr (by simpa [M2] using hsecond)),
+          Matrix.one_mulVec, Matrix.one_mulVec] at h
+        exact h
+      have hu : u = 0 := by
+        apply hinj1
+        rw [hquad.1, Matrix.mulVec_zero]
+      have hv : v = 0 := by
+        apply hinj2
+        rw [hquad.2, Matrix.mulVec_zero]
+      apply hzne
+      funext r
+      cases r with
+      | inl i => simpa [u] using congrFun hu i
+      | inr i => simpa [v] using congrFun hv i
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    determinant symmetry for the supplied adjacent two-column block: the two
+    quadratic coefficients have the same determinant.  This is exact algebra
+    (`det (Q * P - c I) = det (P * Q - c I)`) and reduces the structural
+    block nonsingularity route to a single product-shift determinant
+    certificate. -/
+theorem sylvesterTwoColumnBlockFirstQuadraticCoeff_det_eq_secondQuadraticCoeff_det
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n) :
+    Matrix.det (sylvesterTwoColumnBlockFirstQuadraticCoeff m n A T p q) =
+      Matrix.det (sylvesterTwoColumnBlockSecondQuadraticCoeff m n A T p q) := by
+  let P : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T p p)
+  let Q : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T q q)
+  let c : Real := T q p * T p q
+  have hchar := congrArg (fun f : Polynomial Real => f.eval c)
+    (Matrix.charpoly_mul_comm Q P)
+  change (Q * P).charpoly.eval c = (P * Q).charpoly.eval c at hchar
+  rw [Matrix.eval_charpoly, Matrix.eval_charpoly] at hchar
+  have hleft : Matrix.scalar (Fin m) c - Q * P = -(Q * P - Matrix.scalar (Fin m) c) := by
+    simp [neg_sub]
+  have hright : Matrix.scalar (Fin m) c - P * Q = -(P * Q - Matrix.scalar (Fin m) c) := by
+    simp [neg_sub]
+  rw [hleft, hright, Matrix.det_neg, Matrix.det_neg] at hchar
+  have hneg : Not ((-1 : Real) = 0) := by norm_num
+  have hfactor : Not (((-1 : Real) ^ Fintype.card (Fin m)) = 0) :=
+    pow_ne_zero (Fintype.card (Fin m)) hneg
+  have hdet : Matrix.det (Q * P - Matrix.scalar (Fin m) c) =
+      Matrix.det (P * Q - Matrix.scalar (Fin m) c) :=
+    (mul_eq_mul_left_iff.mp hchar).resolve_right hfactor
+  simpa [sylvesterTwoColumnBlockFirstQuadraticCoeff,
+    sylvesterTwoColumnBlockSecondQuadraticCoeff, P, Q, c, mul_comm] using hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
+    determinant bridge for a supplied adjacent two-column block: it is enough
+    to prove nonsingularity of one product-shift quadratic coefficient.  The
+    companion quadratic determinant condition follows from
+    `det (Q * P - c I) = det (P * Q - c I)`, so this is the one-certificate
+    block nonsingularity surface needed before deriving the product-shift
+    condition from real-Schur spectral separation data. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_first_quadratic_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hfirst :
+      Not (Matrix.det
+        (sylvesterTwoColumnBlockFirstQuadraticCoeff m n A T p q) = 0)) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  apply sylvesterTwoColumnBlockCoeff_det_ne_zero_of_quadratic_det_ne_zero
+    m n A T p q hfirst
+  intro hsecond
+  exact hfirst
+    ((sylvesterTwoColumnBlockFirstQuadraticCoeff_det_eq_secondQuadraticCoeff_det
+      m n A T p q).trans hsecond)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    spectral certificate for a supplied adjacent two-column block: if the
+    coupling product is not a root of the characteristic polynomial of the
+    product of the two shifted column coefficients, then the full block
+    coefficient is nonsingular.  This is the spectral-facing form of the
+    one-quadratic determinant certificate. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_charpoly
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hchar :
+      Not ((sylvesterTriangularShiftedCoeff m A (T q q) *
+        sylvesterTriangularShiftedCoeff m A (T p p)).charpoly.eval
+          (T q p * T p q) = 0)) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  apply sylvesterTwoColumnBlockCoeff_det_ne_zero_of_first_quadratic_det_ne_zero
+  intro hdet
+  let P : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T p p)
+  let Q : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T q q)
+  let c : Real := T q p * T p q
+  have hdet' : Matrix.det (Q * P - Matrix.scalar (Fin m) c) = 0 := by
+    simpa [sylvesterTwoColumnBlockFirstQuadraticCoeff, P, Q, c] using hdet
+  have hleft : Matrix.scalar (Fin m) c - Q * P =
+      -(Q * P - Matrix.scalar (Fin m) c) := by
+    simp [neg_sub]
+  have hcharzero : (Q * P).charpoly.eval c = 0 := by
+    rw [Matrix.eval_charpoly, hleft, Matrix.det_neg, hdet', mul_zero]
+  exact hchar (by simpa [P, Q, c] using hcharzero)
+
+/-- Finite-matrix spectral kernel bridge: if the only vector satisfying
+    `M x = c x` is zero, then `c` is not a root of `M.charpoly`.  This is the
+    reusable determinant-free surface used below to turn a product-shift
+    no-eigenvector hypothesis into the Chapter 16 two-column block
+    nonsingularity certificate. -/
+theorem finiteMatrix_charpoly_eval_ne_zero_of_mulVec_no_eigenvector
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : Matrix ι ι Real) (c : Real)
+    (hker : forall x : ι -> Real,
+      Matrix.mulVec M x = (fun i => c * x i) -> x = 0) :
+    Not (M.charpoly.eval c = 0) := by
+  intro hchar
+  have hdet : Matrix.det (Matrix.scalar ι c - M) = 0 := by
+    simpa [Matrix.eval_charpoly] using hchar
+  obtain ⟨x, hxne, hxzero⟩ := Matrix.exists_mulVec_eq_zero_iff.mpr hdet
+  have hxM : Matrix.mulVec M x = fun i => c * x i := by
+    funext i
+    have hi := congrFun hxzero i
+    have hi' : c * x i - Matrix.mulVec M x i = 0 := by
+      simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hi
+    linarith
+  exact hxne (hker x hxM)
+
+/-- Finite-matrix nonroot kernel bridge: if `c` is not a root of
+    `M.charpoly`, then the eigen-equation `M x = c x` has only the zero
+    solution.  This is the source-shaped converse to
+    `finiteMatrix_charpoly_eval_ne_zero_of_mulVec_no_eigenvector`. -/
+theorem finiteMatrix_mulVec_no_eigenvector_of_charpoly_eval_ne_zero
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : Matrix ι ι Real) (c : Real)
+    (hchar : Not (M.charpoly.eval c = 0)) :
+    forall x : ι -> Real,
+      Matrix.mulVec M x = (fun i => c * x i) -> x = 0 := by
+  intro x hx
+  by_contra hxne
+  have hxzero : Matrix.mulVec (Matrix.scalar ι c - M) x = 0 := by
+    funext i
+    have hi := congrFun hx i
+    have hi' : c * x i - Matrix.mulVec M x i = 0 := by
+      rw [hi]
+      ring
+    simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hi'
+  have hdet : Matrix.det (Matrix.scalar ι c - M) = 0 :=
+    Matrix.exists_mulVec_eq_zero_iff.mp ⟨x, hxne, hxzero⟩
+  exact hchar (by simpa [Matrix.eval_charpoly] using hdet)
+
+/-- Finite-matrix product-shift determinant kernel bridge: nonsingularity of
+    `M - c I` rules out nonzero solutions of the eigen-equation `M x = c x`.
+    This is a determinant-facing route to the no-eigenvector hypothesis used
+    by the structural two-column block solve. -/
+theorem finiteMatrix_mulVec_no_eigenvector_of_det_sub_scalar_ne_zero
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : Matrix ι ι Real) (c : Real)
+    (hdet : Not (Matrix.det (M - Matrix.scalar ι c) = 0)) :
+    forall x : ι -> Real,
+      Matrix.mulVec M x = (fun i => c * x i) -> x = 0 := by
+  intro x hx
+  by_contra hxne
+  have hxzero : Matrix.mulVec (M - Matrix.scalar ι c) x = 0 := by
+    funext i
+    have hi := congrFun hx i
+    have hi' : Matrix.mulVec M x i - c * x i = 0 := by
+      rw [hi]
+      ring
+    simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hi'
+  have hsing : Matrix.det (M - Matrix.scalar ι c) = 0 :=
+    Matrix.exists_mulVec_eq_zero_iff.mp ⟨x, hxne, hxzero⟩
+  exact hdet hsing
+
+/-- Finite complex-matrix intertwiner bridge: if `A * X = X * B`, then the
+    image under `X` of a supplied `B` eigenvector is an `A` eigenvector with
+    the same eigenvalue.  This is the algebraic core needed to turn a
+    nonzero two-column intertwiner into a shared complex eigenvalue in the
+    Chapter 16 real-Schur block-separation route. -/
+theorem finiteComplexMatrix_intertwiner_maps_mulVec_eigenvector
+    {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (A : Matrix ι ι Complex) (B : Matrix κ κ Complex)
+    (X : Matrix ι κ Complex) (mu : Complex) (w : κ -> Complex)
+    (hX : A * X = X * B)
+    (hw : Matrix.mulVec B w = fun j => mu * w j) :
+    Matrix.mulVec A (Matrix.mulVec X w) =
+      fun i => mu * Matrix.mulVec X w i := by
+  calc
+    Matrix.mulVec A (Matrix.mulVec X w) = Matrix.mulVec (A * X) w := by
+      rw [Matrix.mulVec_mulVec]
+    _ = Matrix.mulVec (X * B) w := by rw [hX]
+    _ = Matrix.mulVec X (Matrix.mulVec B w) := by
+      rw [← Matrix.mulVec_mulVec]
+    _ = Matrix.mulVec X (fun j => mu * w j) := by rw [hw]
+    _ = fun i => mu * Matrix.mulVec X w i := by
+      simpa using Matrix.mulVec_smul X mu w
+
+/-- Finite complex-matrix intertwiner eigenpair bridge: if `A * X = X * B`
+    and a supplied `B` eigenvector has nonzero image under `X`, then `A`
+    has a supplied nonzero eigenvector with the same eigenvalue. -/
+theorem finiteComplexMatrix_exists_mulVec_eigenpair_of_intertwiner_image_ne_zero
+    {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (A : Matrix ι ι Complex) (B : Matrix κ κ Complex)
+    (X : Matrix ι κ Complex) (mu : Complex) (w : κ -> Complex)
+    (hX : A * X = X * B)
+    (hw : Matrix.mulVec B w = fun j => mu * w j)
+    (hXw : Matrix.mulVec X w ≠ 0) :
+    ∃ y : ι -> Complex,
+      y ≠ 0 ∧ Matrix.mulVec A y = fun i => mu * y i :=
+  ⟨Matrix.mulVec X w, hXw,
+    finiteComplexMatrix_intertwiner_maps_mulVec_eigenvector
+      A B X mu w hX hw⟩
+
+/-- Entrywise real-to-complex map for rectangular matrices.  This is the
+    rectangular companion to the square complexification used in the real
+    invariant-subspace development. -/
+def realMatrixToComplex {ι κ : Type*}
+    (M : Matrix ι κ Real) : Matrix ι κ Complex :=
+  M.map Complex.ofRealHom
+
+@[simp] theorem realMatrixToComplex_apply {ι κ : Type*}
+    (M : Matrix ι κ Real) (i : ι) (j : κ) :
+    realMatrixToComplex M i j = (M i j : Complex) := rfl
+
+/-- Real-to-complex matrix conversion preserves finite matrix multiplication. -/
+theorem realMatrixToComplex_mul {ι κ τ : Type*} [Fintype κ]
+    (A : Matrix ι κ Real) (B : Matrix κ τ Real) :
+    realMatrixToComplex (A * B) =
+      realMatrixToComplex A * realMatrixToComplex B := by
+  simp [realMatrixToComplex]
+
+/-- A real matrix intertwining identity remains an intertwining identity after
+    entrywise complexification. -/
+theorem realMatrixToComplex_intertwining_of_real
+    {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (A : Matrix ι ι Real) (B : Matrix κ κ Real)
+    (X : Matrix ι κ Real)
+    (hX : A * X = X * B) :
+    realMatrixToComplex A * realMatrixToComplex X =
+      realMatrixToComplex X * realMatrixToComplex B := by
+  rw [← realMatrixToComplex_mul A X, hX, realMatrixToComplex_mul X B]
+
+/-- Kernel invariance for a finite real-matrix intertwiner: if `A * X = X * B`,
+    then the kernel of `X` is mapped into itself by `B`.  This is the real
+    invariant-line algebra needed before the Chapter 16 `2 x 2` real-Schur
+    block-separation argument. -/
+theorem finiteRealMatrix_intertwiner_kernel_invariant
+    {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (A : Matrix ι ι Real) (B : Matrix κ κ Real)
+    (X : Matrix ι κ Real)
+    (hX : A * X = X * B)
+    {x : κ -> Real}
+    (hx : Matrix.mulVec X x = 0) :
+    Matrix.mulVec X (Matrix.mulVec B x) = 0 := by
+  calc
+    Matrix.mulVec X (Matrix.mulVec B x) = Matrix.mulVec (X * B) x := by
+      rw [Matrix.mulVec_mulVec]
+    _ = Matrix.mulVec (A * X) x := by rw [← hX]
+    _ = Matrix.mulVec A (Matrix.mulVec X x) := by
+      rw [← Matrix.mulVec_mulVec]
+    _ = 0 := by rw [hx, Matrix.mulVec_zero]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    spectral bridge for a supplied adjacent two-column block: a trivial kernel
+    for the eigen-equation of the product of the two shifted column
+    coefficients proves the characteristic-polynomial nonroot certificate. -/
+theorem sylvesterTwoColumnBlockCoeff_product_shift_charpoly_ne_zero_of_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0) :
+    Not ((sylvesterTriangularShiftedCoeff m A (T q q) *
+      sylvesterTriangularShiftedCoeff m A (T p p)).charpoly.eval
+        (T q p * T p q) = 0) := by
+  exact
+    finiteMatrix_charpoly_eval_ne_zero_of_mulVec_no_eigenvector
+      (sylvesterTriangularShiftedCoeff m A (T q q) *
+        sylvesterTriangularShiftedCoeff m A (T p p))
+      (T q p * T p q) hker
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    nonroot bridge for a supplied adjacent two-column block: the source-shaped
+    characteristic-polynomial exclusion for the shifted product implies the
+    no-eigenvector hypothesis used by the active-block solve wrappers. -/
+theorem sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_charpoly_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hchar :
+      Not ((sylvesterTriangularShiftedCoeff m A (T q q) *
+        sylvesterTriangularShiftedCoeff m A (T p p)).charpoly.eval
+          (T q p * T p q) = 0)) :
+    forall x : Fin m -> Real,
+      Matrix.mulVec
+          (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p)) x =
+        (fun i => (T q p * T p q) * x i) ->
+      x = 0 := by
+  exact
+    finiteMatrix_mulVec_no_eigenvector_of_charpoly_eval_ne_zero
+      (sylvesterTriangularShiftedCoeff m A (T q q) *
+        sylvesterTriangularShiftedCoeff m A (T p p))
+      (T q p * T p q) hchar
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    determinant bridge for a supplied adjacent two-column block: a nonsingular
+    shifted product `(A - T_qq I) (A - T_pp I) - T_qp T_pq I` gives the
+    no-eigenvector hypothesis needed by the existing block determinant and
+    solve consequences. -/
+theorem sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_product_shift_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p) -
+          Matrix.scalar (Fin m) (T q p * T p q)) = 0)) :
+    forall x : Fin m -> Real,
+      Matrix.mulVec
+          (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p)) x =
+        (fun i => (T q p * T p q) * x i) ->
+      x = 0 := by
+  exact
+    finiteMatrix_mulVec_no_eigenvector_of_det_sub_scalar_ne_zero
+      (sylvesterTriangularShiftedCoeff m A (T q q) *
+        sylvesterTriangularShiftedCoeff m A (T p p))
+      (T q p * T p q) hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
+    spectrum bridge for a supplied adjacent two-column block: if the
+    product-shift eigen-equation
+    `(A - T_qq I) (A - T_pp I) x = (T_qp T_pq) x` has only the zero solution,
+    then the full real-Schur two-column block coefficient is nonsingular. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  apply sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_charpoly
+  exact
+    sylvesterTwoColumnBlockCoeff_product_shift_charpoly_ne_zero_of_no_eigenvector
+      m n A T p q hker
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    certificate through the no-eigenvector bridge: nonsingularity of the
+    product-shift matrix gives nonsingularity of the supplied two-column block
+    coefficient via the same product-shift kernel surface used by later solve
+    wrappers. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdet :
+      Not (Matrix.det
+        (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p) -
+          Matrix.scalar (Fin m) (T q p * T p q)) = 0)) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  apply sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+  exact
+    sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_product_shift_det_ne_zero
+      m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block action
+    of the left Sylvester factor on the two active columns.  This packages
+    the exact operation `A [u v]` as one block-vector matrix action; it is
+    only algebraic infrastructure for the real-Schur two-column route. -/
+noncomputable def sylvesterTwoColumnBlockLeftAction (m : Nat)
+    (A : RMatFn m m) :
+    Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real :=
+  Matrix.fromBlocks (Matrix.of A) 0 0 (Matrix.of A)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block action
+    of the supplied adjacent `2 x 2` real-Schur diagonal block on the two
+    active columns.  The top-right and bottom-left scalar identity blocks
+    follow the column equations
+    `A u = T_pp u + T_qp v` and `A v = T_pq u + T_qq v`. -/
+noncomputable def sylvesterTwoColumnBlockSchurAction (m n : Nat)
+    (T : RMatFn n n) (p q : Fin n) :
+    Matrix (Sum (Fin m) (Fin m)) (Sum (Fin m) (Fin m)) Real :=
+  Matrix.fromBlocks
+    ((T p p) • (1 : Matrix (Fin m) (Fin m) Real))
+    ((T q p) • (1 : Matrix (Fin m) (Fin m) Real))
+    ((T p q) • (1 : Matrix (Fin m) (Fin m) Real))
+    ((T q q) • (1 : Matrix (Fin m) (Fin m) Real))
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), two active
+    columns packaged as an `m x 2` matrix.  Column `0` is `u` and column `1`
+    is `v`; this is the standard matrix-intertwining shape behind the
+    block-action certificate. -/
+def sylvesterTwoColumnBlockColumnPair (m : Nat)
+    (u v : Fin m -> Real) : Matrix (Fin m) (Fin 2) Real :=
+  fun i k => if k = 0 then u i else v i
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), the supplied
+    adjacent real `2 x 2` Schur block acting on the two active columns. -/
+def sylvesterTwoColumnRealSchurBlock (n : Nat)
+    (T : RMatFn n n) (p q : Fin n) : Matrix (Fin 2) (Fin 2) Real :=
+  fun r c =>
+    if r = 0 then
+      if c = 0 then T p p else T p q
+    else
+      if c = 0 then T q p else T q q
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), matrix
+    intertwining form: the coupled active-column equations are equivalent to
+    `A * U = U * J`, where `U` is the two-column matrix `(u, v)` and `J` is
+    the supplied adjacent real `2 x 2` Schur block.  This is the standard
+    spectral-facing target for the still-open complex separation proof. -/
+theorem sylvesterTwoColumnBlock_coupled_block_action_iff_columnPair_intertwining
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (u v : Fin m -> Real) :
+    (Matrix.mulVec (Matrix.of A) u =
+          (fun i => T p p * u i + T q p * v i) ∧
+        Matrix.mulVec (Matrix.of A) v =
+          (fun i => T p q * u i + T q q * v i)) ↔
+      Matrix.of A * sylvesterTwoColumnBlockColumnPair m u v =
+        sylvesterTwoColumnBlockColumnPair m u v *
+          sylvesterTwoColumnRealSchurBlock n T p q := by
+  constructor
+  · intro h
+    rcases h with ⟨hu, hv⟩
+    ext i k
+    fin_cases k
+    · have hi := congrFun hu i
+      simpa [Matrix.mul_apply, Matrix.mulVec, dotProduct, Matrix.of_apply,
+        sylvesterTwoColumnBlockColumnPair, sylvesterTwoColumnRealSchurBlock,
+        Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using hi
+    · have hi := congrFun hv i
+      simpa [Matrix.mul_apply, Matrix.mulVec, dotProduct, Matrix.of_apply,
+        sylvesterTwoColumnBlockColumnPair, sylvesterTwoColumnRealSchurBlock,
+        Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using hi
+  · intro h
+    constructor
+    · funext i
+      have hi := congrFun (congrFun h i) (0 : Fin 2)
+      simpa [Matrix.mul_apply, Matrix.mulVec, dotProduct, Matrix.of_apply,
+        sylvesterTwoColumnBlockColumnPair, sylvesterTwoColumnRealSchurBlock,
+        Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using hi
+    · funext i
+      have hi := congrFun (congrFun h i) (1 : Fin 2)
+      simpa [Matrix.mul_apply, Matrix.mulVec, dotProduct, Matrix.of_apply,
+        sylvesterTwoColumnBlockColumnPair, sylvesterTwoColumnRealSchurBlock,
+        Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using hi
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), complexified
+    two-column intertwining bridge: a real identity `A * U = U * J` for the
+    active two-column matrix and supplied adjacent real Schur block remains
+    valid after entrywise complexification, so it can be consumed by complex
+    spectral/eigenvector lemmas. -/
+theorem sylvesterTwoColumnBlock_columnPair_intertwining_complexification
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (u v : Fin m -> Real)
+    (hX :
+      Matrix.of A * sylvesterTwoColumnBlockColumnPair m u v =
+        sylvesterTwoColumnBlockColumnPair m u v *
+          sylvesterTwoColumnRealSchurBlock n T p q) :
+    realMatrixToComplex (Matrix.of A) *
+        realMatrixToComplex (sylvesterTwoColumnBlockColumnPair m u v) =
+      realMatrixToComplex (sylvesterTwoColumnBlockColumnPair m u v) *
+        realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q) :=
+  realMatrixToComplex_intertwining_of_real
+    (Matrix.of A) (sylvesterTwoColumnRealSchurBlock n T p q)
+    (sylvesterTwoColumnBlockColumnPair m u v) hX
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), kernel
+    invariance for a two-column intertwiner: if the active column pair
+    satisfies `A * U = U * J`, then the real kernel of `U` is invariant under
+    the supplied adjacent `2 x 2` Schur block `J`.  This is a preparatory
+    algebraic step for ruling out nonzero block-action witnesses from
+    irreducible real-Schur block separation. -/
+theorem sylvesterTwoColumnBlock_columnPair_kernel_invariant
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (u v : Fin m -> Real)
+    (hX :
+      Matrix.of A * sylvesterTwoColumnBlockColumnPair m u v =
+        sylvesterTwoColumnBlockColumnPair m u v *
+          sylvesterTwoColumnRealSchurBlock n T p q)
+    {x : Fin 2 -> Real}
+    (hx :
+      Matrix.mulVec (sylvesterTwoColumnBlockColumnPair m u v) x = 0) :
+    Matrix.mulVec (sylvesterTwoColumnBlockColumnPair m u v)
+        (Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x) = 0 :=
+  finiteRealMatrix_intertwiner_kernel_invariant
+    (Matrix.of A) (sylvesterTwoColumnRealSchurBlock n T p q)
+    (sylvesterTwoColumnBlockColumnPair m u v) hX hx
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-action
+    packaging: the two coupled active-column equations are equivalent to
+    equality of the left `A` action and the supplied `2 x 2` Schur-block
+    action on the concatenated vector `(u, v)`.  This is the algebraic target
+    that a future real-Schur spectral-separation theorem can rule out. -/
+theorem sylvesterTwoColumnBlock_coupled_block_action_iff_leftAction_eq_schurAction
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (u v : Fin m -> Real) :
+    (Matrix.mulVec (Matrix.of A) u =
+          (fun i => T p p * u i + T q p * v i) ∧
+        Matrix.mulVec (Matrix.of A) v =
+          (fun i => T p q * u i + T q q * v i)) ↔
+      Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A)
+          (Sum.elim u v) =
+        Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q)
+          (Sum.elim u v) := by
+  constructor
+  · intro h
+    rcases h with ⟨hu, hv⟩
+    funext r
+    cases r with
+    | inl i =>
+        have hi := congrFun hu i
+        rw [sylvesterTwoColumnBlockLeftAction, sylvesterTwoColumnBlockSchurAction,
+          Matrix.fromBlocks_mulVec, Matrix.fromBlocks_mulVec]
+        simp only [Sum.elim_inl, Matrix.smul_mulVec, Matrix.one_mulVec,
+          Pi.add_apply]
+        simpa using hi
+    | inr i =>
+        have hi := congrFun hv i
+        rw [sylvesterTwoColumnBlockLeftAction, sylvesterTwoColumnBlockSchurAction,
+          Matrix.fromBlocks_mulVec, Matrix.fromBlocks_mulVec]
+        simp only [Sum.elim_inr, Matrix.smul_mulVec, Matrix.one_mulVec,
+          Pi.add_apply]
+        simpa [add_comm, add_left_comm, add_assoc] using hi
+  · intro h
+    constructor
+    · funext i
+      have hi := congrFun h (Sum.inl i)
+      rw [sylvesterTwoColumnBlockLeftAction, sylvesterTwoColumnBlockSchurAction,
+        Matrix.fromBlocks_mulVec, Matrix.fromBlocks_mulVec] at hi
+      simp only [Sum.elim_inl, Matrix.smul_mulVec, Matrix.one_mulVec,
+        Pi.add_apply] at hi
+      simpa using hi
+    · funext i
+      have hi := congrFun h (Sum.inr i)
+      rw [sylvesterTwoColumnBlockLeftAction, sylvesterTwoColumnBlockSchurAction,
+        Matrix.fromBlocks_mulVec, Matrix.fromBlocks_mulVec] at hi
+      simp only [Sum.elim_inr, Matrix.smul_mulVec, Matrix.one_mulVec,
+        Pi.add_apply] at hi
+      simpa [add_comm, add_left_comm, add_assoc] using hi
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), active-block
+    kernel packaging: the supplied two-column block coefficient kills the
+    concatenated vector `(u, v)` exactly when the two coupled column-action
+    equations hold. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_sumElim_eq_zero_iff_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (u v : Fin m -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)
+        (Sum.elim u v) = 0 ↔
+      Matrix.mulVec (Matrix.of A) u =
+          (fun i => T p p * u i + T q p * v i) ∧
+        Matrix.mulVec (Matrix.of A) v =
+          (fun i => T p q * u i + T q q * v i) := by
+  constructor
+  · intro hzero
+    constructor
+    · funext i
+      have hi := congrFun hzero (Sum.inl i)
+      have hi' :
+          Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T p p)) u i +
+              (-(T q p)) * v i = 0 := by
+        simpa [sylvesterTwoColumnBlockCoeff, Matrix.fromBlocks_mulVec,
+          Matrix.smul_mulVec, Matrix.one_mulVec] using hi
+      have hP := sylvesterTriangularShiftedCoeff_mulVec_apply m A (T p p) u i
+      have hP' :
+          Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T p p)) u i =
+            Matrix.mulVec (Matrix.of A) u i - T p p * u i := by
+        simpa [Matrix.mulVec, dotProduct, Matrix.of_apply] using hP
+      linarith
+    · funext i
+      have hi := congrFun hzero (Sum.inr i)
+      have hi' :
+          Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T q q)) v i +
+              (-(T p q)) * u i = 0 := by
+        simpa [sylvesterTwoColumnBlockCoeff, Matrix.fromBlocks_mulVec,
+          Matrix.smul_mulVec, Matrix.one_mulVec, add_comm, add_left_comm, add_assoc]
+          using hi
+      have hQ := sylvesterTriangularShiftedCoeff_mulVec_apply m A (T q q) v i
+      have hQ' :
+          Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T q q)) v i =
+            Matrix.mulVec (Matrix.of A) v i - T q q * v i := by
+        simpa [Matrix.mulVec, dotProduct, Matrix.of_apply] using hQ
+      linarith
+  · intro haction
+    rcases haction with ⟨hu, hv⟩
+    funext r
+    cases r with
+    | inl i =>
+        have hi := congrFun hu i
+        have hP := sylvesterTriangularShiftedCoeff_mulVec_apply m A (T p p) u i
+        have hP' :
+            Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T p p)) u i =
+              Matrix.mulVec (Matrix.of A) u i - T p p * u i := by
+          simpa [Matrix.mulVec, dotProduct, Matrix.of_apply] using hP
+        have hgoal :
+            Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T p p)) u i +
+                (-(T q p)) * v i = 0 := by
+          linarith
+        simpa [sylvesterTwoColumnBlockCoeff, Matrix.fromBlocks_mulVec,
+          Matrix.smul_mulVec, Matrix.one_mulVec] using hgoal
+    | inr i =>
+        have hi := congrFun hv i
+        have hQ := sylvesterTriangularShiftedCoeff_mulVec_apply m A (T q q) v i
+        have hQ' :
+            Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T q q)) v i =
+              Matrix.mulVec (Matrix.of A) v i - T q q * v i := by
+          simpa [Matrix.mulVec, dotProduct, Matrix.of_apply] using hQ
+        have hgoal :
+            Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T q q)) v i +
+                (-(T p q)) * u i = 0 := by
+          linarith
+        simpa [sylvesterTwoColumnBlockCoeff, Matrix.fromBlocks_mulVec,
+          Matrix.smul_mulVec, Matrix.one_mulVec, add_comm, add_left_comm, add_assoc]
+          using hgoal
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-kernel
+    separation packaging: the supplied two-column coefficient has a nonzero
+    kernel vector exactly when the left `A` block action agrees with the
+    supplied `2 x 2` Schur-block action on a nonzero concatenated vector. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_leftAction_eq_schurAction
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (z : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0 ↔
+      Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) z =
+        Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q) z := by
+  let u : Fin m -> Real := fun i => z (Sum.inl i)
+  let v : Fin m -> Real := fun i => z (Sum.inr i)
+  have hz : z = Sum.elim u v := by
+    funext r
+    cases r <;> rfl
+  rw [hz]
+  exact
+    (sylvesterTwoColumnBlockCoeff_mulVec_sumElim_eq_zero_iff_coupled_block_action
+      m n A T p q u v).trans
+      (sylvesterTwoColumnBlock_coupled_block_action_iff_leftAction_eq_schurAction
+        m n A T p q u v)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
+    block-action separation certificate: if no nonzero concatenated two-column
+    vector makes the left `A` action agree with the supplied `2 x 2`
+    Schur-block action, then the supplied two-column block coefficient is
+    nonsingular.  This is the determinant-facing form of the still-open
+    spectral-separation target. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_no_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hno :
+      ∀ z : Sum (Fin m) (Fin m) -> Real, z ≠ 0 ->
+        ¬ Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) z =
+          Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q) z) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  intro hdet
+  obtain ⟨z, hz_ne, hzero⟩ := Matrix.exists_mulVec_eq_zero_iff.mpr hdet
+  exact hno z hz_ne
+    ((sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_leftAction_eq_schurAction
+      m n A T p q z).mp hzero)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-local
+    spectral obstruction for a supplied real `2 x 2` Schur block: a nonzero
+    product-shift kernel vector yields two real vectors satisfying the same
+    coupled two-column block action, provided the subdiagonal coupling is
+    nonzero.  This is the forward algebraic step needed for the real-Schur
+    block-separation route: a future separation theorem can rule out these
+    coupled block-action witnesses to obtain the product-shift no-eigenvector
+    certificate. -/
+theorem sylvesterTwoColumnBlock_product_shift_kernel_to_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hsub : T q p ≠ 0)
+    {u : Fin m -> Real}
+    (hker :
+      Matrix.mulVec
+          (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p)) u =
+        (fun i => (T q p * T p q) * u i)) :
+    ∃ v : Fin m -> Real,
+      Matrix.mulVec (Matrix.of A) u =
+          (fun i => T p p * u i + T q p * v i) ∧
+      Matrix.mulVec (Matrix.of A) v =
+          (fun i => T p q * u i + T q q * v i) := by
+  let P : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T p p)
+  let Q : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T q q)
+  let v : Fin m -> Real := fun i => (T q p)⁻¹ * Matrix.mulVec P u i
+  refine ⟨v, ?_, ?_⟩
+  · funext i
+    have hv : T q p * v i = Matrix.mulVec P u i := by
+      simp [v, hsub]
+    have hP := sylvesterTriangularShiftedCoeff_mulVec_apply m A (T p p) u i
+    have hP' : Matrix.mulVec P u i =
+        Matrix.mulVec (Matrix.of A) u i - T p p * u i := by
+      simpa [P, Matrix.mulVec, dotProduct, Matrix.of_apply] using hP
+    calc
+      Matrix.mulVec (Matrix.of A) u i =
+          Matrix.mulVec P u i + T p p * u i := by linarith
+      _ = T p p * u i + T q p * v i := by rw [hv]; ring
+  · funext i
+    have hQPu : Matrix.mulVec Q (Matrix.mulVec P u) i =
+        (T q p * T p q) * u i := by
+      have hi := congrFun hker i
+      simpa [P, Q, Matrix.mulVec_mulVec] using hi
+    have hQv : Matrix.mulVec Q v i = T p q * u i := by
+      have hsmul : Matrix.mulVec Q v =
+          fun i : Fin m => (T q p)⁻¹ * Matrix.mulVec Q (Matrix.mulVec P u) i := by
+        simpa [v] using Matrix.mulVec_smul Q (T q p)⁻¹ (Matrix.mulVec P u)
+      calc
+        Matrix.mulVec Q v i =
+            (T q p)⁻¹ * Matrix.mulVec Q (Matrix.mulVec P u) i := by
+              rw [hsmul]
+        _ = (T q p)⁻¹ * ((T q p * T p q) * u i) := by rw [hQPu]
+        _ = T p q * u i := by
+              field_simp [hsub]
+    have hQ := sylvesterTriangularShiftedCoeff_mulVec_apply m A (T q q) v i
+    have hQ' : Matrix.mulVec Q v i =
+        Matrix.mulVec (Matrix.of A) v i - T q q * v i := by
+      simpa [Q, Matrix.mulVec, dotProduct, Matrix.of_apply] using hQ
+    calc
+      Matrix.mulVec (Matrix.of A) v i =
+          Matrix.mulVec Q v i + T q q * v i := by linarith
+      _ = T p q * u i + T q q * v i := by rw [hQv]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), contrapositive
+    block-separation certificate for a supplied real `2 x 2` Schur block: if
+    no nonzero vector can be extended to a coupled two-vector block action
+    matching the supplied diagonal block, then the product-shift eigen-equation
+    has only the zero solution.  Together with the existing
+    `sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector`,
+    this is the next block-local spectral bridge before a full real-Schur
+    separation theorem supplies the `hno` hypothesis from source-level
+    spectral disjointness. -/
+theorem sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_no_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hsub : T q p ≠ 0)
+    (hno :
+      ∀ u : Fin m -> Real, u ≠ 0 ->
+        ¬ ∃ v : Fin m -> Real,
+          Matrix.mulVec (Matrix.of A) u =
+              (fun i => T p p * u i + T q p * v i) ∧
+          Matrix.mulVec (Matrix.of A) v =
+              (fun i => T p q * u i + T q q * v i)) :
+    forall u : Fin m -> Real,
+      Matrix.mulVec
+          (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p)) u =
+        (fun i => (T q p * T p q) * u i) ->
+      u = 0 := by
+  intro u hker
+  by_contra hune
+  exact hno u hune
+    (sylvesterTwoColumnBlock_product_shift_kernel_to_coupled_block_action
+      m n A T p q hsub hker)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-action
+    separation bridge: if no nonzero concatenated two-column vector can make
+    the left `A` action equal the supplied `2 x 2` Schur-block action, then
+    the product-shift eigen-equation has only the zero solution.  This is the
+    block-matrix target for the still-open spectral-separation proof; it does
+    not itself derive separation from eigenvalue disjointness. -/
+theorem sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_no_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hsub : T q p ≠ 0)
+    (hno :
+      ∀ z : Sum (Fin m) (Fin m) -> Real, z ≠ 0 ->
+        ¬ Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) z =
+          Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q) z) :
+    forall u : Fin m -> Real,
+      Matrix.mulVec
+          (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p)) u =
+        (fun i => (T q p * T p q) * u i) ->
+      u = 0 := by
+  intro u hker
+  by_contra hune
+  obtain ⟨v, haction⟩ :=
+    sylvesterTwoColumnBlock_product_shift_kernel_to_coupled_block_action
+      m n A T p q hsub hker
+  have hz_ne : Sum.elim u v ≠ 0 := by
+    intro hz
+    apply hune
+    funext i
+    have hi := congrFun hz (Sum.inl i)
+    simpa using hi
+  have hblock :
+      Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) (Sum.elim u v) =
+        Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q)
+          (Sum.elim u v) :=
+    (sylvesterTwoColumnBlock_coupled_block_action_iff_leftAction_eq_schurAction
+      m n A T p q u v).mp haction
+  exact hno (Sum.elim u v) hz_ne hblock
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), real-Schur
+    same-block spectral certificate: an adjacent same-labelled block in the
+    exported quasi-Schur block map supplies the two-column zero pattern, and a
+    supplied no-coupled-action separation condition makes the corresponding
+    two-column block coefficient nonsingular.  This is a source-shaped adapter
+    for downstream Bartels-Stewart block solves; it still assumes the
+    separation/no-action condition rather than proving it from a full real
+    Schur spectral theorem. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_no_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hsub : T q p ≠ 0)
+    (hno :
+      ∀ u : Fin m -> Real, u ≠ 0 ->
+        ¬ ∃ v : Fin m -> Real,
+          Matrix.mulVec (Matrix.of A) u =
+              (fun i => T p p * u i + T q p * v i) ∧
+          Matrix.mulVec (Matrix.of A) v =
+              (fun i => T p q * u i + T q q * v i)) :
+    IsAdjacentQuasiTriangularBlockFn n T p q ∧
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  refine ⟨?_, ?_⟩
+  · exact IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block
+      n T pmap p q hmono hcard hzero hpq hsame
+  · apply sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+    exact
+      sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_no_coupled_block_action
+        m n A T p q hsub hno
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), structural
+    determinant bridge for a supplied adjacent two-column block with zero
+    coupling product: if the two scalar shifted column coefficients
+    `A - T_pp I` and `A - T_qq I` are nonsingular and
+    `T_qp * T_pq = 0`, then the full two-column block coefficient is
+    nonsingular. This instantiates the product-shift quadratic bridge from
+    the existing shifted determinant assumptions in the triangular or
+    degenerate-block case, avoiding a supplied block inverse/determinant
+    certificate for that local step. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  apply sylvesterTwoColumnBlockCoeff_det_ne_zero_of_quadratic_det_ne_zero
+    m n A T p q
+  · intro hdet
+    have hprod :
+        Matrix.det
+          (sylvesterTriangularShiftedCoeff m A (T q q) *
+            sylvesterTriangularShiftedCoeff m A (T p p)) = 0 := by
+      simpa [sylvesterTwoColumnBlockFirstQuadraticCoeff, hcouple] using hdet
+    rw [Matrix.det_mul] at hprod
+    exact (mul_ne_zero hqdet hpdet) hprod
+  · intro hdet
+    have hcouple' : T p q * T q p = 0 := by
+      rw [mul_comm]
+      exact hcouple
+    have hprod :
+        Matrix.det
+          (sylvesterTriangularShiftedCoeff m A (T p p) *
+            sylvesterTriangularShiftedCoeff m A (T q q)) = 0 := by
+      simpa [sylvesterTwoColumnBlockSecondQuadraticCoeff, hcouple'] using hdet
+    rw [Matrix.det_mul] at hprod
+    exact (mul_ne_zero hpdet hqdet) hprod
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), degenerate
+    same-block real-Schur adapter: the exported quasi-Schur block-map data
+    supplies the adjacent two-column zero pattern, while nonsingularity of
+    the two shifted column coefficients and zero coupling product prove the
+    active two-column block coefficient is nonsingular.  This closes the
+    zero-coupling subcase of the real `2 x 2` block route; the genuinely
+    coupled block still requires a spectral separation/no-coupled-action
+    certificate. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    IsAdjacentQuasiTriangularBlockFn n T p q ∧
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  refine ⟨?_, ?_⟩
+  · exact IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block
+      n T pmap p q hmono hcard hzero hpq hsame
+  · exact sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
+      m n A T p q hpdet hqdet hcouple
 
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6), right-hand side for
     the supplied adjacent two-column block recurrence.  It collects the
@@ -1031,6 +2390,644 @@ theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_
           (sylvesterTwoColumnBlockRhs m n T C X p q) := by
         rw [hz]
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    active-block injectivity: a trivial kernel for the eigen-equation of the
+    product of the two shifted column coefficients makes the supplied
+    two-column block `mulVec` action injective. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0) :
+    Function.Injective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact sylvesterTwoColumnBlockCoeff_mulVec_injective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    active-block surjectivity: the no-eigenvector product-shift certificate
+    makes every supplied two-column block right-hand side reachable. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0) :
+    Function.Surjective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    active-block bijectivity wrapper for the supplied two-column block. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0) :
+    Function.Bijective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    trivial-kernel wrapper for the supplied two-column block coefficient. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0)
+    (z : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0 <->
+      z = 0 := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_det_ne_zero
+    m n A T p q hdet z
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    active-block linear solve: the no-eigenvector product-shift certificate
+    gives existence and uniqueness for the supplied two-column block right-hand
+    side, with witness Mathlib's nonsingular inverse. -/
+theorem existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0) :
+    ExistsUnique fun z : Sum (Fin m) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_det_ne_zero
+    m n A T C X p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    active-block solution identification: any vector solving the supplied
+    two-column block system is the nonsingular-inverse solution once the
+    product-shift no-eigenvector certificate is available. -/
+theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0)
+    {z : Sum (Fin m) (Fin m) -> Real}
+    (hz :
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q) :
+    z =
+      Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact
+    sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_zero
+      m n A T C X p q hdet hz
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), real-Schur
+    same-block active-block injectivity: an adjacent same-labelled block in a
+    supplied quasi-Schur block map, together with the supplied no-coupled-action
+    separation condition, makes the two-column block `mulVec` action injective.
+    Scope: exact supplied-block algebra only. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_quasiSchur_no_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hsub : T q p ≠ 0)
+    (hno :
+      ∀ u : Fin m -> Real, u ≠ 0 ->
+        ¬ ∃ v : Fin m -> Real,
+          Matrix.mulVec (Matrix.of A) u =
+              (fun i => T p p * u i + T q p * v i) ∧
+          Matrix.mulVec (Matrix.of A) v =
+              (fun i => T p q * u i + T q q * v i)) :
+    Function.Injective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_no_coupled_block_action
+      m n A T pmap p q hmono hcard hzero hpq hsame hsub hno).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_injective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), real-Schur
+    same-block active-block surjectivity: the quasi-Schur/no-coupled-action
+    route makes every supplied two-column block right-hand side reachable by
+    the block coefficient. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_quasiSchur_no_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hsub : T q p ≠ 0)
+    (hno :
+      ∀ u : Fin m -> Real, u ≠ 0 ->
+        ¬ ∃ v : Fin m -> Real,
+          Matrix.mulVec (Matrix.of A) u =
+              (fun i => T p p * u i + T q p * v i) ∧
+          Matrix.mulVec (Matrix.of A) v =
+              (fun i => T p q * u i + T q q * v i)) :
+    Function.Surjective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_no_coupled_block_action
+      m n A T pmap p q hmono hcard hzero hpq hsame hsub hno).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), real-Schur
+    same-block active-block bijectivity wrapper from the quasi-Schur
+    no-coupled-action route. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_quasiSchur_no_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hsub : T q p ≠ 0)
+    (hno :
+      ∀ u : Fin m -> Real, u ≠ 0 ->
+        ¬ ∃ v : Fin m -> Real,
+          Matrix.mulVec (Matrix.of A) u =
+              (fun i => T p p * u i + T q p * v i) ∧
+          Matrix.mulVec (Matrix.of A) v =
+              (fun i => T p q * u i + T q q * v i)) :
+    Function.Bijective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_no_coupled_block_action
+      m n A T pmap p q hmono hcard hzero hpq hsame hsub hno).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), real-Schur
+    same-block trivial-kernel wrapper for the supplied two-column block
+    coefficient under the quasi-Schur/no-coupled-action hypotheses. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_quasiSchur_no_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hsub : T q p ≠ 0)
+    (hno :
+      ∀ u : Fin m -> Real, u ≠ 0 ->
+        ¬ ∃ v : Fin m -> Real,
+          Matrix.mulVec (Matrix.of A) u =
+              (fun i => T p p * u i + T q p * v i) ∧
+          Matrix.mulVec (Matrix.of A) v =
+              (fun i => T p q * u i + T q q * v i))
+    (z : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0 <->
+      z = 0 := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_no_coupled_block_action
+      m n A T pmap p q hmono hcard hzero hpq hsame hsub hno).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_det_ne_zero
+    m n A T p q hdet z
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), real-Schur
+    same-block active-block linear solve: the quasi-Schur/no-coupled-action
+    route gives existence and uniqueness for the supplied two-column block
+    right-hand side, with witness Mathlib's nonsingular inverse. -/
+theorem existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_quasiSchur_no_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hsub : T q p ≠ 0)
+    (hno :
+      ∀ u : Fin m -> Real, u ≠ 0 ->
+        ¬ ∃ v : Fin m -> Real,
+          Matrix.mulVec (Matrix.of A) u =
+              (fun i => T p p * u i + T q p * v i) ∧
+          Matrix.mulVec (Matrix.of A) v =
+              (fun i => T p q * u i + T q q * v i)) :
+    ExistsUnique fun z : Sum (Fin m) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_no_coupled_block_action
+      m n A T pmap p q hmono hcard hzero hpq hsame hsub hno).2
+  exact existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_det_ne_zero
+    m n A T C X p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), real-Schur
+    same-block active-block solution identification: any vector solving the
+    supplied two-column block system is the nonsingular-inverse solution under
+    the quasi-Schur/no-coupled-action hypotheses. -/
+theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_quasiSchur_no_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hsub : T q p ≠ 0)
+    (hno :
+      ∀ u : Fin m -> Real, u ≠ 0 ->
+        ¬ ∃ v : Fin m -> Real,
+          Matrix.mulVec (Matrix.of A) u =
+              (fun i => T p p * u i + T q p * v i) ∧
+          Matrix.mulVec (Matrix.of A) v =
+              (fun i => T p q * u i + T q q * v i))
+    {z : Sum (Fin m) (Fin m) -> Real}
+    (hz :
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q) :
+    z =
+      Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_no_coupled_block_action
+      m n A T pmap p q hmono hcard hzero hpq hsame hsub hno).2
+  exact
+    sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_zero
+      m n A T C X p q hdet hz
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    active-block injectivity: nonsingular shifted column coefficients and a
+    zero coupling product make the supplied two-column block coefficient
+    injective.  This is the exact algebraic zero-coupling route, without
+    carrying quasi-Schur block-map provenance. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    Function.Injective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
+      m n A T p q hpdet hqdet hcouple
+  exact sylvesterTwoColumnBlockCoeff_mulVec_injective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    active-block surjectivity from nonsingular shifted column coefficients and
+    a zero coupling product. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    Function.Surjective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
+      m n A T p q hpdet hqdet hcouple
+  exact sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    active-block bijectivity from nonsingular shifted column coefficients and
+    a zero coupling product. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    Function.Bijective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
+      m n A T p q hpdet hqdet hcouple
+  exact sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    active-block trivial-kernel wrapper for the supplied two-column block
+    coefficient under shifted determinant and zero-coupling hypotheses. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    (z : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0 <->
+      z = 0 := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
+      m n A T p q hpdet hqdet hcouple
+  exact sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_det_ne_zero
+    m n A T p q hdet z
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    active-block linear solve from nonsingular shifted column coefficients and
+    a zero coupling product. -/
+theorem existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n) (p q : Fin n)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    ExistsUnique fun z : Sum (Fin m) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
+      m n A T p q hpdet hqdet hcouple
+  exact existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_det_ne_zero
+    m n A T C X p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    active-block solution identification under shifted determinant and
+    zero-coupling hypotheses. -/
+theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n) (p q : Fin n)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    {z : Sum (Fin m) (Fin m) -> Real}
+    (hz :
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q) :
+    z =
+      Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
+      m n A T p q hpdet hqdet hcouple
+  exact
+    sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_zero
+      m n A T C X p q hdet hz
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block active-block injectivity: same-block quasi-Schur block-map data,
+    nonsingular shifted column coefficients, and zero coupling product make the
+    supplied two-column block coefficient injective. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_injective_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    Function.Injective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_injective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block active-block surjectivity from same-block quasi-Schur data,
+    nonsingular shifted column coefficients, and zero coupling product. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    Function.Surjective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_surjective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block active-block bijectivity wrapper from the same-block
+    quasi-Schur/shifted-determinant/zero-coupling route. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    Function.Bijective
+      (Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q)) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_bijective_of_det_ne_zero
+    m n A T p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block trivial-kernel wrapper for the supplied two-column block
+    coefficient under the same-block quasi-Schur/zero-coupling hypotheses. -/
+theorem sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    (z : Sum (Fin m) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z = 0 <->
+      z = 0 := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact sylvesterTwoColumnBlockCoeff_mulVec_eq_zero_iff_of_det_ne_zero
+    m n A T p q hdet z
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block active-block linear solve from same-block quasi-Schur data,
+    nonsingular shifted column coefficients, and zero coupling product. -/
+theorem existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0) :
+    ExistsUnique fun z : Sum (Fin m) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact existsUnique_sylvesterTwoColumnBlockCoeff_mulVec_of_det_ne_zero
+    m n A T C X p q hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block active-block solution identification under same-block
+    quasi-Schur data, nonsingular shifted column coefficients, and zero
+    coupling product. -/
+theorem sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    {z : Sum (Fin m) (Fin m) -> Real}
+    (hz :
+      Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n A T p q) z =
+        sylvesterTwoColumnBlockRhs m n T C X p q) :
+    z =
+      Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+        (sylvesterTwoColumnBlockRhs m n T C X p q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact
+    sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_zero
+      m n A T C X p q hdet hz
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant-based
     column wrapper for the supplied adjacent two-column block solve: assigning
     columns `p` and `q` from the nonsingular-inverse block solution makes `X`
@@ -1055,6 +3052,38 @@ theorem sylvesterTwoColumnBlockSystem_of_nonsingInv_columns (m n : Nat)
       (sylvesterTwoColumnBlockRhs m n T C X p q)) ?_ hXp hXq
   exact sylvesterTwoColumnBlockCoeff_mulVec_nonsingInv_mulVec_of_det_ne_zero
     m n A T p q hdet (sylvesterTwoColumnBlockRhs m n T C X p q)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    column wrapper for the supplied adjacent two-column block solve: assigning
+    columns `p` and `q` from the nonsingular-inverse block solution makes `X`
+    satisfy the supplied two-column block recurrence once the product-shift
+    no-eigenvector certificate is available. -/
+theorem sylvesterTwoColumnBlockSystem_of_nonsingInv_columns_of_product_shift_no_eigenvector
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i)) :
+    IsSylvesterTwoColumnBlockSystem m n A T C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact sylvesterTwoColumnBlockSystem_of_nonsingInv_columns
+    m n A T C X p q hdet hXp hXq
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), supplied
     two-column block inverse consistency: any supplied left inverse and right
@@ -1376,6 +3405,407 @@ theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_nonsingInv_columns_of_
   have hcols :=
     sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_det_ne_zero_of_prev_columns_eq
       m n A T C X Y p q hdet hXp hXq hY hprev
+  funext r
+  cases r with
+  | inl i => simpa using hcols.1 i
+  | inr i => simpa using hcols.2 i
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
+    nonsingular-inverse solve/uniqueness bridge: if the supplied two-column
+    block columns of `X` are defined by the nonsingular-inverse solve and a
+    supplied block-system solution `Y` agrees with `X` on previous columns,
+    then the active columns agree under the product-shift no-eigenvector
+    certificate. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_product_shift_no_eigenvector_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_no_eigenvector
+      m n A T p q hker
+  exact
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_det_ne_zero_of_prev_columns_eq
+      m n A T C X Y p q hdet hXp hXq hY hprev
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), vector form of
+    the product-shift nonsingular-inverse solve/uniqueness bridge for supplied
+    adjacent two-column block systems. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_nonsingInv_columns_of_product_shift_no_eigenvector_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (p q : Fin n)
+    (hker :
+      forall x : Fin m -> Real,
+        Matrix.mulVec
+            (sylvesterTriangularShiftedCoeff m A (T q q) *
+              sylvesterTriangularShiftedCoeff m A (T p p)) x =
+          (fun i => (T q p * T p q) * x i) ->
+        x = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  have hcols :=
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_product_shift_no_eigenvector_of_prev_columns_eq
+      m n A T C X Y p q hker hXp hXq hY hprev
+  funext r
+  cases r with
+  | inl i => simpa using hcols.1 i
+  | inr i => simpa using hcols.2 i
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), real-Schur
+    same-block column wrapper for the supplied adjacent two-column block solve:
+    assigning columns `p` and `q` from the nonsingular-inverse block solution
+    makes `X` satisfy the supplied two-column block recurrence under the
+    quasi-Schur/no-coupled-action hypotheses. -/
+theorem sylvesterTwoColumnBlockSystem_of_nonsingInv_columns_of_quasiSchur_no_coupled_block_action
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hsub : T q p ≠ 0)
+    (hno :
+      forall u : Fin m -> Real, u ≠ 0 ->
+        Not (exists v : Fin m -> Real,
+          Matrix.mulVec (Matrix.of A) u =
+              (fun i => T p p * u i + T q p * v i) /\
+          Matrix.mulVec (Matrix.of A) v =
+              (fun i => T p q * u i + T q q * v i)))
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i)) :
+    IsSylvesterTwoColumnBlockSystem m n A T C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_no_coupled_block_action
+      m n A T pmap p q hmono hcard hzero hpq hsame hsub hno).2
+  exact sylvesterTwoColumnBlockSystem_of_nonsingInv_columns
+    m n A T C X p q hdet hXp hXq
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), real-Schur
+    same-block nonsingular-inverse solve/uniqueness bridge: if the supplied
+    two-column block columns of `X` are defined by the nonsingular-inverse
+    solve and a supplied block-system solution `Y` agrees with `X` on previous
+    columns, then the active columns agree under the quasi-Schur/no-coupled
+    route. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_quasiSchur_no_coupled_block_action_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hsub : T q p ≠ 0)
+    (hno :
+      forall u : Fin m -> Real, u ≠ 0 ->
+        Not (exists v : Fin m -> Real,
+          Matrix.mulVec (Matrix.of A) u =
+              (fun i => T p p * u i + T q p * v i) /\
+          Matrix.mulVec (Matrix.of A) v =
+              (fun i => T p q * u i + T q q * v i)))
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_no_coupled_block_action
+      m n A T pmap p q hmono hcard hzero hpq hsame hsub hno).2
+  exact
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_det_ne_zero_of_prev_columns_eq
+      m n A T C X Y p q hdet hXp hXq hY hprev
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), vector form of
+    the real-Schur same-block nonsingular-inverse solve/uniqueness bridge for
+    supplied adjacent two-column block systems. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_nonsingInv_columns_of_quasiSchur_no_coupled_block_action_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hsub : T q p ≠ 0)
+    (hno :
+      forall u : Fin m -> Real, u ≠ 0 ->
+        Not (exists v : Fin m -> Real,
+          Matrix.mulVec (Matrix.of A) u =
+              (fun i => T p p * u i + T q p * v i) /\
+          Matrix.mulVec (Matrix.of A) v =
+              (fun i => T p q * u i + T q q * v i)))
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  have hcols :=
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_quasiSchur_no_coupled_block_action_of_prev_columns_eq
+      m n A T C X Y pmap p q hmono hcard hzero hpq hsame hsub hno
+      hXp hXq hY hprev
+  funext r
+  cases r with
+  | inl i => simpa using hcols.1 i
+  | inr i => simpa using hcols.2 i
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    column wrapper for the supplied two-column block solve: assigning columns
+    `p` and `q` from the nonsingular-inverse block solution makes `X` satisfy
+    the supplied two-column recurrence under shifted determinant and
+    zero-coupling hypotheses. -/
+theorem sylvesterTwoColumnBlockSystem_of_nonsingInv_columns_of_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n) (p q : Fin n)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i)) :
+    IsSylvesterTwoColumnBlockSystem m n A T C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
+      m n A T p q hpdet hqdet hcouple
+  exact sylvesterTwoColumnBlockSystem_of_nonsingInv_columns
+    m n A T C X p q hdet hXp hXq
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    nonsingular-inverse solve/uniqueness bridge: the shifted determinant and
+    zero-coupling route gives active-column uniqueness once previous columns
+    agree. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_shifted_det_product_zero_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n) (p q : Fin n)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
+      m n A T p q hpdet hqdet hcouple
+  exact
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_det_ne_zero_of_prev_columns_eq
+      m n A T C X Y p q hdet hXp hXq hY hprev
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), vector form of
+    the degenerate nonsingular-inverse solve/uniqueness bridge under shifted
+    determinant and zero-coupling hypotheses. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_nonsingInv_columns_of_shifted_det_product_zero_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n) (p q : Fin n)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  have hcols :=
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_shifted_det_product_zero_of_prev_columns_eq
+      m n A T C X Y p q hpdet hqdet hcouple hXp hXq hY hprev
+  funext r
+  cases r with
+  | inl i => simpa using hcols.1 i
+  | inr i => simpa using hcols.2 i
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block column wrapper for the supplied adjacent two-column block solve:
+    assigning columns `p` and `q` from the nonsingular-inverse block solution
+    makes `X` satisfy the supplied two-column recurrence under same-block
+    quasi-Schur data, shifted determinant certificates, and zero coupling. -/
+theorem sylvesterTwoColumnBlockSystem_of_nonsingInv_columns_of_quasiSchur_shifted_det_product_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i)) :
+    IsSylvesterTwoColumnBlockSystem m n A T C X p q := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact sylvesterTwoColumnBlockSystem_of_nonsingInv_columns
+    m n A T C X p q hdet hXp hXq
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), degenerate
+    same-block nonsingular-inverse solve/uniqueness bridge: the zero-coupling
+    quasi-Schur determinant route gives active-column uniqueness once previous
+    columns agree. -/
+theorem sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_quasiSchur_shifted_det_product_zero_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    (forall i : Fin m, X i p = Y i p) /\
+      (forall i : Fin m, X i q = Y i q) := by
+  have hdet :
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+    (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+      m n A T pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple).2
+  exact
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_det_ne_zero_of_prev_columns_eq
+      m n A T C X Y p q hdet hXp hXq hY hprev
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), vector form of
+    the degenerate same-block nonsingular-inverse solve/uniqueness bridge. -/
+theorem sylvesterTwoColumnBlockSystem_activeColumns_eq_of_nonsingInv_columns_of_quasiSchur_shifted_det_product_zero_of_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hpdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T p p)) = 0))
+    (hqdet :
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T q q)) = 0))
+    (hcouple : T q p * T p q = 0)
+    (hXp : forall i : Fin m,
+      X i p =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inl i))
+    (hXq : forall i : Fin m,
+      X i q =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n A T p q))
+          (sylvesterTwoColumnBlockRhs m n T C X p q) (Sum.inr i))
+    (hY : IsSylvesterTwoColumnBlockSystem m n A T C Y p q)
+    (hprev : forall j : Fin n, j < p -> forall i : Fin m, X i j = Y i j) :
+    Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q) =
+      Sum.elim (fun i : Fin m => Y i p) (fun i : Fin m => Y i q) := by
+  have hcols :=
+    sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_quasiSchur_shifted_det_product_zero_of_prev_columns_eq
+      m n A T C X Y pmap p q hmono hcard hzero hpq hsame hpdet hqdet hcouple
+      hXp hXq hY hprev
   funext r
   cases r with
   | inl i => simpa using hcols.1 i
@@ -2142,6 +4572,493 @@ theorem sylvesterVecCoeff_schurTriangular_det_ne_zero (m n : Nat)
     apply hinj
     rw [hxzero, Matrix.mulVec_zero]
   exact hxne hxzero'
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.4), strict singleton-block
+    specialization of the supplied real quasi-Schur block map: if the supplied
+    block map strictly increases with the matrix index, then the quasi-Schur
+    below-block zero condition is ordinary upper triangularity. -/
+theorem isUpperTriangularFn_of_strictBlockMap (n : Nat)
+    (S : RMatFn n n) (p : Fin n -> Nat)
+    (hpstrict : forall {i j : Fin n}, j < i -> p j < p i)
+    (hSstrict : forall i j : Fin n, p j < p i -> S i j = 0) :
+    IsUpperTriangularFn n S := by
+  intro i j hji
+  exact hSstrict i j (hpstrict hji)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: supplied real quasi-Schur factors
+    whose `B`-side block map is strictly increasing reduce to the supplied
+    Schur-triangular determinant theorem, so the original vec/Kronecker
+    Sylvester coefficient is nonsingular. Scope: exact supplied factors only;
+    this does not prove the 2-by-2 real quasi-Schur block solve or floating-
+    point Bartels-Stewart stability. -/
+theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Not (Matrix.det (sylvesterVecCoeff m n A B) = 0) := by
+  have _hpAmono := hpAmono
+  have _hpAcard := hpAcard
+  have _hRstrict := hRstrict
+  have _hpBmono := hpBmono
+  have _hpBcard := hpBcard
+  exact
+    sylvesterVecCoeff_schurTriangular_det_ne_zero
+      m n U R A V S B hU hV hA hB
+      (isUpperTriangularFn_of_strictBlockMap n S pB hpBstrict hSstrict)
+      hshift
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: the strict supplied-factor
+    determinant certificate makes the vectorized Sylvester coefficient have
+    trivial kernel. Scope: exact supplied factors only; no 2-by-2 block solve
+    or floating-point stability is claimed. -/
+theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_eq_zero_iff
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (x : Prod (Fin n) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff m n A B) x = 0 <-> x = 0 := by
+  constructor
+  · intro hx
+    have hdet :=
+      sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero
+        m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+        hpBmono hpBcard hpBstrict hSstrict hshift
+    have h := congrArg
+      (Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B))) hx
+    rw [Matrix.mulVec_zero, Matrix.mulVec_mulVec,
+      Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr hdet),
+      Matrix.one_mulVec] at h
+    exact h
+  · intro hx
+    rw [hx]
+    exact Matrix.mulVec_zero _
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: the strict supplied-factor
+    determinant certificate makes the vectorized Sylvester coefficient
+    injective. Scope: exact supplied factors only; no 2-by-2 block solve or
+    floating-point stability is claimed. -/
+theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_injective
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  have hdet :=
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift
+  intro x y hxy
+  have h := congrArg
+    (Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B))) hxy
+  rw [Matrix.mulVec_mulVec, Matrix.mulVec_mulVec,
+    Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+      (isUnit_iff_ne_zero.mpr hdet),
+    Matrix.one_mulVec, Matrix.one_mulVec] at h
+  exact h
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: the strict supplied-factor
+    determinant certificate makes the vectorized Sylvester coefficient
+    surjective, so every vectorized right-hand side is reachable in exact
+    arithmetic. -/
+theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_surjective
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  have hdet :=
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift
+  intro c
+  refine
+    ⟨Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c, ?_⟩
+  rw [Matrix.mulVec_mulVec,
+    Matrix.mul_nonsing_inv (sylvesterVecCoeff m n A B)
+      (isUnit_iff_ne_zero.mpr hdet),
+    Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: the vectorized Sylvester
+    coefficient solve is bijective under the exact supplied-factor
+    assumptions. -/
+theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_bijective
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff m n A B)) :=
+  ⟨sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_injective
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift,
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_surjective
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift⟩
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: every vectorized right-hand side
+    has a unique exact solution under the strict supplied-factor assumptions. -/
+theorem existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ∃! x : Prod (Fin n) (Fin m) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c := by
+  have hinj :=
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_injective
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift
+  have hsurj :=
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_surjective
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift
+  obtain ⟨x, hx⟩ := hsurj c
+  refine ⟨x, hx, ?_⟩
+  intro y hy
+  exact hinj (by rw [hy, hx])
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: Mathlib's nonsingular inverse gives
+    an explicit exact vectorized Sylvester coefficient solution for any right-
+    hand side. Scope: supplied exact factors only; no 2-by-2 block solve or
+    floating-point stability is claimed. -/
+theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_solution
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff m n A B)
+        (Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c) =
+      c := by
+  have hdet :=
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift
+  rw [Matrix.mulVec_mulVec,
+    Matrix.mul_nonsing_inv (sylvesterVecCoeff m n A B)
+      (isUnit_iff_ne_zero.mpr hdet),
+    Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: the nonsingular inverse is a left
+    action on the vectorized Sylvester coefficient under the supplied exact
+    factor hypotheses. -/
+theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_mulVec
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (x : Prod (Fin n) (Fin m) -> Real) :
+    Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B))
+        (Matrix.mulVec (sylvesterVecCoeff m n A B) x) =
+      x := by
+  have hdet :=
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift
+  rw [Matrix.mulVec_mulVec,
+    Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+      (isUnit_iff_ne_zero.mpr hdet),
+    Matrix.one_mulVec]
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: any exact vectorized Sylvester
+    coefficient solution is the nonsingular-inverse solution. -/
+theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_eq_nonsingInv_mulVec_of_mulVec_eq
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    {x c : Prod (Fin n) (Fin m) -> Real}
+    (hx : Matrix.mulVec (sylvesterVecCoeff m n A B) x = c) :
+    x = Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c := by
+  calc
+    x =
+        Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B))
+          (Matrix.mulVec (sylvesterVecCoeff m n A B) x) := by
+        symm
+        exact
+          sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_mulVec
+            m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+            hpBmono hpBcard hpBstrict hSstrict hshift x
+    _ = Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c := by
+        rw [hx]
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
+    real-quasi-Schur singleton-block case: the nonsingular-inverse formula is
+    the unique exact vectorized Sylvester coefficient solution for the supplied
+    factors. -/
+theorem existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_solution
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ∃! x : Prod (Fin n) (Fin m) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c ∧
+        x = Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c := by
+  refine
+    ⟨Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c, ?_, ?_⟩
+  · exact
+      ⟨sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_solution
+          m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+          hpBmono hpBcard hpBstrict hSstrict hshift c,
+        rfl⟩
+  · intro y hy
+    exact
+      sylvesterVecCoeff_realQuasiSchur_strictBlockMap_eq_nonsingInv_mulVec_of_mulVec_eq
+        m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+        hpBmono hpBcard hpBstrict hSstrict hshift hy.1
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equation (16.3), strict
+    real-quasi-Schur singleton-block nonsingularity excludes a supplied common
+    real right/transpose eigenpair of `A` and `B`. -/
+theorem no_common_real_eigenpair_of_realQuasiSchur_strictBlockMap (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real)
+    (hv0 : Not (v = 0)) (hw0 : Not (w = 0))
+    (hv : Matrix.mulVec A v = fun i => lam * v i)
+    (hw : Matrix.mulVec (Matrix.transpose B) w = fun j => lam * w j) :
+    False := by
+  have hdet :=
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift
+  exact hdet
+    (sylvesterVecCoeff_singular_of_common_eigenvalue
+      m n A B v w lam hv0 hw0 hv hw)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equation (16.3), strict
+    real-quasi-Schur singleton-block nonsingularity excludes a supplied common
+    real right/left eigenpair of `A` and `B`. -/
+theorem no_common_real_left_eigenpair_of_realQuasiSchur_strictBlockMap
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real)
+    (hv0 : Not (v = 0)) (hw0 : Not (w = 0))
+    (hv : Matrix.mulVec A v = fun i => lam * v i)
+    (hw : Matrix.vecMul w B = fun j => lam * w j) :
+    False := by
+  have hdet :=
+    sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero
+      m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
+      hpBmono hpBcard hpBstrict hSstrict hshift
+  apply hdet
+  apply Matrix.exists_mulVec_eq_zero_iff.mp
+  refine ⟨Matrix.vec (fun i j => v i * w j : RMatFn m n),
+    vec_outer_product_ne_zero m n v w hv0 hw0, ?_⟩
+  rw [sylvesterVecCoeff_eigenpair_vecMul m n A B v w lam lam hv hw]
+  funext p
+  simp
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6),
+    supplied triangular Schur-coordinate case: the exact shifted-determinant
+    hypotheses that make the vectorized Sylvester coefficient nonsingular also
+    rule out supplied common real eigenpairs of `A` and `B^T`. -/
+theorem no_common_real_eigenpair_of_schurTriangular (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.mulVec (Matrix.transpose B) w = (fun j => lam * w j)) :=
+  no_common_real_eigenpair_of_sylvesterVecCoeff_det_ne_zero m n A B
+    (sylvesterVecCoeff_schurTriangular_det_ne_zero
+      m n U R A V S B hU hV hA hB hS hshift)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6),
+    supplied triangular Schur-coordinate case in left-eigenvector form:
+    exact shifted-determinant hypotheses rule out supplied nonzero real
+    eigenpairs `A v = lam v` and `w^T B = lam w^T`. -/
+theorem no_common_real_left_eigenpair_of_schurTriangular (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) :
+    Not (∃ (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) ∧ Not (w = 0) ∧
+        Matrix.mulVec A v = (fun i => lam * v i) ∧
+        Matrix.vecMul w B = (fun j => lam * w j)) :=
+  no_common_real_left_eigenpair_of_sylvesterVecCoeff_det_ne_zero m n A B
+    (sylvesterVecCoeff_schurTriangular_det_ne_zero
+      m n U R A V S B hU hV hA hB hS hshift)
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
     Schur-coordinate case: the practical componentwise error bound can use
@@ -3200,5 +6117,785 @@ theorem sylvester_practical_error_bound_of_schurTriangular_computed_residual_err
       (sylvesterComputedResidualBudget_of_error_model m n A B C Xhat Rhat Ru dR
         hRhat_model hRu hdR)
       hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_certificate
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_certificate_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_certificate_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate_mono
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_certificate_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_certificate_mono_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_budget
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_budget_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_budget_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget_mono
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_budget_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_budget_mono_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_error_model
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru dR : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_error_model
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_error_model_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Ru dR : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_error_model_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_error_model_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat_model : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_error_model_mono
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_schurTriangular_computed_residual_error_model_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat_model : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_schurTriangular_computed_residual_error_model_mono_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_certificate
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_certificate_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_certificate_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate_mono
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_certificate_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_certificate_mono_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_budget
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Ru : RMatFn m n) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      ((∀ i j : Fin n, j < i -> pB j < pB i) ->
+        (∀ k : Fin n,
+          Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0)) ->
+        IsSylvesterSolutionRect m n A B C X ->
+        (∀ i j, 0 <= Ru i j) ->
+        (∀ i j,
+          |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j) ->
+        0 < sylvesterMaxEntryNormRect m n Xhat ->
+        sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+            sylvesterMaxEntryNormRect m n Xhat <=
+          sylvesterVecMaxNorm m n
+            (sylvesterPracticalBudgetVec m n
+              (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+            sylvesterMaxEntryNormRect m n Xhat) := by
+  exact
+    sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget
+      m n A B C X Xhat Rhat Ru
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_budget_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_budget_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget_mono
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_budget_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect m n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat_le : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_budget_mono_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_error_model
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru dR : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_error_model
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_error_model_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru dR : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_error_model_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_error_model_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat_model : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_error_model_mono
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for this practical Sylvester residual error bound endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_error_model_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Rhat' Ru Ru' dR : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat_model : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_error_model_mono_scalar
+  all_goals assumption
 
 end LeanFpAnalysis.FP

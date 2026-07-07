@@ -11166,12 +11166,105 @@ These compile, but should not be treated as fully derived stability results:
 - 2026-07-05 Theorem 13.7 BDD initial active-pivot bridge: added
   `higham13_algorithm13_3_initial_pivot_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`,
   `higham13_algorithm13_3_initial_pivot_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`,
+  `higham13_algorithm13_3_initial_pivot_det_ne_zero_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`,
   and
   `higham13_algorithm13_3_initial_pivot_right_inverse_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
   in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These specialize the
   BDD all-prefix diagonal inverse table to Algorithm 13.3 stage zero, where
-  the active pivot is definitionally the original first diagonal block, and
-  turn `pivotInv 0 = nonsingInv r (A 0 0)` into the exact first active pivot
+  the active pivot is definitionally the original first diagonal block.  The
+  determinant wrapper gives first-pivot nonsingularity directly from the
+  canonical BDD inverse, and the equality wrapper turns
+  `pivotInv 0 = nonsingInv r (A 0 0)` into the exact first active pivot
   right-inverse certificate consumed by matrix-stage APIs.  This closes only
   the base-pivot bridge; deriving later active Schur-stage pivot certificates
   from the printed BDD hypotheses remains open.
+
+- 2026-07-06 Theorem 13.7 BDD first Schur-tail nonsingularity handoff: added
+  `higham13_algorithm13_3_first_schur_tail_blockMatrixNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  and
+  `higham13_algorithm13_3_first_schur_tail_blockMatrixFlat_det_ne_zero_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These compose the
+  BDD all-prefix canonical first-pivot inverse with the existing
+  Schur-complement nonsingularity theorem: full leading-prefix nonsingularity
+  gives nonsingularity of the original full block matrix, and the BDD-derived
+  canonical first pivot supplies the two-sided inverse needed to prove
+  `blockSchur A (pivotInv 0)` block-nonsingular.  The determinant corollary
+  exposes the product-index flattened determinant certificate.  This closes
+  the first recursive nonsingularity handoff after the base pivot bridge, but
+  not the later active Schur-stage BDD reciprocal/source table, entrywise
+  max-growth product/update route, Problem 13.4 all-tail comparisons, or
+  Theorem 13.6 cited implementation estimates.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`,
+  `git diff --check`, touched Lean marker scan, scratch proof bench, and
+  scratch axiom audit passed; the axiom audit reported only standard Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`.  Redirected public
+  lookup printed both new Chapter 13 declarations and still failed only on
+  unrelated pre-existing stale lookup rows.
+
+- 2026-07-06 Theorem 13.7 BDD first Schur-tail leading-prefix handoff: added
+  `higham13_algorithm13_3_first_schur_tail_leadingPrincipalBlockNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  This strengthens the
+  first Schur-tail nonsingularity bridge by transferring the full
+  `LeadingPrincipalBlockNonsingular13_2` condition to
+  `blockSchur A (pivotInv 0)` from the all-leading-prefix table and the
+  BDD-derived canonical first pivot inverse.  It is the recursive
+  leading-prefix handoff needed before later BDD/source-table work can iterate
+  on Schur tails.  Later active Schur-stage reciprocal/source-table data,
+  entrywise max-growth product/update routing, Problem 13.4 all-tail
+  comparisons, and Theorem 13.6 cited implementation estimates remain open.
+  Direct `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`, touched Lean
+  marker scan, scratch proof bench, and scratch axiom audit passed; the axiom
+  audit reported only standard Mathlib axioms `propext`, `Classical.choice`,
+  and `Quot.sound`.  Redirected public lookup printed the full first-tail
+  theorem family and still failed only on unrelated pre-existing stale lookup
+  rows.
+
+- 2026-07-06 Theorem 13.7 BDD first Schur-tail all-prefix table:
+  added
+  `higham13_algorithm13_3_first_schur_tail_all_leadingBlockPrefixes_nonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  This packages the
+  preceding full-tail nonsingularity and leading-principal handoffs for
+  `blockSchur A (pivotInv 0)` into the all-leading-prefix table shape
+  consumed by the BDD all-prefix diagonal-inverse theorem.  It is a small but
+  important recursive dependency: after the first canonical BDD pivot, the
+  first Schur tail now has the exact prefix-nonsingularity hypothesis format
+  needed by later tail-level diagonal inverse/pivot-certificate steps.  It
+  still does not construct the later active Schur-stage reciprocal/source
+  table, entrywise max-growth product/update route, Problem 13.4 all-tail
+  comparisons, or Theorem 13.6 cited implementation estimates.  Direct
+  `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`, touched Lean
+  marker scan, scratch proof bench, and scratch axiom audit passed.  The axiom
+  audit reported only standard Mathlib axioms `propext`, `Classical.choice`,
+  and `Quot.sound`.  Redirected public lookup printed the four first-tail
+  declarations including the new all-prefix table, with empty stderr; it still
+  failed only on unrelated pre-existing stale lookup rows later in
+  `examples/LibraryLookup.lean`.
+
+- 2026-07-06 Theorem 13.7 BDD first Schur-tail diagonal inverse handoff:
+  added
+  `higham13_algorithm13_3_first_schur_tail_diag_nonsingInv_isInverse_of_tail_blockDiagDomCol_diagBound_nonpos`,
+  `higham13_algorithm13_3_first_schur_tail_diag_nonsingInv_isRightInverse_of_tail_blockDiagDomCol_diagBound_nonpos`,
+  and
+  `higham13_algorithm13_3_first_schur_tail_diag_det_ne_zero_of_tail_blockDiagDomCol_diagBound_nonpos`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These apply the
+  first-Schur-tail all-prefix handoff to the existing BDD all-prefix
+  diagonal-inverse theorem: if the first Schur tail has its own column-BDD
+  lower-bound table with nonpositive bounds, then every tail diagonal block
+  has the canonical `nonsingInv` two-sided/right-inverse certificates and a
+  nonzero determinant certificate.  This is recursive pivot-certificate
+  packaging only; it does not prove the tail BDD/source reciprocal table,
+  entrywise max-growth product/update route, Problem 13.4 all-tail
+  comparisons, or Theorem 13.6 cited implementation estimates.  Verification
+  passed: direct `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `git diff --check`, touched Lean
+  marker scan, scratch prototype, expanded scratch axiom audit, and redirected
+  public lookup presence.  The axiom audit reported only standard Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`; lookup stderr was
+  empty and the later nonzero exit was still from unrelated stale
+  non-Chapter-13 lookup rows.

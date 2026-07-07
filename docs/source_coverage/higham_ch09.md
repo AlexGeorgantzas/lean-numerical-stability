@@ -7,10 +7,28 @@
 - Mode: core.
 - Parallel split: 2 (chapters 7-12).
 - Planning documents consulted: blueprint, Split 2 section of `split_primary_contracts.md`, `chapter_index.md`.
-- Selected-scope gate: PASS. The primary labels Theorems 9.1, 9.3-9.5,
-  9.8-9.15, Lemma 9.6, and Algorithm 9.2 are represented by proved
-  source-facing declarations; the numbered equation families (9.1)-(9.27) are
-  accounted for by the chapter surfaces listed below.
+- Selected-scope gate: FAIL (citation-blocked). The primary labels Theorems
+  9.1, 9.3-9.5, 9.8-9.10, 9.12-9.14, Lemma 9.6, and Algorithm 9.2 are
+  represented by proved source-facing declarations, and the numbered equation
+  families (9.1)-(9.27) are accounted for by the chapter surfaces listed below.
+  However, four selected rows whose *only* justification in the book is an
+  external citation (Higham gives no proof) remain genuinely open and are held
+  as honest conditional/partial surfaces rather than closed: the complete-
+  pivoting upper bound eq. (9.14) [Wilkinson 1961], the rook-pivoting bound
+  eq. (9.16) [Foster 1997], the banded GEPP growth Theorem 9.11 [Bohte 1975],
+  and the full normwise/spectral Barrlund-Sun Theorem 9.15 self-majorant/Schur-
+  induction step. See the not-proved ledger below. **UPDATE (2026-07-06, web-
+  authorized pass):** the *analytic core* of eq. (9.14) — Wilkinson's actual
+  1961 growth-factor bound — is now PROVED axiom-clean as
+  `higham9_14_wilkinson_ratio_bound` (given the Hadamard pivot constraint, the
+  pivot ratio is `≤ completePivotWilkinsonBound n`). (9.14) is thus reduced to a
+  Gaussian-elimination iterate-model bookkeeping layer, no longer citation-
+  blocked. The other three rows (9.16, 9.11, 9.15) remain open and each require
+  their own research-grade analytic-core formalization. (An earlier revision of this
+  file recorded PASS with "no open items"; that overstated the Lean state and
+  is corrected here per the project's documentation-honesty rule that a
+  citation is not a proof and a conditional transfer does not close a stronger
+  source row.)
 
 Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean`
 (chapter-label surface); reusable LU, triangular solve, growth-factor,
@@ -26,7 +44,7 @@ and shared analysis files.
 | Theorem 9.4 (LU solve backward error) | `higham9_4_lu_solve_backward_error`, `higham9_4_exactDoolittle_recurrences_lu_solve_backward_error`, `higham9_4_rectRoundedLoop_square_lu_solve_backward_error` | triangular solve handoff |
 | Theorem 9.5 (Wilkinson-type solve bound) | `higham9_5_wilkinson_source_bound_of_entry_growth`, `higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace`, `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace`, plus dense/abs-budget/rounded-loop variants | growth-factor-to-solve-error bridge |
 | Lemma 9.6 (growth and reduced-matrix support) | `higham9_6_absLU_infNorm_le_source_constant_of_noPivotReducedGrowthFactor_exists_hAmax`, `higham9_6_growthFactorEntry_le_one_of_totalNonnegative_det_ne_zero_exists_hAmax`, `higham9_6_lu_exists_nonnegative_of_totalNonnegative_det_ne_zero` | no-pivot growth, reduced entries, and total-nonnegative support |
-| Theorem 9.8 (complete pivoting lower-bound families) | `higham9_8_growth_factor_ge_theta_real`, `higham9_8_exists_completePivoting_growth_factor_ge_theta_real`, `higham9_8_exists_completePivoting_growth_factor_ge_theta_nonsingInv`, `higham9_8_*checkerboard*` | real and checkerboard-conjugate witnesses |
+| Theorem 9.8 (complete pivoting lower-bound families) | `higham9_8_growth_factor_ge_theta_real`, `higham9_8_exists_completePivoting_growth_factor_ge_theta_real`, `higham9_8_exists_completePivoting_growth_factor_ge_theta_nonsingInv`, `higham9_8_*checkerboard*`; section-9.4 illustrations: `higham9_12_sineMatrix_theta_candidate_ge_half_succ` (S_n), `higham9_13_fourierVandermonde_complexGrowthFactorEntry_ge_card` (V_n), `higham9_8_hadamard_theta_candidate_eq_card` / `higham9_8_hadamard_growthFactorEntry_ge_card_of_lu_right_inverse` (Hadamard `rho_n >= n`) | real and checkerboard-conjugate witnesses; the theta = n Hadamard bound applies Theorem 9.8 with alpha = 1, beta = 1/n via the scaled-transpose inverse `higham9_8_hadamardInv` |
 | Theorem 9.9 (diagonal dominance) | `higham9_9_colDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_le_two`, `higham9_9_rowDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_le_two`, `higham9_9_*wilkinson_source_bound_exists*` | column/row diagonal dominance and small-dimension endpoint wrappers |
 | Theorem 9.10 (Hessenberg matrices) | `higham9_10_hessenberg_growth_backward_error`, `higham9_10_hessenberg_lu_solve_backward_stable_tight`, `higham9_10_HessenbergGEPPUTrace_*` | Hessenberg GEPP structure and solve bound |
 | Theorem 9.11 (banded matrices) | `higham9_11_bohteBound*`, `higham9_11_bohte_banded_solve_tight*`, `higham9_11_matrix_bohte_banded_solve_tight*`, `higham9_11_matrix_tridiag_data_bohte_solve_tight*` | Bohte constants, bandwidth-specialized wrappers, and Matrix APIs |
@@ -60,9 +78,27 @@ The rendered PDF lists Problem 9.12, so it is included in this reserved range
 even though the current planning ledgers omit that identifier.
 
 ## Open selected-scope items (not-proved ledger)
-None. All selected primary labels for Chapter 9 are represented by proved Lean
-declarations, with Matrix-facing wrappers added for the Theorem 9.11-9.13 API
-surfaces during the final pass.
+Four selected rows are citation-only in the book (Higham states them without
+proof) and remain open. Each carries honest partial/conditional Lean surfaces
+(the locally provable arithmetic, monotone consumers, and solve/inverse
+bridges) but the core imported inequality is NOT proved locally; the missing
+foundation is the cited external proof, which is either unavailable or research-
+grade. A conditional wrapper that takes the target bound as a hypothesis does
+not close these rows.
+
+| Selected row | Source (no book proof) | Missing foundation | Honest surfaces present | Smallest next Lean target | Status |
+|---|---|---|---|---|---|
+| Eq. (9.14), complete-pivoting growth upper bound `rho_n^c <= n^{1/2}(2*3^{1/2}...n^{1/(n-1)})^{1/2}` | Wilkinson [1229, 1961]; Higham gives no proof | pivot-magnitude decay under complete pivoting + Hadamard-type determinant inequality on leading submatrices | lower-bound theta families, `higham9_8_*`; Hadamard `rho_n >= n` illustration. **Hadamard foundation PROVED**: `higham9_hadamard_det_sq_le_prod_row_sq`, `higham9_posDef_det_le_prod_diag`, `higham9_hadamard_det_sq_le_pow_maxEntryNorm` (Mathlib gap, via eigenvalue/AM-GM on the Gram matrix). **Pivot-to-leading-minor step NOW PROVED**: `higham9_14_LUFactSpec_leadingSubmatrix_det_eq_prod_U_diag` (`det of k×k leading submatrix = prod of first k pivots`, via leading-block factorization L_k·U_k) and `higham9_14_abs_prod_leadingPivots_le_of_entries_le` (`|prod first-k pivots| <= sqrt(k^k)·M^k` when all leading-submatrix entries `<= M`, combining the leading-minor identity with the Hadamard max-entry bound). Also PROVED: `higham9_14_leadingSubmatrix_det_succ` (consecutive-minor recursion `det B_{k+1} = pivot·det B_k`) and `higham9_14_abs_prod_pivots_le_maxEntryNorm` (`|det A| <= sqrt(n^n)·maxEntryNorm^n`). **WILKINSON'S ANALYTIC CORE NOW PROVED**: `higham9_14_wilkinson_ratio_bound` — given positive pivots `p 1..p n` with the Hadamard constraint `∏_{i≤k} p i ≤ √(k^k)·(p k)^k` for all k, then `p 1 / p n ≤ completePivotWilkinsonBound n = √n·(2·3^{1/2}⋯n^{1/(n-1)})^{1/2}`. This is Wilkinson's actual 1961 proof (per Bisain-Edelman-Urschel 2024, arXiv:2312.00994): with `q k=log p k`, `T k=(∑_{i≤k}q i)/k`, the constraint gives `T m - T(m+1) ≤ log(m+1)/(2m)`, telescoping to `q1-qn ≤ ½(log n + ∑_{k=2}^n log k/(k-1)) = log(bound)`. Axiom-clean. | remaining to fully close the SOURCE row: only the Gaussian-elimination iterate model discharging the pivot constraint for an actual completely-pivoted matrix — i.e. define the completely-pivoted Schur-complement chain A^(k), identify growth factor = max_k p_k/p_n, and supply the constraint from `higham9_14_abs_prod_leadingPivots_le_of_entries_le` + `‖A^(k)‖_max = p_k`. The analytic bound itself (the cited hard content) is done. | OPEN — analytic core PROVED; only the GE-iterate/growth-factor bookkeeping layer remains |
+| Eq. (9.16), rook-pivoting growth bound `rho_n <= 1.5 n^{(3/4)log n}` | Foster [435, 1997]; Higham gives no proof | Foster's rook-pivoting stage analysis | rook-pivoting dense/rounded-loop `2^{n-1}` bridges | acquire Foster (1997) proof or derive stage bound | OPEN (citation-blocked: paper not in cache) |
+| Theorem 9.11, banded GEPP growth (Bohte constant) | Bohte [146, 1975]; Higham gives no proof | Bohte banded-GEPP growth theorem | `higham9_11_bohteBound*`, conditional solve wrappers `higham9_11_bohte_banded_solve_tight*` (take the growth bound as a hypothesis) | acquire Bohte (1975) proof (OUP PDF returns Cloudflare challenge; unavailable) | OPEN (citation-blocked: paper unavailable) |
+| Theorem 9.15, full Barrlund-Sun normwise/spectral sensitivity | Barrlund; Sun (cited); book proof omitted | derive the self-majorant inequality `W <= |G| + |G| W` (Schur-induction step) from first principles | componentwise identity/bounds proved (`higham9_15_lu_perturbation_*`); spectral-radius => nonnegative resolvent derived (`higham9_15_nonnegative_resolvent_nonsingInv_of_spectralRadius_lt_one`); self-majorant still a free hypothesis | prove the self-majorant inequality or route it through an equivalent Ch6/7 spectral surface | OPEN (hard; self-majorant is the remaining Schur-induction crux) |
+
+All other selected primary labels (Theorems 9.1, 9.3-9.5, 9.8 lower bound,
+9.9, 9.10, 9.12-9.14 endpoints, Lemma 9.6, Algorithm 9.2) are represented by
+proved Lean declarations, with Matrix-facing wrappers for the Theorem 9.11-9.13
+API surfaces. The section-9.4 growth illustrations of Theorem 9.8 are now
+complete for all three matrices Higham names: `S_n` (9.12), `V_n` (9.13), and
+the Hadamard matrix (`rho_n >= n`, added this pass).
 
 ## Hidden-hypothesis summary
 - Exact factorization wrappers state determinant, pivot, diagonal-dominance,
@@ -84,6 +120,12 @@ surfaces during the final pass.
   - `lake env lean --tstack=131072 examples/LibraryLookup.lean` passed after the final lookup additions.
   - `#print axioms` audits for the newly added Theorem 9.12 and Theorem 9.13 Matrix wrappers all reported only `[propext, Classical.choice, Quot.sound]`.
   - `git diff --check` and added-line placeholder scans were clean before each synced increment.
+  - 2026-07-06 (Claude Split-2 proof-completion pass): re-verified current `main` and added the Hadamard section-9.4 growth application. `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` passed (`Build completed successfully (3045 jobs)`); `#print axioms` for the five new `higham9_8_hadamard*` declarations reported only `[propext, Classical.choice, Quot.sound]`; hygiene and `git diff --check` clean. Corrected the selected-scope gate from an overstated PASS to FAIL (citation-blocked) with the not-proved ledger above.
+  - 2026-07-06 (same pass, continued): built the **Hadamard determinant inequality** foundation for eq. (9.14), a Mathlib gap, in the `HadamardDeterminantInequality` section: `higham9_amgm_prod_le_one_of_sum_eq_card`, `higham9_posDef_det_le_prod_diag` (`det M ≤ ∏ Mᵢᵢ`, PosDef), `higham9_hadamard_det_sq_le_prod_row_sq` (`(det A)² ≤ ∏ᵢ∑ⱼAᵢⱼ²`), and `higham9_hadamard_det_sq_le_pow_maxEntryNorm` (`(det A)² ≤ nⁿ·(maxEntryNorm A)^{2n}`). All four axiom-clean; three separate build/axiom/sync cycles, all `3045 jobs` PASS. Remaining for (9.14): the complete-pivoting combinatorial assembly (nested leading-minor = product of successive pivots, plus the growth recursion producing Wilkinson's `2·3^{1/2}⋯` product). The repo already provides `LUFactSpec.det_eq_prod_U_diag` (full det = ∏ pivots) and a complete-pivoting entry-≤-pivot invariant; the nested/recursive assembly across all `n` stages remains open and is research-grade.
+  - 2026-07-06 (Claude Split-2 proof-completion pass, web-authorized): **formalized Wilkinson's complete-pivoting growth bound (analytic core of eq. 9.14)** as `higham9_14_wilkinson_ratio_bound`, following the exact proof reconstructed in Bisain, Edelman & Urschel, "A New Upper Bound for the Growth Factor in Gaussian Elimination with Complete Pivoting" (arXiv:2312.00994, 2024), §2, which restates Wilkinson [1229, 1961, Eq. 4.15]. The theorem takes the Hadamard pivot constraint `∏_{i≤k} p i ≤ √(k^k)·(p k)^k` (the exact output of `higham9_14_abs_prod_leadingPivots_le_of_entries_le` under complete pivoting, where `‖A^(k)‖_max = p k`) and concludes `p 1 / p n ≤ higham9_14_completePivotWilkinsonBound n`, via the log/telescoping argument (no LP duality needed). Build PASS; axiom-clean `[propext, Classical.choice, Quot.sound]`. This is the hard, cited mathematical content of (9.14). The row is NOT yet fully closed: the remaining piece is the Gaussian-elimination iterate model (completely-pivoted Schur-complement chain, growth factor = max_k p_k/p_n) that discharges the pivot-constraint hypothesis for an actual matrix — pure bookkeeping over the now-proved analytic core.
+  - 2026-07-06 (Claude Split-2 proof-completion pass, continued): proved the **pivot-to-leading-minor** step for eq. (9.14). Added `higham9_14_LUFactSpec_leadingSubmatrix_det_eq_prod_U_diag` (`det of the k×k leading principal submatrix of A = ∏ of the first k pivots`, proved via the leading-block factorization `A_k = L_k·U_k`, the tail terms vanishing by lower-triangularity) and `higham9_14_abs_prod_leadingPivots_le_of_entries_le` (`|∏ first-k pivots| ≤ √(kᵏ)·Mᵏ` whenever every leading-submatrix entry is `≤ M`, combining the new leading-minor identity with `higham9_hadamard_det_sq_le_pow_maxEntryNorm`). The entry bound `M` is an explicit hypothesis — this is an honest reduction of (9.14) to the still-open global per-stage entry invariant, not a proof of the full upper bound. `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` PASS (`Build completed successfully (3045 jobs)`); `#print axioms` for both new declarations reported only `[propext, Classical.choice, Quot.sound]`. Remaining for (9.14): promote the per-stage invariant `higham9_1_completePivot_active_entry_ratio_abs_le_one` to a global `all leading-submatrix entries ≤ |a_11|` bound, then the pivot recursion. Gate remains FAIL (this row still OPEN; the three other open rows unchanged).
+  - 2026-07-06 (Claude Split-2 proof-completion pass, continued): added the **consecutive leading-minor / pivot relation** `higham9_14_leadingSubmatrix_det_succ` (`det B_{k+1} = pivot_{k+1} · det B_k`, division-free form, via `Fin.prod_univ_castSucc` on the leading-minor identity). This is the classical "pivot = ratio of consecutive leading principal minors" recursion step of Wilkinson's complete-pivoting argument. Build PASS (3045 jobs); axiom-clean. Gate still FAIL: (9.14) still OPEN (global entry invariant + full recursion remain).
+  - 2026-07-06 (Claude Split-2 proof-completion pass, continued): added the full-matrix Hadamard pivot-product bound `higham9_14_abs_prod_pivots_le_maxEntryNorm` (`|∏ pivots| = |det A| ≤ √(nⁿ)·(maxEntryNorm A)ⁿ`, via `LUFactSpec.det_eq_prod_U_diag` + Hadamard max-entry bound) — a growth-factor-facing surface with the concrete `maxEntryNorm A` entry bound (no extra hypothesis). Build PASS; axiom-clean. This completes the clean, bounded (9.14) foundation toolkit (leading-minor identity, Hadamard pivot-product bound, consecutive-minor recursion, full-matrix bound). The remaining (9.14) step — the global "all completely-pivoted leading-submatrix entries ≤ |a_11|" invariant — has no small next lemma: it requires building a multi-stage Gaussian-elimination reduced-matrix induction (absent from `LU/GrowthFactor.lean`, which has only per-stage `higham9_1_completePivot_active_entry_ratio_abs_le_one`), a research-grade multi-session effort.
 
 ## Documentation
 - Inventory and report: `docs/source_coverage/higham_ch09.md` (this file).
@@ -91,4 +133,11 @@ surfaces during the final pass.
 - Name inventory: `docs/LIBRARY_LOOKUP.md`.
 
 ## Open issues
-None for the selected Chapter 9 scope.
+The selected-scope gate is FAIL, blocked by the four citation-only rows in the
+not-proved ledger above: eq. (9.14) Wilkinson complete-pivoting upper bound,
+eq. (9.16) Foster rook-pivoting bound, Theorem 9.11 Bohte banded GEPP growth,
+and the full Barrlund-Sun Theorem 9.15 self-majorant step. (9.16) and 9.11 are
+citation-blocked (cited papers unavailable in the source cache); (9.14) and the
+9.15 self-majorant are hard local routes not yet closed. No `sorry`, `admit`,
+or new `axiom` is used anywhere in the chapter; the open rows are kept honest as
+partial/conditional surfaces rather than closed by assuming their conclusions.

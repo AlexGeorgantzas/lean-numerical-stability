@@ -1749,7 +1749,7 @@ theorem forward_error_step_bound (n : ℕ)
 theorem correction_componentwise_of_infNorm {n : ℕ}
     (dvec t : Fin n → ℝ) (rho0 ρ m : ℝ)
     (hnorm : infNormVec dvec ≤ rho0)
-    (hm_pos : 0 < m) (ht_lb : ∀ i, m ≤ t i)
+    (_hm_pos : 0 < m) (ht_lb : ∀ i, m ≤ t i)
     (hρ_nn : 0 ≤ ρ) (hcond : rho0 ≤ ρ * m) :
     ∀ i, dvec i ≤ ρ * t i := by
   intro i
@@ -1757,5 +1757,83 @@ theorem correction_componentwise_of_infNorm {n : ℕ}
     le_trans (le_trans (le_abs_self _) (abs_le_infNormVec dvec i)) hnorm
   have h2 : ρ * m ≤ ρ * t i := mul_le_mul_of_nonneg_left (ht_lb i) hρ_nn
   linarith [hdi, hcond, h2]
+
+-- ============================================================
+-- §12.2  Correction Neumann inequality from the solver (eqns 12.18–12.20)
+-- ============================================================
+
+/-- **Correction Neumann inequality** (Higham §12.2, eqns (12.18)–(12.20), exact form).
+
+    From the solver `(A + ΔA) d̂ = r̂` with `|ΔA| ≤ μ|A|` and a nonnegative resolver
+    `Ainv` for `A` (`A v = w ⇒ |v_i| ≤ ∑_j Ainv_ij |w_j|`), the correction magnitude
+    vector `|A||d̂|` satisfies the componentwise Neumann inequality
+      `(|A||d̂|)_i ≤ ∑_k P_{ik} |r̂_k| + μ ∑_k P_{ik} (|A||d̂|)_k`,   `P := |A|·Ainv`,
+    i.e. `(I − μ|A|Ainv)(|A||d̂|) ≤ (|A|Ainv)|r̂|`.  This is Higham's (12.18)/(12.20)
+    with `M₃ = |A||A⁻¹|`, derived **exactly** (no `O(u²)`): the input consumed by
+    `nonneg_resolvent_infNormVec_bound` / `higham12_21_correction_infNorm_bound`
+    with `M := μ|A|Ainv` (`≥ 0`) and `w := (|A|Ainv)|r̂|`. -/
+theorem correction_neumann_inequality (n : ℕ)
+    (A Ainv ΔA : Fin n → Fin n → ℝ) (d_hat r_hat : Fin n → ℝ)
+    (μ : ℝ) (_hμ_nn : 0 ≤ μ)
+    (hAinv_nn : ∀ i j, 0 ≤ Ainv i j)
+    (hAinv : ∀ (v w : Fin n → ℝ),
+      (∀ i, ∑ j : Fin n, A i j * v j = w i) →
+      ∀ i, |v i| ≤ ∑ j : Fin n, Ainv i j * |w j|)
+    (hΔA : ∀ i j, |ΔA i j| ≤ μ * |A i j|)
+    (hsolve : ∀ i, ∑ j : Fin n, (A i j + ΔA i j) * d_hat j = r_hat i) :
+    ∀ i : Fin n,
+      (∑ j : Fin n, |A i j| * |d_hat j|) ≤
+        (∑ k : Fin n, (∑ j : Fin n, |A i j| * Ainv j k) * |r_hat k|)
+          + μ * ∑ k : Fin n, (∑ j : Fin n, |A i j| * Ainv j k)
+              * (∑ l : Fin n, |A k l| * |d_hat l|) := by
+  -- A d̂ = r̂ − ΔA d̂
+  have hAd : ∀ i, ∑ j : Fin n, A i j * d_hat j
+      = r_hat i - ∑ j : Fin n, ΔA i j * d_hat j := by
+    intro i; have := hsolve i; simp_rw [add_mul] at this
+    rw [Finset.sum_add_distrib] at this; linarith
+  -- resolver on d̂ with w_k = r̂_k − (ΔA d̂)_k
+  have hdj := hAinv d_hat (fun k => r_hat k - ∑ l : Fin n, ΔA k l * d_hat l) hAd
+  -- |w_k| ≤ |r̂_k| + μ (|A||d̂|)_k
+  have hwk : ∀ k : Fin n, |r_hat k - ∑ l : Fin n, ΔA k l * d_hat l|
+      ≤ |r_hat k| + μ * ∑ l : Fin n, |A k l| * |d_hat l| := by
+    intro k
+    have h1 : |r_hat k - ∑ l, ΔA k l * d_hat l| ≤ |r_hat k| + |∑ l, ΔA k l * d_hat l| :=
+      abs_sub (r_hat k) (∑ l, ΔA k l * d_hat l)
+    have h2 : |∑ l, ΔA k l * d_hat l| ≤ μ * ∑ l, |A k l| * |d_hat l| := by
+      calc |∑ l, ΔA k l * d_hat l| ≤ ∑ l, |ΔA k l * d_hat l| := Finset.abs_sum_le_sum_abs _ _
+        _ = ∑ l, |ΔA k l| * |d_hat l| := by congr 1; ext l; exact abs_mul _ _
+        _ ≤ ∑ l, (μ * |A k l|) * |d_hat l| :=
+            Finset.sum_le_sum (fun l _ => mul_le_mul_of_nonneg_right (hΔA k l) (abs_nonneg _))
+        _ = μ * ∑ l, |A k l| * |d_hat l| := by rw [Finset.mul_sum]; congr 1; ext l; ring
+    linarith
+  -- |d̂_j| ≤ ∑_k Ainv_jk (|r̂_k| + μ (|A||d̂|)_k)
+  have hdj2 : ∀ j : Fin n, |d_hat j| ≤
+      ∑ k : Fin n, Ainv j k * (|r_hat k| + μ * ∑ l : Fin n, |A k l| * |d_hat l|) := by
+    intro j
+    refine le_trans (hdj j) ?_
+    exact Finset.sum_le_sum (fun k _ => mul_le_mul_of_nonneg_left (hwk k) (hAinv_nn j k))
+  intro i
+  -- abbreviation X k = |r̂_k| + μ (|A||d̂|)_k
+  set X : Fin n → ℝ := fun k => |r_hat k| + μ * ∑ l : Fin n, |A k l| * |d_hat l| with hX
+  have hswap : ∑ j : Fin n, |A i j| * (∑ k : Fin n, Ainv j k * X k)
+      = ∑ k : Fin n, (∑ j : Fin n, |A i j| * Ainv j k) * X k := by
+    calc ∑ j, |A i j| * (∑ k, Ainv j k * X k)
+        = ∑ j, ∑ k, |A i j| * (Ainv j k * X k) := by
+          apply Finset.sum_congr rfl; intro j _; rw [Finset.mul_sum]
+      _ = ∑ k, ∑ j, |A i j| * (Ainv j k * X k) := Finset.sum_comm
+      _ = ∑ k, (∑ j, |A i j| * Ainv j k) * X k := by
+          apply Finset.sum_congr rfl; intro k _
+          rw [Finset.sum_mul]; apply Finset.sum_congr rfl; intro j _; ring
+  have hsplit : ∑ k : Fin n, (∑ j : Fin n, |A i j| * Ainv j k) * X k
+      = (∑ k : Fin n, (∑ j : Fin n, |A i j| * Ainv j k) * |r_hat k|)
+          + μ * ∑ k : Fin n, (∑ j : Fin n, |A i j| * Ainv j k)
+              * (∑ l : Fin n, |A k l| * |d_hat l|) := by
+    rw [Finset.mul_sum, ← Finset.sum_add_distrib]
+    apply Finset.sum_congr rfl; intro k _; simp only [hX]; ring
+  calc ∑ j, |A i j| * |d_hat j|
+      ≤ ∑ j, |A i j| * (∑ k, Ainv j k * X k) :=
+        Finset.sum_le_sum (fun j _ => mul_le_mul_of_nonneg_left (hdj2 j) (abs_nonneg _))
+    _ = ∑ k, (∑ j, |A i j| * Ainv j k) * X k := hswap
+    _ = _ := hsplit
 
 end LeanFpAnalysis.FP

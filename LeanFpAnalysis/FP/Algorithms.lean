@@ -73,6 +73,7 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterPerturbation
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Minimizers
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Spectrum
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16SpectrumMinimizers
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Psi
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Lyapunov
 import LeanFpAnalysis.FP.Algorithms.StationaryIteration
@@ -117,6 +118,7 @@ import LeanFpAnalysis.FP.Analysis.SemiconvergentBlockFormExists
 import LeanFpAnalysis.FP.Analysis.SemiconvergentExistenceFull
 import LeanFpAnalysis.FP.Analysis.SemiconvergentExistenceComplete
 import LeanFpAnalysis.FP.Analysis.SemiconvergentRealSpectrumComplete
+import LeanFpAnalysis.FP.Analysis.SemiconvergentLimitGeneral
 import LeanFpAnalysis.FP.Analysis.HenriciSharpConstant
 import LeanFpAnalysis.FP.Analysis.HenriciSharpConstantExact
 import LeanFpAnalysis.FP.Analysis.PseudospectralLowerBound
