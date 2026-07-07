@@ -3237,6 +3237,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_pathS_zero`
 - `higham9_15_frobNormRect_smul`
 - `higham9_15_pathS_selfMajorant`
+- `higham9_15_pathL_entry_continuousOn`
+- `higham9_15_pathU_entry_continuousOn`
+- `higham9_15_pathS_continuousOn`
+- `higham9_15_rigorous_pathS_endpoint_bound`
+- `higham9_15_rigorous_lu_perturbation_combined_bound`
 - `higham9_15_normalized_G_factorization_matrix`
 - `higham9_15_normalized_Gtilde_factorization_matrix`
 - `higham9_15_strilPart`
