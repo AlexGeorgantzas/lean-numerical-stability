@@ -5395,6 +5395,13 @@ the exact Hyman block identities (14.35)--(14.36), and Problem 14.10:
 - `higham14_problem14_13_gej_squared_bound_from_amgm`
 - `higham14_problem14_13_gej_bound_from_squared`
 - `higham14_problem14_13_gej_bound_from_amgm_certificate`
+- `higham14_problem14_13_opNorm2_eq_complexMatrixOp2_realRectToCMatrix`
+- `higham14_problem14_13_opNorm2_eq_complex_top_singularValue`
+- `higham14_problem14_13_frobNorm_sq_eq_complexMatrixFrobeniusSq`
+- `higham14_problem14_13_frobNorm_sq_eq_sum_complex_singularValue_sq`
+- `higham14_problem14_13_lowerNorm_eq_complex_last_singularValue`
+- `higham14_problem14_13_opNorm2_rightInverse_eq_inv_complex_last_singularValue`
+- `higham14_problem14_13_kappa2_eq_top_div_last_singularValue_of_rightInverse`
 - `higham14_problem14_13_frobNorm_eq_sqrt_card_of_rowNorm2_eq_one`
 - `higham14_problem14_13_hadamardConditionNumber_eq_inv_abs_det_of_rowNorm2_eq_one`
 - `higham14_problem14_13_two_over_abs_det_eq_two_mul_hadamardConditionNumber`
