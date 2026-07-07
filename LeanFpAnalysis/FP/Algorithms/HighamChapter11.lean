@@ -3431,6 +3431,56 @@ theorem higham11_8_aasen_factor_solve_norm_budget_of_colDiagDom_middle_coeff_par
         (higham9_14_f (gamma fp n) * 3) ηFT ηFB ηST ηSB
         hFT hFB hST hSB hparts
 
+/-- Column-dominant middle-budget scalar reducer with the final printed
+coefficient supplied as one direct sum inequality. -/
+theorem higham11_8_aasen_factor_solve_norm_budget_of_colDiagDom_middle_coeff
+    (fp : FPModel) (n : ℕ)
+    (L T L_hat T_hat L_T_hat U_T_hat BT_factor : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κLhat κLhatT κT κBT : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hn : gammaValid fp n)
+    (hκL : 0 ≤ κL) (hκLhat : 0 ≤ κLhat)
+    (hκT : 0 ≤ κT) (hκBT : 0 ≤ κBT)
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hdetT : Matrix.det (Matrix.of T_hat : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hT_tridiag : IsTridiagonal n T_hat)
+    (hColDom : IsDiagDominant n T_hat)
+    (hL : infNorm L ≤ κL)
+    (hLT : infNorm (fun r c => L c r) ≤ κLT)
+    (hLhat : infNorm L_hat ≤ κLhat)
+    (hLhatT : infNorm (fun r c => L_hat c r) ≤ κLhatT)
+    (hT : infNorm T ≤ κT * infNorm T_hat)
+    (hBT : infNorm BT_factor ≤ κBT * infNorm T_hat)
+    (hcoeff :
+      (2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT) +
+        (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) +
+        (2 * gamma fp n + (gamma fp n) ^ 2) * (κLhat * κLhatT) +
+        (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+          (κLhat * (higham9_14_f (gamma fp n) * 3) * κLhatT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    ((2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm T * infNorm (fun r c => L c r)) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm BT_factor * infNorm (fun r c => L c r))) +
+    ((2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat *
+          infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) *
+          infNorm (fun r c => L_hat c r))) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat := by
+  exact
+    higham11_8_aasen_factor_solve_norm_budget_of_colDiagDom_middle_coeff_parts
+      fp n L T L_hat T_hat L_T_hat U_T_hat BT_factor γ_factor γ15n25
+      κL κLT κLhat κLhatT κT κBT
+      ((2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT))
+      ((1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT))
+      ((2 * gamma fp n + (gamma fp n) ^ 2) * (κLhat * κLhatT))
+      ((1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (κLhat * (higham9_14_f (gamma fp n) * 3) * κLhatT))
+      hγ_factor hn hκL hκLhat hκT hκBT hLU hdetT hT_tridiag hColDom
+      hL hLT hLhat hLhatT hT hBT (le_refl _) (le_refl _) (le_refl _)
+      (le_refl _) hcoeff
+
 /-- Scalar norm-budget reducer where the middle tridiagonal-solve budget is
 discharged by Chapter 9's row-dominant tridiagonal LU growth theorem, yielding
 the concrete middle coefficient `3 * f(γ_n)`. -/
@@ -3488,6 +3538,56 @@ theorem higham11_8_aasen_factor_solve_norm_budget_of_rowDiagDom_middle_coeff_par
         (gamma fp n) γ15n25 κL κLT κLhat κLhatT κT κBT
         (higham9_14_f (gamma fp n) * 3) ηFT ηFB ηST ηSB
         hFT hFB hST hSB hparts
+
+/-- Row-dominant middle-budget scalar reducer with the final printed
+coefficient supplied as one direct sum inequality. -/
+theorem higham11_8_aasen_factor_solve_norm_budget_of_rowDiagDom_middle_coeff
+    (fp : FPModel) (n : ℕ)
+    (L T L_hat T_hat L_T_hat U_T_hat BT_factor : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κLhat κLhatT κT κBT : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hn : gammaValid fp n)
+    (hκL : 0 ≤ κL) (hκLhat : 0 ≤ κLhat)
+    (hκT : 0 ≤ κT) (hκBT : 0 ≤ κBT)
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hdetT : Matrix.det (Matrix.of T_hat : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hT_tridiag : IsTridiagonal n T_hat)
+    (hRowDom : IsRowDiagDominant n T_hat)
+    (hL : infNorm L ≤ κL)
+    (hLT : infNorm (fun r c => L c r) ≤ κLT)
+    (hLhat : infNorm L_hat ≤ κLhat)
+    (hLhatT : infNorm (fun r c => L_hat c r) ≤ κLhatT)
+    (hT : infNorm T ≤ κT * infNorm T_hat)
+    (hBT : infNorm BT_factor ≤ κBT * infNorm T_hat)
+    (hcoeff :
+      (2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT) +
+        (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) +
+        (2 * gamma fp n + (gamma fp n) ^ 2) * (κLhat * κLhatT) +
+        (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+          (κLhat * (higham9_14_f (gamma fp n) * 3) * κLhatT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    ((2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm T * infNorm (fun r c => L c r)) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm BT_factor * infNorm (fun r c => L c r))) +
+    ((2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat *
+          infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) *
+          infNorm (fun r c => L_hat c r))) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat := by
+  exact
+    higham11_8_aasen_factor_solve_norm_budget_of_rowDiagDom_middle_coeff_parts
+      fp n L T L_hat T_hat L_T_hat U_T_hat BT_factor γ_factor γ15n25
+      κL κLT κLhat κLhatT κT κBT
+      ((2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT))
+      ((1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT))
+      ((2 * gamma fp n + (gamma fp n) ^ 2) * (κLhat * κLhatT))
+      ((1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (κLhat * (higham9_14_f (gamma fp n) * 3) * κLhatT))
+      hγ_factor hn hκL hκLhat hκT hκBT hLU hdetT hT_tridiag hRowDom
+      hL hLT hLhat hLhatT hT hBT (le_refl _) (le_refl _) (le_refl _)
+      (le_refl _) hcoeff
 
 /-- Rounded Aasen factorization-plus-solve source backward error together
 with the printed Theorem 11.8 normwise predicate, using a single scalar
