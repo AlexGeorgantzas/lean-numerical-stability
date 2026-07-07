@@ -1124,6 +1124,45 @@ theorem finiteMatrix_mulVec_no_eigenvector_of_det_sub_scalar_ne_zero
     Matrix.exists_mulVec_eq_zero_iff.mp ⟨x, hxne, hxzero⟩
   exact hdet hsing
 
+/-- Finite complex-matrix intertwiner bridge: if `A * X = X * B`, then the
+    image under `X` of a supplied `B` eigenvector is an `A` eigenvector with
+    the same eigenvalue.  This is the algebraic core needed to turn a
+    nonzero two-column intertwiner into a shared complex eigenvalue in the
+    Chapter 16 real-Schur block-separation route. -/
+theorem finiteComplexMatrix_intertwiner_maps_mulVec_eigenvector
+    {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (A : Matrix ι ι Complex) (B : Matrix κ κ Complex)
+    (X : Matrix ι κ Complex) (mu : Complex) (w : κ -> Complex)
+    (hX : A * X = X * B)
+    (hw : Matrix.mulVec B w = fun j => mu * w j) :
+    Matrix.mulVec A (Matrix.mulVec X w) =
+      fun i => mu * Matrix.mulVec X w i := by
+  calc
+    Matrix.mulVec A (Matrix.mulVec X w) = Matrix.mulVec (A * X) w := by
+      rw [Matrix.mulVec_mulVec]
+    _ = Matrix.mulVec (X * B) w := by rw [hX]
+    _ = Matrix.mulVec X (Matrix.mulVec B w) := by
+      rw [← Matrix.mulVec_mulVec]
+    _ = Matrix.mulVec X (fun j => mu * w j) := by rw [hw]
+    _ = fun i => mu * Matrix.mulVec X w i := by
+      simpa using Matrix.mulVec_smul X mu w
+
+/-- Finite complex-matrix intertwiner eigenpair bridge: if `A * X = X * B`
+    and a supplied `B` eigenvector has nonzero image under `X`, then `A`
+    has a supplied nonzero eigenvector with the same eigenvalue. -/
+theorem finiteComplexMatrix_exists_mulVec_eigenpair_of_intertwiner_image_ne_zero
+    {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (A : Matrix ι ι Complex) (B : Matrix κ κ Complex)
+    (X : Matrix ι κ Complex) (mu : Complex) (w : κ -> Complex)
+    (hX : A * X = X * B)
+    (hw : Matrix.mulVec B w = fun j => mu * w j)
+    (hXw : Matrix.mulVec X w ≠ 0) :
+    ∃ y : ι -> Complex,
+      y ≠ 0 ∧ Matrix.mulVec A y = fun i => mu * y i :=
+  ⟨Matrix.mulVec X w, hXw,
+    finiteComplexMatrix_intertwiner_maps_mulVec_eigenvector
+      A B X mu w hX hw⟩
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
     spectral bridge for a supplied adjacent two-column block: a trivial kernel
     for the eigen-equation of the product of the two shifted column
