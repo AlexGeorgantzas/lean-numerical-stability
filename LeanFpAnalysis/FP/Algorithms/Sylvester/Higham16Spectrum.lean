@@ -1183,6 +1183,26 @@ theorem finiteComplexMatrix_no_eigenpair_of_det_sub_scalar_ne_zero
     Matrix.exists_mulVec_eq_zero_iff.mp ⟨y, hyne, hyzero⟩
   exact hdet hsing
 
+/-- A finite complex matrix with no supplied eigenpair at `mu` has nonzero
+    shifted determinant.  This is the converse direction used to turn a
+    source-level no-common-complex-eigenvalue hypothesis into the determinant
+    certificate required by the real-Schur two-column block route. -/
+theorem finiteComplexMatrix_det_sub_scalar_ne_zero_of_no_eigenpair
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (A : Matrix ι ι Complex) (mu : Complex)
+    (hno :
+      ¬ ∃ y : ι -> Complex,
+        y ≠ 0 ∧ Matrix.mulVec A y = fun i => mu * y i) :
+    Not (Matrix.det (A - Matrix.scalar ι mu) = 0) := by
+  intro hdet
+  rcases (Matrix.exists_mulVec_eq_zero_iff.mpr hdet) with ⟨y, hyne, hyzero⟩
+  exact hno ⟨y, hyne, by
+    funext i
+    have hi := congrFun hyzero i
+    have hcoord : Matrix.mulVec A y i - mu * y i = 0 := by
+      simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hi
+    exact sub_eq_zero.mp hcoord⟩
+
 /-- Entrywise real-to-complex map for rectangular matrices.  This is the
     rectangular companion to the square complexification used in the real
     invariant-subspace development. -/
@@ -2387,6 +2407,69 @@ theorem sylvesterTwoColumnRealSchurBlock_no_real_eigenvector_of_disc_neg
     sylvesterTwoColumnRealSchurBlock_no_real_eigenvector_of_delta_sq_ne_zero
       n T p q delta hdelta hdelta_ne
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): a
+    no-common-complex-eigenpair hypothesis between the adjacent real-Schur
+    block and the left matrix supplies the shifted determinant certificate at
+    the standard complex root `sqrt (-disc)`.  This is the source-facing route
+    that remains after the constructed real-quasi-Schur API supplies the
+    negative-discriminant side. -/
+theorem sylvesterTwoColumnRealSchurBlockComplexRoot_det_separation_of_disc_no_common_complex_eigenpair
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0)
+    (hnoCommon :
+      ∀ mu : Complex,
+        (∃ w : Fin 2 -> Complex,
+          w ≠ 0 ∧
+            Matrix.mulVec (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q)) w =
+              fun k => mu * w k) ->
+        ¬ ∃ y : Fin m -> Complex,
+          y ≠ 0 ∧
+            Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+              fun i => mu * y i) :
+    Not
+      ((Matrix.det
+        (realMatrixToComplex (Matrix.of A) -
+          Matrix.scalar (Fin m)
+            (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+              (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0)) := by
+  let delta : Real := Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))
+  have hsub : Not (T q p = 0) :=
+    sylvesterTwoColumnRealSchurBlock_subdiagonal_ne_zero_of_disc_neg
+      n T p q hdisc
+  have hdelta :
+      delta ^ 2 =
+        -((T p p - T q q) ^ 2 + 4 * T p q * T q p) := by
+    dsimp [delta]
+    rw [Real.sq_sqrt]
+    linarith
+  have hblockEig :
+      ∃ w : Fin 2 -> Complex,
+        w ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q)) w =
+            fun k => sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta * w k :=
+    ⟨sylvesterTwoColumnRealSchurBlockComplexRootVector n T p q
+        (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta),
+      sylvesterTwoColumnRealSchurBlockComplexRootVector_ne_zero
+        n T p q (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta) hsub,
+      sylvesterTwoColumnRealSchurBlockComplexRootVector_mulVec
+        n T p q (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta)
+        (sylvesterTwoColumnRealSchurBlockComplexRoot_root_of_delta_sq
+          n T p q delta hdelta)⟩
+  have hnoA :
+      ¬ ∃ y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i => sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta * y i :=
+    hnoCommon (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta) hblockEig
+  have hdet :=
+    finiteComplexMatrix_det_sub_scalar_ne_zero_of_no_eigenpair
+      (realMatrixToComplex (Matrix.of A))
+      (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta)
+      hnoA
+  simpa [delta] using hdet
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     no-block-action certificate from a negative real discriminant and a
     shifted complex determinant separation certificate for `A`.  This is the
@@ -2802,6 +2885,49 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_d
       m n A T pmap p q
       (sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_det_separation
         m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral hdetA)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): the constructed
+    real-quasi-Schur two-block spectral certificate plus a global
+    no-common-complex-eigenpair hypothesis for the adjacent block supplies the
+    active two-column block shape and determinant nonsingularity. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_no_common_complex_eigenpair
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of T) pmap)
+    (hnoCommon :
+      ∀ mu : Complex,
+        (∃ w : Fin 2 -> Complex,
+          w ≠ 0 ∧
+            Matrix.mulVec (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q)) w =
+              fun k => mu * w k) ->
+        ¬ ∃ y : Fin m -> Complex,
+          y ≠ 0 ∧
+            Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+              fun i => mu * y i) :
+    IsAdjacentQuasiTriangularBlockFn n T p q ∧
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  have hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0 := by
+    simpa [Matrix.of_apply] using (hspectral p q hpq_adj hsame).2
+  have hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m)
+              (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0)) :=
+    sylvesterTwoColumnRealSchurBlockComplexRoot_det_separation_of_disc_no_common_complex_eigenpair
+      m n A T p q hdisc hnoCommon
+  exact
+    sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_det_separation
+      m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral hdetA
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     determinant-shaped complex-separation route from a negative real
