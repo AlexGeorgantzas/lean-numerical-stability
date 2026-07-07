@@ -2486,6 +2486,34 @@ theorem sylvesterTwoColumnRealSchurBlock_separation_of_disc_det_separation
     IsSylvesterTwoColumnRealSchurBlockSeparation m n A T p q :=
   ⟨hdisc, hdetA⟩
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), direct producer
+    for the explicit real-Schur block-separation predicate from an
+    irreducibility-shaped `2 x 2` block certificate: no nonzero real
+    eigenline supplies the negative discriminant, while the shifted complex
+    determinant separation for `A` remains explicit. -/
+theorem sylvesterTwoColumnRealSchurBlock_separation_of_no_real_eigenvector_det_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hno :
+      forall x : Fin 2 -> Real, x ≠ 0 ->
+        Not (exists nu : Real,
+          Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+            fun k => nu * x k))
+    (hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m)
+              (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
+    IsSylvesterTwoColumnRealSchurBlockSeparation m n A T p q := by
+  exact
+    sylvesterTwoColumnRealSchurBlock_separation_of_disc_det_separation
+      m n A T p q
+      (sylvesterTwoColumnRealSchurBlock_disc_neg_of_no_real_eigenvector
+        n T p q hno)
+      hdetA
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), canonical
     real `2 x 2` rotation-scaling block algebra: if the adjacent block has
     entries `[[alpha, beta], [-beta, alpha]]` in the `(p,q)` order and
@@ -2606,6 +2634,40 @@ theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_disc_det_separation
     ⟨hmono, hcard, hzero, hpq_adj, hsame,
       sylvesterTwoColumnRealSchurBlock_separation_of_disc_det_separation
         m n A T p q hdisc hdetA⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
+    real-quasi-Schur separation producer from block-map data, adjacent
+    same-block provenance, a no-real-eigenline certificate for the adjacent
+    `2 x 2` block, and shifted determinant separation for `A`. -/
+theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_no_real_eigenvector_det_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hno :
+      forall x : Fin 2 -> Real, x ≠ 0 ->
+        Not (exists nu : Real,
+          Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+            fun k => nu * x k))
+    (hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m)
+              (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
+    IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q := by
+  exact
+    sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_disc_det_separation
+      m n A T pmap p q hmono hcard hzero hpq_adj hsame
+      (sylvesterTwoColumnRealSchurBlock_disc_neg_of_no_real_eigenvector
+        n T p q hno)
+      hdetA
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
     real-quasi-Schur block-separation producer from canonical rotation-scaling
