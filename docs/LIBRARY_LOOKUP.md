@@ -5312,8 +5312,14 @@ hypothesis already contains the algorithmic stability conclusion, the theorem is
 a transfer or packaging result rather than a complete local analysis.
 
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
-Problem 14.7:
+Problem 14.3 and Problem 14.7:
 
+- `inverseRightResidual`, `inverseLeftResidual`
+- `higham14_problem14_3_right_residual_eq_mul_left_residual`
+- `higham14_problem14_3_left_residual_eq_mul_right_residual`
+- `higham14_problem14_3_right_over_left_residual_infNorm_le_kappa`
+- `higham14_problem14_3_left_over_right_residual_infNorm_le_kappa`
+- `higham14_problem14_3_max_residual_ratio_infNorm_le_kappa`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones`
 

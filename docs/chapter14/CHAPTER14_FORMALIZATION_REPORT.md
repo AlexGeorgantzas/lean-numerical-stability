@@ -18,7 +18,7 @@
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| 14 | core | 100 | 72 | 50 | 38 | 65 | 60 | about 31 selected rows/classes | Conditional floating-point interfaces for Method 2/2C, Method D, and GJE second-stage accumulation; determinant/Hyman/problem rows unstarted | medium |
+| 14 | core | 100 | 73 | 51 | 40 | 65 | 61 | about 30 selected rows/classes | Conditional floating-point interfaces for Method 2/2C, Method D, and GJE second-stage accumulation; determinant/Hyman/problem rows unstarted | medium |
 
 ## Completed selected targets
 
@@ -33,6 +33,7 @@
 | (14.18) | `methodB_left_residual` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Method B left-residual bound from supplied triangular-inverse/solve specs. | Conditional but internally proved from stated hypotheses. |
 | (14.19) | `methodC_mixed_residual`, `methodC_forward_error` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Mixed-residual interface and forward-error consequence. | Mixed residual is assumed; forward consequence proved. |
 | (14.24) | `left_right_residual_comparison` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Exact comparison of left and right residuals through a left inverse. | Proved. |
+| Problem 14.3 | `higham14_problem14_3_right_over_left_residual_infNorm_le_kappa`, `higham14_problem14_3_left_over_right_residual_infNorm_le_kappa`, `higham14_problem14_3_max_residual_ratio_infNorm_le_kappa` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Infinity-norm residual-ratio bound by `kappaInf`; includes exact identities `AX-I = A(XA-I)A_inv` and `XA-I = A_inv(AX-I)A`. | New after the initial milestone; denominators are explicit positivity hypotheses. |
 | Problem 14.7 | `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones`, `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Sum of all inverse entries is one when A has a row or column of ones. | New in this pass; proved. |
 | Theorem 14.5 composition | `gje_overall_residual`, `gje_overall_forward_error` | `LeanFpAnalysis/FP/Algorithms/GaussJordan.lean` | Composition from explicit GE and GJE second-stage hypotheses. | Partial source closure; printed constants still open. |
 
@@ -50,6 +51,10 @@
 
 | Declaration | Why needed | Used by | Feasibility status |
 |---|---|---|---|
+| `inverseRightResidual`, `inverseLeftResidual` | Stable source-facing names for `AX-I` and `XA-I`. | Problem 14.3; later Problems 14.4--14.5. | implemented |
+| `higham14_problem14_3_right_residual_eq_mul_left_residual` | Exact identity `AX-I = A(XA-I)A_inv`. | Problem 14.3 right-over-left ratio. | implemented |
+| `higham14_problem14_3_left_residual_eq_mul_right_residual` | Exact identity `XA-I = A_inv(AX-I)A`. | Problem 14.3 left-over-right ratio. | implemented |
+| `higham14_problem14_3_max_residual_ratio_infNorm_le_kappa` | Closes the printed max residual-ratio inequality for `infNorm` under nonzero residual denominators. | Chapter 14 inventory/report. | implemented |
 | `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones` | Closes the row-ones half of Problem 14.7. | Chapter 14 inventory/report. | implemented |
 | `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones` | Closes the column-ones half of Problem 14.7. | Chapter 14 inventory/report. | implemented |
 
@@ -103,6 +108,7 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 
 ## Hidden-hypothesis summary
 
+- The new Problem 14.3 max-ratio theorem assumes both residual denominators are positive. The two one-sided ratio lemmas require only the denominator used by that ratio. This makes the source's implicit nonzero-ratio side condition explicit.
 - The new Problem 14.7 theorems assume the appropriate inverse side explicitly (`IsRightInverse` for a row of ones, `IsLeftInverse` for a column of ones); these are source/domain assumptions, not proof artifacts.
 - Existing Method 2, Method 2C, Method D, and GJE theorem surfaces still include hypotheses that are essentially the missing algorithmic analyses. They are recorded as conditional interfaces and do not close the source rows.
 - Existing `O(u^2)` source statements are not fully modeled unless a theorem explicitly exposes a first-order wrapper; the report does not count asymptotic endpoints as closed.
@@ -124,20 +130,21 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
   - marker scan for `sorry`, `admit`, `axiom`, `unsafe`, and `opaque` over the touched Chapter 14 Lean files
   - focused `#check` file for the two new Problem 14.7 theorems
   - focused `#print axioms` file for the two new Problem 14.7 theorems
+  - stdin focused `#check`/`#print axioms` run for the new Problem 14.3 residual-ratio theorems
   - `lake env lean examples/LibraryLookup.lean`
-- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass before and after the upstream merge; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
-- New theorem axiom surface: both new Problem 14.7 theorems use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`).
-- Known verification issue: the full `examples/LibraryLookup.lean` run aborts with a stack overflow / exit 134 after producing large lookup output. The focused lookup file for the two new declarations passes, so this is recorded as a full-example scale issue rather than a failed declaration lookup.
+- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass before and after the upstream merge and after the Problem 14.3 addition; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
+- New theorem axiom surface: the new Problem 14.3 and Problem 14.7 theorems use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`).
+- Known verification issue: the full `examples/LibraryLookup.lean` run aborts with a stack overflow / exit 134 after producing large lookup output. Focused lookups for the new declarations pass, so this is recorded as a full-example scale issue rather than a failed declaration lookup.
 - New versus pre-existing warnings: a new unused-simp warning appeared during initial Problem 14.7 proof and was removed.
 
 ## GitHub synchronization
 
 - Local branch: main
-- Latest remote base integrated: `origin/main` fast-forwarded from `0af482e1` to `8411b4d2` before theorem design, then merged `57d02bfd` after the Chapter 14 milestone commit.
-- Milestone commit and split prefix: `6939f36a` (`Split 3A: start Ch14 matrix inversion inventory`)
-- Local merge commit before report-sync update: `24f75fa4`
-- Pushed to origin/main: yes, through `3f182f74` before this push-record update
-- Merge/conflict resolution: clean `ort` merge; upstream changed `LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean` and `docs/source_coverage/higham_ch20.md`
+- Latest remote base integrated: `origin/main` fast-forwarded from `0af482e1` to `8411b4d2` before theorem design, then merged `57d02bfd` and `5e10aea0` after local Chapter 14 milestones.
+- Milestone commits and split prefixes: `6939f36a` (`Split 3A: start Ch14 matrix inversion inventory`), `63347956` (`Split 3A: formalize Ch14 residual ratio`)
+- Local merge commits before report-sync updates: `24f75fa4`, `30c972c4`
+- Pushed to origin/main: yes, through `30c972c4` before this push-record update
+- Merge/conflict resolution: clean `ort` merges; upstream changed `LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean` and `docs/source_coverage/higham_ch20.md`
 - New upstream imports or exported contracts: none
 
 ## Documentation
