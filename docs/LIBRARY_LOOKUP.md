@@ -5329,6 +5329,13 @@ pivoted absolute-value form, and Problem 14.10:
 - `higham14_problem14_5_forward_error_of_residual_bound`
 - `higham14_problem14_5_right_inverse_solve_forward_error_bound`
 - `higham14_problem14_5_left_inverse_solve_forward_error_bound`
+- `higham14_absMatrix_matMulVec_mono`
+- `higham14_absMatrix_matMulVec_nonneg`
+- `higham14_problem14_5_right_inverse_solve_forward_error_bound_of_abs_X_le`
+- `higham14_problem14_5_right_inverse_solve_forward_error_firstorder_replacement`
+- `higham14_problem14_5_left_inverse_solve_forward_error_bound_of_abs_Y_le`
+- `higham14_problem14_5_left_inverse_solve_forward_error_firstorder_replacement`
+- `higham14_problem14_5_left_firstorder_envelope_le_right_exact_rhs_envelope`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones`
 - `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`
