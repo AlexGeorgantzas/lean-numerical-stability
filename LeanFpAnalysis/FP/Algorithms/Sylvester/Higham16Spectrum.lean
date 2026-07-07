@@ -1163,6 +1163,35 @@ theorem finiteComplexMatrix_exists_mulVec_eigenpair_of_intertwiner_image_ne_zero
     finiteComplexMatrix_intertwiner_maps_mulVec_eigenvector
       A B X mu w hX hw⟩
 
+/-- Entrywise real-to-complex map for rectangular matrices.  This is the
+    rectangular companion to the square complexification used in the real
+    invariant-subspace development. -/
+def realMatrixToComplex {ι κ : Type*}
+    (M : Matrix ι κ Real) : Matrix ι κ Complex :=
+  M.map Complex.ofRealHom
+
+@[simp] theorem realMatrixToComplex_apply {ι κ : Type*}
+    (M : Matrix ι κ Real) (i : ι) (j : κ) :
+    realMatrixToComplex M i j = (M i j : Complex) := rfl
+
+/-- Real-to-complex matrix conversion preserves finite matrix multiplication. -/
+theorem realMatrixToComplex_mul {ι κ τ : Type*} [Fintype κ]
+    (A : Matrix ι κ Real) (B : Matrix κ τ Real) :
+    realMatrixToComplex (A * B) =
+      realMatrixToComplex A * realMatrixToComplex B := by
+  simp [realMatrixToComplex]
+
+/-- A real matrix intertwining identity remains an intertwining identity after
+    entrywise complexification. -/
+theorem realMatrixToComplex_intertwining_of_real
+    {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (A : Matrix ι ι Real) (B : Matrix κ κ Real)
+    (X : Matrix ι κ Real)
+    (hX : A * X = X * B) :
+    realMatrixToComplex A * realMatrixToComplex X =
+      realMatrixToComplex X * realMatrixToComplex B := by
+  rw [← realMatrixToComplex_mul A X, hX, realMatrixToComplex_mul X B]
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
     spectral bridge for a supplied adjacent two-column block: a trivial kernel
     for the eigen-equation of the product of the two shifted column
@@ -1356,6 +1385,27 @@ theorem sylvesterTwoColumnBlock_coupled_block_action_iff_columnPair_intertwining
       simpa [Matrix.mul_apply, Matrix.mulVec, dotProduct, Matrix.of_apply,
         sylvesterTwoColumnBlockColumnPair, sylvesterTwoColumnRealSchurBlock,
         Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using hi
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), complexified
+    two-column intertwining bridge: a real identity `A * U = U * J` for the
+    active two-column matrix and supplied adjacent real Schur block remains
+    valid after entrywise complexification, so it can be consumed by complex
+    spectral/eigenvector lemmas. -/
+theorem sylvesterTwoColumnBlock_columnPair_intertwining_complexification
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (u v : Fin m -> Real)
+    (hX :
+      Matrix.of A * sylvesterTwoColumnBlockColumnPair m u v =
+        sylvesterTwoColumnBlockColumnPair m u v *
+          sylvesterTwoColumnRealSchurBlock n T p q) :
+    realMatrixToComplex (Matrix.of A) *
+        realMatrixToComplex (sylvesterTwoColumnBlockColumnPair m u v) =
+      realMatrixToComplex (sylvesterTwoColumnBlockColumnPair m u v) *
+        realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q) :=
+  realMatrixToComplex_intertwining_of_real
+    (Matrix.of A) (sylvesterTwoColumnRealSchurBlock n T p q)
+    (sylvesterTwoColumnBlockColumnPair m u v) hX
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-action
     packaging: the two coupled active-column equations are equivalent to
