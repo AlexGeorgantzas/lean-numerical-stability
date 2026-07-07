@@ -412,6 +412,69 @@ theorem real_peel_one_or_two {n : ℕ} (hn : 0 < n) (A : Matrix (Fin n) (Fin n) 
     right
     exact ⟨μ.re, μ.im, x, y, hβ, reIm_linearIndependent_of_im_ne A hveqn hvne hβ, hAx, hAy⟩
 
+/-- A genuine real rotation-scaling invariant plane has no real eigenline
+    inside that plane.  This packages the irreducibility content of the
+    nonreal branch of `real_peel_one_or_two` before the Schur deflation step
+    forgets the chosen basis. -/
+theorem no_real_eigenvector_in_span_of_rotation_scaling {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ)
+    (α β : ℝ) (x y : Fin n → ℝ)
+    (hβ : β ≠ 0)
+    (hind : LinearIndependent ℝ ![x, y])
+    (hAx : A *ᵥ x = α • x - β • y)
+    (hAy : A *ᵥ y = β • x + α • y) :
+    ∀ a b : ℝ, (a • x + b • y : Fin n → ℝ) ≠ 0 ->
+      ¬ ∃ ν : ℝ, A *ᵥ (a • x + b • y : Fin n → ℝ) =
+        ν • (a • x + b • y : Fin n → ℝ) := by
+  intro a b hab hEig
+  rcases hEig with ⟨ν, hν⟩
+  have hνlin :
+      A.mulVecLin (a • x + b • y : Fin n → ℝ) =
+        ν • (a • x + b • y : Fin n → ℝ) := by
+    simpa [Matrix.mulVecLin_apply] using hν
+  have hcoeff_eq :
+      a • (α • x - β • y) + b • (β • x + α • y) =
+        ν • (a • x + b • y : Fin n → ℝ) := by
+    calc
+      a • (α • x - β • y) + b • (β • x + α • y)
+          = A.mulVecLin (a • x + b • y : Fin n → ℝ) := by
+            simp [map_add, map_smul, hAx, hAy]
+      _ = ν • (a • x + b • y : Fin n → ℝ) := hνlin
+  have hzero :
+      ((a * α + b * β - ν * a) • x +
+        ((-a * β + b * α - ν * b) • y) : Fin n → ℝ) = 0 := by
+    funext k
+    have hk := congrFun hcoeff_eq k
+    simp only [Pi.add_apply, Pi.sub_apply, Pi.smul_apply, smul_eq_mul] at hk ⊢
+    calc
+      (a * α + b * β - ν * a) * x k + (-a * β + b * α - ν * b) * y k
+          = a * (α * x k - β * y k) + b * (β * x k + α * y k) -
+              ν * (a * x k + b * y k) := by
+            ring
+      _ = 0 := by
+            rw [hk]
+            ring
+  rw [LinearIndependent.pair_iff] at hind
+  have hcoeff := hind
+    (a * α + b * β - ν * a)
+    (-a * β + b * α - ν * b) hzero
+  have ha_eq : a * α + b * β - ν * a = 0 := hcoeff.1
+  have hb_eq : -a * β + b * α - ν * b = 0 := hcoeff.2
+  have hsumsq : β * (a ^ 2 + b ^ 2) = 0 := by
+    have h1 : (a * α + b * β - ν * a) * b = 0 := by
+      rw [ha_eq]
+      ring
+    have h2 : (-a * β + b * α - ν * b) * a = 0 := by
+      rw [hb_eq]
+      ring
+    nlinarith [h1, h2]
+  have habsq : a ^ 2 + b ^ 2 = 0 := by
+    exact (mul_eq_zero.mp hsumsq).resolve_left hβ
+  have ha0 : a = 0 := by nlinarith [sq_nonneg a, sq_nonneg b, habsq]
+  have hb0 : b = 0 := by nlinarith [sq_nonneg a, sq_nonneg b, habsq]
+  apply hab
+  simp [ha0, hb0]
+
 /-- **Exact-dimension form of the descent.**  Every nonempty real square matrix
     has a real invariant subspace whose dimension is *exactly* `1` or *exactly*
     `2` — the `1×1` / `2×2` blocks of the real quasi-triangular Schur form
