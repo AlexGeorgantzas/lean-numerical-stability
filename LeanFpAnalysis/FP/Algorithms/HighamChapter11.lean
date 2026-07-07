@@ -3249,6 +3249,59 @@ theorem higham11_8_aasen_factor_solve_norm_budget_of_relative_factor_norm_bounds
       hγ_factor hn hκL (mul_nonneg hγ1 hκL) hκT hκBT hκmid
       hL hLT hLhat_norm hLhatT_norm hT hBT hmiddle hcoeff
 
+/-- Relative-factor scalar reducer with the final printed coefficient supplied
+as four shares of the printed `(n-1)^2 γ_{15n+25}` budget. -/
+theorem higham11_8_aasen_factor_solve_norm_budget_of_relative_factor_norm_bounds_gamma_parts
+    (fp : FPModel) (n : ℕ)
+    (L T L_hat T_hat L_T_hat U_T_hat BT_factor : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κT κBT κmid γFT γFB γST γSB : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hn : gammaValid fp n)
+    (hκL : 0 ≤ κL)
+    (hκT : 0 ≤ κT) (hκBT : 0 ≤ κBT) (hκmid : 0 ≤ κmid)
+    (hLhat_entry : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ_factor * |L i j|)
+    (hL : infNorm L ≤ κL)
+    (hLT : infNorm (fun r c => L c r) ≤ κLT)
+    (hT : infNorm T ≤ κT * infNorm T_hat)
+    (hBT : infNorm BT_factor ≤ κBT * infNorm T_hat)
+    (hmiddle :
+      infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) ≤
+        κmid * infNorm T_hat)
+    (hFT :
+      (2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γFT)
+    (hFB :
+      (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γFB)
+    (hST :
+      (2 * gamma fp n + (gamma fp n) ^ 2) *
+        (((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γST)
+    (hSB :
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (((1 + γ_factor) * κL) * κmid * ((1 + γ_factor) * κLT)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γSB)
+    (hparts : γFT + γFB + γST + γSB ≤ γ15n25) :
+    ((2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm T * infNorm (fun r c => L c r)) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm BT_factor * infNorm (fun r c => L c r))) +
+    ((2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat *
+          infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) *
+          infNorm (fun r c => L_hat c r))) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat := by
+  exact
+    higham11_8_aasen_factor_solve_norm_budget_of_relative_factor_norm_bounds
+      fp n L T L_hat T_hat L_T_hat U_T_hat BT_factor γ_factor γ15n25
+      κL κLT κT κBT κmid hγ_factor hn hκL hκT hκBT hκmid hLhat_entry
+      hL hLT hT hBT hmiddle
+      (higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts n γ_factor
+        (gamma fp n) γ15n25 κL κLT ((1 + γ_factor) * κL)
+        ((1 + γ_factor) * κLT) κT κBT κmid γFT γFB γST γSB
+        hFT hFB hST hSB hparts)
+
 /-- Scalar norm-budget reducer with the middle tridiagonal-solve budget
 discharged from a tridiagonal LU factor-product bound and the final printed
 coefficient supplied as four independent scalar pieces. -/
