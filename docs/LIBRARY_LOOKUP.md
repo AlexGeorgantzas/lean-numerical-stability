@@ -3187,6 +3187,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_chi_condition_chain_of_matrix_lu_inverse_identities`
 - `higham9_15_chi_condition_chain_min_of_lu_inverse_identities`
 - `higham9_15_chi_condition_chain_min_of_matrix_lu_inverse_identities`
+- `higham9_15_leadingSubmatrix_mul_of_lower_left`
+- `higham9_15_leadingSubmatrix_mul_of_upper_right`
+- `higham9_15_leadingSubmatrix_det_triple`
+- `higham9_15_perturbed_leading_minor_eq`
 - `higham9_15_normalized_G_factorization_matrix`
 - `higham9_15_normalized_Gtilde_factorization_matrix`
 - `higham9_15_strilPart`
