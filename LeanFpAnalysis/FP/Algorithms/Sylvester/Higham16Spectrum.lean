@@ -2269,6 +2269,89 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_delta_root_det_separ
       (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta)
       hdetA)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), scalar
+    discriminant fact for a genuine adjacent real `2 x 2` block: if the real
+    block discriminant is negative, then the subdiagonal entry `T q p` cannot
+    vanish.  This is the small algebraic certificate needed by the concrete
+    complex-root vector `(mu - T_qq, T_qp)`. -/
+theorem sylvesterTwoColumnRealSchurBlock_subdiagonal_ne_zero_of_disc_neg
+    (n : Nat) (T : RMatFn n n) (p q : Fin n)
+    (hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0) :
+    Not (T q p = 0) := by
+  intro hzero_qp
+  have hsq : 0 <= (T p p - T q q) ^ 2 :=
+    sq_nonneg (T p p - T q q)
+  have hdisc_nonneg :
+      0 <= (T p p - T q q) ^ 2 + 4 * T p q * T q p := by
+    simpa [hzero_qp] using hsq
+  linarith
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), negative
+    discriminant implies no real eigenline for the adjacent real `2 x 2`
+    block.  The proof instantiates the existing nonzero square-root route with
+    `delta = sqrt (-disc)`. -/
+theorem sylvesterTwoColumnRealSchurBlock_no_real_eigenvector_of_disc_neg
+    (n : Nat) (T : RMatFn n n) (p q : Fin n)
+    (hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0) :
+    forall x : Fin 2 -> Real, x ≠ 0 ->
+      Not (exists nu : Real,
+        Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+          fun k => nu * x k) := by
+  let delta : Real := Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))
+  have hdelta :
+      delta ^ 2 =
+        -((T p p - T q q) ^ 2 + 4 * T p q * T q p) := by
+    dsimp [delta]
+    rw [Real.sq_sqrt]
+    linarith
+  have hdelta_ne : Not (delta = 0) := by
+    intro hzero_delta
+    rw [hzero_delta] at hdelta
+    norm_num at hdelta
+    linarith
+  exact
+    sylvesterTwoColumnRealSchurBlock_no_real_eigenvector_of_delta_sq_ne_zero
+      n T p q delta hdelta hdelta_ne
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
+    determinant-shaped complex-separation route from a negative real
+    discriminant: `sqrt (-disc)` supplies the complex root and no-real-line
+    certificate, while the shifted complex determinant for `A` remains an
+    explicit separation hypothesis. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_disc_det_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0)
+    (hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m)
+              (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  let delta : Real := Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))
+  have hsub : Not (T q p = 0) :=
+    sylvesterTwoColumnRealSchurBlock_subdiagonal_ne_zero_of_disc_neg
+      n T p q hdisc
+  have hdelta :
+      delta ^ 2 =
+        -((T p p - T q q) ^ 2 + 4 * T p q * T q p) := by
+    dsimp [delta]
+    rw [Real.sq_sqrt]
+    linarith
+  have hdelta_ne : Not (delta = 0) := by
+    intro hzero_delta
+    rw [hzero_delta] at hdelta
+    norm_num at hdelta
+    linarith
+  exact
+    sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_delta_root_det_separation
+      m n A T p q delta hsub hdelta hdelta_ne hdetA
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), real-Schur
     same-block determinant-shaped complex-separation certificate: an adjacent
     same-labelled block in the exported quasi-Schur block map supplies the
@@ -2305,6 +2388,40 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_complex
       n T pmap p q hmono hcard hzero hpq hsame
   · exact sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_delta_root_det_separation
       m n A T p q delta hsub hdelta hdelta_ne hdetA
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), real-Schur
+    same-block determinant-shaped complex-separation certificate from a
+    negative real discriminant: the square-root `sqrt (-disc)` supplies the
+    complex root used by the two-column block determinant bridge, and the
+    negative discriminant also forces the subdiagonal coupling `T q p` to be
+    nonzero.  The shifted complex determinant separation for `A` remains an
+    explicit supplied certificate. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_complex_disc_det_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0)
+    (hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m)
+              (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))))) = 0))) :
+    IsAdjacentQuasiTriangularBlockFn n T p q /\
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  refine ⟨?_, ?_⟩
+  · exact IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block
+      n T pmap p q hmono hcard hzero hpq hsame
+  · exact sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_disc_det_separation
+      m n A T p q hdisc hdetA
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-local
     spectral obstruction for a supplied real `2 x 2` Schur block: a nonzero
