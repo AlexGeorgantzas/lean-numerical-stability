@@ -1333,6 +1333,45 @@ theorem hasComplexRightEigenvalue_reindex
   rw [Matrix.charpoly_reindex]
   exact hchar
 
+/-- Similarity transport for supplied complex right eigenvalues.  If
+    `A = Q * R * Qinv` and `Qinv * Q = 1`, then every right eigenvalue of
+    the coordinate matrix `R` is a right eigenvalue of the original matrix
+    `A`.  This is the generic spectral step needed before transporting
+    Chapter 16 no-common-spectrum assumptions through Schur coordinates. -/
+theorem hasComplexRightEigenvalue_of_similar
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (A R Q Qinv : Matrix ι ι Complex) (mu : Complex)
+    (hA : A = Q * R * Qinv)
+    (hleft : Qinv * Q = 1)
+    (hR : HasComplexRightEigenvalue R mu) :
+    HasComplexRightEigenvalue A mu := by
+  rcases hR with ⟨y, hyne, hyR⟩
+  refine ⟨Matrix.mulVec Q y, ?_, ?_⟩
+  · intro hQy
+    apply hyne
+    have h := congrArg (Matrix.mulVec Qinv) hQy
+    rw [Matrix.mulVec_mulVec, hleft, Matrix.one_mulVec] at h
+    simpa [Matrix.mulVec_zero] using h
+  · have hprod : (Q * R * Qinv) * Q = Q * R := by
+      calc
+        (Q * R * Qinv) * Q = Q * R * (Qinv * Q) := by
+          rw [Matrix.mul_assoc]
+        _ = Q * R * 1 := by rw [hleft]
+        _ = Q * R := by simp
+    have hAY :
+        Matrix.mulVec A (Matrix.mulVec Q y) =
+          Matrix.mulVec Q (Matrix.mulVec R y) := by
+      calc
+        Matrix.mulVec A (Matrix.mulVec Q y) =
+            Matrix.mulVec (Q * R * Qinv) (Matrix.mulVec Q y) := by rw [hA]
+        _ = Matrix.mulVec ((Q * R * Qinv) * Q) y := by
+          rw [Matrix.mulVec_mulVec]
+        _ = Matrix.mulVec (Q * R) y := by rw [hprod]
+        _ = Matrix.mulVec Q (Matrix.mulVec R y) := by
+          rw [← Matrix.mulVec_mulVec]
+    rw [hAY, hyR]
+    simpa using Matrix.mulVec_smul Q mu y
+
 /-- Finite complex block-triangular spectral lift: an eigenvalue of any
     diagonal block of a block-triangular matrix is an eigenvalue of the full
     matrix.  This is the determinant/charpoly route needed for interior
@@ -1388,6 +1427,27 @@ def NoCommonComplexRightEigenvalue {ι κ : Type*} [Fintype ι] [Fintype κ]
     (A : Matrix ι ι Complex) (B : Matrix κ κ Complex) : Prop :=
   ∀ mu : Complex, ¬ (HasComplexRightEigenvalue A mu ∧
     HasComplexRightEigenvalue B mu)
+
+/-- Similarity transport for source-facing no-common-complex-right-eigenvalue
+    hypotheses.  If `A = QA * RA * QAinv` and `B = QB * RB * QBinv` with the
+    displayed left inverses, then no common right eigenvalue of the original
+    pair implies no common right eigenvalue of the coordinate pair. -/
+theorem noCommonComplexRightEigenvalue_of_similar_factors
+    {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
+    (A RA QA QAinv : Matrix ι ι Complex)
+    (B RB QB QBinv : Matrix κ κ Complex)
+    (hA : A = QA * RA * QAinv)
+    (hAleft : QAinv * QA = 1)
+    (hB : B = QB * RB * QBinv)
+    (hBleft : QBinv * QB = 1)
+    (hno : NoCommonComplexRightEigenvalue A B) :
+    NoCommonComplexRightEigenvalue RA RB := by
+  intro mu hpair
+  exact hno mu ⟨
+    hasComplexRightEigenvalue_of_similar
+      A RA QA QAinv mu hA hAleft hpair.1,
+    hasComplexRightEigenvalue_of_similar
+      B RB QB QBinv mu hB hBleft hpair.2⟩
 
 /-- A left-oriented no-common-eigenvalue hypothesis plus a supplied right
     eigenvalue of `B` gives the shifted determinant separation for `A`.  This
