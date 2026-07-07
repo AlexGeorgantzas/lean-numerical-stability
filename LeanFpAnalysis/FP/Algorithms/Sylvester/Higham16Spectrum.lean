@@ -1258,6 +1258,66 @@ noncomputable def sylvesterTwoColumnBlockSchurAction (m n : Nat)
     ((T p q) • (1 : Matrix (Fin m) (Fin m) Real))
     ((T q q) • (1 : Matrix (Fin m) (Fin m) Real))
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), two active
+    columns packaged as an `m x 2` matrix.  Column `0` is `u` and column `1`
+    is `v`; this is the standard matrix-intertwining shape behind the
+    block-action certificate. -/
+def sylvesterTwoColumnBlockColumnPair (m : Nat)
+    (u v : Fin m -> Real) : Matrix (Fin m) (Fin 2) Real :=
+  fun i k => if k = 0 then u i else v i
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), the supplied
+    adjacent real `2 x 2` Schur block acting on the two active columns. -/
+def sylvesterTwoColumnRealSchurBlock (n : Nat)
+    (T : RMatFn n n) (p q : Fin n) : Matrix (Fin 2) (Fin 2) Real :=
+  fun r c =>
+    if r = 0 then
+      if c = 0 then T p p else T p q
+    else
+      if c = 0 then T q p else T q q
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), matrix
+    intertwining form: the coupled active-column equations are equivalent to
+    `A * U = U * J`, where `U` is the two-column matrix `(u, v)` and `J` is
+    the supplied adjacent real `2 x 2` Schur block.  This is the standard
+    spectral-facing target for the still-open complex separation proof. -/
+theorem sylvesterTwoColumnBlock_coupled_block_action_iff_columnPair_intertwining
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (u v : Fin m -> Real) :
+    (Matrix.mulVec (Matrix.of A) u =
+          (fun i => T p p * u i + T q p * v i) ∧
+        Matrix.mulVec (Matrix.of A) v =
+          (fun i => T p q * u i + T q q * v i)) ↔
+      Matrix.of A * sylvesterTwoColumnBlockColumnPair m u v =
+        sylvesterTwoColumnBlockColumnPair m u v *
+          sylvesterTwoColumnRealSchurBlock n T p q := by
+  constructor
+  · intro h
+    rcases h with ⟨hu, hv⟩
+    ext i k
+    fin_cases k
+    · have hi := congrFun hu i
+      simpa [Matrix.mul_apply, Matrix.mulVec, dotProduct, Matrix.of_apply,
+        sylvesterTwoColumnBlockColumnPair, sylvesterTwoColumnRealSchurBlock,
+        Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using hi
+    · have hi := congrFun hv i
+      simpa [Matrix.mul_apply, Matrix.mulVec, dotProduct, Matrix.of_apply,
+        sylvesterTwoColumnBlockColumnPair, sylvesterTwoColumnRealSchurBlock,
+        Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using hi
+  · intro h
+    constructor
+    · funext i
+      have hi := congrFun (congrFun h i) (0 : Fin 2)
+      simpa [Matrix.mul_apply, Matrix.mulVec, dotProduct, Matrix.of_apply,
+        sylvesterTwoColumnBlockColumnPair, sylvesterTwoColumnRealSchurBlock,
+        Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using hi
+    · funext i
+      have hi := congrFun (congrFun h i) (1 : Fin 2)
+      simpa [Matrix.mul_apply, Matrix.mulVec, dotProduct, Matrix.of_apply,
+        sylvesterTwoColumnBlockColumnPair, sylvesterTwoColumnRealSchurBlock,
+        Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using hi
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-action
     packaging: the two coupled active-column equations are equivalent to
     equality of the left `A` action and the supplied `2 x 2` Schur-block
