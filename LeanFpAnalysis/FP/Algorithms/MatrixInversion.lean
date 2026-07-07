@@ -5093,6 +5093,81 @@ theorem higham14_problem14_15_theta_product_bound {n : ℕ} (hnpos : 0 < n)
   prod_one_add_delta_abs_sub_one_le_gamma_radius n hnpos heps0 hsmall theta htheta
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    a supplied all-index singular-value perturbation certificate reduces the
+    absolute determinant relative-change bound to the scalar theta-product
+    bound.  The still-open source work is to derive `htheta_sv` from the
+    matrix perturbation hypotheses. -/
+theorem higham14_problem14_15_abs_det_add_rel_le_of_singularValue_theta
+    {n : ℕ} (hnpos : 0 < n)
+    (A Delta : Fin n → Fin n → ℝ) {eps : ℝ}
+    (heps0 : 0 ≤ eps) (hsmall : (n : ℝ) * eps < (1 : ℝ))
+    (theta : Fin n → ℝ)
+    (hdetA_pos : 0 < |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)|)
+    (htheta_sv : ∀ i : Fin n,
+      complexMatrixSingularValue
+          (realRectToCMatrix (fun r c => A r c + Delta r c)) i =
+        complexMatrixSingularValue (realRectToCMatrix A) i * (1 + theta i))
+    (htheta : ∀ i : Fin n, |theta i| ≤ eps) :
+    |(|Matrix.det
+          ((fun r c => A r c + Delta r c) : Matrix (Fin n) (Fin n) ℝ)| /
+        |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)|) - 1| ≤
+      ((n : ℝ) * eps) / (1 - (n : ℝ) * eps) := by
+  let B : Fin n → Fin n → ℝ := fun r c => A r c + Delta r c
+  let sigmaA : Fin n → ℝ :=
+    fun i => complexMatrixSingularValue (realRectToCMatrix A) i
+  have hdetB_prod :
+      |Matrix.det (B : Matrix (Fin n) (Fin n) ℝ)| =
+        ∏ i : Fin n, sigmaA i * (1 + theta i) := by
+    rw [higham14_problem14_13_abs_det_eq_prod_complex_singularValue B]
+    apply Finset.prod_congr rfl
+    intro i _
+    simpa [B, sigmaA] using htheta_sv i
+  have hdetA_prod :
+      |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+        ∏ i : Fin n, sigmaA i := by
+    simpa [sigmaA] using
+      higham14_problem14_13_abs_det_eq_prod_complex_singularValue A
+  have hprod_ne : (∏ i : Fin n, sigmaA i) ≠ 0 := by
+    rw [← hdetA_prod]
+    exact ne_of_gt hdetA_pos
+  have hrel_eq :
+      |Matrix.det (B : Matrix (Fin n) (Fin n) ℝ)| /
+          |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| - 1 =
+        (∏ i : Fin n, (1 + theta i)) - 1 := by
+    rw [hdetB_prod, hdetA_prod, Finset.prod_mul_distrib]
+    field_simp [hprod_ne]
+  rw [show (fun r c => A r c + Delta r c) = B by rfl]
+  rw [hrel_eq]
+  exact higham14_problem14_15_theta_product_bound hnpos heps0 hsmall theta htheta
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    signed relative determinant-change form, obtained from the absolute-value
+    determinant bridge when both determinants are positive. -/
+theorem higham14_problem14_15_det_add_rel_le_of_singularValue_theta_of_det_pos
+    {n : ℕ} (hnpos : 0 < n)
+    (A Delta : Fin n → Fin n → ℝ) {eps : ℝ}
+    (heps0 : 0 ≤ eps) (hsmall : (n : ℝ) * eps < (1 : ℝ))
+    (theta : Fin n → ℝ)
+    (hdetA_pos : 0 < Matrix.det (A : Matrix (Fin n) (Fin n) ℝ))
+    (hdetB_pos :
+      0 < Matrix.det
+        ((fun r c => A r c + Delta r c) : Matrix (Fin n) (Fin n) ℝ))
+    (htheta_sv : ∀ i : Fin n,
+      complexMatrixSingularValue
+          (realRectToCMatrix (fun r c => A r c + Delta r c)) i =
+        complexMatrixSingularValue (realRectToCMatrix A) i * (1 + theta i))
+    (htheta : ∀ i : Fin n, |theta i| ≤ eps) :
+    |(Matrix.det
+          ((fun r c => A r c + Delta r c) : Matrix (Fin n) (Fin n) ℝ) /
+        Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) - 1| ≤
+      ((n : ℝ) * eps) / (1 - (n : ℝ) * eps) := by
+  have hAbs :=
+    higham14_problem14_15_abs_det_add_rel_le_of_singularValue_theta
+      hnpos A Delta heps0 hsmall theta (abs_pos.mpr hdetA_pos.ne')
+      htheta_sv htheta
+  simpa [abs_of_pos hdetA_pos, abs_of_pos hdetB_pos] using hAbs
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
     the smallest ordered singular value of a perturbed square matrix is bounded
     below by `sigma_min(A) - delta` whenever `delta` bounds `B - A` in
     operator 2-norm.  This is the extremal singular-value perturbation line
