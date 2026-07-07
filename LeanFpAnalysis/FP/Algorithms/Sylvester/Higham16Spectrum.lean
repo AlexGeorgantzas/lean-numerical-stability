@@ -1565,6 +1565,66 @@ theorem realMatrixToComplex_mul {ι κ τ : Type*} [Fintype κ]
       realMatrixToComplex A * realMatrixToComplex B := by
   simp [realMatrixToComplex]
 
+/-- Entrywise complexification preserves the repository's rectangular real
+    matrix product. -/
+theorem realMatrixToComplex_rectMatMul {m n p : Nat}
+    (A : RMatFn m n) (B : RMatFn n p) :
+    realMatrixToComplex (rectMatMul A B) =
+      realMatrixToComplex A * realMatrixToComplex B := by
+  ext i j
+  simp [realMatrixToComplex, rectMatMul, Matrix.mul_apply]
+
+/-- Entrywise complexification commutes with the repository's square
+    transpose operation. -/
+theorem realMatrixToComplex_matTranspose {n : Nat} (A : RMatFn n n) :
+    realMatrixToComplex (matTranspose A) =
+      Matrix.transpose (realMatrixToComplex A) := by
+  ext i j
+  rfl
+
+/-- Complexifying an orthogonal real matrix keeps the displayed transpose as a
+    left inverse.  This is the bridge from real Schur orthogonal factors to
+    the generic complex similarity transport theorem. -/
+theorem realMatrixToComplex_orthogonal_left_inv {n : Nat}
+    (U : RMatFn n n) (hU : IsOrthogonal n U) :
+    realMatrixToComplex (matTranspose U) * realMatrixToComplex U = 1 := by
+  ext i j
+  have hentry := congrArg (fun x : Real => (x : Complex)) (hU.left_inv i j)
+  by_cases hij : i = j
+  · subst j
+    simpa [realMatrixToComplex, matTranspose, Matrix.mul_apply,
+      Matrix.one_apply] using hentry
+  · simpa [realMatrixToComplex, matTranspose, Matrix.mul_apply,
+      Matrix.one_apply, hij] using hentry
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5): supplied real
+    orthogonal Schur-coordinate factors transport the source no-common-complex
+    eigenvalue hypothesis from the original pair to the coordinate pair. -/
+theorem noCommonComplexRightEigenvalue_realQuasiSchur_factors
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    NoCommonComplexRightEigenvalue (realMatrixToComplex R)
+      (realMatrixToComplex S) := by
+  apply noCommonComplexRightEigenvalue_of_similar_factors
+    (A := realMatrixToComplex A) (RA := realMatrixToComplex R)
+    (QA := realMatrixToComplex U)
+    (QAinv := realMatrixToComplex (matTranspose U))
+    (B := realMatrixToComplex B) (RB := realMatrixToComplex S)
+    (QB := realMatrixToComplex V)
+    (QBinv := realMatrixToComplex (matTranspose V))
+  · rw [hA]
+    simp [realMatrixToComplex_rectMatMul, Matrix.mul_assoc]
+  · exact realMatrixToComplex_orthogonal_left_inv U hU
+  · rw [hB]
+    simp [realMatrixToComplex_rectMatMul, Matrix.mul_assoc]
+  · exact realMatrixToComplex_orthogonal_left_inv V hV
+  · exact hno
+
 /-- Entrywise complexification sends the real Sylvester vec/Kronecker
     coefficient `I_n kron A - B^T kron I_m` to its complex counterpart. -/
 theorem realMatrixToComplex_sylvesterVecCoeff (m n : Nat)
