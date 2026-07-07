@@ -789,6 +789,50 @@ theorem IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block (n : Nat)
     exact quasiSchur_blockMap_strict_after_adjacent_same_block
       n pmap p q j hmono hcard hpq hsame hqj
 
+/-- A monotone real quasi-Schur block map is strict after a singleton column:
+    if the immediate successor is not in the same block label, every later
+    column has a strictly larger block label.  The statement is vacuous for
+    the last column, but the proof only constructs the successor in the
+    nonvacuous `k < j` case. -/
+theorem quasiSchur_blockMap_strict_after_singleton_successor (n : Nat)
+    (pmap : Fin n -> Nat) (k j : Fin n)
+    (hmono : Monotone pmap)
+    (hnext : forall q : Fin n, q.val = k.val + 1 -> pmap k ≠ pmap q)
+    (hkj : k < j) :
+    pmap k < pmap j := by
+  have hle : pmap k <= pmap j := hmono (le_of_lt hkj)
+  refine lt_of_le_of_ne hle ?_
+  intro heq
+  have hk1lt : k.val + 1 < n := by
+    have hkjNat : k.val < j.val := Fin.lt_def.mp hkj
+    have hjlt : j.val < n := j.isLt
+    omega
+  let q : Fin n := ⟨k.val + 1, hk1lt⟩
+  have hkq : k <= q := Fin.le_def.mpr (by dsimp [q]; omega)
+  have hqj : q <= j := Fin.le_def.mpr (by
+    dsimp [q]
+    have hkjNat : k.val < j.val := Fin.lt_def.mp hkj
+    omega)
+  have hkq_eq : pmap k = pmap q := by
+    have hkq_le : pmap k <= pmap q := hmono hkq
+    have hqj_le : pmap q <= pmap j := hmono hqj
+    omega
+  exact hnext q rfl hkq_eq
+
+/-- A singleton column in the real quasi-Schur block map has the ordinary
+    upper-triangular zero-below-column property needed by the one-column
+    Bartels-Stewart recurrence. -/
+theorem quasiSchur_zero_below_of_singleton_successor (n : Nat)
+    (T : RMatFn n n) (pmap : Fin n -> Nat) (k : Fin n)
+    (hmono : Monotone pmap)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hnext : forall q : Fin n, q.val = k.val + 1 -> pmap k ≠ pmap q) :
+    forall j : Fin n, k < j -> T j k = 0 := by
+  intro j hkj
+  apply hzero j k
+  exact quasiSchur_blockMap_strict_after_singleton_successor
+    n pmap k j hmono hnext hkj
+
 private theorem two_column_block_sum_split (m n : Nat) (T : RMatFn n n)
     (X : RMatFn m n) (i : Fin m) (p q k : Fin n)
     (hpq : q.val = p.val + 1)
@@ -7121,6 +7165,194 @@ theorem sylvester_triangular_column_step_eq_of_shifted_det (m n : Nat)
     existsUnique_sylvester_triangular_column_step_of_shifted_det
       m n A T C X hT k hdet
   exact (huniq x hx).trans (huniq y hy).symm
+
+private theorem column_sum_split_of_zero_below (m n : Nat)
+    (T : RMatFn n n) (X : RMatFn m n) (i : Fin m) (k : Fin n)
+    (hbelow : forall j : Fin n, k < j -> T j k = 0) :
+    (Finset.sum Finset.univ fun j : Fin n => X i j * T j k) =
+      T k k * X i k +
+        Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+          (fun j => T j k * X i j) := by
+  have hsub : Finset.sum (Finset.filter (fun j => j <= k) Finset.univ)
+        (fun j => X i j * T j k) =
+      Finset.sum Finset.univ fun j : Fin n => X i j * T j k := by
+    apply Finset.sum_subset (Finset.filter_subset _ _)
+    intro j _ hjnot
+    have hnot : Not (j <= k) := by
+      intro hle
+      exact hjnot (Finset.mem_filter.mpr ⟨Finset.mem_univ j, hle⟩)
+    have hkj : k < j := not_le.mp hnot
+    rw [hbelow j hkj, mul_zero]
+  rw [← hsub]
+  have hset : Finset.filter (fun j => j <= k) Finset.univ =
+      insert k (Finset.filter (fun j => j < k) Finset.univ) := by
+    ext j
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_insert]
+    constructor
+    · intro hle
+      rcases lt_or_eq_of_le hle with hlt | heq
+      · exact Or.inr hlt
+      · exact Or.inl heq
+    · intro h
+      rcases h with heq | hlt
+      · exact le_of_eq heq
+      · exact le_of_lt hlt
+  have hknotmem : k ∉ Finset.filter (fun j => j < k) Finset.univ := by
+    intro hmem
+    exact absurd (Finset.mem_filter.mp hmem).2 (lt_irrefl k)
+  rw [hset, Finset.sum_insert hknotmem, mul_comm (X i k) (T k k)]
+  congr 1
+  apply Finset.sum_congr rfl
+  intro j _
+  ring
+
+/-- Column-local form of the Bartels-Stewart identity: to derive the
+    one-column recurrence for column `k`, it is enough to know that entries
+    strictly below that column vanish.  This is the singleton-block analogue
+    of `sylvester_triangular_column_identity` for quasi-Schur traversal. -/
+theorem sylvester_column_identity_of_zero_below (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (X : RMatFn m n)
+    (k : Fin n)
+    (hbelow : forall j : Fin n, k < j -> T j k = 0) (i : Fin m) :
+    Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T k k))
+        (fun i' => X i' k) i =
+      sylvesterOpRect m n A T X i k +
+        Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+          (fun j => T j k * X i j) := by
+  rw [sylvesterTriangularShiftedCoeff_mulVec_apply]
+  show (Finset.sum Finset.univ fun l : Fin m => A i l * X l k) -
+      T k k * X i k =
+    sylvesterOpRect m n A T X i k +
+      Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+        (fun j => T j k * X i j)
+  have hop : sylvesterOpRect m n A T X i k =
+      (Finset.sum Finset.univ fun l : Fin m => A i l * X l k) -
+        (Finset.sum Finset.univ fun j : Fin n => X i j * T j k) := rfl
+  rw [hop, column_sum_split_of_zero_below m n T X i k hbelow]
+  ring
+
+/-- If an exact Sylvester solution is restricted to a column whose entries
+    below the diagonal vanish, that column satisfies the one-column
+    Bartels-Stewart recurrence. -/
+theorem sylvester_column_equation_of_solution_zero_below (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X : RMatFn m n)
+    (k : Fin n)
+    (hbelow : forall j : Fin n, k < j -> T j k = 0)
+    (hX : IsSylvesterSolutionRect m n A T C X) :
+    Matrix.mulVec (sylvesterTriangularShiftedCoeff m A (T k k))
+        (fun i => X i k) =
+      fun i => C i k +
+        Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+          (fun j => T j k * X i j) := by
+  funext i
+  rw [sylvester_column_identity_of_zero_below m n A T X k hbelow i, hX i k]
+
+/-- The singleton-column right-hand side depends only on earlier columns. -/
+theorem sylvester_singleton_column_rhs_eq_of_prev_columns_eq (m n : Nat)
+    (T : RMatFn n n) (C X Y : RMatFn m n) (k : Fin n)
+    (hprev : forall j : Fin n, j < k -> forall i : Fin m, X i j = Y i j) :
+    (fun i : Fin m => C i k +
+      Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+        (fun j => T j k * X i j)) =
+    (fun i : Fin m => C i k +
+      Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+        (fun j => T j k * Y i j)) := by
+  funext i
+  have hsum : Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+        (fun j => T j k * X i j) =
+      Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+        (fun j => T j k * Y i j) := by
+    apply Finset.sum_congr rfl
+    intro j hj
+    have hjk : j < k := (Finset.mem_filter.mp hj).2
+    rw [hprev j hjk i]
+  rw [hsum]
+
+/-- Singleton-column solve/uniqueness bridge for the quasi-Schur traversal:
+    if column `k` has the local zero-below property, the shifted coefficient is
+    nonsingular, and `X(:,k)` is computed by the nonsingular inverse recurrence
+    from previously solved columns, then it agrees with any exact solution `Y`
+    once all earlier columns agree. -/
+theorem sylvester_singleton_column_eq_of_nonsingInv_of_solution_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (k : Fin n)
+    (hbelow : forall j : Fin n, k < j -> T j k = 0)
+    (hdet : Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T k k)) = 0))
+    (hXk : forall i : Fin m,
+      X i k =
+        Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m A (T k k)))
+          (fun i => C i k +
+            Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+              (fun j => T j k * X i j)) i)
+    (hYsol : IsSylvesterSolutionRect m n A T C Y)
+    (hprev : forall j : Fin n, j < k -> forall i : Fin m, X i j = Y i j) :
+    forall i : Fin m, X i k = Y i k := by
+  let M : Matrix (Fin m) (Fin m) Real :=
+    sylvesterTriangularShiftedCoeff m A (T k k)
+  let rhsX : Fin m -> Real := fun i => C i k +
+    Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+      (fun j => T j k * X i j)
+  let rhsY : Fin m -> Real := fun i => C i k +
+    Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+      (fun j => T j k * Y i j)
+  have hRight : M * Inv.inv M = 1 := by
+    dsimp [M]
+    exact Matrix.mul_nonsing_inv _
+      (isUnit_iff_ne_zero.mpr hdet)
+  have hXvec : (fun i : Fin m => X i k) =
+      Matrix.mulVec (Inv.inv M) rhsX := by
+    funext i
+    dsimp [M, rhsX]
+    exact hXk i
+  have hMX : Matrix.mulVec M (fun i : Fin m => X i k) = rhsX := by
+    rw [hXvec, Matrix.mulVec_mulVec, hRight, Matrix.one_mulVec]
+  have hMY : Matrix.mulVec M (fun i : Fin m => Y i k) = rhsY := by
+    dsimp [M, rhsY]
+    exact sylvester_column_equation_of_solution_zero_below
+      m n A T C Y k hbelow hYsol
+  have hrhs : rhsX = rhsY := by
+    dsimp [rhsX, rhsY]
+    exact sylvester_singleton_column_rhs_eq_of_prev_columns_eq
+      m n T C X Y k hprev
+  have hmul :
+      Matrix.mulVec M (fun i : Fin m => X i k) =
+        Matrix.mulVec M (fun i : Fin m => Y i k) := by
+    rw [hMX, hMY]
+    exact hrhs
+  have hcol : (fun i : Fin m => X i k) = (fun i : Fin m => Y i k) :=
+    mulVec_injective_of_det_ne_zero hdet hmul
+  intro i
+  exact congrFun hcol i
+
+/-- Source-facing singleton real-quasi-Schur recurrence wrapper: a singleton
+    block-map column supplies the local zero-below-column fact, so the
+    nonsingular-inverse one-column update agrees with any exact solution after
+    all earlier columns agree.  This is the singleton companion to the
+    solution-facing adjacent two-column recurrence wrapper. -/
+theorem sylvester_quasiSchur_singleton_column_eq_of_nonsingInv_of_solution_prev_columns_eq
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (C X Y : RMatFn m n)
+    (pmap : Fin n -> Nat) (k : Fin n)
+    (hmono : Monotone pmap)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hnext : forall q : Fin n, q.val = k.val + 1 -> pmap k ≠ pmap q)
+    (hdet : Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T k k)) = 0))
+    (hXk : forall i : Fin m,
+      X i k =
+        Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m A (T k k)))
+          (fun i => C i k +
+            Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+              (fun j => T j k * X i j)) i)
+    (hYsol : IsSylvesterSolutionRect m n A T C Y)
+    (hprev : forall j : Fin n, j < k -> forall i : Fin m, X i j = Y i j) :
+    forall i : Fin m, X i k = Y i k := by
+  have hbelow : forall j : Fin n, k < j -> T j k = 0 :=
+    quasiSchur_zero_below_of_singleton_successor
+      n T pmap k hmono hzero hnext
+  exact
+    sylvester_singleton_column_eq_of_nonsingInv_of_solution_prev_columns_eq
+      m n A T C X Y k hbelow hdet hXk hYsol hprev
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
