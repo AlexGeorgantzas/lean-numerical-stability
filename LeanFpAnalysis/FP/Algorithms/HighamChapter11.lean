@@ -2593,6 +2593,23 @@ theorem higham11_8_aasenNormwiseBackwardBound_of_componentwise_T_bound
   (higham11_8_infNorm_le_mul_of_componentwise_T_bound n ΔA T_hat η hη hΔ).trans
     hbudget
 
+/-- Split an entrywise Theorem 11.8 `T_hat` comparison into independent
+factorization and solve-chain pieces. -/
+theorem higham11_8_componentwise_T_bound_add_of_parts (n : ℕ)
+    (B_factor B_solve T_hat : Fin n → Fin n → ℝ)
+    (η_factor η_solve η : ℝ)
+    (hfactor : ∀ i j : Fin n, B_factor i j ≤ η_factor * |T_hat i j|)
+    (hsolve : ∀ i j : Fin n, B_solve i j ≤ η_solve * |T_hat i j|)
+    (hη_parts : η_factor + η_solve ≤ η) :
+    ∀ i j : Fin n, B_factor i j + B_solve i j ≤ η * |T_hat i j| := by
+  intro i j
+  calc B_factor i j + B_solve i j
+      ≤ η_factor * |T_hat i j| + η_solve * |T_hat i j| :=
+          add_le_add (hfactor i j) (hsolve i j)
+    _ = (η_factor + η_solve) * |T_hat i j| := by ring
+    _ ≤ η * |T_hat i j| :=
+          mul_le_mul_of_nonneg_right hη_parts (abs_nonneg _)
+
 /-- Normwise bridge for the closed Aasen solve-chain budget.  Once the closed
 componentwise chain budget is majorized by `η |T_hat|`, the existing Theorem
 11.8 normwise predicate follows from the relative `T_hat` bridge. -/
@@ -2838,6 +2855,71 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error
     exact (hDeltaA i j).trans hentry
   · simpa [mul_assoc] using
       mul_le_mul_of_nonneg_right hη_le (infNorm_nonneg T_hat)
+
+/-- Rounded Aasen factorization-plus-solve source backward error with the
+printed Theorem 11.8 normwise predicate, where the remaining entrywise
+`η |T_hat|` comparison is supplied as separate factorization and solve-chain
+pieces. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets
+    (fp : FPModel) (n : ℕ)
+    (A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor η_factor η_solve η γ15n25 : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hη : 0 ≤ η)
+    (hBT_factor : ∀ i j : Fin n, 0 ≤ BT_factor i j)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hLhat : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ_factor * |L i j|)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT_factor i j)
+    (hbudget_factor : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T
+          (fun r c => L c r) i j ≤
+        η_factor * |T_hat i j|)
+    (hbudget_solve : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n (gamma fp n)
+          (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat)
+          L_hat T_hat (fun r c => L_hat c r) i j ≤
+        η_solve * |T_hat i j|)
+    (hη_parts : η_factor + η_solve ≤ η)
+    (hη_le : η ≤ ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA) γ15n25
+        (infNorm T_hat) := by
+  apply higham11_8_fl_aasen_factor_solve_source_normwise_backward_error
+    fp n A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+    γ_factor η γ15n25 hγ_factor hη hBT_factor h20 hLhat_diag hLhat_lower
+    hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hprod hLhat hThat
+  · exact
+      higham11_8_componentwise_T_bound_add_of_parts n
+        (higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T
+          (fun r c => L c r))
+        (higham11_15_aasenChainDeltaABound n (gamma fp n)
+          (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat)
+          L_hat T_hat (fun r c => L_hat c r))
+        T_hat η_factor η_solve η hbudget_factor hbudget_solve hη_parts
+  · exact hη_le
 
 /-- Rounded Aasen source-prefix recurrence wrapper plus the printed Theorem
 11.8 normwise predicate.  This is the normwise sibling of
