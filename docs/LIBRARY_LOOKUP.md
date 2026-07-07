@@ -3218,6 +3218,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_borderedRows_castSucc`
 - `higham9_15_borderedL_det`
 - `higham9_15_borderedMinor_eq_L_mul_pivots`
+- `higham9_15_minor_path_continuous`
+- `higham9_15_U_entry_path_continuousOn`
+- `higham9_15_L_entry_path_continuousOn`
+- `higham9_15_U_entry_eq_minor_ratio`
+- `higham9_15_L_entry_eq_minor_ratio`
 - `higham9_15_normalized_G_factorization_matrix`
 - `higham9_15_normalized_Gtilde_factorization_matrix`
 - `higham9_15_strilPart`
