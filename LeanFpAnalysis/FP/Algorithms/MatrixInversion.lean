@@ -4040,6 +4040,165 @@ theorem higham14_problem14_13_kappa2_eq_top_div_last_singularValue_of_rightInver
       A Ainv hRight,
     div_eq_mul_inv]
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    determinant of the complex Gram linear map as the product of its ordered
+    Gram eigenvalues. -/
+theorem higham14_problem14_13_complexGramLin_det_eq_prod_gramEigenvalues
+    {n : ℕ} (A : CMatrix n n) :
+    LinearMap.det (complexMatrixGramLin A) =
+      ∏ i : Fin n, (complexMatrixGramEigenvalues A i : ℂ) := by
+  let ob := complexMatrixGramEigenvectorBasis A
+  let b := ob.toBasis
+  have hmat : LinearMap.toMatrix b b (complexMatrixGramLin A) =
+      Matrix.diagonal (fun i : Fin n => (complexMatrixGramEigenvalues A i : ℂ)) := by
+    ext i j
+    rw [LinearMap.toMatrix_apply]
+    have happ := complexMatrixGramLin_apply_eigenvectorBasis A j
+    change b.repr ((complexMatrixGramLin A) (b j)) i =
+      Matrix.diagonal (fun i : Fin n => (complexMatrixGramEigenvalues A i : ℂ)) i j
+    have hb_j : b j = complexMatrixGramEigenvectorBasis A j := by rfl
+    rw [hb_j, happ]
+    rw [OrthonormalBasis.coe_toBasis_repr_apply]
+    rw [map_smul, OrthonormalBasis.repr_self]
+    by_cases hji : j = i
+    · subst i
+      rw [WithLp.ofLp_smul, Pi.smul_apply, EuclideanSpace.single_apply]
+      simp
+    · have hij : i ≠ j := fun h => hji h.symm
+      rw [WithLp.ofLp_smul, Pi.smul_apply, EuclideanSpace.single_apply]
+      simp [Matrix.diagonal, hij]
+  rw [← LinearMap.det_toMatrix b (complexMatrixGramLin A), hmat,
+    Matrix.det_diagonal]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    determinant of `Aᴴ A` is the product of squared ordered singular values. -/
+theorem higham14_problem14_13_complex_det_conjTranspose_mul_self_eq_prod_singularValue_sq
+    {n : ℕ} (A : CMatrix n n) :
+    Matrix.det ((complexCMatrixAsMatrix A).conjTranspose * complexCMatrixAsMatrix A) =
+      ∏ i : Fin n, ((complexMatrixSingularValue A i : ℂ) ^ 2) := by
+  have hdet_toMatrix := LinearMap.det_toMatrix (complexEuclideanBasisFin n)
+    (complexMatrixGramLin A)
+  rw [complexMatrixGramLin_toMatrix] at hdet_toMatrix
+  calc
+    Matrix.det ((complexCMatrixAsMatrix A).conjTranspose * complexCMatrixAsMatrix A)
+        = LinearMap.det (complexMatrixGramLin A) := hdet_toMatrix
+    _ = ∏ i : Fin n, (complexMatrixGramEigenvalues A i : ℂ) :=
+        higham14_problem14_13_complexGramLin_det_eq_prod_gramEigenvalues A
+    _ = ∏ i : Fin n, ((complexMatrixSingularValue A i : ℂ) ^ 2) := by
+        apply Finset.prod_congr rfl
+        intro i _
+        rw [← Complex.ofReal_pow, complexMatrixSingularValue_sq]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    square of a real determinant as the product of squared ordered singular
+    values of the complexified real matrix. -/
+theorem higham14_problem14_13_real_det_sq_eq_prod_complex_singularValue_sq
+    {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    (Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) ^ 2 =
+      ∏ i : Fin n, complexMatrixSingularValue (realRectToCMatrix A) i ^ 2 := by
+  let C : CMatrix n n := realRectToCMatrix A
+  have hdetC : Matrix.det (complexCMatrixAsMatrix C) =
+      ((Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) : ℝ) : ℂ) := by
+    dsimp [C]
+    symm
+    exact RingHom.map_det (algebraMap ℝ ℂ)
+      (A : Matrix (Fin n) (Fin n) ℝ)
+  have hleft :
+      Matrix.det ((complexCMatrixAsMatrix C).conjTranspose * complexCMatrixAsMatrix C) =
+        (((Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) ^ 2 : ℝ) : ℂ) := by
+    rw [Matrix.det_mul, Matrix.det_conjTranspose, hdetC]
+    simp [pow_two]
+  have h :=
+    higham14_problem14_13_complex_det_conjTranspose_mul_self_eq_prod_singularValue_sq C
+  rw [hleft] at h
+  apply Complex.ofReal_injective
+  calc
+    (((Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) ^ 2 : ℝ) : ℂ)
+        = ∏ i : Fin n,
+            ((complexMatrixSingularValue (realRectToCMatrix A) i : ℂ) ^ 2) := by
+            simpa [C] using h
+    _ = ((∏ i : Fin n,
+            complexMatrixSingularValue (realRectToCMatrix A) i ^ 2 : ℝ) : ℂ) := by
+        calc
+          (∏ i : Fin n,
+              ((complexMatrixSingularValue (realRectToCMatrix A) i : ℂ) ^ 2))
+              = ∏ i : Fin n,
+                  ((complexMatrixSingularValue (realRectToCMatrix A) i ^ 2 : ℝ) : ℂ) := by
+                apply Finset.prod_congr rfl
+                intro i _
+                rw [Complex.ofReal_pow]
+          _ = ((∏ i : Fin n,
+                  complexMatrixSingularValue (realRectToCMatrix A) i ^ 2 : ℝ) : ℂ) :=
+                (Complex.ofReal_prod Finset.univ
+                  (fun i : Fin n =>
+                    complexMatrixSingularValue (realRectToCMatrix A) i ^ 2)).symm
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    absolute value of a real determinant as the product of ordered singular
+    values of the complexified real matrix. -/
+theorem higham14_problem14_13_abs_det_eq_prod_complex_singularValue
+    {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+      ∏ i : Fin n, complexMatrixSingularValue (realRectToCMatrix A) i := by
+  apply (sq_eq_sq₀ (abs_nonneg _) (Finset.prod_nonneg
+    (fun i _ => complexMatrixSingularValue_nonneg (realRectToCMatrix A) i))).mp
+  rw [sq_abs]
+  rw [← Finset.prod_pow Finset.univ 2
+    (fun i : Fin n => complexMatrixSingularValue (realRectToCMatrix A) i)]
+  exact higham14_problem14_13_real_det_sq_eq_prod_complex_singularValue_sq A
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    a supplied right inverse makes the determinant strictly nonzero in
+    absolute value. -/
+theorem higham14_problem14_13_abs_det_pos_of_isRightInverse
+    {n : ℕ} (A Ainv : Fin n → Fin n → ℝ)
+    (hRight : IsRightInverse n A Ainv) :
+    0 < |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| := by
+  let AM : Matrix (Fin n) (Fin n) ℝ := A
+  let AinvM : Matrix (Fin n) (Fin n) ℝ := Ainv
+  have hmat :
+      AM * AinvM = 1 := by
+    ext i j
+    simpa [AM, AinvM, Matrix.mul_apply] using hRight i j
+  have hdet_prod : Matrix.det AM * Matrix.det AinvM = 1 := by
+    calc
+      Matrix.det AM * Matrix.det AinvM = Matrix.det (AM * AinvM) := by
+        rw [Matrix.det_mul]
+      _ = Matrix.det (1 : Matrix (Fin n) (Fin n) ℝ) := by
+        rw [hmat]
+      _ = 1 := Matrix.det_one
+  have hdet_ne : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0 := by
+    intro hzero
+    have hzeroAM : Matrix.det AM = 0 := by
+      simpa [AM] using hzero
+    rw [hzeroAM, zero_mul] at hdet_prod
+    norm_num at hdet_prod
+  exact abs_pos.mpr hdet_ne
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    matrix-shaped AM-GM certificate wrapper for the GEJ bound.  This removes
+    the scalar positivity hypotheses from
+    `higham14_problem14_13_gej_bound_from_amgm_certificate` when a right
+    inverse is supplied. -/
+theorem higham14_problem14_13_gej_bound_from_matrix_amgm_certificate
+    {n : ℕ} (hn : 0 < n) (A Ainv : Fin n → Fin n → ℝ) (z : Fin n → ℝ)
+    (hRight : IsRightInverse n A Ainv)
+    (hz : ∀ i, 0 ≤ z i)
+    (hprod :
+      (∏ i : Fin n, z i) =
+        (kappa2 A Ainv *
+          |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| / 2) ^ 2)
+    (hsum_lt : (∑ i : Fin n, z i) < frobNorm A ^ 2) :
+    kappa2 A Ainv <
+      (2 / |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)|) *
+        (frobNorm A / Real.sqrt (n : ℝ)) ^ n := by
+  exact
+    higham14_problem14_13_gej_bound_from_amgm_certificate hn z
+      (higham14_problem14_13_abs_det_pos_of_isRightInverse A Ainv hRight)
+      (mul_nonneg (opNorm2_nonneg A) (opNorm2_nonneg Ainv))
+      (frobNorm_nonneg A)
+      hz hprod hsum_lt
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.13(b) support:
     if every row has Euclidean norm one, then the Frobenius norm is
     `sqrt(n)`. -/
