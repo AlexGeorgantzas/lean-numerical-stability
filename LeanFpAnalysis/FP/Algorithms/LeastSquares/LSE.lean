@@ -1199,6 +1199,72 @@ theorem theorem20_7_signed_stage_pivot_column_zero_below_of_trailingNorm_pos_nat
       hnm Astage alpha i.val hit (hAlphaDef i.val hit)
       (htrailingPos i.val hit) a ha
 
+/-- Theorem 20.7 support: signed-stage exact same-reflector `A` growth from
+    active row and column stage bounds.
+
+This is the matrix-side Cox--Higham bridge behind the completion-time `A`
+obligation.  Pivot-column maximality and positive trailing norm select the
+signed Householder reflector; active row and active column entry budgets supply
+the exact same-reflector growth field consumed by the stored-QR completion
+adapter. -/
+theorem theorem20_7_signed_stage_exact_completionA_bound_of_active_stage_bounds_nat
+    {m n : ℕ} (hnm : n ≤ m)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (B : Fin m → ℝ)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) (Fin.mk t ht))
+    (hB : ∀ i : Fin m, 0 ≤ B i)
+    (hrowBound :
+      ∀ i : Fin m, i.val + 1 < n → ∀ l : Fin n, i.val ≤ l.val →
+        |Astage i.val i l| ≤ B i)
+    (hcolBound :
+      ∀ i : Fin m, i.val + 1 < n → ∀ r : Fin m, i.val ≤ r.val →
+        ∀ j : Fin n, i.val ≤ j.val →
+          |Astage i.val r j| ≤ B i) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      |matMulVec m
+          (householder m
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val))
+          (fun r => Astage i.val r j) i| ≤
+        H19.Theorem19_6.active_row_growth_factor m * B i := by
+  intro i hi j hij
+  have hit : i.val < n := by omega
+  have hnorm :
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk i.val (lt_of_lt_of_le hit hnm)) (Astage i.val)
+          (Fin.mk i.val hit) := by
+    simpa [householderTrailingColumnNorm2Sq] using
+      htrailingPos i.val hit
+  have hbase :=
+    storedQRSignedStage_exact_same_reflector_bound_of_prefix_or_active_stage_bounds
+      hnm Astage alpha i.val hit i j (B i) (hAlphaDef i.val hit) hij
+      (hB i)
+      (fun hprefix => by omega)
+      hnorm (hpivotMax i.val hit)
+      (fun l hl => hrowBound i hi l hl)
+      (fun r hr => hcolBound i hi r hr j hij)
+  simpa [H19.Theorem19_6.active_row_growth_factor] using hbase
+
 /-- Theorem 20.7 support: active/trailing completion-time `A` row bounds for
     signed stored-QR stages.
 
@@ -1265,6 +1331,82 @@ theorem theorem20_7_completionA_active_tail_bound_of_h19_signed_stage_budget_nat
       (theorem20_7_signed_stage_pivot_column_zero_below_of_trailingNorm_pos_nat
         hnm Astage alpha hAlphaDef htrailingPos)
       hexact hbudget
+
+/-- Theorem 20.7 support: full signed-stage completion-time `A` row bounds
+    from active stage bounds.
+
+This composes the signed-stage exact same-reflector growth bridge with the
+existing stored-QR completion adapter.  The remaining caller obligations are
+pivot maximality, active row/column stage budgets, and concrete compact-budget
+domination. -/
+theorem theorem20_7_completionA_bound_of_h19_signed_stage_active_stage_budget_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Astage : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (err : ℝ) (B : Fin m → ℝ) (herr : 0 ≤ err)
+    (hm : gammaValid fp m)
+    (hStep : ∀ k, k < n →
+      Astage (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Astage alpha k)
+          (storedQRSignedStageBeta hnm Astage alpha k)
+          (Astage k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) (Fin.mk t ht))
+    (hB : ∀ i : Fin m, 0 ≤ B i)
+    (hrowBound :
+      ∀ i : Fin m, i.val + 1 < n → ∀ l : Fin n, i.val ≤ l.val →
+        |Astage i.val i l| ≤ B i)
+    (hcolBound :
+      ∀ i : Fin m, i.val + 1 < n → ∀ r : Fin m, i.val ≤ r.val →
+        ∀ j : Fin n, i.val ≤ j.val →
+          |Astage i.val r j| ≤ B i)
+    (hbudget :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        H19.Theorem19_6.active_row_growth_factor m * B i +
+            householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Astage alpha i.val)
+              (storedQRSignedStageBeta hnm Astage alpha i.val)
+              (fun r => Astage i.val r j) i ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialRowMax hn A i) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n,
+      |Astage (i.val + 1) i j| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  exact
+    theorem20_7_completionA_bound_of_h19_stored_panel_step_budget_nat
+      hn fp (fun k => storedQRSignedStageVector hnm Astage alpha k)
+      (fun k => storedQRSignedStageBeta hnm Astage alpha k)
+      Astage A err B herr hm hStep
+      (theorem20_7_signed_stage_completed_column_preservation_nat
+        hnm fp Astage alpha hStep)
+      (theorem20_7_signed_stage_pivot_column_zero_below_of_trailingNorm_pos_nat
+        hnm Astage alpha hAlphaDef htrailingPos)
+      (theorem20_7_signed_stage_exact_completionA_bound_of_active_stage_bounds_nat
+        hnm Astage alpha B hAlphaDef htrailingPos hpivotMax hB hrowBound
+        hcolBound)
+      hbudget
 
 /-- Theorem 20.7 support: full completion-time `A` row bounds for signed
     stored-QR stages.
