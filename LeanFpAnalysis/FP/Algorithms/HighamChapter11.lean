@@ -2962,6 +2962,52 @@ theorem higham11_8_aasen_factor_solve_coeff_le_of_parts
       ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 := by
   linarith
 
+/-- Variant of `higham11_8_aasen_factor_solve_coeff_le_of_parts` where the
+four coefficient pieces are allocated as shares of the printed
+`(n-1)^2 γ_{15n+25}` budget. -/
+theorem higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts
+    (n : ℕ)
+    (γ_factor γ_solve γ15n25 κL κLT κLhat κLhatT κT κBT κmid
+      γFT γFB γST γSB : ℝ)
+    (hFT :
+      (2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γFT)
+    (hFB :
+      (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γFB)
+    (hST :
+      (2 * γ_solve + γ_solve ^ 2) * (κLhat * κLhatT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γST)
+    (hSB :
+      (1 + 2 * γ_solve + γ_solve ^ 2) *
+        (κLhat * κmid * κLhatT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γSB)
+    (hparts : γFT + γFB + γST + γSB ≤ γ15n25) :
+    (2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) +
+      (2 * γ_solve + γ_solve ^ 2) * (κLhat * κLhatT) +
+      (1 + 2 * γ_solve + γ_solve ^ 2) *
+        (κLhat * κmid * κLhatT) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 := by
+  let α : ℝ := ((n - 1 : ℕ) : ℝ) ^ 2
+  have hα : 0 ≤ α := by
+    dsimp [α]
+    exact sq_nonneg _
+  have hparts' : α * γFT + α * γFB + α * γST + α * γSB ≤ α * γ15n25 := by
+    calc
+      α * γFT + α * γFB + α * γST + α * γSB
+          = α * (γFT + γFB + γST + γSB) := by ring
+      _ ≤ α * γ15n25 := mul_le_mul_of_nonneg_left hparts hα
+  exact
+    higham11_8_aasen_factor_solve_coeff_le_of_parts n γ_factor γ_solve
+      γ15n25 κL κLT κLhat κLhatT κT κBT κmid
+      (α * γFT) (α * γFB) (α * γST) (α * γSB)
+      (by simpa [α] using hFT)
+      (by simpa [α] using hFB)
+      (by simpa [α] using hST)
+      (by simpa [α] using hSB)
+      (by simpa [α] using hparts')
+
 /-- Scalar reducer for the norm-budget hypothesis in the Aasen
 factorization-plus-solve wrapper.  It isolates the remaining printed
 coefficient bookkeeping from primitive infinity-norm bounds for the exact and
