@@ -2672,6 +2672,187 @@ theorem higham11_8_aasenNormwiseBackwardBound_of_sum_aasenChainDeltaABounds
     n hn γ1 γ2 BT1 L1 T1 U1 BT2 L2 T2 U2 DeltaA
     hγ1 hBT1 hγ2 hBT2 hDelta).trans hbudget
 
+/-- Scalar reducer for the norm-budget hypothesis in the Aasen
+factorization-plus-solve wrapper.  It isolates the remaining printed
+coefficient bookkeeping from primitive infinity-norm bounds for the exact and
+computed factors. -/
+theorem higham11_8_aasen_factor_solve_norm_budget_of_factor_norm_bounds
+    (fp : FPModel) (n : ℕ)
+    (L T L_hat T_hat L_T_hat U_T_hat BT_factor : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κLhat κLhatT κT κBT κmid : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hn : gammaValid fp n)
+    (hκL : 0 ≤ κL) (hκLhat : 0 ≤ κLhat)
+    (hκT : 0 ≤ κT) (hκBT : 0 ≤ κBT) (hκmid : 0 ≤ κmid)
+    (hL : infNorm L ≤ κL)
+    (hLT : infNorm (fun r c => L c r) ≤ κLT)
+    (hLhat : infNorm L_hat ≤ κLhat)
+    (hLhatT : infNorm (fun r c => L_hat c r) ≤ κLhatT)
+    (hT : infNorm T ≤ κT * infNorm T_hat)
+    (hBT : infNorm BT_factor ≤ κBT * infNorm T_hat)
+    (hmiddle :
+      infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) ≤
+        κmid * infNorm T_hat)
+    (hcoeff :
+      (2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT) +
+        (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) +
+        (2 * gamma fp n + (gamma fp n) ^ 2) * (κLhat * κLhatT) +
+        (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+          (κLhat * κmid * κLhatT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    ((2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm T * infNorm (fun r c => L c r)) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm BT_factor * infNorm (fun r c => L c r))) +
+    ((2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat *
+          infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) *
+          infNorm (fun r c => L_hat c r))) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat := by
+  let τ : ℝ := infNorm T_hat
+  let M : Fin n → Fin n → ℝ := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+  let cF_T : ℝ := 2 * γ_factor + γ_factor ^ 2
+  let cF_B : ℝ := 1 + 2 * γ_factor + γ_factor ^ 2
+  let γn : ℝ := gamma fp n
+  let cS_T : ℝ := 2 * γn + γn ^ 2
+  let cS_B : ℝ := 1 + 2 * γn + γn ^ 2
+  have hτ : 0 ≤ τ := by
+    dsimp [τ]
+    exact infNorm_nonneg T_hat
+  have hγn : 0 ≤ γn := by
+    dsimp [γn]
+    exact gamma_nonneg fp hn
+  have hcF_T : 0 ≤ cF_T := by
+    dsimp [cF_T]
+    nlinarith [mul_nonneg (by norm_num : 0 ≤ (2 : ℝ)) hγ_factor,
+      sq_nonneg γ_factor]
+  have hcF_B : 0 ≤ cF_B := by
+    dsimp [cF_B]
+    nlinarith [sq_nonneg (γ_factor + 1)]
+  have hcS_T : 0 ≤ cS_T := by
+    dsimp [cS_T, γn]
+    nlinarith [mul_nonneg (by norm_num : 0 ≤ (2 : ℝ)) hγn,
+      sq_nonneg γn]
+  have hcS_B : 0 ≤ cS_B := by
+    dsimp [cS_B, γn]
+    nlinarith [sq_nonneg (γn + 1)]
+  have hF_T :
+      infNorm L * infNorm T * infNorm (fun r c => L c r) ≤
+        (κL * κT * κLT) * τ := by
+    have h12 : infNorm L * infNorm T ≤ κL * (κT * τ) :=
+      mul_le_mul hL (by simpa [τ] using hT) (infNorm_nonneg T) hκL
+    have h123 :
+        (infNorm L * infNorm T) * infNorm (fun r c => L c r) ≤
+          (κL * (κT * τ)) * κLT :=
+      mul_le_mul h12 hLT (infNorm_nonneg (fun r c => L c r))
+        (mul_nonneg hκL (mul_nonneg hκT hτ))
+    calc
+      infNorm L * infNorm T * infNorm (fun r c => L c r)
+          = (infNorm L * infNorm T) * infNorm (fun r c => L c r) := by ring
+      _ ≤ (κL * (κT * τ)) * κLT := h123
+      _ = (κL * κT * κLT) * τ := by ring
+  have hF_B :
+      infNorm L * infNorm BT_factor * infNorm (fun r c => L c r) ≤
+        (κL * κBT * κLT) * τ := by
+    have h12 : infNorm L * infNorm BT_factor ≤ κL * (κBT * τ) :=
+      mul_le_mul hL (by simpa [τ] using hBT) (infNorm_nonneg BT_factor) hκL
+    have h123 :
+        (infNorm L * infNorm BT_factor) * infNorm (fun r c => L c r) ≤
+          (κL * (κBT * τ)) * κLT :=
+      mul_le_mul h12 hLT (infNorm_nonneg (fun r c => L c r))
+        (mul_nonneg hκL (mul_nonneg hκBT hτ))
+    calc
+      infNorm L * infNorm BT_factor * infNorm (fun r c => L c r)
+          = (infNorm L * infNorm BT_factor) * infNorm (fun r c => L c r) := by ring
+      _ ≤ (κL * (κBT * τ)) * κLT := h123
+      _ = (κL * κBT * κLT) * τ := by ring
+  have hS_T :
+      infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r) ≤
+        (κLhat * κLhatT) * τ := by
+    have hprod :
+        infNorm L_hat * infNorm (fun r c => L_hat c r) ≤
+          κLhat * κLhatT :=
+      mul_le_mul hLhat hLhatT (infNorm_nonneg (fun r c => L_hat c r)) hκLhat
+    calc
+      infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)
+          = (infNorm L_hat * infNorm (fun r c => L_hat c r)) * τ := by
+            simp [τ]
+            ring
+      _ ≤ (κLhat * κLhatT) * τ :=
+          mul_le_mul_of_nonneg_right hprod hτ
+  have hS_B :
+      infNorm L_hat * infNorm M * infNorm (fun r c => L_hat c r) ≤
+        (κLhat * κmid * κLhatT) * τ := by
+    have h12 : infNorm L_hat * infNorm M ≤ κLhat * (κmid * τ) :=
+      mul_le_mul hLhat (by simpa [M, τ] using hmiddle) (infNorm_nonneg M) hκLhat
+    have h123 :
+        (infNorm L_hat * infNorm M) * infNorm (fun r c => L_hat c r) ≤
+          (κLhat * (κmid * τ)) * κLhatT :=
+      mul_le_mul h12 hLhatT (infNorm_nonneg (fun r c => L_hat c r))
+        (mul_nonneg hκLhat (mul_nonneg hκmid hτ))
+    calc
+      infNorm L_hat * infNorm M * infNorm (fun r c => L_hat c r)
+          = (infNorm L_hat * infNorm M) * infNorm (fun r c => L_hat c r) := by ring
+      _ ≤ (κLhat * (κmid * τ)) * κLhatT := h123
+      _ = (κLhat * κmid * κLhatT) * τ := by ring
+  have hsum :
+      (cF_T * (infNorm L * infNorm T * infNorm (fun r c => L c r)) +
+        cF_B * (infNorm L * infNorm BT_factor * infNorm (fun r c => L c r))) +
+      (cS_T * (infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)) +
+        cS_B * (infNorm L_hat * infNorm M * infNorm (fun r c => L_hat c r))) ≤
+        (cF_T * (κL * κT * κLT) +
+          cF_B * (κL * κBT * κLT) +
+          cS_T * (κLhat * κLhatT) +
+          cS_B * (κLhat * κmid * κLhatT)) * τ := by
+    calc
+      (cF_T * (infNorm L * infNorm T * infNorm (fun r c => L c r)) +
+        cF_B * (infNorm L * infNorm BT_factor * infNorm (fun r c => L c r))) +
+      (cS_T * (infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)) +
+        cS_B * (infNorm L_hat * infNorm M * infNorm (fun r c => L_hat c r)))
+          ≤
+        (cF_T * ((κL * κT * κLT) * τ) +
+          cF_B * ((κL * κBT * κLT) * τ)) +
+        (cS_T * ((κLhat * κLhatT) * τ) +
+          cS_B * ((κLhat * κmid * κLhatT) * τ)) :=
+            add_le_add
+              (add_le_add
+                (mul_le_mul_of_nonneg_left hF_T hcF_T)
+                (mul_le_mul_of_nonneg_left hF_B hcF_B))
+              (add_le_add
+                (mul_le_mul_of_nonneg_left hS_T hcS_T)
+                (mul_le_mul_of_nonneg_left hS_B hcS_B))
+      _ = (cF_T * (κL * κT * κLT) +
+          cF_B * (κL * κBT * κLT) +
+          cS_T * (κLhat * κLhatT) +
+          cS_B * (κLhat * κmid * κLhatT)) * τ := by ring
+  calc
+    ((2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm T * infNorm (fun r c => L c r)) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm BT_factor * infNorm (fun r c => L c r))) +
+    ((2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat *
+          infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) *
+          infNorm (fun r c => L_hat c r)))
+        ≤ (cF_T * (κL * κT * κLT) +
+          cF_B * (κL * κBT * κLT) +
+          cS_T * (κLhat * κLhatT) +
+          cS_B * (κLhat * κmid * κLhatT)) * τ := by
+            simpa [cF_T, cF_B, cS_T, cS_B, γn, M] using hsum
+    _ ≤ ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat := by
+        have hcoeff' :
+            cF_T * (κL * κT * κLT) +
+              cF_B * (κL * κBT * κLT) +
+              cS_T * (κLhat * κLhatT) +
+              cS_B * (κLhat * κmid * κLhatT) ≤
+              ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 := by
+          simpa [cF_T, cF_B, cS_T, cS_B, γn] using hcoeff
+        simpa [τ, mul_assoc] using
+          mul_le_mul_of_nonneg_right hcoeff' hτ
+
 /-- Rounded Aasen factorization-plus-solve source backward error together
 with the printed Theorem 11.8 normwise predicate, using a single scalar
 normwise comparison for the summed factorization and solve-chain budgets. -/
