@@ -1603,6 +1603,35 @@ theorem sylvesterTwoColumnRealSchurBlockComplexRootVector_mulVec
       sylvesterTwoColumnRealSchurBlockComplexRootVector,
       Fin.sum_univ_two] using hcoord
 
+/-- The standard complex root of the adjacent real `2 x 2` block when the
+    real discriminant is negative and `delta` supplies its positive square
+    root magnitude. -/
+noncomputable def sylvesterTwoColumnRealSchurBlockComplexRoot (n : Nat)
+    (T : RMatFn n n) (p q : Fin n) (delta : Real) : Complex :=
+  ((((T p p + T q q) / 2 : Real) : Complex) +
+    Complex.I * (((delta / 2 : Real) : Complex)))
+
+/-- The standard complex root satisfies the characteristic equation of the
+    adjacent real `2 x 2` block whenever `delta^2` is the negative
+    discriminant. -/
+theorem sylvesterTwoColumnRealSchurBlockComplexRoot_root_of_delta_sq
+    (n : Nat) (T : RMatFn n n) (p q : Fin n) (delta : Real)
+    (hdelta :
+      delta ^ 2 =
+        -((T p p - T q q) ^ 2 + 4 * T p q * T q p)) :
+    (((T p p : Real) : Complex) -
+        sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta) *
+      (((T q q : Real) : Complex) -
+        sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta) -
+        ((T p q : Real) : Complex) * ((T q p : Real) : Complex) = 0 := by
+  apply Complex.ext
+  · simp [sylvesterTwoColumnRealSchurBlockComplexRoot, Complex.mul_re,
+      Complex.mul_im]
+    nlinarith [hdelta]
+  · simp [sylvesterTwoColumnRealSchurBlockComplexRoot, Complex.mul_re,
+      Complex.mul_im]
+    ring
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), matrix
     intertwining form: the coupled active-column equations are equivalent to
     `A * U = U * J`, where `U` is the two-column matrix `(u, v)` and `J` is
@@ -2085,6 +2114,40 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_root_separation
   sylvesterTwoColumnBlockCoeff_det_ne_zero_of_no_block_action m n A T p q
     (sylvesterTwoColumnBlock_no_block_action_of_complex_root_separation
       m n A T p q mu hsub hroot hnoReal hnoA)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    consequence from a supplied negative-discriminant square-root certificate:
+    `delta` constructs the standard complex root of the adjacent real `2 x 2`
+    block, and the root-based separation bridge proves nonsingularity of the
+    active block coefficient. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_delta_root_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (delta : Real)
+    (hsub : T q p ≠ 0)
+    (hdelta :
+      delta ^ 2 =
+        -((T p p - T q q) ^ 2 + 4 * T p q * T q p))
+    (hnoReal :
+      ∀ x : Fin 2 -> Real, x ≠ 0 ->
+        ¬ ∃ nu : Real,
+          Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+            fun k => nu * x k)
+    (hnoA :
+      ¬ ∃ y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i =>
+              sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta *
+                y i) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+  sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_root_separation
+    m n A T p q
+    (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta)
+    hsub
+    (sylvesterTwoColumnRealSchurBlockComplexRoot_root_of_delta_sq
+      n T p q delta hdelta)
+    hnoReal hnoA
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-local
     spectral obstruction for a supplied real `2 x 2` Schur block: a nonzero
