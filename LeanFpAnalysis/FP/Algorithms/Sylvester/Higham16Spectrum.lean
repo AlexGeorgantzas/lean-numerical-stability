@@ -600,6 +600,48 @@ theorem sylvesterTriangularShiftedCoeff_mulVec_apply (m : Nat)
   rw [Matrix.sub_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec]
   simp [Matrix.mulVec, dotProduct, Matrix.of_apply]
 
+/-- The one-column vec/Kronecker product index `(0,i)` is equivalent to the
+    active column index `i`. -/
+def sylvesterOneColumnIndexEquiv (m : Nat) : Fin m ≃ Prod (Fin 1) (Fin m) where
+  toFun i := (0, i)
+  invFun p := p.2
+  left_inv _ := rfl
+  right_inv p := by
+    rcases p with ⟨j, i⟩
+    have hj : j = 0 := Subsingleton.elim j (0 : Fin 1)
+    cases hj
+    rfl
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6): the singleton shifted
+    column coefficient is the one-column vec/Kronecker Sylvester coefficient,
+    after the canonical product-index reindexing. -/
+theorem sylvesterVecCoeff_one_reindex_eq_sylvesterTriangularShiftedCoeff
+    (m : Nat) (A : RMatFn m m) (t : Real) :
+    Matrix.reindex (sylvesterOneColumnIndexEquiv m).symm
+        (sylvesterOneColumnIndexEquiv m).symm
+        (sylvesterVecCoeff m 1 A (fun _ _ : Fin 1 => t)) =
+      sylvesterTriangularShiftedCoeff m A t := by
+  ext i j
+  simp [sylvesterOneColumnIndexEquiv, sylvesterVecCoeff,
+    sylvesterTriangularShiftedCoeff, Matrix.reindex_apply, Matrix.kronecker,
+    Matrix.transpose_apply, Matrix.one_apply, Matrix.of_apply]
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6): determinant form of the
+    one-column vec/Kronecker bridge for the shifted column coefficient. -/
+theorem sylvesterVecCoeff_one_det_eq_sylvesterTriangularShiftedCoeff_det
+    (m : Nat) (A : RMatFn m m) (t : Real) :
+    Matrix.det (sylvesterVecCoeff m 1 A (fun _ _ : Fin 1 => t)) =
+      Matrix.det (sylvesterTriangularShiftedCoeff m A t) := by
+  let e := sylvesterOneColumnIndexEquiv m
+  have hdet_reindex :
+      Matrix.det (Matrix.reindex e.symm e.symm
+          (sylvesterVecCoeff m 1 A (fun _ _ : Fin 1 => t))) =
+        Matrix.det (sylvesterVecCoeff m 1 A (fun _ _ : Fin 1 => t)) :=
+    Matrix.det_reindex_self e.symm
+      (sylvesterVecCoeff m 1 A (fun _ _ : Fin 1 => t))
+  rw [← hdet_reindex,
+    sylvesterVecCoeff_one_reindex_eq_sylvesterTriangularShiftedCoeff]
+
 private theorem triangular_column_sum_split (m n : Nat) (T : RMatFn n n)
     (hT : IsUpperTriangularFn n T) (X : RMatFn m n) (i : Fin m) (k : Fin n) :
     (Finset.sum Finset.univ fun j : Fin n => X i j * T j k) =
@@ -2850,6 +2892,98 @@ theorem noCommonComplexRightEigenvalue_of_sameBlock_twoBlock_quasiSchur
     hasComplexRightEigenvalue_realMatrixToComplex_of_sameBlock_twoBlock_quasiSchur
       n T pmap p q mu hcard hBT hpq hsame hpair.2⟩
 
+/-- The fiber over a singleton real-quasi-Schur block label is canonically a
+    one-element index set. -/
+def singletonBlockFiberEquiv (n : Nat) (pmap : Fin n -> Nat) (k : Fin n)
+    (hsingle : forall i : Fin n, pmap i = pmap k -> i = k) :
+    Fin 1 ≃ { i : Fin n // pmap i = pmap k } where
+  toFun _ := ⟨k, rfl⟩
+  invFun _ := 0
+  left_inv i := Subsingleton.elim _ _
+  right_inv i := by
+    apply Subtype.ext
+    exact (hsingle i.1 i.2).symm
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): the
+    `toSquareBlock` fiber of a singleton-labelled real-quasi-Schur block is
+    the scalar `1 x 1` block containing the diagonal entry. -/
+theorem realMatrixToComplex_toSquareBlock_singleton_reindex
+    (n : Nat) (T : RMatFn n n) (pmap : Fin n -> Nat) (k : Fin n)
+    (hsingle : forall i : Fin n, pmap i = pmap k -> i = k) :
+    Matrix.reindex
+        (singletonBlockFiberEquiv n pmap k hsingle).symm
+        (singletonBlockFiberEquiv n pmap k hsingle).symm
+        ((realMatrixToComplex (Matrix.of T)).toSquareBlock pmap (pmap k)) =
+      realMatrixToComplex (Matrix.of (fun _ _ : Fin 1 => T k k)) := by
+  ext r c
+  fin_cases r
+  fin_cases c
+  simp [Matrix.reindex_apply, Matrix.toSquareBlock_def,
+    singletonBlockFiberEquiv, realMatrixToComplex, Matrix.of_apply]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): an eigenvalue of
+    a singleton scalar block in a block-triangular real-quasi-Schur factor is
+    an eigenvalue of the full complexified Schur factor. -/
+theorem hasComplexRightEigenvalue_realMatrixToComplex_of_singletonBlock_quasiSchur
+    (n : Nat) (T : RMatFn n n) (pmap : Fin n -> Nat) (k : Fin n)
+    (mu : Complex)
+    (hBT :
+      (realMatrixToComplex (Matrix.of T)).BlockTriangular pmap)
+    (hsingle : forall i : Fin n, pmap i = pmap k -> i = k)
+    (hblock :
+      HasComplexRightEigenvalue
+        (realMatrixToComplex (Matrix.of (fun _ _ : Fin 1 => T k k))) mu) :
+    HasComplexRightEigenvalue (realMatrixToComplex (Matrix.of T)) mu := by
+  classical
+  let e := singletonBlockFiberEquiv n pmap k hsingle
+  let M : Matrix (Fin n) (Fin n) Complex := realMatrixToComplex (Matrix.of T)
+  let N : Matrix { i : Fin n // pmap i = pmap k }
+      { i : Fin n // pmap i = pmap k } Complex :=
+    M.toSquareBlock pmap (pmap k)
+  let B : Matrix (Fin 1) (Fin 1) Complex :=
+    realMatrixToComplex (Matrix.of (fun _ _ : Fin 1 => T k k))
+  have hreindex : Matrix.reindex e.symm e.symm N = B := by
+    simpa [e, M, N, B] using
+      realMatrixToComplex_toSquareBlock_singleton_reindex
+        n T pmap k hsingle
+  have hBchar : B.charpoly.eval mu = 0 :=
+    (finiteComplexMatrix_hasComplexRightEigenvalue_iff_charpoly_eval_eq_zero
+      B mu).mp (by simpa [B] using hblock)
+  have hNchar : N.charpoly.eval mu = 0 := by
+    have hcharReindex :=
+      congrArg (fun P : Polynomial Complex => P.eval mu)
+        (Matrix.charpoly_reindex e.symm N)
+    rw [hreindex] at hcharReindex
+    exact hcharReindex.symm.trans hBchar
+  have hN :
+      HasComplexRightEigenvalue N mu :=
+    (finiteComplexMatrix_hasComplexRightEigenvalue_iff_charpoly_eval_eq_zero
+      N mu).mpr hNchar
+  exact
+    hasComplexRightEigenvalue_of_blockTriangular_toSquareBlock
+      M pmap (pmap k) mu (by simpa [M] using hBT) hN
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): transport a
+    global no-common-complex-right-eigenvalue hypothesis for the full Schur
+    factor to a singleton scalar block. -/
+theorem noCommonComplexRightEigenvalue_of_singletonBlock_quasiSchur
+    (m n : Nat) (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (k : Fin n)
+    (hBT :
+      (realMatrixToComplex (Matrix.of T)).BlockTriangular pmap)
+    (hsingle : forall i : Fin n, pmap i = pmap k -> i = k)
+    (hno :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex (Matrix.of A))
+        (realMatrixToComplex (Matrix.of T))) :
+    NoCommonComplexRightEigenvalue
+      (realMatrixToComplex (Matrix.of A))
+      (realMatrixToComplex (Matrix.of (fun _ _ : Fin 1 => T k k))) := by
+  intro mu hpair
+  exact hno mu ⟨hpair.1,
+    hasComplexRightEigenvalue_realMatrixToComplex_of_singletonBlock_quasiSchur
+      n T pmap k mu hBT hsingle hpair.2⟩
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), complexified
     two-column intertwining bridge: a real identity `A * U = U * J` for the
     active two-column matrix and supplied adjacent real Schur block remains
@@ -4158,6 +4292,66 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_n
   exact
     sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_det_separation
       m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral hdetA
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6): a singleton block in a
+    block-triangular Schur factor inherits shifted determinant nonsingularity
+    from a global no-common-complex-right-eigenvalue hypothesis. -/
+theorem sylvesterTriangularShiftedCoeff_det_ne_zero_of_singleton_global_no_common_complex_right_eigenvalue_left
+    (m n : Nat) (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (k : Fin n)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hsingle : forall i : Fin n, pmap i = pmap k -> i = k)
+    (hnoGlobal :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex (Matrix.of A))
+        (realMatrixToComplex (Matrix.of T))) :
+    Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T k k)) = 0) := by
+  have hBT : (realMatrixToComplex (Matrix.of T)).BlockTriangular pmap := by
+    intro i j hij
+    simp [realMatrixToComplex, Matrix.of_apply, hzero i j hij]
+  have hnoSingleton :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex (fun _ _ : Fin 1 => T k k)) := by
+    simpa [Matrix.of_apply] using
+      noCommonComplexRightEigenvalue_of_singletonBlock_quasiSchur
+        m n A T pmap k hBT hsingle hnoGlobal
+  have hdetVec :
+      Matrix.det (sylvesterVecCoeff m 1 A (fun _ _ : Fin 1 => T k k)) ≠ 0 :=
+    sylvesterVecCoeff_det_ne_zero_of_no_common_complex_right_eigenvalue
+      m 1 A (fun _ _ : Fin 1 => T k k) hnoSingleton
+  intro hdet
+  exact hdetVec
+    ((sylvesterVecCoeff_one_det_eq_sylvesterTriangularShiftedCoeff_det
+      m A (T k k)).trans hdet)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6): supplied real orthogonal
+    Schur factorizations transport original-coordinate no-common-complex-right
+    eigenvalue data to the Schur-coordinate singleton shifted determinant. -/
+theorem sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_singleton_no_common_complex_right_eigenvalue
+    (m n : Nat)
+    (U R Aorig : RMatFn m m) (V S Borig : RMatFn n n)
+    (pmap : Fin n -> Nat) (k : Fin n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : Aorig = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : Borig = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hsingle : forall i : Fin n, pmap i = pmap k -> i = k)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex Aorig)
+        (realMatrixToComplex Borig)) :
+    Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0) := by
+  have hnoRS :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex R)
+        (realMatrixToComplex S) :=
+    noCommonComplexRightEigenvalue_realQuasiSchur_factors
+      m n U R Aorig V S Borig hU hV hA hB hnoOrig
+  exact
+    sylvesterTriangularShiftedCoeff_det_ne_zero_of_singleton_global_no_common_complex_right_eigenvalue_left
+      m n R S pmap k hzero hsingle
+      (by simpa [Matrix.of_apply] using hnoRS)
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): full Schur-factor
     no-common-complex-right-eigenvalue version of the constructed
