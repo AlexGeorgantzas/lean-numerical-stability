@@ -42442,6 +42442,176 @@ theorem theorem20_10_partB_backward_error_of_constructed_source_exact_rhs_househ
       A B b d (theorem20_10_gqr_xhat fp h b d)
       hgammaB_nonneg hcertA
 
+/-- Theorem 20.10(a), exact transformed-RHS constructed-source route with
+    source rank hypotheses instead of supplied triangular diagonal hypotheses.
+
+For supplied exact GQR data, source full row rank of `B` and full column rank
+of `[A; B]` imply the nonzero `S` and `L22` diagonal conditions needed by the
+printed Householder-gamma mixed-stability branch.  The theorem remains an
+exact transformed-RHS result: it does not claim the rounded RHS-transform or
+final computed-vector path. -/
+theorem theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ DeltaX : Fin (p + q) → ℝ,
+    ∃ x : Fin (p + q) → ℝ,
+      (∀ j : Fin (p + q),
+        theorem20_10_gqr_xhat fp h b d j = x j + DeltaX j) ∧
+      vecNorm2 DeltaX ≤
+        theorem20_10_householder_gammaB fp r p q * vecNorm2 x ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA fp r p q * vecNorm2 b ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) d x ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = d ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x0 : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d x0)) := by
+  have hdiag :
+      (∀ i : Fin p, h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0) :=
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
+      ⟨hBsrc, hStack⟩
+  exact
+    theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs_householder_gamma
+      fp h b d hdiag.1 hdiag.2 hvalidA hvalidB
+
+/-- Theorem 20.10(a), exact transformed-RHS constructed-source certificate
+    with source rank hypotheses instead of supplied triangular diagonal
+    hypotheses.
+
+This is the nonempty-certificate form of
+`theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks`. -/
+theorem theorem20_10_partA_certificate_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d)
+          (theorem20_10_householder_gammaA fp r p q)
+          (theorem20_10_householder_gammaB fp r p q)) := by
+  have hdiag :
+      (∀ i : Fin p, h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0) :=
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
+      ⟨hBsrc, hStack⟩
+  exact
+    theorem20_10_partA_certificate_of_constructed_source_exact_rhs_householder_gamma
+      fp h b d hdiag.1 hdiag.2 hvalidA hvalidB
+
+/-- Theorem 20.10(b), exact transformed-RHS constructed-source
+    backward-error core with source rank hypotheses instead of supplied
+    triangular diagonal hypotheses.
+
+For supplied exact GQR data, this removes the caller-facing `S`/`L22`
+diagonal side conditions from the printed Householder-gamma Part B core by
+deriving them from `LSEFullRowRank B` and `LSEStackedFullColumnRank A B`. -/
+theorem theorem20_10_partB_backward_error_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let xhat : Fin (p + q) → ℝ := theorem20_10_gqr_xhat fp h b d
+    let gammaA : ℝ := theorem20_10_householder_gammaA fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  have hdiag :
+      (∀ i : Fin p, h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0) :=
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
+      ⟨hBsrc, hStack⟩
+  exact
+    theorem20_10_partB_backward_error_of_constructed_source_exact_rhs_householder_gamma
+      fp h b d hdiag.1 hdiag.2 hvalidA hvalidB
+
 /-- Theorem 20.10(b) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
 theorem theorem20_10_partB_backward_error_of_householder_gamma_certificate
@@ -42493,5 +42663,132 @@ theorem theorem20_10_partB_backward_error_of_householder_gamma_certificate
           IsLSEMinimizer Apert bpert Bpert dpert x)) :=
   theorem20_10_partB_backward_error_of_perturbation_certificate
     A B b d xhat cert
+
+/-- Theorem 20.10(a), nonempty Householder-gamma certificate handoff.
+
+This certificate-free form consumes a nonempty Part A perturbation certificate
+with the source-facing Householder `gamma_tilde_mn` and `gamma_tilde_np`
+coefficients and returns the corresponding mixed-stability conclusion. -/
+theorem theorem20_10_partA_mixed_stability_of_nonempty_householder_gamma_certificate
+    {r p q : ℕ}
+    (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hcert :
+      Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d xhat
+          (theorem20_10_householder_gammaA fp r p q)
+          (theorem20_10_householder_gammaB fp r p q))) :
+    let gammaA : ℝ := theorem20_10_householder_gammaA fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ DeltaX : Fin (p + q) → ℝ,
+    ∃ x : Fin (p + q) → ℝ,
+      (∀ j : Fin (p + q), xhat j = x j + DeltaX j) ∧
+      vecNorm2 DeltaX ≤ gammaB * vecNorm2 x ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      vecNorm2 Deltab ≤ gammaA * vecNorm2 b ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) d x ∧
+      (∃ h : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec h.S yz.1 = d ∧
+          rectMatMulVec h.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose h.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec h.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d
+            (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x0 : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d x0)) := by
+  dsimp
+  rcases hcert with ⟨cert⟩
+  rcases
+    theorem20_10_partA_mixed_stability_of_householder_gamma_certificate
+      fp A B b d xhat cert with
+    ⟨DeltaA, DeltaB, Deltab, DeltaX, x, _hDeltaAeq, _hDeltaBeq,
+      _hDeltabeq, hxhat, hDeltaX, hDeltaA, hDeltab, hDeltaB,
+      hx, hmethod⟩
+  exact
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, DeltaX, x, hxhat, hDeltaX,
+      cert.hDeltaA, cert.hDeltab, cert.hDeltaB, hx, hmethod⟩
+
+/-- Theorem 20.10(b), nonempty Householder-gamma certificate handoff.
+
+This certificate-free form consumes a nonempty Part B perturbation certificate
+with the source-facing Householder `gamma_tilde_mn` and `gamma_tilde_np`
+coefficients and returns the exact perturbed GQR/minimizer core. -/
+theorem theorem20_10_partB_backward_error_of_nonempty_householder_gamma_certificate
+    {r p q : ℕ}
+    (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hcert :
+      Nonempty
+        (Theorem20_10PartBPerturbationCertificate A B b d xhat
+          (theorem20_10_householder_gammaA fp r p q)
+          (theorem20_10_householder_gammaB fp r p q))) :
+    let gammaA : ℝ := theorem20_10_householder_gammaA fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ h : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec h.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec h.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose h.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec h.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  dsimp
+  rcases hcert with ⟨cert⟩
+  rcases
+    theorem20_10_partB_backward_error_of_householder_gamma_certificate
+      fp A B b d xhat cert with
+    ⟨DeltaA, DeltaB, Deltab, Deltad, _hDeltaAeq, _hDeltaBeq,
+      _hDeltabeq, _hDeltadeq, hDeltaA, hDeltaB, hDeltab, hDeltad,
+      hmethod⟩
+  exact
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, cert.Deltad,
+      cert.hDeltaA, cert.hDeltaB, cert.hDeltab, cert.hDeltad, hmethod⟩
 
 end LeanFpAnalysis.FP
