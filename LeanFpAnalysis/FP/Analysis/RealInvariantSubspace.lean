@@ -234,6 +234,37 @@ end RealInvariantSubspaceAux
 def MatrixNoRealEigenline {n : ℕ} (A : Matrix (Fin n) (Fin n) ℝ) : Prop :=
   ∀ x : Fin n → ℝ, x ≠ 0 -> ¬ ∃ ν : ℝ, A *ᵥ x = ν • x
 
+/-- The principal `2 x 2` block of a matrix on the ordered index pair `(p,q)`.
+    This source-side definition is shared by future real quasi-Schur block
+    exports and avoids depending on the Sylvester-specific block definitions. -/
+def principalTwoBlock {n : ℕ} (A : Matrix (Fin n) (Fin n) ℝ) (p q : Fin n) :
+    Matrix (Fin 2) (Fin 2) ℝ :=
+  fun i j =>
+    if i = 0 then
+      if j = 0 then A p p else A p q
+    else
+      if j = 0 then A q p else A q q
+
+@[simp] theorem principalTwoBlock_zero_zero {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ) (p q : Fin n) :
+    principalTwoBlock A p q 0 0 = A p p := by
+  simp [principalTwoBlock]
+
+@[simp] theorem principalTwoBlock_zero_one {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ) (p q : Fin n) :
+    principalTwoBlock A p q 0 1 = A p q := by
+  simp [principalTwoBlock]
+
+@[simp] theorem principalTwoBlock_one_zero {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ) (p q : Fin n) :
+    principalTwoBlock A p q 1 0 = A q p := by
+  simp [principalTwoBlock]
+
+@[simp] theorem principalTwoBlock_one_one {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ) (p q : Fin n) :
+    principalTwoBlock A p q 1 1 = A q q := by
+  simp [principalTwoBlock]
+
 /-- The canonical real `2 x 2` rotation-scaling block
     `[[alpha,beta],[-beta,alpha]]` with `beta != 0` has no real eigenline. -/
 theorem matrixNoRealEigenline_fin_two_of_rotation_scaling_entries
@@ -261,6 +292,24 @@ theorem matrixNoRealEigenline_fin_two_of_rotation_scaling_entries
   apply hx
   funext k
   fin_cases k <;> simp [hx0, hx1]
+
+/-- A principal `2 x 2` block with canonical rotation-scaling entries has no
+    real eigenline. -/
+theorem matrixNoRealEigenline_principalTwoBlock_of_rotation_scaling_entries
+    {n : ℕ} (A : Matrix (Fin n) (Fin n) ℝ) (p q : Fin n) (α β : ℝ)
+    (hpp : A p p = α)
+    (hqq : A q q = α)
+    (hpq : A p q = β)
+    (hqp : A q p = -β)
+    (hβ : β ≠ 0) :
+    MatrixNoRealEigenline (principalTwoBlock A p q) :=
+  matrixNoRealEigenline_fin_two_of_rotation_scaling_entries
+    (principalTwoBlock A p q) α β
+    (by simpa using hpp)
+    (by simpa using hpq)
+    (by simpa using hqp)
+    (by simpa using hqq)
+    hβ
 
 open RealInvariantSubspaceAux in
 /-- **ℂ→ℝ real invariant-subspace descent (dimension `1` or `2`).**
