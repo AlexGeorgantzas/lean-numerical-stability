@@ -5245,6 +5245,202 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_sourc
         fp n T_hat L_T_hat U_T_hat hn hLU hdetT hT_tridiag hRowDom)
       hcoeff
 
+/-- Source-prefix relative column-dominant wrapper variant where the
+factorization-side `BT_factor` norm bound is derived from a componentwise
+bound against `T_hat`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor :
+      Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κT κBT : ℝ)
+    (hγ_factor : 0 ≤ γ_factor)
+    (hκL : 0 ≤ κL)
+    (hκT : 0 ≤ κT) (hκBT : 0 ≤ κBT)
+    (hBT_factor : ∀ i j : Fin n, 0 ≤ BT_factor i j)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hvalSum : ∀ i next : Fin n, next.val = i.val + 1 →
+      gammaValid fp next.val)
+    (hvalUpdate : gammaValid fp 2)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ γ_factor * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT_factor i j)
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hdetT : Matrix.det (Matrix.of T_hat : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hT_tridiag : IsTridiagonal n T_hat)
+    (hColDom : IsDiagDominant n T_hat)
+    (hL_norm : infNorm L ≤ κL)
+    (hLT_norm : infNorm (fun r c => L c r) ≤ κLT)
+    (hT_norm : infNorm T ≤ κT * infNorm T_hat)
+    (hBT_component : ∀ i j : Fin n, BT_factor i j ≤ κBT * |T_hat i j|)
+    (hcoeff :
+      (2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT) +
+        (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) +
+        (2 * gamma fp n + (gamma fp n) ^ 2) *
+          (((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT)) +
+        (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+          (((1 + γ_factor) * κL) * (higham9_14_f (gamma fp n) * 3) *
+            ((1 + γ_factor) * κLT)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA) γ15n25
+        (infNorm T_hat) := by
+  have hBT_norm : infNorm BT_factor ≤ κBT * infNorm T_hat := by
+    apply higham11_8_infNorm_le_mul_of_componentwise_T_bound n BT_factor T_hat κBT hκBT
+    intro i j
+    rw [abs_of_nonneg (hBT_factor i j)]
+    exact hBT_component i j
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_colDiagDom_middle_coeff
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT hγ_factor hκL hκT hκBT
+      hBT_factor hrec hHnz hvalSum hvalUpdate hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hprod hThat
+      hLU hdetT hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_norm hcoeff
+
+/-- Source-prefix relative row-dominant wrapper variant where the
+factorization-side `BT_factor` norm bound is derived from a componentwise
+bound against `T_hat`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor :
+      Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κT κBT : ℝ)
+    (hγ_factor : 0 ≤ γ_factor)
+    (hκL : 0 ≤ κL)
+    (hκT : 0 ≤ κT) (hκBT : 0 ≤ κBT)
+    (hBT_factor : ∀ i j : Fin n, 0 ≤ BT_factor i j)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hvalSum : ∀ i next : Fin n, next.val = i.val + 1 →
+      gammaValid fp next.val)
+    (hvalUpdate : gammaValid fp 2)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ γ_factor * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT_factor i j)
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hdetT : Matrix.det (Matrix.of T_hat : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hT_tridiag : IsTridiagonal n T_hat)
+    (hRowDom : IsRowDiagDominant n T_hat)
+    (hL_norm : infNorm L ≤ κL)
+    (hLT_norm : infNorm (fun r c => L c r) ≤ κLT)
+    (hT_norm : infNorm T ≤ κT * infNorm T_hat)
+    (hBT_component : ∀ i j : Fin n, BT_factor i j ≤ κBT * |T_hat i j|)
+    (hcoeff :
+      (2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT) +
+        (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) +
+        (2 * gamma fp n + (gamma fp n) ^ 2) *
+          (((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT)) +
+        (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+          (((1 + γ_factor) * κL) * (higham9_14_f (gamma fp n) * 3) *
+            ((1 + γ_factor) * κLT)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA) γ15n25
+        (infNorm T_hat) := by
+  have hBT_norm : infNorm BT_factor ≤ κBT * infNorm T_hat := by
+    apply higham11_8_infNorm_le_mul_of_componentwise_T_bound n BT_factor T_hat κBT hκBT
+    intro i j
+    rw [abs_of_nonneg (hBT_factor i j)]
+    exact hBT_component i j
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_rowDiagDom_middle_coeff
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT hγ_factor hκL hκT hκBT
+      hBT_factor hrec hHnz hvalSum hvalUpdate hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hprod hThat
+      hLU hdetT hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_norm hcoeff
+
 /-- Source-prefix factor-norm wrapper variant where the relative `L_hat`
 factor hypothesis is generated from modeled rounded recurrence updates and the
 factorization-side `BT_factor` norm bound is derived from a componentwise bound
