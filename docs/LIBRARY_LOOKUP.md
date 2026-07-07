@@ -5312,9 +5312,10 @@ hypothesis already contains the algorithmic stability conclusion, the theorem is
 a transfer or packaging result rather than a complete local analysis.
 
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
-Problem 14.3, the residual and forward-error consequences from Problem 14.5,
-Problem 14.7, equation (14.34) in its exact no-pivot/unit-lower LU form and
-pivoted absolute-value form, and Problem 14.10:
+Problem 14.3, the explicit residual-ratio family from Problem 14.4, the residual
+and forward-error consequences from Problem 14.5, Problem 14.7, equation
+(14.34) in its exact no-pivot/unit-lower LU form and pivoted absolute-value
+form, and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
 - `higham14_problem14_3_right_residual_eq_mul_left_residual`
@@ -5322,6 +5323,13 @@ pivoted absolute-value form, and Problem 14.10:
 - `higham14_problem14_3_right_over_left_residual_infNorm_le_kappa`
 - `higham14_problem14_3_left_over_right_residual_infNorm_le_kappa`
 - `higham14_problem14_3_max_residual_ratio_infNorm_le_kappa`
+- `higham14_problem14_4_A`, `higham14_problem14_4_X`
+- `higham14_problem14_4_XA_eq`, `higham14_problem14_4_AX_eq`
+- `higham14_problem14_4_left_residual_eq`
+- `higham14_problem14_4_left_residual_infNorm_eq`
+- `higham14_problem14_4_right_residual_infNorm_ge_inv_cube`
+- `higham14_problem14_4_right_over_left_ratio_ge`
+- `higham14_problem14_4_right_over_left_ratio_arbitrarily_large`
 - `higham14_unit_roundoff_add_gamma_le_gamma_succ`
 - `higham14_problem14_5_right_inverse_solve_residual_bound`
 - `higham14_problem14_5_left_inverse_solve_residual_bound`
