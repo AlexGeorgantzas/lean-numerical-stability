@@ -1192,6 +1192,26 @@ theorem realMatrixToComplex_intertwining_of_real
       realMatrixToComplex X * realMatrixToComplex B := by
   rw [← realMatrixToComplex_mul A X, hX, realMatrixToComplex_mul X B]
 
+/-- Kernel invariance for a finite real-matrix intertwiner: if `A * X = X * B`,
+    then the kernel of `X` is mapped into itself by `B`.  This is the real
+    invariant-line algebra needed before the Chapter 16 `2 x 2` real-Schur
+    block-separation argument. -/
+theorem finiteRealMatrix_intertwiner_kernel_invariant
+    {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (A : Matrix ι ι Real) (B : Matrix κ κ Real)
+    (X : Matrix ι κ Real)
+    (hX : A * X = X * B)
+    {x : κ -> Real}
+    (hx : Matrix.mulVec X x = 0) :
+    Matrix.mulVec X (Matrix.mulVec B x) = 0 := by
+  calc
+    Matrix.mulVec X (Matrix.mulVec B x) = Matrix.mulVec (X * B) x := by
+      rw [Matrix.mulVec_mulVec]
+    _ = Matrix.mulVec (A * X) x := by rw [← hX]
+    _ = Matrix.mulVec A (Matrix.mulVec X x) := by
+      rw [← Matrix.mulVec_mulVec]
+    _ = 0 := by rw [hx, Matrix.mulVec_zero]
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), product-shift
     spectral bridge for a supplied adjacent two-column block: a trivial kernel
     for the eigen-equation of the product of the two shifted column
@@ -1406,6 +1426,29 @@ theorem sylvesterTwoColumnBlock_columnPair_intertwining_complexification
   realMatrixToComplex_intertwining_of_real
     (Matrix.of A) (sylvesterTwoColumnRealSchurBlock n T p q)
     (sylvesterTwoColumnBlockColumnPair m u v) hX
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), kernel
+    invariance for a two-column intertwiner: if the active column pair
+    satisfies `A * U = U * J`, then the real kernel of `U` is invariant under
+    the supplied adjacent `2 x 2` Schur block `J`.  This is a preparatory
+    algebraic step for ruling out nonzero block-action witnesses from
+    irreducible real-Schur block separation. -/
+theorem sylvesterTwoColumnBlock_columnPair_kernel_invariant
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (u v : Fin m -> Real)
+    (hX :
+      Matrix.of A * sylvesterTwoColumnBlockColumnPair m u v =
+        sylvesterTwoColumnBlockColumnPair m u v *
+          sylvesterTwoColumnRealSchurBlock n T p q)
+    {x : Fin 2 -> Real}
+    (hx :
+      Matrix.mulVec (sylvesterTwoColumnBlockColumnPair m u v) x = 0) :
+    Matrix.mulVec (sylvesterTwoColumnBlockColumnPair m u v)
+        (Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x) = 0 :=
+  finiteRealMatrix_intertwiner_kernel_invariant
+    (Matrix.of A) (sylvesterTwoColumnRealSchurBlock n T p q)
+    (sylvesterTwoColumnBlockColumnPair m u v) hX hx
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-action
     packaging: the two coupled active-column equations are equivalent to
