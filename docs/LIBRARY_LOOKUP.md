@@ -1968,6 +1968,17 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_completePivotWilkinsonBound_succ_div_ge_one`
 - `higham9_14_completePivotWilkinsonBound_ge_two_of_ge_two`
 - `higham9_14_completePivotWilkinsonBound_monotone`
+- `higham9_14_wilkinson_max_pivot_bound`
+- `higham9_14_wilkinson_pivot_le_bound_mul`
+- `higham9_14_geShift`
+- `higham9_14_geShift_val`
+- `higham9_14_geIterate`
+- `higham9_14_geIterate_LUFactSpec`
+- `higham9_14_geIterate_zero_apply`
+- `higham9_14_geIterate_row_zero`
+- `higham9_14_completePivot_segment_pivot_bound`
+- `higham9_14_completePivot_growthFactorEntry_le_wilkinsonBound`
+- `higham9_14_completePivot_iterate_entry_le_wilkinsonBound_mul`
 - `higham9_completePivotGrowthSet`
 - `higham9_completePivotGrowthSup`
 - `higham9_completePivotGrowth_le_sup`

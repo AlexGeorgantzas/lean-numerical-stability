@@ -2269,6 +2269,43 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_delta_root_det_separ
       (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta)
       hdetA)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), real-Schur
+    same-block determinant-shaped complex-separation certificate: an adjacent
+    same-labelled block in the exported quasi-Schur block map supplies the
+    two-column zero pattern, while a supplied negative-discriminant square-root
+    and shifted complex determinant separation certificate make the active
+    two-column block coefficient nonsingular.  This packages the proved
+    complex-root route with the structural quasi-Schur block-map data; it does
+    not construct the spectral certificates from the quasi-Schur predicate. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_complex_delta_root_det_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (delta : Real)
+    (hsub : Not (T q p = 0))
+    (hdelta :
+      delta ^ 2 =
+        -((T p p - T q q) ^ 2 + 4 * T p q * T q p))
+    (hdelta_ne : Not (delta = 0))
+    (hdetA :
+      Not (Matrix.det
+        (realMatrixToComplex (Matrix.of A) -
+          Matrix.scalar (Fin m)
+            (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta)) = 0)) :
+    IsAdjacentQuasiTriangularBlockFn n T p q /\
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  refine ⟨?_, ?_⟩
+  · exact IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block
+      n T pmap p q hmono hcard hzero hpq hsame
+  · exact sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_delta_root_det_separation
+      m n A T p q delta hsub hdelta hdelta_ne hdetA
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-local
     spectral obstruction for a supplied real `2 x 2` Schur block: a nonzero
     product-shift kernel vector yields two real vectors satisfying the same
