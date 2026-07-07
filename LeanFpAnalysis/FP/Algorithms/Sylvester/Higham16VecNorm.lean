@@ -697,6 +697,56 @@ theorem H16_eq16_3_existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_
   existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_right_eigenvalue
     m n A B hno c
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.6): no common
+    supplied complex right eigenpair for the complexified real factors gives a
+    unique exact real Sylvester matrix solution for every right-hand side. -/
+theorem existsUnique_isSylvesterSolutionRect_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j))) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  obtain ⟨x, hx, huniq⟩ :=
+    existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair
+      m n A B hno (Matrix.vec C)
+  obtain ⟨X, hXvec⟩ := Matrix.vec_bijective.surjective x
+  refine ⟨X, ?_, ?_⟩
+  · exact
+      (sylvester_vec_system_iff_solution m n A B C X).mp
+        (by rw [hXvec]; exact hx)
+  · intro Y hY
+    apply Matrix.vec_inj.mp
+    have hYvec :
+        Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec Y) =
+          Matrix.vec C :=
+      (sylvester_vec_system_iff_solution m n A B C Y).mpr hY
+    rw [huniq (Matrix.vec Y) hYvec, hXvec]
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.6), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors gives a unique exact real Sylvester matrix
+    solution for every right-hand side. -/
+theorem existsUnique_isSylvesterSolutionRect_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  exact existsUnique_isSylvesterSolutionRect_of_no_common_complex_eigenpair
+    m n A B C hno
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the named no-common-complex-right-eigenvalue
+    exact real Sylvester matrix unique-solve route. -/
+theorem H16_eq16_3_existsUnique_isSylvesterSolutionRect_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_no_common_complex_right_eigenvalue
+    m n A B C hno
+
 /-- A concrete left inverse and operator-2 radius for the printed Sylvester
     vec/Kronecker coefficient gives its sigma-min lower-bound route directly,
     without assuming the target coefficient lower-bound theorem. -/
