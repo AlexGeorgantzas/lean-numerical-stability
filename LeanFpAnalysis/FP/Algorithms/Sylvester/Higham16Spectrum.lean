@@ -1230,6 +1230,92 @@ theorem finiteComplexMatrix_det_sub_scalar_ne_zero_of_no_common_right_eigenvalue
   exact finiteComplexMatrix_det_sub_scalar_ne_zero_of_no_eigenpair A mu
     (fun hA => hno mu ⟨hA, hB⟩)
 
+/-- A supplied complex right eigenvalue also has a supplied left eigenvector
+    for the same matrix and eigenvalue.  This finite-dimensional orientation
+    adapter is used to turn Higham's right-eigenvalue spectral condition into
+    the left `B`-eigenvector needed by the `AX - XB` outer-product kernel
+    witness. -/
+theorem finiteComplexMatrix_exists_vecMul_eigenpair_of_right_eigenvalue
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (A : Matrix ι ι Complex) (mu : Complex)
+    (hA : HasComplexRightEigenvalue A mu) :
+    ∃ w : ι -> Complex,
+      w ≠ 0 ∧ Matrix.vecMul w A = fun i => mu * w i := by
+  rcases hA with ⟨v, hvne, hv⟩
+  have hvzero : Matrix.mulVec (A - Matrix.scalar ι mu) v = 0 := by
+    funext i
+    have hi := congrFun hv i
+    have hcoord : Matrix.mulVec A v i - mu * v i = 0 := sub_eq_zero.mpr hi
+    simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hcoord
+  have hdet : Matrix.det (A - Matrix.scalar ι mu) = 0 := by
+    exact Matrix.exists_mulVec_eq_zero_iff.mp ⟨v, hvne, hvzero⟩
+  rcases (Matrix.exists_vecMul_eq_zero_iff (M := A - Matrix.scalar ι mu)).2 hdet with
+    ⟨w, hwne, hwzero⟩
+  refine ⟨w, hwne, ?_⟩
+  funext i
+  have hzero' :
+      Matrix.vecMul w A - Matrix.vecMul w (Matrix.scalar ι mu) = 0 := by
+    simpa [Matrix.vecMul_sub] using hwzero
+  have hi := congrFun hzero' i
+  have hcoord : Matrix.vecMul w A i - mu * w i = 0 := by
+    simpa [Matrix.vecMul, dotProduct, Matrix.scalar_apply] using hi
+  exact sub_eq_zero.mp hcoord
+
+/-- Complex companion to `vec_outer_product_ne_zero`: the vectorization of a
+    rank-one outer product of two nonzero complex vectors is nonzero. -/
+theorem complex_vec_outer_product_ne_zero (m n : Nat)
+    (v : Fin m -> Complex) (w : Fin n -> Complex)
+    (hv : v ≠ 0) (hw : w ≠ 0) :
+    Matrix.vec (fun i j => v i * w j : Matrix (Fin m) (Fin n) Complex) ≠ 0 := by
+  obtain ⟨i, hi⟩ := Function.ne_iff.mp hv
+  obtain ⟨j, hj⟩ := Function.ne_iff.mp hw
+  intro h
+  have hp := congrFun h (j, i)
+  have hval : v i * w j = 0 := by
+    simpa [Matrix.vec] using hp
+  rcases mul_eq_zero.mp hval with h0 | h0
+  · exact hi (by simpa using h0)
+  · exact hj (by simpa using h0)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), complex obstruction:
+    a common supplied complex right eigenvalue of `A` and `B` makes the
+    complex vec/Kronecker Sylvester coefficient singular.  The `B` side is
+    converted to a left eigenvector internally, so the statement matches
+    Higham's right-eigenvalue spectral condition. -/
+theorem complexSylvesterVecCoeff_singular_of_common_right_eigenvalue
+    {m n : Nat}
+    (A : Matrix (Fin m) (Fin m) Complex)
+    (B : Matrix (Fin n) (Fin n) Complex) (mu : Complex)
+    (hA : HasComplexRightEigenvalue A mu)
+    (hB : HasComplexRightEigenvalue B mu) :
+    Matrix.det (complexSylvesterVecCoeff A B) = 0 := by
+  classical
+  rcases hA with ⟨v, hvne, hv⟩
+  rcases finiteComplexMatrix_exists_vecMul_eigenpair_of_right_eigenvalue B mu hB with
+    ⟨w, hwne, hw⟩
+  let X : Matrix (Fin m) (Fin n) Complex := fun i j => v i * w j
+  have hXne : Matrix.vec X ≠ 0 := by
+    simpa [X] using complex_vec_outer_product_ne_zero m n v w hvne hwne
+  have hOp : complexSylvesterOp A B X = 0 := by
+    ext i j
+    have hvi : (∑ k : Fin m, A i k * v k) = mu * v i := by
+      simpa [Matrix.mulVec, dotProduct] using congrFun hv i
+    have hwj : (∑ k : Fin n, w k * B k j) = mu * w j := by
+      simpa [Matrix.vecMul, dotProduct] using congrFun hw j
+    have hleft : (∑ k : Fin m, A i k * X k j) =
+        (∑ k : Fin m, A i k * v k) * w j := by
+      simp [X, Finset.sum_mul, mul_assoc]
+    have hright : (∑ k : Fin n, X i k * B k j) =
+        v i * (∑ k : Fin n, w k * B k j) := by
+      simp [X, Finset.mul_sum, mul_assoc]
+    simp [complexSylvesterOp, Matrix.mul_apply, hleft, hright, hvi, hwj]
+    ring
+  apply Matrix.exists_mulVec_eq_zero_iff.mp
+  refine ⟨Matrix.vec X, hXne, ?_⟩
+  have hcoeff := complexSylvesterVecCoeff_mulVec_vec A B X
+  rw [hOp] at hcoeff
+  simpa using hcoeff
+
 /-- Entrywise real-to-complex map for rectangular matrices.  This is the
     rectangular companion to the square complexification used in the real
     invariant-subspace development. -/
@@ -1320,6 +1406,57 @@ theorem H16_eq16_3_sylvesterVecCoeff_det_ne_zero_of_no_common_complex_right_eige
       (realMatrixToComplex B)) :
     Matrix.det (sylvesterVecCoeff m n A B) ≠ 0 :=
   sylvesterVecCoeff_det_ne_zero_of_no_common_complex_right_eigenvalue m n A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), reverse spectral
+    direction for the real vec/Kronecker coefficient: if the real coefficient
+    is nonsingular, then the entrywise complexifications of `A` and `B` have
+    no common supplied complex right eigenvalue. -/
+theorem no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hdet : Matrix.det (sylvesterVecCoeff m n A B) ≠ 0) :
+    NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B) := by
+  intro mu hcommon
+  rcases hcommon with ⟨hA, hB⟩
+  have hcomplexZero :
+      Matrix.det
+        (complexSylvesterVecCoeff (realMatrixToComplex A) (realMatrixToComplex B)) = 0 :=
+    complexSylvesterVecCoeff_singular_of_common_right_eigenvalue
+      (realMatrixToComplex A) (realMatrixToComplex B) mu hA hB
+  have hmap :
+      Matrix.det (realMatrixToComplex (sylvesterVecCoeff m n A B)) =
+        Complex.ofRealHom (Matrix.det (sylvesterVecCoeff m n A B)) := by
+    simpa [realMatrixToComplex] using
+      (RingHom.map_det Complex.ofRealHom (sylvesterVecCoeff m n A B)).symm
+  have hcomplexRealZero :
+      Complex.ofRealHom (Matrix.det (sylvesterVecCoeff m n A B)) = 0 := by
+    rw [← hmap, realMatrixToComplex_sylvesterVecCoeff m n A B]
+    exact hcomplexZero
+  have hrealZero : Matrix.det (sylvesterVecCoeff m n A B) = 0 := by
+    exact Complex.ofReal_eq_zero.mp (by simpa using hcomplexRealZero)
+  exact hdet hrealZero
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-facing iff:
+    the real vec/Kronecker Sylvester coefficient is nonsingular exactly when
+    the entrywise complexifications of `A` and `B` have no common supplied
+    complex right eigenvalue. -/
+theorem sylvesterVecCoeff_det_ne_zero_iff_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) :
+    Matrix.det (sylvesterVecCoeff m n A B) ≠ 0 ↔
+      NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+        (realMatrixToComplex B) := by
+  constructor
+  · exact no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero m n A B
+  · exact sylvesterVecCoeff_det_ne_zero_of_no_common_complex_right_eigenvalue m n A B
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias for
+    the determinant/eigenvalue-separation iff. -/
+theorem H16_eq16_3_sylvesterVecCoeff_det_ne_zero_iff_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) :
+    Matrix.det (sylvesterVecCoeff m n A B) ≠ 0 ↔
+      NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+        (realMatrixToComplex B) :=
+  sylvesterVecCoeff_det_ne_zero_iff_no_common_complex_right_eigenvalue m n A B
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), spectral-separation
     practical endpoint: if the entrywise complexifications of `A` and `B`
