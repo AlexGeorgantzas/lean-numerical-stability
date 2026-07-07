@@ -18,7 +18,7 @@
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| 14 | core | 100 | 76 | 54 | 44 | 68 | 65 | about 27 selected rows/classes | Conditional floating-point interfaces for Method 2/2C, Method D, and GJE second-stage accumulation; Hadamard/Hyman/problem rows still partly open | medium |
+| 14 | core | 100 | 78 | 56 | 46 | 70 | 67 | about 26 selected rows/classes | Conditional floating-point interfaces for Method 2/2C, Method D, and GJE second-stage accumulation; signed determinant parity, Hadamard/Hyman/problem rows still partly open | medium |
 
 ## Completed selected targets
 
@@ -34,9 +34,9 @@
 | (14.19) | `methodC_mixed_residual`, `methodC_forward_error` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Mixed-residual interface and forward-error consequence. | Mixed residual is assumed; forward consequence proved. |
 | (14.24) | `left_right_residual_comparison` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Exact comparison of left and right residuals through a left inverse. | Proved. |
 | Problem 14.3 | `higham14_problem14_3_right_over_left_residual_infNorm_le_kappa`, `higham14_problem14_3_left_over_right_residual_infNorm_le_kappa`, `higham14_problem14_3_max_residual_ratio_infNorm_le_kappa` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Infinity-norm residual-ratio bound by `kappaInf`; includes exact identities `AX-I = A(XA-I)A_inv` and `XA-I = A_inv(AX-I)A`. | New after the initial milestone; denominators are explicit positivity hypotheses. |
-| Problem 14.5 partial | `higham14_problem14_5_right_inverse_solve_residual_bound` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Right-approximate-inverse solve residual bound `|A fl(Xb)-b| <= gamma_(n+1) |A||X||b|`. | Partial closure; left-approximate-inverse residual and forward-error comparison remain open. |
+| Problem 14.5 residual bounds | `higham14_problem14_5_right_inverse_solve_residual_bound`, `higham14_problem14_5_left_inverse_solve_residual_bound` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Right-approximate-inverse bound `|A fl(Xb)-b| <= gamma_(n+1) |A||X||b|` and left-approximate-inverse bound `|A fl(Y(Ax))-Ax| <= gamma_(n+1) |A||Y||A||x|`. | Partial closure; forward-error comparison and interpretation remain open. |
 | Problem 14.7 | `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones`, `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Sum of all inverse entries is one when A has a row or column of ones. | New in this pass; proved. |
-| (14.34) partial | `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`, `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Determinant/product-of-pivots identity for exact no-pivot/unit-lower LU certificates. | Partial closure; GEPP row-interchange parity and `psi(A)` remain open. |
+| (14.34) partial | `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`, `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec`, `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_PermutedLUFactSpec` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Determinant/product-of-pivots identity for exact no-pivot/unit-lower LU certificates and absolute-value determinant product for row-permuted LU certificates. | Partial closure; signed row-interchange parity and `psi(A)` remain open. |
 | Problem 14.10 | `higham14_problem14_10_det_entry_perturb_eq`, `higham14_problem14_10_det_entry_independent_iff_adjugate_eq_zero` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Exact determinant entry-perturbation formula and iff condition for determinant independence from `a_ij`. | New after Problem 14.3; cofactor/adjugate condition is explicit. |
 | Theorem 14.5 composition | `gje_overall_residual`, `gje_overall_forward_error` | `LeanFpAnalysis/FP/Algorithms/GaussJordan.lean` | Composition from explicit GE and GJE second-stage hypotheses. | Partial source closure; printed constants still open. |
 
@@ -60,11 +60,13 @@
 | `higham14_problem14_3_max_residual_ratio_infNorm_le_kappa` | Closes the printed max residual-ratio inequality for `infNorm` under nonzero residual denominators. | Chapter 14 inventory/report. | implemented |
 | `higham14_unit_roundoff_add_gamma_le_gamma_succ` | Scalar gamma collapse `u + gamma_n <= gamma_(n+1)`. | Problem 14.5 residual bound. | implemented |
 | `higham14_problem14_5_right_inverse_solve_residual_bound` | Closes the right-approximate-inverse residual half of Problem 14.5. | Chapter 14 inventory/report. | implemented |
+| `higham14_problem14_5_left_inverse_solve_residual_bound` | Closes the left-approximate-inverse residual half of Problem 14.5 with `b = Ax`. | Chapter 14 inventory/report. | implemented |
 | `matrixEntryPerturb` | Source-facing additive perturbation of one matrix entry. | Problem 14.10. | implemented |
 | `higham14_problem14_10_det_entry_perturb_eq` | Exact determinant change formula `det(A+tE_ij)=det(A)+t*adj(A)_{ji}`. | Problem 14.10 independence iff. | implemented |
 | `higham14_problem14_10_det_entry_independent_iff_adjugate_eq_zero` | Closes the determinant-independence condition in cofactor/adjugate form. | Chapter 14 inventory/report. | implemented |
 | `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec` | Source-facing Chapter 14 wrapper around the existing unit-lower LU determinant product identity. | Equation (14.34) no-pivot core. | implemented |
 | `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec` | Absolute-value form of the exact no-pivot LU determinant product. | Equation (14.34) no-pivot core. | implemented |
+| `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_PermutedLUFactSpec` | Absolute-value determinant product for row-permuted LU certificates. | Equation (14.34) GEPP absolute-value product. | implemented |
 | `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones` | Closes the row-ones half of Problem 14.7. | Chapter 14 inventory/report. | implemented |
 | `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones` | Closes the column-ones half of Problem 14.7. | Chapter 14 inventory/report. | implemented |
 
@@ -119,9 +121,9 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 ## Hidden-hypothesis summary
 
 - The new Problem 14.3 max-ratio theorem assumes both residual denominators are positive. The two one-sided ratio lemmas require only the denominator used by that ratio. This makes the source's implicit nonzero-ratio side condition explicit.
-- The new Problem 14.5 theorem closes only the right-approximate-inverse residual bound. It assumes the source residual budget `|AX-I| <= u|A||X|` and uses the repository's concrete `fl_matVec` model; left-residual and forward-error conclusions remain open.
+- The new Problem 14.5 residual theorems close both source residual bounds. The right theorem assumes `|AX-I| <= u|A||X|`; the left theorem assumes `|YA-I| <= u|Y||A|` and the exact right-hand side `b = Ax`; both use the repository's concrete `fl_matVec` model, while the forward-error conclusions remain open.
 - The new Problem 14.10 theorem states the determinant-independence condition as `adj(A)_{ji}=0`. For a nonsingular matrix this is equivalent to the corresponding inverse-entry condition after multiplying by the nonzero determinant factor.
-- The new (14.34) theorem is deliberately the no-pivot/unit-lower LU core. It does not include the GEPP row-interchange parity factor and does not define the Hadamard determinant condition number `psi(A)`.
+- The new (14.34) determinant theorems include the no-pivot/unit-lower LU core and the row-permuted absolute-value product. They do not yet include a signed row-interchange parity formula and do not define the Hadamard determinant condition number `psi(A)`.
 - The new Problem 14.7 theorems assume the appropriate inverse side explicitly (`IsRightInverse` for a row of ones, `IsLeftInverse` for a column of ones); these are source/domain assumptions, not proof artifacts.
 - Existing Method 2, Method 2C, Method D, and GJE theorem surfaces still include hypotheses that are essentially the missing algorithmic analyses. They are recorded as conditional interfaces and do not close the source rows.
 - Existing `O(u^2)` source statements are not fully modeled unless a theorem explicitly exposes a first-order wrapper; the report does not count asymptotic endpoints as closed.
@@ -145,11 +147,13 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
   - focused `#print axioms` file for the two new Problem 14.7 theorems
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.3 residual-ratio theorems
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.5 right-residual theorem
+  - stdin focused `#check`/`#print axioms` run for the new Problem 14.5 left-residual theorem
   - stdin focused `#check`/`#print axioms` run for the new Problem 14.10 determinant-independence theorems
   - focused module build after the new (14.34) determinant wrappers
+  - focused `#check`/`#print axioms` run for the new pivoted absolute-value (14.34) wrapper
   - `lake env lean examples/LibraryLookup.lean`
-- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass before and after the upstream merge and after the Problem 14.3, Problem 14.5 right-residual, Problem 14.10, and (14.34) additions; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
-- New theorem axiom surface: the new Problem 14.3, Problem 14.5 right-residual, Problem 14.7, Problem 14.10, and (14.34) theorems use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`) when checked; the (14.34) wrappers inherit the existing LU determinant theorem.
+- Result: both touched Lean files compile after the label correction and Problem 14.7 addition; focused module builds pass before and after the upstream merge and after the Problem 14.3, Problem 14.5 residual, Problem 14.10, and (14.34) additions; `git diff --check` passes; stale-label and marker scans are clean; focused `#check` and axiom checks pass.
+- New theorem axiom surface: the new Problem 14.3, Problem 14.5 residual, Problem 14.7, Problem 14.10, and (14.34) theorems use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`) when checked; the (14.34) wrappers inherit existing determinant/permutation/LU determinant facts.
 - Known verification issue: the full `examples/LibraryLookup.lean` run aborts with a stack overflow / exit 134 after producing large lookup output. Focused lookups for the new declarations pass, so this is recorded as a full-example scale issue rather than a failed declaration lookup.
 - New versus pre-existing warnings: a new unused-simp warning appeared during initial Problem 14.7 proof and was removed.
 
