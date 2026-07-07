@@ -1571,6 +1571,67 @@ theorem theorem20_7_completedA_preservation_of_stored_panel_step_row_preservatio
   intro i k hk hik j
   exact hprefix k (Nat.le_of_lt hk) i hik j
 
+/-- Theorem 20.7 support: signed stored-QR stages preserve rows above the
+    active pivot when subtracting zero is an exact copy operation.
+
+The signed stage vector is zero above the pivot.  Therefore the compact
+Householder update subtracts an exactly rounded zero from every entry in such a
+row; completed columns are already copied by the stored-panel definition. -/
+theorem theorem20_7_signed_stage_stored_panel_row_preservation_of_subtractZeroExact_nat
+    {m n : ℕ} (hnm : n ≤ m) (fp : FPModel)
+    (Ahat : ℕ → Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp) :
+    ∀ k, k < n → ∀ i : Fin m, i.val < k → ∀ j : Fin n,
+      fl_householderStoredPanelStep fp m n k
+        (storedQRSignedStageVector hnm Ahat alpha k)
+        (storedQRSignedStageBeta hnm Ahat alpha k)
+        (Ahat k) i j =
+        Ahat k i j := by
+  intro k hk i hik j
+  have hvzero : storedQRSignedStageVector hnm Ahat alpha k i = 0 := by
+    unfold storedQRSignedStageVector
+    simp only [dif_pos hk]
+    exact
+      householderTrailingActiveVector_zero_prefix m
+        ⟨k, lt_of_lt_of_le hk hnm⟩
+        (fun a => Ahat k a ⟨k, hk⟩) (alpha k) i hik
+  by_cases hjlt : j.val < k
+  · simp [fl_householderStoredPanelStep, hjlt]
+  · have hraw :
+        fl_householderApplyCompactPanel fp m n
+            (storedQRSignedStageVector hnm Ahat alpha k)
+            (storedQRSignedStageBeta hnm Ahat alpha k)
+            (Ahat k) i j =
+          Ahat k i j := by
+      simpa [fl_householderApplyCompactPanel, fl_householderApplyCompact,
+        hvzero, H19.Theorem19_13.fl_mul_zero_right] using hcopy (Ahat k i j)
+    by_cases hjeq : j.val = k
+    · have hnotBelow : ¬ k < i.val := Nat.not_lt.mpr (Nat.le_of_lt hik)
+      simp [fl_householderStoredPanelStep, hjeq, hnotBelow, hraw]
+    · simp [fl_householderStoredPanelStep, hjlt, hjeq, hraw]
+
+/-- Theorem 20.7 support: sequence-level completed-row preservation for the
+    signed stored-QR panel under exact subtract-by-zero copying. -/
+theorem theorem20_7_completedA_preservation_of_signed_stage_subtractZeroExact_nat
+    {m n : ℕ} (hnm : n ≤ m) (fp : FPModel)
+    (Ahat : ℕ → Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hStep : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k)) :
+    ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+      Ahat k i j = Ahat (i.val + 1) i j := by
+  exact
+    theorem20_7_completedA_preservation_of_stored_panel_step_row_preservation_nat
+      fp (fun k => storedQRSignedStageVector hnm Ahat alpha k)
+      (fun k => storedQRSignedStageBeta hnm Ahat alpha k)
+      Ahat hStep
+      (theorem20_7_signed_stage_stored_panel_row_preservation_of_subtractZeroExact_nat
+        hnm fp Ahat alpha hcopy)
+
 /-- Theorem 20.7 support: split the staged row-growth obligations into
     completed rows `i < k` and active rows `k <= i`.
 
