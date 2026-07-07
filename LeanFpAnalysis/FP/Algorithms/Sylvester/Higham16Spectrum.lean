@@ -1251,6 +1251,54 @@ def HasComplexRightEigenvalue {ι : Type*} [Fintype ι]
   ∃ y : ι -> Complex,
     y ≠ 0 ∧ Matrix.mulVec A y = fun i => mu * y i
 
+/-- Finite complex block-triangular spectral lift: an eigenvalue of any
+    diagonal block of a block-triangular matrix is an eigenvalue of the full
+    matrix.  This is the determinant/charpoly route needed for interior
+    real-quasi-Schur `2 x 2` blocks, where zero-extending the block
+    eigenvector is not valid because of upper couplings from earlier blocks. -/
+theorem hasComplexRightEigenvalue_of_blockTriangular_toSquareBlock
+    {ι α : Type*} [Fintype ι] [DecidableEq ι] [LinearOrder α]
+    (M : Matrix ι ι Complex) (b : ι -> α) (a : α) (mu : Complex)
+    (hBT : M.BlockTriangular b)
+    (hblock : HasComplexRightEigenvalue (M.toSquareBlock b a) mu) :
+    HasComplexRightEigenvalue M mu := by
+  classical
+  rcases hblock with ⟨w, hwne, hw⟩
+  have ha_mem : a ∈ Finset.univ.image b := by
+    by_contra ha
+    apply hwne
+    funext i
+    exact False.elim (ha (Finset.mem_image.mpr ⟨i.1, Finset.mem_univ _, i.2⟩))
+  have hblock_char : (M.toSquareBlock b a).charpoly.eval mu = 0 := by
+    have hzero :
+        Matrix.mulVec
+            (Matrix.scalar {i // b i = a} mu - M.toSquareBlock b a) w = 0 := by
+      funext i
+      have hi := congrFun hw i
+      have hcoord : mu * w i - Matrix.mulVec (M.toSquareBlock b a) w i = 0 := by
+        rw [hi]
+        ring
+      simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hcoord
+    have hdet :
+        Matrix.det
+            (Matrix.scalar {i // b i = a} mu - M.toSquareBlock b a) = 0 :=
+      Matrix.exists_mulVec_eq_zero_iff.mp ⟨w, hwne, hzero⟩
+    simpa [Matrix.eval_charpoly] using hdet
+  have hchar : M.charpoly.eval mu = 0 := by
+    rw [hBT.charpoly]
+    rw [Polynomial.eval_prod]
+    exact Finset.prod_eq_zero ha_mem (by simpa using hblock_char)
+  have hdet :
+      Matrix.det (Matrix.scalar ι mu - M) = 0 := by
+    simpa [Matrix.eval_charpoly] using hchar
+  obtain ⟨y, hyne, hyzero⟩ := Matrix.exists_mulVec_eq_zero_iff.mpr hdet
+  refine ⟨y, hyne, ?_⟩
+  funext i
+  have hi := congrFun hyzero i
+  have hcoord : mu * y i - Matrix.mulVec M y i = 0 := by
+    simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hi
+  exact (sub_eq_zero.mp hcoord).symm
+
 /-- Source-facing no-common-complex-right-eigenvalue predicate for two complex
     matrices, matching Higham's spectral-separation condition for the exact
     Sylvester equation. -/
