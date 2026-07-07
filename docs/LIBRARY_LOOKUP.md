@@ -5311,6 +5311,12 @@ The safest way to classify a theorem is to inspect the statement. If a
 hypothesis already contains the algorithmic stability conclusion, the theorem is
 a transfer or packaging result rather than a complete local analysis.
 
+Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
+Problem 14.7:
+
+- `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones`
+- `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones`
+
 ## Search Recipes
 
 Inside the repository:
