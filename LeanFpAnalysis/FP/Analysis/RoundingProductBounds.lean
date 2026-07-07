@@ -163,6 +163,63 @@ theorem real_exp_sub_one_lt_div_one_sub_half_of_pos_of_lt_two {x : ℝ}
       norm_num
       ring
 
+/-- Higham Chapter 3, Lemma 3.1, all-positive-factor product radius.
+
+If `|delta_i| <= u` and `n*u < 1`, the relative perturbation in
+`prod_i (1 + delta_i)` is bounded by the usual `gamma_n = n*u/(1-n*u)`.
+This non-strict form is useful when a later chapter has already reduced a
+matrix perturbation estimate to scalar factors `1 + delta_i`. -/
+theorem prod_one_add_delta_abs_sub_one_le_gamma_radius (n : ℕ) {u : ℝ}
+    (hnpos : 0 < n) (hu0 : 0 ≤ u)
+    (hnu : (n : ℝ) * u < (1 : ℝ)) (delta : Fin n → ℝ)
+    (hdelta : ∀ i : Fin n, |delta i| ≤ u) :
+    |(∏ i : Fin n, (1 + delta i)) - 1| ≤
+      ((n : ℝ) * u) / (1 - (n : ℝ) * u) := by
+  by_cases hu_zero : u = 0
+  · have hdelta_zero : ∀ i : Fin n, delta i = 0 := by
+      intro i
+      have hle : |delta i| ≤ 0 := by
+        simpa [hu_zero] using hdelta i
+      exact abs_eq_zero.mp (le_antisymm hle (abs_nonneg _))
+    have hprod_one : (∏ i : Fin n, (1 + delta i)) = 1 := by
+      simp [hdelta_zero]
+    rw [hprod_one]
+    simp [hu_zero]
+  · set x : ℝ := (n : ℝ) * u
+    have hnposR : 0 < (n : ℝ) := by exact_mod_cast hnpos
+    have hu_pos : 0 < u := lt_of_le_of_ne hu0 (Ne.symm hu_zero)
+    have hxpos : 0 < x := by
+      exact mul_pos hnposR hu_pos
+    have hxlt1 : x < 1 := by
+      simpa [x] using hnu
+    have hn_one_le : (1 : ℝ) ≤ (n : ℝ) := by
+      exact_mod_cast (Nat.succ_le_iff.mpr hnpos)
+    have hu_le_x : u ≤ x := by
+      simpa [x, one_mul] using
+        mul_le_mul_of_nonneg_right hn_one_le hu0
+    have hu1 : u ≤ 1 := hu_le_x.trans (le_of_lt hxlt1)
+    have hprod_exp :
+        |(∏ i : Fin n, (1 + delta i)) - 1| ≤ Real.exp x - 1 := by
+      simpa [x] using
+        prod_one_add_delta_abs_sub_one_le_exp_sub_one n hu0 hu1 delta hdelta
+    have hexp_lt_half :
+        Real.exp x - 1 < x / (1 - x / 2) :=
+      real_exp_sub_one_lt_div_one_sub_half_of_pos_of_lt_two hxpos (by nlinarith)
+    have hden_half_pos : 0 < 1 - x / 2 := by nlinarith
+    have hden_pos : 0 < 1 - x := by nlinarith
+    have hden_le : 1 - x ≤ 1 - x / 2 := by nlinarith
+    have hinv_le : (1 - x / 2)⁻¹ ≤ (1 - x)⁻¹ :=
+      inv_anti₀ hden_pos hden_le
+    have hhalf_le : x / (1 - x / 2) ≤ x / (1 - x) := by
+      simpa [div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc] using
+        mul_le_mul_of_nonneg_left hinv_le (le_of_lt hxpos)
+    calc
+      |(∏ i : Fin n, (1 + delta i)) - 1| ≤ Real.exp x - 1 := hprod_exp
+      _ ≤ x / (1 - x / 2) := le_of_lt hexp_lt_half
+      _ ≤ x / (1 - x) := hhalf_le
+      _ = ((n : ℝ) * u) / (1 - (n : ℝ) * u) := by
+        simp [x]
+
 /-- Higham Chapter 3, Lemma 3.4, in scalar product form. -/
 theorem prod_one_add_delta_eq_one_add_eta_bound_101 (n : ℕ) {u : ℝ}
     (hnpos : 0 < n) (delta : Fin n → ℝ)
