@@ -703,6 +703,19 @@ lemma splitEquiv_isLeft_iff {d m n : ℕ} (hnm : d + m = n) (i : Fin n) :
     have hval : d + (b : ℕ) = (i : ℕ) := splitEquiv_inr_val hnm hsum
     omega
 
+/-- `splitEquiv` sends an index whose value is `< d` to the corresponding left
+    summand.  This is the pointwise form of the leading-block side of the
+    variable-`d` deflation split. -/
+lemma splitEquiv_eq_inl_of_lt {d m n : ℕ} (hnm : d + m = n)
+    (i : Fin n) (hi : (i : ℕ) < d) :
+    splitEquiv hnm i = Sum.inl ⟨(i : ℕ), hi⟩ := by
+  rcases hsum : splitEquiv hnm i with a | b
+  · have hval := splitEquiv_inl_val hnm hsum
+    have ha : a = ⟨(i : ℕ), hi⟩ := Fin.ext (by simpa using hval)
+    rw [ha]
+  · have hval : d + (b : ℕ) = (i : ℕ) := splitEquiv_inr_val hnm hsum
+    omega
+
 /-! ### Block conjugation by the re-embedded trailing orthogonal matrix -/
 
 /-- Conjugating a block matrix `[[P, Bu], [0, D]]` (zero lower-left) by the block
@@ -718,6 +731,15 @@ lemma conj_embedBlock_eq {d m : ℕ} (P : Matrix (Fin d) (Fin d) ℝ)
   rw [Matrix.fromBlocks_transpose]
   rw [Matrix.fromBlocks_multiply, Matrix.fromBlocks_multiply]
   simp
+
+/-- Re-embedding a trailing orthogonal factor does not change entries whose row
+    and column are both in the leading block. -/
+lemma embedBlock_conj_apply_inl_inl {d m : ℕ}
+    (M : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ) (a b : Fin d) :
+    ((embedBlock (d := d) U)ᵀ * M * embedBlock (d := d) U) (Sum.inl a) (Sum.inl b) =
+      M (Sum.inl a) (Sum.inl b) := by
+  simp [embedBlock, Matrix.fromBlocks, Matrix.mul_apply, Matrix.one_apply]
 
 /-! ### The variable-`d` orthogonal deflation induction (Higham (16.4)) -/
 
