@@ -470,6 +470,9 @@
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table_of_det_ne_zero,
+    higham13_algorithm13_3_matrix_infNorm_initial_diag_bound_of_diagBound_nonpos,
+    higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos,
+    higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pos_dim,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table_of_pivot_right_inverse,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_initial_diag_right_inverse_of_pivot_right_inverse,
@@ -14776,6 +14779,88 @@ theorem higham13_algorithm13_3_matrix_infNorm_initial_diag_bound_of_diag_right_i
       hLower_eq.symm
     _ ≤ ‖matrixMulVecCLM (A j j)‖ := hLower_le_norm
     _ = infNorm (A j j) := matrixMulVecCLM_norm_eq_infNorm (A j j)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7:
+    nonpositive BDD lower-bound data supplies the initial diagonal comparison
+    for the matrix-`∞` active-stage route.
+
+    This is the simple scalar side of the BDD source-table bridge:
+    `invDiagBound j <= 0` and nonnegativity of the matrix `∞` norm imply
+    `invDiagBound j <= ‖A_jj‖∞`. -/
+theorem higham13_algorithm13_3_matrix_infNorm_initial_diag_bound_of_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0) :
+    ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j) := by
+  intro j
+  exact le_trans (hBound j) (infNorm_nonneg (A j j))
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 and equation (13.18):
+    all-leading-prefix BDD nonsingularity supplies the initial matrix-`∞`
+    lower table through the canonical diagonal `nonsingInv` table.
+
+    The generic matrix-`∞` source-table route asks for diagonal right inverses
+    and reciprocal lower bounds.  Under the BDD all-prefix hypotheses the
+    right inverses are the canonical `nonsingInv` blocks, while
+    `invDiagBound j <= 0` supplies the reciprocal lower bound because
+    `0 <= ‖nonsingInv(A_jj)‖∞⁻¹`. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (hunit : ({x : Fin r → ℝ | ‖x‖ = 1} : Set (Fin r → ℝ)).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol m
+      (fun i j => ‖(A i j : Fin r → Fin r → ℝ)‖) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0) :
+    ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (matrixMulVecCLM
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+          hunit := by
+  let diagInv : Fin m → Matrix (Fin r) (Fin r) ℝ :=
+    fun j => nonsingInv r (A j j)
+  have hInvBound : ∀ j : Fin m, invDiagBound j ≤ (infNorm (diagInv j))⁻¹ := by
+    intro j
+    exact le_trans (hBound j)
+      (inv_nonneg.mpr (infNorm_nonneg (diagInv j)))
+  have hDiagRight : ∀ j : Fin m, IsRightInverse r (A j j) (diagInv j) := by
+    intro j
+    exact
+      higham13_diag_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+        A invDiagBound hPrefix hDom hBound j
+  exact
+    higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_diag_right_inverse
+      hunit invDiagBound A pivotInv diagInv hInvBound hDiagRight
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 and equation (13.18):
+    positive block size discharges the unit-sphere witness in the BDD initial
+    matrix-`∞` lower-table bridge. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pos_dim
+    {m r : ℕ} (hr : 0 < r)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol m
+      (fun i j => ‖(A i j : Fin r → Fin r → ℝ)‖) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0) :
+    ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (matrixMulVecCLM
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+          (higham13_fin_fun_unit_sphere_nonempty hr) :=
+  higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    (higham13_fin_fun_unit_sphere_nonempty hr) invDiagBound A pivotInv
+    hPrefix hDom hBound
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
     matrix-`∞` CLM diagonal-lower certificate from initial diagonal inverse
