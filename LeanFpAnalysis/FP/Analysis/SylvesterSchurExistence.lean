@@ -213,6 +213,59 @@ def complexShiftedCoeff {m : ℕ}
     (R : Matrix (Fin m) (Fin m) ℂ) (s : ℂ) : Matrix (Fin m) (Fin m) ℂ :=
   R - s • (1 : Matrix (Fin m) (Fin m) ℂ)
 
+/-- A finite upper-triangular complex matrix with nonzero diagonal has nonzero
+    determinant.  This is the complex analogue of the repository's real
+    triangular determinant bridge, using the same below-diagonal convention. -/
+theorem complex_det_ne_zero_of_upperTriangular_diag_ne_zero {m : ℕ}
+    (T : Matrix (Fin m) (Fin m) ℂ)
+    (hupper : IsUpperTriangularC T)
+    (hdiag : ∀ i : Fin m, T i i ≠ 0) :
+    T.det ≠ 0 := by
+  classical
+  have htri : Matrix.BlockTriangular (M := T) id := by
+    intro i j hij
+    exact hupper i j (by simpa using hij)
+  rw [Matrix.det_of_upperTriangular htri]
+  exact Finset.prod_ne_zero_iff.mpr (fun i _ => hdiag i)
+
+/-- Shifting an upper-triangular complex matrix by a scalar multiple of the
+    identity preserves upper triangularity. -/
+theorem complexShiftedCoeff_upperTriangular {m : ℕ}
+    (R : Matrix (Fin m) (Fin m) ℂ) (s : ℂ)
+    (hR : IsUpperTriangularC R) :
+    IsUpperTriangularC (complexShiftedCoeff R s) := by
+  intro i j hji
+  have hij : i ≠ j := ne_of_gt hji
+  simp [complexShiftedCoeff, Matrix.sub_apply, hR i j hji, hij]
+
+/-- For an upper-triangular complex Schur factor, pairwise separation between a
+    scalar `s` and the diagonal entries gives nonsingularity of the shifted
+    column coefficient `R - s I`. -/
+theorem complexShiftedCoeff_det_ne_zero_of_upperTriangular_diag_ne
+    {m : ℕ}
+    (R : Matrix (Fin m) (Fin m) ℂ) (s : ℂ)
+    (hR : IsUpperTriangularC R)
+    (hgap : ∀ i : Fin m, R i i ≠ s) :
+    (complexShiftedCoeff R s).det ≠ 0 := by
+  apply complex_det_ne_zero_of_upperTriangular_diag_ne_zero
+  · exact complexShiftedCoeff_upperTriangular R s hR
+  · intro i
+    have hdiag : R i i - s ≠ 0 := sub_ne_zero.mpr (hgap i)
+    simpa [complexShiftedCoeff] using hdiag
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), complex Schur diagonal
+    separation supplies the per-column shifted determinant hypotheses for the
+    triangular Bartels-Stewart solve. -/
+theorem complexSylvester_shift_det_ne_zero_of_schur_diagonal_separation
+    {m n : ℕ}
+    (R : Matrix (Fin m) (Fin m) ℂ) (S : Matrix (Fin n) (Fin n) ℂ)
+    (hR : IsUpperTriangularC R)
+    (hsep : ∀ i : Fin m, ∀ k : Fin n, R i i ≠ S k k) :
+    ∀ k : Fin n, (complexShiftedCoeff R (S k k)).det ≠ 0 := by
+  intro k
+  exact complexShiftedCoeff_det_ne_zero_of_upperTriangular_diag_ne
+    R (S k k) hR (fun i => hsep i k)
+
 /-- Entrywise column identity: for upper-triangular `S`, applying the shifted
     coefficient to column `k` of `Y` reproduces the `k`-th column of the
     Sylvester operator `R Y - Y S` plus a sum over strictly earlier columns.
@@ -543,6 +596,29 @@ theorem complexSylvester_exists_unique_of_schur_factors {m n : ℕ}
       (isComplexSylvesterSolution_conj_iff A B U V R S C W hU hV hR hS).mp hXsol
     have hWY : W = Y := hYuniq W hWsol
     rw [← hXexpand, hWY]
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.6), complex Schur
+    factors with explicit diagonal separation: if the Schur diagonals of `R`
+    and `S` are pairwise distinct, then the complex Sylvester equation has a
+    unique exact solution.  This packages the source-level eigenvalue
+    separation condition into the shifted determinant hypotheses used by the
+    column recurrence. -/
+theorem complexSylvester_exists_unique_of_schur_diagonal_separation {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (U : Matrix (Fin m) (Fin m) ℂ) (V : Matrix (Fin n) (Fin n) ℂ)
+    (R : Matrix (Fin m) (Fin m) ℂ) (S : Matrix (Fin n) (Fin n) ℂ)
+    (C : Matrix (Fin m) (Fin n) ℂ)
+    (hU : U ∈ Matrix.unitaryGroup (Fin m) ℂ)
+    (hV : V ∈ Matrix.unitaryGroup (Fin n) ℂ)
+    (hA : Uᴴ * A * U = R) (hB : Vᴴ * B * V = S)
+    (hRtri : IsUpperTriangularC R)
+    (hStri : IsUpperTriangularC S)
+    (hsep : ∀ i : Fin m, ∀ k : Fin n, R i i ≠ S k k) :
+    ∃! X : Matrix (Fin m) (Fin n) ℂ, IsComplexSylvesterSolution A B C X := by
+  exact complexSylvester_exists_unique_of_schur_factors A B U V R S C
+    hU hV hA hB hStri
+    (complexSylvester_shift_det_ne_zero_of_schur_diagonal_separation
+      R S hRtri hsep)
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.6), complex path,
     HEADLINE unconditional-existence form.  For ANY complex square matrices
