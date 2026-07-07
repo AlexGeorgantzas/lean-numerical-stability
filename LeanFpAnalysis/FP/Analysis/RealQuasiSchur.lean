@@ -1319,6 +1319,251 @@ theorem exists_orthogonal_conj_quasiUpperTriangular :
             simp only [hq, hei, hej, Sum.elim_inr] at hlt
             omega
 
+open RealInvariantSubspaceAux in
+/-- Strengthened real quasi-Schur construction carrying spectral certificates
+    for every adjacent `2 x 2` block produced by the recursive block map. -/
+theorem exists_orthogonal_conj_quasiUpperTriangular_twoBlockSpectral :
+    ∀ (n : ℕ) (A : Matrix (Fin n) (Fin n) ℝ),
+      ∃ Q : Matrix (Fin n) (Fin n) ℝ, Q ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+        ∃ pmap : Fin n → ℕ,
+          Monotone pmap ∧
+          (∀ c : ℕ, (Finset.univ.filter (fun i => pmap i = c)).card ≤ 2) ∧
+          (∀ i j : Fin n, pmap j < pmap i → (Qᵀ * A * Q) i j = 0) ∧
+          HasRealQuasiSchurTwoBlockSpectral (Qᵀ * A * Q) pmap := by
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    intro A
+    rcases Nat.eq_zero_or_pos n with hn0 | hnpos
+    · subst hn0
+      refine ⟨1, Submonoid.one_mem _, ?_⟩
+      refine ⟨fun _ => 0, monotone_const, ?_, ?_, ?_⟩
+      · intro c; simp
+      · intro i; exact absurd i.2 (Nat.not_lt_zero _)
+      · intro p _q _hadj _hsame
+        exact Fin.elim0 p
+    · obtain ⟨W, hWbranch, hWinv⟩ :=
+        exists_invariant_subspace_dim_one_or_two_frame_twoBlock_spectral hnpos A
+      obtain ⟨d, hd, hdle, Q, hQorth, hQspan, hlead⟩ :
+          ∃ d : ℕ, finrank ℝ W = d ∧ (d = 1 ∨ d = 2) ∧
+            ∃ Q : Matrix (Fin n) (Fin n) ℝ,
+              Q ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+              Submodule.span ℝ
+                (Set.range
+                  (fun c : {c : Fin n // (c : ℕ) < d} => (fun k => Q k c.1))) = W ∧
+              (d = 2 →
+                ∃ p q : Fin n, (p : ℕ) = 0 ∧ (q : ℕ) = 1 ∧
+                  LeanFpAnalysis.FP.MatrixNoRealEigenline
+                    (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q)) := by
+        rcases hWbranch with h1 | h2data
+        · obtain ⟨Q, hQorth, _hQmem, hQspan⟩ := exists_orthogonal_frame W 1 h1
+          refine ⟨1, h1, Or.inl rfl, Q, hQorth, hQspan, ?_⟩
+          intro h12
+          omega
+        · obtain ⟨Q, p, q, h2, hQorth, hp, hq, hQspan, hno, _hdisc⟩ := h2data
+          refine ⟨2, h2, Or.inr rfl, Q, hQorth, hQspan, ?_⟩
+          intro _h22
+          exact ⟨p, q, hp, hq, hno⟩
+      have hdpos : 0 < d := by rcases hdle with h | h <;> omega
+      have hdcard : d ≤ 2 := by rcases hdle with h | h <;> omega
+      set m : ℕ := n - d with hm
+      have hdn : d ≤ n := by
+        have hle : finrank ℝ W ≤ finrank ℝ (Fin n → ℝ) := Submodule.finrank_le W
+        rw [hd] at hle
+        simpa using hle
+      have hnm : d + m = n := by omega
+      have hmlt : m < n := by omega
+      have hinv : ∀ j : Fin n, (j : ℕ) < d →
+          (A *ᵥ (fun k => Q k j)) ∈
+            Submodule.span ℝ
+              (Set.range (fun c : {c : Fin n // (c : ℕ) < d} => (fun k => Q k c.1))) := by
+        intro j hj
+        have hcolmem : (fun k => Q k j) ∈ W := by
+          rw [← hQspan]
+          exact Submodule.subset_span (Set.mem_range.mpr ⟨⟨j, hj⟩, rfl⟩)
+        have hmap := hWinv (fun k => Q k j) hcolmem
+        rw [hQspan]
+        simpa [Matrix.mulVecLin_apply] using hmap
+      have hMzero : ∀ i j : Fin n, d ≤ (i : ℕ) → (j : ℕ) < d →
+          (Qᵀ * A * Q) i j = 0 :=
+        fun i j hi hj => deflation_lower_left_zero A Q hQorth d hinv i j hi hj
+      set e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm with he
+      set M : Matrix (Fin n) (Fin n) ℝ := Qᵀ * A * Q with hMdef
+      set M' : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Matrix.reindex e e M with hM'
+      have hM'zero : M'.toBlocks₂₁ = 0 := by
+        ext a b
+        simp only [Matrix.toBlocks₂₁, hM', Matrix.reindex_apply, Matrix.submatrix_apply,
+          Matrix.of_apply, Matrix.zero_apply]
+        apply hMzero
+        · have hsum : splitEquiv hnm (e.symm (Sum.inr a)) = Sum.inr a := by
+            rw [← he]; exact e.apply_symm_apply _
+          have hval := splitEquiv_inr_val hnm hsum
+          omega
+        · have hsum : splitEquiv hnm (e.symm (Sum.inl b)) = Sum.inl b := by
+            rw [← he]; exact e.apply_symm_apply _
+          have hval := splitEquiv_inl_val hnm hsum
+          have hb := b.2
+          omega
+      have hM'block : M' = Matrix.fromBlocks M'.toBlocks₁₁ M'.toBlocks₁₂ 0 M'.toBlocks₂₂ := by
+        conv_lhs => rw [← Matrix.fromBlocks_toBlocks M']
+        rw [hM'zero]
+      obtain ⟨U', hU'orth, p', hp'mono, hp'card, hp'zero, hp'spectral⟩ :=
+        ih m hmlt M'.toBlocks₂₂
+      set Q' : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Matrix.reindex e e Q with hQ'
+      set A' : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Matrix.reindex e e A with hA'
+      set V : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Q' * embedBlock U' with hV
+      set Qfull : Matrix (Fin n) (Fin n) ℝ := Matrix.reindex e.symm e.symm V with hQfull
+      have hQfullorth : Qfull ∈ Matrix.orthogonalGroup (Fin n) ℝ := by
+        rw [hQfull]
+        apply reindex_mem_orthogonal
+        rw [hV]
+        exact Submonoid.mul_mem _ (reindex_mem_orthogonal e hQorth)
+          (embedBlock_mem_orthogonal hU'orth)
+      set X : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ :=
+        (embedBlock U')ᵀ * M' * embedBlock U' with hX
+      have hconj : Qfullᵀ * A * Qfull = Matrix.reindex e.symm e.symm X := by
+        have hM'conj : M' = Q'ᵀ * A' * Q' := by
+          rw [hM', hMdef, hQ', hA', reindex_conj]
+        have hXeq : X = Vᵀ * A' * V := by
+          rw [hX, hM'conj, hV]
+          rw [Matrix.transpose_mul]
+          simp only [mul_assoc]
+        rw [hXeq, reindex_conj, ← hQfull, hA', reindex_symm_reindex]
+      have hXblock : X = Matrix.fromBlocks M'.toBlocks₁₁ (M'.toBlocks₁₂ * U') 0
+          (U'ᵀ * M'.toBlocks₂₂ * U') := by
+        rw [hX]
+        conv_lhs => rw [hM'block]
+        rw [conj_embedBlock_eq]
+      have hRentry : ∀ i j : Fin n, (Matrix.reindex e.symm e.symm X) i j = X (e i) (e j) := by
+        intro i j
+        simp [Matrix.reindex_apply, Matrix.submatrix_apply]
+      set q : Fin d ⊕ Fin m → ℕ := Sum.elim (fun _ => 0) (fun a => p' a + 1) with hq
+      refine ⟨Qfull, hQfullorth, ?_⟩
+      refine ⟨fun i => q (e i), ?_, ?_, ?_, ?_⟩
+      · intro i i' hii'
+        rcases hei : e i with a | a
+        · simp [hq, hei]
+        · have heisp : splitEquiv hnm i = Sum.inr a := by rw [← he]; exact hei
+          have hia : d + (a : ℕ) = (i : ℕ) := splitEquiv_inr_val hnm heisp
+          rcases hei' : e i' with a' | a'
+          · have hei'sp : splitEquiv hnm i' = Sum.inl a' := by rw [← he]; exact hei'
+            have hia' : (a' : ℕ) = (i' : ℕ) := splitEquiv_inl_val hnm hei'sp
+            have ha'2 := a'.2
+            have hii'val : (i : ℕ) ≤ (i' : ℕ) := hii'
+            omega
+          · have hei'sp : splitEquiv hnm i' = Sum.inr a' := by rw [← he]; exact hei'
+            have hia' : d + (a' : ℕ) = (i' : ℕ) := splitEquiv_inr_val hnm hei'sp
+            have haa' : (a : ℕ) ≤ (a' : ℕ) := by
+              have hii'val : (i : ℕ) ≤ (i' : ℕ) := hii'
+              omega
+            simp only [hq, hei, hei', Sum.elim_inr]
+            have := hp'mono (show a ≤ a' from haa')
+            omega
+      · intro c
+        have hcardeq : (Finset.univ.filter (fun i : Fin n => q (e i) = c)).card
+            = (Finset.univ.filter (fun x : Fin d ⊕ Fin m => q x = c)).card := by
+          rw [← Fintype.card_subtype, ← Fintype.card_subtype]
+          exact Fintype.card_congr (Equiv.subtypeEquiv e (fun a => Iff.rfl))
+        rw [hcardeq, ← Fintype.card_subtype]
+        rw [Fintype.card_congr (Equiv.subtypeSum (p := fun x : Fin d ⊕ Fin m => q x = c))]
+        rw [Fintype.card_sum]
+        by_cases hc0 : c = 0
+        · subst hc0
+          have hleft : Fintype.card {a : Fin d // q (Sum.inl a) = 0} = d := by
+            simp only [hq, Sum.elim_inl]
+            simp [Fintype.card_subtype]
+          have hright : Fintype.card {b : Fin m // q (Sum.inr b) = 0} = 0 := by
+            simp only [hq, Sum.elim_inr]
+            rw [Fintype.card_subtype]
+            simp only [Nat.succ_ne_zero, Finset.filter_false, Finset.card_empty]
+          rw [hleft, hright]
+          omega
+        · have hleft : Fintype.card {a : Fin d // q (Sum.inl a) = c} = 0 := by
+            simp only [hq, Sum.elim_inl]
+            rw [Fintype.card_subtype]
+            simp only [Finset.card_eq_zero]
+            rw [Finset.filter_eq_empty_iff]
+            intro a _
+            exact fun h => hc0 h.symm
+          have hright : Fintype.card {b : Fin m // q (Sum.inr b) = c} ≤ 2 := by
+            simp only [hq, Sum.elim_inr]
+            rw [Fintype.card_subtype]
+            have hce : ∀ b : Fin m, (p' b + 1 = c) ↔ (p' b = c - 1) := by
+              intro b
+              omega
+            simp only [hce]
+            rw [← Fintype.card_subtype, Fintype.card_subtype]
+            exact hp'card (c - 1)
+          rw [hleft]
+          omega
+      · intro i j hlt
+        rw [hconj, hRentry, hXblock]
+        rcases hei : e i with a | a
+        · exfalso
+          simp only [hq, hei, Sum.elim_inl] at hlt
+          exact Nat.not_lt_zero _ hlt
+        · rcases hej : e j with b | b
+          · simp [Matrix.fromBlocks]
+          · simp only [Matrix.fromBlocks_apply₂₂]
+            apply hp'zero
+            simp only [hq, hei, hej, Sum.elim_inr] at hlt
+            omega
+      · intro i j hadj hsame
+        rcases hei : e i with a | a
+        · rcases hej : e j with b | b
+          · have heisp : splitEquiv hnm i = Sum.inl a := by rw [← he]; exact hei
+            have hejsp : splitEquiv hnm j = Sum.inl b := by rw [← he]; exact hej
+            have hia : (a : ℕ) = (i : ℕ) := splitEquiv_inl_val hnm heisp
+            have hjb : (b : ℕ) = (j : ℕ) := splitEquiv_inl_val hnm hejsp
+            rcases hdle with hd1 | hd2
+            · subst hd1
+              have ha := a.2
+              have hb := b.2
+              omega
+            · subst hd2
+              obtain ⟨p0, q0, hp0, hq0, hno0⟩ := hlead rfl
+              have hi0 : (i : ℕ) = 0 := by omega
+              have hj1 : (j : ℕ) = 1 := by omega
+              have hip0 : i = p0 := Fin.ext (by omega)
+              have hjq0 : j = q0 := Fin.ext (by omega)
+              have hnoij :
+                  LeanFpAnalysis.FP.MatrixNoRealEigenline
+                    (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) i j) := by
+                simpa [hip0, hjq0] using hno0
+              simpa [hQfull, hV, hQ', e] using
+                leading_twoBlock_spectral_preserved_after_trailing_conj
+                  hnm A Q U' hi0 hj1 hnoij
+          · exfalso
+            simp only [hq, hei, hej, Sum.elim_inl, Sum.elim_inr] at hsame
+            omega
+        · rcases hej : e j with b | b
+          · have heisp : splitEquiv hnm i = Sum.inr a := by rw [← he]; exact hei
+            have hejsp : splitEquiv hnm j = Sum.inl b := by rw [← he]; exact hej
+            have hia : d + (a : ℕ) = (i : ℕ) := splitEquiv_inr_val hnm heisp
+            have hjb : (b : ℕ) = (j : ℕ) := splitEquiv_inl_val hnm hejsp
+            have hb := b.2
+            omega
+          · have heisp : splitEquiv hnm i = Sum.inr a := by rw [← he]; exact hei
+            have hejsp : splitEquiv hnm j = Sum.inr b := by rw [← he]; exact hej
+            have hia : d + (a : ℕ) = (i : ℕ) := splitEquiv_inr_val hnm heisp
+            have hjb : d + (b : ℕ) = (j : ℕ) := splitEquiv_inr_val hnm hejsp
+            have hab : (b : ℕ) = (a : ℕ) + 1 := by omega
+            have hsame' : p' a = p' b := by
+              simp only [hq, hei, hej, Sum.elim_inr] at hsame
+              omega
+            have htrail :
+                LeanFpAnalysis.FP.MatrixNoRealEigenline
+                    (LeanFpAnalysis.FP.principalTwoBlock
+                      (U'ᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U') a b) ∧
+                  ((U'ᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U') a a -
+                      (U'ᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U') b b) ^ 2 +
+                    4 * (U'ᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U') a b *
+                      (U'ᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U') b a < 0 := by
+              simpa [hM', hMdef] using hp'spectral a b hab hsame'
+            simpa [hQfull, hV, hQ', e] using
+              trailing_twoBlock_spectral_preserved_after_trailing_conj
+                hnm A Q U' hia.symm hjb.symm htrail.1
+
 end RealQuasiSchurAux
 
 /-! ### The main theorems (Higham §16.2 (16.4)) -/
