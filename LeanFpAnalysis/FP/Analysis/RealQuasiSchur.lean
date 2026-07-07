@@ -294,6 +294,140 @@ lemma exists_orthogonal_frame (W : Submodule ℝ (Fin n → ℝ)) (d : ℕ)
     rw [LinearMap.range_eq_top_of_surjective _ (euclEquiv n).surjective]
     exact le_top
 
+lemma eq_zero_of_mem_span_pair_orthogonal_cols_dot_eq_zero
+    {Q : Matrix (Fin n) (Fin n) ℝ} {p q : Fin n}
+    (hQ : Q ∈ Matrix.orthogonalGroup (Fin n) ℝ) (hpq : p ≠ q)
+    {v : Fin n → ℝ}
+    (hv : v ∈
+      Submodule.span ℝ
+        ({(fun k : Fin n => Q k p), (fun k : Fin n => Q k q)}
+          : Set (Fin n → ℝ)))
+    (hp : (fun k : Fin n => Q k p) ⬝ᵥ v = 0)
+    (hq : (fun k : Fin n => Q k q) ⬝ᵥ v = 0) :
+    v = 0 := by
+  rcases (Submodule.mem_span_pair.mp hv) with ⟨a, b, hrepr⟩
+  have ha : a = 0 := by
+    have hdot :=
+      congrArg (fun z : Fin n → ℝ => (fun k : Fin n => Q k p) ⬝ᵥ z) hrepr
+    change (fun k : Fin n => Q k p) ⬝ᵥ
+        ((a • fun k : Fin n => Q k p) + b • fun k : Fin n => Q k q) =
+      (fun k : Fin n => Q k p) ⬝ᵥ v at hdot
+    rw [hp] at hdot
+    simpa [dotProduct_add, dotProduct_smul, orthogonal_col_dotProduct hQ, hpq,
+      Ne.symm hpq] using hdot
+  have hb : b = 0 := by
+    have hdot :=
+      congrArg (fun z : Fin n → ℝ => (fun k : Fin n => Q k q) ⬝ᵥ z) hrepr
+    change (fun k : Fin n => Q k q) ⬝ᵥ
+        ((a • fun k : Fin n => Q k p) + b • fun k : Fin n => Q k q) =
+      (fun k : Fin n => Q k q) ⬝ᵥ v at hdot
+    rw [hq] at hdot
+    simpa [dotProduct_add, dotProduct_smul, orthogonal_col_dotProduct hQ, hpq,
+      Ne.symm hpq] using hdot
+  rw [← hrepr, ha, hb]
+  simp
+
+/-- If two orthogonal columns span an invariant plane with no real eigenline for
+    `A`, then the corresponding principal `2 x 2` block of `Qᵀ * A * Q` has no
+    real eigenline. This is the source-side bridge that lets the quasi-Schur
+    deflation carry irreducibility data from an invariant plane to the explicit
+    diagonal block seen by Higham (16.4). -/
+lemma matrixNoRealEigenline_principalTwoBlock_of_invariant_noRealEigenline_columnSpan
+    (A Q : Matrix (Fin n) (Fin n) ℝ) {p q : Fin n}
+    (hQ : Q ∈ Matrix.orthogonalGroup (Fin n) ℝ) (hpq : p ≠ q)
+    (W : Submodule ℝ (Fin n → ℝ))
+    (hWspan :
+      Submodule.span ℝ
+        ({(fun k : Fin n => Q k p), (fun k : Fin n => Q k q)}
+          : Set (Fin n → ℝ)) = W)
+    (hWinv : ∀ w ∈ W, A.mulVecLin w ∈ W)
+    (hWno :
+      ∀ w ∈ W, w ≠ 0 →
+        ¬ ∃ nu : ℝ, A *ᵥ w = nu • w) :
+    LeanFpAnalysis.FP.MatrixNoRealEigenline
+      (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q) := by
+  intro x hx hEig
+  rcases hEig with ⟨nu, hnu⟩
+  let cp : Fin n → ℝ := fun k => Q k p
+  let cq : Fin n → ℝ := fun k => Q k q
+  let w : Fin n → ℝ := x 0 • cp + x 1 • cq
+  have hWspan' : Submodule.span ℝ ({cp, cq} : Set (Fin n → ℝ)) = W := by
+    simpa [cp, cq] using hWspan
+  have hw_span : w ∈ Submodule.span ℝ ({cp, cq} : Set (Fin n → ℝ)) := by
+    rw [Submodule.mem_span_pair]
+    exact ⟨x 0, x 1, rfl⟩
+  have hwW : w ∈ W := by
+    rw [← hWspan']
+    exact hw_span
+  have hdotp_w : cp ⬝ᵥ w = x 0 := by
+    simp [w, cp, cq, dotProduct_add, dotProduct_smul, orthogonal_col_dotProduct hQ, hpq]
+  have hdotq_w : cq ⬝ᵥ w = x 1 := by
+    simp [w, cp, cq, dotProduct_add, dotProduct_smul, orthogonal_col_dotProduct hQ,
+      Ne.symm hpq]
+  have hwne : w ≠ 0 := by
+    intro hzero
+    have hx0 : x 0 = 0 := by
+      have hdot := hdotp_w
+      rw [hzero, dotProduct_zero] at hdot
+      exact hdot.symm
+    have hx1 : x 1 = 0 := by
+      have hdot := hdotq_w
+      rw [hzero, dotProduct_zero] at hdot
+      exact hdot.symm
+    apply hx
+    funext k
+    fin_cases k <;> simp [hx0, hx1]
+  have hrow0 :
+      (Qᵀ * A * Q) p p * x 0 + (Qᵀ * A * Q) p q * x 1 = nu * x 0 := by
+    have hcoord := congrFun hnu (0 : Fin 2)
+    simpa [Matrix.mulVec, dotProduct, Fin.sum_univ_two, principalTwoBlock] using hcoord
+  have hrow1 :
+      (Qᵀ * A * Q) q p * x 0 + (Qᵀ * A * Q) q q * x 1 = nu * x 1 := by
+    have hcoord := congrFun hnu (1 : Fin 2)
+    simpa [Matrix.mulVec, dotProduct, Fin.sum_univ_two, principalTwoBlock] using hcoord
+  have hAw_dotp : cp ⬝ᵥ (A *ᵥ w) = nu * x 0 := by
+    calc
+      cp ⬝ᵥ (A *ᵥ w)
+          = x 0 * (cp ⬝ᵥ (A *ᵥ cp)) + x 1 * (cp ⬝ᵥ (A *ᵥ cq)) := by
+            simp [w, Matrix.mulVec_add, Matrix.mulVec_smul, dotProduct_add,
+              dotProduct_smul]
+      _ = (Qᵀ * A * Q) p p * x 0 + (Qᵀ * A * Q) p q * x 1 := by
+            rw [← conj_entry_eq_dotProduct A Q p p, ← conj_entry_eq_dotProduct A Q p q]
+            ring
+      _ = nu * x 0 := hrow0
+  have hAw_dotq : cq ⬝ᵥ (A *ᵥ w) = nu * x 1 := by
+    calc
+      cq ⬝ᵥ (A *ᵥ w)
+          = x 0 * (cq ⬝ᵥ (A *ᵥ cp)) + x 1 * (cq ⬝ᵥ (A *ᵥ cq)) := by
+            simp [w, Matrix.mulVec_add, Matrix.mulVec_smul, dotProduct_add,
+              dotProduct_smul]
+      _ = (Qᵀ * A * Q) q p * x 0 + (Qᵀ * A * Q) q q * x 1 := by
+            rw [← conj_entry_eq_dotProduct A Q q p, ← conj_entry_eq_dotProduct A Q q q]
+            ring
+      _ = nu * x 1 := hrow1
+  have hresW : A *ᵥ w - nu • w ∈ W := by
+    have hAwW : A *ᵥ w ∈ W := by
+      simpa [Matrix.mulVecLin_apply] using hWinv w hwW
+    exact W.sub_mem hAwW (W.smul_mem nu hwW)
+  have hres_span :
+      A *ᵥ w - nu • w ∈ Submodule.span ℝ ({cp, cq} : Set (Fin n → ℝ)) := by
+    rw [hWspan']
+    exact hresW
+  have hres_dotp : cp ⬝ᵥ (A *ᵥ w - nu • w) = 0 := by
+    rw [dotProduct_sub, dotProduct_smul, hAw_dotp, hdotp_w]
+    rw [smul_eq_mul]
+    ring
+  have hres_dotq : cq ⬝ᵥ (A *ᵥ w - nu • w) = 0 := by
+    rw [dotProduct_sub, dotProduct_smul, hAw_dotq, hdotq_w]
+    rw [smul_eq_mul]
+    ring
+  have hres_zero : A *ᵥ w - nu • w = 0 :=
+    eq_zero_of_mem_span_pair_orthogonal_cols_dot_eq_zero
+      hQ hpq (by simpa [cp, cq] using hres_span)
+      (by simpa [cp] using hres_dotp)
+      (by simpa [cq] using hres_dotq)
+  exact hWno w hwW hwne ⟨nu, sub_eq_zero.mp hres_zero⟩
+
 /-! ### Reindexing helpers: conjugation and orthogonality transport
 
 Transporting an orthogonal conjugation `Xᵀ A X` along an index equivalence
