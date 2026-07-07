@@ -977,6 +977,40 @@ theorem H16_eq16_3_complexSylvester_exists_unique_of_schur_no_common_eigenpair
   complexSylvester_exists_unique_of_schur_no_common_eigenpair
     A B U V R S C hU hV hR hS hRtri hStri hno
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6), complex
+    Schur route with factors supplied by existence: if the original complex
+    matrices have no common supplied right eigenpair, then the exact complex
+    Sylvester equation has a unique solution. -/
+theorem complexSylvester_exists_unique_of_no_common_eigenpair {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (C : Matrix (Fin m) (Fin n) ℂ)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    ∃! X : Matrix (Fin m) (Fin n) ℂ, IsComplexSylvesterSolution A B C X := by
+  obtain ⟨U, R, V, S, hU, hUR, hRtri, hV, hVS, hStri⟩ :=
+    complexSylvester_schur_factors_exist A B
+  exact complexSylvester_exists_unique_of_schur_no_common_eigenpair
+    A B U V R S C hU hV hUR hVS hRtri hStri hno
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the exact complex Sylvester unique-solve theorem
+    from no common supplied right eigenpair, with Schur factors obtained by
+    existence. -/
+theorem H16_eq16_3_complexSylvester_exists_unique_of_no_common_eigenpair
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ)
+    (C : Matrix (Fin m) (Fin n) ℂ)
+    (hno : ∀ μ : ℂ,
+      ¬ ((∃ y : Fin m → ℂ,
+            y ≠ 0 ∧ Matrix.mulVec A y = fun i => μ * y i) ∧
+          (∃ z : Fin n → ℂ,
+            z ≠ 0 ∧ Matrix.mulVec B z = fun j => μ * z j))) :
+    ∃! X : Matrix (Fin m) (Fin n) ℂ, IsComplexSylvesterSolution A B C X :=
+  complexSylvester_exists_unique_of_no_common_eigenpair A B C hno
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.6), complex path,
     HEADLINE unconditional-existence form.  For ANY complex square matrices
     `A`, `B` (no supplied factors), Schur triangulation produces unitary
