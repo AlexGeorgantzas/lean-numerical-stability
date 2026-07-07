@@ -8019,6 +8019,129 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_det_frontier_step_ora
           hU hV hA hB hCschur hstart hend hmono hcard hzero hstep hYorig
     exact hEq.symm
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), product-shift
+    determinant adapter for scheduled quasi-Schur traversal exact solvability:
+    each adjacent two-column step may supply the product-shift determinant
+    certificate instead of the full two-column block determinant certificate. -/
+theorem sylvester_quasiSchur_blockTraversal_solution_of_product_shift_det_frontier_step_oracle
+    (m n r : Nat)
+    (R : RMatFn m m) (S : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) /\
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => C i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        Not (Matrix.det
+          (sylvesterTriangularShiftedCoeff m R (S q q) *
+              sylvesterTriangularShiftedCoeff m R (S p p) -
+            Matrix.scalar (Fin m) (S q p * S p q)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inr i)))) :
+    IsSylvesterSolutionRect m n R S C X := by
+  apply
+    sylvester_quasiSchur_blockTraversal_solution_of_det_frontier_step_oracle
+      m n r R S C X pmap frontier hstart hend hmono hcard hzero ?_
+  intro t ht
+  rcases hstep t ht with hsingle | hblock
+  · exact Or.inl hsingle
+  · rcases hblock with
+      ⟨p, q, hpval, hqval, hfront, hsame, hprod, hXp, hXq⟩
+    refine Or.inr ⟨p, q, hpval, hqval, hfront, hsame, ?_, hXp, hXq⟩
+    exact
+      sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_det_ne_zero
+        m n R S p q hprod
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    original-coordinate unique solvability from a scheduled quasi-Schur
+    traversal whose two-column steps carry product-shift determinant
+    certificates.  This is a source-shaped certificate adapter over
+    `existsUnique_isSylvesterSolutionRect_of_quasiSchur_det_frontier_step_oracle`. -/
+theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_product_shift_det_frontier_step_oracle
+    (m n r : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C Cschur X : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hCschur : Cschur = rectMatMul (matTranspose U) (rectMatMul C V))
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) /\
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => Cschur i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        Not (Matrix.det
+          (sylvesterTriangularShiftedCoeff m R (S q q) *
+              sylvesterTriangularShiftedCoeff m R (S p p) -
+            Matrix.scalar (Fin m) (S q p * S p q)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inr i)))) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  apply
+    existsUnique_isSylvesterSolutionRect_of_quasiSchur_det_frontier_step_oracle
+      m n r U R A V S B C Cschur X pmap frontier
+      hU hV hA hB hCschur hstart hend hmono hcard hzero ?_
+  intro t ht
+  rcases hstep t ht with hsingle | hblock
+  · exact Or.inl hsingle
+  · rcases hblock with
+      ⟨p, q, hpval, hqval, hfront, hsame, hprod, hXp, hXq⟩
+    refine Or.inr ⟨p, q, hpval, hqval, hfront, hsame, ?_, hXp, hXq⟩
+    exact
+      sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_det_ne_zero
+        m n R S p q hprod
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
     `A - t_kk I` nonsingular, two solutions of `AX - XT = C` coincide, by
