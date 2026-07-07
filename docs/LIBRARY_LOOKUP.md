@@ -5324,6 +5324,12 @@ componentwise residual-budget dependency, the exact Hyman block identities
 (14.35)--(14.36), and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
+- `higham14_infNorm_le_of_componentwise_abs_matmul_bound`
+- `higham14_infNorm_le_of_componentwise_matmul_bound`
+- `triInv_method2_left_residual_normwise`
+- `triInv_method1B_right_residual_normwise`
+- `triInv_method1B_right_residual_normwise_from_spec`
+- `triInv_method2C_left_residual_normwise`
 - `higham14_problem14_3_right_residual_eq_mul_left_residual`
 - `higham14_problem14_3_left_residual_eq_mul_right_residual`
 - `higham14_problem14_3_right_over_left_residual_infNorm_le_kappa`
