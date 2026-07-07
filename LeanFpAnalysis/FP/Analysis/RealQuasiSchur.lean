@@ -763,7 +763,7 @@ lemma trailing_conj_preserves_leading_entry
         Matrix.reindex e.symm e.symm (Vᵀ * A' * V) := by
     have h := reindex_conj e.symm A' V
     rw [show Matrix.reindex e.symm e.symm A' = A by
-      simpa [A'] using reindex_symm_reindex e A] at h
+      simp [A']] at h
     exact h.symm
   have hV :
       Vᵀ * A' * V = Eᵀ * (Q'ᵀ * A' * Q') * E := by
