@@ -1163,6 +1163,26 @@ theorem finiteComplexMatrix_exists_mulVec_eigenpair_of_intertwiner_image_ne_zero
     finiteComplexMatrix_intertwiner_maps_mulVec_eigenvector
       A B X mu w hX hw⟩
 
+/-- A nonzero shifted determinant rules out a supplied complex eigenpair. -/
+theorem finiteComplexMatrix_no_eigenpair_of_det_sub_scalar_ne_zero
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (A : Matrix ι ι Complex) (mu : Complex)
+    (hdet : Not (Matrix.det (A - Matrix.scalar ι mu) = 0)) :
+    ¬ ∃ y : ι -> Complex,
+      y ≠ 0 ∧ Matrix.mulVec A y = fun i => mu * y i := by
+  intro hEig
+  rcases hEig with ⟨y, hyne, hy⟩
+  have hyzero : Matrix.mulVec (A - Matrix.scalar ι mu) y = 0 := by
+    funext i
+    have hi := congrFun hy i
+    have hcoord : Matrix.mulVec A y i - mu * y i = 0 := by
+      rw [hi]
+      ring
+    simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hcoord
+  have hsing : Matrix.det (A - Matrix.scalar ι mu) = 0 :=
+    Matrix.exists_mulVec_eq_zero_iff.mp ⟨y, hyne, hyzero⟩
+  exact hdet hsing
+
 /-- Entrywise real-to-complex map for rectangular matrices.  This is the
     rectangular companion to the square complexification used in the real
     invariant-subspace development. -/
@@ -1602,6 +1622,81 @@ theorem sylvesterTwoColumnRealSchurBlockComplexRootVector_mulVec
       sylvesterTwoColumnRealSchurBlock,
       sylvesterTwoColumnRealSchurBlockComplexRootVector,
       Fin.sum_univ_two] using hcoord
+
+/-- The standard complex root of the adjacent real `2 x 2` block when the
+    real discriminant is negative and `delta` supplies its positive square
+    root magnitude. -/
+noncomputable def sylvesterTwoColumnRealSchurBlockComplexRoot (n : Nat)
+    (T : RMatFn n n) (p q : Fin n) (delta : Real) : Complex :=
+  ((((T p p + T q q) / 2 : Real) : Complex) +
+    Complex.I * (((delta / 2 : Real) : Complex)))
+
+/-- The standard complex root satisfies the characteristic equation of the
+    adjacent real `2 x 2` block whenever `delta^2` is the negative
+    discriminant. -/
+theorem sylvesterTwoColumnRealSchurBlockComplexRoot_root_of_delta_sq
+    (n : Nat) (T : RMatFn n n) (p q : Fin n) (delta : Real)
+    (hdelta :
+      delta ^ 2 =
+        -((T p p - T q q) ^ 2 + 4 * T p q * T q p)) :
+    (((T p p : Real) : Complex) -
+        sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta) *
+      (((T q q : Real) : Complex) -
+        sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta) -
+        ((T p q : Real) : Complex) * ((T q p : Real) : Complex) = 0 := by
+  apply Complex.ext
+  · simp [sylvesterTwoColumnRealSchurBlockComplexRoot, Complex.mul_re,
+      Complex.mul_im]
+    nlinarith [hdelta]
+  · simp [sylvesterTwoColumnRealSchurBlockComplexRoot, Complex.mul_re,
+      Complex.mul_im]
+    ring
+
+/-- A nonzero negative-discriminant square-root certificate rules out real
+    eigenlines for the adjacent `2 x 2` block. -/
+theorem sylvesterTwoColumnRealSchurBlock_no_real_eigenvector_of_delta_sq_ne_zero
+    (n : Nat) (T : RMatFn n n) (p q : Fin n) (delta : Real)
+    (hdelta :
+      delta ^ 2 =
+        -((T p p - T q q) ^ 2 + 4 * T p q * T q p))
+    (hdelta_ne : delta ≠ 0) :
+    ∀ x : Fin 2 -> Real, x ≠ 0 ->
+      ¬ ∃ nu : Real,
+        Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+          fun k => nu * x k := by
+  intro x hxne hEig
+  rcases hEig with ⟨nu, hnu⟩
+  have hxzero :
+      Matrix.mulVec
+          (sylvesterTwoColumnRealSchurBlock n T p q -
+            Matrix.scalar (Fin 2) nu) x = 0 := by
+    funext k
+    have hk := congrFun hnu k
+    have hcoord :
+        Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x k -
+            nu * x k = 0 := by
+      rw [hk]
+      ring
+    simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hcoord
+  have hdet :
+      Matrix.det
+          (sylvesterTwoColumnRealSchurBlock n T p q -
+            Matrix.scalar (Fin 2) nu) = 0 :=
+    Matrix.exists_mulVec_eq_zero_iff.mp ⟨x, hxne, hxzero⟩
+  have hroot :
+      (T p p - nu) * (T q q - nu) - T p q * T q p = 0 := by
+    simpa [sylvesterTwoColumnRealSchurBlock, Matrix.det_fin_two,
+      Matrix.scalar_apply] using hdet
+  have hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p =
+        (T p p + T q q - 2 * nu) ^ 2 := by
+    nlinarith [hroot]
+  have hsum :
+      delta ^ 2 + (T p p + T q q - 2 * nu) ^ 2 = 0 := by
+    nlinarith [hdelta, hdisc]
+  have hdelta_pos : 0 < delta ^ 2 := sq_pos_of_ne_zero hdelta_ne
+  have hsquare_nonneg : 0 ≤ (T p p + T q q - 2 * nu) ^ 2 := sq_nonneg _
+  nlinarith
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), matrix
     intertwining form: the coupled active-column equations are equivalent to
@@ -2085,6 +2180,94 @@ theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_root_separation
   sylvesterTwoColumnBlockCoeff_det_ne_zero_of_no_block_action m n A T p q
     (sylvesterTwoColumnBlock_no_block_action_of_complex_root_separation
       m n A T p q mu hsub hroot hnoReal hnoA)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    consequence from a supplied negative-discriminant square-root certificate:
+    `delta` constructs the standard complex root of the adjacent real `2 x 2`
+    block, and the root-based separation bridge proves nonsingularity of the
+    active block coefficient. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_delta_root_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (delta : Real)
+    (hsub : T q p ≠ 0)
+    (hdelta :
+      delta ^ 2 =
+        -((T p p - T q q) ^ 2 + 4 * T p q * T q p))
+    (hnoReal :
+      ∀ x : Fin 2 -> Real, x ≠ 0 ->
+        ¬ ∃ nu : Real,
+          Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+            fun k => nu * x k)
+    (hnoA :
+      ¬ ∃ y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i =>
+              sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta *
+                y i) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+  sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_root_separation
+    m n A T p q
+    (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta)
+    hsub
+    (sylvesterTwoColumnRealSchurBlockComplexRoot_root_of_delta_sq
+      n T p q delta hdelta)
+    hnoReal hnoA
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    consequence from a nonzero negative-discriminant square-root certificate:
+    the same certificate supplies both the standard complex root and the
+    no-real-eigenline hypothesis for the adjacent real `2 x 2` block. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_delta_root_no_real_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (delta : Real)
+    (hsub : T q p ≠ 0)
+    (hdelta :
+      delta ^ 2 =
+        -((T p p - T q q) ^ 2 + 4 * T p q * T q p))
+    (hdelta_ne : delta ≠ 0)
+    (hnoA :
+      ¬ ∃ y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i =>
+              sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta *
+                y i) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+  sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_delta_root_separation
+    m n A T p q delta hsub hdelta
+    (sylvesterTwoColumnRealSchurBlock_no_real_eigenvector_of_delta_sq_ne_zero
+      n T p q delta hdelta hdelta_ne)
+    hnoA
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), determinant
+    consequence from fully determinant-shaped supplied spectral separation:
+    a nonzero shifted complex determinant for `A` at the constructed
+    negative-discriminant root supplies the remaining no-common-eigenvalue
+    exclusion used by the delta-root route. -/
+theorem sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_delta_root_det_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n) (p q : Fin n)
+    (delta : Real)
+    (hsub : T q p ≠ 0)
+    (hdelta :
+      delta ^ 2 =
+        -((T p p - T q q) ^ 2 + 4 * T p q * T q p))
+    (hdelta_ne : delta ≠ 0)
+    (hdetA :
+      Not (Matrix.det
+        (realMatrixToComplex (Matrix.of A) -
+          Matrix.scalar (Fin m)
+            (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta)) = 0)) :
+    Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) :=
+  sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_delta_root_no_real_separation
+    m n A T p q delta hsub hdelta hdelta_ne
+    (finiteComplexMatrix_no_eigenpair_of_det_sub_scalar_ne_zero
+      (realMatrixToComplex (Matrix.of A))
+      (sylvesterTwoColumnRealSchurBlockComplexRoot n T p q delta)
+      hdetA)
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), block-local
     spectral obstruction for a supplied real `2 x 2` Schur block: a nonzero
