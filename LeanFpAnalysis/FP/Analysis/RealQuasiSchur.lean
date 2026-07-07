@@ -1627,4 +1627,24 @@ theorem real_quasi_schur_blocks {n : ℕ} (A : Matrix (Fin n) (Fin n) ℝ) :
     RealQuasiSchurAux.exists_orthogonal_conj_quasiUpperTriangular n A
   exact ⟨Q, p, hQ, hmono, hcard, hzero⟩
 
+/-- **Real quasi-triangular Schur decomposition with `2 x 2` spectral
+    certificates (Higham §16.2 (16.4)).**
+
+    Strengthens `real_quasi_schur_blocks`: every adjacent pair in the same
+    constructed `2 x 2` block has no real eigenline, hence negative
+    discriminant.  This is the source-facing certificate that such blocks carry
+    complex-conjugate eigenvalue pairs; it does not by itself assert Sylvester
+    separation from another matrix. -/
+theorem real_quasi_schur_blocks_twoBlockSpectral {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ) :
+    ∃ (Q : Matrix (Fin n) (Fin n) ℝ) (p : Fin n → ℕ),
+      Q ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+      Monotone p ∧
+      (∀ c : ℕ, (Finset.univ.filter (fun i => p i = c)).card ≤ 2) ∧
+      (∀ i j : Fin n, p j < p i → (Qᵀ * A * Q) i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral (Qᵀ * A * Q) p := by
+  obtain ⟨Q, hQ, p, hmono, hcard, hzero, hspectral⟩ :=
+    RealQuasiSchurAux.exists_orthogonal_conj_quasiUpperTriangular_twoBlockSpectral n A
+  exact ⟨Q, p, hQ, hmono, hcard, hzero, hspectral⟩
+
 end LeanFpAnalysis.FP
