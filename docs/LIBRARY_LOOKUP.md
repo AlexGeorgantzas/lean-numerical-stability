@@ -3203,6 +3203,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_1_leadingSubmatrix_det_eq_pivot_mul_schur`
 - `higham9_1_lu_exists_of_leading_minors_ne_zero`
 - `higham9_15_perturbed_lu_exists`
+- `higham9_15_leading_minor_path_continuous`
+- `higham9_15_pivot_ratio_path_continuousOn`
+- `higham9_1_pivot_eq_leading_minor_ratio`
 - `higham9_15_normalized_G_factorization_matrix`
 - `higham9_15_normalized_Gtilde_factorization_matrix`
 - `higham9_15_strilPart`
