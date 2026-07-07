@@ -3606,6 +3606,147 @@ theorem higham14_problem14_12_hadamardConditionNumber_stressUpper_one_eq_sqrt_fa
     higham14_problem14_12_det_stressUpper_one n]
   norm_num
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.12(b):
+    the Pei matrix `A = (alpha - 1) I + e e^T`, equivalently diagonal entries
+    `alpha` and off-diagonal entries `1`. -/
+noncomputable def higham14_peiMatrix (n : ℕ) (α : ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => if i = j then α else 1
+
+private lemma higham14_problem14_12_peiMatrix_eq_smul_one_add_rankOne
+    (n : ℕ) (α : ℝ) (hα : α - 1 ≠ 0) :
+    (higham14_peiMatrix n α : Matrix (Fin n) (Fin n) ℝ) =
+      (α - 1) •
+        (1 + Matrix.replicateCol Unit (fun _ : Fin n => (α - 1)⁻¹) *
+          Matrix.replicateRow Unit (fun _ : Fin n => (1 : ℝ))) := by
+  funext i j
+  change (if i = j then α else 1) =
+    (α - 1) *
+      (((1 : Matrix (Fin n) (Fin n) ℝ) +
+        Matrix.replicateCol Unit (fun _ : Fin n => (α - 1)⁻¹) *
+          Matrix.replicateRow Unit (fun _ : Fin n => (1 : ℝ))) i j)
+  by_cases hij : i = j
+  · subst j
+    simp [Matrix.add_apply, Matrix.mul_apply,
+      Matrix.replicateCol_apply, Matrix.replicateRow_apply]
+    field_simp [hα]
+    ring
+  · simp [hij, Matrix.add_apply, Matrix.mul_apply,
+      Matrix.replicateCol_apply, Matrix.replicateRow_apply]
+    field_simp [hα]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.12(b), dependency:
+    determinant of the Pei matrix `(alpha - 1) I + e e^T`. -/
+lemma higham14_problem14_12_peiMatrix_det
+    (n : ℕ) (α : ℝ) (hn : 0 < n) (hα : α - 1 ≠ 0) :
+    Matrix.det (higham14_peiMatrix n α : Matrix (Fin n) (Fin n) ℝ) =
+      ((n : ℝ) + α - 1) * (α - 1) ^ (n - 1) := by
+  let β : ℝ := α - 1
+  have hβ : β ≠ 0 := by simpa [β] using hα
+  let M : Matrix (Fin n) (Fin n) ℝ :=
+    1 + Matrix.replicateCol Unit (fun _ : Fin n => β⁻¹) *
+      Matrix.replicateRow Unit (fun _ : Fin n => (1 : ℝ))
+  have hmatrix :
+      (higham14_peiMatrix n α : Matrix (Fin n) (Fin n) ℝ) = β • M := by
+    dsimp [M, β]
+    exact higham14_problem14_12_peiMatrix_eq_smul_one_add_rankOne n α hα
+  rw [hmatrix]
+  change Matrix.det (β • M) = ((n : ℝ) + α - 1) * (α - 1) ^ (n - 1)
+  rw [Matrix.det_smul]
+  rw [Fintype.card_fin]
+  have hdetM : Matrix.det M = 1 + (n : ℝ) * β⁻¹ := by
+    dsimp [M]
+    rw [Matrix.det_one_add_replicateCol_mul_replicateRow]
+    simp [dotProduct, Finset.sum_const, Fintype.card_fin]
+  rw [hdetM]
+  have hn_eq : n = (n - 1) + 1 := by omega
+  rw [hn_eq, pow_succ]
+  dsimp [β]
+  field_simp [hα]
+  ring
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.12(b), dependency:
+    every row of the Pei matrix has squared Euclidean norm
+    `alpha^2 + n - 1`. -/
+lemma higham14_problem14_12_peiMatrix_row_sq_sum
+    (n : ℕ) (α : ℝ) (i : Fin n) :
+    (∑ j : Fin n, (higham14_peiMatrix n α i j) ^ 2) =
+      α ^ 2 + ((n - 1 : ℕ) : ℝ) := by
+  calc
+    (∑ j : Fin n, (higham14_peiMatrix n α i j) ^ 2)
+        = ∑ j : Fin n, ((1 : ℝ) + if j = i then α ^ 2 - 1 else 0) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            by_cases hji : j = i
+            · subst j
+              simp [higham14_peiMatrix]
+            · have hij : i ≠ j := by exact Ne.symm hji
+              simp [higham14_peiMatrix, hij, hji]
+    _ = α ^ 2 + ((n - 1 : ℕ) : ℝ) := by
+        rw [Finset.sum_add_distrib]
+        simp [Finset.sum_const, Fintype.card_fin]
+        have hnpos : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le i.val) i.isLt
+        rw [Nat.cast_sub (Nat.succ_le_of_lt hnpos)]
+        ring
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.12(b), dependency:
+    row norm of the Pei matrix. -/
+lemma higham14_problem14_12_peiMatrix_rowNorm2
+    (n : ℕ) (α : ℝ) (i : Fin n) :
+    higham14_rowNorm2 (higham14_peiMatrix n α) i =
+      Real.sqrt (α ^ 2 + ((n - 1 : ℕ) : ℝ)) := by
+  have harg_nonneg : 0 ≤ α ^ 2 + ((n - 1 : ℕ) : ℝ) :=
+    add_nonneg (sq_nonneg α) (Nat.cast_nonneg _)
+  exact (sq_eq_sq₀ (higham14_rowNorm2_nonneg _ _) (Real.sqrt_nonneg _)).mp (by
+    rw [higham14_rowNorm2, vecNorm2_sq, vecNorm2Sq]
+    rw [Real.sq_sqrt harg_nonneg]
+    exact higham14_problem14_12_peiMatrix_row_sq_sum n α i)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.12(b), dependency:
+    numerator product of the Pei matrix Hadamard condition number. -/
+lemma higham14_problem14_12_peiMatrix_prod_rowNorm2
+    (n : ℕ) (α : ℝ) :
+    (∏ i : Fin n, higham14_rowNorm2 (higham14_peiMatrix n α) i) =
+      (Real.sqrt (α ^ 2 + ((n - 1 : ℕ) : ℝ))) ^ n := by
+  calc
+    (∏ i : Fin n, higham14_rowNorm2 (higham14_peiMatrix n α) i)
+        = ∏ _i : Fin n, Real.sqrt (α ^ 2 + ((n - 1 : ℕ) : ℝ)) := by
+            apply Finset.prod_congr rfl
+            intro i _
+            exact higham14_problem14_12_peiMatrix_rowNorm2 n α i
+    _ = (Real.sqrt (α ^ 2 + ((n - 1 : ℕ) : ℝ))) ^ n := by
+            simp [Fintype.card_fin]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.12(b):
+    Pei-matrix Hadamard condition-number formula in the nonnegative
+    `|det(A)|` denominator convention used by `higham14_hadamardConditionNumber`. -/
+theorem higham14_problem14_12_hadamardConditionNumber_peiMatrix_abs
+    (n : ℕ) (α : ℝ) (hn : 0 < n) (hα : α - 1 ≠ 0) :
+    higham14_hadamardConditionNumber (higham14_peiMatrix n α) =
+      (Real.sqrt (α ^ 2 + ((n - 1 : ℕ) : ℝ))) ^ n /
+        |((n : ℝ) + α - 1) * (α - 1) ^ (n - 1)| := by
+  unfold higham14_hadamardConditionNumber
+  rw [higham14_problem14_12_peiMatrix_prod_rowNorm2,
+    higham14_problem14_12_peiMatrix_det n α hn hα]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.12(b), Appendix A:
+    for the Pei matrix `A = (alpha - 1) I + e e^T` with `alpha > 1`,
+    `psi(A) = (sqrt(alpha^2 + n - 1))^n /
+      ((n + alpha - 1) * (alpha - 1)^(n - 1))`. -/
+theorem higham14_problem14_12_hadamardConditionNumber_peiMatrix
+    (n : ℕ) (α : ℝ) (hn : 0 < n) (hα : 1 < α) :
+    higham14_hadamardConditionNumber (higham14_peiMatrix n α) =
+      (Real.sqrt (α ^ 2 + ((n - 1 : ℕ) : ℝ))) ^ n /
+        (((n : ℝ) + α - 1) * (α - 1) ^ (n - 1)) := by
+  have hαsub_pos : 0 < α - 1 := by linarith
+  have hαne : α - 1 ≠ 0 := ne_of_gt hαsub_pos
+  have hden_pos : 0 < ((n : ℝ) + α - 1) * (α - 1) ^ (n - 1) := by
+    have hfirst : 0 < (n : ℝ) + α - 1 := by
+      have hn_nonneg : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
+      linarith
+    exact mul_pos hfirst (pow_pos hαsub_pos _)
+  rw [higham14_problem14_12_hadamardConditionNumber_peiMatrix_abs n α hn hαne,
+    abs_of_pos hden_pos]
+
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
 theorem higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec
