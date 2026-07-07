@@ -3895,6 +3895,151 @@ theorem higham14_problem14_13_gej_bound_from_amgm_certificate
     hfrob_nonneg
     (higham14_problem14_13_gej_squared_bound_from_amgm hn z hz hprod hsum_lt)
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    the repository's exact real operator `2`-norm agrees with the operator
+    norm of the complexified real matrix. -/
+theorem higham14_problem14_13_opNorm2_eq_complexMatrixOp2_realRectToCMatrix
+    {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    opNorm2 A = complexMatrixOp2 (realRectToCMatrix A) := by
+  apply le_antisymm
+  · exact opNorm2_le_of_opNorm2Le A
+      (complexMatrixOp2_nonneg (realRectToCMatrix A))
+      (opNorm2Le_complexMatrixOp2_realRectToCMatrix A)
+  · exact complexMatrixOp2_realRectToCMatrix_le_of_opNorm2Le A
+      (opNorm2_nonneg A) (opNorm2Le_opNorm2 A)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    the real operator `2`-norm is the largest ordered singular value of the
+    complexified real matrix. -/
+theorem higham14_problem14_13_opNorm2_eq_complex_top_singularValue
+    {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) :
+    opNorm2 A =
+      complexMatrixSingularValue (realRectToCMatrix A) ⟨0, hn⟩ := by
+  rw [higham14_problem14_13_opNorm2_eq_complexMatrixOp2_realRectToCMatrix A]
+  exact complexMatrixOp2_eq_top_singularValue hn (realRectToCMatrix A)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    the real Frobenius square agrees with the Frobenius square of the
+    complexified real matrix. -/
+theorem higham14_problem14_13_frobNorm_sq_eq_complexMatrixFrobeniusSq
+    {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    frobNorm A ^ 2 = complexMatrixFrobeniusSq (realRectToCMatrix A) := by
+  rw [frobNorm_sq]
+  unfold frobNormSq complexMatrixFrobeniusSq realRectToCMatrix
+  apply Finset.sum_congr rfl
+  intro i _
+  apply Finset.sum_congr rfl
+  intro j _
+  rw [complexNorm_ofReal_eq_abs, sq_abs]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    the Frobenius square of a real matrix is the sum of the squared ordered
+    singular values of its complexification. -/
+theorem higham14_problem14_13_frobNorm_sq_eq_sum_complex_singularValue_sq
+    {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    frobNorm A ^ 2 =
+      ∑ i : Fin n, complexMatrixSingularValue (realRectToCMatrix A) i ^ 2 := by
+  rw [higham14_problem14_13_frobNorm_sq_eq_complexMatrixFrobeniusSq A]
+  exact complexMatrixFrobeniusSq_eq_sum_singularValue_sq (realRectToCMatrix A)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    the Euclidean lower norm of a real `(k+1) x (k+1)` matrix equals its last
+    ordered singular value after complexification. -/
+theorem higham14_problem14_13_lowerNorm_eq_complex_last_singularValue
+    {k : ℕ} (A : Fin (k + 1) → Fin (k + 1) → ℝ) :
+    matMulVecLowerNorm2 (Nat.succ_pos k) A =
+      complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k) := by
+  let sigma : ℝ := complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k)
+  have hsigma_nonneg : 0 ≤ sigma := by
+    simpa [sigma] using
+      complexMatrixSingularValue_nonneg (realRectToCMatrix A) (Fin.last k)
+  apply le_antisymm
+  · obtain ⟨x, hx_ne, hx_eq⟩ :=
+      realRectToCMatrix_last_singularValue_exists_real_attaining_vector_sq A
+    have hx_norm_ne : vecNorm2 x ≠ 0 := by
+      intro hx_zero
+      apply hx_ne
+      funext i
+      exact (vecNorm2_eq_zero_iff x).mp hx_zero i
+    have hx_norm_pos : 0 < vecNorm2 x :=
+      lt_of_le_of_ne (vecNorm2_nonneg x) (Ne.symm hx_norm_ne)
+    let y : Fin (k + 1) → ℝ := fun i => (vecNorm2 x)⁻¹ * x i
+    have hy_unit : vecNorm2 y = 1 :=
+      vecNorm2_inv_smul_self_of_pos x hx_norm_pos
+    have hAy_sq : vecNorm2 (matMulVec (k + 1) A y) ^ 2 = sigma ^ 2 := by
+      have hAx_sq : vecNorm2 (matMulVec (k + 1) A x) ^ 2 =
+          sigma ^ 2 * vecNorm2 x ^ 2 := by
+        rw [vecNorm2_sq, vecNorm2_sq]
+        simpa [sigma, matMulVec, rectMatMulVec] using hx_eq
+      have hAy_eq : matMulVec (k + 1) A y =
+          fun i => (vecNorm2 x)⁻¹ * matMulVec (k + 1) A x i := by
+        simpa [y] using matMulVec_const_mul_right (k + 1) A (vecNorm2 x)⁻¹ x
+      calc
+        vecNorm2 (matMulVec (k + 1) A y) ^ 2
+            = ((vecNorm2 x)⁻¹ * vecNorm2 (matMulVec (k + 1) A x)) ^ 2 := by
+                rw [hAy_eq, vecNorm2_smul, abs_of_pos (inv_pos.mpr hx_norm_pos)]
+        _ = (vecNorm2 x)⁻¹ ^ 2 * vecNorm2 (matMulVec (k + 1) A x) ^ 2 := by
+                ring
+        _ = (vecNorm2 x)⁻¹ ^ 2 * (sigma ^ 2 * vecNorm2 x ^ 2) := by
+                rw [hAx_sq]
+        _ = sigma ^ 2 := by
+                field_simp [hx_norm_ne]
+    have hAy_norm : vecNorm2 (matMulVec (k + 1) A y) = sigma := by
+      exact (sq_eq_sq₀ (vecNorm2_nonneg _) hsigma_nonneg).mp hAy_sq
+    calc
+      matMulVecLowerNorm2 (Nat.succ_pos k) A
+          ≤ vecNorm2 (matMulVec (k + 1) A y) :=
+            matMulVecLowerNorm2_le (Nat.succ_pos k) A y hy_unit
+      _ = sigma := hAy_norm
+  · obtain ⟨y, hy_unit, hy_eq⟩ :=
+      matMulVecLowerNorm2_attained (Nat.succ_pos k) A
+    have hlower :=
+      complexMatrixSingularValue_last_mul_norm_le_norm_euclideanLin
+        (realRectToCMatrix A) (realVecToEuclidean y)
+    have hsigma_le : sigma ≤ vecNorm2 (matMulVec (k + 1) A y) := by
+      simpa [sigma, realVecToEuclidean_norm,
+        realRectToCMatrix_euclideanLin_realVecToEuclidean_norm, hy_unit,
+        matMulVec, rectMatMulVec] using hlower
+    rwa [← hy_eq] at hsigma_le
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    a certified right inverse has operator norm equal to the reciprocal of the
+    last ordered singular value of the original matrix. -/
+theorem higham14_problem14_13_opNorm2_rightInverse_eq_inv_complex_last_singularValue
+    {k : ℕ} (A Ainv : Fin (k + 1) → Fin (k + 1) → ℝ)
+    (hRight : IsRightInverse (k + 1) A Ainv) :
+    opNorm2 Ainv =
+      (complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k))⁻¹ := by
+  have hlower :=
+    matMulVecLowerNorm2_eq_inv_opNorm2_of_isRightInverse
+      (Nat.succ_pos k) A Ainv hRight
+  have hlast :=
+    higham14_problem14_13_lowerNorm_eq_complex_last_singularValue A
+  have hinv :
+      (opNorm2 Ainv)⁻¹ =
+        complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k) := by
+    rw [← hlower]
+    exact hlast
+  calc
+    opNorm2 Ainv = ((opNorm2 Ainv)⁻¹)⁻¹ := by rw [inv_inv]
+    _ = (complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k))⁻¹ := by
+          rw [hinv]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.13 support:
+    for a supplied right inverse, `kappa2` is `sigma_1 / sigma_n` in the
+    ordered singular values of the complexified real matrix. -/
+theorem higham14_problem14_13_kappa2_eq_top_div_last_singularValue_of_rightInverse
+    {k : ℕ} (A Ainv : Fin (k + 1) → Fin (k + 1) → ℝ)
+    (hRight : IsRightInverse (k + 1) A Ainv) :
+    kappa2 A Ainv =
+      complexMatrixSingularValue (realRectToCMatrix A) ⟨0, Nat.succ_pos k⟩ /
+        complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k) := by
+  rw [kappa2,
+    higham14_problem14_13_opNorm2_eq_complex_top_singularValue (Nat.succ_pos k) A,
+    higham14_problem14_13_opNorm2_rightInverse_eq_inv_complex_last_singularValue
+      A Ainv hRight,
+    div_eq_mul_inv]
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.13(b) support:
     if every row has Euclidean norm one, then the Frobenius norm is
     `sqrt(n)`. -/
