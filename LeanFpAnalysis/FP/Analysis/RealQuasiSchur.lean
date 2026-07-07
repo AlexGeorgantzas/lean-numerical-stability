@@ -588,6 +588,36 @@ lemma exists_orthogonal_frame_two_principalBlock_noRealEigenline_disc_neg
       A Q hp hq hQ W hQspan hWinv hWno
   exact ⟨Q, p, q, hQ, hp, hq, hQspan, hno, hdisc⟩
 
+/-- Source-side peel data with the two-dimensional branch already framed as a
+    leading `2 x 2` block carrying no-real-eigenline and negative-discriminant
+    certificates. This is the nonrecursive input surface needed before the full
+    quasi-Schur recursion can export spectral data for its `2 x 2` blocks. -/
+lemma exists_invariant_subspace_dim_one_or_two_frame_twoBlock_spectral
+    {n : ℕ} (hn : 0 < n) (A : Matrix (Fin n) (Fin n) ℝ) :
+    ∃ W : Submodule ℝ (Fin n → ℝ),
+      (finrank ℝ W = 1 ∨
+        ∃ (Q : Matrix (Fin n) (Fin n) ℝ) (p q : Fin n),
+          finrank ℝ W = 2 ∧
+            Q ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+            (p : ℕ) = 0 ∧
+            (q : ℕ) = 1 ∧
+            Submodule.span ℝ
+              (Set.range
+                (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1))) = W ∧
+            LeanFpAnalysis.FP.MatrixNoRealEigenline
+              (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q) ∧
+            ((Qᵀ * A * Q) p p - (Qᵀ * A * Q) q q) ^ 2 +
+              4 * (Qᵀ * A * Q) p q * (Qᵀ * A * Q) q p < 0) ∧
+      ∀ w ∈ W, A.mulVecLin w ∈ W := by
+  obtain ⟨W, hbranch, hWinv⟩ :=
+    LeanFpAnalysis.FP.exists_real_invariant_subspace_dim_one_or_two_no_real_eigenline hn A
+  rcases hbranch with h1 | ⟨h2, hWno⟩
+  · exact ⟨W, Or.inl h1, hWinv⟩
+  · obtain ⟨Q, p, q, hQ, hp, hq, hQspan, hno, hdisc⟩ :=
+      exists_orthogonal_frame_two_principalBlock_noRealEigenline_disc_neg
+        A W h2 hWinv hWno
+    exact ⟨W, Or.inr ⟨Q, p, q, h2, hQ, hp, hq, hQspan, hno, hdisc⟩, hWinv⟩
+
 /-! ### Reindexing helpers: conjugation and orthogonality transport
 
 Transporting an orthogonal conjugation `Xᵀ A X` along an index equivalence
