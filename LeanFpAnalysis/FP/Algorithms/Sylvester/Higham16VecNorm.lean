@@ -564,6 +564,27 @@ theorem existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair
       (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
       c
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
+    supplied complex right eigenpair for the complexified real factors gives a
+    unique vectorized real Sylvester coefficient solution whose witness is
+    Mathlib's nonsingular-inverse vector formula. -/
+theorem existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j)))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c ∧
+        x = Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c := by
+  exact
+    existsUnique_finiteMatrix_nonsingInv_mulVec_solution_of_det_ne_zero
+      (sylvesterVecCoeff m n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
+      c
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
     spectral-separation form: no common complex right eigenvalue for the
     complexified real factors makes the real Sylvester vec coefficient action
@@ -632,6 +653,22 @@ theorem existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_right_eigenva
     existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair
       m n A B hno c
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors gives a unique vectorized solution whose witness
+    is Mathlib's nonsingular-inverse vector formula. -/
+theorem existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c ∧
+        x = Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c := by
+  exact
+    existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_eigenpair
+      m n A B hno c
+
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
     source-numbered alias for the named no-common-complex-right-eigenvalue
     real vec/Kronecker unique-solve route. -/
@@ -643,6 +680,21 @@ theorem H16_eq16_3_existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_ri
     ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
       Matrix.mulVec (sylvesterVecCoeff m n A B) x = c :=
   existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_right_eigenvalue
+    m n A B hno c
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the named no-common-complex-right-eigenvalue
+    real vec/Kronecker unique-solve route with the explicit nonsingular-inverse
+    vector formula. -/
+theorem H16_eq16_3_existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c ∧
+        x = Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c :=
+  existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_right_eigenvalue
     m n A B hno c
 
 /-- A concrete left inverse and operator-2 radius for the printed Sylvester
