@@ -5317,6 +5317,7 @@ and forward-error consequences from Problem 14.5, Problem 14.7, the p.279
 Hadamard determinant condition number, equation (14.34) in its exact
 no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
 Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence,
+Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
 the exact Hyman block identities (14.35)--(14.36), and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
@@ -5402,6 +5403,12 @@ the exact Hyman block identities (14.35)--(14.36), and Problem 14.10:
 - `higham14_problem14_13_lowerNorm_eq_complex_last_singularValue`
 - `higham14_problem14_13_opNorm2_rightInverse_eq_inv_complex_last_singularValue`
 - `higham14_problem14_13_kappa2_eq_top_div_last_singularValue_of_rightInverse`
+- `higham14_problem14_13_complexGramLin_det_eq_prod_gramEigenvalues`
+- `higham14_problem14_13_complex_det_conjTranspose_mul_self_eq_prod_singularValue_sq`
+- `higham14_problem14_13_real_det_sq_eq_prod_complex_singularValue_sq`
+- `higham14_problem14_13_abs_det_eq_prod_complex_singularValue`
+- `higham14_problem14_13_abs_det_pos_of_isRightInverse`
+- `higham14_problem14_13_gej_bound_from_matrix_amgm_certificate`
 - `higham14_problem14_13_frobNorm_eq_sqrt_card_of_rowNorm2_eq_one`
 - `higham14_problem14_13_hadamardConditionNumber_eq_inv_abs_det_of_rowNorm2_eq_one`
 - `higham14_problem14_13_two_over_abs_det_eq_two_mul_hadamardConditionNumber`
