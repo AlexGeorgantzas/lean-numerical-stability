@@ -7354,6 +7354,110 @@ theorem sylvester_quasiSchur_singleton_column_eq_of_nonsingInv_of_solution_prev_
     sylvester_singleton_column_eq_of_nonsingInv_of_solution_prev_columns_eq
       m n A T C X Y k hbelow hdet hXk hYsol hprev
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    quasi-Schur traversal uniqueness skeleton: if every column of a supplied
+    candidate `X` is covered either by the singleton one-column recurrence or
+    by an adjacent same-block two-column recurrence, then `X` agrees with any
+    exact Schur-coordinate solution `Y`.
+
+    This is intentionally a step-oracle theorem, not an executable
+    Bartels-Stewart traversal: it assembles the already proved local singleton
+    and two-column recurrence uniqueness facts into the prefix induction that
+    a later algorithmic traversal can instantiate. -/
+theorem sylvester_quasiSchur_blockTraversal_columns_eq_of_solution_step_oracle
+    (m n : Nat)
+    (U R Aorig : RMatFn m m) (V S Borig : RMatFn n n) (C X Y : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : Aorig = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : Borig = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex Aorig)
+        (realMatrixToComplex Borig))
+    (hstep : forall k : Fin n,
+      ((forall q : Fin n, q.val = k.val + 1 -> pmap k ≠ pmap q) /\
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0) /\
+        (forall i : Fin m,
+          X i k =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S k k)))
+              (fun i => C i k +
+                Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+                  (fun j => S j k * X i j)) i)) \/
+      (exists p q : Fin n,
+        q.val = p.val + 1 /\
+        pmap p = pmap q /\
+        (k = p \/ k = q) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inr i))))
+    (hYsol : IsSylvesterSolutionRect m n R S C Y) :
+    X = Y := by
+  have hcol : forall N : Nat, forall k : Fin n, k.val < N ->
+      forall i : Fin m, X i k = Y i k := by
+    intro N
+    induction N with
+    | zero =>
+        intro k hk
+        exact absurd hk (Nat.not_lt_zero _)
+    | succ N ih =>
+        intro k hk
+        by_cases hlt : k.val < N
+        · exact ih k hlt
+        · have hkN : k.val = N := by omega
+          rcases hstep k with hsingle | hblock
+          · rcases hsingle with ⟨hnext, hdet, hXk⟩
+            have hprev : forall j : Fin n, j < k -> forall i : Fin m,
+                X i j = Y i j := by
+              intro j hjk
+              have hjN : j.val < N := by
+                have hjkNat : j.val < k.val := Fin.lt_def.mp hjk
+                omega
+              exact ih j hjN
+            exact
+              sylvester_quasiSchur_singleton_column_eq_of_nonsingInv_of_solution_prev_columns_eq
+                m n R S C X Y pmap k hmono hzero hnext hdet hXk hYsol hprev
+          · rcases hblock with ⟨p, q, hpq_adj, hsame, hkblock, hXp, hXq⟩
+            have hprev : forall j : Fin n, j < p -> forall i : Fin m,
+                X i j = Y i j := by
+              intro j hjp
+              have hjN : j.val < N := by
+                rcases hkblock with hkleft | hkright
+                · have hjpNat : j.val < p.val := Fin.lt_def.mp hjp
+                  have hpval : p.val = N := by
+                    rw [← hkN]
+                    exact congrArg Fin.val hkleft.symm
+                  omega
+                · have hjpNat : j.val < p.val := Fin.lt_def.mp hjp
+                  have hqval : q.val = N := by
+                    rw [← hkN]
+                    exact congrArg Fin.val hkright.symm
+                  omega
+              exact ih j hjN
+            have hcols :=
+              sylvesterTwoColumnBlockSystem_columns_eq_of_nonsingInv_columns_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left_of_solution_prev_columns_eq
+                m n U R Aorig V S Borig C X Y pmap p q
+                hU hV hA hB hmono hcard hzero hpq_adj hsame hspectral hnoOrig
+                hXp hXq hYsol hprev
+            intro i
+            rcases hkblock with hkleft | hkright
+            · subst k
+              exact hcols.1 i
+            · subst k
+              exact hcols.2 i
+  funext i k
+  exact hcol n k k.isLt i
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
     `A - t_kk I` nonsingular, two solutions of `AX - XT = C` coincide, by
