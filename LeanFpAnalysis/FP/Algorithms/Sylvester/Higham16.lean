@@ -3722,6 +3722,115 @@ theorem frobNormRect_sylvesterResidualRect_schur_transform (m n : Nat)
           simpa [Rs, matMulRectRight] using
             frobNormRect_orthogonal_right Rs (matTranspose V) hV.transpose
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.9), conditional exact
+    residual-bound transport.  Any Schur-coordinate Frobenius residual bound
+    transfers unchanged to the reconstructed original-coordinate iterate. -/
+theorem frobNormRect_sylvesterResidualRect_le_of_schur_transform (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n) (C Y : RMatFn m n)
+    (rho : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho) :
+    frobNormRect
+        (sylvesterResidualRect m n A B C
+          (rectMatMul U (rectMatMul Y (matTranspose V)))) <= rho := by
+  rw [frobNormRect_sylvesterResidualRect_schur_transform m n U R A V S B C Y
+    hU hV hA hB]
+  exact hres
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.9): source-numbered
+    alias for exact residual-bound transport from Schur coordinates. -/
+alias H16_eq16_9_frobNormRect_sylvesterResidualRect_le_of_schur_transform :=
+  frobNormRect_sylvesterResidualRect_le_of_schur_transform
+
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    a Frobenius residual-error model in Schur coordinates transfers to the
+    original-coordinate computed-residual budget after orthogonal
+    reconstruction. -/
+theorem sylvesterComputedResidualBudget_of_schur_frobenius_error_model
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C Y RhatS dRs : RMatFn m n) (rho : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hRhatS : forall i j,
+      RhatS i j =
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) i j + dRs i j)
+    (hrho : 0 <= rho)
+    (hdRs : frobNorm dRs <= rho) :
+    IsSylvesterComputedResidualBudget m n A B C
+      (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (rectMatMul U (rectMatMul RhatS (matTranspose V)))
+      (fun _ _ => rho) := by
+  let Cs : RMatFn m n := rectMatMul (matTranspose U) (rectMatMul C V)
+  let Rs : RMatFn m n := sylvesterResidualRect m n R S Cs Y
+  let Xhat : RMatFn m n := rectMatMul U (rectMatMul Y (matTranspose V))
+  let Rhat : RMatFn m n := rectMatMul U (rectMatMul RhatS (matTranspose V))
+  let dR : RMatFn m n := rectMatMul U (rectMatMul dRs (matTranspose V))
+  have hRhatS_fun : RhatS = fun i j => Rs i j + dRs i j := by
+    ext i j
+    simpa [Rs, Cs] using hRhatS i j
+  have hinner :
+      rectMatMul RhatS (matTranspose V) =
+        fun i j =>
+          rectMatMul Rs (matTranspose V) i j +
+            rectMatMul dRs (matTranspose V) i j := by
+    rw [hRhatS_fun]
+    exact rectMatMul_add_left Rs dRs (matTranspose V)
+  have houter :
+      Rhat =
+        fun i j =>
+          rectMatMul U (rectMatMul Rs (matTranspose V)) i j + dR i j := by
+    unfold Rhat dR
+    rw [hinner]
+    exact rectMatMul_add_right U
+      (rectMatMul Rs (matTranspose V)) (rectMatMul dRs (matTranspose V))
+  have horig :
+      sylvesterResidualRect m n A B C Xhat =
+        rectMatMul U (rectMatMul Rs (matTranspose V)) := by
+    simpa [Xhat, Rs, Cs] using
+      sylvesterResidualRect_schur_transform_identity
+        m n U R A V S B C Y hU hV hA hB
+  have hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j := by
+    intro i j
+    have houterij := congrFun (congrFun houter i) j
+    have horigij := congrFun (congrFun horig i) j
+    calc
+      Rhat i j =
+          rectMatMul U (rectMatMul Rs (matTranspose V)) i j + dR i j := houterij
+      _ = sylvesterResidualRect m n A B C Xhat i j + dR i j := by
+          rw [← horigij]
+  have hdR : frobNorm dR <= rho := by
+    have hrect : frobNormRect dR = frobNormRect dRs := by
+      calc
+        frobNormRect dR =
+            frobNormRect (rectMatMul dRs (matTranspose V)) := by
+            simpa [dR, matMulRectLeft] using
+              frobNormRect_orthogonal_left U
+                (rectMatMul dRs (matTranspose V)) hU
+        _ = frobNormRect dRs := by
+            simpa [matMulRectRight] using
+              frobNormRect_orthogonal_right dRs (matTranspose V) hV.transpose
+    have hnorm : frobNorm dR = frobNorm dRs := by
+      rw [← frobNormRect_eq_frobNormFn dR, hrect,
+        frobNormRect_eq_frobNormFn dRs]
+    simpa [hnorm] using hdRs
+  simpa [Xhat, Rhat] using
+    sylvesterComputedResidualBudget_of_frobenius_error_model m n
+      A B C Xhat Rhat dR rho hRhat hrho hdR
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered alias
+    for the Schur-coordinate Frobenius residual-error budget transfer. -/
+alias H16_eq16_29_sylvesterComputedResidualBudget_of_schur_frobenius_error_model :=
+  sylvesterComputedResidualBudget_of_schur_frobenius_error_model
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5):
     equation-level Schur-coordinate form.  Under supplied orthogonal
     factorizations `A = U R U^T` and `B = V S V^T`, the substitution
