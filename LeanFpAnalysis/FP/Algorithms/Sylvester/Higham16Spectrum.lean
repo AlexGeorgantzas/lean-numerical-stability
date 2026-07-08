@@ -9949,6 +9949,84 @@ theorem exists_isSylvesterSolutionRect_and_generatedStepFormula_of_twoBlockSpect
       m n U R A V S B C X pmap hU hV hA hB hmono hcard hzero
       hspectral hnoOrig hXsol⟩
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    generated-step witness surface: the exact Schur-coordinate witness from
+    `exists_isSylvesterSolutionRect_and_generatedStepFormula_of_twoBlockSpectral_no_common`
+    reconstructs an exact original-coordinate solution after the standard
+    `C_s = U^T C V` right-hand-side transform.
+
+    Scope: the generated formulas are proved for the Schur-coordinate right
+    hand side displayed in the theorem.  The witness is still obtained through
+    the exact vec/Kronecker inverse route, not by the recursive
+    Bartels-Stewart frontier recurrence. -/
+theorem exists_original_solution_and_generated_step_formula_of_twoBlockSpectral_no_common
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    exists X : RMatFn m n,
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap /\
+      IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) := by
+  obtain ⟨X, hXsol, hXformula⟩ :=
+    exists_isSylvesterSolutionRect_and_generatedStepFormula_of_twoBlockSpectral_no_common
+      m n U R A V S B
+      (rectMatMul (matTranspose U) (rectMatMul C V)) pmap
+      hU hV hA hB hmono hcard hzero hspectral hnoOrig
+  refine ⟨X, hXformula, ?_⟩
+  exact
+    (sylvester_schur_transform_solution_iff m n
+      U R A V S B C X hU hV hA hB).mpr hXsol
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    original-coordinate unique solvability from the exact generated-formula
+    witness.  This removes the caller-facing generated-formula hypothesis by
+    producing such a witness from the exact vec/Kronecker solve, then feeding
+    it to the generated-step unique-solvability wrapper.
+
+    Scope: exact arithmetic only; this is not a rounded Bartels-Stewart solve
+    or LAPACK estimator theorem. -/
+theorem existsUnique_isSylvesterSolutionRect_of_twoBlockSpectral_no_common_generated_step_formula_witness
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  obtain ⟨X, hXformula, _hXorig⟩ :=
+    exists_original_solution_and_generated_step_formula_of_twoBlockSpectral_no_common
+      m n U R A V S B C pmap hU hV hA hB hmono hcard hzero
+      hspectral hnoOrig
+  exact
+    existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_generated_step_formula
+      m n U R A V S B C
+      (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap
+      hU hV hA hB rfl hmono hcard hzero hspectral hnoOrig hXformula
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
     `A - t_kk I` nonsingular, two solutions of `AX - XT = C` coincide, by
