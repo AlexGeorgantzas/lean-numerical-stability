@@ -1419,6 +1419,24 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_solve_delta
   exact higham11_7_tridiagonal_backward_error_interface n A b x_hat c u Amax
     ⟨ΔA1, ΔA2, hΔA1, hΔA2, hsolve_eq⟩
 
+/-- **Theorem 11.7 solve-side bridge, nonnegative printed budget**, a
+convenience form of
+`higham11_7_tridiagonal_backward_error_interface_of_solve_delta` when the
+printed coefficient, unit roundoff, and matrix budget are separately
+nonnegative. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_solve_delta_nonneg
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (c u Amax : ℝ) (hc : 0 ≤ c) (hu : 0 ≤ u) (hAmax : 0 ≤ Amax)
+    (hsolve : ∃ ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ c * u * Amax) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_solve_delta n A b x_hat
+    c u Amax (mul_nonneg (mul_nonneg hc hu) hAmax) hsolve
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
