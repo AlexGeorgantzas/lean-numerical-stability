@@ -1956,6 +1956,25 @@ theorem tridiagonalTwoByTwoLiftTrailingPerturbation_leadingBlockSupport
   · rw [tridiagonalTwoByTwoLiftTrailingPerturbation, dif_neg hi]
 
 /-- Package the recursive trailing perturbation lift with its ambient bound,
+shifted zero-prefix support, and embedded-entry identity. -/
+theorem tridiagonalTwoByTwoLiftTrailingPerturbation_bound_leadingBlockSupport
+    (n offset : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ) (β : ℝ)
+    (hEbound : ∀ i j : Fin (n + 1), |E i j| ≤ β)
+    (hEsupp : TridiagonalLeadingBlockSupport (n + 1) offset E) :
+    ∃ ΔR : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔR i j| ≤ β) ∧
+      TridiagonalLeadingBlockSupport (n + 3) (offset + 2) ΔR ∧
+      (∀ i j : Fin (n + 1),
+        ΔR (tridiagonalTwoByTwoTrailingSubproblemIndex n i)
+          (tridiagonalTwoByTwoTrailingSubproblemIndex n j) = E i j) := by
+  refine ⟨tridiagonalTwoByTwoLiftTrailingPerturbation n E, ?_, ?_, ?_⟩
+  · exact tridiagonalTwoByTwoLiftTrailingPerturbation_bound n E β hEbound
+  · exact tridiagonalTwoByTwoLiftTrailingPerturbation_leadingBlockSupport
+      n offset E hEsupp
+  · intro i j
+    exact tridiagonalTwoByTwoLiftTrailingPerturbation_apply_embedded n E i j
+
+/-- Package the recursive trailing perturbation lift with its ambient bound,
 support, and embedded-entry identity. -/
 theorem tridiagonalTwoByTwoLiftTrailingPerturbation_bound_support
     (n : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ) (β : ℝ)
