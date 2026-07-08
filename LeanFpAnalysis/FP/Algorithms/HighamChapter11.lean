@@ -962,6 +962,113 @@ abbrev higham11_7_TridiagonalLeadingBlockSupport (m offset : ℕ)
     (E : Fin m → Fin m → ℝ) : Prop :=
   TridiagonalLeadingBlockSupport m offset E
 
+/-- **Theorem 11.7 zero-prefix support monotonicity**, lowering a deeper
+recursive zero-prefix support fact to any shallower prefix. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_of_le_offset
+    (m offset offset' : ℕ) (E : Fin m → Fin m → ℝ)
+    (hoff : offset ≤ offset')
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m offset' E) :
+    higham11_7_TridiagonalLeadingBlockSupport m offset E :=
+  tridiagonalLeadingBlockSupport_of_le_offset m offset offset' E hoff hEsupp
+
+/-- **Theorem 11.7 recursive base support package**, giving the zero
+perturbation with any zero-prefix support and any nonnegative componentwise
+bound. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_zero_bound
+    (m offset : ℕ) (β : ℝ) (hβ : 0 ≤ β) :
+    ∃ Z : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |Z i j| ≤ β) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset Z ∧
+      (∀ i j : Fin m, Z i j = 0) :=
+  tridiagonalLeadingBlockSupport_zero_bound m offset β hβ
+
+/-- **Theorem 11.7 recursive base support package, printed coefficients**,
+giving the zero perturbation with any zero-prefix support and bound
+`c * u * Amax`. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_zero_printed_bound
+    (m offset : ℕ) (c u Amax : ℝ) (hβ : 0 ≤ c * u * Amax) :
+    ∃ Z : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |Z i j| ≤ c * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset Z ∧
+      (∀ i j : Fin m, Z i j = 0) :=
+  tridiagonalLeadingBlockSupport_zero_printed_bound m offset c u Amax hβ
+
+/-- **Theorem 11.7 recursive support-add combiner**, accumulating two
+zero-prefix supported perturbations at an arbitrary recursive offset while
+adding their componentwise bounds. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_add_bound
+    (m offset : ℕ) (E F : Fin m → Fin m → ℝ) (βE βF : ℝ)
+    (hEbound : ∀ i j : Fin m, |E i j| ≤ βE)
+    (hFbound : ∀ i j : Fin m, |F i j| ≤ βF)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m offset E)
+    (hFsupp : higham11_7_TridiagonalLeadingBlockSupport m offset F) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ βE + βF) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = E i j + F i j) :=
+  tridiagonalLeadingBlockSupport_add_bound m offset E F βE βF
+    hEbound hFbound hEsupp hFsupp
+
+/-- **Theorem 11.7 recursive support-add combiner, mixed offsets**,
+accumulating two zero-prefix supported perturbations into a common shallower
+recursive offset while adding their componentwise bounds. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_add_bound_of_le_offset
+    (m offset offsetE offsetF : ℕ) (E F : Fin m → Fin m → ℝ) (βE βF : ℝ)
+    (hoffE : offset ≤ offsetE) (hoffF : offset ≤ offsetF)
+    (hEbound : ∀ i j : Fin m, |E i j| ≤ βE)
+    (hFbound : ∀ i j : Fin m, |F i j| ≤ βF)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m offsetE E)
+    (hFsupp : higham11_7_TridiagonalLeadingBlockSupport m offsetF F) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ βE + βF) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = E i j + F i j) :=
+  tridiagonalLeadingBlockSupport_add_bound_of_le_offset m offset offsetE
+    offsetF E F βE βF hoffE hoffF hEbound hFbound hEsupp hFsupp
+
+/-- **Theorem 11.7 recursive support-add combiner, printed coefficients**,
+accumulating two zero-prefix supported perturbations bounded by
+`cE * u * Amax` and `cF * u * Amax`. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_add_bound_printed
+    (m offset : ℕ) (E F : Fin m → Fin m → ℝ) (cE cF u Amax : ℝ)
+    (hEbound : ∀ i j : Fin m, |E i j| ≤ cE * u * Amax)
+    (hFbound : ∀ i j : Fin m, |F i j| ≤ cF * u * Amax)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m offset E)
+    (hFsupp : higham11_7_TridiagonalLeadingBlockSupport m offset F) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ (cE + cF) * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = E i j + F i j) :=
+  tridiagonalLeadingBlockSupport_add_bound_printed m offset E F cE cF u Amax
+    hEbound hFbound hEsupp hFsupp
+
+/-- **Theorem 11.7 recursive support-add combiner, printed mixed offsets**,
+accumulating two zero-prefix supported perturbations into a common shallower
+recursive offset with printed coefficients. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_add_bound_printed_of_le_offset
+    (m offset offsetE offsetF : ℕ) (E F : Fin m → Fin m → ℝ)
+    (cE cF u Amax : ℝ)
+    (hoffE : offset ≤ offsetE) (hoffF : offset ≤ offsetF)
+    (hEbound : ∀ i j : Fin m, |E i j| ≤ cE * u * Amax)
+    (hFbound : ∀ i j : Fin m, |F i j| ≤ cF * u * Amax)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m offsetE E)
+    (hFsupp : higham11_7_TridiagonalLeadingBlockSupport m offsetF F) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ (cE + cF) * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = E i j + F i j) :=
+  tridiagonalLeadingBlockSupport_add_bound_printed_of_le_offset m offset
+    offsetE offsetF E F cE cF u Amax hoffE hoffF hEbound hFbound
+    hEsupp hFsupp
+
+/-- **Theorem 11.7 support predicate bridge**, identifying the specialized
+trailing-block support predicate with zero-prefix support at offset two. -/
+theorem higham11_7_tridiagonalTwoByTwoTrailingBlockSupport_iff_leadingBlockSupport
+    (n : ℕ) (E : Fin (n + 3) → Fin (n + 3) → ℝ) :
+    higham11_7_TridiagonalTwoByTwoTrailingBlockSupport n E ↔
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 E :=
+  tridiagonalTwoByTwoTrailingBlockSupport_iff_leadingBlockSupport n E
+
 /-- Supported perturbations in the trailing block after a leading `2 × 2`
 tridiagonal pivot are closed under addition, and their componentwise bounds add. -/
 theorem higham11_7_tridiagonalTwoByTwoTrailingBlockSupport_add_bound
@@ -1176,6 +1283,36 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_subproblem_printed_bound_acc
     σ a11 a21 a22 b c Amax κ c_bound c_rec u ΔRtail hchoice hσa11
     hσa22 hAmax hκ hb hc hratio hbudget hval hRtail_bound
 
+/-- **Theorem 11.7 recursive-subproblem accumulation with zero-prefix support**,
+lifting a recursive trailing perturbation, accumulating the local rounded
+Schur residual, and exposing support through the generic leading-block
+predicate at offset two. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_subproblem_printed_bound_accumulate_leadingBlockSupport
+    (n : ℕ) (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound c_rec u : ℝ)
+    (ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3)
+    (hRtail_bound : ∀ i j : Fin (n + 1),
+      |ΔRtail i j| ≤ c_rec * u * Amax) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c) +
+          ΔRtail 0 0
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) :=
+  fl_tridiagonal_twoByTwo_trailing_subproblem_printed_bound_accumulate_leadingBlockSupport
+    n fp σ a11 a21 a22 b c Amax κ c_bound c_rec u ΔRtail hchoice
+    hσa11 hσa22 hAmax hκ hb hc hratio hbudget hval hRtail_bound
+
 /-- **Theorem 11.7 recursive residual accumulation**, composing a recursive
 tail scalar residual certificate with the local `2 × 2` tridiagonal rounded
 Schur residual under the printed coefficient update. -/
@@ -1204,6 +1341,38 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_b
           ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
             (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) :=
   fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate
+    n fp σ a11 a21 a22 b c Amax κ c_bound c_rec u tail_fl tail_exact
+    hchoice hσa11 hσa22 hAmax hκ hb hc hratio hbudget hval hrec
+
+/-- **Theorem 11.7 recursive residual accumulation with zero-prefix support**,
+composing a recursive scalar residual certificate with the local rounded Schur
+residual and exposing the resulting perturbation through the generic
+leading-block support predicate at offset two. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport
+    (n : ℕ) (fp : FPModel)
+    (σ a11 a21 a22 b c Amax κ c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * Amax) ∧
+      tail_fl = tail_exact + ΔRtail 0 0) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c) +
+          tail_fl
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) :=
+  fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport
     n fp σ a11 a21 a22 b c Amax κ c_bound c_rec u tail_fl tail_exact
     hchoice hσa11 hσa22 hAmax hκ hb hc hratio hbudget hval hrec
 
