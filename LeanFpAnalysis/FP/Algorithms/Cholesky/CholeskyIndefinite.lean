@@ -1599,6 +1599,52 @@ theorem fl_tridiagonal_twoByTwo_schur_step_backward_error_of_sigma_bound
   rw [hstep]
   ring
 
+/-- Uniform scalar budget for the backward-error form of the accepted
+tridiagonal `2 × 2` pivot update.  This is the local bridge from the Algorithm
+11.6 inverse-entry scalar to a one-stage normwise envelope. -/
+theorem fl_tridiagonal_twoByTwo_schur_step_backward_error_uniform_bound
+    (fp : FPModel) (σ a11 a21 a22 b c Amax κ : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hval : gammaValid fp 3) :
+    ∃ Δb : ℝ,
+      |Δb| ≤ gamma fp 3 * (Amax + Amax * κ * Amax) ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b + Δb) - c * (a11 / (a11 * a22 - a21 ^ 2)) * c := by
+  obtain ⟨Δb, hΔb, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_schur_step_backward_error_of_sigma_bound fp
+      σ a11 a21 a22 b c hchoice hσa11 hσa22 hval
+  refine ⟨Δb, ?_, hstep⟩
+  have hσ : 0 ≤ σ := le_trans (abs_nonneg a11) hσa11
+  have ha21 :=
+    bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg σ a11 a21
+      hchoice hσ
+  have hsquare : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have halpha_gap : 0 < 1 - bunchTridiagonalAlpha := by
+    linarith [bunch_tridiagonal_alpha_lt_one]
+  have hlower_pos : 0 < (1 - bunchTridiagonalAlpha) * a21 ^ 2 :=
+    mul_pos halpha_gap hsquare
+  have hratio_nonneg :
+      0 ≤ σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) :=
+    div_nonneg hσ (le_of_lt hlower_pos)
+  have hcorr1 :
+      |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) ≤ Amax * κ :=
+    mul_le_mul hc hratio hratio_nonneg hAmax
+  have hcorr :
+      |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) * |c| ≤
+        Amax * κ * Amax :=
+    mul_le_mul hcorr1 hc (abs_nonneg c) (mul_nonneg hAmax hκ)
+  have hinside :
+      |b| + |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) * |c| ≤
+        Amax + Amax * κ * Amax :=
+    add_le_add hb hcorr
+  have hγ0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+  exact le_trans hΔb (mul_le_mul_of_nonneg_left hinside hγ0)
+
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
 -- ============================================================

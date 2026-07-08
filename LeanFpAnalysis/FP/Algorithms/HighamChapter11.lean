@@ -827,6 +827,25 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_schur_step_backward_error_of_sigma_bo
   fl_tridiagonal_twoByTwo_schur_step_backward_error_of_sigma_bound fp
     σ a11 a21 a22 b c hchoice hσa11 hσa22 hval
 
+/-- **Theorem 11.7 local uniform bound**, turning the scalar `2 × 2`
+tridiagonal pivot backward error into an `Amax`/`κ` stage budget. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_schur_step_backward_error_uniform_bound
+    (fp : FPModel) (σ a11 a21 a22 b c Amax κ : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hval : gammaValid fp 3) :
+    ∃ Δb : ℝ,
+      |Δb| ≤ gamma fp 3 * (Amax + Amax * κ * Amax) ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b + Δb) - c * (a11 / (a11 * a22 - a21 ^ 2)) * c :=
+  fl_tridiagonal_twoByTwo_schur_step_backward_error_uniform_bound fp
+    σ a11 a21 a22 b c Amax κ hchoice hσa11 hσa22 hAmax hκ hb hc
+    hratio hval
+
 /-- **Equation (11.8)** source predicate: unpermuted block LDL^T
 factorization for a symmetric tridiagonal matrix. -/
 abbrev higham11_8_tridiagonalBlockLDLTSpec (n : ℕ)
