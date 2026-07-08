@@ -1805,6 +1805,47 @@ def TridiagonalLeadingBlockSupport (m offset : ℕ)
     (E : Fin m → Fin m → ℝ) : Prop :=
   ∀ i j : Fin m, i.val < offset ∨ j.val < offset → E i j = 0
 
+/-- The zero perturbation has any zero-prefix support, with any nonnegative
+componentwise bound.  This is the base bookkeeping object for recursive
+tridiagonal perturbation assembly. -/
+theorem tridiagonalLeadingBlockSupport_zero_bound
+    (m offset : ℕ) (β : ℝ) (hβ : 0 ≤ β) :
+    ∃ Z : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |Z i j| ≤ β) ∧
+      TridiagonalLeadingBlockSupport m offset Z ∧
+      (∀ i j : Fin m, Z i j = 0) := by
+  refine ⟨fun _ _ => 0, ?_, ?_, ?_⟩
+  · intro i j
+    simpa using hβ
+  · intro i j hlead
+    rfl
+  · intro i j
+    rfl
+
+/-- Zero-prefix supported perturbations are closed under addition, and their
+componentwise bounds add.  This is the offset-generic version used when several
+recursive tridiagonal lifts are accumulated at different depths. -/
+theorem tridiagonalLeadingBlockSupport_add_bound
+    (m offset : ℕ) (E F : Fin m → Fin m → ℝ) (βE βF : ℝ)
+    (hEbound : ∀ i j : Fin m, |E i j| ≤ βE)
+    (hFbound : ∀ i j : Fin m, |F i j| ≤ βF)
+    (hEsupp : TridiagonalLeadingBlockSupport m offset E)
+    (hFsupp : TridiagonalLeadingBlockSupport m offset F) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ βE + βF) ∧
+      TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = E i j + F i j) := by
+  refine ⟨fun i j => E i j + F i j, ?_, ?_, ?_⟩
+  · intro i j
+    calc
+      |E i j + F i j| ≤ |E i j| + |F i j| := abs_add_le _ _
+      _ ≤ βE + βF := add_le_add (hEbound i j) (hFbound i j)
+  · intro i j hlead
+    change E i j + F i j = 0
+    rw [hEsupp i j hlead, hFsupp i j hlead, add_zero]
+  · intro i j
+    rfl
+
 /-- Supported perturbations in the trailing block after a leading `2 × 2`
 tridiagonal pivot are closed under addition, and their componentwise bounds add. -/
 theorem tridiagonalTwoByTwoTrailingBlockSupport_add_bound
