@@ -2856,6 +2856,192 @@ theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_slack_nat
           (hcompact i hi))
       hslack
 
+/-- Theorem 20.7 support: a vector whose entries are bounded by a scalar
+    multiple of a source row scale has the corresponding `sqrt(m)` norm bound.
+
+This is the finite-dimensional norm bridge used to turn entrywise QR stage
+bounds into the column/RHS norm estimates consumed by the compact-budget
+coefficient adapters. -/
+theorem theorem20_7_vecNorm2_le_sqrt_card_mul_scale_of_abs_le
+    {m : ℕ} (x : Fin m → ℝ) {C S : ℝ}
+    (hC : 0 ≤ C) (hS : 0 ≤ S)
+    (hentry : ∀ r : Fin m, |x r| ≤ C * S) :
+    vecNorm2 x ≤ (Real.sqrt (m : ℝ) * C) * S := by
+  have hB : 0 ≤ C * S := mul_nonneg hC hS
+  calc
+    vecNorm2 x ≤ Real.sqrt (m : ℝ) * (C * S) :=
+      vecNorm2_le_sqrt_card_mul_of_abs_le x hB hentry
+    _ = (Real.sqrt (m : ℝ) * C) * S := by ring
+
+/-- Theorem 20.7 support: matrix completion-budget domination from entrywise
+    column bounds and a scalar norm-coefficient slack comparison.
+
+Compared with
+`theorem20_7_completionA_budget_of_signed_stage_norm_coeff_slack_nat`, this
+adapter removes the explicit column-norm hypothesis: entrywise bounds by
+`C i * max_j |a_ij|` and the scalar comparison
+`compactCoeff_i * sqrt(m) * C i <= slack i` suffice. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_norm_coeff_entry_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (err : ℝ) (C slack : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        ∀ r : Fin m,
+          |Ahat i.val r j| ≤ C i.val * theorem20_7_initialRowMax hn A i)
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  refine
+    theorem20_7_completionA_budget_of_signed_stage_norm_coeff_slack_nat
+      hn hnm fp Ahat A alpha err slack hm ?_ hslack
+  intro i hi j hij
+  have hrow_nonneg : 0 ≤ theorem20_7_initialRowMax hn A i :=
+    theorem20_7_initialRowMax_nonneg hn A i
+  have hcoeff_nonneg :
+      0 ≤ householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) :=
+    householderCompactNormBudgetCoeff_nonneg fp m
+      (storedQRSignedStageVector hnm Ahat alpha i.val)
+      (storedQRSignedStageBeta hnm Ahat alpha i.val) hm
+  have hnorm :
+      vecNorm2 (fun r : Fin m => Ahat i.val r j) ≤
+        (Real.sqrt (m : ℝ) * C i.val) *
+          theorem20_7_initialRowMax hn A i :=
+    theorem20_7_vecNorm2_le_sqrt_card_mul_scale_of_abs_le
+      (fun r : Fin m => Ahat i.val r j) (hC i hi) hrow_nonneg
+      (fun r => hentry i hi j hij r)
+  calc
+    householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+        vecNorm2 (fun r : Fin m => Ahat i.val r j)
+      ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          ((Real.sqrt (m : ℝ) * C i.val) *
+            theorem20_7_initialRowMax hn A i) :=
+        mul_le_mul_of_nonneg_left hnorm hcoeff_nonneg
+    _ = (householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          (Real.sqrt (m : ℝ) * C i.val)) *
+            theorem20_7_initialRowMax hn A i := by ring
+    _ ≤ slack i.val * theorem20_7_initialRowMax hn A i :=
+        mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: RHS completion-budget domination from entrywise RHS
+    bounds and a scalar norm-coefficient slack comparison.
+
+This is the weighted right-hand-side analogue of
+`theorem20_7_completionA_budget_of_signed_stage_norm_coeff_entry_slack_nat`. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_entry_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (err : ℝ) (C slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ r : Fin m,
+        |bhat i.val r| ≤
+          C i.val * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  refine
+    theorem20_7_completionB_budget_of_signed_stage_norm_coeff_slack_nat
+      hn hnm fp Ahat bhat A b alpha err slack hphi hm ?_ hslack
+  intro i hi
+  have hrow_nonneg :
+      0 ≤ theorem20_7_initialWeightedRowMax hn A b phi i :=
+    theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i
+  have hcoeff_nonneg :
+      0 ≤ householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) :=
+    householderCompactNormBudgetCoeff_nonneg fp m
+      (storedQRSignedStageVector hnm Ahat alpha i.val)
+      (storedQRSignedStageBeta hnm Ahat alpha i.val) hm
+  have hnorm :
+      vecNorm2 (bhat i.val) ≤
+        (Real.sqrt (m : ℝ) * C i.val) *
+          theorem20_7_initialWeightedRowMax hn A b phi i :=
+    theorem20_7_vecNorm2_le_sqrt_card_mul_scale_of_abs_le
+      (bhat i.val) (hC i hi) hrow_nonneg
+      (fun r => hentry i hi r)
+  calc
+    householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+        vecNorm2 (bhat i.val)
+      ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          ((Real.sqrt (m : ℝ) * C i.val) *
+            theorem20_7_initialWeightedRowMax hn A b phi i) :=
+        mul_le_mul_of_nonneg_left hnorm hcoeff_nonneg
+    _ = (householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          (Real.sqrt (m : ℝ) * C i.val)) *
+            theorem20_7_initialWeightedRowMax hn A b phi i := by ring
+    _ ≤ slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
+        mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
+
 /-- Theorem 20.7 support: stored RHS steps preserve completed rows.
 
 Once row `i` has been processed, every later stored RHS step has active pivot
