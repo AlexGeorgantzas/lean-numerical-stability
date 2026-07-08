@@ -2085,6 +2085,16 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_fosterFeasible_of_rook` (rook LU factorization sorted pivots are Lemma A.2-feasible at `sqrt(n^n)`, zero tail)
 - `higham9_16_fosterA2_one` (Lemma A.2 base case `k = 1`: `p_1 <= C`)
 - `higham9_16_fosterFeasible_head_max` (the head dominates every entry)
+- `higham9_16_fosterA2_case1_slice` (A.2 induction step, case 1: small last variable gives `p_1 <= V(k+1, C)` from the k-level standard-constant bound)
+- `higham9_16_fosterA2_case2_reduction` (A.2 induction step, case-2 reduction: positive last variable gives k-level feasibility at `min(sqrt(k^k), C/(t(1+t)^k))`)
+- `higham9_16_hat_strictMonoOn` (`x ↦ x/(1+x)` strictly monotone on `[0,∞)`)
+- `higham9_16_fosterQStage_hat_transfer` (Foster (A.22)/(A.25) level-shift identity: `QStage_k^(r+1)(x) = QStage_(k-1)^r(x/(1+x))·x(1+x)^(k-1)`)
+- `higham9_16_fosterQ_hat` (the hat image of a level-`k` stage-`(r+1)` root is the level-`(k-1)` stage-`r` root at the hatted constant)
+- `higham9_16_fosterQ_lt_succ` (**Foster Lemma A.3 (A.18), general interlacing**: `q^(r) < q^(r+1)` for `2 <= k`, `0 < C <= sqrt(k^k)`, `1 <= r`, `r+1 <= k` — by Foster's double induction, derivative-free)
+- `higham9_16_fosterBandValue_one` (`M(1, C, P) = C`)
+- `higham9_16_fosterQ_one_le` (with A.3, the first band root is least)
+- `higham9_16_fosterBandIdx_eq_zero_of_le_first` (band index vanishes below the first root)
+- `higham9_16_fosterA2_step_case1` (A.2 induction step, case 1 assembled: bound by the full band value at the tail `P`)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
