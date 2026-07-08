@@ -2032,6 +2032,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_completePivotingUTraceGrowthValues_exists_ge_succ`
 - `higham9_11_completePivotingUTraceGrowthSup_ge_succ`
 - `higham9_16_rookPivotFosterBound`
+- `higham9_16_foster_subset_hadamard`
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
