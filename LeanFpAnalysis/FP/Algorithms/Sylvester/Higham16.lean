@@ -3936,6 +3936,42 @@ theorem sylvester_practical_abs_error_bound_of_schur_transform_residual_bound
       (sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
         m n U R A V S B C Y rho hU hV hA hB hres)
 
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    scalar-cap form of the denominator-free conservative Schur residual
+    practical max-entry bound. -/
+theorem sylvester_practical_abs_error_bound_of_schur_transform_residual_bound_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Y : RMatFn m n) (rho eta : Real)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p,
+        sylvesterPracticalBudgetVec m n PinvAbs
+            (fun _ _ => 0) (fun _ _ => rho) p <= eta) :
+    sylvesterMaxEntryNormRect m n
+        (fun i j =>
+          X i j - rectMatMul U (rectMatMul Y (matTranspose V)) i j) <= eta := by
+  exact
+    sylvester_practical_abs_error_bound_of_computed_residual_certificate_scalar
+      m n A B C X (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (fun _ _ => 0) (fun _ _ => rho) Pinv PinvAbs eta
+      hX hLeft hPinvAbs
+      (sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
+        m n U R A V S B C Y rho hU hV hA hB hres)
+      heta hcomponent
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered alias
     for the conservative practical wrapper from a Schur residual bound. -/
 alias H16_eq16_29_sylvester_practical_error_bound_of_schur_transform_residual_bound :=
@@ -3945,6 +3981,11 @@ alias H16_eq16_29_sylvester_practical_error_bound_of_schur_transform_residual_bo
     for the denominator-free conservative Schur residual practical wrapper. -/
 alias H16_eq16_29_sylvester_practical_abs_error_bound_of_schur_transform_residual_bound :=
   sylvester_practical_abs_error_bound_of_schur_transform_residual_bound
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered alias
+    for the denominator-free scalar-cap Schur residual practical wrapper. -/
+alias H16_eq16_29_sylvester_practical_abs_error_bound_of_schur_transform_residual_bound_scalar :=
+  sylvester_practical_abs_error_bound_of_schur_transform_residual_bound_scalar
 
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5):
     equation-level Schur-coordinate form.  Under supplied orthogonal
