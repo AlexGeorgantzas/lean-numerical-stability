@@ -226,6 +226,127 @@ theorem theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
       (mul_le_mul_of_nonneg_left (hA k hk s hks) hphi)
       (hb k hk s hks)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    row sorting relabels the source row maximum by the sorting permutation. -/
+theorem theorem20_7_initialRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (σ : Fin m ≃ Fin m) (i : Fin m) :
+    theorem20_7_initialRowMax hn (fun r j => A (σ r) j) i =
+      theorem20_7_initialRowMax hn A (σ i) := by
+  simp [theorem20_7_initialRowMax]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    row sorting relabels the weighted source row maximum by the sorting
+    permutation, provided `A` and `b` are permuted together. -/
+theorem theorem20_7_initialWeightedRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ)
+    (σ : Fin m ≃ Fin m) (i : Fin m) :
+    theorem20_7_initialWeightedRowMax hn
+        (fun r j => A (σ r) j) (fun r => b (σ r)) phi i =
+      theorem20_7_initialWeightedRowMax hn A b phi (σ i) := by
+  simp [theorem20_7_initialWeightedRowMax,
+    theorem20_7_initialRowMax_permuteRows]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
+    a permutation whose displayed active suffix is sorted by the original row
+    maxima supplies the sorted-source hypothesis for the permuted matrix. -/
+theorem theorem20_7_initialRowMax_sorted_of_permuteRows_sorted_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (σ : Fin m ≃ Fin m)
+    (hσA :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A (σ s) ≤
+          theorem20_7_initialRowMax hn A
+            (σ ⟨k, lt_of_lt_of_le hk hnm⟩)) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+      theorem20_7_initialRowMax hn (fun r j => A (σ r) j) s ≤
+        theorem20_7_initialRowMax hn (fun r j => A (σ r) j)
+          ⟨k, lt_of_lt_of_le hk hnm⟩ := by
+  intro k hk s hks
+  simpa [theorem20_7_initialRowMax_permuteRows] using hσA k hk s hks
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
+    a permutation whose displayed active suffix is sorted by the original
+    right-hand-side magnitudes supplies the `|b|` sorted-source hypothesis for
+    the permuted vector. -/
+theorem theorem20_7_abs_b_sorted_of_permuteRows_sorted_nat
+    {m n : ℕ} (hnm : n ≤ m) (b : Fin m → ℝ) (σ : Fin m ≃ Fin m)
+    (hσb :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b (σ s)| ≤ |b (σ ⟨k, lt_of_lt_of_le hk hnm⟩)|) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+      |(fun r => b (σ r)) s| ≤
+        |(fun r => b (σ r)) ⟨k, lt_of_lt_of_le hk hnm⟩| := by
+  intro k hk s hks
+  simpa using hσb k hk s hks
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
+    sorting `A` and `b` by a common row permutation supplies the weighted
+    sorted-source hypothesis used by the row-wise QR handoff. -/
+theorem theorem20_7_initialWeightedRowMax_sorted_of_permuteRows_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (σ : Fin m ≃ Fin m) (hphi : 0 ≤ phi)
+    (hσA :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A (σ s) ≤
+          theorem20_7_initialRowMax hn A
+            (σ ⟨k, lt_of_lt_of_le hk hnm⟩))
+    (hσb :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b (σ s)| ≤ |b (σ ⟨k, lt_of_lt_of_le hk hnm⟩)|) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+      theorem20_7_initialWeightedRowMax hn
+          (fun r j => A (σ r) j) (fun r => b (σ r)) phi s ≤
+        theorem20_7_initialWeightedRowMax hn
+          (fun r j => A (σ r) j) (fun r => b (σ r)) phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ := by
+  exact
+    theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
+      hn hnm (fun r j => A (σ r) j) (fun r => b (σ r)) hphi
+      (theorem20_7_initialRowMax_sorted_of_permuteRows_sorted_nat
+        hn hnm A σ hσA)
+      (theorem20_7_abs_b_sorted_of_permuteRows_sorted_nat hnm b σ hσb)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-scale bridge:
+    an explicit row permutation transports the unweighted source ratio
+    hypothesis to the permuted matrix. -/
+theorem theorem20_7_initialRowMax_ratio_of_permuteRows_ratio_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (σ : Fin m ≃ Fin m) {rho : ℝ}
+    (hσratio :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A
+            (σ ⟨k, lt_of_lt_of_le hk hnm⟩) /
+          theorem20_7_initialRowMax hn A (σ r) ≤ rho) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+      theorem20_7_initialRowMax hn (fun s j => A (σ s) j)
+          ⟨k, lt_of_lt_of_le hk hnm⟩ /
+        theorem20_7_initialRowMax hn (fun s j => A (σ s) j) r ≤ rho := by
+  intro k hk r hkr
+  simpa [theorem20_7_initialRowMax_permuteRows] using hσratio k hk r hkr
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-scale bridge:
+    an explicit row permutation transports the weighted source ratio
+    hypothesis to the permuted `A,b` pair. -/
+theorem theorem20_7_initialWeightedRowMax_ratio_of_permuteRows_ratio_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ)
+    (σ : Fin m ≃ Fin m) {rho : ℝ}
+    (hσratio :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            (σ ⟨k, lt_of_lt_of_le hk hnm⟩) /
+          theorem20_7_initialWeightedRowMax hn A b phi (σ r) ≤ rho) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+      theorem20_7_initialWeightedRowMax hn
+          (fun s j => A (σ s) j) (fun s => b (σ s)) phi
+          ⟨k, lt_of_lt_of_le hk hnm⟩ /
+        theorem20_7_initialWeightedRowMax hn
+          (fun s j => A (σ s) j) (fun s => b (σ s)) phi r ≤ rho := by
+  intro k hk r hkr
+  simpa [theorem20_7_initialWeightedRowMax_permuteRows] using
+    hσratio k hk r hkr
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     the raw pivot-maximality field follows from choosing the current active
     column with the finite active-max pivot selector. -/
