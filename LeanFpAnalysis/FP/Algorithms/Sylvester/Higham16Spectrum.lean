@@ -5102,6 +5102,32 @@ theorem sylvesterTwoColumnBlockRhs_eq_of_column_update_at_or_after
           exact (not_lt_of_ge hle) hlt
         simp [Function.update_of_ne hjne])
 
+/-- Updating two recursive-state columns at or to the right of the active
+    block still leaves the two-column recurrence right-hand side unchanged. -/
+theorem sylvesterTwoColumnBlockRhs_eq_of_two_column_updates_at_or_after
+    (m n : Nat)
+    (T : RMatFn n n) (C : RMatFn m n)
+    (x : Fin n -> Fin m -> Real) (p q k l : Fin n)
+    (xk xl : Fin m -> Real)
+    (hpk : p <= k) (hpl : p <= l) :
+    sylvesterTwoColumnBlockRhs m n T C
+        (fun i j => Function.update (Function.update x k xk) l xl j i) p q =
+      sylvesterTwoColumnBlockRhs m n T C
+        (fun i j => x j i) p q := by
+  calc
+    sylvesterTwoColumnBlockRhs m n T C
+        (fun i j => Function.update (Function.update x k xk) l xl j i) p q
+        = sylvesterTwoColumnBlockRhs m n T C
+            (fun i j => Function.update x k xk j i) p q := by
+            exact
+              sylvesterTwoColumnBlockRhs_eq_of_column_update_at_or_after
+                m n T C (Function.update x k xk) p q l xl hpl
+    _ = sylvesterTwoColumnBlockRhs m n T C
+          (fun i j => x j i) p q := by
+          exact
+            sylvesterTwoColumnBlockRhs_eq_of_column_update_at_or_after
+              m n T C x p q k xk hpk
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6), exact block-vector form:
     the supplied adjacent two-column predicate is equivalent to one combined
     linear system for the concatenated unknown vector `(Z(:,p), Z(:,q))`.
