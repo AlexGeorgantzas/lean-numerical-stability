@@ -1465,6 +1465,33 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm
   higham11_7_tridiagonal_backward_error_interface_of_solve_delta_nonneg
     n A b x_hat c u (infNorm A) hc hu (infNorm_nonneg A) hsolve
 
+/-- **Theorem 11.7 componentwise-to-norm bridge**, a uniform componentwise
+perturbation bound implies an infinity-norm bound by summing rows. -/
+theorem higham11_7_infNorm_le_card_mul_of_uniform_componentwise_bound (n : ℕ)
+    (ΔA : Fin n → Fin n → ℝ) (β : ℝ) (hβ : 0 ≤ β)
+    (hΔ : ∀ i j : Fin n, |ΔA i j| ≤ β) :
+    infNorm ΔA ≤ (n : ℝ) * β := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc (∑ j : Fin n, |ΔA i j|)
+        ≤ ∑ _j : Fin n, β := Finset.sum_le_sum (fun j _ => hΔ i j)
+      _ = (n : ℝ) * β := by
+        simp [Finset.sum_const, nsmul_eq_mul]
+  · exact mul_nonneg (Nat.cast_nonneg n) hβ
+
+/-- **Theorem 11.7 printed componentwise-to-norm bridge**, specializing the
+uniform row-sum aggregation to a printed `c * u * Amax` budget. -/
+theorem higham11_7_infNorm_le_card_mul_of_printed_componentwise_bound (n : ℕ)
+    (ΔA : Fin n → Fin n → ℝ) (c u Amax : ℝ)
+    (hβ : 0 ≤ c * u * Amax)
+    (hΔ : ∀ i j : Fin n, |ΔA i j| ≤ c * u * Amax) :
+    infNorm ΔA ≤ (n : ℝ) * c * u * Amax := by
+  calc
+    infNorm ΔA ≤ (n : ℝ) * (c * u * Amax) :=
+      higham11_7_infNorm_le_card_mul_of_uniform_componentwise_bound n ΔA
+        (c * u * Amax) hβ hΔ
+    _ = (n : ℝ) * c * u * Amax := by ring
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
