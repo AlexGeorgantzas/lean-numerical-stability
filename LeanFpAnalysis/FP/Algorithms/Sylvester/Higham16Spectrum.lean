@@ -5128,6 +5128,72 @@ theorem sylvesterTwoColumnBlockRhs_eq_of_two_column_updates_at_or_after
             sylvesterTwoColumnBlockRhs_eq_of_column_update_at_or_after
               m n T C x p q k xk hpk
 
+/-- A direct two-column recursive-state update satisfies the generated
+    two-column block formula against the final updated state.  This is the local
+    block-step counterpart to the prefix-stability lemmas used by a future
+    recursive quasi-Schur candidate construction. -/
+theorem sylvesterTwoColumnBlock_formula_of_column_family_block_update
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n) (C : RMatFn m n)
+    (x : Fin n -> Fin m -> Real) (p q : Fin n)
+    (hpq : q.val = p.val + 1) :
+    let z : Sum (Fin m) (Fin m) -> Real :=
+      Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+        (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+    let xNew : Fin n -> Fin m -> Real :=
+      Function.update (Function.update x p (fun i => z (Sum.inl i))) q
+        (fun i => z (Sum.inr i))
+    (forall i : Fin m,
+      xNew p i =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C (fun i j => xNew j i) p q)
+          (Sum.inl i)) /\
+    (forall i : Fin m,
+      xNew q i =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C (fun i j => xNew j i) p q)
+          (Sum.inr i)) := by
+  let z : Sum (Fin m) (Fin m) -> Real :=
+    Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+      (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+  let xNew : Fin n -> Fin m -> Real :=
+    Function.update (Function.update x p (fun i => z (Sum.inl i))) q
+      (fun i => z (Sum.inr i))
+  change
+    (forall i : Fin m,
+      xNew p i =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C (fun i j => xNew j i) p q)
+          (Sum.inl i)) /\
+    (forall i : Fin m,
+      xNew q i =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C (fun i j => xNew j i) p q)
+          (Sum.inr i))
+  have hp_le_q : p <= q := Fin.le_def.mpr (by omega)
+  have hp_ne_q : p ≠ q := by
+    intro hpqeq
+    have hval : p.val = q.val := congrArg Fin.val hpqeq
+    omega
+  have hRhs :
+      sylvesterTwoColumnBlockRhs m n S C (fun i j => xNew j i) p q =
+        sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q := by
+    dsimp [xNew]
+    exact
+      sylvesterTwoColumnBlockRhs_eq_of_two_column_updates_at_or_after
+        m n S C x p q p q
+        (fun i => z (Sum.inl i)) (fun i => z (Sum.inr i))
+        (le_rfl) hp_le_q
+  constructor
+  · intro i
+    rw [hRhs]
+    dsimp [xNew, z]
+    rw [Function.update_of_ne hp_ne_q, Function.update_self]
+  · intro i
+    rw [hRhs]
+    dsimp [xNew, z]
+    rw [Function.update_self]
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6), exact block-vector form:
     the supplied adjacent two-column predicate is equivalent to one combined
     linear system for the concatenated unknown vector `(Z(:,p), Z(:,q))`.
