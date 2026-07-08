@@ -1493,6 +1493,55 @@ theorem bunch_tridiagonal_twoByTwo_inverse_entry_bounds_of_sigma_bound
         div_le_div_of_nonneg_left hσ hlower_pos hdet_lower
       exact hnum.trans hden
 
+/-- Floating-point backward error of the scalar Schur update in a tridiagonal
+`2 × 2` pivot step.  In a symmetric tridiagonal matrix, after accepting the
+leading `2 × 2` block, the only trailing update has the form
+`b - c*f*c`, where `f` is the bottom-right entry of the inverse pivot block.
+The rounded computation `fl(b - fl(fl(c*f)*c))` differs from the exact update by
+a residual bounded by `γ₃ (|b| + |c*f*c|)`. -/
+theorem fl_tridiagonal_twoByTwo_schur_step_error
+    (fp : FPModel) (b c f : ℝ) (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 3 * (|b| + |c * f * c|) ∧
+      fp.fl_sub b (fp.fl_mul (fp.fl_mul c f) c) = (b - c * f * c) + Δ := by
+  obtain ⟨δ1, hδ1, hm1⟩ := fp.model_mul c f
+  obtain ⟨δ2, hδ2, hm2⟩ := fp.model_mul (fp.fl_mul c f) c
+  obtain ⟨δ3, hδ3, hs⟩ := fp.model_sub b (fp.fl_mul (fp.fl_mul c f) c)
+  obtain ⟨θ, hθ, hprod⟩ :=
+    prod_error_bound fp 3 ![δ1, δ2, δ3]
+      (by intro i; fin_cases i <;> simp_all) hval
+  have hfactor : (1 + δ1) * (1 + δ2) * (1 + δ3) = 1 + θ := by
+    have h := hprod
+    rw [Fin.prod_univ_three] at h
+    simpa using h
+  have hs_eq : fp.fl_sub b (fp.fl_mul (fp.fl_mul c f) c)
+      = b * (1 + δ3) - (c * f * c) * (1 + θ) := by
+    rw [hs, hm2, hm1, ← hfactor]
+    ring
+  refine ⟨b * δ3 - (c * f * c) * θ, ?_, ?_⟩
+  · have hu3 : fp.u ≤ gamma fp 3 := u_le_gamma fp (by norm_num) hval
+    have hγ0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+    have htri : |b * δ3 - (c * f * c) * θ| ≤
+        |b * δ3| + |(c * f * c) * θ| := by
+      have h := abs_add_le (b * δ3) (-((c * f * c) * θ))
+      rwa [← sub_eq_add_neg, abs_neg] at h
+    have e1 : |b * δ3 - (c * f * c) * θ|
+        ≤ |b| * fp.u + |c * f * c| * gamma fp 3 := by
+      calc |b * δ3 - (c * f * c) * θ|
+          ≤ |b * δ3| + |(c * f * c) * θ| := htri
+        _ = |b| * |δ3| + |c * f * c| * |θ| := by rw [abs_mul, abs_mul]
+        _ ≤ |b| * fp.u + |c * f * c| * gamma fp 3 :=
+            add_le_add (mul_le_mul_of_nonneg_left hδ3 (abs_nonneg _))
+              (mul_le_mul_of_nonneg_left hθ (abs_nonneg _))
+    have e2 : |b| * fp.u + |c * f * c| * gamma fp 3
+        ≤ gamma fp 3 * (|b| + |c * f * c|) := by
+      have hle : |b| * fp.u ≤ |b| * gamma fp 3 :=
+        mul_le_mul_of_nonneg_left hu3 (abs_nonneg _)
+      nlinarith [hle, abs_nonneg (c * f * c), hγ0]
+    exact le_trans e1 e2
+  · rw [hs_eq]
+    ring
+
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
 -- ============================================================

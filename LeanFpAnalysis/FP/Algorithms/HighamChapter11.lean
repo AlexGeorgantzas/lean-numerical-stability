@@ -784,6 +784,15 @@ theorem higham11_7_tridiagonal_twoByTwo_inverse_entry_bounds_of_sigma_bound
   bunch_tridiagonal_twoByTwo_inverse_entry_bounds_of_sigma_bound σ a11 a21 a22
     hchoice hσa11 hσa22
 
+/-- **Theorem 11.7 atomic fl update**, for the scalar Schur update produced by
+an accepted `2 × 2` tridiagonal pivot. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_schur_step_error
+    (fp : FPModel) (b c f : ℝ) (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 3 * (|b| + |c * f * c|) ∧
+      fp.fl_sub b (fp.fl_mul (fp.fl_mul c f) c) = (b - c * f * c) + Δ :=
+  fl_tridiagonal_twoByTwo_schur_step_error fp b c f hval
+
 /-- **Equation (11.8)** source predicate: unpermuted block LDL^T
 factorization for a symmetric tridiagonal matrix. -/
 abbrev higham11_8_tridiagonalBlockLDLTSpec (n : ℕ)
