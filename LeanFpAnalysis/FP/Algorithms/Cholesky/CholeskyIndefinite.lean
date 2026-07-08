@@ -1542,6 +1542,42 @@ theorem fl_tridiagonal_twoByTwo_schur_step_error
   · rw [hs_eq]
     ring
 
+/-- Source-shaped version of `fl_tridiagonal_twoByTwo_schur_step_error` for the
+accepted Algorithm 11.6 `2 × 2` pivot block.  The inverse-entry bound converts
+the abstract correction `|c*f*c|` into the scalar budget using
+`σ / ((1 - α) a21²)`. -/
+theorem fl_tridiagonal_twoByTwo_schur_step_error_of_sigma_bound
+    (fp : FPModel) (σ a11 a21 a22 b c : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 3 *
+        (|b| + |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) * |c|) ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) + Δ := by
+  obtain ⟨hInv22, hInv21, hInv11⟩ :=
+    bunch_tridiagonal_twoByTwo_inverse_entry_bounds_of_sigma_bound σ a11 a21 a22
+      hchoice hσa11 hσa22
+  obtain ⟨Δ, hΔ, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_schur_step_error fp b c
+      (a11 / (a11 * a22 - a21 ^ 2)) hval
+  refine ⟨Δ, ?_, hstep⟩
+  have hcorr : |c * (a11 / (a11 * a22 - a21 ^ 2)) * c| ≤
+      |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) * |c| := by
+    rw [abs_mul, abs_mul]
+    have hleft :=
+      mul_le_mul_of_nonneg_left hInv11 (abs_nonneg c)
+    exact mul_le_mul_of_nonneg_right hleft (abs_nonneg c)
+  have hγ0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+  have hbudget :
+      gamma fp 3 * (|b| + |c * (a11 / (a11 * a22 - a21 ^ 2)) * c|)
+        ≤ gamma fp 3 *
+          (|b| + |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) * |c|) :=
+    mul_le_mul_of_nonneg_left (add_le_add (le_refl |b|) hcorr) hγ0
+  exact le_trans hΔ hbudget
+
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
 -- ============================================================

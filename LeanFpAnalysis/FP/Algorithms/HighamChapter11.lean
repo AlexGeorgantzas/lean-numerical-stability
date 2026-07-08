@@ -793,6 +793,23 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_schur_step_error
       fp.fl_sub b (fp.fl_mul (fp.fl_mul c f) c) = (b - c * f * c) + Δ :=
   fl_tridiagonal_twoByTwo_schur_step_error fp b c f hval
 
+/-- **Theorem 11.7 atomic fl update**, specialized to Algorithm 11.6's accepted
+`2 × 2` tridiagonal pivot and the corresponding inverse-entry budget. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_schur_step_error_of_sigma_bound
+    (fp : FPModel) (σ a11 a21 a22 b c : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 3 *
+        (|b| + |c| *
+          (σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2)) * |c|) ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) + Δ :=
+  fl_tridiagonal_twoByTwo_schur_step_error_of_sigma_bound fp σ a11 a21 a22 b c
+    hchoice hσa11 hσa22 hval
+
 /-- **Equation (11.8)** source predicate: unpermuted block LDL^T
 factorization for a symmetric tridiagonal matrix. -/
 abbrev higham11_8_tridiagonalBlockLDLTSpec (n : ℕ)
