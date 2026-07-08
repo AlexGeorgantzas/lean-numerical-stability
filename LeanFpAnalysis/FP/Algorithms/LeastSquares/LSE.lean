@@ -24961,6 +24961,47 @@ theorem theorem20_8_wedinResidualRHS_scaled_residual_le_of_first_order_coeff_le
       A B APplus BAplus heps_nonneg hcoeff)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    after identifying Wedin's reduced-problem condition number with
+    `kappa_B(A)`, the first-order residual-amplifier coefficient comparison
+    follows from the remaining scalar bracket inequality. -/
+theorem theorem20_8_wedinResidualRHS_first_order_coeff_le_of_kappaB_bracket
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    {kappa : ℝ}
+    (hApos : 0 < frobNormRect A)
+    (hkappa : kappa = theorem20_8KappaB A APplus)
+    (hbracket :
+      1 + 2 * kappa ≤
+        kappa *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) +
+            1)) :
+    complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+      theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A := by
+  subst kappa
+  let APnorm : ℝ := complexMatrixOp2 (realRectToCMatrix APplus)
+  let bracket : ℝ :=
+    (frobNormRect B / frobNormRect A) *
+        complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) +
+      1
+  have hAPnorm_nonneg : 0 ≤ APnorm := by
+    dsimp [APnorm]
+    exact complexMatrixOp2_nonneg (realRectToCMatrix APplus)
+  have hmul :=
+    mul_le_mul_of_nonneg_left hbracket hAPnorm_nonneg
+  calc
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        (1 + 2 * theorem20_8KappaB A APplus)
+        = APnorm * (1 + 2 * theorem20_8KappaB A APplus) := by
+            rfl
+    _ ≤ APnorm * (theorem20_8KappaB A APplus * bracket) := hmul
+    _ = theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A := by
+      dsimp [APnorm, bracket]
+      unfold theorem20_8ResidualAmplifier theorem20_8KappaB
+      field_simp [ne_of_gt hApos]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action first-order handoff when the reduced residual-relative
     estimate has Wedin's Theorem 20.1 residual RHS.  The comparison between
     that Wedin residual RHS and the Chapter 20.8 residual amplifier is still
