@@ -4528,6 +4528,91 @@ theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_det_
     sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_no_real_eigenvector_det_separation
       m n A T pmap p q hmono hcard hzero hpq_adj hsame hno hdetA
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), constructed
+    two-block spectral data plus exclusion of the matching complex root for
+    `A` gives the active two-column no-block-action certificate. -/
+theorem sylvesterTwoColumnBlock_no_block_action_of_twoBlockSpectral_complex_root_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of T) pmap)
+    (hnoA :
+      Not (exists y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i =>
+              sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))) *
+                  y i)) :
+    forall z : Sum (Fin m) (Fin m) -> Real, z ≠ 0 ->
+      Not (Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) z =
+        Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q) z) := by
+  let mu : Complex :=
+    sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+      (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p)))
+  have hnoReal :
+      forall x : Fin 2 -> Real, x ≠ 0 ->
+        Not (exists nu : Real,
+          Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+            fun k => nu * x k) := by
+    simpa [HasRealQuasiSchurTwoBlockSpectral, MatrixNoRealEigenline,
+      principalTwoBlock, sylvesterTwoColumnRealSchurBlock, Matrix.of_apply] using
+      (hspectral p q hpq_adj hsame).1
+  have hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0 :=
+    sylvesterTwoColumnRealSchurBlock_disc_neg_of_no_real_eigenvector
+      n T p q hnoReal
+  have hblockEig :
+      HasComplexRightEigenvalue
+        (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q)) mu := by
+    simpa [mu] using
+      sylvesterTwoColumnRealSchurBlockComplexRoot_hasComplexRightEigenvalue_of_disc_neg
+        n T p q hdisc
+  rcases hblockEig with ⟨w, hwne, hwJ⟩
+  have hnoA_mu :
+      Not (exists y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i => mu * y i) := by
+    simpa [mu] using hnoA
+  exact
+    sylvesterTwoColumnBlock_no_block_action_of_complex_eigenpair_separation
+      m n A T p q mu w hwne hwJ hnoReal hnoA_mu
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), determinant
+    consequence of constructed two-block spectral data plus exclusion of the
+    matching complex root for `A`. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_complex_root_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of T) pmap)
+    (hnoA :
+      Not (exists y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i =>
+              sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))) *
+                  y i)) :
+    IsAdjacentQuasiTriangularBlockFn n T p q /\
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  refine ⟨?_, ?_⟩
+  · exact IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block
+      n T pmap p q hmono hcard hzero hpq_adj hsame
+  · exact sylvesterTwoColumnBlockCoeff_det_ne_zero_of_no_block_action
+      m n A T p q
+      (sylvesterTwoColumnBlock_no_block_action_of_twoBlockSpectral_complex_root_separation
+        m n A T pmap p q hpq_adj hsame hspectral hnoA)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
     real-quasi-Schur block-separation producer from canonical rotation-scaling
     entries for the adjacent `2 x 2` block.  The current `real_quasi_schur_blocks`
