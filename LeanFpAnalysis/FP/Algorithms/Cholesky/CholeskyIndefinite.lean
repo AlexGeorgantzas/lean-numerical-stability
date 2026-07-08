@@ -2139,6 +2139,64 @@ theorem fl_tridiagonal_twoByTwo_trailing_subproblem_printed_bound_accumulate
       hRembed 0 0
   simpa [htail] using hstep
 
+/-- Recursive-residual form of the printed accumulation step.  If the recursive
+trailing subproblem already has a scalar backward-error certificate
+`tail_fl = tail_exact + ΔRtail 0 0`, the leading `2 × 2` tridiagonal step
+absorbs that certificate into one ambient perturbation with coefficient
+`c_bound + c_rec`. -/
+theorem fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate
+    (n : ℕ) (fp : FPModel)
+    (σ a11 a21 a22 b c Amax κ c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * Amax) ∧
+      tail_fl = tail_exact + ΔRtail 0 0) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * Amax) ∧
+      TridiagonalTwoByTwoTrailingBlockSupport n ΔA ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c) +
+          tail_fl
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          tail_exact +
+          ΔA (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  obtain ⟨ΔRtail, hRtail_bound, htail⟩ := hrec
+  obtain ⟨ΔA, hΔA, hAsupp, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_trailing_subproblem_printed_bound_accumulate
+      n fp σ a11 a21 a22 b c Amax κ c_bound c_rec u ΔRtail
+      hchoice hσa11 hσa22 hAmax hκ hb hc hratio hbudget hval
+      hRtail_bound
+  refine ⟨ΔA, hΔA, hAsupp, ?_⟩
+  rw [htail]
+  calc
+    fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c) +
+          (tail_exact + ΔRtail 0 0)
+        =
+          (fp.fl_sub b
+              (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c) +
+            ΔRtail 0 0) + tail_exact := by
+      ring
+    _ =
+          ((b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+            ΔA (tridiagonalTwoByTwoFirstTrailingIndex n)
+              (tridiagonalTwoByTwoFirstTrailingIndex n)) + tail_exact := by
+      rw [hstep]
+    _ =
+          (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          tail_exact +
+          ΔA (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n) := by
+      ring
+
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
 -- ============================================================
