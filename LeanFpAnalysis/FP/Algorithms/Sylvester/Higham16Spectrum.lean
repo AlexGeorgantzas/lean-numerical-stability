@@ -10681,6 +10681,71 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpec
       (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap
       hU hV hA hB rfl hmono hcard hzero hspectral hnoOrig hXformula
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    recursive-candidate witness with the real quasi-Schur factors chosen
+    internally.  Under the original no-common complex spectrum hypothesis, the
+    constructed real quasi-Schur factors provide the block-map, zero-below, and
+    adjacent two-block spectral certificates consumed by the generated
+    Bartels-Stewart traversal. -/
+theorem exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_no_common
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    exists (U R : RMatFn m m) (V S : RMatFn n n)
+        (pA : Fin m -> Nat) (pB : Fin n -> Nat) (X : RMatFn m n),
+      IsOrthogonal m U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) /\
+      (forall i j : Fin m, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) := by
+  obtain
+      ⟨U, R, V, S, pA, pB, hU, hV, hA, hB, hpAmono, hpAcard,
+        hAzero, hAspectral, hpBmono, hpBcard, hBzero, hBspectral, _hiff⟩ :=
+    sylvester_realQuasiSchur_transform_solution_iff_twoBlockSpectral
+      m n A B C (fun _ _ => 0)
+  obtain ⟨X, hXformula, hXorig⟩ :=
+    exists_original_solution_and_generated_step_formula_of_quasiSchur_schedule_twoBlockSpectral_no_common
+      m n U R A V S B C pB hU hV hA hB hpBmono hpBcard hBzero hBspectral hnoOrig
+  exact
+    ⟨U, R, V, S, pA, pB, X, hU, hV, hA, hB, hpAmono, hpAcard,
+      hAzero, hAspectral, hpBmono, hpBcard, hBzero, hBspectral, hXformula, hXorig⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    recursive-candidate unique solvability with internally chosen real
+    quasi-Schur factors.  This removes the caller-facing supplied block-map and
+    two-block spectral premises from the recursive generated-step witness route,
+    leaving the original no-common complex spectrum hypothesis. -/
+theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_no_common_generated_step_formula_witness
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  obtain
+      ⟨U, R, V, S, _pA, pB, hU, hV, hA, hB, _hpAmono, _hpAcard,
+        _hAzero, _hAspectral, hpBmono, hpBcard, hBzero, hBspectral, _hiff⟩ :=
+    sylvester_realQuasiSchur_transform_solution_iff_twoBlockSpectral
+      m n A B C (fun _ _ => 0)
+  exact
+    existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpectral_no_common_generated_step_formula_witness
+      m n U R A V S B C pB hU hV hA hB hpBmono hpBcard hBzero hBspectral hnoOrig
+
 /-- Any exact Schur-coordinate solution satisfies the generated-step formula
     oracle when the real quasi-Schur block map and original no-common spectrum
     hypotheses provide the singleton and two-column nonsingularity
