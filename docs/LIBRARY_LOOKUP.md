@@ -2054,6 +2054,15 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_fosterS_succ_lt` (Foster Lemma A.1 (A.1): `s_(k+1) < s_k` for `k >= 2`, derivative-free)
 - `higham9_16_fosterS_two` (`s_2 = 1`)
 - `higham9_16_fosterS_le_one` (`s_k <= 1` for `k >= 1`)
+- `higham9_16_existsUnique_root` (general positive-root existence/uniqueness for strictly monotone continuous `f` with `f 0 = 0`)
+- `higham9_16_fosterQStage` (Foster (A.5) band-stage function `sqrt((k-r)^(k-r)) q^r (1+rq)^(k-r)`)
+- `higham9_16_fosterQStage_continuous` / `higham9_16_fosterQStage_strictMonoOn` / `higham9_16_fosterQStage_zero` / `higham9_16_fosterQStage_witness` / `higham9_16_fosterQStage_sqrt_ge_one`
+- `higham9_16_existsUnique_fosterQ_root` / `higham9_16_fosterQ` (Foster (A.5) band root `q_(k-r+1)`)
+- `higham9_16_fosterQ_spec` / `higham9_16_fosterQ_eq` / `higham9_16_fosterQ_unique` / `higham9_16_fosterQ_nonneg` / `higham9_16_fosterQ_pos`
+- `higham9_16_fosterQ_mono_const` (band root monotone in the constant)
+- `higham9_16_fosterQ_one_eq_fosterS` / `higham9_16_fosterQ_one_sqrt_eq_fosterS` (Foster's (A.5)-(6) link: the `r = 1` root at `sqrt(k^k)` is `s_k`)
+- `higham9_16_fosterQ_one_le_fosterS` (`q_k <= s_k` for `C <= sqrt(k^k)`)
+- `higham9_16_one_add_mul_hat` (Möbius identity `(1+x)(1+m·x/(1+x)) = 1+(m+1)x`)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
