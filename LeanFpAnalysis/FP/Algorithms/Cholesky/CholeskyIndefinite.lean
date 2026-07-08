@@ -1798,6 +1798,13 @@ def TridiagonalTwoByTwoTrailingBlockSupport (n : ℕ)
     (E : Fin (n + 3) → Fin (n + 3) → ℝ) : Prop :=
   ∀ i j : Fin (n + 3), i.val < 2 ∨ j.val < 2 → E i j = 0
 
+/-- General zero-prefix support predicate: a perturbation vanishes on the
+leading `offset` rows and columns.  The tridiagonal `2 × 2` trailing-block
+support predicate is the `offset = 2` instance. -/
+def TridiagonalLeadingBlockSupport (m offset : ℕ)
+    (E : Fin m → Fin m → ℝ) : Prop :=
+  ∀ i j : Fin m, i.val < offset ∨ j.val < offset → E i j = 0
+
 /-- Supported perturbations in the trailing block after a leading `2 × 2`
 tridiagonal pivot are closed under addition, and their componentwise bounds add. -/
 theorem tridiagonalTwoByTwoTrailingBlockSupport_add_bound
@@ -1910,6 +1917,43 @@ theorem tridiagonalTwoByTwoLiftTrailingPerturbation_support
         not_exists_tridiagonalTwoByTwoTrailingSubproblemIndex_of_val_lt_two hj
       simp [tridiagonalTwoByTwoLiftTrailingPerturbation, hi, hnot]
     · simp [tridiagonalTwoByTwoLiftTrailingPerturbation, hi]
+
+/-- Lifting a recursive trailing-subproblem perturbation through a leading
+`2 × 2` tridiagonal pivot shifts any existing zero-prefix support by two
+ambient indices.  This is the support bookkeeping for iterating the
+tridiagonal recursion. -/
+theorem tridiagonalTwoByTwoLiftTrailingPerturbation_leadingBlockSupport
+    (n offset : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hEsupp : TridiagonalLeadingBlockSupport (n + 1) offset E) :
+    TridiagonalLeadingBlockSupport (n + 3) (offset + 2)
+      (tridiagonalTwoByTwoLiftTrailingPerturbation n E) := by
+  classical
+  intro i j hlead
+  by_cases hi : ∃ a : Fin (n + 1),
+      tridiagonalTwoByTwoTrailingSubproblemIndex n a = i
+  · by_cases hj : ∃ b : Fin (n + 1),
+        tridiagonalTwoByTwoTrailingSubproblemIndex n b = j
+    · rw [tridiagonalTwoByTwoLiftTrailingPerturbation, dif_pos hi, dif_pos hj]
+      apply hEsupp
+      rcases hlead with hilt | hjlt
+      · left
+        have hval :
+            (Classical.choose hi).val + 2 = i.val := by
+          simpa [tridiagonalTwoByTwoTrailingSubproblemIndex] using
+            congrArg Fin.val (Classical.choose_spec hi)
+        have hsum : (Classical.choose hi).val + 2 < offset + 2 := by
+          rwa [hval]
+        exact (Nat.add_lt_add_iff_right (k := 2)).1 hsum
+      · right
+        have hval :
+            (Classical.choose hj).val + 2 = j.val := by
+          simpa [tridiagonalTwoByTwoTrailingSubproblemIndex] using
+            congrArg Fin.val (Classical.choose_spec hj)
+        have hsum : (Classical.choose hj).val + 2 < offset + 2 := by
+          rwa [hval]
+        exact (Nat.add_lt_add_iff_right (k := 2)).1 hsum
+    · rw [tridiagonalTwoByTwoLiftTrailingPerturbation, dif_pos hi, dif_neg hj]
+  · rw [tridiagonalTwoByTwoLiftTrailingPerturbation, dif_neg hi]
 
 /-- Package the recursive trailing perturbation lift with its ambient bound,
 support, and embedded-entry identity. -/

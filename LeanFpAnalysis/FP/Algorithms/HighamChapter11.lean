@@ -956,6 +956,12 @@ abbrev higham11_7_TridiagonalTwoByTwoTrailingBlockSupport (n : ℕ)
     (E : Fin (n + 3) → Fin (n + 3) → ℝ) : Prop :=
   TridiagonalTwoByTwoTrailingBlockSupport n E
 
+/-- General zero-prefix support predicate for tridiagonal recursion: a
+perturbation vanishes on the leading `offset` rows and columns. -/
+abbrev higham11_7_TridiagonalLeadingBlockSupport (m offset : ℕ)
+    (E : Fin m → Fin m → ℝ) : Prop :=
+  TridiagonalLeadingBlockSupport m offset E
+
 /-- Supported perturbations in the trailing block after a leading `2 × 2`
 tridiagonal pivot are closed under addition, and their componentwise bounds add. -/
 theorem higham11_7_tridiagonalTwoByTwoTrailingBlockSupport_add_bound
@@ -992,6 +998,17 @@ theorem higham11_7_tridiagonalTwoByTwoLiftTrailingPerturbation_bound_support
           (higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex n j) =
             E i j) :=
   tridiagonalTwoByTwoLiftTrailingPerturbation_bound_support n E β hEbound
+
+/-- **Theorem 11.7 recursive support shift**, lifting a recursive
+trailing-subproblem perturbation through a leading `2 × 2` pivot shifts
+zero-prefix support by two ambient indices. -/
+theorem higham11_7_tridiagonalTwoByTwoLiftTrailingPerturbation_leadingBlockSupport
+    (n offset : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport (n + 1) offset E) :
+    higham11_7_TridiagonalLeadingBlockSupport (n + 3) (offset + 2)
+      (higham11_7_tridiagonalTwoByTwoLiftTrailingPerturbation n E) :=
+  tridiagonalTwoByTwoLiftTrailingPerturbation_leadingBlockSupport n offset E
+    hEsupp
 
 /-- Any index with value `< 2` is outside the first trailing scalar after a
 leading `2 × 2` tridiagonal pivot. -/
