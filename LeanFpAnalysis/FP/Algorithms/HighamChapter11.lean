@@ -950,6 +950,19 @@ theorem higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex_injective (n : ℕ
       (higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex n) :=
   tridiagonalTwoByTwoTrailingSubproblemIndex_injective n
 
+/-- Support predicate for an ambient perturbation that vanishes on the first two
+rows and columns after a leading `2 × 2` tridiagonal pivot. -/
+abbrev higham11_7_TridiagonalTwoByTwoTrailingBlockSupport (n : ℕ)
+    (E : Fin (n + 3) → Fin (n + 3) → ℝ) : Prop :=
+  TridiagonalTwoByTwoTrailingBlockSupport n E
+
+/-- Any index with value `< 2` is outside the first trailing scalar after a
+leading `2 × 2` tridiagonal pivot. -/
+theorem higham11_7_ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two
+    {n : ℕ} {i : Fin (n + 3)} (hi : i.val < 2) :
+    i ≠ higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n :=
+  ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two hi
+
 /-- **Theorem 11.7 local recursion embedding**, placing the printed-budget
 trailing scalar perturbation from an accepted `2 × 2` tridiagonal pivot into an
 ambient local block of size `n+3`, with zeros outside the first trailing entry. -/
@@ -975,6 +988,32 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embe
           ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
             (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) :=
   fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed n fp
+    σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
+    hb hc hratio hbudget hval
+
+/-- **Theorem 11.7 local recursion embedding with support**, placing the
+printed-budget trailing scalar perturbation from an accepted `2 × 2`
+tridiagonal pivot into an ambient local block of size `n+3`, supported entirely
+inside the trailing block left after the leading two indices. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_support
+    (n : ℕ) (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound u : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ c_bound * u * Amax) ∧
+      higham11_7_TridiagonalTwoByTwoTrailingBlockSupport n ΔA ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) :=
+  fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_support n fp
     σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
     hb hc hratio hbudget hval
 

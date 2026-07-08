@@ -1791,6 +1791,26 @@ theorem tridiagonalTwoByTwoTrailingSubproblemIndex_injective (n : ℕ) :
   simpa [tridiagonalTwoByTwoTrailingSubproblemIndex] using
     Nat.add_right_cancel hval
 
+/-- An ambient perturbation is supported in the trailing block left after a
+leading `2 × 2` tridiagonal pivot if it vanishes on the first two rows and
+columns. -/
+def TridiagonalTwoByTwoTrailingBlockSupport (n : ℕ)
+    (E : Fin (n + 3) → Fin (n + 3) → ℝ) : Prop :=
+  ∀ i j : Fin (n + 3), i.val < 2 ∨ j.val < 2 → E i j = 0
+
+/-- Any index with value `< 2` is outside the first trailing scalar after a
+leading `2 × 2` tridiagonal pivot. -/
+theorem ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two
+    {n : ℕ} {i : Fin (n + 3)} (hi : i.val < 2) :
+    i ≠ tridiagonalTwoByTwoFirstTrailingIndex n := by
+  intro h
+  have hlt : (tridiagonalTwoByTwoFirstTrailingIndex n).val < 2 := by
+    rw [← h]
+    exact hi
+  have hval : (tridiagonalTwoByTwoFirstTrailingIndex n).val = 2 := by simp
+  rw [hval] at hlt
+  exact (Nat.lt_irrefl 2) hlt
+
 /-- Dimension-generic first-stage embedding of the printed `2 × 2`
 tridiagonal trailing scalar backward error.  In a local block of size `n+3`,
 the first accepted `2 × 2` pivot only touches the first trailing scalar of a
@@ -1840,6 +1860,38 @@ theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed
       · exact hj htail.2
     simp [ΔA, htail]
   · simpa [ΔA, tail, zero] using hstep zero zero
+
+/-- Dimension-generic first-stage embedding of the printed `2 × 2`
+tridiagonal trailing scalar backward error, with the support property needed to
+compose with a recursive trailing-subproblem hypothesis. -/
+theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_support
+    (n : ℕ) (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound u : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ c_bound * u * Amax) ∧
+      TridiagonalTwoByTwoTrailingBlockSupport n ΔA ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  obtain ⟨ΔA, hΔA, hzero, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed n fp
+      σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
+      hb hc hratio hbudget hval
+  refine ⟨ΔA, hΔA, ?_, hstep⟩
+  intro i j hlead
+  apply hzero
+  rcases hlead with hi | hj
+  · exact Or.inl (ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two hi)
+  · exact Or.inr (ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two hj)
 
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
