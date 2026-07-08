@@ -19379,6 +19379,100 @@ theorem
   simpa using hTail
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    first-two-pivots table for Algorithm 13.3 under the BDD recursive handoff.
+
+    This packages the stage-zero canonical inverse bridge and the first Schur
+    tail's stage-one bridge into the small active table shape consumed by
+    downstream pivot APIs.  It is only a two-pivot dependency, not the full
+    all-active Schur-stage pivot table. -/
+theorem
+    higham13_algorithm13_3_first_two_pivots_right_inverse_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_first_schur_tail_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin ((m + 1) + 1) → ℝ)
+    (tailInvDiagBound : Fin (m + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < (m + 1) + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol ((m + 1) + 1)
+      (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin ((m + 1) + 1), invDiagBound j ≤ 0)
+    (hPivot0 :
+      pivotInv 0 =
+        nonsingInv r
+          (A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1))))
+    (hTailDom : IsBlockDiagDomCol (m + 1)
+      (fun i j => ‖blockSchur A (pivotInv 0) i j‖) tailInvDiagBound)
+    (hTailBound : ∀ j : Fin (m + 1), tailInvDiagBound j ≤ 0)
+    (hPivot1 :
+      pivotInv 1 =
+        nonsingInv r
+          ((blockSchur A (pivotInv 0))
+            (0 : Fin (m + 1)) (0 : Fin (m + 1)))) :
+    ∀ k : Fin 2,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k.val
+          ⟨k.val, by omega⟩ ⟨k.val, by omega⟩)
+        (pivotInv k.val) := by
+  intro k
+  fin_cases k
+  · have h0 :=
+      higham13_algorithm13_3_initial_pivot_right_inverse_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+        (Nat.succ_pos (m + 1)) A pivotInv invDiagBound hPrefix hDom hBound
+        hPivot0
+    simpa using h0
+  · have h1 :=
+      higham13_algorithm13_3_stage1_pivot_right_inverse_of_pivotInv_eq_nonsingInv_first_schur_tail_blockDiagDomCol_diagBound_nonpos
+        A pivotInv invDiagBound tailInvDiagBound hPrefix hDom hBound hPivot0
+        hTailDom hTailBound hPivot1
+    simpa using h1
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    determinant projection of the first-two-pivots BDD right-inverse table. -/
+theorem
+    higham13_algorithm13_3_first_two_pivots_det_ne_zero_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_first_schur_tail_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin ((m + 1) + 1) → ℝ)
+    (tailInvDiagBound : Fin (m + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < (m + 1) + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol ((m + 1) + 1)
+      (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin ((m + 1) + 1), invDiagBound j ≤ 0)
+    (hPivot0 :
+      pivotInv 0 =
+        nonsingInv r
+          (A (0 : Fin ((m + 1) + 1)) (0 : Fin ((m + 1) + 1))))
+    (hTailDom : IsBlockDiagDomCol (m + 1)
+      (fun i j => ‖blockSchur A (pivotInv 0) i j‖) tailInvDiagBound)
+    (hTailBound : ∀ j : Fin (m + 1), tailInvDiagBound j ≤ 0)
+    (hPivot1 :
+      pivotInv 1 =
+        nonsingInv r
+          ((blockSchur A (pivotInv 0))
+            (0 : Fin (m + 1)) (0 : Fin (m + 1)))) :
+    ∀ k : Fin 2,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k.val
+          ⟨k.val, by omega⟩ ⟨k.val, by omega⟩) ≠ 0 := by
+  intro k
+  have hRight :=
+    higham13_algorithm13_3_first_two_pivots_right_inverse_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_first_schur_tail_blockDiagDomCol_diagBound_nonpos
+      A pivotInv invDiagBound tailInvDiagBound hPrefix hDom hBound hPivot0
+      hTailDom hTailBound hPivot1 k
+  exact
+    Matrix.det_ne_zero_of_right_inverse
+      (A := higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k.val
+        ⟨k.val, by omega⟩ ⟨k.val, by omega⟩)
+      (B := pivotInv k.val)
+      (by
+        ext i j
+        rw [Matrix.mul_apply, Matrix.one_apply]
+        exact hRight i j)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
     product-index flattened determinant form of the BDD first-Schur-tail
     nonsingularity handoff. -/
 theorem
