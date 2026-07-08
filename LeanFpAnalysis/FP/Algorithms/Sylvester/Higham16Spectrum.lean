@@ -10578,6 +10578,40 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_c
       m n U R A V S B C Cschur X pmap hU hV hA hB hCschur hmono hcard
       hzero hspectral hnoOrig hXsingle hXblock
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    recursive-candidate witness: the automatically generated quasi-Schur
+    frontier schedule constructs a Schur-coordinate candidate satisfying the
+    generated-step formulas, and the existing spectral/no-common traversal
+    theorem proves that this candidate solves the Sylvester equation. -/
+theorem exists_isSylvesterSolutionRect_and_generatedStepFormula_of_quasiSchur_schedule_twoBlockSpectral_no_common
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    exists X : RMatFn m n,
+      IsSylvesterSolutionRect m n R S C X /\
+        IsSylvesterQuasiSchurGeneratedStepFormula m n R S C X pmap := by
+  rcases exists_isSylvesterQuasiSchurGeneratedStepFormula_of_quasiSchur_schedule
+      m n R S C pmap hcard with ⟨X, hXformula⟩
+  have hXsol :
+      IsSylvesterSolutionRect m n R S C X :=
+    sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_generated_step_formula
+      m n U R A V S B C X pmap hU hV hA hB hmono hcard hzero
+      hspectral hnoOrig hXformula
+  exact ⟨X, hXsol, hXformula⟩
+
 /-- Any exact Schur-coordinate solution satisfies the generated-step formula
     oracle when the real quasi-Schur block map and original no-common spectrum
     hypotheses provide the singleton and two-column nonsingularity
