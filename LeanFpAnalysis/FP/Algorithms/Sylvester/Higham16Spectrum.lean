@@ -10649,6 +10649,38 @@ theorem exists_original_solution_and_generated_step_formula_of_quasiSchur_schedu
     (sylvester_schur_transform_solution_iff m n
       U R A V S B C X hU hV hA hB).mpr hXsol
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    exact recursive-candidate unique solvability: the automatically scheduled
+    recursive generated-step witness feeds the existing original-coordinate
+    unique-solvability wrapper. -/
+theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpectral_no_common_generated_step_formula_witness
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  obtain ⟨X, hXformula, _hXorig⟩ :=
+    exists_original_solution_and_generated_step_formula_of_quasiSchur_schedule_twoBlockSpectral_no_common
+      m n U R A V S B C pmap hU hV hA hB hmono hcard hzero
+      hspectral hnoOrig
+  exact
+    existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_generated_step_formula
+      m n U R A V S B C
+      (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap
+      hU hV hA hB rfl hmono hcard hzero hspectral hnoOrig hXformula
+
 /-- Any exact Schur-coordinate solution satisfies the generated-step formula
     oracle when the real quasi-Schur block map and original no-common spectrum
     hypotheses provide the singleton and two-column nonsingularity
