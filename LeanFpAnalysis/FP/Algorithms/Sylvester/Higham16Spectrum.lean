@@ -11391,6 +11391,12 @@ theorem existsUnique_isSylvesterSolutionRect_schurTriangular (m n : Nat)
       X = rectMatMul U (rectMatMul YX (matTranspose V)) := hXexpand.symm
       _ = rectMatMul U (rectMatMul Y (matTranspose V)) := by rw [hYeq]
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.6):
+    source-numbered alias for the supplied Schur-triangular exact unique-solve
+    endpoint. -/
+alias H16_eq16_4_6_existsUnique_isSylvesterSolutionRect_schurTriangular :=
+  existsUnique_isSylvesterSolutionRect_schurTriangular
+
 /-- Real quasi-Schur-to-triangular uniqueness bridge.  The theorem returns the
     exact real quasi-Schur factors for `A` and `B`; if the returned `B`-side
     block map is supplied to be strictly increasing down the matrix order, so
