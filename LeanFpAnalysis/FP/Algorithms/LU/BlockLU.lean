@@ -19569,6 +19569,144 @@ theorem higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
       A pivotInv k hk (hPivotRight k hk)
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    recursive tail-lift for active pivot right-inverse tables.
+
+    If the first active pivot has its right-inverse certificate and the first
+    Schur tail has the shifted active pivot table, then the original matrix has
+    the full active pivot table.  This is the structural recursion bridge
+    needed by BDD/source-chain routes; it does not prove the tail table itself. -/
+theorem
+    higham13_algorithm13_3_pivot_right_inverse_of_initial_pivot_and_first_schur_tail_pivot_right_inverse
+    {m r : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivot0 :
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+          (0 : Fin (m + 1)) (0 : Fin (m + 1)))
+        (pivotInv 0))
+    (hTail : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv (k + 1))) :
+    ∀ k : ℕ, ∀ hk : k < m + 1,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k) := by
+  intro k hk
+  cases k with
+  | zero =>
+      simpa using hPivot0
+  | succ k =>
+      have hkTail : k < m := Nat.succ_lt_succ_iff.mp hk
+      have htail := hTail k hkTail
+      have hidx :
+          (Fin.succ (⟨k, hkTail⟩ : Fin m) : Fin (m + 1)) =
+            (⟨k + 1, hk⟩ : Fin (m + 1)) := by
+        ext
+        rfl
+      have hstage :=
+        higham13_algorithm13_3_schurStageMatrixBlock_tail_shift
+          A pivotInv k (⟨k, hkTail⟩ : Fin m) (⟨k, hkTail⟩ : Fin m)
+      simpa [hidx, hstage] using htail
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    determinant projection of the recursive tail-lifted active pivot table. -/
+theorem
+    higham13_algorithm13_3_pivot_det_ne_zero_of_initial_pivot_and_first_schur_tail_pivot_right_inverse
+    {m r : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivot0 :
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0
+          (0 : Fin (m + 1)) (0 : Fin (m + 1)))
+        (pivotInv 0))
+    (hTail : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv (k + 1))) :
+    ∀ k : ℕ, ∀ hk : k < m + 1,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse A pivotInv
+      (higham13_algorithm13_3_pivot_right_inverse_of_initial_pivot_and_first_schur_tail_pivot_right_inverse
+        A pivotInv hPivot0 hTail)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    BDD initial-pivot specialization of the recursive active pivot-table lift.
+
+    The all-leading-prefix BDD data and `pivotInv 0 = nonsingInv r (A 0 0)`
+    discharge the first pivot.  The remaining hypothesis is exactly the shifted
+    all-active pivot table for the first Schur tail. -/
+theorem
+    higham13_algorithm13_3_pivot_right_inverse_of_first_schur_tail_pivot_right_inverse_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin (m + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol (m + 1)
+      (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin (m + 1), invDiagBound j ≤ 0)
+    (hPivot0 : pivotInv 0 = nonsingInv r (A (0 : Fin (m + 1)) (0 : Fin (m + 1))))
+    (hTail : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv (k + 1))) :
+    ∀ k : ℕ, ∀ hk : k < m + 1,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k) := by
+  have h0 :=
+    higham13_algorithm13_3_initial_pivot_right_inverse_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+      (Nat.succ_pos m) A pivotInv invDiagBound hPrefix hDom hBound hPivot0
+  exact
+    higham13_algorithm13_3_pivot_right_inverse_of_initial_pivot_and_first_schur_tail_pivot_right_inverse
+      A pivotInv h0 hTail
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    determinant form of the BDD initial-pivot recursive active pivot-table
+    lift. -/
+theorem
+    higham13_algorithm13_3_pivot_det_ne_zero_of_first_schur_tail_pivot_right_inverse_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+    {m r : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → Fin r → Fin r → ℝ)
+    (pivotInv : ℕ → Fin r → Fin r → ℝ)
+    (invDiagBound : Fin (m + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp))
+    (hDom : IsBlockDiagDomCol (m + 1)
+      (fun i j => ‖A i j‖) invDiagBound)
+    (hBound : ∀ j : Fin (m + 1), invDiagBound j ≤ 0)
+    (hPivot0 : pivotInv 0 = nonsingInv r (A (0 : Fin (m + 1)) (0 : Fin (m + 1))))
+    (hTail : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv (k + 1))) :
+    ∀ k : ℕ, ∀ hk : k < m + 1,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse A pivotInv
+      (higham13_algorithm13_3_pivot_right_inverse_of_first_schur_tail_pivot_right_inverse_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+        A pivotInv invDiagBound hPrefix hDom hBound hPivot0 hTail)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
     if the supplied pivot inverse is Mathlib's `⅟` for each active pivot, then
     it gives the exact pivot right-inverse certificate used by the
     matrix-stage reconstruction wrappers. -/
