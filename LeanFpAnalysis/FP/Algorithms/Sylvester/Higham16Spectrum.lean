@@ -5077,6 +5077,31 @@ theorem sylvesterTwoColumnBlockRhs_eq_of_column_update_ge
     omega
   rw [Function.update_of_ne hjne]
 
+/-- Column-family version of
+    `sylvesterTwoColumnBlockRhs_eq_of_column_update_ge`: updating the recursive
+    column state at or to the right of the active block does not change the
+    two-column recurrence right-hand side. -/
+theorem sylvesterTwoColumnBlockRhs_eq_of_column_update_at_or_after
+    (m n : Nat)
+    (T : RMatFn n n) (C : RMatFn m n)
+    (x : Fin n -> Fin m -> Real) (p q l : Fin n) (xl : Fin m -> Real)
+    (hle : p <= l) :
+    sylvesterTwoColumnBlockRhs m n T C
+        (fun i j => Function.update x l xl j i) p q =
+      sylvesterTwoColumnBlockRhs m n T C
+        (fun i j => x j i) p q := by
+  exact
+    sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq m n T C
+      (fun i j => Function.update x l xl j i)
+      (fun i j => x j i) p q
+      (by
+        intro j hj i
+        have hjne : Not (j = l) := by
+          intro h
+          have hlt : l < p := by simpa [h] using hj
+          exact (not_lt_of_ge hle) hlt
+        simp [Function.update_of_ne hjne])
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6), exact block-vector form:
     the supplied adjacent two-column predicate is equivalent to one combined
     linear system for the concatenated unknown vector `(Z(:,p), Z(:,q))`.
@@ -7797,6 +7822,33 @@ theorem sylvester_singleton_column_rhs_eq_of_prev_columns_eq (m n : Nat)
     have hjk : j < k := (Finset.mem_filter.mp hj).2
     rw [hprev j hjk i]
   rw [hsum]
+
+/-- Column-family version of
+    `sylvester_singleton_column_rhs_eq_of_prev_columns_eq`: updating the
+    recursive column state at or after the active singleton column does not
+    change that singleton recurrence right-hand side. -/
+theorem sylvester_singleton_column_rhs_eq_of_column_update_at_or_after
+    (m n : Nat)
+    (T : RMatFn n n) (C : RMatFn m n)
+    (x : Fin n -> Fin m -> Real) (k l : Fin n) (xl : Fin m -> Real)
+    (hle : k <= l) :
+    (fun i : Fin m => C i k +
+      Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+        (fun j => T j k * Function.update x l xl j i)) =
+    (fun i : Fin m => C i k +
+      Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+        (fun j => T j k * x j i)) := by
+  exact
+    sylvester_singleton_column_rhs_eq_of_prev_columns_eq m n T C
+      (fun i j => Function.update x l xl j i)
+      (fun i j => x j i) k
+      (by
+        intro j hj i
+        have hjne : Not (j = l) := by
+          intro h
+          have hlt : l < k := by simpa [h] using hj
+          exact (not_lt_of_ge hle) hlt
+        simp [Function.update_of_ne hjne])
 
 /-- Singleton-column solve/uniqueness bridge for the quasi-Schur traversal:
     if column `k` has the local zero-below property, the shifted coefficient is
