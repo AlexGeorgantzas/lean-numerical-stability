@@ -836,6 +836,35 @@ theorem higham11_4_bunchKaufmanProductMax_le_iff_absLDLTProduct (n : ℕ) (hn : 
     simpa [higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
       using hentries i j
 
+/-- The specialized finite maximum used for Theorem 11.4 is exactly the
+repository max-entry norm of the matrix product `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) :
+    higham11_4_bunchKaufmanProductMax n hn L_hat D_hat =
+      maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) := by
+  apply le_antisymm
+  · rw [higham11_4_bunchKaufmanProductMax_le_iff_absLDLTProduct n hn L_hat D_hat]
+    intro i j
+    have hnonneg : 0 ≤ higham11_4_absLDLTProduct n L_hat D_hat i j := by
+      rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+      exact higham11_4_bunchKaufmanProductEntry_nonneg n L_hat D_hat i j
+    calc
+      higham11_4_absLDLTProduct n L_hat D_hat i j
+          = |higham11_4_absLDLTProduct n L_hat D_hat i j| := by
+            rw [abs_of_nonneg hnonneg]
+      _ ≤ maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) :=
+          entry_le_maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) i j
+  · apply maxEntryNorm_le_of_entry_le_bound
+    intro i j
+    have hnonneg : 0 ≤ higham11_4_absLDLTProduct n L_hat D_hat i j := by
+      rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+      exact higham11_4_bunchKaufmanProductEntry_nonneg n L_hat D_hat i j
+    calc
+      |higham11_4_absLDLTProduct n L_hat D_hat i j|
+          = higham11_4_absLDLTProduct n L_hat D_hat i j := abs_of_nonneg hnonneg
+      _ ≤ higham11_4_bunchKaufmanProductMax n hn L_hat D_hat :=
+          higham11_4_absLDLTProduct_entry_le_productMax n hn L_hat D_hat i j
+
 /-- Pointwise product-entry estimates package into the scalar max-entry product
 certificate used in Theorem 11.4. -/
 theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries (n : ℕ)
@@ -861,6 +890,19 @@ theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_absLDLTProduct_entries (n
     ρ_n Amax (fun i j => by
       simpa [higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
         using hentries i j)
+
+/-- A source-style max-entry norm proof for `|L̂||D̂||L̂ᵀ|` packages into the
+scalar product certificate used by Theorem 11.4. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax : ℝ)
+    (hproduct :
+      maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+        36 * (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax := by
+  simpa [higham11_4_bunchKaufmanMaxEntryProductBound,
+    higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct n hn L_hat D_hat]
+    using hproduct
 
 /-- **Theorem 11.4 constant (Higham [608, 1997], eq (4.13))**: the `36` in the
 bound `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36 n ρₙ ‖A‖_M` comes from
