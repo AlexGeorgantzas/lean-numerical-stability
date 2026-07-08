@@ -247,6 +247,18 @@ def IsLeastSquaresMinimizer {m n : ℕ} (A : Fin m → Fin n → ℝ)
     (b : Fin m → ℝ) (x : Fin n → ℝ) : Prop :=
   ∀ y : Fin n → ℝ, lsObjective A b x ≤ lsObjective A b y
 
+/-- An exact minimizer for a row-permuted least-squares problem is an exact
+    minimizer for the original problem. -/
+theorem IsLeastSquaresMinimizer.of_permuteRows {m n : ℕ} (σ : Fin m ≃ Fin m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (x : Fin n → ℝ)
+    (h : IsLeastSquaresMinimizer (rectPermuteRows σ A) (vecPermute σ b) x) :
+    IsLeastSquaresMinimizer A b x := by
+  intro y
+  have hy := h y
+  rw [lsObjective_permuteRows] at hy
+  rw [lsObjective_permuteRows] at hy
+  exact hy
+
 /-- An exact minimizer for a column-permuted least-squares problem maps back
     to an exact minimizer of the original problem. -/
 theorem IsLeastSquaresMinimizer.of_permuteCols {m n : ℕ} (π : Fin n ≃ Fin n)
