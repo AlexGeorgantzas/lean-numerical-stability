@@ -1445,6 +1445,54 @@ theorem bunch_tridiagonal_twoByTwo_det_ne_zero_of_sigma_bound
     lt_of_lt_of_le (mul_pos halpha_gap hsquare) hlower
   exact abs_pos.mp hdet_abs_pos
 
+/-- Entrywise inverse bounds for the `2 × 2` tridiagonal pivot block
+`[[a11, a21], [a21, a22]]` accepted by Algorithm 11.6.  The inverse entries are
+`a22/det`, `-a21/det`, and `a11/det`, with
+`det = a11*a22 - a21²`. -/
+theorem bunch_tridiagonal_twoByTwo_inverse_entry_bounds_of_sigma_bound
+    (σ a11 a21 a22 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ) :
+    |a22 / (a11 * a22 - a21 ^ 2)| ≤
+        σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ∧
+    |(-a21) / (a11 * a22 - a21 ^ 2)| ≤
+        |a21| / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ∧
+    |a11 / (a11 * a22 - a21 ^ 2)| ≤
+        σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) := by
+  let det := a11 * a22 - a21 ^ 2
+  let lower := (1 - bunchTridiagonalAlpha) * a21 ^ 2
+  have hσ : 0 ≤ σ := le_trans (abs_nonneg a11) hσa11
+  have ha21 :=
+    bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg σ a11 a21
+      hchoice hσ
+  have hsquare : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have halpha_gap : 0 < 1 - bunchTridiagonalAlpha := by
+    linarith [bunch_tridiagonal_alpha_lt_one]
+  have hlower_pos : 0 < lower := by
+    dsimp [lower]
+    exact mul_pos halpha_gap hsquare
+  have hdet_lower : lower ≤ |det| := by
+    dsimp [lower, det]
+    exact bunch_tridiagonal_twoByTwo_absdet_lower_of_sigma_bound σ a11 a21 a22
+      hchoice hσa22
+  have hdet_abs_pos : 0 < |det| := lt_of_lt_of_le hlower_pos hdet_lower
+  constructor
+  · rw [abs_div]
+    have hnum : |a22| / |det| ≤ σ / |det| :=
+      div_le_div_of_nonneg_right hσa22 (le_of_lt hdet_abs_pos)
+    have hden : σ / |det| ≤ σ / lower :=
+      div_le_div_of_nonneg_left hσ hlower_pos hdet_lower
+    exact hnum.trans hden
+  · constructor
+    · rw [abs_div, abs_neg]
+      exact div_le_div_of_nonneg_left (abs_nonneg a21) hlower_pos hdet_lower
+    · rw [abs_div]
+      have hnum : |a11| / |det| ≤ σ / |det| :=
+        div_le_div_of_nonneg_right hσa11 (le_of_lt hdet_abs_pos)
+      have hden : σ / |det| ≤ σ / lower :=
+        div_le_div_of_nonneg_left hσ hlower_pos hdet_lower
+      exact hnum.trans hden
+
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
 -- ============================================================

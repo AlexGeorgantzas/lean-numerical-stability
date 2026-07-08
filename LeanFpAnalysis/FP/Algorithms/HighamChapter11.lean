@@ -769,6 +769,21 @@ theorem higham11_7_tridiagonal_twoByTwo_det_ne_zero_of_sigma_bound
   bunch_tridiagonal_twoByTwo_det_ne_zero_of_sigma_bound σ a11 a21 a22
     hchoice hσa22
 
+/-- **Theorem 11.7 dependency**, inverse-entry bounds for the accepted `2 × 2`
+tridiagonal pivot block. -/
+theorem higham11_7_tridiagonal_twoByTwo_inverse_entry_bounds_of_sigma_bound
+    (σ a11 a21 a22 : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ) :
+    |a22 / (a11 * a22 - a21 ^ 2)| ≤
+        σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ∧
+    |(-a21) / (a11 * a22 - a21 ^ 2)| ≤
+        |a21| / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ∧
+    |a11 / (a11 * a22 - a21 ^ 2)| ≤
+        σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) :=
+  bunch_tridiagonal_twoByTwo_inverse_entry_bounds_of_sigma_bound σ a11 a21 a22
+    hchoice hσa11 hσa22
+
 /-- **Equation (11.8)** source predicate: unpermuted block LDL^T
 factorization for a symmetric tridiagonal matrix. -/
 abbrev higham11_8_tridiagonalBlockLDLTSpec (n : ℕ)
