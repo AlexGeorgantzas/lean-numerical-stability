@@ -771,6 +771,27 @@ theorem higham11_4_bunch_kaufman_stability (n : ℕ)
       36 * ↑n * ρ_n * maxNorm_A :=
   bunch_kaufman_stability n A L_hat D_hat ρ_n maxNorm_A hmA hA_norm hstab
 
+/-- **Theorem 11.4 max-entry product bridge**.  Higham [608, 1997], eq. (4.14),
+is proved as a scalar max-entry certificate for
+`|L̂||D̂||L̂ᵀ|`.  Once a scalar `productMax` dominates each product entry, the
+source scalar certificate feeds the existing pointwise Bunch-Kaufman stability
+surface. -/
+theorem higham11_4_bunch_kaufman_stability_of_max_entry_product_bound (n : ℕ)
+    (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ_n maxNorm_A productMax : ℝ) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hproduct_entries : ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤ productMax)
+    (hproduct :
+      higham11_4_bunchKaufmanMaxEntryProductBound n productMax ρ_n maxNorm_A) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability n A L_hat D_hat ρ_n maxNorm_A hmA hA_norm
+    (fun i j => (hproduct_entries i j).trans hproduct)
+
 /-- **Theorem 11.4** solve backward-error target shape for Bunch-Kaufman
 partial pivoting. -/
 theorem higham11_4_bunch_kaufman_solve_backward_error_interface (n : ℕ)
@@ -783,6 +804,29 @@ theorem higham11_4_bunch_kaufman_solve_backward_error_interface (n : ℕ)
       (∀ i j : Fin n, |ΔA i j| ≤ p * ρ_n * u * Amax) ∧
       (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
   hsolve
+
+/-- **Theorem 11.4 solve-budget product bridge**.  If the triangular-solve
+analysis gives a perturbation budget proportional to the scalar max-entry
+product `productMax = ‖|L̂||D̂||L̂ᵀ|‖_M`, then the Higham [608, 1997] product
+certificate turns it into the advertised Bunch-Kaufman normwise budget. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_max_entry_product_bound (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u productMax ρ_n Amax : ℝ) (hpu : 0 ≤ p * u)
+    (hproduct : higham11_4_bunchKaufmanMaxEntryProductBound n productMax ρ_n Amax)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ p * u * productMax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  rcases hsolve with ⟨ΔA, hΔA, hres⟩
+  refine ⟨ΔA, ?_, hres⟩
+  intro i j
+  calc
+    |ΔA i j| ≤ p * u * productMax := hΔA i j
+    _ ≤ p * u * (36 * (n : ℝ) * ρ_n * Amax) :=
+      mul_le_mul_of_nonneg_left hproduct hpu
+    _ = (p * 36 * (n : ℝ)) * ρ_n * u * Amax := by ring
 
 /-! ## §11.1.3 Rook pivoting -/
 
