@@ -5438,6 +5438,10 @@ simplification, the exact Hyman block identities
 - `higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero`
 - `higham14_rowsOrthogonal`
 - `higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal`
+- `higham14_problem14_11_hadamardConditionNumber_eq_one_of_abs_det_eq_prod_rowNorm2`
+- `higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumber_eq_one`
+- `higham14_problem14_11_hadamardConditionNumber_eq_one_iff_abs_det_eq_prod_rowNorm2`
+- `higham14_problem14_11_hadamardConditionNumber_eq_one_of_rowsOrthogonal`
 - `higham14_colNorm2`
 - `higham14_abs_det_eq_one_of_isOrthogonal`
 - `higham14_colNorm2_matMul_orthogonal_left`

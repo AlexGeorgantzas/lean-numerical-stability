@@ -3999,6 +3999,71 @@ theorem higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal
       rw [sq_abs]
       exact hsquare)
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    equality in Hadamard's determinant inequality implies `ψ(A) = 1` for
+    nonsingular `A`.  This isolates the algebraic condition-number bridge from
+    the harder equality-characterization step. -/
+theorem higham14_problem14_11_hadamardConditionNumber_eq_one_of_abs_det_eq_prod_rowNorm2
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (heq :
+      |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+        ∏ i : Fin n, higham14_rowNorm2 A i) :
+    higham14_hadamardConditionNumber A = 1 := by
+  have hden_ne : |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| ≠ 0 :=
+    abs_ne_zero.mpr hdet
+  unfold higham14_hadamardConditionNumber
+  rw [← heq]
+  exact div_self hden_ne
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    if `ψ(A) = 1` for nonsingular `A`, then Hadamard's determinant inequality
+    is attained with equality. -/
+theorem higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumber_eq_one
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hpsi : higham14_hadamardConditionNumber A = 1) :
+    |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+      ∏ i : Fin n, higham14_rowNorm2 A i := by
+  have hden_ne : |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| ≠ 0 :=
+    abs_ne_zero.mpr hdet
+  unfold higham14_hadamardConditionNumber at hpsi
+  have hmul :=
+    congrArg
+      (fun x : ℝ =>
+        x * |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)|) hpsi
+  dsimp only at hmul
+  rw [div_mul_cancel₀ _ hden_ne] at hmul
+  simpa [one_mul] using hmul.symm
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    for nonsingular `A`, the normalized condition-number statement `ψ(A) = 1`
+    is equivalent to equality in Hadamard's determinant inequality. -/
+theorem higham14_problem14_11_hadamardConditionNumber_eq_one_iff_abs_det_eq_prod_rowNorm2
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    higham14_hadamardConditionNumber A = 1 ↔
+      |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+        ∏ i : Fin n, higham14_rowNorm2 A i := by
+  constructor
+  · exact
+      higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumber_eq_one
+        A hdet
+  · exact
+      higham14_problem14_11_hadamardConditionNumber_eq_one_of_abs_det_eq_prod_rowNorm2
+        A hdet
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    nonsingular matrices with pairwise orthogonal rows have `ψ(A) = 1`. -/
+theorem higham14_problem14_11_hadamardConditionNumber_eq_one_of_rowsOrthogonal
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (horth : higham14_rowsOrthogonal A) :
+    higham14_hadamardConditionNumber A = 1 :=
+  higham14_problem14_11_hadamardConditionNumber_eq_one_of_abs_det_eq_prod_rowNorm2
+    A hdet
+    (higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal A horth)
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.12:
     Euclidean norm of column `j`, the quantity `rho_j = ||R(:,j)||_2` in the
     QR formula for the Hadamard condition number. -/
