@@ -3999,6 +3999,71 @@ theorem higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal
       rw [sq_abs]
       exact hsquare)
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    equality in Hadamard's determinant inequality implies `ψ(A) = 1` for
+    nonsingular `A`.  This isolates the algebraic condition-number bridge from
+    the harder equality-characterization step. -/
+theorem higham14_problem14_11_hadamardConditionNumber_eq_one_of_abs_det_eq_prod_rowNorm2
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (heq :
+      |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+        ∏ i : Fin n, higham14_rowNorm2 A i) :
+    higham14_hadamardConditionNumber A = 1 := by
+  have hden_ne : |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| ≠ 0 :=
+    abs_ne_zero.mpr hdet
+  unfold higham14_hadamardConditionNumber
+  rw [← heq]
+  exact div_self hden_ne
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    if `ψ(A) = 1` for nonsingular `A`, then Hadamard's determinant inequality
+    is attained with equality. -/
+theorem higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumber_eq_one
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hpsi : higham14_hadamardConditionNumber A = 1) :
+    |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+      ∏ i : Fin n, higham14_rowNorm2 A i := by
+  have hden_ne : |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| ≠ 0 :=
+    abs_ne_zero.mpr hdet
+  unfold higham14_hadamardConditionNumber at hpsi
+  have hmul :=
+    congrArg
+      (fun x : ℝ =>
+        x * |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)|) hpsi
+  dsimp only at hmul
+  rw [div_mul_cancel₀ _ hden_ne] at hmul
+  simpa [one_mul] using hmul.symm
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    for nonsingular `A`, the normalized condition-number statement `ψ(A) = 1`
+    is equivalent to equality in Hadamard's determinant inequality. -/
+theorem higham14_problem14_11_hadamardConditionNumber_eq_one_iff_abs_det_eq_prod_rowNorm2
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    higham14_hadamardConditionNumber A = 1 ↔
+      |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+        ∏ i : Fin n, higham14_rowNorm2 A i := by
+  constructor
+  · exact
+      higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumber_eq_one
+        A hdet
+  · exact
+      higham14_problem14_11_hadamardConditionNumber_eq_one_of_abs_det_eq_prod_rowNorm2
+        A hdet
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    nonsingular matrices with pairwise orthogonal rows have `ψ(A) = 1`. -/
+theorem higham14_problem14_11_hadamardConditionNumber_eq_one_of_rowsOrthogonal
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (horth : higham14_rowsOrthogonal A) :
+    higham14_hadamardConditionNumber A = 1 :=
+  higham14_problem14_11_hadamardConditionNumber_eq_one_of_abs_det_eq_prod_rowNorm2
+    A hdet
+    (higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal A horth)
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.12:
     Euclidean norm of column `j`, the quantity `rho_j = ||R(:,j)||_2` in the
     QR formula for the Hadamard condition number. -/
@@ -5250,6 +5315,175 @@ theorem higham14_problem14_15_det_add_rel_le_of_singularValue_abs_sub_bound_of_d
     higham14_problem14_15_abs_det_add_rel_le_of_singularValue_abs_sub_bound
       hnpos A Delta heps0 hsmall hlower_pos hlower habs hscale
       (abs_pos.mpr hdetA_pos.ne')
+  simpa [abs_of_pos hdetA_pos, abs_of_pos hdetB_pos] using hAbs
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    a certified right inverse makes the last ordered singular value positive
+    in every nonzero dimension. -/
+theorem higham14_problem14_15_last_singularValue_pos_of_isRightInverse
+    {k : ℕ} (A Ainv : Fin (k + 1) → Fin (k + 1) → ℝ)
+    (hRight : IsRightInverse (k + 1) A Ainv) :
+    0 <
+      complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k) := by
+  have hNormPos : 0 < opNorm2 Ainv :=
+    opNorm2_pos_of_right_inverse_at (Fin.last k) A Ainv hRight
+  have hInvEq :=
+    higham14_problem14_13_opNorm2_rightInverse_eq_inv_complex_last_singularValue
+      A Ainv hRight
+  have hInvPos :
+      0 <
+        (complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k))⁻¹ := by
+    simpa [hInvEq] using hNormPos
+  exact inv_pos.mp hInvPos
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    the last ordered singular value is a lower bound for all ordered singular
+    values. -/
+theorem higham14_problem14_15_last_singularValue_le_singularValue
+    {k : ℕ} (A : Fin (k + 1) → Fin (k + 1) → ℝ) :
+    ∀ i : Fin (k + 1),
+      complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k) ≤
+        complexMatrixSingularValue (realRectToCMatrix A) i := by
+  intro i
+  exact complexMatrixSingularValue_antitone (realRectToCMatrix A) (Fin.le_last i)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    with a certified right inverse, the source scaling
+    `κ₂(A) * ||ΔA||₂ / ||A||₂` is exactly `||ΔA||₂ / σ_n(A)`, hence
+    supplies the lower-scale premise needed by the determinant bridge. -/
+theorem higham14_problem14_15_opNorm2_le_kappa2_scaled_last_singularValue
+    {k : ℕ} (A Ainv Delta : Fin (k + 1) → Fin (k + 1) → ℝ)
+    (hRight : IsRightInverse (k + 1) A Ainv) :
+    opNorm2 Delta ≤
+      (kappa2 A Ainv * opNorm2 Delta / opNorm2 A) *
+        complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k) := by
+  let top : Fin (k + 1) := ⟨0, Nat.succ_pos k⟩
+  let last : Fin (k + 1) := Fin.last k
+  let sigma : Fin (k + 1) → ℝ :=
+    fun i => complexMatrixSingularValue (realRectToCMatrix A) i
+  have hlast_pos : 0 < sigma last := by
+    simpa [sigma, last] using
+      higham14_problem14_15_last_singularValue_pos_of_isRightInverse
+        A Ainv hRight
+  have hlast_le_top : sigma last ≤ sigma top := by
+    simpa [sigma, top, last] using
+      higham14_problem14_15_last_singularValue_le_singularValue A top
+  have htop_pos : 0 < sigma top := lt_of_lt_of_le hlast_pos hlast_le_top
+  have hlast_ne : sigma last ≠ 0 := ne_of_gt hlast_pos
+  have htop_ne : sigma top ≠ 0 := ne_of_gt htop_pos
+  have hkappa :
+      kappa2 A Ainv = sigma top / sigma last := by
+    simpa [sigma, top, last] using
+      higham14_problem14_13_kappa2_eq_top_div_last_singularValue_of_rightInverse
+        A Ainv hRight
+  have hop : opNorm2 A = sigma top := by
+    simpa [sigma, top] using
+      higham14_problem14_13_opNorm2_eq_complex_top_singularValue
+        (Nat.succ_pos k) A
+  have hscale_eq :
+      (kappa2 A Ainv * opNorm2 Delta / opNorm2 A) * sigma last =
+        opNorm2 Delta := by
+    calc
+      (kappa2 A Ainv * opNorm2 Delta / opNorm2 A) * sigma last
+          = ((sigma top / sigma last) * opNorm2 Delta / sigma top) *
+              sigma last := by
+                rw [hkappa, hop]
+      _ = opNorm2 Delta := by
+            field_simp [hlast_ne, htop_ne]
+  simp [sigma, last, hscale_eq]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    source-scaled determinant perturbation bridge.  If the still-open
+    all-index singular-value perturbation inequality supplies
+    `|σ_i(A+ΔA)-σ_i(A)| <= ||ΔA||₂`, then the matrix-specific
+    `κ₂(A)||ΔA||₂/||A||₂` scaling and determinant product argument give the
+    printed relative-change radius, under the necessary `n*eps < 1` guard. -/
+theorem higham14_problem14_15_abs_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound
+    {k : ℕ} (A Ainv Delta : Fin (k + 1) → Fin (k + 1) → ℝ)
+    (hRight : IsRightInverse (k + 1) A Ainv)
+    (hsmall :
+      ((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A) < (1 : ℝ))
+    (habs : ∀ i : Fin (k + 1),
+      |complexMatrixSingularValue
+          (realRectToCMatrix (fun r c => A r c + Delta r c)) i -
+        complexMatrixSingularValue (realRectToCMatrix A) i| ≤ opNorm2 Delta) :
+    |(|Matrix.det
+          ((fun r c => A r c + Delta r c) :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ)| /
+        |Matrix.det (A : Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ)|) - 1| ≤
+      (((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A)) /
+        (1 - ((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A)) := by
+  let top : Fin (k + 1) := ⟨0, Nat.succ_pos k⟩
+  let last : Fin (k + 1) := Fin.last k
+  let sigma : Fin (k + 1) → ℝ :=
+    fun i => complexMatrixSingularValue (realRectToCMatrix A) i
+  have hlast_pos : 0 < sigma last := by
+    simpa [sigma, last] using
+      higham14_problem14_15_last_singularValue_pos_of_isRightInverse
+        A Ainv hRight
+  have hlast_le_top : sigma last ≤ sigma top := by
+    simpa [sigma, top, last] using
+      higham14_problem14_15_last_singularValue_le_singularValue A top
+  have htop_pos : 0 < sigma top := lt_of_lt_of_le hlast_pos hlast_le_top
+  have hop : opNorm2 A = sigma top := by
+    simpa [sigma, top] using
+      higham14_problem14_13_opNorm2_eq_complex_top_singularValue
+        (Nat.succ_pos k) A
+  have hOpA_pos : 0 < opNorm2 A := by
+    rw [hop]
+    exact htop_pos
+  have hkappa_nonneg : 0 ≤ kappa2 A Ainv := by
+    unfold kappa2
+    exact mul_nonneg (opNorm2_nonneg A) (opNorm2_nonneg Ainv)
+  have heps0 :
+      0 ≤ kappa2 A Ainv * opNorm2 Delta / opNorm2 A := by
+    exact div_nonneg
+      (mul_nonneg hkappa_nonneg (opNorm2_nonneg Delta)) hOpA_pos.le
+  exact
+    higham14_problem14_15_abs_det_add_rel_le_of_singularValue_abs_sub_bound
+      (Nat.succ_pos k) A Delta heps0 hsmall hlast_pos
+      (by
+        intro i
+        simpa [sigma, last] using
+          higham14_problem14_15_last_singularValue_le_singularValue A i)
+      habs
+      (higham14_problem14_15_opNorm2_le_kappa2_scaled_last_singularValue
+        A Ainv Delta hRight)
+      (higham14_problem14_13_abs_det_pos_of_isRightInverse A Ainv hRight)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    signed determinant version of the source-scaled conditional bridge, when
+    both determinants are positive. -/
+theorem higham14_problem14_15_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_of_det_pos
+    {k : ℕ} (A Ainv Delta : Fin (k + 1) → Fin (k + 1) → ℝ)
+    (hRight : IsRightInverse (k + 1) A Ainv)
+    (hsmall :
+      ((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A) < (1 : ℝ))
+    (habs : ∀ i : Fin (k + 1),
+      |complexMatrixSingularValue
+          (realRectToCMatrix (fun r c => A r c + Delta r c)) i -
+        complexMatrixSingularValue (realRectToCMatrix A) i| ≤ opNorm2 Delta)
+    (hdetA_pos : 0 < Matrix.det
+      (A : Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ))
+    (hdetB_pos :
+      0 < Matrix.det
+        ((fun r c => A r c + Delta r c) :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ)) :
+    |(Matrix.det
+          ((fun r c => A r c + Delta r c) :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) /
+        Matrix.det (A : Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ)) - 1| ≤
+      (((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A)) /
+        (1 - ((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A)) := by
+  have hAbs :=
+    higham14_problem14_15_abs_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound
+      A Ainv Delta hRight hsmall habs
   simpa [abs_of_pos hdetA_pos, abs_of_pos hdetB_pos] using hAbs
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:

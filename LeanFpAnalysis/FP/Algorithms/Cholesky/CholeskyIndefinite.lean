@@ -968,6 +968,310 @@ theorem fl_blockLDLT_pivot_col_bound (n : ℕ) (fp : FPModel)
   rw [hrw, abs_mul]
   exact (mul_le_mul_of_nonneg_left hδ (abs_nonneg _)).trans_eq (by rw [mul_comm])
 
+/-- Entrywise one-stage backward-error envelope for a rounded 1×1-pivot
+    block-LDLᵀ assemble step.  The leading pivot has exact error `0`; the pivot
+    row/column have the 1×1 solve error `u|A|`; and the trailing block has the
+    per-stage Schur error plus the recursive trailing envelope `Bs`. -/
+noncomputable def flBlockLDLTOneByOneStageBound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) (Bs : Fin n → Fin n → ℝ) :
+    Fin (n + 1) → Fin (n + 1) → ℝ :=
+  fun I J =>
+    Fin.cases
+      (Fin.cases 0 (fun j => fp.u * |A 0 j.succ|) J)
+      (fun i =>
+        Fin.cases
+          (fp.u * |A i.succ 0|)
+          (fun j =>
+            2 * gamma fp 3 *
+              (|A i.succ j.succ| + |A i.succ 0 * A 0 j.succ / A 0 0|)
+              + Bs i j)
+          J)
+      I
+
+/-- **Complete one-stage 1×1-pivot floating-point assemble bound** for
+    Theorem 11.3.  This packages the pivot entry, pivot row, pivot column, and
+    trailing-block estimates into a single all-index statement:
+    `|(L̂D̂L̂ᵀ) I J - A I J|` is bounded by
+    `flBlockLDLTOneByOneStageBound`.  The trailing recursive hypothesis is still
+    explicit; the full multi-stage induction remains a separate theorem. -/
+theorem fl_blockLDLT_oneByOne_stage_bound (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (he : A 0 0 ≠ 0) (hsym1 : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (hval : gammaValid fp 3)
+    (L_S D_S : Fin n → Fin n → ℝ) (Bs : Fin n → Fin n → ℝ)
+    (hIH : ∀ i j : Fin n,
+      |(∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂)
+        - fp.fl_sub (A i.succ j.succ)
+            (fp.fl_mul (fp.fl_div (A i.succ 0) (A 0 0)) (A 0 j.succ))| ≤ Bs i j)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hLtr : ∀ i j : Fin n, L i.succ j.succ = L_S i j)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin n, D i.succ j.succ = D_S i j) :
+    ∀ I J : Fin (n + 1),
+      |(∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) - A I J|
+        ≤ flBlockLDLTOneByOneStageBound n fp A Bs I J := by
+  obtain ⟨h00, hrow⟩ :=
+    fl_blockLDLT_pivot_row_bound n fp A he hsym1 L D
+      hL00 hLcol hL0s hD00 hD0s
+  have hcol :=
+    fl_blockLDLT_pivot_col_bound n fp A he L D
+      hL00 hLcol hL0s hD00 hDs0
+  have htrail :=
+    fl_blockLDLT_trailing_bound n fp A he hsym1 hval L_S D_S Bs hIH L D
+      hLcol hLtr hD00 hD0s hDs0 hDtr
+  intro I J
+  rcases Fin.eq_zero_or_eq_succ I with hI | ⟨i, hI⟩
+  · subst I
+    rcases Fin.eq_zero_or_eq_succ J with hJ | ⟨j, hJ⟩
+    · subst J
+      simp [flBlockLDLTOneByOneStageBound, h00]
+    · subst J
+      simpa [flBlockLDLTOneByOneStageBound] using hrow j
+  · subst I
+    rcases Fin.eq_zero_or_eq_succ J with hJ | ⟨j, hJ⟩
+    · subst J
+      simpa [flBlockLDLTOneByOneStageBound] using hcol i
+    · subst J
+      simpa [flBlockLDLTOneByOneStageBound] using htrail i j
+
+/-- Rounded Schur complement produced by one computed 1×1-pivot block-LDLᵀ
+    elimination step.  This is the recursive matrix consumed by the floating
+    all-1×1 path of Theorem 11.3. -/
+noncomputable def flSchurCompl (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    fp.fl_sub (A i.succ j.succ)
+      (fp.fl_mul (fp.fl_div (A i.succ 0) (A 0 0)) (A 0 j.succ))
+
+/-- Stored-symmetric rounded Schur complement for the 1×1-pivot path.  The
+    upper triangle is computed by `flSchurCompl`; lower-triangular entries are
+    copied from the opposite upper-triangular entry, matching the usual
+    symmetric-storage implementation convention. -/
+noncomputable def flStoredSymSchurCompl (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    if i.val ≤ j.val then flSchurCompl n fp A i j else flSchurCompl n fp A j i
+
+/-- The stored-symmetric rounded Schur complement is symmetric by construction. -/
+theorem flStoredSymSchurCompl_symm (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    ∀ i j : Fin n, flStoredSymSchurCompl n fp A i j =
+      flStoredSymSchurCompl n fp A j i := by
+  intro i j
+  classical
+  unfold flStoredSymSchurCompl
+  by_cases hij : i.val ≤ j.val
+  · by_cases hji : j.val ≤ i.val
+    · have hval : i.val = j.val := Nat.le_antisymm hij hji
+      have hfin : i = j := Fin.ext hval
+      subst j
+      simp
+    · simp [hij, hji]
+  · have hji : j.val ≤ i.val := (Nat.le_total j.val i.val).resolve_right hij
+    simp [hij, hji]
+
+/-- First-row/first-column equality supplied by the stored-symmetric rounded
+    Schur complement when the stored trailing matrix is nonempty. -/
+theorem flStoredSymSchurCompl_first_row_col (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 2) → Fin (n + 2) → ℝ) :
+    ∀ i : Fin n, flStoredSymSchurCompl (n + 1) fp A 0 i.succ =
+      flStoredSymSchurCompl (n + 1) fp A i.succ 0 := by
+  intro i
+  exact flStoredSymSchurCompl_symm (n + 1) fp A 0 i.succ
+
+/-- Entrywise difference between the stored-symmetric rounded Schur complement
+    and the raw rounded Schur update.  This is zero on the computed triangle and
+    records the explicit storage-copy discrepancy on the opposite triangle. -/
+noncomputable def flStoredSymSchurDefect (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => |flStoredSymSchurCompl n fp A i j - flSchurCompl n fp A i j|
+
+/-- One-stage floating block-LDLᵀ bound when the recursive trailing factors
+    approximate the stored-symmetric Schur complement.  The existing raw-Schur
+    one-stage theorem applies with the stored trailing envelope plus the explicit
+    storage defect `flStoredSymSchurDefect`. -/
+theorem fl_blockLDLT_oneByOne_stage_bound_of_stored_schur (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (he : A 0 0 ≠ 0) (hsym1 : ∀ i : Fin n, A 0 i.succ = A i.succ 0)
+    (hval : gammaValid fp 3)
+    (L_S D_S B : Fin n → Fin n → ℝ)
+    (hIH : ∀ i j : Fin n,
+      |(∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂)
+        - flStoredSymSchurCompl n fp A i j| ≤ B i j)
+    (L D : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hL00 : L 0 0 = 1)
+    (hLcol : ∀ i : Fin n, L i.succ 0 = fp.fl_div (A i.succ 0) (A 0 0))
+    (hL0s : ∀ j : Fin n, L 0 j.succ = 0)
+    (hLtr : ∀ i j : Fin n, L i.succ j.succ = L_S i j)
+    (hD00 : D 0 0 = A 0 0)
+    (hD0s : ∀ j : Fin n, D 0 j.succ = 0)
+    (hDs0 : ∀ i : Fin n, D i.succ 0 = 0)
+    (hDtr : ∀ i j : Fin n, D i.succ j.succ = D_S i j) :
+    ∀ I J : Fin (n + 1),
+      |(∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) - A I J|
+        ≤ flBlockLDLTOneByOneStageBound n fp A
+          (fun i j => B i j + flStoredSymSchurDefect n fp A i j) I J := by
+  apply fl_blockLDLT_oneByOne_stage_bound n fp A he hsym1 hval L_S D_S
+    (fun i j => B i j + flStoredSymSchurDefect n fp A i j)
+  · intro i j
+    set P := (∑ k₁, ∑ k₂, L_S i k₁ * D_S k₁ k₂ * L_S j k₂)
+    set S := flStoredSymSchurCompl n fp A i j
+    set R := flSchurCompl n fp A i j
+    have htri : |P - R| ≤ |P - S| + |S - R| := by
+      have hdecomp : P - R = (P - S) + (S - R) := by ring
+      rw [hdecomp]
+      exact abs_add_le _ _
+    have hbound : |P - R| ≤ B i j + flStoredSymSchurDefect n fp A i j := by
+      calc |P - R| ≤ |P - S| + |S - R| := htri
+        _ ≤ B i j + flStoredSymSchurDefect n fp A i j := by
+          apply add_le_add
+          · simpa [P, S] using hIH i j
+          · simp [flStoredSymSchurDefect, S, R]
+    simpa [P, R, flSchurCompl] using hbound
+  · exact hL00
+  · exact hLcol
+  · exact hL0s
+  · exact hLtr
+  · exact hD00
+  · exact hD0s
+  · exact hDs0
+  · exact hDtr
+
+/-- Recursive nonzero-pivot condition for the stored-symmetric all-1×1
+    floating block-LDLᵀ path.  Each recursive trailing matrix is the
+    stored-symmetric rounded Schur complement. -/
+noncomputable def FlStoredAllOnePivots (fp : FPModel) :
+    (n : ℕ) → (Fin n → Fin n → ℝ) → Prop
+  | 0, _ => True
+  | n + 1, A =>
+      A 0 0 ≠ 0 ∧ FlStoredAllOnePivots fp n (flStoredSymSchurCompl n fp A)
+
+/-- Recursive entrywise envelope for the stored-symmetric all-1×1 floating
+    block-LDLᵀ path.  The trailing envelope is the recursive stored envelope plus
+    the explicit stored-vs-raw Schur defect for the current stage. -/
+noncomputable def flBlockLDLTStoredAllOneByOneBound (fp : FPModel) :
+    (n : ℕ) → (Fin n → Fin n → ℝ) → Fin n → Fin n → ℝ
+  | 0, _ => fun I _ => Fin.elim0 I
+  | n + 1, A =>
+      flBlockLDLTOneByOneStageBound n fp A
+        (fun i j =>
+          flBlockLDLTStoredAllOneByOneBound fp n
+              (flStoredSymSchurCompl n fp A) i j
+            + flStoredSymSchurDefect n fp A i j)
+
+/-- **Recursive stored-symmetric all-1×1 floating block-LDLᵀ bound**.  For a
+    symmetric input whose stored-symmetric rounded Schur path has nonzero
+    successive pivots, recursively constructed factors `L̂,D̂` approximate `A`
+    entrywise within `flBlockLDLTStoredAllOneByOneBound`.  This discharges the
+    per-stage symmetry side condition by storing each Schur complement
+    symmetrically, while accounting for the stored-vs-raw Schur defect. -/
+theorem fl_blockLDLT_stored_all_oneByOne_bound (fp : FPModel)
+    (hval : gammaValid fp 3) :
+    ∀ (n : ℕ) (A : Fin n → Fin n → ℝ),
+      (∀ i j, A i j = A j i) →
+      FlStoredAllOnePivots fp n A →
+      ∃ L D : Fin n → Fin n → ℝ,
+        ∀ I J,
+          |(∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) - A I J|
+            ≤ flBlockLDLTStoredAllOneByOneBound fp n A I J := by
+  intro n
+  induction n with
+  | zero =>
+      intro A _hsym _hp
+      refine ⟨A, A, ?_⟩
+      intro I
+      exact Fin.elim0 I
+  | succ n ih =>
+      intro A hsym hp
+      obtain ⟨ha, hpS⟩ := hp
+      obtain ⟨L_S, D_S, hprodS⟩ :=
+        ih (flStoredSymSchurCompl n fp A) (flStoredSymSchurCompl_symm n fp A) hpS
+      refine ⟨fun I J => Fin.cases (Fin.cases 1 (fun _ => 0) J)
+                (fun i => Fin.cases (fp.fl_div (A i.succ 0) (A 0 0))
+                  (fun j => L_S i j) J) I,
+              fun I J => Fin.cases (Fin.cases (A 0 0) (fun _ => 0) J)
+                (fun i => Fin.cases 0 (fun j => D_S i j) J) I, ?_⟩
+      apply fl_blockLDLT_oneByOne_stage_bound_of_stored_schur n fp A ha
+        (fun i => hsym 0 i.succ) hval L_S D_S
+        (flBlockLDLTStoredAllOneByOneBound fp n (flStoredSymSchurCompl n fp A))
+      · exact hprodS
+      · simp
+      · intro i; simp
+      · intro j; simp
+      · intro i j; simp
+      · simp
+      · intro j; simp
+      · intro i; simp
+      · intro i j; simp
+
+/-- Recursive rounded-pivot side condition for the all-1×1 floating block-LDLᵀ
+    path.  At each rounded Schur-complement stage the pivot is nonzero and the
+    active first row agrees with the active first column, which is exactly the
+    symmetry side condition required by the one-stage floating assemble bound. -/
+noncomputable def FlAllOneSymmetricPivots (fp : FPModel) :
+    (n : ℕ) → (Fin n → Fin n → ℝ) → Prop
+  | 0, _ => True
+  | n + 1, A =>
+      A 0 0 ≠ 0 ∧
+      (∀ i : Fin n, A 0 i.succ = A i.succ 0) ∧
+      FlAllOneSymmetricPivots fp n (flSchurCompl n fp A)
+
+/-- Recursive entrywise backward-error envelope for the rounded all-1×1-pivot
+    block-LDLᵀ path.  Each stage wraps the recursive trailing envelope in
+    `flBlockLDLTOneByOneStageBound`. -/
+noncomputable def flBlockLDLTAllOneByOneBound (fp : FPModel) :
+    (n : ℕ) → (Fin n → Fin n → ℝ) → Fin n → Fin n → ℝ
+  | 0, _ => fun I _ => Fin.elim0 I
+  | n + 1, A =>
+      flBlockLDLTOneByOneStageBound n fp A
+        (flBlockLDLTAllOneByOneBound fp n (flSchurCompl n fp A))
+
+/-- **Recursive all-1×1-pivot floating-point block-LDLᵀ bound** for Theorem
+    11.3's `s = 1` path.  If every rounded Schur-complement stage has a nonzero
+    pivot and satisfies the first-row/first-column symmetry needed by the local
+    assemble theorem, then recursively constructed factors `L̂,D̂` satisfy the
+    entrywise envelope `flBlockLDLTAllOneByOneBound`. -/
+theorem fl_blockLDLT_all_oneByOne_bound (fp : FPModel) (hval : gammaValid fp 3) :
+    ∀ (n : ℕ) (A : Fin n → Fin n → ℝ),
+      FlAllOneSymmetricPivots fp n A →
+      ∃ L D : Fin n → Fin n → ℝ,
+        ∀ I J,
+          |(∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) - A I J|
+            ≤ flBlockLDLTAllOneByOneBound fp n A I J := by
+  intro n
+  induction n with
+  | zero =>
+      intro A _hp
+      refine ⟨A, A, ?_⟩
+      intro I
+      exact Fin.elim0 I
+  | succ n ih =>
+      intro A hp
+      obtain ⟨ha, hsym1, hpS⟩ := hp
+      obtain ⟨L_S, D_S, hprodS⟩ := ih (flSchurCompl n fp A) hpS
+      refine ⟨fun I J => Fin.cases (Fin.cases 1 (fun _ => 0) J)
+                (fun i => Fin.cases (fp.fl_div (A i.succ 0) (A 0 0))
+                  (fun j => L_S i j) J) I,
+              fun I J => Fin.cases (Fin.cases (A 0 0) (fun _ => 0) J)
+                (fun i => Fin.cases 0 (fun j => D_S i j) J) I, ?_⟩
+      apply fl_blockLDLT_oneByOne_stage_bound n fp A ha hsym1 hval L_S D_S
+        (flBlockLDLTAllOneByOneBound fp n (flSchurCompl n fp A))
+      · intro i j
+        simpa [flSchurCompl] using hprodS i j
+      · simp
+      · intro i; simp
+      · intro j; simp
+      · intro i j; simp
+      · simp
+      · intro j; simp
+      · intro i; simp
+      · intro i j; simp
+
 -- ============================================================
 -- Chapter 11.1.4  Tridiagonal symmetric matrices
 -- ============================================================
@@ -985,12 +1289,390 @@ theorem bunch_tridiagonal_alpha_root :
   field_simp
   nlinarith [h5]
 
+/-- Bunch's symmetric-tridiagonal pivoting parameter is strictly positive. -/
+theorem bunch_tridiagonal_alpha_pos : 0 < bunchTridiagonalAlpha := by
+  unfold bunchTridiagonalAlpha
+  have h : (1 : ℝ) < Real.sqrt 5 :=
+    (Real.lt_sqrt (by norm_num : (0 : ℝ) ≤ 1)).mpr (by norm_num)
+  linarith
+
+/-- Bunch's symmetric-tridiagonal pivoting parameter is less than one. -/
+theorem bunch_tridiagonal_alpha_lt_one : bunchTridiagonalAlpha < 1 := by
+  unfold bunchTridiagonalAlpha
+  have h : Real.sqrt 5 < 3 := (Real.sqrt_lt' (by norm_num)).mpr (by norm_num)
+  linarith
+
+/-- From the root identity, `α² = 1 - α` for Bunch's tridiagonal parameter. -/
+theorem bunch_tridiagonal_alpha_sq :
+    bunchTridiagonalAlpha ^ 2 = 1 - bunchTridiagonalAlpha := by
+  nlinarith [bunch_tridiagonal_alpha_root]
+
 /-- Algorithm 11.6 source decision predicate for Bunch's tridiagonal pivot-size
 strategy. -/
 def BunchTridiagonalPivotChoice
     (σ a11 a21 : ℝ) (s : PivotSize) : Prop :=
   (σ * |a11| ≥ bunchTridiagonalAlpha * a21 ^ 2 ∧ s = PivotSize.one) ∨
   (σ * |a11| < bunchTridiagonalAlpha * a21 ^ 2 ∧ s = PivotSize.two)
+
+/-- The one-by-one branch of Algorithm 11.6 exposes the printed threshold
+inequality. -/
+theorem bunch_tridiagonal_pivot_choice_one_threshold (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one) :
+    σ * |a11| ≥ bunchTridiagonalAlpha * a21 ^ 2 := by
+  rcases hchoice with hchoice | hchoice
+  · exact hchoice.1
+  · cases hchoice.2
+
+/-- The two-by-two branch of Algorithm 11.6 exposes the strict printed
+threshold inequality. -/
+theorem bunch_tridiagonal_pivot_choice_two_threshold (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two) :
+    σ * |a11| < bunchTridiagonalAlpha * a21 ^ 2 := by
+  rcases hchoice with hchoice | hchoice
+  · cases hchoice.2
+  · exact hchoice.1
+
+/-- The printed non-strict threshold certifies the one-by-one branch of
+Algorithm 11.6. -/
+theorem bunch_tridiagonal_pivot_choice_one_of_threshold (σ a11 a21 : ℝ)
+    (hthreshold : σ * |a11| ≥ bunchTridiagonalAlpha * a21 ^ 2) :
+    BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one :=
+  Or.inl ⟨hthreshold, rfl⟩
+
+/-- The printed strict threshold certifies the two-by-two branch of
+Algorithm 11.6. -/
+theorem bunch_tridiagonal_pivot_choice_two_of_threshold (σ a11 a21 : ℝ)
+    (hthreshold : σ * |a11| < bunchTridiagonalAlpha * a21 ^ 2) :
+    BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two :=
+  Or.inr ⟨hthreshold, rfl⟩
+
+/-- In the one-by-one branch, a nonzero adjacent offdiagonal entry forces the
+accepted scalar pivot to be nonzero.  This is the local nonsingularity fact used
+when the tridiagonal factorization step divides by `a11`. -/
+theorem bunch_tridiagonal_pivot_choice_one_a11_ne_zero_of_a21_ne_zero
+    (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one)
+    (ha21 : a21 ≠ 0) :
+    a11 ≠ 0 := by
+  have hthreshold :=
+    bunch_tridiagonal_pivot_choice_one_threshold σ a11 a21 hchoice
+  have hsquare : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have hright_pos : 0 < bunchTridiagonalAlpha * a21 ^ 2 :=
+    mul_pos bunch_tridiagonal_alpha_pos hsquare
+  have hleft_pos : 0 < σ * |a11| := lt_of_lt_of_le hright_pos hthreshold
+  intro ha11
+  rw [ha11] at hleft_pos
+  simp at hleft_pos
+
+/-- In the two-by-two branch, if the left side of the printed comparison is
+nonnegative, the accepted offdiagonal pivot is nonzero. -/
+theorem bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_left_nonneg
+    (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hleft_nonneg : 0 ≤ σ * |a11|) :
+    a21 ≠ 0 := by
+  have hthreshold :=
+    bunch_tridiagonal_pivot_choice_two_threshold σ a11 a21 hchoice
+  have hright_pos : 0 < bunchTridiagonalAlpha * a21 ^ 2 :=
+    lt_of_le_of_lt hleft_nonneg hthreshold
+  intro ha21
+  rw [ha21] at hright_pos
+  simp at hright_pos
+
+/-- A source-shaped variant of the two-by-two branch nonsingularity fact when
+`σ` is known nonnegative. -/
+theorem bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg
+    (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσ : 0 ≤ σ) :
+    a21 ≠ 0 :=
+  bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_left_nonneg σ a11 a21
+    hchoice (mul_nonneg hσ (abs_nonneg a11))
+
+/-- In the two-by-two branch of Algorithm 11.6, if `σ` dominates the second
+diagonal entry, the accepted tridiagonal pivot block has determinant bounded
+away from zero by `(1 - α) a21²`. -/
+theorem bunch_tridiagonal_twoByTwo_absdet_lower_of_sigma_bound
+    (σ a11 a21 a22 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa22 : |a22| ≤ σ) :
+    (1 - bunchTridiagonalAlpha) * a21 ^ 2 ≤ |a11 * a22 - a21 ^ 2| := by
+  have hthreshold :=
+    bunch_tridiagonal_pivot_choice_two_threshold σ a11 a21 hchoice
+  have hprod_le : |a11 * a22| ≤ σ * |a11| := by
+    have hmul := mul_le_mul_of_nonneg_left hσa22 (abs_nonneg a11)
+    rw [abs_mul]
+    nlinarith
+  have hprod_lt : |a11 * a22| < bunchTridiagonalAlpha * a21 ^ 2 :=
+    lt_of_le_of_lt hprod_le hthreshold
+  have hdecomp : (a21 ^ 2 - a11 * a22) + a11 * a22 = a21 ^ 2 := by ring
+  have hsum : |a21 ^ 2| ≤ |a21 ^ 2 - a11 * a22| + |a11 * a22| := by
+    calc
+      |a21 ^ 2| = |(a21 ^ 2 - a11 * a22) + a11 * a22| := by rw [hdecomp]
+      _ ≤ |a21 ^ 2 - a11 * a22| + |a11 * a22| := abs_add_le _ _
+  have hsq_abs : |a21 ^ 2| = a21 ^ 2 := abs_of_nonneg (sq_nonneg a21)
+  have hlower_basic : a21 ^ 2 - |a11 * a22| ≤
+      |a21 ^ 2 - a11 * a22| := by
+    rw [hsq_abs] at hsum
+    linarith
+  have hcoeff_le_basic :
+      (1 - bunchTridiagonalAlpha) * a21 ^ 2 ≤ a21 ^ 2 - |a11 * a22| := by
+    nlinarith [hprod_lt]
+  calc
+    (1 - bunchTridiagonalAlpha) * a21 ^ 2 ≤
+        a21 ^ 2 - |a11 * a22| := hcoeff_le_basic
+    _ ≤ |a21 ^ 2 - a11 * a22| := hlower_basic
+    _ = |a11 * a22 - a21 ^ 2| := by rw [abs_sub_comm]
+
+/-- The two-by-two tridiagonal pivot block accepted by Algorithm 11.6 is
+nonsingular when `σ` dominates the second diagonal entry. -/
+theorem bunch_tridiagonal_twoByTwo_det_ne_zero_of_sigma_bound
+    (σ a11 a21 a22 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa22 : |a22| ≤ σ) :
+    a11 * a22 - a21 ^ 2 ≠ 0 := by
+  have hσ : 0 ≤ σ := le_trans (abs_nonneg a22) hσa22
+  have ha21 :=
+    bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg σ a11 a21
+      hchoice hσ
+  have hsquare : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have halpha_gap : 0 < 1 - bunchTridiagonalAlpha := by
+    linarith [bunch_tridiagonal_alpha_lt_one]
+  have hlower :=
+    bunch_tridiagonal_twoByTwo_absdet_lower_of_sigma_bound σ a11 a21 a22
+      hchoice hσa22
+  have hdet_abs_pos : 0 < |a11 * a22 - a21 ^ 2| :=
+    lt_of_lt_of_le (mul_pos halpha_gap hsquare) hlower
+  exact abs_pos.mp hdet_abs_pos
+
+/-- Entrywise inverse bounds for the `2 × 2` tridiagonal pivot block
+`[[a11, a21], [a21, a22]]` accepted by Algorithm 11.6.  The inverse entries are
+`a22/det`, `-a21/det`, and `a11/det`, with
+`det = a11*a22 - a21²`. -/
+theorem bunch_tridiagonal_twoByTwo_inverse_entry_bounds_of_sigma_bound
+    (σ a11 a21 a22 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ) :
+    |a22 / (a11 * a22 - a21 ^ 2)| ≤
+        σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ∧
+    |(-a21) / (a11 * a22 - a21 ^ 2)| ≤
+        |a21| / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ∧
+    |a11 / (a11 * a22 - a21 ^ 2)| ≤
+        σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) := by
+  let det := a11 * a22 - a21 ^ 2
+  let lower := (1 - bunchTridiagonalAlpha) * a21 ^ 2
+  have hσ : 0 ≤ σ := le_trans (abs_nonneg a11) hσa11
+  have ha21 :=
+    bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg σ a11 a21
+      hchoice hσ
+  have hsquare : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have halpha_gap : 0 < 1 - bunchTridiagonalAlpha := by
+    linarith [bunch_tridiagonal_alpha_lt_one]
+  have hlower_pos : 0 < lower := by
+    dsimp [lower]
+    exact mul_pos halpha_gap hsquare
+  have hdet_lower : lower ≤ |det| := by
+    dsimp [lower, det]
+    exact bunch_tridiagonal_twoByTwo_absdet_lower_of_sigma_bound σ a11 a21 a22
+      hchoice hσa22
+  have hdet_abs_pos : 0 < |det| := lt_of_lt_of_le hlower_pos hdet_lower
+  constructor
+  · rw [abs_div]
+    have hnum : |a22| / |det| ≤ σ / |det| :=
+      div_le_div_of_nonneg_right hσa22 (le_of_lt hdet_abs_pos)
+    have hden : σ / |det| ≤ σ / lower :=
+      div_le_div_of_nonneg_left hσ hlower_pos hdet_lower
+    exact hnum.trans hden
+  · constructor
+    · rw [abs_div, abs_neg]
+      exact div_le_div_of_nonneg_left (abs_nonneg a21) hlower_pos hdet_lower
+    · rw [abs_div]
+      have hnum : |a11| / |det| ≤ σ / |det| :=
+        div_le_div_of_nonneg_right hσa11 (le_of_lt hdet_abs_pos)
+      have hden : σ / |det| ≤ σ / lower :=
+        div_le_div_of_nonneg_left hσ hlower_pos hdet_lower
+      exact hnum.trans hden
+
+/-- Floating-point backward error of the scalar Schur update in a tridiagonal
+`2 × 2` pivot step.  In a symmetric tridiagonal matrix, after accepting the
+leading `2 × 2` block, the only trailing update has the form
+`b - c*f*c`, where `f` is the bottom-right entry of the inverse pivot block.
+The rounded computation `fl(b - fl(fl(c*f)*c))` differs from the exact update by
+a residual bounded by `γ₃ (|b| + |c*f*c|)`. -/
+theorem fl_tridiagonal_twoByTwo_schur_step_error
+    (fp : FPModel) (b c f : ℝ) (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 3 * (|b| + |c * f * c|) ∧
+      fp.fl_sub b (fp.fl_mul (fp.fl_mul c f) c) = (b - c * f * c) + Δ := by
+  obtain ⟨δ1, hδ1, hm1⟩ := fp.model_mul c f
+  obtain ⟨δ2, hδ2, hm2⟩ := fp.model_mul (fp.fl_mul c f) c
+  obtain ⟨δ3, hδ3, hs⟩ := fp.model_sub b (fp.fl_mul (fp.fl_mul c f) c)
+  obtain ⟨θ, hθ, hprod⟩ :=
+    prod_error_bound fp 3 ![δ1, δ2, δ3]
+      (by intro i; fin_cases i <;> simp_all) hval
+  have hfactor : (1 + δ1) * (1 + δ2) * (1 + δ3) = 1 + θ := by
+    have h := hprod
+    rw [Fin.prod_univ_three] at h
+    simpa using h
+  have hs_eq : fp.fl_sub b (fp.fl_mul (fp.fl_mul c f) c)
+      = b * (1 + δ3) - (c * f * c) * (1 + θ) := by
+    rw [hs, hm2, hm1, ← hfactor]
+    ring
+  refine ⟨b * δ3 - (c * f * c) * θ, ?_, ?_⟩
+  · have hu3 : fp.u ≤ gamma fp 3 := u_le_gamma fp (by norm_num) hval
+    have hγ0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+    have htri : |b * δ3 - (c * f * c) * θ| ≤
+        |b * δ3| + |(c * f * c) * θ| := by
+      have h := abs_add_le (b * δ3) (-((c * f * c) * θ))
+      rwa [← sub_eq_add_neg, abs_neg] at h
+    have e1 : |b * δ3 - (c * f * c) * θ|
+        ≤ |b| * fp.u + |c * f * c| * gamma fp 3 := by
+      calc |b * δ3 - (c * f * c) * θ|
+          ≤ |b * δ3| + |(c * f * c) * θ| := htri
+        _ = |b| * |δ3| + |c * f * c| * |θ| := by rw [abs_mul, abs_mul]
+        _ ≤ |b| * fp.u + |c * f * c| * gamma fp 3 :=
+            add_le_add (mul_le_mul_of_nonneg_left hδ3 (abs_nonneg _))
+              (mul_le_mul_of_nonneg_left hθ (abs_nonneg _))
+    have e2 : |b| * fp.u + |c * f * c| * gamma fp 3
+        ≤ gamma fp 3 * (|b| + |c * f * c|) := by
+      have hle : |b| * fp.u ≤ |b| * gamma fp 3 :=
+        mul_le_mul_of_nonneg_left hu3 (abs_nonneg _)
+      nlinarith [hle, abs_nonneg (c * f * c), hγ0]
+    exact le_trans e1 e2
+  · rw [hs_eq]
+    ring
+
+/-- Source-shaped version of `fl_tridiagonal_twoByTwo_schur_step_error` for the
+accepted Algorithm 11.6 `2 × 2` pivot block.  The inverse-entry bound converts
+the abstract correction `|c*f*c|` into the scalar budget using
+`σ / ((1 - α) a21²)`. -/
+theorem fl_tridiagonal_twoByTwo_schur_step_error_of_sigma_bound
+    (fp : FPModel) (σ a11 a21 a22 b c : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 3 *
+        (|b| + |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) * |c|) ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) + Δ := by
+  obtain ⟨hInv22, hInv21, hInv11⟩ :=
+    bunch_tridiagonal_twoByTwo_inverse_entry_bounds_of_sigma_bound σ a11 a21 a22
+      hchoice hσa11 hσa22
+  obtain ⟨Δ, hΔ, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_schur_step_error fp b c
+      (a11 / (a11 * a22 - a21 ^ 2)) hval
+  refine ⟨Δ, ?_, hstep⟩
+  have hcorr : |c * (a11 / (a11 * a22 - a21 ^ 2)) * c| ≤
+      |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) * |c| := by
+    rw [abs_mul, abs_mul]
+    have hleft :=
+      mul_le_mul_of_nonneg_left hInv11 (abs_nonneg c)
+    exact mul_le_mul_of_nonneg_right hleft (abs_nonneg c)
+  have hγ0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+  have hbudget :
+      gamma fp 3 * (|b| + |c * (a11 / (a11 * a22 - a21 ^ 2)) * c|)
+        ≤ gamma fp 3 *
+          (|b| + |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) * |c|) :=
+    mul_le_mul_of_nonneg_left (add_le_add (le_refl |b|) hcorr) hγ0
+  exact le_trans hΔ hbudget
+
+/-- Backward-error form of the scalar rounded update for an accepted
+tridiagonal `2 × 2` pivot: the computed trailing Schur entry is the exact Schur
+update for a perturbed trailing scalar `b + Δb`. -/
+theorem fl_tridiagonal_twoByTwo_schur_step_backward_error_of_sigma_bound
+    (fp : FPModel) (σ a11 a21 a22 b c : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hval : gammaValid fp 3) :
+    ∃ Δb : ℝ,
+      |Δb| ≤ gamma fp 3 *
+        (|b| + |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) * |c|) ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b + Δb) - c * (a11 / (a11 * a22 - a21 ^ 2)) * c := by
+  obtain ⟨Δ, hΔ, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_schur_step_error_of_sigma_bound fp σ a11 a21 a22 b c
+      hchoice hσa11 hσa22 hval
+  refine ⟨Δ, hΔ, ?_⟩
+  rw [hstep]
+  ring
+
+/-- Uniform scalar budget for the backward-error form of the accepted
+tridiagonal `2 × 2` pivot update.  This is the local bridge from the Algorithm
+11.6 inverse-entry scalar to a one-stage normwise envelope. -/
+theorem fl_tridiagonal_twoByTwo_schur_step_backward_error_uniform_bound
+    (fp : FPModel) (σ a11 a21 a22 b c Amax κ : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hval : gammaValid fp 3) :
+    ∃ Δb : ℝ,
+      |Δb| ≤ gamma fp 3 * (Amax + Amax * κ * Amax) ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b + Δb) - c * (a11 / (a11 * a22 - a21 ^ 2)) * c := by
+  obtain ⟨Δb, hΔb, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_schur_step_backward_error_of_sigma_bound fp
+      σ a11 a21 a22 b c hchoice hσa11 hσa22 hval
+  refine ⟨Δb, ?_, hstep⟩
+  have hσ : 0 ≤ σ := le_trans (abs_nonneg a11) hσa11
+  have ha21 :=
+    bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg σ a11 a21
+      hchoice hσ
+  have hsquare : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have halpha_gap : 0 < 1 - bunchTridiagonalAlpha := by
+    linarith [bunch_tridiagonal_alpha_lt_one]
+  have hlower_pos : 0 < (1 - bunchTridiagonalAlpha) * a21 ^ 2 :=
+    mul_pos halpha_gap hsquare
+  have hratio_nonneg :
+      0 ≤ σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) :=
+    div_nonneg hσ (le_of_lt hlower_pos)
+  have hcorr1 :
+      |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) ≤ Amax * κ :=
+    mul_le_mul hc hratio hratio_nonneg hAmax
+  have hcorr :
+      |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) * |c| ≤
+        Amax * κ * Amax :=
+    mul_le_mul hcorr1 hc (abs_nonneg c) (mul_nonneg hAmax hκ)
+  have hinside :
+      |b| + |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) * |c| ≤
+        Amax + Amax * κ * Amax :=
+    add_le_add hb hcorr
+  have hγ0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+  exact le_trans hΔb (mul_le_mul_of_nonneg_left hinside hγ0)
+
+/-- One-stage `1 × 1` trailing-block envelope for an accepted tridiagonal
+`2 × 2` pivot.  Since a symmetric tridiagonal matrix has only one trailing
+entry touched by the first `2 × 2` pivot, the scalar backward-error bound lifts
+to a `Fin 1 × Fin 1` perturbation directly. -/
+theorem fl_tridiagonal_twoByTwo_trailing_one_stage_bound
+    (fp : FPModel) (σ a11 a21 a22 b c Amax κ : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hval : gammaValid fp 3) :
+    ∃ ΔS : Fin 1 → Fin 1 → ℝ,
+      (∀ i j : Fin 1, |ΔS i j| ≤ gamma fp 3 * (Amax + Amax * κ * Amax)) ∧
+      (∀ i j : Fin 1,
+        fp.fl_sub b
+            (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+          = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) + ΔS i j) := by
+  obtain ⟨Δb, hΔb, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_schur_step_backward_error_uniform_bound fp
+      σ a11 a21 a22 b c Amax κ hchoice hσa11 hσa22 hAmax hκ hb hc
+      hratio hval
+  refine ⟨fun _ _ => Δb, ?_, ?_⟩
+  · intro _ _
+    exact hΔb
+  · intro _ _
+    rw [hstep]
+    ring
 
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
