@@ -22,9 +22,9 @@
 -- * The complex Schur route is imported to prove determinant nonsingularity
 --   of the real vec/Kronecker coefficient from a supplied no-common complex
 --   right-eigenpair hypothesis on the entrywise complexifications of `A` and
---   `B`.  The full spectrum-characterization statement -- every eigenvalue of
---   the Kronecker coefficient is a difference `lam_i(A) - mu_j(B)` -- is still
---   not stated as a complete iff here.
+--   `B`.  The complex coefficient now also has the shifted determinant form of
+--   the full spectrum-characterization statement: a scalar shift is singular
+--   exactly when it is a difference `lambda(A) - mu(B)`.
 -- * The quasi-triangular (2x2 diagonal block, real-Schur) Bartels-Stewart
 --   route behind equations (16.4), (16.7), and (16.8) is represented by an
 --   imported real quasi-Schur existence wrapper plus supplied adjacent
@@ -1815,6 +1815,172 @@ theorem complexSylvesterVecCoeff_singular_of_common_right_eigenvalue
   have hcoeff := complexSylvesterVecCoeff_mulVec_vec A B X
   rw [hOp] at hcoeff
   simpa using hcoeff
+
+/-- Scalar-shift bookkeeping for complex right eigenvalues: an eigenvalue `mu`
+    of `A - theta I` is the same as an eigenvalue `mu + theta` of `A`. -/
+theorem hasComplexRightEigenvalue_sub_scalar_iff
+    {idx : Type*} [Fintype idx] [DecidableEq idx]
+    (A : Matrix idx idx Complex) (theta mu : Complex) :
+    HasComplexRightEigenvalue (A - Matrix.scalar idx theta) mu ↔
+      HasComplexRightEigenvalue A (mu + theta) := by
+  classical
+  constructor
+  · intro h
+    let y := Classical.choose h
+    have hyprops := Classical.choose_spec h
+    have hyne := hyprops.1
+    have hy : Matrix.mulVec (A - Matrix.scalar idx theta) y =
+        fun i => mu * y i := hyprops.2
+    refine ⟨y, hyne, ?_⟩
+    funext i
+    have hi := congrFun hy i
+    have hcoord :
+        Matrix.mulVec A y i - theta * y i = mu * y i := by
+      simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hi
+    have hcoord' :
+        Matrix.mulVec A y i = mu * y i + theta * y i :=
+      sub_eq_iff_eq_add.mp hcoord
+    calc
+      Matrix.mulVec A y i = mu * y i + theta * y i := hcoord'
+      _ = (mu + theta) * y i := by ring
+  · intro h
+    let y := Classical.choose h
+    have hyprops := Classical.choose_spec h
+    have hyne := hyprops.1
+    have hy : Matrix.mulVec A y = fun i => (mu + theta) * y i :=
+      hyprops.2
+    refine ⟨y, hyne, ?_⟩
+    funext i
+    have hi := congrFun hy i
+    have hcoord :
+        Matrix.mulVec A y i = (mu + theta) * y i := by
+      simpa using hi
+    calc
+      Matrix.mulVec (A - Matrix.scalar idx theta) y i
+          = Matrix.mulVec A y i - theta * y i := by
+            simp [Matrix.sub_mulVec, Matrix.scalar_apply]
+      _ = (mu + theta) * y i - theta * y i := by rw [hcoord]
+      _ = mu * y i := by ring
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), complex shifted
+    coefficient identity: shifting the full vec/Kronecker Sylvester coefficient
+    by `theta I` is the same as replacing `A` by `A - theta I`. -/
+theorem complexSylvesterVecCoeff_left_shift_eq_shifted {m n : Nat}
+    (A : Matrix (Fin m) (Fin m) Complex)
+    (B : Matrix (Fin n) (Fin n) Complex) (theta : Complex) :
+    complexSylvesterVecCoeff (A - Matrix.scalar (Fin m) theta) B =
+      complexSylvesterVecCoeff A B -
+        Matrix.scalar (Prod (Fin n) (Fin m)) theta := by
+  ext p q
+  by_cases hpq : p = q
+  · subst q
+    simp [complexSylvesterVecCoeff, Matrix.kronecker, Matrix.scalar_apply,
+      Matrix.sub_apply]
+    ring
+  · have hdiag :
+        Matrix.diagonal (fun _ : Prod (Fin n) (Fin m) => theta) p q = 0 := by
+      simp [hpq]
+    by_cases hp : p.1 = q.1 <;> by_cases hq : p.2 = q.2
+    · exfalso
+      exact hpq (Prod.ext hp hq)
+    all_goals
+      simp [complexSylvesterVecCoeff, Matrix.kronecker, Matrix.scalar_apply,
+        Matrix.sub_apply, hp, hq, hdiag]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), complex form:
+    the complex vec/Kronecker Sylvester coefficient is nonsingular iff `A` and
+    `B` have no common complex right eigenvalue. -/
+theorem complexSylvesterVecCoeff_det_ne_zero_iff_no_common_complex_right_eigenvalue
+    {m n : Nat}
+    (A : Matrix (Fin m) (Fin m) Complex)
+    (B : Matrix (Fin n) (Fin n) Complex) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 ↔
+      NoCommonComplexRightEigenvalue A B := by
+  constructor
+  · intro hdet mu hcommon
+    exact hdet (complexSylvesterVecCoeff_singular_of_common_right_eigenvalue
+      A B mu hcommon.1 hcommon.2)
+  · intro hno
+    exact complexSylvesterVecCoeff_det_ne_zero_of_no_common_eigenpair A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), complex shifted spectrum
+    characterization in determinant form: a scalar `theta` makes the shifted
+    vec/Kronecker Sylvester coefficient singular iff `theta = lambda - mu` for
+    supplied complex right eigenvalues `lambda` of `A` and `mu` of `B`. -/
+theorem complexSylvesterVecCoeff_shifted_det_eq_zero_iff_exists_eigenvalue_difference
+    {m n : Nat}
+    (A : Matrix (Fin m) (Fin m) Complex)
+    (B : Matrix (Fin n) (Fin n) Complex) (theta : Complex) :
+    Matrix.det (complexSylvesterVecCoeff A B -
+        Matrix.scalar (Prod (Fin n) (Fin m)) theta) = 0 ↔
+      ∃ lam : Complex, ∃ mu : Complex,
+        HasComplexRightEigenvalue A lam ∧
+        HasComplexRightEigenvalue B mu ∧
+        lam - mu = theta := by
+  classical
+  constructor
+  · intro hzero
+    have hzero' :
+        Matrix.det (complexSylvesterVecCoeff
+          (A - Matrix.scalar (Fin m) theta) B) = 0 := by
+      rw [complexSylvesterVecCoeff_left_shift_eq_shifted]
+      exact hzero
+    have hnotno : ¬ NoCommonComplexRightEigenvalue
+        (A - Matrix.scalar (Fin m) theta) B := by
+      intro hno
+      have hne :=
+        (complexSylvesterVecCoeff_det_ne_zero_iff_no_common_complex_right_eigenvalue
+          (A - Matrix.scalar (Fin m) theta) B).mpr hno
+      exact hne hzero'
+    have hnotforall :
+        ¬ (∀ mu : Complex,
+          ¬ (HasComplexRightEigenvalue (A - Matrix.scalar (Fin m) theta) mu ∧
+            HasComplexRightEigenvalue B mu)) := by
+      simpa [NoCommonComplexRightEigenvalue] using hnotno
+    have hex_mu := not_forall.mp hnotforall
+    let mu := Classical.choose hex_mu
+    have hnn := Classical.choose_spec hex_mu
+    have hcommon :
+        HasComplexRightEigenvalue (A - Matrix.scalar (Fin m) theta) mu ∧
+          HasComplexRightEigenvalue B mu := by
+      exact not_not.mp hnn
+    have hA : HasComplexRightEigenvalue A (mu + theta) :=
+      (hasComplexRightEigenvalue_sub_scalar_iff A theta mu).mp hcommon.1
+    refine ⟨mu + theta, mu, hA, hcommon.2, ?_⟩
+    ring
+  · rintro ⟨lam, mu, hA, hB, hdiff⟩
+    rw [← complexSylvesterVecCoeff_left_shift_eq_shifted]
+    have hlam' : lam = theta + mu :=
+      sub_eq_iff_eq_add.mp hdiff
+    have hlam : lam = mu + theta := by
+      rw [add_comm] at hlam'
+      exact hlam'
+    have hA' : HasComplexRightEigenvalue A (mu + theta) := by
+      rw [← hlam]
+      exact hA
+    have hAshift :
+        HasComplexRightEigenvalue (A - Matrix.scalar (Fin m) theta) mu :=
+      (hasComplexRightEigenvalue_sub_scalar_iff A theta mu).mpr hA'
+    by_contra hne
+    have hno :=
+      (complexSylvesterVecCoeff_det_ne_zero_iff_no_common_complex_right_eigenvalue
+        (A - Matrix.scalar (Fin m) theta) B).mp hne
+    exact hno mu ⟨hAshift, hB⟩
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias for
+    the complex shifted vec/Kronecker spectrum/difference characterization. -/
+theorem H16_eq16_3_complexSylvesterVecCoeff_shifted_det_eq_zero_iff_exists_eigenvalue_difference
+    {m n : Nat}
+    (A : Matrix (Fin m) (Fin m) Complex)
+    (B : Matrix (Fin n) (Fin n) Complex) (theta : Complex) :
+    Matrix.det (complexSylvesterVecCoeff A B -
+        Matrix.scalar (Prod (Fin n) (Fin m)) theta) = 0 ↔
+      ∃ lam : Complex, ∃ mu : Complex,
+        HasComplexRightEigenvalue A lam ∧
+        HasComplexRightEigenvalue B mu ∧
+        lam - mu = theta :=
+  complexSylvesterVecCoeff_shifted_det_eq_zero_iff_exists_eigenvalue_difference
+    A B theta
 
 /-- Entrywise real-to-complex map for rectangular matrices.  This is the
     rectangular companion to the square complexification used in the real
