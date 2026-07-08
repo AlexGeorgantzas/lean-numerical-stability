@@ -5386,17 +5386,61 @@ The safest way to classify a theorem is to inspect the statement. If a
 hypothesis already contains the algorithmic stability conclusion, the theorem is
 a transfer or packaging result rather than a complete local analysis.
 
+Chapter 14 GJE declarations in `Algorithms/GaussJordan.lean` include the
+cumulative-product and exact recurrence-accumulation support for
+(14.27)--(14.28), abstract second-stage interfaces, and the proved overall
+composition wrappers:
+
+- `gje_c₃`
+- `GJEStage2Spec`
+- `gje_stage2_matrix_recurrence`
+- `gje_stage2_rhs_recurrence`
+- `gje_cumulative_product`
+- `gje_cumulative_product_base`
+- `gje_cumulative_product_step`
+- `gje_cumulative_product_oob`
+- `gje_cumulative_product_nonneg`
+- `gje_cumulative_product_abs_nonneg`
+- `gje_cumulative_product_matrix_accumulation`
+- `gje_cumulative_product_rhs_accumulation`
+- `gje_stage2_forward_error_bound`
+- `gje_stage2_backward_error`
+- `gje_overall_residual`
+- `gje_overall_forward_error`
+- `gje_spd_residual`
+
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
-Problem 14.3, the residual and forward-error consequences from Problem 14.5,
-Problem 14.7, equation (14.34) in its exact no-pivot/unit-lower LU form and
-pivoted absolute-value form, and Problem 14.10:
+Problem 14.3, the explicit residual-ratio family from Problem 14.4, the residual
+and forward-error consequences from Problem 14.5, Problem 14.7, Problem 14.8's
+complex-to-real block inverse and HPD-to-SPD bridge, the p.279
+Hadamard determinant condition number, equation (14.34) in its exact
+no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
+Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence,
+Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
+Problem 14.15's scalar product-radius support, Method D's expanded
+componentwise residual-budget dependency and printed-coefficient scalar
+simplification, the exact Hyman block identities
+(14.35)--(14.36), and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
+- `higham14_infNorm_le_of_componentwise_abs_matmul_bound`
+- `higham14_infNorm_le_of_componentwise_matmul_bound`
+- `triInv_method2_left_residual_normwise`
+- `triInv_method1B_right_residual_normwise`
+- `triInv_method1B_right_residual_normwise_from_spec`
+- `triInv_method2C_left_residual_normwise`
 - `higham14_problem14_3_right_residual_eq_mul_left_residual`
 - `higham14_problem14_3_left_residual_eq_mul_right_residual`
 - `higham14_problem14_3_right_over_left_residual_infNorm_le_kappa`
 - `higham14_problem14_3_left_over_right_residual_infNorm_le_kappa`
 - `higham14_problem14_3_max_residual_ratio_infNorm_le_kappa`
+- `higham14_problem14_4_A`, `higham14_problem14_4_X`
+- `higham14_problem14_4_XA_eq`, `higham14_problem14_4_AX_eq`
+- `higham14_problem14_4_left_residual_eq`
+- `higham14_problem14_4_left_residual_infNorm_eq`
+- `higham14_problem14_4_right_residual_infNorm_ge_inv_cube`
+- `higham14_problem14_4_right_over_left_ratio_ge`
+- `higham14_problem14_4_right_over_left_ratio_arbitrarily_large`
 - `higham14_unit_roundoff_add_gamma_le_gamma_succ`
 - `higham14_problem14_5_right_inverse_solve_residual_bound`
 - `higham14_problem14_5_left_inverse_solve_residual_bound`
@@ -5404,11 +5448,130 @@ pivoted absolute-value form, and Problem 14.10:
 - `higham14_problem14_5_forward_error_of_residual_bound`
 - `higham14_problem14_5_right_inverse_solve_forward_error_bound`
 - `higham14_problem14_5_left_inverse_solve_forward_error_bound`
+- `higham14_absMatrix_matMulVec_mono`
+- `higham14_absMatrix_matMulVec_nonneg`
+- `higham14_problem14_5_right_inverse_solve_forward_error_bound_of_abs_X_le`
+- `higham14_problem14_5_right_inverse_solve_forward_error_firstorder_replacement`
+- `higham14_problem14_5_left_inverse_solve_forward_error_bound_of_abs_Y_le`
+- `higham14_problem14_5_left_inverse_solve_forward_error_firstorder_replacement`
+- `higham14_problem14_5_left_firstorder_envelope_le_right_exact_rhs_envelope`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones`
 - `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones`
+- `higham14_problem14_8_realBlockMatrix`
+- `higham14_problem14_8_realToComplexVec`
+- `higham14_problem14_8_complexToRealVec`
+- `higham14_problem14_8_complexQuadraticForm`
+- `higham14_problem14_8_realBlockSymPosDef`
+- `higham14_problem14_8_complexHermitianPosDef`
+- `higham14_problem14_8_realBlockMatrix_finiteMatVec_eq_complexToRealVec`
+- `higham14_problem14_8_realBlockMatrix_rightInverse_of_complex`
+- `higham14_problem14_8_realBlockMatrix_leftInverse_of_complex`
+- `higham14_problem14_8_realBlockMatrix_inverse_of_complex`
+- `higham14_problem14_8_realBlockMatrix_quadratic_eq_complexQuadratic`
+- `higham14_problem14_8_realBlockMatrix_symPosDef_of_complexHermitianPosDef`
+- `higham14_method2BBlockUpdateExact`
+- `higham14_method2BBlockUpdateDelta`
+- `higham14_eq14_14_method2B_block_update_decomposition`
+- `higham14_eq14_14_method2B_block_update_delta_bound`
+- `higham14_eq14_14_method2B_exact_offdiag_block_update`
+- `higham14_methodDProductDelta`
+- `higham14_methodDLUBackwardDelta`
+- `higham14_methodDXLLeftResidual`
+- `higham14_methodDXULeftResidual`
+- `higham14_eq14_20_methodD_product_decomposition`
+- `higham14_eq14_20_methodD_productDelta_bound`
+- `higham14_eq14_21_methodD_lu_substitution`
+- `higham14_eq14_21_methodD_luDelta_bound`
+- `higham14_eq14_22_methodD_left_residual_expansion`
+- `higham14_eq14_22_methodD_left_residual_abs_le_expanded_terms`
+- `higham14_eq14_23_methodD_left_residual_expanded_budget`
+- `higham14_methodD_abs_product_assoc`
+- `higham14_methodD_abs_XL_L_diag_ge_inv_scale`
+- `higham14_methodD_abs_XU_U_le_scaled_abs_product`
+- `higham14_methodD_abs_Xhat_le_scaled_abs_product`
+- `higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget`
+- `higham14_eq14_23_methodD_left_residual_bound`
+- `higham14_rowNorm2`
+- `higham14_rowNormDiagonal`
+- `higham14_hadamardConditionNumber`
+- `higham14_hadamardConditionNumberRaw`
+- `higham14_det_rowNormDiagonal_eq_prod_rowNorm2`
+- `higham14_hadamardConditionNumber_eq_det_rowNormDiagonal_div_abs_det`
+- `higham14_hadamardConditionNumberRaw_eq_conditionNumber_of_det_pos`
+- `higham14_hadamardConditionNumber_nonneg`
+- `higham14_rowNorm2_pos_of_det_ne_zero`
+- `higham14_hadamardConditionNumber_pos_of_det_ne_zero`
+- `higham14_problem14_11_hadamard_det_sq_le_prod_rowNorm2_sq`
+- `higham14_problem14_11_abs_det_le_prod_rowNorm2`
+- `higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero`
+- `higham14_rowsOrthogonal`
+- `higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal`
+- `higham14_colNorm2`
+- `higham14_abs_det_eq_one_of_isOrthogonal`
+- `higham14_colNorm2_matMul_orthogonal_left`
+- `higham14_rowNorm2_eq_colNorm2_of_transpose_qr`
+- `higham14_problem14_12_hadamardConditionNumber_eq_prod_colNorm2_div_abs_diag_of_transpose_qr_det_product`
+- `higham14_problem14_12_hadamardConditionNumber_eq_prod_colNorm2_div_abs_diag_of_transpose_qr`
+- `higham14_problem14_12_hadamardConditionNumber_stressUpper_one_eq_sqrt_factorial`
+- `higham14_peiMatrix`
+- `higham14_problem14_12_peiMatrix_det`
+- `higham14_problem14_12_peiMatrix_rowNorm2`
+- `higham14_problem14_12_peiMatrix_prod_rowNorm2`
+- `higham14_problem14_12_hadamardConditionNumber_peiMatrix_abs`
+- `higham14_problem14_12_hadamardConditionNumber_peiMatrix`
+- `higham14_problem14_13_amgm_prod_le_pow_sum_div_card`
+- `higham14_problem14_13_gej_squared_bound_from_amgm`
+- `higham14_problem14_13_gej_bound_from_squared`
+- `higham14_problem14_13_gej_bound_from_amgm_certificate`
+- `higham14_problem14_13_opNorm2_eq_complexMatrixOp2_realRectToCMatrix`
+- `higham14_problem14_13_opNorm2_eq_complex_top_singularValue`
+- `higham14_problem14_13_frobNorm_sq_eq_complexMatrixFrobeniusSq`
+- `higham14_problem14_13_frobNorm_sq_eq_sum_complex_singularValue_sq`
+- `higham14_problem14_13_lowerNorm_eq_complex_last_singularValue`
+- `higham14_problem14_13_opNorm2_rightInverse_eq_inv_complex_last_singularValue`
+- `higham14_problem14_13_kappa2_eq_top_div_last_singularValue_of_rightInverse`
+- `higham14_problem14_13_complexGramLin_det_eq_prod_gramEigenvalues`
+- `higham14_problem14_13_complex_det_conjTranspose_mul_self_eq_prod_singularValue_sq`
+- `higham14_problem14_13_real_det_sq_eq_prod_complex_singularValue_sq`
+- `higham14_problem14_13_abs_det_eq_prod_complex_singularValue`
+- `higham14_problem14_13_abs_det_pos_of_isRightInverse`
+- `higham14_problem14_13_gej_bound_from_matrix_amgm_certificate`
+- `higham14_problem14_13_gejAmgmFamily`
+- `higham14_problem14_13_gejAmgmFamily_nonneg`
+- `higham14_problem14_13_last_singularValue_pos_of_isRightInverse`
+- `higham14_problem14_13_gejAmgmFamily_prod`
+- `higham14_problem14_13_gejAmgmFamily_sum_add_last_singularValue_sq`
+- `higham14_problem14_13_gejAmgmFamily_sum_lt_frobNorm_sq`
+- `higham14_problem14_13_gej_bound_of_isRightInverse`
+- `higham14_problem14_13_kappa2_lt_two_mul_hadamardConditionNumber_of_unit_rows`
+- `higham14_problem14_13_frobNorm_eq_sqrt_card_of_rowNorm2_eq_one`
+- `higham14_problem14_13_hadamardConditionNumber_eq_inv_abs_det_of_rowNorm2_eq_one`
+- `higham14_problem14_13_two_over_abs_det_eq_two_mul_hadamardConditionNumber`
+- `higham14_problem14_13_kappa_lt_two_mul_hadamardConditionNumber_of_unit_rows`
+- `exists_relative_theta_of_abs_sub_le_mul_pos`
+- `prod_one_add_delta_abs_sub_one_le_gamma_radius`
+- `higham14_problem14_15_theta_product_bound`
+- `higham14_problem14_15_abs_det_add_rel_le_of_singularValue_theta`
+- `higham14_problem14_15_det_add_rel_le_of_singularValue_theta_of_det_pos`
+- `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_of_sub_rectOpNorm2Le`
+- `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le`
+- `higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt`
+- `higham14_problem14_15_opNorm2_add_le_of_opNorm2Le`
+- `higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le`
 - `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec`
+- `higham14_eq14_34_perm_sign_mul_det_eq_prod_U_diag_of_PermutedLUFactSpec`
+- `higham14_eq14_34_det_eq_perm_sign_mul_prod_U_diag_of_PermutedLUFactSpec`
 - `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_PermutedLUFactSpec`
+- `higham14_hymanRowTimesInv`
+- `higham14_hymanSchur`
+- `higham14_hymanBlockMatrix`
+- `higham14_hymanLowerFactor`
+- `higham14_hymanUpperFactor`
+- `higham14_hymanRowTimesInv_mul_T`
+- `higham14_eq14_35_hyman_block_lu_factorization`
+- `higham14_eq14_36_hyman_det_cyclic_block`
+- `higham14_eq14_36_hyman_det_original_of_row_permutation`
 - `matrixEntryPerturb`
 - `higham14_problem14_10_det_entry_perturb_eq`
 - `higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero`
@@ -5503,6 +5666,7 @@ Current reusable declarations:
 | Algorithm 13.3 matrix-`∞` to max-entry transfer | `higham13_algorithm13_3_matrix_infNorm_block_le_card_mul_blockMaxNorm`, `higham13_algorithm13_3_matrix_infNorm_active_stage_maxEntry_bound`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_of_active_stage_bound`, `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthMatrix_le_of_active_stage_bound`, `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_active_stage_bound`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_continuousLinearMap_source_table`, `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_continuousLinearMap_source_table`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_det_ne_zero`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_det_ne_zero_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_continuousLinearMap_source_table_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_det_ne_zero`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_det_ne_zero_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_initial_diag_right_inverse_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_initial_diag_right_inverse_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_initial_diag_right_inverse_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_initial_diag_right_inverse_of_pivot_right_inverse_of_det_ne_zero` | Transfers the matrix-`∞` active-stage route into the Chapter 13 entrywise max-norm APIs. The generic active-stage wrapper controls the assembled matrix-stage upper factor and the finite matrix-stage history growth matrix in max-entry norm. The source-table corollaries now compose the matrix-`∞` continuous-linear source-table route, and its pivot-right-inverse variant, directly into those max-entry APIs while keeping the initial lower table/diagonal comparison and active inverse certificates explicit; the determinant variants derive the positive growth-factor denominator from `det(blockMatrixFlatFin A) != 0`, and the positive-block-size variants remove the artificial unit-sphere witness from the raw source-table packages using `0 < r`. The initial-diagonal/right-inverse corollaries specialize this further to reciprocal diagonal data, with a matching determinant variant. All of these transferred endpoints are dimension-aware: the upper-factor bound is `2 * ((r : ℝ) * blockMaxNorm A)` and the growth-factor bound is `growthFactorEntry <= 2 * (r : ℝ)`. The explicit factor `r` records the norm-comparison loss `infNorm <= r * maxEntryNorm`; this is dependency-strength progress and deliberately not the source-strength Eq.13.21/`rho <= 2` endpoint. |
 | Algorithm 13.3 canonical active-pivot matrix-`∞` wrappers | `higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_nonsingInv`, `higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv`, `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv_of_det_ne_zero` | Derives active pivot right-inverse certificates from active pivot determinant nonzero plus `pivotInv k = nonsingInv r pivot_k`, then threads this canonical active-pivot surface through the matrix-`∞` active-stage, assembled upper-factor, finite-history, and dimension-aware max-entry/growth packages with canonical initial diagonal inverses. This removes a proof-artifact right-inverse hypothesis from the strongest current canonical route; it still leaves the active pivot determinant/equality table and the source-strength dimension-free Eq.13.21/Eq.13.23 max-entry endpoint open. |
 | Algorithm 13.3 BDD initial active-pivot bridge | `higham13_algorithm13_3_initial_pivot_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_initial_pivot_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_initial_pivot_det_ne_zero_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_initial_pivot_right_inverse_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos` | Specializes the BDD all-prefix original diagonal inverse table to Algorithm 13.3 stage `k = 0`, where the active pivot is definitionally the original first diagonal block.  The determinant wrapper gives first-pivot nonsingularity directly from the canonical BDD inverse, and the last wrapper turns the canonical inverse equality `pivotInv 0 = nonsingInv r (A 0 0)` into the exact first active pivot right-inverse certificate consumed by the matrix-stage APIs.  This closes only the base-pivot bridge; later active Schur-stage pivot certificates remain open. |
+| Algorithm 13.3 BDD initial matrix-`∞` lower-table bridge | `higham13_algorithm13_3_matrix_infNorm_initial_diag_bound_of_diagBound_nonpos`, `higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pos_dim` | Converts the column-BDD nonpositive diagonal-bound table and all-leading-prefix nonsingularity table into the initial matrix-`∞` lower table for the original diagonal blocks.  The first wrapper proves the source-facing comparison `invDiagBound j <= ‖A_jj‖∞` from nonpositivity and norm nonnegativity; the table wrappers combine that comparison with the canonical all-prefix BDD diagonal right-inverse certificates, with a positive-block-size form that derives the unit-sphere witness from `0 < r`.  This is base-stage source-table plumbing; it does not construct the active Schur-stage reciprocal table, the dimension-free max-entry product/update theorem, or the remaining Problem 13.4/Theorem 13.6 source obligations. |
 | Algorithm 13.3 BDD first Schur-tail nonsingularity handoff | `higham13_algorithm13_3_first_schur_tail_blockMatrixNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_first_schur_tail_leadingPrincipalBlockNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_first_schur_tail_all_leadingBlockPrefixes_nonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_first_schur_tail_blockMatrixFlat_det_ne_zero_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos` | Uses the BDD all-prefix canonical first-pivot inverse together with full/all-leading-prefix nonsingularity to prove that the first Algorithm 13.3 Schur tail `blockSchur A (pivotInv 0)` is block-nonsingular, transfers the leading-principal-block nonsingularity condition to that tail, packages all leading prefixes of the tail in the exact table shape consumed by the all-prefix BDD diagonal-inverse theorem, and exposes the corresponding product-index flattened determinant certificate.  This is the first recursive nonsingularity handoff after the base pivot bridge; it does not derive later active Schur-stage reciprocal/source-table data. |
 | Algorithm 13.3 BDD first Schur-tail diagonal inverse handoff | `higham13_algorithm13_3_first_schur_tail_diag_nonsingInv_isInverse_of_tail_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_first_schur_tail_diag_nonsingInv_isRightInverse_of_tail_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_first_schur_tail_diag_det_ne_zero_of_tail_blockDiagDomCol_diagBound_nonpos` | Applies the first-Schur-tail all-prefix handoff to the existing BDD all-prefix diagonal-inverse theorem.  If the first Schur tail has its own column-BDD lower-bound table with nonpositive bounds, these wrappers provide canonical `nonsingInv` two-sided/right-inverse certificates and determinant nonzero facts for every tail diagonal block.  This is recursive pivot-certificate packaging; it does not prove the tail BDD/source reciprocal table itself. |
 | Algorithm 13.3 BDD stage-1 pivot bridge | `higham13_algorithm13_3_stage1_pivot_eq_first_schur_tail_diag`, `higham13_algorithm13_3_stage1_pivot_nonsingInv_isInverse_of_first_schur_tail_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_stage1_pivot_right_inverse_of_pivotInv_eq_nonsingInv_first_schur_tail_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_stage1_pivot_det_ne_zero_of_first_schur_tail_blockDiagDomCol_diagBound_nonpos` | Specializes the Algorithm 13.3 tail-shift theorem to identify the original stage-1 active pivot with the first diagonal block of `blockSchur A (pivotInv 0)`, then transports the first-tail BDD diagonal inverse handoff to the actual stage-1 pivot.  The right-inverse wrapper accepts the source-style equality `pivotInv 1 = nonsingInv r ((blockSchur A (pivotInv 0)) 0 0)`.  This is stage-1 recursive pivot-certificate packaging; it still assumes the first-tail BDD table and does not prove the full active Schur-stage source reciprocal table. |
