@@ -445,6 +445,87 @@ theorem theorem20_7_exists_initialWeightedRowMax_sorted_permuteRows_nat
   intro k hk s hks
   simpa [theorem20_7_initialWeightedRowMax_permuteRows] using hσ k hk s hks
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting policy:
+    if the source right-hand-side magnitudes are monotone with the source row
+    maxima, any row-max sorting permutation also sorts the `|b|` key. -/
+theorem theorem20_7_abs_b_sorted_of_permuteRows_initialRowMax_sorted_compat_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (σ : Fin m ≃ Fin m)
+    (hcompat :
+      ∀ i j : Fin m,
+        theorem20_7_initialRowMax hn A i ≤
+          theorem20_7_initialRowMax hn A j →
+        |b i| ≤ |b j|)
+    (hσA :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A (σ s) ≤
+          theorem20_7_initialRowMax hn A
+            (σ ⟨k, lt_of_lt_of_le hk hnm⟩)) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+      |b (σ s)| ≤ |b (σ ⟨k, lt_of_lt_of_le hk hnm⟩)| := by
+  intro k hk s hks
+  exact
+    hcompat (σ s) (σ ⟨k, lt_of_lt_of_le hk hnm⟩)
+      (hσA k hk s hks)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting policy:
+    under the explicit monotonicity compatibility between source row maxima
+    and right-hand-side magnitudes, the concrete row-max sorting permutation is
+    a common sorting permutation for `A`, `b`, and the weighted row scale. -/
+theorem theorem20_7_exists_initialRowMax_abs_b_sorted_permuteRows_of_abs_b_mono_initialRowMax_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (hphi : 0 ≤ phi)
+    (hcompat :
+      ∀ i j : Fin m,
+        theorem20_7_initialRowMax hn A i ≤
+          theorem20_7_initialRowMax hn A j →
+        |b i| ≤ |b j|) :
+    ∃ σ : Fin m ≃ Fin m,
+      (∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn (fun r j => A (σ r) j) s ≤
+          theorem20_7_initialRowMax hn (fun r j => A (σ r) j)
+            ⟨k, lt_of_lt_of_le hk hnm⟩) ∧
+      (∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |(fun r => b (σ r)) s| ≤
+          |(fun r => b (σ r)) ⟨k, lt_of_lt_of_le hk hnm⟩|) ∧
+      (∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn
+            (fun r j => A (σ r) j) (fun r => b (σ r)) phi s ≤
+          theorem20_7_initialWeightedRowMax hn
+            (fun r j => A (σ r) j) (fun r => b (σ r)) phi
+              ⟨k, lt_of_lt_of_le hk hnm⟩) := by
+  rcases theorem20_7_exists_descending_key_permutation_nat hnm
+      (fun i : Fin m => theorem20_7_initialRowMax hn A i) with
+    ⟨σ, hσA⟩
+  have hA :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn (fun r j => A (σ r) j) s ≤
+          theorem20_7_initialRowMax hn (fun r j => A (σ r) j)
+            ⟨k, lt_of_lt_of_le hk hnm⟩ :=
+    theorem20_7_initialRowMax_sorted_of_permuteRows_sorted_nat
+      hn hnm A σ hσA
+  have hb_raw :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b (σ s)| ≤ |b (σ ⟨k, lt_of_lt_of_le hk hnm⟩)| :=
+    theorem20_7_abs_b_sorted_of_permuteRows_initialRowMax_sorted_compat_nat
+      hn hnm A b σ hcompat hσA
+  have hb :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |(fun r => b (σ r)) s| ≤
+          |(fun r => b (σ r)) ⟨k, lt_of_lt_of_le hk hnm⟩| :=
+    theorem20_7_abs_b_sorted_of_permuteRows_sorted_nat hnm b σ hb_raw
+  have hw :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn
+            (fun r j => A (σ r) j) (fun r => b (σ r)) phi s ≤
+          theorem20_7_initialWeightedRowMax hn
+            (fun r j => A (σ r) j) (fun r => b (σ r)) phi
+              ⟨k, lt_of_lt_of_le hk hnm⟩ :=
+    theorem20_7_initialWeightedRowMax_sorted_of_permuteRows_initialRowMax_abs_b_sorted_nat
+      hn hnm A b σ hphi hσA hb_raw
+  exact ⟨σ, hA, hb, hw⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     the raw pivot-maximality field follows from choosing the current active
     column with the finite active-max pivot selector. -/
