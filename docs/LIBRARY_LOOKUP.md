@@ -2374,6 +2374,15 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal_growth_le`
 - `higham9_11_tridiagonal_bohte_solve_tight`
 - `higham9_11_tridiagonal_bohte_solve_tight_of_growth_le`
+- `higham9_11_TridiagActiveBound` (band-tracked tridiagonal GEPP active-stage bound)
+- `higham9_11_tridiag_pivot_val_le_one`
+- `higham9_11_tridiagActive_row_abs_le_two_mul`
+- `higham9_11_tridiagActive_schur_preserved` (one GEPP step preserves the tridiagonal `(2M, M)` profile)
+- `higham9_11_tridiag_PartialPivotGEPPUTrace_entry_abs_le_two_mul`
+- `higham9_11_tridiag_GEPPUTrace_entry_abs_le_two_mul`
+- `higham9_11_tridiag_GEPPUTrace_growthFactorEntry_le_two` (Theorem 9.11 `p = 1`: tridiagonal GEPP growth factor `<= 2`, proved unconditionally at the exact-trace level)
+- `higham9_11_tridiag_GEPPUTrace_growthFactorEntry_le_bohteBound`
+- `higham9_11_tridiag_wilkinson_source_bound_of_PartialPivotGEPPUTrace`
 - `higham9_11_matrix_bandwidth_one_bohte_solve_tight`
 - `higham9_11_matrix_bandwidth_one_bohte_solve_tight_of_growth_le`
 - `higham9_11_matrix_bandwidth_one_bohte_solve_tight_of_isBanded`
