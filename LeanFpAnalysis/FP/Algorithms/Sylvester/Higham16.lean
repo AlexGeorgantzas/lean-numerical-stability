@@ -3722,6 +3722,31 @@ theorem frobNormRect_sylvesterResidualRect_schur_transform (m n : Nat)
           simpa [Rs, matMulRectRight] using
             frobNormRect_orthogonal_right Rs (matTranspose V) hV.transpose
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.9), conditional exact
+    residual-bound transport.  Any Schur-coordinate Frobenius residual bound
+    transfers unchanged to the reconstructed original-coordinate iterate. -/
+theorem frobNormRect_sylvesterResidualRect_le_of_schur_transform (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n) (C Y : RMatFn m n)
+    (rho : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho) :
+    frobNormRect
+        (sylvesterResidualRect m n A B C
+          (rectMatMul U (rectMatMul Y (matTranspose V)))) <= rho := by
+  rw [frobNormRect_sylvesterResidualRect_schur_transform m n U R A V S B C Y
+    hU hV hA hB]
+  exact hres
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.9): source-numbered
+    alias for exact residual-bound transport from Schur coordinates. -/
+alias H16_eq16_9_frobNormRect_sylvesterResidualRect_le_of_schur_transform :=
+  frobNormRect_sylvesterResidualRect_le_of_schur_transform
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5):
     equation-level Schur-coordinate form.  Under supplied orthogonal
     factorizations `A = U R U^T` and `B = V S V^T`, the substitution
