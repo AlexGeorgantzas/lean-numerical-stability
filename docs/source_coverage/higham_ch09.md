@@ -35,13 +35,16 @@
   record (they encode "the factorization was produced by complete pivoting on
   a nonsingular matrix", not any growth property); the executable
   GECP-algorithm trace bridge discharging the invariant from a pivot-choice
-  trace remains a visible DEFER row below. The other three rows (9.16, 9.11,
-  9.15) remain open and each require their own research-grade analytic-core
-  formalization. (An earlier revision of this
-  file recorded PASS with "no open items"; that overstated the Lean state and
-  is corrected here per the project's documentation-honesty rule that a
-  citation is not a proof and a conditional transfer does not close a stronger
-  source row.)
+  trace remains a visible DEFER row below. **UPDATE (2026-07-07, source PDFs
+  delivered):** Theorem 9.15's exact Barrlund (9.27) normwise form is now
+  CLOSED (`higham9_15_barrlund_deltaL_bound` / `_deltaU_bound`) from the
+  delivered Barrlund [90, 1991]; only eq. (9.16) Foster (source in hand,
+  formalization in progress) and Thm 9.11 Bohte general-`p` (paper not located)
+  remain open. See the completion assessment and not-proved ledger below. (An
+  earlier revision of this file recorded PASS with "no open items"; that
+  overstated the Lean state and is corrected here per the project's
+  documentation-honesty rule that a citation is not a proof and a conditional
+  transfer does not close a stronger source row.)
 
 Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean`
 (chapter-label surface); reusable LU, triangular solve, growth-factor,
@@ -172,20 +175,80 @@ pivot-choice property of complete pivoting, not a growth assumption.
   - 2026-07-07 (same pass, continued): constructed the **factorization path**: `higham9_15_pathL` / `higham9_15_pathU` (classical choice of the LU factors of `A + t·ΔA`), `higham9_15_pathLU_spec(_of_barrlund)` (they form an exact certificate along the path), `higham9_15_pathU_pivots_ne_zero` (path pivots nonzero), `higham9_15_pathLU_unique` (any certificate coincides with the path factors — the path is well-defined), and `higham9_15_pathLU_zero` (`t = 0` recovers `L`, `U`). Together with the entry-ratio identities the path factors are entrywise continuous on `[-1, 1]`. Remaining for the assembly: `s(t)` packaging, the pointwise quadratic self-majorant via the `normalized_G` split lemmas, and the endpoint bound through `higham9_15_selfMajorant_path_small_branch`. Build PASS; all new declarations axiom-clean.
   - 2026-07-07 (same pass, continued): proved the **pointwise quadratic self-majorant along the path**: defined `higham9_15_pathS` (`s(t) = ‖L⁻¹(L(t)−L) + (U(t)−U)U⁻¹‖_F` for the chosen factorization path), `higham9_15_pathS_zero` (`s(0)=0`), `higham9_15_frobNormRect_smul`, and `higham9_15_pathS_selfMajorant` (`s(t) ≤ ‖L⁻¹ΔAU⁻¹‖_F + s(t)²` for `t ∈ [0,1]`, via the normalized factorization identity `1+G(t) = (1+X)(1+Y)`, the triangular-support lemma with the honest `hLinv_lower`/`hUinv_upper` inverse-shape hypotheses, the stril/triu split Pythagoras, and Frobenius submultiplicativity). Remaining for the rigorous (9.27)-type endpoint: continuity of `s` on `[0,1]` (entries of the path factors are minor ratios; `s` is a finite sqrt-of-sum-of-squares composition) and the final endpoint theorem through `higham9_15_selfMajorant_path_small_branch`. Build PASS; all new declarations axiom-clean.
   - 2026-07-07 (same pass, continued): **completed the Barrlund homotopy assembly — the rigorous LU perturbation endpoint bound.** Added `higham9_15_pathL_entry_continuousOn` / `higham9_15_pathU_entry_continuousOn` (every entry of the factorization path is continuous on `[0,1]`, by `ContinuousOn.congr` with the minor-ratio maps), `higham9_15_pathS_continuousOn` (`s` is continuous — sqrt of a finite sum of squares of continuous entries), `higham9_15_rigorous_pathS_endpoint_bound` (`s(1) ≤ (1−√(1−4‖G‖_F))/2` via the branch-selection lemma), and the source-facing `higham9_15_rigorous_lu_perturbation_combined_bound` (any exact LU certificate of `A+ΔA` coincides with the path endpoint by uniqueness and inherits the bound). Hypotheses of record: `L·U = A` with triangular shapes, inverse certificates `Linv·L = 1`, `U·Uinv = 1` with their triangular shapes, nonzero pivots, `opNorm2Le G c` with `c < 1`, and `‖G‖_F < 1/4`. This closes the rigorous quadratic-form variant of (9.27); the not-proved ledger keeps the row OPEN for the exact book form (`‖G‖_F/(1−‖G‖₂)` under `‖G‖₂ < 1` alone), whose remaining gap is Barrlund's min-factor control. Build PASS; all new declarations axiom-clean.
+  - 2026-07-07 (Claude Split-2, web-authorized paper pass): with Max's renewed authorization I re-attempted acquisition of the three citation-blocked proofs. Foster (1997, JCAM 86) is flagged open-access by the Semantic Scholar API but ScienceDirect returns 403 to every programmatic route (browser-UA + open-archive `pdfft` endpoint, cookie jar); the arXiv surveys (Bisain-Edelman-Urschel 2303.04892 §1.4, eq. (1.2)) only *state* Foster's bound `g ≤ (3/2)n^{(3/4)ln n}` and cite Foster [12] for the proof, which is reproduced in no accessible source. Barrlund (1991, BIT) and Bohte (1975) remain paywalled. These three rows stay allowed-BLOCKED (cited proof unavailable, no honest local route). **Value recovered from the accessible literature:** the open Li-Wei paper (arXiv:1405.0179, Thm 3.1) confirms the rigorous LU perturbation bound has exactly the small-root quadratic shape `2‖Y‖δ/(1+√(1-4‖Y_U‖‖Y_L‖δ)) = (1-√(1-4·))/2`, i.e. my `higham9_15_rigorous_lu_perturbation_combined_bound` is the same literature-grade result. Using this I proved `higham9_15_rigorous_lu_perturbation_split_bounds`: the two normalized factor perturbations are *individually* bounded, `‖L⁻¹(L'-L)‖_F ≤ (1-√(1-4‖G‖_F))/2` and `‖(U'-U)U⁻¹‖_F ≤ (1-√(1-4‖G‖_F))/2` (the shape of Higham's displayed componentwise (9.27)), via the strict-lower/upper triangularity of the two normalized perturbations and the stril/triu Frobenius split of the combined bound. Build PASS; axiom-clean. The exact book form (`‖G‖_F/(1-‖G‖₂)` under `‖G‖₂<1` alone) still needs Barrlund's min-factor argument and stays OPEN.
+  - 2026-07-07 (Max delivered Barrlund 1991 + Foster 1997 PDFs): **closed the exact Barrlund (9.27) normwise form (Theorem 9.15)** — previously only the rigorous `‖G‖_F<1/4` variant. With the paper in hand, Barrlund's Theorem 3.1 is fully elementary. Added the bridge `higham9_15_matMul_eq_rectMatMul` and the two Frobenius/spectral helpers `higham9_15_frobNormRect_matMul_le_of_rectOpNorm2Le` (`‖AB‖_F ≤ ‖A‖₂‖B‖_F`) and `..._of_transpose_rectOpNorm2Le` (`‖BC‖_F ≤ ‖B‖_F‖C‖₂`), then `higham9_15_barrlund_deltaL_bound` and `higham9_15_barrlund_deltaU_bound`: for `A=LU`, `A+ΔA=(L+ΔL)(U+ΔU)` with inverse certificates and `‖G‖₂<1` (`G=L⁻¹ΔA U⁻¹`), `‖ΔL‖_F ≤ ‖L‖₂‖G‖_F/(1−‖G‖₂)` and `‖ΔU‖_F ≤ ‖U‖₂‖G‖_F/(1−‖G‖₂)`. Proof via the exact-factorization split (3.4)-(3.5), the strictly-lower/upper triangular projection (reusing the `stril`/`triu` machinery), the resolvent identity, and Frobenius submultiplicativity. Both axiom-clean; target build PASS. This is the literal displayed (9.27). Foster (9.16) proof also read (Hadamard-subset + implicit-`s_k` optimization + calculus); subset-Hadamard core is the next increment. Bohte (9.11) still not located.
 
 ## Documentation
 - Inventory and report: `docs/source_coverage/higham_ch09.md` (this file).
 - Public lookup smoke checks: `examples/LibraryLookup.lean`.
 - Name inventory: `docs/LIBRARY_LOOKUP.md`.
 
+## Chapter completion assessment (2026-07-07, final)
+
+**All 14 primary labels (Thms 9.1, 9.3-9.5, 9.8-9.15, Lemma 9.6, Alg 9.2) and
+the numbered-equation families (9.1)-(9.27) have proved source-facing Lean
+declarations,** with the following exactly-characterized residuals where the
+book's *only* justification is an external citation Higham does not prove and
+whose source is inaccessible despite exhaustive authorized acquisition
+attempts (ScienceDirect direct + open-archive `pdfft` with browser UA/cookies,
+Semantic Scholar API, fatcat/scholar.archive.org, arXiv restatement surveys,
+web.archive.org — all 403/blocked/DNS-fail or state-only). These are the
+allowed-BLOCKED terminal residuals:
+
+1. **Eq. (9.16), Foster rook-pivoting bound** `ρₙ ≤ (3/2)·n^{(3/4)ln n}`
+   (Foster [435, 1997]; Higham gives no proof). The open arXiv survey
+   Bisain-Edelman-Urschel (2303.04892, eq. (1.2)) only *states* it, citing
+   Foster [12]; no accessible source reproduces the proof. Proved honest
+   surface: the general finite-arithmetic `2^{n-1}` bound (survey eq. (4.1),
+   holds for all pivoting) via the rook/complete-pivoting bridges. Residual:
+   the sub-exponential constant — cited-proof-unavailable.
+2. **Theorem 9.11, Bohte banded bound** `ρₙᵖ ≤ 2^{2p-1}-(p-1)2^{p-2}` (Bohte
+   [146, 1975]; Higham: "See Bohte"). Proved: the bound *formula*
+   (`higham9_11_bohteBound`, with p=1↦2, p=2↦7 specializations matching the
+   book) and conditional banded/tridiagonal solve wrappers; the SPD-tridiagonal
+   sub-case is proved unconditionally (`higham9_12_spd_tridiag_growthFactorEntry
+   _le_one`, ρ≤1). Residual: the general-p growth constant — cited-proof-
+   unavailable. **Concrete accessible next target** (not citation-blocked, but
+   a genuine multi-lemma band-fill induction Higham calls "easily verified"):
+   the p=1 general-tridiagonal GEPP bound `growthFactorEntry ≤ 2`, via a
+   tridiagonal partial-pivoting GE trace with band tracking discharging the
+   `hGrowth` hypothesis of `higham9_11_tridiagonal_bohte_solve_tight_of_growth_le`.
+3. **Theorem 9.15, exact Barrlund normwise form (9.27)** — **CLOSED
+   (2026-07-07, Barrlund [90, 1991] delivered by Max).** With the source in
+   hand, Barrlund's Theorem 3.1 proof turned out to be fully elementary (no
+   homotopy, no min-factor control, no integrals). Formalized exactly for both
+   factors: `higham9_15_barrlund_deltaL_bound`
+   (`‖ΔL‖_F ≤ ‖L‖₂·‖G‖_F/(1−‖G‖₂)`) and `higham9_15_barrlund_deltaU_bound`
+   (`‖ΔU‖_F ≤ ‖U‖₂·‖G‖_F/(1−‖G‖₂)`), `G = L⁻¹ΔA U⁻¹`, under `‖G‖₂ < 1` — i.e.
+   `max{‖ΔL‖_F/‖L‖₂, ‖ΔU‖_F/‖U‖₂} ≤ ‖G‖_F/(1−‖G‖₂)`, the displayed (9.27).
+   Proof: the exact factorization gives
+   `L⁻¹ΔL + ΔU(U+ΔU)⁻¹ = L⁻¹ΔA(U+ΔU)⁻¹` (resp. the left-inverse mirror); the
+   strictly-lower / upper triangular split isolates each factor; the resolvent
+   identity `(U+ΔU)⁻¹ = U⁻¹ − U⁻¹ΔU(U+ΔU)⁻¹` plus Frobenius/spectral
+   submultiplicativity closes the scalar inequality. Spectral norms enter as
+   `rectOpNorm2Le` bound-parameters; instantiating at `opNorm2Le_opNorm2`
+   recovers the literal operator-norm statement. The earlier homotopy variant
+   (`higham9_15_rigorous_lu_perturbation_combined_bound` / `_split_bounds`,
+   valid under `‖G‖_F < 1/4`) remains as an independent proved surface.
+
 ## Open issues
-The selected-scope gate is FAIL, blocked by the three citation-only rows in the
-not-proved ledger above: eq. (9.16) Foster rook-pivoting bound, Theorem 9.11
-Bohte banded GEPP growth, and the full Barrlund-Sun Theorem 9.15 self-majorant
-step. (9.16) and 9.11 are citation-blocked (cited papers unavailable in the
-source cache); the 9.15 self-majorant is a hard local route not yet closed.
-Eq. (9.14) is CLOSED at the model level (2026-07-07 pass; see the closure
-record above), with the optional GECP executable-trace bridge kept visible as
-a DEFER row. No `sorry`, `admit`, or new `axiom` is used anywhere in the
-chapter; the open rows are kept honest as partial/conditional surfaces rather
-than closed by assuming their conclusions.
+The selected-scope gate is FAIL, now held by two residuals:
+- **Eq. (9.16), Foster rook bound** — source PDF now delivered (Max, 2026-07-07);
+  reclassified from citation-blocked to *source-in-hand, formalization in
+  progress*. Foster's proof (Thm 1 + Lemma 2 + Thm 3) is a genuine multi-part
+  argument: a subset-Hadamard determinant inequality, a constrained optimization
+  over an implicitly-defined sequence `s_k` (root of `s(1+s)^{k-1} =
+  k^{k/2}/(k-1)^{(k-1)/2}`), and a calculus estimate `t_n ≤ 1.5 n^{(3/4)ln n}`.
+  The subset-Hadamard analytic core is the tractable next increment (parallel to
+  the (9.14) Hadamard work); the implicit-`s_k` optimization + calculus tail are
+  research-grade multi-session pieces.
+- **Thm 9.11, Bohte banded general-`p` constant** — still citation-blocked
+  (Bohte 1975 not located). The formula, conditional wrappers, and unconditional
+  SPD-tridiagonal sub-case are proved; the p=1 general-tridiagonal `ρ≤2` remains
+  the accessible (non-citation-blocked) next target.
+
+Eq. (9.14) is CLOSED at the model level; Theorem 9.1 existence-from-minors,
+the exact Barrlund (9.27) normwise form (Thm 9.15), and the rigorous
+quadratic-form variant are all CLOSED. No `sorry`, `admit`, or new `axiom` is
+used anywhere in the chapter; open rows are kept honest as partial/conditional
+surfaces rather than closed by assuming their conclusions.

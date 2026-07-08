@@ -1,6 +1,7 @@
 import LeanFpAnalysis.FP
 import LeanFpAnalysis.FP.Analysis.HighamChapter7
 import LeanFpAnalysis.FP.Analysis.Norms
+import LeanFpAnalysis.FP.Analysis.RoundingProductBounds
 import LeanFpAnalysis.FP.Algorithms.Horner
 import LeanFpAnalysis.FP.Algorithms.HighamChapter8
 import LeanFpAnalysis.FP.Algorithms.HighamChapter9
