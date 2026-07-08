@@ -956,6 +956,21 @@ abbrev higham11_7_TridiagonalTwoByTwoTrailingBlockSupport (n : ℕ)
     (E : Fin (n + 3) → Fin (n + 3) → ℝ) : Prop :=
   TridiagonalTwoByTwoTrailingBlockSupport n E
 
+/-- Supported perturbations in the trailing block after a leading `2 × 2`
+tridiagonal pivot are closed under addition, and their componentwise bounds add. -/
+theorem higham11_7_tridiagonalTwoByTwoTrailingBlockSupport_add_bound
+    (n : ℕ) (E F : Fin (n + 3) → Fin (n + 3) → ℝ) (βE βF : ℝ)
+    (hEbound : ∀ i j : Fin (n + 3), |E i j| ≤ βE)
+    (hFbound : ∀ i j : Fin (n + 3), |F i j| ≤ βF)
+    (hEsupp : higham11_7_TridiagonalTwoByTwoTrailingBlockSupport n E)
+    (hFsupp : higham11_7_TridiagonalTwoByTwoTrailingBlockSupport n F) :
+    ∃ G : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |G i j| ≤ βE + βF) ∧
+      higham11_7_TridiagonalTwoByTwoTrailingBlockSupport n G ∧
+      (∀ i j : Fin (n + 3), G i j = E i j + F i j) :=
+  tridiagonalTwoByTwoTrailingBlockSupport_add_bound n E F βE βF
+    hEbound hFbound hEsupp hFsupp
+
 /-- Any index with value `< 2` is outside the first trailing scalar after a
 leading `2 × 2` tridiagonal pivot. -/
 theorem higham11_7_ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two

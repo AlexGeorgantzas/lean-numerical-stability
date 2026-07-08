@@ -1798,6 +1798,29 @@ def TridiagonalTwoByTwoTrailingBlockSupport (n : ℕ)
     (E : Fin (n + 3) → Fin (n + 3) → ℝ) : Prop :=
   ∀ i j : Fin (n + 3), i.val < 2 ∨ j.val < 2 → E i j = 0
 
+/-- Supported perturbations in the trailing block after a leading `2 × 2`
+tridiagonal pivot are closed under addition, and their componentwise bounds add. -/
+theorem tridiagonalTwoByTwoTrailingBlockSupport_add_bound
+    (n : ℕ) (E F : Fin (n + 3) → Fin (n + 3) → ℝ) (βE βF : ℝ)
+    (hEbound : ∀ i j : Fin (n + 3), |E i j| ≤ βE)
+    (hFbound : ∀ i j : Fin (n + 3), |F i j| ≤ βF)
+    (hEsupp : TridiagonalTwoByTwoTrailingBlockSupport n E)
+    (hFsupp : TridiagonalTwoByTwoTrailingBlockSupport n F) :
+    ∃ G : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |G i j| ≤ βE + βF) ∧
+      TridiagonalTwoByTwoTrailingBlockSupport n G ∧
+      (∀ i j : Fin (n + 3), G i j = E i j + F i j) := by
+  refine ⟨fun i j => E i j + F i j, ?_, ?_, ?_⟩
+  · intro i j
+    calc
+      |E i j + F i j| ≤ |E i j| + |F i j| := abs_add_le _ _
+      _ ≤ βE + βF := add_le_add (hEbound i j) (hFbound i j)
+  · intro i j hlead
+    change E i j + F i j = 0
+    rw [hEsupp i j hlead, hFsupp i j hlead, add_zero]
+  · intro i j
+    rfl
+
 /-- Any index with value `< 2` is outside the first trailing scalar after a
 leading `2 × 2` tridiagonal pivot. -/
 theorem ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two
