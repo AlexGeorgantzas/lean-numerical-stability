@@ -30,6 +30,11 @@ private theorem theorem20_7_finProdUniv_nonempty_of_pos {n : ℕ} (hn : 0 < n) :
     (Finset.univ : Finset (Fin n × Fin n)).Nonempty :=
   ⟨(⟨0, hn⟩, ⟨0, hn⟩), by simp⟩
 
+private theorem theorem20_7_finRectProdUniv_nonempty_of_pos {m n : ℕ}
+    (hn : 0 < n) (hm : 0 < m) :
+    (Finset.univ : Finset (Fin n × Fin m)).Nonempty :=
+  ⟨(⟨0, hn⟩, ⟨0, hm⟩), by simp⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source row scale `max_j |a_ij|` for a nonempty row. -/
 noncomputable def theorem20_7_initialRowMax {m n : ℕ} (hn : 0 < n)
@@ -750,6 +755,147 @@ theorem theorem20_7_rowRatioMax_le_of_forall {m : ℕ} (hm : 0 < m)
   apply Finset.sup'_le
   intro i _hi
   exact h i
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-scale support:
+    finite maximum of the active-suffix source-row ratios
+    `max_{k<n, r>=k} amax_k / amax_r`. -/
+noncomputable def theorem20_7_activeInitialRowMaxRatioMax {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) : ℝ :=
+  Finset.sup' (Finset.univ : Finset (Fin n × Fin m))
+    (theorem20_7_finRectProdUniv_nonempty_of_pos hn hm)
+    (fun p =>
+      if _h : p.1.val ≤ p.2.val then
+        theorem20_7_initialRowMax hn A
+            ⟨p.1.val, lt_of_lt_of_le p.1.isLt hnm⟩ /
+          theorem20_7_initialRowMax hn A p.2
+      else 0)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-scale support:
+    finite maximum of the active-suffix weighted source-row ratios
+    `max_{k<n, r>=k} wmax_k / wmax_r`. -/
+noncomputable def theorem20_7_activeInitialWeightedRowMaxRatioMax {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ) : ℝ :=
+  Finset.sup' (Finset.univ : Finset (Fin n × Fin m))
+    (theorem20_7_finRectProdUniv_nonempty_of_pos hn hm)
+    (fun p =>
+      if _h : p.1.val ≤ p.2.val then
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨p.1.val, lt_of_lt_of_le p.1.isLt hnm⟩ /
+          theorem20_7_initialWeightedRowMax hn A b phi p.2
+      else 0)
+
+/-- A finite active-suffix source-row ratio maximum gives every pointwise
+    active-suffix source-row ratio. -/
+theorem theorem20_7_initialRowMax_ratio_le_of_activeRatioMax_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) {C : ℝ}
+    (hmax : theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤ C) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+      theorem20_7_initialRowMax hn A
+          ⟨k, lt_of_lt_of_le hk hnm⟩ /
+        theorem20_7_initialRowMax hn A r ≤ C := by
+  intro k hk r hkr
+  let p : Fin n × Fin m := (⟨k, hk⟩, r)
+  have hp :
+      (if _h : p.1.val ≤ p.2.val then
+        theorem20_7_initialRowMax hn A
+            ⟨p.1.val, lt_of_lt_of_le p.1.isLt hnm⟩ /
+          theorem20_7_initialRowMax hn A p.2
+      else 0) ≤ theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A := by
+    unfold theorem20_7_activeInitialRowMaxRatioMax
+    exact
+      Finset.le_sup' (s := (Finset.univ : Finset (Fin n × Fin m)))
+        (f := fun p =>
+          if _h : p.1.val ≤ p.2.val then
+            theorem20_7_initialRowMax hn A
+                ⟨p.1.val, lt_of_lt_of_le p.1.isLt hnm⟩ /
+              theorem20_7_initialRowMax hn A p.2
+          else 0) (Finset.mem_univ p)
+  have hentry :
+      theorem20_7_initialRowMax hn A
+          ⟨k, lt_of_lt_of_le hk hnm⟩ /
+        theorem20_7_initialRowMax hn A r ≤
+          theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A := by
+    simpa [p, hkr] using hp
+  exact hentry.trans hmax
+
+/-- A finite active-suffix weighted source-row ratio maximum gives every
+    pointwise active-suffix weighted source-row ratio. -/
+theorem theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ) {C : ℝ}
+    (hmax :
+      theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm A b phi ≤ C) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+      theorem20_7_initialWeightedRowMax hn A b phi
+          ⟨k, lt_of_lt_of_le hk hnm⟩ /
+        theorem20_7_initialWeightedRowMax hn A b phi r ≤ C := by
+  intro k hk r hkr
+  let p : Fin n × Fin m := (⟨k, hk⟩, r)
+  have hp :
+      (if _h : p.1.val ≤ p.2.val then
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨p.1.val, lt_of_lt_of_le p.1.isLt hnm⟩ /
+          theorem20_7_initialWeightedRowMax hn A b phi p.2
+      else 0) ≤
+        theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm A b phi := by
+    unfold theorem20_7_activeInitialWeightedRowMaxRatioMax
+    exact
+      Finset.le_sup' (s := (Finset.univ : Finset (Fin n × Fin m)))
+        (f := fun p =>
+          if _h : p.1.val ≤ p.2.val then
+            theorem20_7_initialWeightedRowMax hn A b phi
+                ⟨p.1.val, lt_of_lt_of_le p.1.isLt hnm⟩ /
+              theorem20_7_initialWeightedRowMax hn A b phi p.2
+          else 0) (Finset.mem_univ p)
+  have hentry :
+      theorem20_7_initialWeightedRowMax hn A b phi
+          ⟨k, lt_of_lt_of_le hk hnm⟩ /
+        theorem20_7_initialWeightedRowMax hn A b phi r ≤
+          theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm A b phi := by
+    simpa [p, hkr] using hp
+  exact hentry.trans hmax
+
+/-- Active-suffix source-row ratio maxima for a row-permuted matrix supply the
+    source-ratio hypothesis stated in the original row labels. -/
+theorem theorem20_7_initialRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (σ : Fin m ≃ Fin m) {C : ℝ}
+    (hmax :
+      theorem20_7_activeInitialRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) ≤ C) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+      theorem20_7_initialRowMax hn A
+          (σ ⟨k, lt_of_lt_of_le hk hnm⟩) /
+        theorem20_7_initialRowMax hn A (σ r) ≤ C := by
+  intro k hk r hkr
+  have h :=
+    theorem20_7_initialRowMax_ratio_le_of_activeRatioMax_le_nat
+      hm hn hnm (fun r j => A (σ r) j) hmax k hk r hkr
+  simpa [theorem20_7_initialRowMax_permuteRows] using h
+
+/-- Active-suffix weighted source-row ratio maxima for a common row permutation
+    of `A` and `b` supply the weighted source-ratio hypothesis stated in the
+    original row labels. -/
+theorem theorem20_7_initialWeightedRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ)
+    (σ : Fin m ≃ Fin m) {C : ℝ}
+    (hmax :
+      theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) (fun r => b (σ r)) phi ≤ C) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+      theorem20_7_initialWeightedRowMax hn A b phi
+          (σ ⟨k, lt_of_lt_of_le hk hnm⟩) /
+        theorem20_7_initialWeightedRowMax hn A b phi (σ r) ≤ C := by
+  intro k hk r hkr
+  have h :=
+    theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
+      hm hn hnm (fun r j => A (σ r) j) (fun r => b (σ r)) phi
+      hmax k hk r hkr
+  simpa [theorem20_7_initialWeightedRowMax_permuteRows] using h
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     finite version of `max_i {α_i, β_i}`. -/
