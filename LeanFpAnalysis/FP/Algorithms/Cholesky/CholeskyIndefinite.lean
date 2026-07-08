@@ -1798,6 +1798,29 @@ def TridiagonalTwoByTwoTrailingBlockSupport (n : ℕ)
     (E : Fin (n + 3) → Fin (n + 3) → ℝ) : Prop :=
   ∀ i j : Fin (n + 3), i.val < 2 ∨ j.val < 2 → E i j = 0
 
+/-- Supported perturbations in the trailing block after a leading `2 × 2`
+tridiagonal pivot are closed under addition, and their componentwise bounds add. -/
+theorem tridiagonalTwoByTwoTrailingBlockSupport_add_bound
+    (n : ℕ) (E F : Fin (n + 3) → Fin (n + 3) → ℝ) (βE βF : ℝ)
+    (hEbound : ∀ i j : Fin (n + 3), |E i j| ≤ βE)
+    (hFbound : ∀ i j : Fin (n + 3), |F i j| ≤ βF)
+    (hEsupp : TridiagonalTwoByTwoTrailingBlockSupport n E)
+    (hFsupp : TridiagonalTwoByTwoTrailingBlockSupport n F) :
+    ∃ G : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |G i j| ≤ βE + βF) ∧
+      TridiagonalTwoByTwoTrailingBlockSupport n G ∧
+      (∀ i j : Fin (n + 3), G i j = E i j + F i j) := by
+  refine ⟨fun i j => E i j + F i j, ?_, ?_, ?_⟩
+  · intro i j
+    calc
+      |E i j + F i j| ≤ |E i j| + |F i j| := abs_add_le _ _
+      _ ≤ βE + βF := add_le_add (hEbound i j) (hFbound i j)
+  · intro i j hlead
+    change E i j + F i j = 0
+    rw [hEsupp i j hlead, hFsupp i j hlead, add_zero]
+  · intro i j
+    rfl
+
 /-- Any index with value `< 2` is outside the first trailing scalar after a
 leading `2 × 2` tridiagonal pivot. -/
 theorem ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two
@@ -1892,6 +1915,45 @@ theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_support
   rcases hlead with hi | hj
   · exact Or.inl (ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two hi)
   · exact Or.inr (ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two hj)
+
+/-- Accumulate the local printed-budget residual from a leading `2 × 2`
+tridiagonal pivot with an already-supported recursive trailing perturbation.
+This is the local algebraic handoff used when iterating the tridiagonal
+block-LDLᵀ recursion. -/
+theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate
+    (n : ℕ) (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound u βR : ℝ)
+    (ΔR : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3)
+    (hRbound : ∀ i j : Fin (n + 3), |ΔR i j| ≤ βR)
+    (hRsupp : TridiagonalTwoByTwoTrailingBlockSupport n ΔR) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ c_bound * u * Amax + βR) ∧
+      TridiagonalTwoByTwoTrailingBlockSupport n ΔA ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c) +
+          ΔR (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  obtain ⟨ΔS, hΔS, hSsupp, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_support n fp
+      σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
+      hb hc hratio hbudget hval
+  obtain ⟨ΔA, hΔA, hAsupp, hsum⟩ :=
+    tridiagonalTwoByTwoTrailingBlockSupport_add_bound n ΔS ΔR
+      (c_bound * u * Amax) βR hΔS hRbound hSsupp hRsupp
+  refine ⟨ΔA, hΔA, hAsupp, ?_⟩
+  rw [hstep, hsum (tridiagonalTwoByTwoFirstTrailingIndex n)
+    (tridiagonalTwoByTwoFirstTrailingIndex n)]
+  ring
 
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T

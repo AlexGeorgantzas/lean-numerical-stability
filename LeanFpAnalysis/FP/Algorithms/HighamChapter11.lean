@@ -956,6 +956,21 @@ abbrev higham11_7_TridiagonalTwoByTwoTrailingBlockSupport (n : ℕ)
     (E : Fin (n + 3) → Fin (n + 3) → ℝ) : Prop :=
   TridiagonalTwoByTwoTrailingBlockSupport n E
 
+/-- Supported perturbations in the trailing block after a leading `2 × 2`
+tridiagonal pivot are closed under addition, and their componentwise bounds add. -/
+theorem higham11_7_tridiagonalTwoByTwoTrailingBlockSupport_add_bound
+    (n : ℕ) (E F : Fin (n + 3) → Fin (n + 3) → ℝ) (βE βF : ℝ)
+    (hEbound : ∀ i j : Fin (n + 3), |E i j| ≤ βE)
+    (hFbound : ∀ i j : Fin (n + 3), |F i j| ≤ βF)
+    (hEsupp : higham11_7_TridiagonalTwoByTwoTrailingBlockSupport n E)
+    (hFsupp : higham11_7_TridiagonalTwoByTwoTrailingBlockSupport n F) :
+    ∃ G : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |G i j| ≤ βE + βF) ∧
+      higham11_7_TridiagonalTwoByTwoTrailingBlockSupport n G ∧
+      (∀ i j : Fin (n + 3), G i j = E i j + F i j) :=
+  tridiagonalTwoByTwoTrailingBlockSupport_add_bound n E F βE βF
+    hEbound hFbound hEsupp hFsupp
+
 /-- Any index with value `< 2` is outside the first trailing scalar after a
 leading `2 × 2` tridiagonal pivot. -/
 theorem higham11_7_ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two
@@ -1016,6 +1031,36 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embe
   fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_support n fp
     σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
     hb hc hratio hbudget hval
+
+/-- **Theorem 11.7 local residual accumulation**, adding the local
+printed-budget residual from an accepted `2 × 2` tridiagonal pivot to an
+already-supported recursive trailing perturbation. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate
+    (n : ℕ) (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound u βR : ℝ)
+    (ΔR : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3)
+    (hRbound : ∀ i j : Fin (n + 3), |ΔR i j| ≤ βR)
+    (hRsupp : higham11_7_TridiagonalTwoByTwoTrailingBlockSupport n ΔR) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ c_bound * u * Amax + βR) ∧
+      higham11_7_TridiagonalTwoByTwoTrailingBlockSupport n ΔA ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c) +
+          ΔR (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) :=
+  fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate n fp
+    σ a11 a21 a22 b c Amax κ c_bound u βR ΔR hchoice hσa11 hσa22
+    hAmax hκ hb hc hratio hbudget hval hRbound hRsupp
 
 /-- **Equation (11.8)** source predicate: unpermuted block LDL^T
 factorization for a symmetric tridiagonal matrix. -/
