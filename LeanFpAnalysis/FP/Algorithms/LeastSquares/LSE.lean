@@ -13550,6 +13550,93 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_diagLead_of_step_diag_and_curre
     subst r
     simpa [Ahat, qrLeadingRow, qrLeadingColumn] using hcurrentDiag t ht
 
+/-- Theorem 20.7 support: the signed-alpha stored QR nonbreakdown route
+    supplies the just-written diagonal entry after each completed step. -/
+theorem theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget_nat
+    {m n : ℕ} (fp : FPModel) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ)
+    (hmfp : gammaValid fp m)
+    (htrailingPos : ∀ k (hk : k < n),
+      0 < householderTrailingNorm2Sq m
+        ⟨k, lt_of_lt_of_le hk hnm⟩
+        (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩))
+    (hbudgetSqrt : ∀ k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+            (storedHouseholderQRAlphaSeq fp hnm A k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hnm A k)))
+          (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+          ⟨k, lt_of_lt_of_le hk hnm⟩ <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩))) :
+    ∀ k (hk : k < n),
+      storedHouseholderQRMatrixSeq fp hnm A (k + 1)
+        ⟨k, lt_of_lt_of_le hk hnm⟩ ⟨k, hk⟩ ≠ 0 := by
+  let Ahat : ℕ → Fin m → Fin n → ℝ := storedHouseholderQRMatrixSeq fp hnm A
+  let alpha : ℕ → ℝ := storedHouseholderQRAlphaSeq fp hnm A
+  have hStep : ∀ k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hnm))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hnm))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k) := by
+    intro k hk
+    simpa [Ahat, alpha, storedQRSignedStageVector,
+        storedQRSignedStageBeta, hk] using
+      storedHouseholderQRMatrixSeq_succ_of_lt fp hnm A k hk
+  have hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk k (lt_of_lt_of_le hk hnm))
+              (fun i => Ahat k i (Fin.mk k hk))))
+          (Ahat k (Fin.mk k (lt_of_lt_of_le hk hnm)) (Fin.mk k hk)) := by
+    intro k hk
+    simpa [Ahat, alpha] using
+      storedHouseholderQRAlphaSeq_eq_signed fp hnm A k hk
+  have htrailingPos' : ∀ k (hk : k < n),
+      0 < householderTrailingNorm2Sq m
+        ⟨k, lt_of_lt_of_le hk hnm⟩
+        (fun i => Ahat k i ⟨k, hk⟩) := by
+    simpa [Ahat] using htrailingPos
+  have hbudgetSqrt' : ∀ k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun a => Ahat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a => Ahat k a ⟨k, hk⟩) (alpha k)))
+          (fun a => Ahat k a ⟨k, hk⟩)
+          ⟨k, lt_of_lt_of_le hk hnm⟩ <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun i => Ahat k i ⟨k, hk⟩)) := by
+    simpa [Ahat, alpha] using hbudgetSqrt
+  have hprefixDiag :=
+    H19.Theorem19_6.stored_panel_sequence_prefix_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget
+      fp hnm Ahat alpha hmfp hStep hAlphaDef htrailingPos' hbudgetSqrt'
+  intro k hk
+  have hdiag := hprefixDiag (k + 1) (Nat.succ_le_of_lt hk)
+    ⟨k, Nat.lt_succ_self k⟩
+  simpa [Ahat] using hdiag
+
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where the
     stored prefix lower-zero theorem and nonzero local diagonals supply the
     determinant/lower-prefix nonbreakdown hypotheses. -/
