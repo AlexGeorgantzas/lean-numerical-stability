@@ -2033,6 +2033,18 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_completePivotingUTraceGrowthSup_ge_succ`
 - `higham9_16_rookPivotFosterBound`
 - `higham9_16_foster_subset_hadamard`
+- `higham9_16_exists_antitone_enumeration` (every real tuple has a descending enumeration)
+- `higham9_16_card_filter_val_lt`
+- `higham9_16_foster_nested_constraints` (Foster eq. (10): nested subset-Hadamard pivot constraints for any enumeration)
+- `higham9_16_foster_sorted_constraints` (Foster eq. (10), sorted existential form — the exact input of Foster Lemma 2)
+- `higham9_16_fosterStage` / `higham9_16_fosterStageConst` (Foster eq. (6) stage function `s(1+s)^(k-1)` and constant `C_k = sqrt(k^k)/sqrt((k-1)^(k-1))`)
+- `higham9_16_fosterStageConst_one` / `higham9_16_fosterStageConst_pos`
+- `higham9_16_fosterStage_continuous` / `higham9_16_fosterStage_strictMonoOn` / `higham9_16_fosterStage_ge_self`
+- `higham9_16_existsUnique_fosterStage_root` (existence/uniqueness of the positive stage root, via IVT + strict monotonicity)
+- `higham9_16_fosterS` (the implicit stage root `s_k` of Foster eq. (6))
+- `higham9_16_fosterS_spec` / `higham9_16_fosterS_eq` / `higham9_16_fosterS_unique` / `higham9_16_fosterS_nonneg` / `higham9_16_fosterS_pos` / `higham9_16_fosterS_one`
+- `higham9_16_fosterT` (Foster eq. (7) bound `t_n = s_1(1+s_2)⋯(1+s_n)`)
+- `higham9_16_fosterT_one` / `higham9_16_fosterT_pos` / `higham9_16_fosterT_succ`
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
