@@ -9930,6 +9930,166 @@ theorem theorem20_7_compactActiveHorizonStepSlack_recurrence_nat
   ring_nf
   exact le_rfl
 
+/-- Theorem 20.7 support: row-sorted matrix completion-budget domination for
+    the larger compact-active horizon.
+
+This specializes the generic row-sorted horizon adapter to
+`theorem20_7_compactActiveHorizon` and its proved compact-active slack. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_trailingNorm_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ) (err : ℝ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hAactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n,
+        k ≤ j.val →
+          |Ahat k r j| ≤
+            theorem20_7_compactActiveHorizon fp m err k *
+              theorem20_7_initialRowMax hn A r)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht))) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (theorem20_7_compactActiveHorizon fp m err i.val *
+              theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+          theorem20_7_initialRowMax hn A i := by
+  exact
+    theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_trailingNorm_slack_horizon_nat
+      hn hnm fp Ahat A alpha
+      (theorem20_7_compactActiveHorizon fp m err)
+      (theorem20_7_compactActiveHorizonStepSlack fp m err)
+      hmfp
+      (fun i _hi =>
+        theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp herr)
+      hAactive hAsorted hAlphaDef htrailingPos
+      (theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat fp err)
+      (theorem20_7_compactActiveHorizonStepSlack_recurrence_nat fp err)
+
+/-- Theorem 20.7 support: row-sorted RHS completion-budget domination for the
+    larger compact-active horizon. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ} (err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bhat k r| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht))) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (theorem20_7_compactActiveHorizon fp m err i.val *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_slack_horizon_nat
+      hn hnm fp Ahat bhat A b alpha
+      (theorem20_7_compactActiveHorizon fp m err)
+      (theorem20_7_compactActiveHorizonStepSlack fp m err)
+      hphi hmfp
+      (fun i _hi =>
+        theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp herr)
+      hbactive hbsorted hAlphaDef htrailingPos
+      (theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat fp err)
+      (theorem20_7_compactActiveHorizonStepSlack_recurrence_nat fp err)
+
+/-- Theorem 20.7 support: source-sorted RHS completion-budget domination for
+    the larger compact-active horizon. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_compactActiveHorizon_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ} (err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bhat k r| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hAsourceSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht))) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (theorem20_7_compactActiveHorizon fp m err i.val *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_slack_horizon_of_initialRowMax_abs_b_sorted_nat
+      hn hnm fp Ahat bhat A b alpha
+      (theorem20_7_compactActiveHorizon fp m err)
+      (theorem20_7_compactActiveHorizonStepSlack fp m err)
+      hphi hmfp
+      (fun i _hi =>
+        theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp herr)
+      hbactive hAsourceSorted hbAbsSorted hAlphaDef htrailingPos
+      (theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat fp err)
+      (theorem20_7_compactActiveHorizonStepSlack_recurrence_nat fp err)
+
 /-- The current compact active-step factor cannot be absorbed into the printed
     Cox--Higham rowwise factor in general.
 
