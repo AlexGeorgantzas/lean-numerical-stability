@@ -1674,6 +1674,173 @@ theorem fl_tridiagonal_twoByTwo_trailing_one_stage_bound
     rw [hstep]
     ring
 
+/-- Printed-budget handoff for the single trailing block in an accepted
+tridiagonal `2 × 2` pivot step.  Once the local scalar budget is bounded by
+`c_bound * u * Amax`, the perturbation has the componentwise shape used in
+Theorem 11.7. -/
+theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound
+    (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound u : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3) :
+    ∃ ΔS : Fin 1 → Fin 1 → ℝ,
+      (∀ i j : Fin 1, |ΔS i j| ≤ c_bound * u * Amax) ∧
+      (∀ i j : Fin 1,
+        fp.fl_sub b
+            (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+          = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) + ΔS i j) := by
+  obtain ⟨ΔS, hΔS, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_trailing_one_stage_bound fp
+      σ a11 a21 a22 b c Amax κ hchoice hσa11 hσa22 hAmax hκ hb hc
+      hratio hval
+  refine ⟨ΔS, ?_, hstep⟩
+  intro i j
+  exact le_trans (hΔS i j) hbudget
+
+/-- First-stage embedding of the printed `2 × 2` tridiagonal trailing scalar
+backward error into the ambient `3 × 3` tridiagonal block-LDLᵀ step.  The
+perturbation is zero outside the single trailing entry, so this is the local
+handoff needed before iterating the tridiagonal recursion. -/
+theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_three
+    (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound u : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3) :
+    ∃ ΔA : Fin 3 → Fin 3 → ℝ,
+      (∀ i j : Fin 3, |ΔA i j| ≤ c_bound * u * Amax) ∧
+      (∀ i j : Fin 3,
+        i ≠ (⟨2, by decide⟩ : Fin 3) ∨
+          j ≠ (⟨2, by decide⟩ : Fin 3) →
+        ΔA i j = 0) ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (⟨2, by decide⟩ : Fin 3) (⟨2, by decide⟩ : Fin 3) := by
+  obtain ⟨ΔS, hΔS, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound fp
+      σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
+      hb hc hratio hbudget hval
+  let tail : Fin 3 := ⟨2, by decide⟩
+  let zero : Fin 1 := ⟨0, by decide⟩
+  let ΔA : Fin 3 → Fin 3 → ℝ :=
+    fun i j => if i = tail ∧ j = tail then ΔS zero zero else 0
+  refine ⟨ΔA, ?_, ?_, ?_⟩
+  · intro i j
+    have hzero_bound : |(0 : ℝ)| ≤ c_bound * u * Amax := by
+      simpa using (abs_nonneg (ΔS zero zero)).trans (hΔS zero zero)
+    by_cases htail : i = tail ∧ j = tail
+    · simpa [ΔA, htail] using hΔS zero zero
+    · simpa [ΔA, htail] using hzero_bound
+  · intro i j houtside
+    have htail : ¬(i = tail ∧ j = tail) := by
+      intro htail
+      rcases houtside with hi | hj
+      · exact hi htail.1
+      · exact hj htail.2
+    simp [ΔA, htail]
+  · simpa [ΔA, tail, zero] using hstep zero zero
+
+/-- Local index of the first trailing scalar after a leading `2 × 2`
+tridiagonal pivot inside a block of size `n+3`. -/
+def tridiagonalTwoByTwoFirstTrailingIndex (n : ℕ) : Fin (n + 3) :=
+  ⟨2, by
+    have h23 : 2 < 3 := by norm_num
+    have h3 : 3 ≤ n + 3 := Nat.le_add_left 3 n
+    exact lt_of_lt_of_le h23 h3⟩
+
+@[simp] theorem tridiagonalTwoByTwoFirstTrailingIndex_val (n : ℕ) :
+    (tridiagonalTwoByTwoFirstTrailingIndex n).val = 2 := rfl
+
+/-- Offset embedding of the recursive trailing subproblem after a leading
+`2 × 2` tridiagonal pivot.  Local trailing index `0` maps to ambient index `2`. -/
+def tridiagonalTwoByTwoTrailingSubproblemIndex (n : ℕ)
+    (i : Fin (n + 1)) : Fin (n + 3) :=
+  ⟨i.val + 2, by
+    have h := Nat.add_lt_add_right i.isLt 2
+    simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using h⟩
+
+@[simp] theorem tridiagonalTwoByTwoTrailingSubproblemIndex_val
+    (n : ℕ) (i : Fin (n + 1)) :
+    (tridiagonalTwoByTwoTrailingSubproblemIndex n i).val = i.val + 2 := rfl
+
+@[simp] theorem tridiagonalTwoByTwoTrailingSubproblemIndex_zero
+    (n : ℕ) :
+    tridiagonalTwoByTwoTrailingSubproblemIndex n 0 =
+      tridiagonalTwoByTwoFirstTrailingIndex n := by
+  apply Fin.ext
+  simp [tridiagonalTwoByTwoTrailingSubproblemIndex,
+    tridiagonalTwoByTwoFirstTrailingIndex]
+
+/-- The recursive trailing-subproblem embedding after a leading tridiagonal
+`2 × 2` pivot is injective. -/
+theorem tridiagonalTwoByTwoTrailingSubproblemIndex_injective (n : ℕ) :
+    Function.Injective (tridiagonalTwoByTwoTrailingSubproblemIndex n) := by
+  intro i j hij
+  apply Fin.ext
+  have hval := congrArg Fin.val hij
+  simpa [tridiagonalTwoByTwoTrailingSubproblemIndex] using
+    Nat.add_right_cancel hval
+
+/-- Dimension-generic first-stage embedding of the printed `2 × 2`
+tridiagonal trailing scalar backward error.  In a local block of size `n+3`,
+the first accepted `2 × 2` pivot only touches the first trailing scalar of a
+tridiagonal matrix; the ambient perturbation is therefore zero at every entry
+except `tridiagonalTwoByTwoFirstTrailingIndex n`. -/
+theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed
+    (n : ℕ) (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound u : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ c_bound * u * Amax) ∧
+      (∀ i j : Fin (n + 3),
+        i ≠ tridiagonalTwoByTwoFirstTrailingIndex n ∨
+          j ≠ tridiagonalTwoByTwoFirstTrailingIndex n →
+        ΔA i j = 0) ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  obtain ⟨ΔS, hΔS, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound fp
+      σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
+      hb hc hratio hbudget hval
+  let tail : Fin (n + 3) := tridiagonalTwoByTwoFirstTrailingIndex n
+  let zero : Fin 1 := ⟨0, by decide⟩
+  let ΔA : Fin (n + 3) → Fin (n + 3) → ℝ :=
+    fun i j => if i = tail ∧ j = tail then ΔS zero zero else 0
+  refine ⟨ΔA, ?_, ?_, ?_⟩
+  · intro i j
+    have hzero_bound : |(0 : ℝ)| ≤ c_bound * u * Amax := by
+      simpa using (abs_nonneg (ΔS zero zero)).trans (hΔS zero zero)
+    by_cases htail : i = tail ∧ j = tail
+    · simpa [ΔA, htail] using hΔS zero zero
+    · simpa [ΔA, htail] using hzero_bound
+  · intro i j houtside
+    have htail : ¬(i = tail ∧ j = tail) := by
+      intro htail
+      rcases houtside with hi | hj
+      · exact hi htail.1
+      · exact hj htail.2
+    simp [ΔA, htail]
+  · simpa [ΔA, tail, zero] using hstep zero zero
+
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
 -- ============================================================
