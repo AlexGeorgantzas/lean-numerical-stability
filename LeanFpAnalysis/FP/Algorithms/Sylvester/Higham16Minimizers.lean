@@ -1434,6 +1434,129 @@ alias H16_eq16_29_sylvester_practical_error_bound_fl_of_no_common_complex_right_
   sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), spectral-separation floating-point scalar endpoint:
+    after the no-common complex spectrum certificate supplies the exact inverse
+    budget, a scalar cap on the floating residual practical budget gives the
+    source-shaped `eta / ||Xhat||` relative bound. -/
+theorem sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_scalar
+    (fp : FPModel) (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat : RMatFn m n)
+    (eta : Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B)
+          (flSylvesterResidualRect fp m n A B C Xhat)
+          (flSylvesterResidualBudget fp m n A B C Xhat) p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_scalar
+      m n A B C X Xhat
+      (flSylvesterResidualRect fp m n A B C Xhat)
+      (flSylvesterResidualBudget fp m n A B C Xhat)
+      eta hno hX
+      (isSylvesterComputedResidualBudget_fl fp m n A B C Xhat hm hn)
+      heta hcomponent hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), spectral-separation floating-point monotone endpoint:
+    componentwise larger inverse and residual-budget inputs preserve the
+    practical relative bound for the floating residual computation.  This is an
+    estimator-ready adapter, not an estimator proof. -/
+theorem sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_mono
+    (fp : FPModel) (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat' Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      |flSylvesterResidualRect fp m n A B C Xhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j,
+      flSylvesterResidualBudget fp m n A B C Xhat i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_mono
+      m n A B C X Xhat
+      (flSylvesterResidualRect fp m n A B C Xhat) Rhat'
+      (flSylvesterResidualBudget fp m n A B C Xhat) Ru'
+      PinvAbs' hno hX
+      (isSylvesterComputedResidualBudget_fl fp m n A B C Xhat hm hn)
+      hPinvAbs_le hRhat hRu_le hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), spectral-separation floating-point monotone scalar endpoint:
+    after componentwise estimator enlargement, a scalar cap on the enlarged
+    practical budget gives the relative max-entry forward-error bound. -/
+theorem sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_mono_scalar
+    (fp : FPModel) (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat' Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      |flSylvesterResidualRect fp m n A B C Xhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j,
+      flSylvesterResidualBudget fp m n A B C Xhat i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_mono_scalar
+      m n A B C X Xhat
+      (flSylvesterResidualRect fp m n A B C Xhat) Rhat'
+      (flSylvesterResidualBudget fp m n A B C Xhat) Ru'
+      PinvAbs' eta hno hX
+      (isSylvesterComputedResidualBudget_fl fp m n A B C Xhat hm hn)
+      hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), source-numbered alias for the scalar no-common-complex-spectrum
+    floating-point residual endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_scalar :=
+  sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_scalar
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), source-numbered alias for the monotone no-common-complex-spectrum
+    floating-point residual endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_mono :=
+  sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_mono
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), source-numbered alias for the monotone scalar
+    no-common-complex-spectrum floating-point residual endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_mono_scalar :=
+  sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_mono_scalar
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
     eq (16.29), square arbitrary-coefficient determinant endpoint:
     nonsingularity of the vec/Kronecker Sylvester coefficient discharges the
     inverse left-inverse hypothesis in the floating-point practical residual
