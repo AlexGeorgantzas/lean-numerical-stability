@@ -13495,6 +13495,61 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_diagPrev_of_diagLead_nat
   simpa [qrPrefixRow, qrPreviousColumn, qrLeadingRow, qrLeadingColumn] using
     hdiagLead t ht (Fin.castSucc r)
 
+/-- Theorem 20.7 support: leading-block diagonal nonzero follows from
+    completed-step diagonal nonzero plus the current pivot diagonal facts. -/
+theorem theorem20_7_storedHouseholderQRMatrixSeq_diagLead_of_step_diag_and_current_diag_nat
+    {m n : ℕ} (fp : FPModel) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ)
+    (hstepDiag : ∀ k (hk : k < n),
+      storedHouseholderQRMatrixSeq fp hnm A (k + 1)
+        ⟨k, lt_of_lt_of_le hk hnm⟩ ⟨k, hk⟩ ≠ 0)
+    (hcurrentDiag : ∀ k (hk : k < n),
+      storedHouseholderQRMatrixSeq fp hnm A k
+        ⟨k, lt_of_lt_of_le hk hnm⟩ ⟨k, hk⟩ ≠ 0) :
+    ∀ t (ht : t < n) (r : Fin (t + 1)),
+      storedHouseholderQRMatrixSeq fp hnm A t
+        (qrLeadingRow m t
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le ht hnm)) r)
+        (qrLeadingColumn n t ht r) ≠ 0 := by
+  let Ahat : ℕ → Fin m → Fin n → ℝ := storedHouseholderQRMatrixSeq fp hnm A
+  let alpha : ℕ → ℝ := storedHouseholderQRAlphaSeq fp hnm A
+  have hStep : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k) := by
+    intro k hk
+    simpa [Ahat, alpha, storedQRSignedStageVector,
+        storedQRSignedStageBeta, hk] using
+      storedHouseholderQRMatrixSeq_succ_of_lt fp hnm A k hk
+  have hstepPanel : ∀ k (hk : k < n),
+      fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k)
+          ⟨k, lt_of_lt_of_le hk hnm⟩ ⟨k, hk⟩ ≠ 0 := by
+    intro k hk
+    have hpoint := congrFun
+      (congrFun (hStep k hk) ⟨k, lt_of_lt_of_le hk hnm⟩) ⟨k, hk⟩
+    rw [← hpoint]
+    exact hstepDiag k hk
+  have hprefixDiag :=
+    fl_householderStoredPanel_sequence_prefix_diag_nonzero_of_step_diag_nonzero
+      fp hnm
+      (fun k => storedQRSignedStageVector hnm Ahat alpha k)
+      (fun k => storedQRSignedStageBeta hnm Ahat alpha k)
+      Ahat hStep hstepPanel
+  intro t ht r
+  by_cases hrt : r.val < t
+  · have hprev :=
+      hprefixDiag t (Nat.le_of_lt ht) ⟨r.val, hrt⟩
+    simpa [Ahat, qrLeadingRow, qrLeadingColumn] using hprev
+  · have hr_eq : r.val = t := by omega
+    have hr_last : r = ⟨t, Nat.lt_succ_self t⟩ := Fin.ext hr_eq
+    subst r
+    simpa [Ahat, qrLeadingRow, qrLeadingColumn] using hcurrentDiag t ht
+
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where the
     stored prefix lower-zero theorem and nonzero local diagonals supply the
     determinant/lower-prefix nonbreakdown hypotheses. -/
