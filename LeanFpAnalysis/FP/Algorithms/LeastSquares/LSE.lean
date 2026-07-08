@@ -32420,6 +32420,107 @@ theorem
       hDelta hres_relative hleftA hleftB hSymA hSymB hbracket
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-facing `kappa_B(A)` direct-radius wrapper with the reduced residual
+    gap supplied in norm form rather than divided-relative form.  Since the
+    source residual norm is positive, `||rHigh-r|| <= eps*||r||` implies the
+    relative residual-gap hypothesis consumed by the Wedin handoff. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_norm_kappaB_norm_nonneg
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ)
+    {AredPlus_norm eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hkappa : theorem20_8KappaB A APplus = AredPlus_norm * Ared_norm)
+    (hsmall : theorem20_8KappaB A APplus * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) (eps * Ared_norm))
+    (hres_norm :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) ≤
+        eps * vecNorm2 (lsResidualHigham A b x))
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hres_relative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps := by
+    exact (div_le_iff₀ hrpos).2 (by simpa using hres_norm)
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_relative_kappaB_norm_nonneg
+      hm A DeltaA b Deltab hB DeltaB APplus d Deltad N Npert
+      AredPlus BredPlus x y heps_nonneg hApos hbpos hBpos hdpos
+      hxpos hyx hrpos hmax hMP hBAPt hstack hx hy hN hNpert
+      hAredPlus_pos hkappa hsmall hAredPlus hDelta hres_relative
+      hleftA hleftB hSymA hSymB hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank projected-difference handoff for the
     Moore--Penrose/transpose-range route. -/
 theorem
