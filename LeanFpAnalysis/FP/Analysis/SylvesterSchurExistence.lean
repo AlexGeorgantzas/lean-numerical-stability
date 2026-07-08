@@ -268,6 +268,116 @@ theorem complexSylvesterVecCoeff_det_eq_prod_of_upperTriangular {m n : ℕ}
   exact e.symm.prod_comp
     (fun p : Prod (Fin n) (Fin m) => A p.2 p.2 - B p.1 p.1)
 
+/-- Reversing the block coordinate also makes every scalar shift of the
+    complex triangular Sylvester vec coefficient upper triangular. -/
+theorem complexSylvesterVecCoeff_shifted_reindex_upperTriangular {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ) (μ : ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B) :
+    (Matrix.reindex (complexSylvesterVecCoeffDualIndexEquiv m n)
+        (complexSylvesterVecCoeffDualIndexEquiv m n)
+        (complexSylvesterVecCoeff A B -
+          Matrix.scalar (Prod (Fin n) (Fin m)) μ)).BlockTriangular id := by
+  let e := complexSylvesterVecCoeffDualIndexEquiv m n
+  have htri :
+      (Matrix.reindex e e (complexSylvesterVecCoeff A B)).BlockTriangular id :=
+    complexSylvesterVecCoeff_reindex_upperTriangular A B hA hB
+  intro x y hyx
+  have hcoeff :
+      Matrix.reindex e e (complexSylvesterVecCoeff A B) x y = 0 :=
+    htri hyx
+  have hxy : e.symm x ≠ e.symm y := by
+    intro h
+    exact ne_of_gt hyx (e.symm.injective h)
+  have hscalar :
+      Matrix.reindex e e (Matrix.scalar (Prod (Fin n) (Fin m)) μ) x y = 0 := by
+    rw [Matrix.reindex_apply, Matrix.submatrix_apply, Matrix.scalar_apply,
+      Matrix.diagonal_apply_ne _ hxy]
+  change
+    Matrix.reindex e e
+        (complexSylvesterVecCoeff A B - Matrix.scalar (Prod (Fin n) (Fin m)) μ) x y =
+      0
+  calc
+    Matrix.reindex e e
+        (complexSylvesterVecCoeff A B - Matrix.scalar (Prod (Fin n) (Fin m)) μ) x y
+        = Matrix.reindex e e (complexSylvesterVecCoeff A B) x y -
+            Matrix.reindex e e (Matrix.scalar (Prod (Fin n) (Fin m)) μ) x y := by
+          simp [Matrix.reindex_apply, Matrix.sub_apply]
+    _ = 0 := by rw [hcoeff, hscalar, sub_zero]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), supplied complex
+    triangular shifted case: the scalar-shifted vec/Kronecker Sylvester
+    coefficient determinant is the product of shifted pairwise Schur diagonal
+    differences. -/
+theorem complexSylvesterVecCoeff_shifted_det_eq_prod_of_upperTriangular {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ) (μ : ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B) :
+    Matrix.det (complexSylvesterVecCoeff A B -
+        Matrix.scalar (Prod (Fin n) (Fin m)) μ) =
+      ∏ p : Prod (Fin n) (Fin m), (A p.2 p.2 - B p.1 p.1 - μ) := by
+  let e := complexSylvesterVecCoeffDualIndexEquiv m n
+  have htri :
+      (Matrix.reindex e e
+        (complexSylvesterVecCoeff A B -
+          Matrix.scalar (Prod (Fin n) (Fin m)) μ)).BlockTriangular id :=
+    complexSylvesterVecCoeff_shifted_reindex_upperTriangular A B μ hA hB
+  have hdet_reindex :
+      Matrix.det (Matrix.reindex e e
+        (complexSylvesterVecCoeff A B -
+          Matrix.scalar (Prod (Fin n) (Fin m)) μ)) =
+        Matrix.det (complexSylvesterVecCoeff A B -
+          Matrix.scalar (Prod (Fin n) (Fin m)) μ) :=
+    Matrix.det_reindex_self e
+      (complexSylvesterVecCoeff A B - Matrix.scalar (Prod (Fin n) (Fin m)) μ)
+  rw [← hdet_reindex, Matrix.det_of_upperTriangular htri]
+  have hdiag :
+      (fun x : (Fin n)ᵒᵈ ×ₗ Fin m =>
+        Matrix.reindex e e
+          (complexSylvesterVecCoeff A B -
+            Matrix.scalar (Prod (Fin n) (Fin m)) μ) x x) =
+      fun x : (Fin n)ᵒᵈ ×ₗ Fin m =>
+        A ((e.symm x).2) ((e.symm x).2) -
+          B ((e.symm x).1) ((e.symm x).1) - μ := by
+    funext x
+    simp [e, complexSylvesterVecCoeff, Matrix.reindex_apply, Matrix.sub_apply,
+      Matrix.kronecker, Matrix.transpose_apply]
+  rw [hdiag]
+  exact e.symm.prod_comp
+    (fun p : Prod (Fin n) (Fin m) => A p.2 p.2 - B p.1 p.1 - μ)
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), supplied complex
+    triangular shifted case: shifted determinant nonsingularity is equivalent to
+    separation of the shift from every pairwise Schur diagonal difference. -/
+theorem complexSylvesterVecCoeff_shifted_det_ne_zero_iff_of_upperTriangular_diagonal_separation
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ) (μ : ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B) :
+    Matrix.det (complexSylvesterVecCoeff A B -
+        Matrix.scalar (Prod (Fin n) (Fin m)) μ) ≠ 0 ↔
+      ∀ i : Fin m, ∀ j : Fin n, A i i - B j j ≠ μ := by
+  rw [complexSylvesterVecCoeff_shifted_det_eq_prod_of_upperTriangular A B μ hA hB]
+  constructor
+  · intro hdet i j hij
+    have hfactor :=
+      (Finset.prod_ne_zero_iff.mp hdet) (j, i) (Finset.mem_univ _)
+    exact hfactor (sub_eq_zero.mpr hij)
+  · intro hsep
+    exact Finset.prod_ne_zero_iff.mpr
+      (fun p _ => sub_ne_zero.mpr (hsep p.2 p.1))
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), supplied complex
+    triangular shifted determinant-nonsingularity consequence from shifted
+    diagonal-difference separation. -/
+theorem complexSylvesterVecCoeff_shifted_det_ne_zero_of_upperTriangular_diagonal_separation
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ) (μ : ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B)
+    (hsep : ∀ i : Fin m, ∀ j : Fin n, A i i - B j j ≠ μ) :
+    Matrix.det (complexSylvesterVecCoeff A B -
+        Matrix.scalar (Prod (Fin n) (Fin m)) μ) ≠ 0 := by
+  exact
+    (complexSylvesterVecCoeff_shifted_det_ne_zero_iff_of_upperTriangular_diagonal_separation
+      A B μ hA hB).mpr hsep
+
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3), supplied complex
     triangular case: determinant nonsingularity is equivalent to pairwise
     separation of the triangular diagonal entries. -/
@@ -318,6 +428,42 @@ theorem H16_eq16_3_complexSylvesterVecCoeff_det_eq_prod_of_upperTriangular
     Matrix.det (complexSylvesterVecCoeff A B) =
       ∏ p : Prod (Fin n) (Fin m), (A p.2 p.2 - B p.1 p.1) :=
   complexSylvesterVecCoeff_det_eq_prod_of_upperTriangular A B hA hB
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered alias for
+    the supplied complex triangular shifted vec/Kronecker determinant product. -/
+theorem H16_eq16_3_complexSylvesterVecCoeff_shifted_det_eq_prod_of_upperTriangular
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ) (μ : ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B) :
+    Matrix.det (complexSylvesterVecCoeff A B -
+        Matrix.scalar (Prod (Fin n) (Fin m)) μ) =
+      ∏ p : Prod (Fin n) (Fin m), (A p.2 p.2 - B p.1 p.1 - μ) :=
+  complexSylvesterVecCoeff_shifted_det_eq_prod_of_upperTriangular A B μ hA hB
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered alias for
+    the supplied complex triangular shifted determinant/separation equivalence. -/
+theorem H16_eq16_3_complexSylvesterVecCoeff_shifted_det_ne_zero_iff_of_upperTriangular_diagonal_separation
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ) (μ : ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B) :
+    Matrix.det (complexSylvesterVecCoeff A B -
+        Matrix.scalar (Prod (Fin n) (Fin m)) μ) ≠ 0 ↔
+      ∀ i : Fin m, ∀ j : Fin n, A i i - B j j ≠ μ :=
+  complexSylvesterVecCoeff_shifted_det_ne_zero_iff_of_upperTriangular_diagonal_separation
+    A B μ hA hB
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered alias for
+    the supplied complex triangular shifted determinant nonsingularity
+    consequence. -/
+theorem H16_eq16_3_complexSylvesterVecCoeff_shifted_det_ne_zero_of_upperTriangular_diagonal_separation
+    {m n : ℕ}
+    (A : Matrix (Fin m) (Fin m) ℂ) (B : Matrix (Fin n) (Fin n) ℂ) (μ : ℂ)
+    (hA : IsUpperTriangularC A) (hB : IsUpperTriangularC B)
+    (hsep : ∀ i : Fin m, ∀ j : Fin n, A i i - B j j ≠ μ) :
+    Matrix.det (complexSylvesterVecCoeff A B -
+        Matrix.scalar (Prod (Fin n) (Fin m)) μ) ≠ 0 :=
+  complexSylvesterVecCoeff_shifted_det_ne_zero_of_upperTriangular_diagonal_separation
+    A B μ hA hB hsep
 
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered alias for
     the supplied complex triangular determinant/separation equivalence. -/
