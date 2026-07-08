@@ -24911,6 +24911,55 @@ theorem theorem20_8_wedinResidualRHS_scaled_residual_le_of_scalar_op2_le
     mul_le_mul_of_nonneg_right hscalar (vecNorm2_nonneg r)
   simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv] using hmul
 
+/-- Higham, 2nd ed., Chapter 20, Theorems 20.1 and 20.8:
+    expanding Wedin's residual RHS `(1 + 2*kappa)*eps` turns the scalar
+    residual-amplifier comparison into an `eps`-free coefficient comparison. -/
+theorem theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A) :
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        wedinTheorem20_1ResidualRelativeRHS kappa eps ≤
+      eps * theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A := by
+  unfold wedinTheorem20_1ResidualRelativeRHS
+  have hmul := mul_le_mul_of_nonneg_right hcoeff heps_nonneg
+  calc
+    complexMatrixOp2 (realRectToCMatrix APplus) * ((1 + 2 * kappa) * eps)
+        = (complexMatrixOp2 (realRectToCMatrix APplus) *
+            (1 + 2 * kappa)) * eps := by
+            ring
+    _ ≤ (theorem20_8ResidualAmplifier A B APplus BAplus /
+          frobNormRect A) * eps := hmul
+    _ = eps * theorem20_8ResidualAmplifier A B APplus BAplus /
+          frobNormRect A := by
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual-gap scaling from an `eps`-free first-order coefficient comparison
+    for Wedin's residual RHS. -/
+theorem theorem20_8_wedinResidualRHS_scaled_residual_le_of_first_order_coeff_le
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (r : Fin m → ℝ) {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A) :
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        (wedinTheorem20_1ResidualRelativeRHS kappa eps * vecNorm2 r) ≤
+      eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+        (vecNorm2 r / frobNormRect A) :=
+  theorem20_8_wedinResidualRHS_scaled_residual_le_of_scalar_op2_le
+    A B APplus BAplus r
+    (theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+      A B APplus BAplus heps_nonneg hcoeff)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action first-order handoff when the reduced residual-relative
     estimate has Wedin's Theorem 20.1 residual RHS.  The comparison between
