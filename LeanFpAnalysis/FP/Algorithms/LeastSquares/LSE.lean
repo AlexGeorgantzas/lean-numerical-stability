@@ -16613,6 +16613,139 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
       simpa [Aperm, bperm, theorem20_7_initialWeightedRowMax_permuteRows]
         using h
 
+/-- Theorem 20.7 row-sorting support: row-permuted concrete stored-Householder
+    QR certificate wrapper whose active-suffix row-ratio hypotheses are supplied
+    by finite active-ratio maxima for the displayed row order. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_signed_alpha_budget_sq_leading_block_det_ne_zero_activeRatioMax_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (σ : Fin m ≃ Fin m)
+    (Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (diagBudget : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A (σ r) j)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b (σ r))
+    (hbudgetBound : ∀ k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun a =>
+              storedHouseholderQRMatrixSeq fp hnm
+                (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+            (storedHouseholderQRAlphaSeq fp hnm
+              (fun r j => A (σ r) j) k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a =>
+                storedHouseholderQRMatrixSeq fp hnm
+                  (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hnm
+                (fun r j => A (σ r) j) k)))
+          (fun a =>
+            storedHouseholderQRMatrixSeq fp hnm
+              (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+          ⟨k, lt_of_lt_of_le hk hnm⟩ ≤ diagBudget k)
+    (hmargin : ∀ k (hk : k < n),
+      (m : ℝ) * (diagBudget k) ^ 2 <
+        householderTrailingNorm2Sq m
+          ⟨k, lt_of_lt_of_le hk hnm⟩
+          (fun i =>
+            storedHouseholderQRMatrixSeq fp hnm
+              (fun r j => A (σ r) j) k i ⟨k, hk⟩))
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock
+          (storedHouseholderQRMatrixSeq fp hnm
+            (fun r j => A (σ r) j) k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hnm)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0)
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotChoice : ∀ t (ht : t < n),
+      Fin.mk t ht =
+        householderActiveMaxPivotColumn
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)
+          (storedHouseholderQRMatrixSeq fp hnm
+            (fun r j => A (σ r) j) t))
+    (hσA :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A (σ s) ≤
+          theorem20_7_initialRowMax hn A
+            (σ ⟨k, lt_of_lt_of_le hk hnm⟩))
+    (hσb :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b (σ s)| ≤ |b (σ ⟨k, lt_of_lt_of_le hk hnm⟩)|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |storedHouseholderQRMatrixSeq fp hnm
+            (fun s j => A (σ s) j) (t + 1) r j -
+            Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRMatrixSeq fp hnm
+                (fun s j => A (σ s) j) t r j - Aexact t r j|)
+    (hσArowRatioMax :
+      theorem20_7_activeInitialRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) ≤ Real.sqrt (m : ℝ))
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |storedHouseholderQRRhsSeq fp hnm
+            (fun s j => A (σ s) j) (fun s => b (σ s))
+            (t + 1) r -
+            bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRRhsSeq fp hnm
+                (fun s j => A (σ s) j) (fun s => b (σ s))
+                t r - bexact t r|)
+    (hσbrowRatioMax :
+      theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) (fun r => b (σ r)) phi ≤
+          Real.sqrt (m : ℝ))
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn
+        (fun r j => A (σ r) j) (fun r => b (σ r))
+        (storedHouseholderQRMatrixSeq fp hnm
+          (fun r j => A (σ r) j))
+        (storedHouseholderQRRhsSeq fp hnm
+          (fun r j => A (σ r) j) (fun r => b (σ r)))
+        phi gammaTilde xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA (σ.symm i) j)
+        (fun i => b i + hcert.Deltab (σ.symm i)) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA (σ.symm i) j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab (σ.symm i)| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_signed_alpha_budget_sq_leading_block_det_ne_zero_row_scale_ratios_nat
+      hm hn hnm fp σ Aexact A bexact b diagBudget gammaTilde err xhat
+      hphi hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound hmargin
+      hdetLead hcopy hpivotChoice hσA hσb hAstepExact hAstepErr
+      (theorem20_7_initialRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
+        hm hn hnm A σ hσArowRatioMax)
+      hbstepExact hbstepErr
+      (theorem20_7_initialWeightedRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
+        hm hn hnm A b phi σ hσbrowRatioMax)
+      hcert
+
 /-- Theorem 20.7 row-sorting support: certificate-free form of the permuted
     concrete stored-Householder QR wrapper.
 
@@ -16786,6 +16919,159 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
       hσArowRatio hbstepExact hbstepErr hσbrowRatio hcert
   simpa [hcert, Theorem20_7RowwiseBackwardError.of_exact_perturbations]
     using h
+
+/-- Theorem 20.7 row-sorting support: certificate-free permuted concrete
+    wrapper whose active-suffix row-ratio hypotheses are supplied by finite
+    active-ratio maxima for the displayed row order. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_permuted_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_signed_alpha_budget_sq_leading_block_det_ne_zero_activeRatioMax_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (σ : Fin m ≃ Fin m)
+    (Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (diagBudget : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A (σ r) j)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b (σ r))
+    (hbudgetBound : ∀ k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun a =>
+              storedHouseholderQRMatrixSeq fp hnm
+                (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+            (storedHouseholderQRAlphaSeq fp hnm
+              (fun r j => A (σ r) j) k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a =>
+                storedHouseholderQRMatrixSeq fp hnm
+                  (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hnm
+                (fun r j => A (σ r) j) k)))
+          (fun a =>
+            storedHouseholderQRMatrixSeq fp hnm
+              (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+          ⟨k, lt_of_lt_of_le hk hnm⟩ ≤ diagBudget k)
+    (hmargin : ∀ k (hk : k < n),
+      (m : ℝ) * (diagBudget k) ^ 2 <
+        householderTrailingNorm2Sq m
+          ⟨k, lt_of_lt_of_le hk hnm⟩
+          (fun i =>
+            storedHouseholderQRMatrixSeq fp hnm
+              (fun r j => A (σ r) j) k i ⟨k, hk⟩))
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock
+          (storedHouseholderQRMatrixSeq fp hnm
+            (fun r j => A (σ r) j) k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hnm)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0)
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotChoice : ∀ t (ht : t < n),
+      Fin.mk t ht =
+        householderActiveMaxPivotColumn
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)
+          (storedHouseholderQRMatrixSeq fp hnm
+            (fun r j => A (σ r) j) t))
+    (hσA :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A (σ s) ≤
+          theorem20_7_initialRowMax hn A
+            (σ ⟨k, lt_of_lt_of_le hk hnm⟩))
+    (hσb :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b (σ s)| ≤ |b (σ ⟨k, lt_of_lt_of_le hk hnm⟩)|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |storedHouseholderQRMatrixSeq fp hnm
+            (fun s j => A (σ s) j) (t + 1) r j -
+            Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRMatrixSeq fp hnm
+                (fun s j => A (σ s) j) t r j - Aexact t r j|)
+    (hσArowRatioMax :
+      theorem20_7_activeInitialRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) ≤ Real.sqrt (m : ℝ))
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |storedHouseholderQRRhsSeq fp hnm
+            (fun s j => A (σ s) j) (fun s => b (σ s))
+            (t + 1) r -
+            bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRRhsSeq fp hnm
+                (fun s j => A (σ s) j) (fun s => b (σ s))
+                t r - bexact t r|)
+    (hσbrowRatioMax :
+      theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) (fun r => b (σ r)) phi ≤
+          Real.sqrt (m : ℝ))
+    (DeltaAperm : Fin m → Fin n → ℝ) (Deltabperm : Fin m → ℝ)
+    (hExact :
+      IsLeastSquaresMinimizer
+        (fun i j => A (σ i) j + DeltaAperm i j)
+        (fun i => b (σ i) + Deltabperm i) xhat)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaAperm i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn
+              (storedHouseholderQRMatrixSeq fp hnm
+                (fun r j => A (σ r) j))
+              (fun r j => A (σ r) j) i)
+            (theorem20_7_initialRowMax hn
+              (fun r j => A (σ r) j) i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltabperm i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn
+              (storedHouseholderQRMatrixSeq fp hnm
+                (fun r j => A (σ r) j))
+              (fun r j => A (σ r) j)
+              (storedHouseholderQRRhsSeq fp hnm
+                (fun r j => A (σ r) j) (fun r => b (σ r)))
+              (fun r => b (σ r)) phi i)
+            (theorem20_7_initialWeightedRowMax hn
+              (fun r j => A (σ r) j) (fun r => b (σ r)) phi i)) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + DeltaAperm (σ.symm i) j)
+        (fun i => b i + Deltabperm (σ.symm i)) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |DeltaAperm (σ.symm i) j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |Deltabperm (σ.symm i)| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_permuted_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_signed_alpha_budget_sq_leading_block_det_ne_zero_row_scale_ratios_nat
+      hm hn hnm fp σ Aexact A bexact b diagBudget gammaTilde err xhat
+      hphi hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound hmargin
+      hdetLead hcopy hpivotChoice hσA hσb hAstepExact hAstepErr
+      (theorem20_7_initialRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
+        hm hn hnm A σ hσArowRatioMax)
+      hbstepExact hbstepErr
+      (theorem20_7_initialWeightedRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
+        hm hn hnm A b phi σ hσbrowRatioMax)
+      DeltaAperm Deltabperm hExact hDeltaA hDeltab
 
 /-- Theorem 20.7 support: active-max pivot stage-swap wrapper for the
     compact-active, source-initial, zero-start, zero-step-budget all-entry

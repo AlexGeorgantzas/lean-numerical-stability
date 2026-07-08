@@ -1450,6 +1450,92 @@ theorem higham11_7_abs_entry_le_infNorm (n : ℕ)
         (Finset.mem_univ j)
     _ ≤ infNorm A := row_sum_le_infNorm A i
 
+/-- **Theorem 11.7 solve-side interface bridge, infinity-norm budget**,
+specializing the printed componentwise budget to `c * u * ||A||_∞`. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (c u : ℝ) (hc : 0 ≤ c) (hu : 0 ≤ u)
+    (hsolve : ∃ ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * infNorm A) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ c * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * infNorm A) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_solve_delta_nonneg
+    n A b x_hat c u (infNorm A) hc hu (infNorm_nonneg A) hsolve
+
+/-- **Theorem 11.7 componentwise-to-norm bridge**, a uniform componentwise
+perturbation bound implies an infinity-norm bound by summing rows. -/
+theorem higham11_7_infNorm_le_card_mul_of_uniform_componentwise_bound (n : ℕ)
+    (ΔA : Fin n → Fin n → ℝ) (β : ℝ) (hβ : 0 ≤ β)
+    (hΔ : ∀ i j : Fin n, |ΔA i j| ≤ β) :
+    infNorm ΔA ≤ (n : ℝ) * β := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc (∑ j : Fin n, |ΔA i j|)
+        ≤ ∑ _j : Fin n, β := Finset.sum_le_sum (fun j _ => hΔ i j)
+      _ = (n : ℝ) * β := by
+        simp [Finset.sum_const, nsmul_eq_mul]
+  · exact mul_nonneg (Nat.cast_nonneg n) hβ
+
+/-- **Theorem 11.7 printed componentwise-to-norm bridge**, specializing the
+uniform row-sum aggregation to a printed `c * u * Amax` budget. -/
+theorem higham11_7_infNorm_le_card_mul_of_printed_componentwise_bound (n : ℕ)
+    (ΔA : Fin n → Fin n → ℝ) (c u Amax : ℝ)
+    (hβ : 0 ≤ c * u * Amax)
+    (hΔ : ∀ i j : Fin n, |ΔA i j| ≤ c * u * Amax) :
+    infNorm ΔA ≤ (n : ℝ) * c * u * Amax := by
+  calc
+    infNorm ΔA ≤ (n : ℝ) * (c * u * Amax) :=
+      higham11_7_infNorm_le_card_mul_of_uniform_componentwise_bound n ΔA
+        (c * u * Amax) hβ hΔ
+    _ = (n : ℝ) * c * u * Amax := by ring
+
+/-- **Theorem 11.7 solve-side bridge with norm aggregation**, carrying a
+componentwise recursive solve perturbation through the source-facing interface
+and recording the induced infinity-norm bounds for both perturbation matrices.
+-/
+theorem higham11_7_tridiagonal_backward_error_interface_of_solve_delta_with_norm_bounds
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (c u Amax : ℝ) (hβ : 0 ≤ c * u * Amax)
+    (hsolve : ∃ ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ c * u * Amax) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * Amax) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * c * u * Amax ∧
+      infNorm ΔA2 ≤ (n : ℝ) * c * u * Amax ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  obtain ⟨ΔA1, hΔA1, _hΔA1supp, _hΔA1zero⟩ :=
+    higham11_7_tridiagonalLeadingBlockSupport_zero_bound n 0
+      (c * u * Amax) hβ
+  obtain ⟨ΔA2, hΔA2, hsolve_eq⟩ := hsolve
+  refine ⟨ΔA1, ΔA2, hΔA1, hΔA2, ?_, ?_, hsolve_eq⟩
+  · exact higham11_7_infNorm_le_card_mul_of_printed_componentwise_bound
+      n ΔA1 c u Amax hβ hΔA1
+  · exact higham11_7_infNorm_le_card_mul_of_printed_componentwise_bound
+      n ΔA2 c u Amax hβ hΔA2
+
+/-- **Theorem 11.7 solve-side bridge with direct infinity-norm budget**,
+specializing the norm-aggregating source bridge to `Amax = ||A||_∞`. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm_with_norm_bounds
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (c u : ℝ) (hc : 0 ≤ c) (hu : 0 ≤ u)
+    (hsolve : ∃ ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * infNorm A) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ c * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * c * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * c * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_solve_delta_with_norm_bounds
+    n A b x_hat c u (infNorm A)
+    (mul_nonneg (mul_nonneg hc hu) (infNorm_nonneg A)) hsolve
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
