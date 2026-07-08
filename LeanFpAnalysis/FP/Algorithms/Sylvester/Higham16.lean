@@ -7326,6 +7326,60 @@ def IsGeneralizedSylvesterPairSolution (m n : Nat)
     (forall i j, matMulRect m m n A X i j - matMulRect m n n Y B i j = C i j)
     (forall i j, matMulRect m m n D X i j - matMulRect m n n Y E i j = F0 i j)
 
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
+    first residual for the coupled generalized Sylvester equations
+    `AX - YB = C` and `DX - YE = F`. -/
+noncomputable def generalizedSylvesterPairResidualLeft (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Y : RMatFn m n) : RMatFn m n :=
+  fun i j => matMulRect m m n A X i j - matMulRect m n n Y B i j - C i j
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
+    second residual for the coupled generalized Sylvester equations
+    `AX - YB = C` and `DX - YE = F`. -/
+noncomputable def generalizedSylvesterPairResidualRight (m n : Nat)
+    (D : RMatFn m m) (E : RMatFn n n)
+    (F0 X Y : RMatFn m n) : RMatFn m n :=
+  fun i j => matMulRect m m n D X i j - matMulRect m n n Y E i j - F0 i j
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.31): the two residuals vanish
+    exactly when the coupled generalized Sylvester equations hold. -/
+theorem generalizedSylvesterPair_residual_zero_iff_solution (m n : Nat)
+    (A D : RMatFn m m) (B E : RMatFn n n)
+    (C F0 X Y : RMatFn m n) :
+    ((forall i j,
+        generalizedSylvesterPairResidualLeft m n A B C X Y i j = 0) ∧
+      (forall i j,
+        generalizedSylvesterPairResidualRight m n D E F0 X Y i j = 0)) <->
+      IsGeneralizedSylvesterPairSolution m n A D B E C F0 X Y := by
+  constructor
+  · intro h
+    constructor
+    · intro i j
+      have hij := h.1 i j
+      unfold generalizedSylvesterPairResidualLeft at hij
+      linarith
+    · intro i j
+      have hij := h.2 i j
+      unfold generalizedSylvesterPairResidualRight at hij
+      linarith
+  · intro h
+    constructor
+    · intro i j
+      have hij := h.1 i j
+      unfold generalizedSylvesterPairResidualLeft
+      linarith
+    · intro i j
+      have hij := h.2 i j
+      unfold generalizedSylvesterPairResidualRight
+      linarith
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.31): source-numbered alias
+    for the residual characterization of the coupled generalized Sylvester
+    equations. -/
+alias H16_eq16_31_generalizedSylvesterPair_residual_zero_iff_solution :=
+  generalizedSylvesterPair_residual_zero_iff_solution
+
 /-- Higham, 2nd ed., Chapter 16.5, equation (16.32):
     residual for the algebraic Riccati form `AX + XB - XFX + G = 0`. -/
 noncomputable def riccatiResidual (m n : Nat)
