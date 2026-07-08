@@ -6391,6 +6391,41 @@ structure Theorem20_7RowwiseBackwardError {m n : ℕ} (hn : 0 < n)
           (theorem20_7_beta hn Astage A bstage b phi i)
           (theorem20_7_initialWeightedRowMax hn A b phi i)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    package concrete perturbations, exact LS optimality, and the printed
+    componentwise bounds into the row-wise backward-error certificate.
+
+This is only a certificate constructor; the QR-specific perturbation witnesses
+and bounds must still be proved by the caller. -/
+def Theorem20_7RowwiseBackwardError.of_exact_perturbations {m n : ℕ}
+    {hn : 0 < n} {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {Astage : ℕ → Fin m → Fin n → ℝ} {bstage : ℕ → Fin m → ℝ}
+    {phi gammaTilde : ℝ} {xhat : Fin n → ℝ}
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hExact :
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) xhat)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Astage A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Astage A bstage b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    Theorem20_7RowwiseBackwardError hn A b Astage bstage phi gammaTilde
+      xhat where
+  DeltaA := DeltaA
+  Deltab := Deltab
+  exact_solution := hExact
+  deltaA_bound := hDeltaA
+  deltab_bound := hDeltab
+
 /-- The exact least-squares minimizer component of a Theorem 20.7 row-wise
     backward-error certificate. -/
 theorem Theorem20_7RowwiseBackwardError.exactSolution {m n : ℕ}
@@ -6480,6 +6515,58 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_alphaBetaMax_le
   · exact
       hcert.deltab_bound_of_alphaBetaMax_le
         hm hn A b Astage bstage phi gammaTilde xhat hphi hgamma hmax
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    certificate-free uniform-budget handoff from concrete perturbation
+    witnesses and a proved finite `max_i {alpha_i, beta_i}` bound.
+
+This names the perturbation-construction boundary used by the weighted-LS
+route: callers provide the exact perturbed minimizer and printed
+componentwise bounds, and this theorem returns the source-shaped uniform
+budgets without requiring a separate explicit certificate value. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_alphaBetaMax_le
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (phi gammaTilde : ℝ) (xhat : Fin n → ℝ) {C : ℝ}
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 ≤ phi) (hgamma : 0 ≤ gammaTilde)
+    (hmax : theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤ C)
+    (hExact :
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) xhat)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Astage A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Astage A bstage b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde C
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde C
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  let hcert :
+      Theorem20_7RowwiseBackwardError hn A b Astage bstage phi gammaTilde
+        xhat :=
+    Theorem20_7RowwiseBackwardError.of_exact_perturbations
+      DeltaA Deltab hExact hDeltaA hDeltab
+  simpa [hcert, Theorem20_7RowwiseBackwardError.of_exact_perturbations] using
+    Theorem20_7RowwiseBackwardError.uniform_bounds_of_alphaBetaMax_le
+      hm hn A b Astage bstage phi gammaTilde xhat hphi hgamma hmax hcert
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row-sorting stage bounds with the printed
