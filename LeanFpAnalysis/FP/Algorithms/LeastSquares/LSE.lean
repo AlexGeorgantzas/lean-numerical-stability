@@ -2712,6 +2712,150 @@ theorem theorem20_7_completionB_budget_of_signed_stage_component_slack_nat
           theorem20_7_initialWeightedRowMax hn A b phi i :=
           mul_le_mul_of_nonneg_right (hslack i hi) hrow_nonneg
 
+/-- Theorem 20.7 support: a single compact Householder component budget is
+    controlled by the reflector's norm-budget coefficient times the input
+    vector norm.
+
+This is the pointwise form needed by the weighted-LS completion route: the
+repository already proves the corresponding normwise compact-budget bound, and
+this adapter extracts one nonnegative component from that norm bound. -/
+theorem theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_vecNorm2
+    (fp : FPModel) (m : ℕ) (v : Fin m → ℝ) (beta : ℝ)
+    (x : Fin m → ℝ) (hm : gammaValid fp m) (i : Fin m) :
+    householderCompactComponentBudget fp m v beta x i ≤
+      householderCompactNormBudgetCoeff fp m v beta * vecNorm2 x := by
+  have hnonneg :
+      0 ≤ householderCompactComponentBudget fp m v beta x i :=
+    householderCompactComponentBudget_nonneg fp m v beta x hm i
+  have hcoord :
+      |(fun r : Fin m =>
+          householderCompactComponentBudget fp m v beta x r) i| ≤
+        vecNorm2 (fun r : Fin m =>
+          householderCompactComponentBudget fp m v beta x r) :=
+    abs_coord_le_vecNorm2
+      (fun r : Fin m =>
+        householderCompactComponentBudget fp m v beta x r) i
+  have hcomponent_norm :
+      householderCompactComponentBudget fp m v beta x i ≤
+        vecNorm2 (fun r : Fin m =>
+          householderCompactComponentBudget fp m v beta x r) := by
+    simpa [abs_of_nonneg hnonneg] using hcoord
+  have hnorm :
+      vecNorm2 (fun r : Fin m =>
+          householderCompactComponentBudget fp m v beta x r) ≤
+        householderCompactNormBudgetCoeff fp m v beta * vecNorm2 x := by
+    have h :=
+      householderCompactNormBudget_le_normBudgetCoeff_mul
+        fp m v beta x hm
+    simpa [householderCompactNormBudget] using h
+  exact hcomponent_norm.trans hnorm
+
+/-- Theorem 20.7 support: source-row-scale matrix completion-budget domination
+    from norm-budget-coefficient slack.
+
+This is the next layer below
+`theorem20_7_completionA_budget_of_signed_stage_component_slack_nat`: callers
+may prove the norm-budget coefficient times the current column norm is below a
+source-row-scale slack, and this adapter converts it to the exact matrix
+completion-budget hypothesis used by the active-tail wrappers. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_norm_coeff_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (err : ℝ) (slack : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hcompact :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            vecNorm2 (fun r : Fin m => Ahat i.val r j) ≤
+          slack i.val * theorem20_7_initialRowMax hn A i)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  exact
+    theorem20_7_completionA_budget_of_signed_stage_component_slack_nat
+      hn hnm fp Ahat A alpha err slack
+      (fun i hi j hij =>
+        (theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_vecNorm2
+          fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (fun r : Fin m => Ahat i.val r j) hm i).trans
+          (hcompact i hi j hij))
+      hslack
+
+/-- Theorem 20.7 support: weighted RHS completion-budget domination from
+    norm-budget-coefficient slack.
+
+This is the right-hand-side analogue of
+`theorem20_7_completionA_budget_of_signed_stage_norm_coeff_slack_nat`; it
+reduces the compact RHS budget obligation to a norm-budget-coefficient bound
+against the weighted source row scale. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (err : ℝ) (slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m)
+    (hcompact :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            vecNorm2 (bhat i.val) ≤
+          slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completionB_budget_of_signed_stage_component_slack_nat
+      hn hnm fp Ahat bhat A b alpha err slack hphi
+      (fun i hi =>
+        (theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_vecNorm2
+          fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (bhat i.val) hm i).trans
+          (hcompact i hi))
+      hslack
+
 /-- Theorem 20.7 support: stored RHS steps preserve completed rows.
 
 Once row `i` has been processed, every later stored RHS step has active pivot
