@@ -1758,6 +1758,39 @@ def tridiagonalTwoByTwoFirstTrailingIndex (n : ℕ) : Fin (n + 3) :=
     have h3 : 3 ≤ n + 3 := Nat.le_add_left 3 n
     exact lt_of_lt_of_le h23 h3⟩
 
+@[simp] theorem tridiagonalTwoByTwoFirstTrailingIndex_val (n : ℕ) :
+    (tridiagonalTwoByTwoFirstTrailingIndex n).val = 2 := rfl
+
+/-- Offset embedding of the recursive trailing subproblem after a leading
+`2 × 2` tridiagonal pivot.  Local trailing index `0` maps to ambient index `2`. -/
+def tridiagonalTwoByTwoTrailingSubproblemIndex (n : ℕ)
+    (i : Fin (n + 1)) : Fin (n + 3) :=
+  ⟨i.val + 2, by
+    have h := Nat.add_lt_add_right i.isLt 2
+    simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using h⟩
+
+@[simp] theorem tridiagonalTwoByTwoTrailingSubproblemIndex_val
+    (n : ℕ) (i : Fin (n + 1)) :
+    (tridiagonalTwoByTwoTrailingSubproblemIndex n i).val = i.val + 2 := rfl
+
+@[simp] theorem tridiagonalTwoByTwoTrailingSubproblemIndex_zero
+    (n : ℕ) :
+    tridiagonalTwoByTwoTrailingSubproblemIndex n 0 =
+      tridiagonalTwoByTwoFirstTrailingIndex n := by
+  apply Fin.ext
+  simp [tridiagonalTwoByTwoTrailingSubproblemIndex,
+    tridiagonalTwoByTwoFirstTrailingIndex]
+
+/-- The recursive trailing-subproblem embedding after a leading tridiagonal
+`2 × 2` pivot is injective. -/
+theorem tridiagonalTwoByTwoTrailingSubproblemIndex_injective (n : ℕ) :
+    Function.Injective (tridiagonalTwoByTwoTrailingSubproblemIndex n) := by
+  intro i j hij
+  apply Fin.ext
+  have hval := congrArg Fin.val hij
+  simpa [tridiagonalTwoByTwoTrailingSubproblemIndex] using
+    Nat.add_right_cancel hval
+
 /-- Dimension-generic first-stage embedding of the printed `2 × 2`
 tridiagonal trailing scalar backward error.  In a local block of size `n+3`,
 the first accepted `2 × 2` pivot only touches the first trailing scalar of a

@@ -921,6 +921,35 @@ abbrev higham11_7_tridiagonalTwoByTwoFirstTrailingIndex (n : ℕ) :
     Fin (n + 3) :=
   tridiagonalTwoByTwoFirstTrailingIndex n
 
+/-- Offset embedding of the recursive trailing subproblem after a leading
+`2 × 2` tridiagonal pivot. -/
+abbrev higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex (n : ℕ)
+    (i : Fin (n + 1)) : Fin (n + 3) :=
+  tridiagonalTwoByTwoTrailingSubproblemIndex n i
+
+@[simp] theorem higham11_7_tridiagonalTwoByTwoFirstTrailingIndex_val (n : ℕ) :
+    (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n).val = 2 :=
+  tridiagonalTwoByTwoFirstTrailingIndex_val n
+
+@[simp] theorem higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex_val
+    (n : ℕ) (i : Fin (n + 1)) :
+    (higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex n i).val =
+      i.val + 2 :=
+  tridiagonalTwoByTwoTrailingSubproblemIndex_val n i
+
+@[simp] theorem higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex_zero
+    (n : ℕ) :
+    higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex n 0 =
+      higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n :=
+  tridiagonalTwoByTwoTrailingSubproblemIndex_zero n
+
+/-- The recursive trailing-subproblem embedding after a leading tridiagonal
+`2 × 2` pivot is injective. -/
+theorem higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex_injective (n : ℕ) :
+    Function.Injective
+      (higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex n) :=
+  tridiagonalTwoByTwoTrailingSubproblemIndex_injective n
+
 /-- **Theorem 11.7 local recursion embedding**, placing the printed-budget
 trailing scalar perturbation from an accepted `2 × 2` tridiagonal pivot into an
 ambient local block of size `n+3`, with zeros outside the first trailing entry. -/
