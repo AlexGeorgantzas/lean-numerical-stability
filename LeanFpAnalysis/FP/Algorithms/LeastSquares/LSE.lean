@@ -14018,6 +14018,109 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alp
   intro k hk
   exact lt_of_le_of_lt (hbudgetBound k hk) (hbudgetLt k hk)
 
+/-- Theorem 20.7 support: a dimensioned square margin for a scalar diagonal
+    budget implies the strict square-root budget used by the signed-alpha
+    stored-QR route.
+
+The nonnegativity of `diagBudget k` is derived from the compact component
+budget lower bound and the caller's component-budget domination hypothesis. -/
+theorem theorem20_7_storedHouseholderQRMatrixSeq_diagBudget_lt_sqrt_of_component_budget_bound_sq_nat
+    {m n : ℕ} (fp : FPModel) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (diagBudget : ℕ → ℝ)
+    (hmfp : gammaValid fp m)
+    (hbudgetBound : ∀ k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+            (storedHouseholderQRAlphaSeq fp hnm A k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hnm A k)))
+          (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+          ⟨k, lt_of_lt_of_le hk hnm⟩ ≤ diagBudget k)
+    (hmargin : ∀ k (hk : k < n),
+      (m : ℝ) * (diagBudget k) ^ 2 <
+        householderTrailingNorm2Sq m
+          ⟨k, lt_of_lt_of_le hk hnm⟩
+          (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩)) :
+    ∀ k (hk : k < n),
+      diagBudget k <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩)) := by
+  intro k hk
+  let p : Fin m := ⟨k, lt_of_lt_of_le hk hnm⟩
+  let v :=
+    householderTrailingActiveVector m p
+      (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+      (storedHouseholderQRAlphaSeq fp hnm A k)
+  let beta := householderBetaSpec m v
+  let budget :=
+    householderCompactComponentBudget fp m v beta
+      (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩) p
+  have hbudget_nonneg : 0 ≤ budget := by
+    simpa [budget, beta, v, p] using
+      householderCompactComponentBudget_nonneg fp m v beta
+        (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩) hmfp p
+  have hdiagBudget_nonneg : 0 ≤ diagBudget k :=
+    le_trans hbudget_nonneg (by simpa [budget, beta, v, p] using hbudgetBound k hk)
+  simpa [p] using
+    budget_lt_sqrt_householderTrailingNorm2Sq_of_dim_mul_budget_sq_lt_trailingNorm2Sq
+      m p
+      (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩)
+      (diagBudget k) hdiagBudget_nonneg (by simpa [p] using hmargin k hk)
+
+/-- Theorem 20.7 support: a scalar diagonal budget square margin discharges
+    the exact strict compact-budget premise consumed by the direct
+    square-root nonbreakdown wrappers. -/
+theorem theorem20_7_storedHouseholderQRMatrixSeq_budgetSqrt_of_component_budget_bound_sq_nat
+    {m n : ℕ} (fp : FPModel) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (diagBudget : ℕ → ℝ)
+    (hmfp : gammaValid fp m)
+    (hbudgetBound : ∀ k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+            (storedHouseholderQRAlphaSeq fp hnm A k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hnm A k)))
+          (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+          ⟨k, lt_of_lt_of_le hk hnm⟩ ≤ diagBudget k)
+    (hmargin : ∀ k (hk : k < n),
+      (m : ℝ) * (diagBudget k) ^ 2 <
+        householderTrailingNorm2Sq m
+          ⟨k, lt_of_lt_of_le hk hnm⟩
+          (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩)) :
+    ∀ k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+            (storedHouseholderQRAlphaSeq fp hnm A k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hnm A k)))
+          (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+          ⟨k, lt_of_lt_of_le hk hnm⟩ <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩)) := by
+  intro k hk
+  exact lt_of_le_of_lt (hbudgetBound k hk)
+    (theorem20_7_storedHouseholderQRMatrixSeq_diagBudget_lt_sqrt_of_component_budget_bound_sq_nat
+      fp hnm A diagBudget hmfp hbudgetBound hmargin k hk)
+
 /-- Theorem 20.7 support: a scalar diagonal budget strictly below the trailing
     norm square root already implies positive trailing norm. -/
 theorem theorem20_7_storedHouseholderQRMatrixSeq_trailingNorm_pos_of_component_budget_bound_nat
