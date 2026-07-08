@@ -2071,6 +2071,37 @@ theorem realMatrixToComplex_sylvesterVecCoeff (m n : Nat)
     simp [realMatrixToComplex, sylvesterVecCoeff, complexSylvesterVecCoeff,
       Matrix.kronecker, Matrix.transpose_apply, Matrix.one_apply, hp, hq]
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), real source-facing
+    complexified shifted spectrum characterization: a complex scalar shift makes
+    the complexification of the real vec/Kronecker Sylvester coefficient
+    singular iff the shift is a difference of complex right eigenvalues of the
+    complexified real factors. -/
+theorem sylvesterVecCoeff_complexified_shifted_det_eq_zero_iff_exists_complex_eigenvalue_difference
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (theta : Complex) :
+    Matrix.det (realMatrixToComplex (sylvesterVecCoeff m n A B) -
+        Matrix.scalar (Prod (Fin n) (Fin m)) theta) = 0 ↔
+      ∃ lam : Complex, ∃ mu : Complex,
+        HasComplexRightEigenvalue (realMatrixToComplex A) lam ∧
+        HasComplexRightEigenvalue (realMatrixToComplex B) mu ∧
+        lam - mu = theta := by
+  rw [realMatrixToComplex_sylvesterVecCoeff]
+  exact
+    complexSylvesterVecCoeff_shifted_det_eq_zero_iff_exists_eigenvalue_difference
+      (realMatrixToComplex A) (realMatrixToComplex B) theta
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias for
+    the complexified real vec/Kronecker shifted spectrum/difference theorem. -/
+theorem H16_eq16_3_sylvesterVecCoeff_complexified_shifted_det_eq_zero_iff_exists_complex_eigenvalue_difference
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (theta : Complex) :
+    Matrix.det (realMatrixToComplex (sylvesterVecCoeff m n A B) -
+        Matrix.scalar (Prod (Fin n) (Fin m)) theta) = 0 ↔
+      ∃ lam : Complex, ∃ mu : Complex,
+        HasComplexRightEigenvalue (realMatrixToComplex A) lam ∧
+        HasComplexRightEigenvalue (realMatrixToComplex B) mu ∧
+        lam - mu = theta :=
+  sylvesterVecCoeff_complexified_shifted_det_eq_zero_iff_exists_complex_eigenvalue_difference
+    m n A B theta
+
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3), complex spectral
     nonsingularity route for the real vec/Kronecker coefficient: if the
     entrywise complexifications of the real matrices `A` and `B` have no
