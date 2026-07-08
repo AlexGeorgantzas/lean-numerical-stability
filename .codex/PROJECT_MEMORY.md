@@ -20,6 +20,19 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-08 BDD canonical-tail recursive pivot-table lift: added
+  `higham13_algorithm13_3_pivot_right_inverse_of_initial_pivot_and_first_schur_tail_pivotInv_eq_nonsingInv`,
+  `higham13_algorithm13_3_pivot_det_ne_zero_of_initial_pivot_and_first_schur_tail_pivotInv_eq_nonsingInv`,
+  `higham13_algorithm13_3_pivot_right_inverse_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`,
+  and
+  `higham13_algorithm13_3_pivot_det_ne_zero_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`
+  in `BlockLU.lean`.  These replace an explicit first-Schur-tail active
+  right-inverse table with tail determinant nonzero facts plus
+  `pivotInv (k+1) = nonsingInv r tailPivot_k`, then reuse the existing
+  recursive tail lift.  This is dependency progress only: the first-Schur-tail
+  BDD/source reciprocal table, dimension-free Eq.13.21/Eq.13.23 max-entry
+  endpoint, Problem 13.4 all-tail comparisons, and Theorem 13.6 cited estimates
+  remain open.
 - 2026-07-05 sync/checkpoint: local `main` fast-forwarded to `origin/main`
   commit `183253e3`; direct
   `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` passed with no
