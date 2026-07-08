@@ -19570,6 +19570,27 @@ theorem IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
         rw [hs]
         rfl)
 
+/-- Higham, 2nd ed., Chapter 20, Wedin perturbation setup:
+    exact least-squares optimality makes the source Higham residual orthogonal
+    to the data columns, hence a symmetric range projector `A*Aplus`
+    annihilates it. -/
+theorem IsLeastSquaresMinimizer.wedin_rangeProjection_higham_residual_eq_zero
+    {m k : ℕ} {A : Fin m → Fin (k + 1) → ℝ}
+    {Aplus : Fin (k + 1) → Fin m → ℝ}
+    {b r : Fin m → ℝ} {x : Fin (k + 1) → ℝ}
+    (hmin : IsLeastSquaresMinimizer A b x)
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hr : r = fun i => b i - rectMatMulVec A x i) :
+    rectMatMulVec (rectMatMul A Aplus) r = 0 := by
+  have horth :
+      ∀ j : Fin (k + 1), ∑ i : Fin m, A i j * r i = 0 :=
+    IsLeastSquaresMinimizer.higham_residual_orthogonal
+      (A := A) (b := b) (x := x) (s := r) hmin
+      (by simpa [lsResidualHigham] using hr)
+  exact
+    wedinTheorem20_1_rangeProjection_perturbed_residual_eq_zero_of_column_orthogonal
+      A Aplus r hSymA horth
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1):
     source-strength solution-side Wedin bound with perturbed least-squares
     optimality as the caller-facing hypothesis.
@@ -19907,6 +19928,58 @@ theorem IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_min_surface_geom
       hAplus hDelta hDeltaA hDeltab hDeltaA_norm_budget
       hDeltab_norm_budget hleftA hleftB hSymA hSymB hrangeA_residual
       hB hr hs horth_s
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2):
+    minimizer-facing residual-side Wedin bound using exact optimality for both
+    the source and perturbed least-squares problems.
+
+The source minimizer supplies the `P_A r = 0` residual-projection condition;
+the perturbed minimizer supplies residual column orthogonality.  Lemmas 20.11
+and 20.12 still discharge the Wedin pseudoinverse and projector estimates
+through the min-surface wrapper. -/
+theorem
+    IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_min_surface_geometry_source_minimizer
+    {m k : ℕ} (hm : 0 < m) (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {delta Aplus_norm DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hExactMin : IsLeastSquaresMinimizer A b x)
+    (hPertMin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
+    (hb_norm_pos : 0 < vecNorm2 b)
+    (hAplus_pos : 0 < Aplus_norm)
+    (hA_norm_nonneg : 0 ≤ A_norm)
+    (heps_nonneg : 0 ≤ eps)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (hsmall : kappa * eps < 1)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget : Deltab_norm ≤ eps * vecNorm2 b)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
+    vecNorm2 (fun i => r i - s i) / vecNorm2 b ≤
+      wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+  have hrangeA_residual :
+      rectMatMulVec (rectMatMul A Aplus) r = 0 :=
+    IsLeastSquaresMinimizer.wedin_rangeProjection_higham_residual_eq_zero
+      (A := A) (Aplus := Aplus) (b := b) (r := r) (x := x)
+      hExactMin hSymA hr
+  exact
+    IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_min_surface_geometry
+      hm A B Aplus Bplus DeltaA b Deltab r s x y hPertMin hb_norm_pos
+      hAplus_pos hA_norm_nonneg heps_nonneg hkappa hdelta hsmall
+      hAplus hDelta hDeltaA hDeltab hDeltaA_norm_budget
+      hDeltab_norm_budget hleftA hleftB hSymA hSymB hrangeA_residual
+      hB hr hs
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2), conservative
     residual-side Wedin bound with perturbed least-squares optimality as the
