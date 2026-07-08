@@ -3243,6 +3243,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_rigorous_pathS_endpoint_bound`
 - `higham9_15_rigorous_lu_perturbation_combined_bound`
 - `higham9_15_rigorous_lu_perturbation_split_bounds`
+- `higham9_15_matMul_eq_rectMatMul`
+- `higham9_15_frobNormRect_matMul_le_of_rectOpNorm2Le`
+- `higham9_15_frobNormRect_matMul_le_of_transpose_rectOpNorm2Le`
+- `higham9_15_barrlund_deltaL_bound`
+- `higham9_15_barrlund_deltaU_bound`
 - `higham9_15_normalized_G_factorization_matrix`
 - `higham9_15_normalized_Gtilde_factorization_matrix`
 - `higham9_15_strilPart`
