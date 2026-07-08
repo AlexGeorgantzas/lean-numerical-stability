@@ -9891,6 +9891,64 @@ theorem isSylvesterQuasiSchurGeneratedStepFormula_of_solution_twoBlockSpectral_n
     · intro i
       exact congrFun hvec (Sum.inr i)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    generated-step witness surface: under supplied real-quasi-Schur factors,
+    the two-block spectral block map, and original no-common complex spectrum,
+    some exact Schur-coordinate solution satisfies the packaged generated-step
+    formulas.
+
+    Scope: this proves existence of a formula-satisfying witness by the exact
+    vectorized Sylvester solve and the solution-characterization theorem above.
+    It is not yet the recursive Bartels-Stewart construction of the candidate
+    `X`. -/
+theorem exists_isSylvesterSolutionRect_and_generatedStepFormula_of_twoBlockSpectral_no_common
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    exists X : RMatFn m n,
+      IsSylvesterSolutionRect m n R S C X /\
+        IsSylvesterQuasiSchurGeneratedStepFormula m n R S C X pmap := by
+  have hnoRS :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex R)
+        (realMatrixToComplex S) :=
+    noCommonComplexRightEigenvalue_realQuasiSchur_factors
+      m n U R A V S B hU hV hA hB hnoOrig
+  have hdet :
+      Not (Matrix.det (sylvesterVecCoeff m n R S) = 0) :=
+    sylvesterVecCoeff_det_ne_zero_of_no_common_complex_right_eigenvalue
+      m n R S hnoRS
+  let x : Prod (Fin n) (Fin m) -> Real :=
+    Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n R S)) (Matrix.vec C)
+  have hx :
+      Matrix.mulVec (sylvesterVecCoeff m n R S) x = Matrix.vec C := by
+    dsimp [x]
+    rw [Matrix.mulVec_mulVec,
+      Matrix.mul_nonsing_inv (sylvesterVecCoeff m n R S)
+        (isUnit_iff_ne_zero.mpr hdet),
+      Matrix.one_mulVec]
+  obtain ⟨X, hXvec⟩ := Matrix.vec_bijective.surjective x
+  have hXsol : IsSylvesterSolutionRect m n R S C X :=
+    (sylvester_vec_system_iff_solution m n R S C X).mp
+      (by rw [hXvec]; exact hx)
+  exact ⟨X, hXsol,
+    isSylvesterQuasiSchurGeneratedStepFormula_of_solution_twoBlockSpectral_no_common
+      m n U R A V S B C X pmap hU hV hA hB hmono hcard hzero
+      hspectral hnoOrig hXsol⟩
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
     `A - t_kk I` nonsingular, two solutions of `AX - XT = C` coincide, by
