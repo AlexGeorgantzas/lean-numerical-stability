@@ -1702,6 +1702,54 @@ theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound
   intro i j
   exact le_trans (hΔS i j) hbudget
 
+/-- First-stage embedding of the printed `2 × 2` tridiagonal trailing scalar
+backward error into the ambient `3 × 3` tridiagonal block-LDLᵀ step.  The
+perturbation is zero outside the single trailing entry, so this is the local
+handoff needed before iterating the tridiagonal recursion. -/
+theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_three
+    (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound u : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3) :
+    ∃ ΔA : Fin 3 → Fin 3 → ℝ,
+      (∀ i j : Fin 3, |ΔA i j| ≤ c_bound * u * Amax) ∧
+      (∀ i j : Fin 3,
+        i ≠ (⟨2, by decide⟩ : Fin 3) ∨
+          j ≠ (⟨2, by decide⟩ : Fin 3) →
+        ΔA i j = 0) ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (⟨2, by decide⟩ : Fin 3) (⟨2, by decide⟩ : Fin 3) := by
+  obtain ⟨ΔS, hΔS, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound fp
+      σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
+      hb hc hratio hbudget hval
+  let tail : Fin 3 := ⟨2, by decide⟩
+  let zero : Fin 1 := ⟨0, by decide⟩
+  let ΔA : Fin 3 → Fin 3 → ℝ :=
+    fun i j => if i = tail ∧ j = tail then ΔS zero zero else 0
+  refine ⟨ΔA, ?_, ?_, ?_⟩
+  · intro i j
+    have hzero_bound : |(0 : ℝ)| ≤ c_bound * u * Amax := by
+      simpa using (abs_nonneg (ΔS zero zero)).trans (hΔS zero zero)
+    by_cases htail : i = tail ∧ j = tail
+    · simpa [ΔA, htail] using hΔS zero zero
+    · simpa [ΔA, htail] using hzero_bound
+  · intro i j houtside
+    have htail : ¬(i = tail ∧ j = tail) := by
+      intro htail
+      rcases houtside with hi | hj
+      · exact hi htail.1
+      · exact hj htail.2
+    simp [ΔA, htail]
+  · simpa [ΔA, tail, zero] using hstep zero zero
+
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
 -- ============================================================

@@ -888,6 +888,33 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound
     σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
     hb hc hratio hbudget hval
 
+/-- **Theorem 11.7 first-stage embedding**, placing the printed-budget trailing
+scalar perturbation from an accepted `2 × 2` tridiagonal pivot into the ambient
+`3 × 3` tridiagonal block-LDLᵀ step with zeros outside the trailing entry. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_three
+    (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound u : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3) :
+    ∃ ΔA : Fin 3 → Fin 3 → ℝ,
+      (∀ i j : Fin 3, |ΔA i j| ≤ c_bound * u * Amax) ∧
+      (∀ i j : Fin 3,
+        i ≠ (⟨2, by decide⟩ : Fin 3) ∨
+          j ≠ (⟨2, by decide⟩ : Fin 3) →
+        ΔA i j = 0) ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (⟨2, by decide⟩ : Fin 3) (⟨2, by decide⟩ : Fin 3) :=
+  fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_three fp
+    σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
+    hb hc hratio hbudget hval
+
 /-- **Equation (11.8)** source predicate: unpermuted block LDL^T
 factorization for a symmetric tridiagonal matrix. -/
 abbrev higham11_8_tridiagonalBlockLDLTSpec (n : ℕ)
