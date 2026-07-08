@@ -7311,6 +7311,11 @@ theorem generalizedSylvesterAXB_CXD_residual_zero_iff_solution (m n : Nat)
     unfold generalizedSylvesterAXB_CXD_residual
     linarith
 
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.30): source-numbered alias
+    for the zero-residual characterization of `A X B + C X D = E`. -/
+alias H16_eq16_30_generalizedSylvesterAXB_CXD_residual_zero_iff_solution :=
+  generalizedSylvesterAXB_CXD_residual_zero_iff_solution
+
 /-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
     coupled generalized Sylvester equation predicate
     `AX - YB = C` and `DX - YE = F`. -/
