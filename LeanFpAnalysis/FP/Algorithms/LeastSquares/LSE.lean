@@ -235,6 +235,25 @@ theorem theorem20_7_initialRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
   simp [theorem20_7_initialRowMax]
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    row sorting relabels the staged row maximum by the same permutation. -/
+theorem theorem20_7_stageRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (σ : Fin m ≃ Fin m) (i : Fin m) :
+    theorem20_7_stageRowMax hn (fun k r j => Astage k (σ r) j) i =
+      theorem20_7_stageRowMax hn Astage (σ i) := by
+  simp [theorem20_7_stageRowMax]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    common row sorting relabels the source ratio `α_i`. -/
+theorem theorem20_7_alpha_permuteRows {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (σ : Fin m ≃ Fin m) (i : Fin m) :
+    theorem20_7_alpha hn
+        (fun k r j => Astage k (σ r) j) (fun r j => A (σ r) j) i =
+      theorem20_7_alpha hn Astage A (σ i) := by
+  simp [theorem20_7_alpha, theorem20_7_stageRowMax_permuteRows,
+    theorem20_7_initialRowMax_permuteRows]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row sorting relabels the weighted source row maximum by the sorting
     permutation, provided `A` and `b` are permuted together. -/
 theorem theorem20_7_initialWeightedRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
@@ -566,6 +585,38 @@ noncomputable def theorem20_7_beta {m n : ℕ} (hn : 0 < n)
     (i : Fin m) : ℝ :=
   theorem20_7_stageWeightedRowMax hn Astage bstage phi i /
     theorem20_7_initialWeightedRowMax hn A b phi i
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    row sorting relabels the staged right-hand-side maximum. -/
+theorem theorem20_7_stageBMax_permuteRows {m n : ℕ} (hn : 0 < n)
+    (bstage : ℕ → Fin m → ℝ) (σ : Fin m ≃ Fin m) (i : Fin m) :
+    theorem20_7_stageBMax hn (fun k r => bstage k (σ r)) i =
+      theorem20_7_stageBMax hn bstage (σ i) := by
+  simp [theorem20_7_stageBMax]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    common row sorting relabels the staged weighted-row maximum. -/
+theorem theorem20_7_stageWeightedRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (phi : ℝ) (σ : Fin m ≃ Fin m) (i : Fin m) :
+    theorem20_7_stageWeightedRowMax hn
+        (fun k r j => Astage k (σ r) j) (fun k r => bstage k (σ r)) phi i =
+      theorem20_7_stageWeightedRowMax hn Astage bstage phi (σ i) := by
+  simp [theorem20_7_stageWeightedRowMax,
+    theorem20_7_stageRowMax_permuteRows, theorem20_7_stageBMax_permuteRows]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    common row sorting relabels the weighted source ratio `β_i`. -/
+theorem theorem20_7_beta_permuteRows {m n : ℕ} (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi : ℝ)
+    (σ : Fin m ≃ Fin m) (i : Fin m) :
+    theorem20_7_beta hn
+        (fun k r j => Astage k (σ r) j) (fun r j => A (σ r) j)
+        (fun k r => bstage k (σ r)) (fun r => b (σ r)) phi i =
+      theorem20_7_beta hn Astage A bstage b phi (σ i) := by
+  simp [theorem20_7_beta, theorem20_7_stageWeightedRowMax_permuteRows,
+    theorem20_7_initialWeightedRowMax_permuteRows]
 
 /-- If the staged weighted-row maximum is at most `C` times the initial
     weighted row maximum, then the Theorem 20.7 source ratio `β_i` is at most
@@ -6560,6 +6611,62 @@ theorem Theorem20_7RowwiseBackwardError.exactSolution {m n : ℕ}
       (fun i j => A i j + hcert.DeltaA i j)
       (fun i => b i + hcert.Deltab i) xhat :=
   hcert.exact_solution
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
+    a row-wise backward-error certificate for a commonly row-permuted
+    `A,b,Astage,bstage` instance transports back to the original row order.
+
+The transported perturbations are just the inverse row permutation of the
+row-sorted perturbations, and exact least-squares optimality follows from
+row-permutation invariance of the objective. -/
+def Theorem20_7RowwiseBackwardError.of_permuteRows {m n : ℕ}
+    {hn : 0 < n} {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {Astage : ℕ → Fin m → Fin n → ℝ} {bstage : ℕ → Fin m → ℝ}
+    {phi gammaTilde : ℝ} {xhat : Fin n → ℝ}
+    (σ : Fin m ≃ Fin m)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn
+        (fun r j => A (σ r) j) (fun r => b (σ r))
+        (fun k r j => Astage k (σ r) j)
+        (fun k r => bstage k (σ r)) phi gammaTilde xhat) :
+    Theorem20_7RowwiseBackwardError hn A b Astage bstage phi gammaTilde
+      xhat where
+  DeltaA := fun i j => hcert.DeltaA (σ.symm i) j
+  Deltab := fun i => hcert.Deltab (σ.symm i)
+  exact_solution := by
+    intro y
+    let A' : Fin m → Fin n → ℝ :=
+      fun i j => A i j + hcert.DeltaA (σ.symm i) j
+    let b' : Fin m → ℝ :=
+      fun i => b i + hcert.Deltab (σ.symm i)
+    have hperm :
+        lsObjective (rectPermuteRows σ A') (vecPermute σ b') xhat ≤
+          lsObjective (rectPermuteRows σ A') (vecPermute σ b') y := by
+      have hAperm :
+          rectPermuteRows σ A' =
+            (fun i j => A (σ i) j + hcert.DeltaA i j) := by
+        ext i j
+        simp [A', rectPermuteRows]
+      have hbperm :
+          vecPermute σ b' =
+            (fun i => b (σ i) + hcert.Deltab i) := by
+        ext i
+        simp [b', vecPermute]
+      rw [hAperm, hbperm]
+      exact hcert.exact_solution y
+    rw [lsObjective_permuteRows σ A' b' xhat] at hperm
+    rw [lsObjective_permuteRows σ A' b' y] at hperm
+    simpa [A', b'] using hperm
+  deltaA_bound := by
+    intro i j
+    have h := hcert.deltaA_bound (σ.symm i) j
+    simpa [theorem20_7_alpha_permuteRows,
+      theorem20_7_initialRowMax_permuteRows] using h
+  deltab_bound := by
+    intro i
+    have h := hcert.deltab_bound (σ.symm i)
+    simpa [theorem20_7_beta_permuteRows,
+      theorem20_7_initialWeightedRowMax_permuteRows] using h
 
 /-- A Theorem 20.7 row-wise backward-error certificate inherits any uniform
     finite bound on `max_i {alpha_i, beta_i}` for its `Delta A` components. -/

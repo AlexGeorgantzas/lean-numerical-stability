@@ -2095,6 +2095,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_fosterQ_one_le` (with A.3, the first band root is least)
 - `higham9_16_fosterBandIdx_eq_zero_of_le_first` (band index vanishes below the first root)
 - `higham9_16_fosterA2_step_case1` (A.2 induction step, case 1 assembled: bound by the full band value at the tail `P`)
+- `higham9_16_le_fosterQ_iff` (comparison with a band root = comparison of stage values)
+- `higham9_16_fosterQ_le_iff_hat_le` / `higham9_16_fosterQ_lt_iff_hat_lt` (**Foster (A.12)**: band membership transfers through the Möbius map)
+- `higham9_16_fosterBandIdx_hat` (Foster (A.12), band-index form: level-(k+1) index at `t` = level-k index of the hat image + 1)
+- `higham9_16_fosterPStar_scale` (**Foster (A.14)-(A.16) core**: the level-k shifted root at hatted data, scaled by `1+t`, is the level-(k+1) shifted root — the band-formula composition identity)
+- `higham9_16_fosterBandValue_hat_compose` (**Foster (A.14)-(A.16) assembled**: `(1+t)·M(k, C/(t(1+t)^k), t/(1+t)) = M(k+1, C, t)` for a case-2 tail — both if- and else-branches)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
