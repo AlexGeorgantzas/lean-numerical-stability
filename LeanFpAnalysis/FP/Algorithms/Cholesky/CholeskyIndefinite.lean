@@ -1955,6 +1955,42 @@ theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate
     (tridiagonalTwoByTwoFirstTrailingIndex n)]
   ring
 
+/-- Printed-coefficient form of the local recursive accumulation step: if the
+recursive trailing perturbation is already bounded by `c_rec * u * Amax`, then
+the accumulated perturbation is bounded by `(c_bound + c_rec) * u * Amax`. -/
+theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate_printed
+    (n : ℕ) (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound c_rec u : ℝ)
+    (ΔR : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3)
+    (hRbound : ∀ i j : Fin (n + 3), |ΔR i j| ≤ c_rec * u * Amax)
+    (hRsupp : TridiagonalTwoByTwoTrailingBlockSupport n ΔR) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * Amax) ∧
+      TridiagonalTwoByTwoTrailingBlockSupport n ΔA ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c) +
+          ΔR (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  obtain ⟨ΔA, hΔA, hAsupp, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate n fp
+      σ a11 a21 a22 b c Amax κ c_bound u (c_rec * u * Amax) ΔR
+      hchoice hσa11 hσa22 hAmax hκ hb hc hratio hbudget hval hRbound hRsupp
+  refine ⟨ΔA, ?_, hAsupp, hstep⟩
+  intro i j
+  calc
+    |ΔA i j| ≤ c_bound * u * Amax + c_rec * u * Amax := hΔA i j
+    _ = (c_bound + c_rec) * u * Amax := by ring
+
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
 -- ============================================================
