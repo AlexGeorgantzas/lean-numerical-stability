@@ -5128,6 +5128,65 @@ theorem sylvesterTwoColumnBlockRhs_eq_of_two_column_updates_at_or_after
             sylvesterTwoColumnBlockRhs_eq_of_column_update_at_or_after
               m n T C x p q k xk hpk
 
+/-- A singleton recursive-state column update preserves every earlier column.
+    This is the prefix-invariant bookkeeping used by the eventual scheduled
+    quasi-Schur candidate. -/
+theorem sylvesterColumnFamily_update_eq_of_lt
+    {m n : Nat} (x : Fin n -> Fin m -> Real)
+    (p j : Fin n) (xp : Fin m -> Real)
+    (hjp : j < p) :
+    Function.update x p xp j = x j := by
+  rw [Function.update_of_ne (ne_of_lt hjp)]
+
+/-- A two-column recursive-state update at `p` and `q`, with `p <= q`,
+    preserves every column strictly before `p`. -/
+theorem sylvesterColumnFamily_two_updates_eq_of_lt
+    {m n : Nat} (x : Fin n -> Fin m -> Real)
+    (p q j : Fin n) (xp xq : Fin m -> Real)
+    (hpq : p <= q) (hjp : j < p) :
+    Function.update (Function.update x p xp) q xq j = x j := by
+  have hjq : j ≠ q := by
+    intro hjq
+    have hq_lt_p : q < p := by simpa [hjq] using hjp
+    exact (not_lt_of_ge hpq) hq_lt_p
+  rw [Function.update_of_ne hjq]
+  exact sylvesterColumnFamily_update_eq_of_lt x p j xp hjp
+
+/-- A recursive-state update at or beyond a natural-number frontier preserves
+    every column strictly before that frontier. -/
+theorem sylvesterColumnFamily_prefix_eq_of_column_update_ge_nat
+    {m n : Nat} (x : Fin n -> Fin m -> Real)
+    (N : Nat) (k : Fin n) (xk : Fin m -> Real)
+    (hNk : N <= k.val) :
+    forall j : Fin n, j.val < N -> forall i : Fin m,
+      Function.update x k xk j i = x j i := by
+  intro j hj i
+  have hjne : Not (j = k) := by
+    intro h
+    have hjk : j.val = k.val := by
+      exact congrArg Fin.val h
+    omega
+  rw [Function.update_of_ne hjne]
+
+/-- Two recursive-state updates at or beyond a natural-number frontier preserve
+    every column strictly before that frontier. -/
+theorem sylvesterColumnFamily_prefix_eq_of_two_column_updates_ge_nat
+    {m n : Nat} (x : Fin n -> Fin m -> Real)
+    (N : Nat) (k l : Fin n) (xk xl : Fin m -> Real)
+    (hNk : N <= k.val) (hNl : N <= l.val) :
+    forall j : Fin n, j.val < N -> forall i : Fin m,
+      Function.update (Function.update x k xk) l xl j i = x j i := by
+  intro j hj i
+  have hjl : Not (j = l) := by
+    intro h
+    have hjlval : j.val = l.val := by
+      exact congrArg Fin.val h
+    omega
+  rw [Function.update_of_ne hjl]
+  exact
+    sylvesterColumnFamily_prefix_eq_of_column_update_ge_nat
+      x N k xk hNk j hj i
+
 /-- A direct two-column recursive-state update satisfies the generated
     two-column block formula against the final updated state.  This is the local
     block-step counterpart to the prefix-stability lemmas used by a future
