@@ -399,6 +399,37 @@ noncomputable abbrev higham11_3_fl_oneByOneStageBound (n : ℕ) (fp : FPModel)
     Fin (n + 1) → Fin (n + 1) → ℝ :=
   flBlockLDLTOneByOneStageBound n fp A Bs
 
+/-- The one-stage all-`1 × 1` block-LDLᵀ envelope is nonnegative whenever the
+recursive trailing envelope is nonnegative. -/
+theorem higham11_3_fl_oneByOneStageBound_nonneg (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) (Bs : Fin n → Fin n → ℝ)
+    (hval : gammaValid fp 3) (hBs : ∀ i j : Fin n, 0 ≤ Bs i j) :
+    ∀ I J : Fin (n + 1), 0 ≤ higham11_3_fl_oneByOneStageBound n fp A Bs I J := by
+  intro I J
+  have hγ : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+  rcases Fin.eq_zero_or_eq_succ I with hI | ⟨i, hI⟩
+  · subst I
+    rcases Fin.eq_zero_or_eq_succ J with hJ | ⟨j, hJ⟩
+    · subst J
+      simp [higham11_3_fl_oneByOneStageBound, flBlockLDLTOneByOneStageBound]
+    · subst J
+      simp [higham11_3_fl_oneByOneStageBound, flBlockLDLTOneByOneStageBound,
+        mul_nonneg fp.u_nonneg (abs_nonneg (A 0 j.succ))]
+  · subst I
+    rcases Fin.eq_zero_or_eq_succ J with hJ | ⟨j, hJ⟩
+    · subst J
+      simp [higham11_3_fl_oneByOneStageBound, flBlockLDLTOneByOneStageBound,
+        mul_nonneg fp.u_nonneg (abs_nonneg (A i.succ 0))]
+    · subst J
+      have hlocal :
+          0 ≤ 2 * gamma fp 3 *
+              (|A i.succ j.succ| + |A i.succ 0 * A 0 j.succ / A 0 0|) := by
+        exact mul_nonneg
+          (mul_nonneg (by norm_num : 0 ≤ (2 : ℝ)) hγ)
+          (add_nonneg (abs_nonneg _) (abs_nonneg _))
+      simpa [higham11_3_fl_oneByOneStageBound,
+        flBlockLDLTOneByOneStageBound] using add_nonneg hlocal (hBs i j)
+
 /-- **Theorem 11.3 one-stage all-index fl backward-error bound**:
 `|(L̂D̂L̂ᵀ) I J - A I J|` is bounded by
 `higham11_3_fl_oneByOneStageBound` for every index pair of a single rounded
@@ -460,6 +491,13 @@ noncomputable abbrev higham11_3_fl_storedSymSchurDefect (n : ℕ) (fp : FPModel)
     (A : Fin (n + 1) → Fin (n + 1) → ℝ) : Fin n → Fin n → ℝ :=
   flStoredSymSchurDefect n fp A
 
+/-- The stored-symmetric Schur storage defect is nonnegative. -/
+theorem higham11_3_fl_storedSymSchurDefect_nonneg (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    ∀ i j : Fin n, 0 ≤ higham11_3_fl_storedSymSchurDefect n fp A i j := by
+  intro i j
+  simp [higham11_3_fl_storedSymSchurDefect, flStoredSymSchurDefect]
+
 /-- **Theorem 11.3 stored-Schur one-stage bridge**: if the recursive trailing
 factors approximate the stored-symmetric rounded Schur complement, the existing
 one-stage LDLᵀ bound applies with the stored trailing envelope plus the explicit
@@ -515,6 +553,32 @@ theorem higham11_3_fl_blockLDLT_stored_all_oneByOne_bound (fp : FPModel)
           ≤ higham11_3_fl_storedAllOneByOneBound fp n A I J :=
   fl_blockLDLT_stored_all_oneByOne_bound fp hval n A hsym hp
 
+/-- The recursive stored-symmetric all-`1 × 1` block-LDLᵀ envelope is
+nonnegative. -/
+theorem higham11_3_fl_storedAllOneByOneBound_nonneg (fp : FPModel)
+    (hval : gammaValid fp 3) :
+    ∀ (n : ℕ) (A : Fin n → Fin n → ℝ) (I J : Fin n),
+      0 ≤ higham11_3_fl_storedAllOneByOneBound fp n A I J := by
+  intro n
+  induction n with
+  | zero =>
+      intro A I
+      exact Fin.elim0 I
+  | succ n ih =>
+      intro A I J
+      exact
+        higham11_3_fl_oneByOneStageBound_nonneg n fp A
+          (fun i j =>
+            higham11_3_fl_storedAllOneByOneBound fp n
+                (higham11_3_fl_storedSymSchurCompl n fp A) i j +
+              higham11_3_fl_storedSymSchurDefect n fp A i j)
+          hval
+          (fun i j =>
+            add_nonneg
+              (ih (higham11_3_fl_storedSymSchurCompl n fp A) i j)
+              (higham11_3_fl_storedSymSchurDefect_nonneg n fp A i j))
+          I J
+
 /-- Recursive rounded-pivot side condition for Theorem 11.3's all-1×1 path. -/
 noncomputable abbrev higham11_3_FlAllOneSymmetricPivots (fp : FPModel)
     (n : ℕ) (A : Fin n → Fin n → ℝ) : Prop :=
@@ -538,6 +602,91 @@ theorem higham11_3_fl_blockLDLT_all_oneByOne_bound (fp : FPModel)
         |(∑ k₁, ∑ k₂, L I k₁ * D k₁ k₂ * L J k₂) - A I J|
           ≤ higham11_3_fl_allOneByOneBound fp n A I J :=
   fl_blockLDLT_all_oneByOne_bound fp hval n A hp
+
+/-- The recursive raw-Schur all-`1 × 1` block-LDLᵀ envelope is nonnegative. -/
+theorem higham11_3_fl_allOneByOneBound_nonneg (fp : FPModel)
+    (hval : gammaValid fp 3) :
+    ∀ (n : ℕ) (A : Fin n → Fin n → ℝ) (I J : Fin n),
+      0 ≤ higham11_3_fl_allOneByOneBound fp n A I J := by
+  intro n
+  induction n with
+  | zero =>
+      intro A I
+      exact Fin.elim0 I
+  | succ n ih =>
+      intro A I J
+      exact
+        higham11_3_fl_oneByOneStageBound_nonneg n fp A
+          (higham11_3_fl_allOneByOneBound fp n
+            (higham11_3_fl_schurCompl n fp A))
+          hval
+          (fun i j => ih (higham11_3_fl_schurCompl n fp A) i j)
+          I J
+
+/-- **Theorem 11.3 all-`1 × 1` source-facing package**, stored-symmetric path:
+the recursive stored-symmetric floating-point factorization bound supplies the
+explicit factorization perturbations required by the Chapter 11 source
+interface, with zero used for the second perturbation. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne
+    (fp : FPModel) (hval : gammaValid fp 3) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hsym : ∀ i j, A i j = A j i)
+    (hp : higham11_3_FlStoredAllOnePivots fp n A) :
+    ∃ L_hat D_hat : Fin n → Fin n → ℝ,
+      ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+        (∀ i j : Fin n,
+          |ΔA1 i j| ≤ higham11_3_fl_storedAllOneByOneBound fp n A i j) ∧
+        (∀ i j : Fin n,
+          |ΔA2 i j| ≤ higham11_3_fl_storedAllOneByOneBound fp n A i j) ∧
+        (∀ i j : Fin n,
+          ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+            L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+          A i j + ΔA1 i j) := by
+  obtain ⟨L_hat, D_hat, hLD⟩ :=
+    higham11_3_fl_blockLDLT_stored_all_oneByOne_bound fp hval n A hsym hp
+  let ΔA1 : Fin n → Fin n → ℝ := fun i j =>
+    (∑ k₁ : Fin n, ∑ k₂ : Fin n,
+      L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂) - A i j
+  let ΔA2 : Fin n → Fin n → ℝ := fun _ _ => 0
+  refine ⟨L_hat, D_hat, ΔA1, ΔA2, ?_, ?_, ?_⟩
+  · intro i j
+    exact hLD i j
+  · intro i j
+    simpa [ΔA2] using
+      higham11_3_fl_storedAllOneByOneBound_nonneg fp hval n A i j
+  · intro i j
+    simp [ΔA1]
+
+/-- **Theorem 11.3 all-`1 × 1` source-facing package**, raw-Schur path:
+the recursive rounded all-`1 × 1` factorization bound supplies the explicit
+factorization perturbations required by the Chapter 11 source interface, with
+zero used for the second perturbation. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne
+    (fp : FPModel) (hval : gammaValid fp 3) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hp : higham11_3_FlAllOneSymmetricPivots fp n A) :
+    ∃ L_hat D_hat : Fin n → Fin n → ℝ,
+      ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+        (∀ i j : Fin n,
+          |ΔA1 i j| ≤ higham11_3_fl_allOneByOneBound fp n A i j) ∧
+        (∀ i j : Fin n,
+          |ΔA2 i j| ≤ higham11_3_fl_allOneByOneBound fp n A i j) ∧
+        (∀ i j : Fin n,
+          ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+            L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+          A i j + ΔA1 i j) := by
+  obtain ⟨L_hat, D_hat, hLD⟩ :=
+    higham11_3_fl_blockLDLT_all_oneByOne_bound fp hval n A hp
+  let ΔA1 : Fin n → Fin n → ℝ := fun i j =>
+    (∑ k₁ : Fin n, ∑ k₂ : Fin n,
+      L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂) - A i j
+  let ΔA2 : Fin n → Fin n → ℝ := fun _ _ => 0
+  refine ⟨L_hat, D_hat, ΔA1, ΔA2, ?_, ?_, ?_⟩
+  · intro i j
+    exact hLD i j
+  · intro i j
+    simpa [ΔA2] using higham11_3_fl_allOneByOneBound_nonneg fp hval n A i j
+  · intro i j
+    simp [ΔA1]
 
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
