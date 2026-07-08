@@ -9909,6 +9909,45 @@ def IsSylvesterQuasiSchurGeneratedStepFormula (m n : Nat)
         Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
           (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inr i)))
 
+/-- Column-family packaging for
+    `IsSylvesterQuasiSchurGeneratedStepFormula`.  A recursive construction often
+    maintains state as `Fin n -> Fin m -> Real`; this wrapper turns singleton
+    and block formulas for that state into the existing `RMatFn` predicate. -/
+theorem isSylvesterQuasiSchurGeneratedStepFormula_of_column_family
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (x : Fin n -> Fin m -> Real)
+    (pmap : Fin n -> Nat)
+    (hsingle : forall p : Fin n,
+      (forall q : Fin n, q.val + 1 = p.val -> Not (pmap q = pmap p)) ->
+      (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) ->
+      forall i : Fin m,
+        x p i =
+          Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+            (fun i => C i p +
+              Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                (fun j => S j p * x j i)) i)
+    (hblock : forall p q : Fin n,
+      q.val = p.val + 1 ->
+      pmap p = pmap q ->
+      (forall i : Fin m,
+        x p i =
+          Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+            (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+            (Sum.inl i)) /\
+      (forall i : Fin m,
+        x q i =
+          Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+            (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+            (Sum.inr i))) :
+    IsSylvesterQuasiSchurGeneratedStepFormula m n R S C
+      (fun i j => x j i) pmap := by
+  constructor
+  · intro p hprev hnext i
+    exact hsingle p hprev hnext i
+  · intro p q hpq hsame
+    exact hblock p q hpq hsame
+
 /-- Predicate-packaged version of
     `sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_generated_frontier_step_oracle`. -/
 theorem sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_generated_step_formula
