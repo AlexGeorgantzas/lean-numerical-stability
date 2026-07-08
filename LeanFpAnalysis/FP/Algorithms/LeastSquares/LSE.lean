@@ -9123,6 +9123,66 @@ theorem theorem20_7_compactStepSlack_coeff_bound_nat
   simp [theorem20_7_compactStepSlack]
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    combined exact-growth plus compact-update scalar factor for one active-tail
+    signed stored-QR step. -/
+noncomputable def theorem20_7_compactActiveStepFactor
+    (fp : FPModel) (m : ℕ) : ℝ :=
+  H19.Theorem19_6.active_row_growth_factor m +
+    (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+      Real.sqrt (m : ℝ)
+
+/-- The combined active-plus-compact step factor is nonnegative under the usual
+    compact Householder roundoff guard. -/
+theorem theorem20_7_compactActiveStepFactor_nonneg
+    (fp : FPModel) (m : ℕ) (hmfp : gammaValid fp m) :
+    0 ≤ theorem20_7_compactActiveStepFactor fp m := by
+  have hactive : 0 ≤ H19.Theorem19_6.active_row_growth_factor m :=
+    H19.Theorem19_6.active_row_growth_factor_nonneg m
+  have hcoeff : 0 ≤ fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m := by
+    have hfac : 0 ≤ householderCompactNormBudgetCoeffFactor fp m :=
+      householderCompactNormBudgetCoeffFactor_nonneg fp m hmfp
+    have hu : 0 ≤ fp.u := fp.u_nonneg
+    nlinarith
+  exact
+    add_nonneg hactive (mul_nonneg hcoeff (Real.sqrt_nonneg _))
+
+/-- The combined active-plus-compact scalar factor implies the concrete compact
+    slack recurrence used by the active-tail all-entry wrapper.
+
+This is only an algebraic reduction: the hard remaining scalar condition is the
+product inequality for `theorem20_7_compactActiveStepFactor`. -/
+theorem theorem20_7_compactStepSlack_recurrence_of_compactActiveStepFactor_bound_nat
+    {m n : ℕ} (fp : FPModel) (err : ℝ)
+    (hfactor :
+      ∀ i : Fin m, i.val + 1 < n →
+        theorem20_7_compactActiveStepFactor fp m *
+            (Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+          theorem20_7_compactStepSlack fp m err i.val ≤
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err := by
+  intro i hi
+  have hleft :
+      H19.Theorem19_6.active_row_growth_factor m *
+            (Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+          theorem20_7_compactStepSlack fp m err i.val =
+        theorem20_7_compactActiveStepFactor fp m *
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) := by
+    simp [theorem20_7_compactStepSlack,
+      theorem20_7_compactActiveStepFactor]
+    ring
+  rw [hleft]
+  exact hfactor i hi
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-tail source-initial all-entry wrapper with the concrete compact
     scalar slack inlined.
 
