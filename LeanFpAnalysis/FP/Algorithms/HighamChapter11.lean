@@ -691,6 +691,62 @@ abbrev higham11_6_BunchTridiagonalPivotChoice
     (σ a11 a21 : ℝ) (s : PivotSize) : Prop :=
   BunchTridiagonalPivotChoice σ a11 a21 s
 
+/-- **Algorithm 11.6**, one-by-one branch threshold extraction. -/
+theorem higham11_6_tridiagonal_pivot_choice_one_threshold (σ a11 a21 : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one) :
+    σ * |a11| ≥ higham11_6_bunchTridiagonalAlpha * a21 ^ 2 :=
+  bunch_tridiagonal_pivot_choice_one_threshold σ a11 a21 hchoice
+
+/-- **Algorithm 11.6**, two-by-two branch threshold extraction. -/
+theorem higham11_6_tridiagonal_pivot_choice_two_threshold (σ a11 a21 : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two) :
+    σ * |a11| < higham11_6_bunchTridiagonalAlpha * a21 ^ 2 :=
+  bunch_tridiagonal_pivot_choice_two_threshold σ a11 a21 hchoice
+
+/-- **Algorithm 11.6**, constructor for the one-by-one branch from the printed
+threshold test. -/
+theorem higham11_6_tridiagonal_pivot_choice_one_of_threshold (σ a11 a21 : ℝ)
+    (hthreshold : σ * |a11| ≥ higham11_6_bunchTridiagonalAlpha * a21 ^ 2) :
+    higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one :=
+  bunch_tridiagonal_pivot_choice_one_of_threshold σ a11 a21 hthreshold
+
+/-- **Algorithm 11.6**, constructor for the two-by-two branch from the printed
+strict threshold test. -/
+theorem higham11_6_tridiagonal_pivot_choice_two_of_threshold (σ a11 a21 : ℝ)
+    (hthreshold : σ * |a11| < higham11_6_bunchTridiagonalAlpha * a21 ^ 2) :
+    higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two :=
+  bunch_tridiagonal_pivot_choice_two_of_threshold σ a11 a21 hthreshold
+
+/-- **Algorithm 11.6**, one-by-one branch nonsingularity: if the neighboring
+offdiagonal entry is nonzero, the accepted scalar pivot is nonzero. -/
+theorem higham11_6_tridiagonal_pivot_choice_one_a11_ne_zero_of_a21_ne_zero
+    (σ a11 a21 : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one)
+    (ha21 : a21 ≠ 0) :
+    a11 ≠ 0 :=
+  bunch_tridiagonal_pivot_choice_one_a11_ne_zero_of_a21_ne_zero σ a11 a21
+    hchoice ha21
+
+/-- **Algorithm 11.6**, two-by-two branch nonsingularity with a nonnegative
+left-hand side in the pivot test. -/
+theorem higham11_6_tridiagonal_pivot_choice_two_a21_ne_zero_of_left_nonneg
+    (σ a11 a21 : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hleft_nonneg : 0 ≤ σ * |a11|) :
+    a21 ≠ 0 :=
+  bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_left_nonneg σ a11 a21
+    hchoice hleft_nonneg
+
+/-- **Algorithm 11.6**, two-by-two branch nonsingularity when `σ` is
+nonnegative. -/
+theorem higham11_6_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg
+    (σ a11 a21 : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσ : 0 ≤ σ) :
+    a21 ≠ 0 :=
+  bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg σ a11 a21
+    hchoice hσ
+
 /-- **Equation (11.8)** source predicate: unpermuted block LDL^T
 factorization for a symmetric tridiagonal matrix. -/
 abbrev higham11_8_tridiagonalBlockLDLTSpec (n : ℕ)

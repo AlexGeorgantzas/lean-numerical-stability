@@ -1314,6 +1314,81 @@ def BunchTridiagonalPivotChoice
   (σ * |a11| ≥ bunchTridiagonalAlpha * a21 ^ 2 ∧ s = PivotSize.one) ∨
   (σ * |a11| < bunchTridiagonalAlpha * a21 ^ 2 ∧ s = PivotSize.two)
 
+/-- The one-by-one branch of Algorithm 11.6 exposes the printed threshold
+inequality. -/
+theorem bunch_tridiagonal_pivot_choice_one_threshold (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one) :
+    σ * |a11| ≥ bunchTridiagonalAlpha * a21 ^ 2 := by
+  rcases hchoice with hchoice | hchoice
+  · exact hchoice.1
+  · cases hchoice.2
+
+/-- The two-by-two branch of Algorithm 11.6 exposes the strict printed
+threshold inequality. -/
+theorem bunch_tridiagonal_pivot_choice_two_threshold (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two) :
+    σ * |a11| < bunchTridiagonalAlpha * a21 ^ 2 := by
+  rcases hchoice with hchoice | hchoice
+  · cases hchoice.2
+  · exact hchoice.1
+
+/-- The printed non-strict threshold certifies the one-by-one branch of
+Algorithm 11.6. -/
+theorem bunch_tridiagonal_pivot_choice_one_of_threshold (σ a11 a21 : ℝ)
+    (hthreshold : σ * |a11| ≥ bunchTridiagonalAlpha * a21 ^ 2) :
+    BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one :=
+  Or.inl ⟨hthreshold, rfl⟩
+
+/-- The printed strict threshold certifies the two-by-two branch of
+Algorithm 11.6. -/
+theorem bunch_tridiagonal_pivot_choice_two_of_threshold (σ a11 a21 : ℝ)
+    (hthreshold : σ * |a11| < bunchTridiagonalAlpha * a21 ^ 2) :
+    BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two :=
+  Or.inr ⟨hthreshold, rfl⟩
+
+/-- In the one-by-one branch, a nonzero adjacent offdiagonal entry forces the
+accepted scalar pivot to be nonzero.  This is the local nonsingularity fact used
+when the tridiagonal factorization step divides by `a11`. -/
+theorem bunch_tridiagonal_pivot_choice_one_a11_ne_zero_of_a21_ne_zero
+    (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one)
+    (ha21 : a21 ≠ 0) :
+    a11 ≠ 0 := by
+  have hthreshold :=
+    bunch_tridiagonal_pivot_choice_one_threshold σ a11 a21 hchoice
+  have hsquare : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have hright_pos : 0 < bunchTridiagonalAlpha * a21 ^ 2 :=
+    mul_pos bunch_tridiagonal_alpha_pos hsquare
+  have hleft_pos : 0 < σ * |a11| := lt_of_lt_of_le hright_pos hthreshold
+  intro ha11
+  rw [ha11] at hleft_pos
+  simp at hleft_pos
+
+/-- In the two-by-two branch, if the left side of the printed comparison is
+nonnegative, the accepted offdiagonal pivot is nonzero. -/
+theorem bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_left_nonneg
+    (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hleft_nonneg : 0 ≤ σ * |a11|) :
+    a21 ≠ 0 := by
+  have hthreshold :=
+    bunch_tridiagonal_pivot_choice_two_threshold σ a11 a21 hchoice
+  have hright_pos : 0 < bunchTridiagonalAlpha * a21 ^ 2 :=
+    lt_of_le_of_lt hleft_nonneg hthreshold
+  intro ha21
+  rw [ha21] at hright_pos
+  simp at hright_pos
+
+/-- A source-shaped variant of the two-by-two branch nonsingularity fact when
+`σ` is known nonnegative. -/
+theorem bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg
+    (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσ : 0 ≤ σ) :
+    a21 ≠ 0 :=
+  bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_left_nonneg σ a11 a21
+    hchoice (mul_nonneg hσ (abs_nonneg a11))
+
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
 -- ============================================================
