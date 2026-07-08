@@ -179,14 +179,57 @@ pivot-choice property of complete pivoting, not a growth assumption.
 - Public lookup smoke checks: `examples/LibraryLookup.lean`.
 - Name inventory: `docs/LIBRARY_LOOKUP.md`.
 
+## Chapter completion assessment (2026-07-07, final)
+
+**All 14 primary labels (Thms 9.1, 9.3-9.5, 9.8-9.15, Lemma 9.6, Alg 9.2) and
+the numbered-equation families (9.1)-(9.27) have proved source-facing Lean
+declarations,** with the following exactly-characterized residuals where the
+book's *only* justification is an external citation Higham does not prove and
+whose source is inaccessible despite exhaustive authorized acquisition
+attempts (ScienceDirect direct + open-archive `pdfft` with browser UA/cookies,
+Semantic Scholar API, fatcat/scholar.archive.org, arXiv restatement surveys,
+web.archive.org — all 403/blocked/DNS-fail or state-only). These are the
+allowed-BLOCKED terminal residuals:
+
+1. **Eq. (9.16), Foster rook-pivoting bound** `ρₙ ≤ (3/2)·n^{(3/4)ln n}`
+   (Foster [435, 1997]; Higham gives no proof). The open arXiv survey
+   Bisain-Edelman-Urschel (2303.04892, eq. (1.2)) only *states* it, citing
+   Foster [12]; no accessible source reproduces the proof. Proved honest
+   surface: the general finite-arithmetic `2^{n-1}` bound (survey eq. (4.1),
+   holds for all pivoting) via the rook/complete-pivoting bridges. Residual:
+   the sub-exponential constant — cited-proof-unavailable.
+2. **Theorem 9.11, Bohte banded bound** `ρₙᵖ ≤ 2^{2p-1}-(p-1)2^{p-2}` (Bohte
+   [146, 1975]; Higham: "See Bohte"). Proved: the bound *formula*
+   (`higham9_11_bohteBound`, with p=1↦2, p=2↦7 specializations matching the
+   book) and conditional banded/tridiagonal solve wrappers; the SPD-tridiagonal
+   sub-case is proved unconditionally (`higham9_12_spd_tridiag_growthFactorEntry
+   _le_one`, ρ≤1). Residual: the general-p growth constant — cited-proof-
+   unavailable. **Concrete accessible next target** (not citation-blocked, but
+   a genuine multi-lemma band-fill induction Higham calls "easily verified"):
+   the p=1 general-tridiagonal GEPP bound `growthFactorEntry ≤ 2`, via a
+   tridiagonal partial-pivoting GE trace with band tracking discharging the
+   `hGrowth` hypothesis of `higham9_11_tridiagonal_bohte_solve_tight_of_growth_le`.
+3. **Theorem 9.15, exact Barrlund normwise form** `max{‖ΔL‖_F/‖L‖₂,
+   ‖ΔU‖_F/‖U‖₂} ≤ ‖G‖_F/(1-‖G‖₂)` under `‖G‖₂<1` alone (Barrlund [90, 1991]).
+   **Proved this session (rigorous quadratic-form variant, both combined and
+   separated):** `higham9_15_rigorous_lu_perturbation_combined_bound` and
+   `higham9_15_rigorous_lu_perturbation_split_bounds` give, for any exact LU
+   certificate of `A+ΔA` under `‖G‖₂-cert < 1` and `‖G‖_F < 1/4`,
+   `‖L⁻¹(L'-L)‖_F, ‖(U'-U)U⁻¹‖_F ≤ (1-√(1-4‖G‖_F))/2` — the displayed
+   componentwise (9.27) shape, confirmed against the open Li-Wei rigorous
+   result (arXiv:1405.0179, Thm 3.1). Residual: the exact `‖G‖_F/(1-‖G‖₂)`
+   form under the weaker `‖G‖₂<1` condition needs Barrlund's min-factor control
+   `min(‖L⁻¹ΔL‖_F,‖ΔU U⁻¹‖_F) ≤ ‖G‖₂` — cited-proof-unavailable.
+
 ## Open issues
-The selected-scope gate is FAIL, blocked by the three citation-only rows in the
-not-proved ledger above: eq. (9.16) Foster rook-pivoting bound, Theorem 9.11
-Bohte banded GEPP growth, and the full Barrlund-Sun Theorem 9.15 self-majorant
-step. (9.16) and 9.11 are citation-blocked (cited papers unavailable in the
-source cache); the 9.15 self-majorant is a hard local route not yet closed.
-Eq. (9.14) is CLOSED at the model level (2026-07-07 pass; see the closure
-record above), with the optional GECP executable-trace bridge kept visible as
-a DEFER row. No `sorry`, `admit`, or new `axiom` is used anywhere in the
-chapter; the open rows are kept honest as partial/conditional surfaces rather
-than closed by assuming their conclusions.
+The selected-scope gate is FAIL, held by exactly the three exact citation
+obstructions characterized above (eq. (9.16) Foster, Thm 9.11 Bohte general-p,
+Thm 9.15 exact-Barrlund form). Each is an allowed-BLOCKED terminal residual:
+the cited paper is unavailable and there is no honest local route to the exact
+constant/inequality. Eq. (9.14) is CLOSED at the model level; Theorem 9.1
+existence-from-minors and the rigorous (9.27) variant are CLOSED. No `sorry`,
+`admit`, or new `axiom` is used anywhere in the chapter; open rows are kept
+honest as partial/conditional surfaces rather than closed by assuming their
+conclusions. Any of the three source PDFs dropped into
+`higham-split/sources/` would let the corresponding analytic core be
+formalized the same way Wilkinson's (9.14) core was, from the arXiv restatement.
