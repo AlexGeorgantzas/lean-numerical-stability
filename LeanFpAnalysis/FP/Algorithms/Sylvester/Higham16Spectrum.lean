@@ -10017,6 +10017,83 @@ def IsSylvesterQuasiSchurGeneratedStepFormula (m n : Nat)
         Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
           (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inr i)))
 
+/-- Prefix form of the generated Bartels-Stewart column formulas for a
+    recursive column-family state.  The predicate records that every singleton
+    or adjacent same-block formula whose active columns lie strictly before the
+    natural-number frontier `N` has already been established. -/
+def IsSylvesterColumnFamilyGeneratedPrefix (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (x : Fin n -> Fin m -> Real)
+    (pmap : Fin n -> Nat) (N : Nat) : Prop :=
+  (forall p : Fin n, p.val < N ->
+    (forall q : Fin n, q.val + 1 = p.val -> Not (pmap q = pmap p)) ->
+    (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) ->
+    forall i : Fin m,
+      x p i =
+        Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+          (fun i => C i p +
+            Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+              (fun j => S j p * x j i)) i) /\
+  (forall p q : Fin n, p.val < N -> q.val < N ->
+    q.val = p.val + 1 ->
+    pmap p = pmap q ->
+    (forall i : Fin m,
+      x p i =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+          (Sum.inl i)) /\
+    (forall i : Fin m,
+      x q i =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+          (Sum.inr i)))
+
+/-- Empty generated-prefix base case. -/
+theorem isSylvesterColumnFamilyGeneratedPrefix_zero
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (x : Fin n -> Fin m -> Real)
+    (pmap : Fin n -> Nat) :
+    IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap 0 := by
+  constructor
+  · intro p hp _ _ _
+    omega
+  · intro p q hp _ _ _
+    omega
+
+/-- A generated-prefix certificate can be restricted to any earlier frontier. -/
+theorem isSylvesterColumnFamilyGeneratedPrefix_mono
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (x : Fin n -> Fin m -> Real)
+    (pmap : Fin n -> Nat) {M N : Nat}
+    (hMN : M <= N)
+    (hprefix : IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap N) :
+    IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap M := by
+  rcases hprefix with ⟨hsingle, hblock⟩
+  constructor
+  · intro p hp hprev hnext i
+    exact hsingle p (by omega) hprev hnext i
+  · intro p q hp hq hpq hsame
+    exact hblock p q (by omega) (by omega) hpq hsame
+
+/-- A generated-prefix certificate through frontier `n` supplies the full
+    generated-step formula predicate for the corresponding `RMatFn`. -/
+theorem isSylvesterQuasiSchurGeneratedStepFormula_of_column_family_generated_prefix
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (x : Fin n -> Fin m -> Real)
+    (pmap : Fin n -> Nat)
+    (hprefix : IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap n) :
+    IsSylvesterQuasiSchurGeneratedStepFormula m n R S C
+      (fun i j => x j i) pmap := by
+  rcases hprefix with ⟨hsingle, hblock⟩
+  constructor
+  · intro p hprev hnext i
+    exact hsingle p p.isLt hprev hnext i
+  · intro p q hpq hsame
+    exact hblock p q p.isLt q.isLt hpq hsame
+
 /-- Column-family packaging for
     `IsSylvesterQuasiSchurGeneratedStepFormula`.  A recursive construction often
     maintains state as `Fin n -> Fin m -> Real`; this wrapper turns singleton
