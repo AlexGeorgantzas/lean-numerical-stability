@@ -10337,6 +10337,75 @@ theorem isSylvesterColumnFamilyGeneratedPrefix_after_two_column_update
         exact sylvesterTwoColumnBlock_formula_of_column_family_block_update
           m n R S C x p q hpq
 
+/-- A supplied generated frontier schedule constructs a terminal recursive
+    column-family state satisfying all generated singleton and adjacent-block
+    formulas.  This is the noncomputable existence form of the scheduled
+    Bartels-Stewart candidate; it is still exact arithmetic and does not model
+    rounded residuals or estimator data. -/
+theorem exists_isSylvesterColumnFamilyGeneratedPrefix_of_frontier_schedule
+    (m n r : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hstart : frontier 0 = 0) (hend : frontier r = n)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val + 1 = p.val -> pmap q ≠ pmap p) /\
+        (forall q : Fin n, q.val = p.val + 1 -> pmap p ≠ pmap q))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q)) :
+    exists x : Fin n -> Fin m -> Real,
+      IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap n := by
+  have hstates : forall t : Nat, t <= r ->
+      exists x : Fin n -> Fin m -> Real,
+        IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap (frontier t) := by
+    intro t
+    induction t with
+    | zero =>
+        intro _ht
+        refine ⟨fun _ _ => 0, ?_⟩
+        simpa [hstart] using
+          isSylvesterColumnFamilyGeneratedPrefix_zero
+            m n R S C (fun _ _ => 0) pmap
+    | succ t ih =>
+        intro ht
+        have htlt : t < r := by omega
+        rcases ih (by omega) with ⟨x, hprefix⟩
+        rcases hstep t htlt with hsingle | hblock
+        · rcases hsingle with ⟨p, hp, hfront, hprev, _hnext⟩
+          let xp : Fin m -> Real :=
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => C i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * x j i))
+          let xNew : Fin n -> Fin m -> Real := Function.update x p xp
+          refine ⟨xNew, ?_⟩
+          have hprefix' :=
+            isSylvesterColumnFamilyGeneratedPrefix_after_singleton_update
+              m n R S C x pmap (frontier t) p hp hprefix hprev
+          simpa [xNew, xp, hfront] using hprefix'
+        · rcases hblock with ⟨p, q, hp, hq, hfront, hsame⟩
+          let z : Sum (Fin m) (Fin m) -> Real :=
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+          let xNew : Fin n -> Fin m -> Real :=
+            Function.update (Function.update x p (fun i => z (Sum.inl i))) q
+              (fun i => z (Sum.inr i))
+          refine ⟨xNew, ?_⟩
+          have hprefix' :=
+            isSylvesterColumnFamilyGeneratedPrefix_after_two_column_update
+              m n R S C x pmap (frontier t) p q hp hq hcard hsame hprefix
+          simpa [xNew, z, hfront] using hprefix'
+  rcases hstates r le_rfl with ⟨x, hprefix⟩
+  exact ⟨x, by simpa [hend] using hprefix⟩
+
 /-- Column-family packaging for
     `IsSylvesterQuasiSchurGeneratedStepFormula`.  A recursive construction often
     maintains state as `Fin n -> Fin m -> Real`; this wrapper turns singleton
