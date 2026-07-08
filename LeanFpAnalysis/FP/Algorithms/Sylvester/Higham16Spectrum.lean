@@ -5046,6 +5046,24 @@ theorem sylvesterTriangularShiftedCoeff_det_ne_zero_of_singleton_global_no_commo
     ((sylvesterVecCoeff_one_det_eq_sylvesterTriangularShiftedCoeff_det
       m A (T k k)).trans hdet)
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6): a singleton block in a
+    block-triangular Schur factor inherits shifted determinant nonsingularity
+    from nonsingularity of the global vec/Kronecker Sylvester coefficient. -/
+theorem sylvesterTriangularShiftedCoeff_det_ne_zero_of_singleton_global_vecCoeff_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (k : Fin n)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hsingle : forall i : Fin n, pmap i = pmap k -> i = k)
+    (hdetGlobal : Not (Matrix.det (sylvesterVecCoeff m n A T) = 0)) :
+    Not (Matrix.det (sylvesterTriangularShiftedCoeff m A (T k k)) = 0) := by
+  exact
+    sylvesterTriangularShiftedCoeff_det_ne_zero_of_singleton_global_no_common_complex_right_eigenvalue_left
+      m n A T pmap k hzero hsingle
+      (by
+        simpa [Matrix.of_apply] using
+          no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
+            m n A T hdetGlobal)
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6): supplied real orthogonal
     Schur factorizations transport original-coordinate no-common-complex-right
     eigenvalue data to the Schur-coordinate singleton shifted determinant. -/
@@ -5073,6 +5091,28 @@ theorem sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_si
     sylvesterTriangularShiftedCoeff_det_ne_zero_of_singleton_global_no_common_complex_right_eigenvalue_left
       m n R S pmap k hzero hsingle
       (by simpa [Matrix.of_apply] using hnoRS)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6): supplied real orthogonal
+    Schur factorizations transport original-coordinate vec/Kronecker
+    determinant nonsingularity to the Schur-coordinate singleton shifted
+    determinant. -/
+theorem sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_singleton_vecCoeff_det_ne_zero
+    (m n : Nat)
+    (U R Aorig : RMatFn m m) (V S Borig : RMatFn n n)
+    (pmap : Fin n -> Nat) (k : Fin n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : Aorig = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : Borig = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hsingle : forall i : Fin n, pmap i = pmap k -> i = k)
+    (hdetOrig :
+      Not (Matrix.det (sylvesterVecCoeff m n Aorig Borig) = 0)) :
+    Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0) := by
+  exact
+    sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_singleton_no_common_complex_right_eigenvalue
+      m n U R Aorig V S Borig pmap k hU hV hA hB hzero hsingle
+      (no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
+        m n Aorig Borig hdetOrig)
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): full Schur-factor
     no-common-complex-right-eigenvalue version of the constructed
@@ -5104,6 +5144,32 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_g
       m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral
       (noCommonComplexRightEigenvalue_of_sameBlock_twoBlock_quasiSchur
         m n A T pmap p q hcard hBT hpq_adj hsame hnoGlobal)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): global
+    vec/Kronecker determinant nonsingularity is a source-level way to supply
+    the no-common-complex spectrum certificate needed by the same-block
+    two-block determinant route. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_global_vecCoeff_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of T) pmap)
+    (hdetGlobal : Not (Matrix.det (sylvesterVecCoeff m n A T) = 0)) :
+    IsAdjacentQuasiTriangularBlockFn n T p q /\
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  exact
+    sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+      m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral
+      (by
+        simpa [Matrix.of_apply] using
+          no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
+            m n A T hdetGlobal)
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): supplied real
     orthogonal Schur factorizations transport original-coordinate
@@ -5140,6 +5206,35 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_fac
     sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
       m n R S pmap p q hmono hcard hzero hpq_adj hsame hspectral
       (by simpa [Matrix.of_apply] using hnoRS)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): supplied real
+    orthogonal Schur factorizations plus original-coordinate vec/Kronecker
+    determinant nonsingularity give the active same-block two-column
+    determinant certificate. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_factors_twoBlockSpectral_global_vecCoeff_det_ne_zero
+    (m n : Nat)
+    (U R Aorig : RMatFn m m) (V S Borig : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : Aorig = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : Borig = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hdetOrig :
+      Not (Matrix.det (sylvesterVecCoeff m n Aorig Borig) = 0)) :
+    IsAdjacentQuasiTriangularBlockFn n S p q /\
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n R S p q) = 0) := by
+  exact
+    sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+      m n U R Aorig V S Borig pmap p q hU hV hA hB hmono hcard hzero
+      hpq_adj hsame hspectral
+      (no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
+        m n Aorig Borig hdetOrig)
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): automatic
     real-quasi-Schur factor package for active `B`-side two-column blocks.
@@ -5191,6 +5286,42 @@ theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_
     under no-common complex spectrum. -/
 alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_no_common_complex_right_eigenvalue :=
   sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_no_common_complex_right_eigenvalue
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): automatic
+    real-quasi-Schur active-block determinant package from nonsingularity of
+    the original vec/Kronecker Sylvester coefficient. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0)) :
+    exists (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) /\
+      (forall i j : Fin m, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      (forall p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsAdjacentQuasiTriangularBlockFn n S p q /\
+          Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n R S p q) = 0)) := by
+  exact
+    sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_no_common_complex_right_eigenvalue
+      m n A B
+      (no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
+        m n A B hdet)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-numbered
+    alias for the automatic active-block determinant package from vec
+    coefficient nonsingularity. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_det_ne_zero :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_det_ne_zero
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     determinant-shaped complex-separation route from a negative real
@@ -12158,6 +12289,88 @@ theorem H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_sche
     ExistsUnique (IsSylvesterSolutionRect m n A B C) :=
   existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_no_common_generated_step_formula_witness
     m n A B C hnoOrig
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    recursive-candidate witness from nonsingularity of the original
+    vec/Kronecker Sylvester coefficient. -/
+theorem exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0)) :
+    exists (U R : RMatFn m m) (V S : RMatFn n n)
+        (pA : Fin m -> Nat) (pB : Fin n -> Nat) (X : RMatFn m n),
+      IsOrthogonal m U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) /\
+      (forall i j : Fin m, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_no_common
+    m n A B C
+    (no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
+      m n A B hdet)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    recursive-candidate unique solvability from nonsingularity of the original
+    vec/Kronecker Sylvester coefficient. -/
+theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_det_ne_zero_generated_step_formula_witness
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_no_common_generated_step_formula_witness
+    m n A B C
+    (no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
+      m n A B hdet)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-numbered
+    alias for the internally chosen real-Schur recursive generated-step
+    witness from vec coefficient nonsingularity. -/
+theorem H16_eq16_4_8_exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0)) :
+    exists (U R : RMatFn m m) (V S : RMatFn n n)
+        (pA : Fin m -> Nat) (pB : Fin n -> Nat) (X : RMatFn m n),
+      IsOrthogonal m U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) /\
+      (forall i j : Fin m, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_det_ne_zero
+    m n A B C hdet
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-numbered
+    alias for original-coordinate unique solvability via internally chosen
+    real-Schur factors and vec coefficient nonsingularity. -/
+theorem H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_det_ne_zero_generated_step_formula_witness
+    m n A B C hdet
 
 /-- Any exact Schur-coordinate solution satisfies the generated-step formula
     oracle when the real quasi-Schur block map and original no-common spectrum
