@@ -13661,6 +13661,15 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_16_fosterT_one
 #check higham9_16_fosterT_pos
 #check higham9_16_fosterT_succ
+#check higham9_16_sqrt_pow
+#check higham9_16_prod_fosterStageConst
+#check higham9_16_fosterS_lt_sqrt
+#check higham9_16_sqrt_ratio_lt_one_add_fosterS
+#check higham9_16_bernoulli_pow_ratio
+#check higham9_16_fosterStageConst_succ_le
+#check higham9_16_fosterS_succ_lt
+#check higham9_16_fosterS_two
+#check higham9_16_fosterS_le_one
 #check higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowth_le
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowthValue_le

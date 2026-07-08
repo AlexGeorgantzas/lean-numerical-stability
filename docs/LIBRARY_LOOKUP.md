@@ -2045,6 +2045,15 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_fosterS_spec` / `higham9_16_fosterS_eq` / `higham9_16_fosterS_unique` / `higham9_16_fosterS_nonneg` / `higham9_16_fosterS_pos` / `higham9_16_fosterS_one`
 - `higham9_16_fosterT` (Foster eq. (7) bound `t_n = s_1(1+s_2)⋯(1+s_n)`)
 - `higham9_16_fosterT_one` / `higham9_16_fosterT_pos` / `higham9_16_fosterT_succ`
+- `higham9_16_sqrt_pow` (`sqrt(x^k) = (sqrt x)^k`)
+- `higham9_16_prod_fosterStageConst` (telescoping `C_1⋯C_n = sqrt(n^n)`)
+- `higham9_16_fosterS_lt_sqrt` (Foster Lemma A.1: `s_k < sqrt k` for `k >= 2`)
+- `higham9_16_sqrt_ratio_lt_one_add_fosterS` (`sqrt(k/(k-1)) < 1 + s_k`)
+- `higham9_16_bernoulli_pow_ratio` (`(k+1)^(k+1)(k-1)^k < k^(2k+1)`, via Bernoulli)
+- `higham9_16_fosterStageConst_succ_le` (`C_(k+1) <= sqrt(k/(k-1)) C_k`)
+- `higham9_16_fosterS_succ_lt` (Foster Lemma A.1 (A.1): `s_(k+1) < s_k` for `k >= 2`, derivative-free)
+- `higham9_16_fosterS_two` (`s_2 = 1`)
+- `higham9_16_fosterS_le_one` (`s_k <= 1` for `k >= 1`)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
