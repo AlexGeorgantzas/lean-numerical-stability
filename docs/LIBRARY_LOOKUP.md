@@ -2106,6 +2106,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_le_fosterPStar_iff` (shifted-root comparison = shifted-stage comparison)
 - `higham9_16_fosterPStar_ge_tail_iff` (**in-band characterization**: `P <= p*(P) ↔ P <= q^(j+1)`)
 - `higham9_16_fosterBandValue_inband_antitone` (**Foster (A.17), derivative-free**: within a band, the (A.7) value `1+jP+p*(P)` is antitone in the tail — division chain + two zones via the phi toolkit)
+- `higham9_16_fosterQ_le_iff` / `higham9_16_fosterPStar_le_iff` (mirrored root/stage comparisons)
+- `higham9_16_fosterPStar_le_tail_iff` (mirrored in-band characterization `p*(P) <= P ↔ q^(j+1) <= P`)
+- `higham9_16_fosterBandIdx_mono` (band index monotone in the tail)
+- `higham9_16_fosterPStar_at_edge` (**band-edge value**: at `e = q^(j+1)` the band-(j+1) shifted root is `s_(K-j-1)·(1+(j+1)e)` — the gluing input, via the σ-substitution and `fosterS` uniqueness)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`

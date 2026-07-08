@@ -13746,6 +13746,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_16_le_fosterPStar_iff
 #check higham9_16_fosterPStar_ge_tail_iff
 #check higham9_16_fosterBandValue_inband_antitone
+#check higham9_16_fosterQ_le_iff
+#check higham9_16_fosterPStar_le_iff
+#check higham9_16_fosterPStar_le_tail_iff
+#check higham9_16_fosterBandIdx_mono
+#check higham9_16_fosterPStar_at_edge
 #check higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowth_le
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowthValue_le
