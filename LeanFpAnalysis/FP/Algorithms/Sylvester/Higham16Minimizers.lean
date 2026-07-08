@@ -1395,6 +1395,45 @@ theorem sylvester_practical_error_bound_fl_of_left_inverse (fp : FPModel)
       hXhat
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), spectral-separation floating-point residual endpoint:
+    if the entrywise complexifications of `A` and `B` have no common supplied
+    complex right eigenvalue, then the floating-point residual computation
+    `flSylvesterResidualRect` and budget `flSylvesterResidualBudget` feed the
+    practical relative max-entry forward-error bound.  Scope: this models only
+    the residual computation in floating point, not the solve algorithm that
+    produced `Xhat`. -/
+theorem sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue
+    (fp : FPModel) (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat : RMatFn m n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B)
+          (flSylvesterResidualRect fp m n A B C Xhat)
+          (flSylvesterResidualBudget fp m n A B C Xhat)) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate
+      m n A B C X Xhat
+      (flSylvesterResidualRect fp m n A B C Xhat)
+      (flSylvesterResidualBudget fp m n A B C Xhat)
+      hno hX
+      (isSylvesterComputedResidualBudget_fl fp m n A B C Xhat hm hn)
+      hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), source-numbered alias for the no-common-complex-spectrum
+    floating-point residual endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue :=
+  sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
     eq (16.29), square arbitrary-coefficient determinant endpoint:
     nonsingularity of the vec/Kronecker Sylvester coefficient discharges the
     inverse left-inverse hypothesis in the floating-point practical residual
