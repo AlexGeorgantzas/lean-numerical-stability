@@ -10094,6 +10094,108 @@ theorem isSylvesterQuasiSchurGeneratedStepFormula_of_column_family_generated_pre
   · intro p q hpq hsame
     exact hblock p q p.isLt q.isLt hpq hsame
 
+/-- A singleton recursive update extends the generated-prefix certificate by
+    one frontier column, provided that the current frontier column is separated
+    from its immediate predecessor in the quasi-Schur block map. -/
+theorem isSylvesterColumnFamilyGeneratedPrefix_after_singleton_update
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (x : Fin n -> Fin m -> Real)
+    (pmap : Fin n -> Nat) (N : Nat) (p : Fin n)
+    (hp : p.val = N)
+    (hprefix : IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap N)
+    (hprev : forall q : Fin n, q.val + 1 = p.val -> Not (pmap q = pmap p)) :
+    let xp : Fin m -> Real :=
+      Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+        (fun i => C i p +
+          Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+            (fun j => S j p * x j i))
+    let xNew : Fin n -> Fin m -> Real := Function.update x p xp
+    IsSylvesterColumnFamilyGeneratedPrefix m n R S C xNew pmap (N + 1) := by
+  let xp : Fin m -> Real :=
+    Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+      (fun i => C i p +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => S j p * x j i))
+  let xNew : Fin n -> Fin m -> Real := Function.update x p xp
+  change IsSylvesterColumnFamilyGeneratedPrefix m n R S C xNew pmap (N + 1)
+  rcases hprefix with ⟨hsingle, hblock⟩
+  constructor
+  · intro k hk hprevk hnextk i
+    by_cases hkold : k.val < N
+    · have hkp : k <= p := Fin.le_def.mpr (by rw [hp]; omega)
+      have hk_ne_p : Not (k = p) := by
+        intro h
+        have hval : k.val = p.val := congrArg Fin.val h
+        omega
+      have hk_update : xNew k i = x k i := by
+        dsimp [xNew]
+        rw [Function.update_of_ne hk_ne_p]
+      have hRhs :
+          (fun i : Fin m => C i k +
+            Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+              (fun j => S j k * xNew j i)) =
+          (fun i : Fin m => C i k +
+            Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+              (fun j => S j k * x j i)) := by
+        dsimp [xNew]
+        exact
+          sylvester_singleton_column_rhs_eq_of_column_update_at_or_after
+            m n S C x k p xp hkp
+      rw [hk_update, hRhs]
+      exact hsingle k hkold hprevk hnextk i
+    · have hkp : k = p := by
+        apply Fin.ext
+        rw [hp]
+        omega
+      subst k
+      dsimp [xNew]
+      exact sylvesterSingleton_formula_of_column_family_update m n R S C x p i
+  · intro k l hk hl hkl hsame
+    by_cases hlold : l.val < N
+    · have hkold : k.val < N := by omega
+      have hkp : k <= p := Fin.le_def.mpr (by rw [hp]; omega)
+      have hk_ne_p : Not (k = p) := by
+        intro h
+        have hval : k.val = p.val := congrArg Fin.val h
+        omega
+      have hl_ne_p : Not (l = p) := by
+        intro h
+        have hval : l.val = p.val := congrArg Fin.val h
+        omega
+      have hk_update : forall i : Fin m, xNew k i = x k i := by
+        intro i
+        dsimp [xNew]
+        rw [Function.update_of_ne hk_ne_p]
+      have hl_update : forall i : Fin m, xNew l i = x l i := by
+        intro i
+        dsimp [xNew]
+        rw [Function.update_of_ne hl_ne_p]
+      have hRhs :
+          sylvesterTwoColumnBlockRhs m n S C (fun i j => xNew j i) k l =
+          sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) k l := by
+        dsimp [xNew]
+        exact
+          sylvesterTwoColumnBlockRhs_eq_of_column_update_at_or_after
+            m n S C x k l p xp hkp
+      rcases hblock k l hkold hlold hkl hsame with ⟨hkformula, hlformula⟩
+      constructor
+      · intro i
+        rw [hk_update i, hRhs]
+        exact hkformula i
+      · intro i
+        rw [hl_update i, hRhs]
+        exact hlformula i
+    · have hlp : l = p := by
+        apply Fin.ext
+        rw [hp]
+        omega
+      have hkpval : k.val + 1 = p.val := by
+        simpa [hlp] using hkl.symm
+      have hsame_kp : pmap k = pmap p := by
+        simpa [hlp] using hsame
+      exact False.elim ((hprev k hkpval) hsame_kp)
+
 /-- Column-family packaging for
     `IsSylvesterQuasiSchurGeneratedStepFormula`.  A recursive construction often
     maintains state as `Fin n -> Fin m -> Real`; this wrapper turns singleton
