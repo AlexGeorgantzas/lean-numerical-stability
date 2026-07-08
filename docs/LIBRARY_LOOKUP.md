@@ -2085,6 +2085,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_fosterFeasible_of_rook` (rook LU factorization sorted pivots are Lemma A.2-feasible at `sqrt(n^n)`, zero tail)
 - `higham9_16_fosterA2_one` (Lemma A.2 base case `k = 1`: `p_1 <= C`)
 - `higham9_16_fosterFeasible_head_max` (the head dominates every entry)
+- `higham9_16_fosterA2_case1_slice` (A.2 induction step, case 1: small last variable gives `p_1 <= V(k+1, C)` from the k-level standard-constant bound)
+- `higham9_16_fosterA2_case2_reduction` (A.2 induction step, case-2 reduction: positive last variable gives k-level feasibility at `min(sqrt(k^k), C/(t(1+t)^k))`)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
