@@ -10608,6 +10608,266 @@ theorem theorem20_7_signed_stage_exact_completionB_bound_of_row_sorting_active_s
           (theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp
             herr)
 
+/-- Theorem 20.7 support: signed stored-QR matrix completion-time rows from
+    row-sorted compact-active active-tail bounds.
+
+This composes the compact-active exact same-reflector growth bridge and compact
+budget bridge with the stored-panel step equation, yielding the completed row
+bound against the larger compact-active horizon. -/
+theorem theorem20_7_completionA_bound_of_h19_signed_stage_row_sorting_active_tail_stage_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (alpha : ℕ → ℝ) (err : ℝ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hStep : ∀ k, k < n →
+      Astage (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Astage alpha k)
+          (storedQRSignedStageBeta hnm Astage alpha k)
+          (Astage k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) (Fin.mk t ht))
+    (hAactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n,
+        k ≤ j.val →
+          |Astage k r j| ≤
+            theorem20_7_compactActiveHorizon fp m err k *
+              theorem20_7_initialRowMax hn A r)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n,
+      |Astage (i.val + 1) i j| ≤
+        theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+          theorem20_7_initialRowMax hn A i := by
+  intro i hi j
+  by_cases hji : j.val < i.val
+  · have hk_le : i.val + 1 ≤ n := Nat.le_of_lt hi
+    have hzero :
+        Astage (i.val + 1) i j = 0 := by
+      exact
+        fl_householderStoredPanel_sequence_prefix_lower_zero
+          fp
+          (fun k => storedQRSignedStageVector hnm Astage alpha k)
+          (fun k => storedQRSignedStageBeta hnm Astage alpha k)
+          Astage hStep (i.val + 1) hk_le i j
+          (Nat.lt_succ_of_lt hji) hji
+    have hbound_nonneg :
+        0 ≤
+          theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+            theorem20_7_initialRowMax hn A i :=
+      mul_nonneg
+        (theorem20_7_compactActiveHorizon_nonneg fp m err (i.val + 1)
+          hmfp herr)
+        (theorem20_7_initialRowMax_nonneg hn A i)
+    rw [hzero]
+    simpa using hbound_nonneg
+  · have hij : i.val ≤ j.val := le_of_not_gt hji
+    have hik : i.val < n := Nat.lt_trans (Nat.lt_succ_self i.val) hi
+    have hstepPoint :
+        Astage (i.val + 1) i j =
+          fl_householderStoredPanelStep fp m n i.val
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val)
+            (Astage i.val) i j := by
+      exact congrFun (congrFun (hStep i.val hik) i) j
+    rw [hstepPoint]
+    exact
+      (H19.Theorem19_6.stored_panel_step_active_entry_bound_of_exact_stage_budget_factor
+        fp m n i.val
+        (storedQRSignedStageVector hnm Astage alpha i.val)
+        (storedQRSignedStageBeta hnm Astage alpha i.val)
+        (H19.Theorem19_6.active_row_growth_factor m)
+        (theorem20_7_compactActiveHorizon fp m err i.val *
+          theorem20_7_initialRowMax hn A i)
+        (Astage i.val) hmfp i j hij
+        (fun hj =>
+          theorem20_7_signed_stage_completed_column_preservation_nat
+            hnm fp Astage alpha hStep i hi j hj)
+        (fun hj =>
+          theorem20_7_signed_stage_pivot_column_zero_below_of_trailingNorm_pos_nat
+            hnm Astage alpha hAlphaDef htrailingPos i hi j hj)
+        (theorem20_7_signed_stage_exact_completionA_bound_of_row_sorting_active_tail_stage_compactActiveHorizon_nat
+          hn hnm fp Astage A alpha err hmfp herr hAlphaDef htrailingPos
+          hpivotMax hAactive hAsorted i hi j hij)).trans
+        (theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_trailingNorm_compactActiveHorizon_nat
+          hn hnm fp Astage A alpha err hmfp herr hAactive hAsorted
+          hAlphaDef htrailingPos i hi j hij)
+
+/-- Theorem 20.7 support: signed stored-QR RHS completion-time rows from
+    row-sorted compact-active active RHS bounds.
+
+This is the RHS analogue of
+`theorem20_7_completionA_bound_of_h19_signed_stage_row_sorting_active_tail_stage_compactActiveHorizon_nat`. -/
+theorem theorem20_7_completionB_bound_of_h19_signed_stage_row_sorting_active_stage_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) (phi err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hStep : ∀ k, k < n →
+      bstage (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Astage alpha k)
+          (storedQRSignedStageBeta hnm Astage alpha k)
+          (bstage k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bstage k r| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩) :
+    ∀ i : Fin m, i.val + 1 < n →
+      |bstage (i.val + 1) i| ≤
+        theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  intro i hi
+  have hik : i.val < n := Nat.lt_trans (Nat.lt_succ_self i.val) hi
+  let exactUpdate : ℝ :=
+    matMulVec m
+      (householder m
+        (storedQRSignedStageVector hnm Astage alpha i.val)
+        (storedQRSignedStageBeta hnm Astage alpha i.val))
+      (bstage i.val) i
+  have hstepPoint :
+      bstage (i.val + 1) i =
+        fl_householderStoredRhsStep fp m i.val
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i := by
+    exact congrFun (hStep i.val hik) i
+  rw [hstepPoint]
+  have hround :
+      |fl_householderStoredRhsStep fp m i.val
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i - exactUpdate| ≤
+        householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i := by
+    have hnot : ¬ i.val < i.val := lt_irrefl i.val
+    simpa [fl_householderStoredRhsStep, exactUpdate, hnot] using
+      fl_householderApplyCompact_componentwise_error_bound
+        fp m
+        (storedQRSignedStageVector hnm Astage alpha i.val)
+        (storedQRSignedStageBeta hnm Astage alpha i.val)
+        (bstage i.val) hmfp i
+  have htri :
+      |fl_householderStoredRhsStep fp m i.val
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i| ≤
+        |fl_householderStoredRhsStep fp m i.val
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val)
+            (bstage i.val) i - exactUpdate| +
+          |exactUpdate| := by
+    have hsum :
+        fl_householderStoredRhsStep fp m i.val
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val)
+            (bstage i.val) i =
+          (fl_householderStoredRhsStep fp m i.val
+              (storedQRSignedStageVector hnm Astage alpha i.val)
+              (storedQRSignedStageBeta hnm Astage alpha i.val)
+              (bstage i.val) i - exactUpdate) +
+            exactUpdate := by
+      ring
+    calc
+      |fl_householderStoredRhsStep fp m i.val
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i|
+          = |(fl_householderStoredRhsStep fp m i.val
+              (storedQRSignedStageVector hnm Astage alpha i.val)
+              (storedQRSignedStageBeta hnm Astage alpha i.val)
+              (bstage i.val) i - exactUpdate) +
+              exactUpdate| := by
+              exact congrArg (fun z : ℝ => |z|) hsum
+      _ ≤ |fl_householderStoredRhsStep fp m i.val
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val)
+            (bstage i.val) i - exactUpdate| +
+          |exactUpdate| := by
+            exact abs_add_le
+              (fl_householderStoredRhsStep fp m i.val
+                (storedQRSignedStageVector hnm Astage alpha i.val)
+                (storedQRSignedStageBeta hnm Astage alpha i.val)
+                (bstage i.val) i - exactUpdate)
+              exactUpdate
+  calc
+    |fl_householderStoredRhsStep fp m i.val
+        (storedQRSignedStageVector hnm Astage alpha i.val)
+        (storedQRSignedStageBeta hnm Astage alpha i.val)
+        (bstage i.val) i|
+        ≤ |fl_householderStoredRhsStep fp m i.val
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val)
+            (bstage i.val) i - exactUpdate| +
+          |exactUpdate| := htri
+    _ ≤ householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i +
+        H19.Theorem19_6.active_row_growth_factor m *
+          (theorem20_7_compactActiveHorizon fp m err i.val *
+            theorem20_7_initialWeightedRowMax hn A b phi i) :=
+          add_le_add hround
+            (by
+              simpa [exactUpdate] using
+                theorem20_7_signed_stage_exact_completionB_bound_of_row_sorting_active_stage_compactActiveHorizon_nat
+                  hn hnm fp Astage bstage A b alpha phi err hphi hmfp herr
+                  hAlphaDef htrailingPos hbactive hbsorted i hi)
+    _ = H19.Theorem19_6.active_row_growth_factor m *
+          (theorem20_7_compactActiveHorizon fp m err i.val *
+            theorem20_7_initialWeightedRowMax hn A b phi i) +
+        householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i := by ring
+    _ ≤ theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i :=
+        theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_compactActiveHorizon_nat
+          hn hnm fp Astage bstage A b alpha err hphi hmfp herr
+          hbactive hbsorted hAlphaDef htrailingPos i hi
+
 /-- The current compact active-step factor cannot be absorbed into the printed
     Cox--Higham rowwise factor in general.
 
