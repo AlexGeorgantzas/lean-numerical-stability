@@ -3831,6 +3831,83 @@ theorem sylvesterComputedResidualBudget_of_schur_frobenius_error_model
 alias H16_eq16_29_sylvesterComputedResidualBudget_of_schur_frobenius_error_model :=
   sylvesterComputedResidualBudget_of_schur_frobenius_error_model
 
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    a Schur-coordinate Frobenius residual bound gives an original-coordinate
+    computed-residual budget with `Rhat = 0` and uniform radius `rho`. -/
+theorem sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C Y : RMatFn m n) (rho : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho) :
+    IsSylvesterComputedResidualBudget m n A B C
+      (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (fun _ _ => 0) (fun _ _ => rho) := by
+  let Xhat : RMatFn m n := rectMatMul U (rectMatMul Y (matTranspose V))
+  let Rorig : RMatFn m n := sylvesterResidualRect m n A B C Xhat
+  have hres_orig : frobNormRect Rorig <= rho := by
+    simpa [Xhat, Rorig] using
+      frobNormRect_sylvesterResidualRect_le_of_schur_transform
+        m n U R A V S B C Y rho hU hV hA hB hres
+  have hrho : 0 <= rho := (frobNormRect_nonneg Rorig).trans hres_orig
+  constructor
+  · intro _ _
+    exact hrho
+  · intro i j
+    have hentry : |Rorig i j| <= rho :=
+      (abs_entry_le_frobNormRect Rorig i j).trans hres_orig
+    simpa [Xhat, Rorig] using hentry
+
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    conservative practical max-entry bound from a Schur-coordinate Frobenius
+    residual bound, using `Rhat = 0` and a uniform residual budget `rho`. -/
+theorem sylvester_practical_error_bound_of_schur_transform_residual_bound
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Y : RMatFn m n) (rho : Real)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n
+      (rectMatMul U (rectMatMul Y (matTranspose V)))) :
+    sylvesterMaxEntryNormRect m n
+        (fun i j =>
+          X i j - rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs
+          (fun _ _ => 0) (fun _ _ => rho)) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate m n
+      A B C X (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (fun _ _ => 0) (fun _ _ => rho) Pinv PinvAbs
+      hX hLeft hPinvAbs
+      (sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
+        m n U R A V S B C Y rho hU hV hA hB hres)
+      hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered alias
+    for the conservative practical wrapper from a Schur residual bound. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schur_transform_residual_bound :=
+  sylvester_practical_error_bound_of_schur_transform_residual_bound
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5):
     equation-level Schur-coordinate form.  Under supplied orthogonal
     factorizations `A = U R U^T` and `B = V S V^T`, the substitution
