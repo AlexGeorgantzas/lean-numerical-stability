@@ -747,6 +747,28 @@ theorem higham11_6_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg
   bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg σ a11 a21
     hchoice hσ
 
+/-- **Theorem 11.7 dependency**, two-by-two tridiagonal pivot determinant:
+Algorithm 11.6's two-pivot branch plus `|a22| ≤ σ` gives the determinant lower
+bound for the accepted `2 × 2` block. -/
+theorem higham11_7_tridiagonal_twoByTwo_absdet_lower_of_sigma_bound
+    (σ a11 a21 a22 : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa22 : |a22| ≤ σ) :
+    (1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2 ≤
+      |a11 * a22 - a21 ^ 2| :=
+  bunch_tridiagonal_twoByTwo_absdet_lower_of_sigma_bound σ a11 a21 a22
+    hchoice hσa22
+
+/-- **Theorem 11.7 dependency**, nonsingularity of the accepted `2 × 2`
+tridiagonal pivot block under the Algorithm 11.6 two-pivot branch. -/
+theorem higham11_7_tridiagonal_twoByTwo_det_ne_zero_of_sigma_bound
+    (σ a11 a21 a22 : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa22 : |a22| ≤ σ) :
+    a11 * a22 - a21 ^ 2 ≠ 0 :=
+  bunch_tridiagonal_twoByTwo_det_ne_zero_of_sigma_bound σ a11 a21 a22
+    hchoice hσa22
+
 /-- **Equation (11.8)** source predicate: unpermuted block LDL^T
 factorization for a symmetric tridiagonal matrix. -/
 abbrev higham11_8_tridiagonalBlockLDLTSpec (n : ℕ)

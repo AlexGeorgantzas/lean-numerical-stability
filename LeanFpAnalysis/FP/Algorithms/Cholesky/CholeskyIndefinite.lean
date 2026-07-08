@@ -1389,6 +1389,62 @@ theorem bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg
   bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_left_nonneg σ a11 a21
     hchoice (mul_nonneg hσ (abs_nonneg a11))
 
+/-- In the two-by-two branch of Algorithm 11.6, if `σ` dominates the second
+diagonal entry, the accepted tridiagonal pivot block has determinant bounded
+away from zero by `(1 - α) a21²`. -/
+theorem bunch_tridiagonal_twoByTwo_absdet_lower_of_sigma_bound
+    (σ a11 a21 a22 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa22 : |a22| ≤ σ) :
+    (1 - bunchTridiagonalAlpha) * a21 ^ 2 ≤ |a11 * a22 - a21 ^ 2| := by
+  have hthreshold :=
+    bunch_tridiagonal_pivot_choice_two_threshold σ a11 a21 hchoice
+  have hprod_le : |a11 * a22| ≤ σ * |a11| := by
+    have hmul := mul_le_mul_of_nonneg_left hσa22 (abs_nonneg a11)
+    rw [abs_mul]
+    nlinarith
+  have hprod_lt : |a11 * a22| < bunchTridiagonalAlpha * a21 ^ 2 :=
+    lt_of_le_of_lt hprod_le hthreshold
+  have hdecomp : (a21 ^ 2 - a11 * a22) + a11 * a22 = a21 ^ 2 := by ring
+  have hsum : |a21 ^ 2| ≤ |a21 ^ 2 - a11 * a22| + |a11 * a22| := by
+    calc
+      |a21 ^ 2| = |(a21 ^ 2 - a11 * a22) + a11 * a22| := by rw [hdecomp]
+      _ ≤ |a21 ^ 2 - a11 * a22| + |a11 * a22| := abs_add_le _ _
+  have hsq_abs : |a21 ^ 2| = a21 ^ 2 := abs_of_nonneg (sq_nonneg a21)
+  have hlower_basic : a21 ^ 2 - |a11 * a22| ≤
+      |a21 ^ 2 - a11 * a22| := by
+    rw [hsq_abs] at hsum
+    linarith
+  have hcoeff_le_basic :
+      (1 - bunchTridiagonalAlpha) * a21 ^ 2 ≤ a21 ^ 2 - |a11 * a22| := by
+    nlinarith [hprod_lt]
+  calc
+    (1 - bunchTridiagonalAlpha) * a21 ^ 2 ≤
+        a21 ^ 2 - |a11 * a22| := hcoeff_le_basic
+    _ ≤ |a21 ^ 2 - a11 * a22| := hlower_basic
+    _ = |a11 * a22 - a21 ^ 2| := by rw [abs_sub_comm]
+
+/-- The two-by-two tridiagonal pivot block accepted by Algorithm 11.6 is
+nonsingular when `σ` dominates the second diagonal entry. -/
+theorem bunch_tridiagonal_twoByTwo_det_ne_zero_of_sigma_bound
+    (σ a11 a21 a22 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa22 : |a22| ≤ σ) :
+    a11 * a22 - a21 ^ 2 ≠ 0 := by
+  have hσ : 0 ≤ σ := le_trans (abs_nonneg a22) hσa22
+  have ha21 :=
+    bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg σ a11 a21
+      hchoice hσ
+  have hsquare : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have halpha_gap : 0 < 1 - bunchTridiagonalAlpha := by
+    linarith [bunch_tridiagonal_alpha_lt_one]
+  have hlower :=
+    bunch_tridiagonal_twoByTwo_absdet_lower_of_sigma_bound σ a11 a21 a22
+      hchoice hσa22
+  have hdet_abs_pos : 0 < |a11 * a22 - a21 ^ 2| :=
+    lt_of_lt_of_le (mul_pos halpha_gap hsquare) hlower
+  exact abs_pos.mp hdet_abs_pos
+
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
 -- ============================================================
