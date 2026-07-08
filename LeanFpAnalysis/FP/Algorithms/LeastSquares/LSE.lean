@@ -10213,6 +10213,238 @@ theorem theorem20_7_active_tail_stageB_bound_of_h19_row_sorting_source_initial_a
       (mul_le_mul_of_nonneg_right hhorizon
         (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi r))
 
+/-- The compact-active horizon is monotone in the stage index. -/
+theorem theorem20_7_compactActiveHorizon_le_of_le
+    (fp : FPModel) (m : ℕ) (err : ℝ) {i j : ℕ}
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err) (hij : i ≤ j) :
+    theorem20_7_compactActiveHorizon fp m err i ≤
+      theorem20_7_compactActiveHorizon fp m err j := by
+  have hbase : 0 ≤ Real.sqrt (m : ℝ) + err :=
+    add_nonneg (Real.sqrt_nonneg _) herr
+  have hfactor :
+      1 ≤ theorem20_7_compactActiveStepFactor fp m :=
+    theorem20_7_one_le_compactActiveStepFactor fp m hmfp
+  have hpow :
+      theorem20_7_compactActiveStepFactor fp m ^ i ≤
+        theorem20_7_compactActiveStepFactor fp m ^ j :=
+    pow_le_pow_right₀ hfactor hij
+  dsimp [theorem20_7_compactActiveHorizon]
+  exact mul_le_mul_of_nonneg_left hpow hbase
+
+/-- Any stage before `n` is bounded by the final compact-active horizon
+    coefficient at `n - 1`. -/
+theorem theorem20_7_compactActiveHorizon_le_final_nat
+    {n : ℕ} (fp : FPModel) (m : ℕ) (err : ℝ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err) {k : ℕ} (hk : k < n) :
+    theorem20_7_compactActiveHorizon fp m err k ≤
+      theorem20_7_compactActiveHorizon fp m err (n - 1) :=
+  theorem20_7_compactActiveHorizon_le_of_le fp m err hmfp herr
+    (Nat.le_sub_one_of_lt hk)
+
+/-- Theorem 20.7 support: active/completed stage bounds with the larger
+    compact-active horizon control the finite `max_i {alpha_i, beta_i}` ratio. -/
+theorem theorem20_7_alphaBetaMax_le_of_active_completed_entry_growth_compactActiveHorizon_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val → ∀ j : Fin n,
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i)
+    (hbactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val →
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤
+      theorem20_7_compactActiveHorizon fp m err (n - 1) := by
+  have hC :
+      0 ≤ theorem20_7_compactActiveHorizon fp m err (n - 1) :=
+    theorem20_7_compactActiveHorizon_nonneg fp m err (n - 1) hmfp herr
+  apply
+    theorem20_7_alphaBetaMax_le_of_uniform_entry_growth_nat
+      hm hn Astage A bstage b phi hC hphi hdenA hdenW
+  · intro i k hk j
+    have hstage :
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i := by
+      by_cases hcompleted : i.val < k
+      · exact hAcompleted i k hk hcompleted j
+      · exact hAactive i k hk (le_of_not_gt hcompleted) j
+    exact
+      hstage.trans
+        (mul_le_mul_of_nonneg_right
+          (theorem20_7_compactActiveHorizon_le_final_nat fp m err hmfp
+            herr hk)
+          (theorem20_7_initialRowMax_nonneg hn A i))
+  · intro i k hk
+    have hstage :
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i := by
+      by_cases hcompleted : i.val < k
+      · exact hbcompleted i k hk hcompleted
+      · exact hbactive i k hk (le_of_not_gt hcompleted)
+    exact
+      hstage.trans
+        (mul_le_mul_of_nonneg_right
+          (theorem20_7_compactActiveHorizon_le_final_nat fp m err hmfp
+            herr hk)
+          (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
+
+/-- Theorem 20.7 support: all-entry perturbation budgets from active/completed
+    stage bounds against the larger compact-active horizon. -/
+theorem theorem20_7_deltaEntries_bound_all_of_active_completed_entry_growth_compactActiveHorizon_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (gammaTilde err : ℝ) (DeltaA : Fin m → Fin n → ℝ)
+    (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val → ∀ j : Fin n,
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i)
+    (hbactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val →
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Astage A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Astage A bstage b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  have hdenA :
+      ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i := by
+    intro i
+    exact theorem20_7_initialRowMax_pos_of_exists_entry_ne_zero hn A i
+      (hrows i)
+  have hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i := by
+    intro i
+    exact theorem20_7_initialWeightedRowMax_pos_of_exists_entry_ne_zero
+      hn A b hphi i (hrows i)
+  have hmax :
+      theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤
+        theorem20_7_compactActiveHorizon fp m err (n - 1) :=
+    theorem20_7_alphaBetaMax_le_of_active_completed_entry_growth_compactActiveHorizon_nat
+      hm hn fp Astage A bstage b phi err (le_of_lt hphi) hmfp herr
+      hdenA hdenW hAcompleted hbcompleted hAactive hbactive
+  constructor
+  · intro i j
+    exact
+      theorem20_7_deltaAEntry_bound_of_alphaBetaMax_le
+        hm hn Astage A bstage b phi gammaTilde DeltaA i j hgamma hmax
+        (hDeltaA i j)
+  · intro i
+    exact
+      theorem20_7_deltaBEntry_bound_of_alphaBetaMax_le
+        hm hn Astage A bstage b phi gammaTilde Deltab i (le_of_lt hphi)
+        hgamma hmax (hDeltab i)
+
+/-- Theorem 20.7 support: certificate-level version of the compact-active
+    active/completed all-entry budget bridge. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_completed_entry_growth_compactActiveHorizon_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (gammaTilde err : ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val → ∀ j : Fin n,
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i)
+    (hbactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val →
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Astage bstage phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  refine ⟨hcert.exact_solution, ?_⟩
+  exact
+    theorem20_7_deltaEntries_bound_all_of_active_completed_entry_growth_compactActiveHorizon_rows_nonzero_nat
+      hm hn fp Astage A bstage b gammaTilde err hcert.DeltaA hcert.Deltab
+      hphi hgamma hmfp herr hrows hAcompleted hbcompleted hAactive hbactive
+      hcert.deltaA_bound hcert.deltab_bound
+
 /-- The current compact active-step factor cannot be absorbed into the printed
     Cox--Higham rowwise factor in general.
 
