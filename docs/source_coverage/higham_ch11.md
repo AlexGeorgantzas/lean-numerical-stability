@@ -28,7 +28,7 @@ assumptions remain open in the not-proved ledger below.
 | Source item | Lean declaration(s) | File | Notes |
 |---|---|---|---|
 | Alg 11.1 α = (1+√17)/8 root of 4α²−α−1 | `bunch_parlett_alpha_root`, `higham11_1_bunch_parlett_alpha_root` | CholeskyIndefinite / Ch11 | exact algebraic identity |
-| Alg 11.6 α = (√5−1)/2 root of α²+α−1 | `bunch_tridiagonal_alpha_root`, `higham11_6_bunch_tridiagonal_alpha_root` | " | exact algebraic identity |
+| Alg 11.6 α = (√5−1)/2 root of α²+α−1 | `bunch_tridiagonal_alpha_root`, `bunch_tridiagonal_alpha_pos`, `bunch_tridiagonal_alpha_lt_one`, `bunch_tridiagonal_alpha_sq`, `higham11_6_bunch_tridiagonal_alpha_root`, `higham11_6_bunch_tridiagonal_alpha_pos`, `higham11_6_bunch_tridiagonal_alpha_lt_one`, `higham11_6_bunch_tridiagonal_alpha_sq` | " | exact algebraic identity plus `0<α<1` and `α²=1−α`, used by tridiagonal pivot-case inequalities |
 | §11.1.1 1×1 multiplier bound `|c/e| ≤ 1/α` | `oneByOne_multiplier_bound`, `higham11_1_oneByOne_multiplier_bound` | " | **new this session**; derived from pivot test `α·ω ≤ |e|`; the honest content behind the `bunch_parlett_L_bound`/`bunch_kaufman` `‖L‖`-interfaces |
 | §11.1.1 / §11.1.2 1×1 Schur step growth `|b−c₁c₂/e| ≤ (1+1/α)μ₀` | `oneByOne_schur_growth`, `higham11_1_oneByOne_schur_growth` | " | **new this session**; printed bound `|ã_ij| ≤ μ₀+μ₀²/μ₁ ≤ (1+1/α)μ₀`; mechanism behind ρₙ ≤ (1+α⁻¹)^{n−1} |
 | §11.1.1 2×2 pivot det bound `det E ≤ (α²−1)μ₀²` | `twoByTwo_completePivot_det_bound`, `higham11_4_twoByTwo_det_bound` | " | **new this session**; printed `det(E) ≤ μ₁²−μ₀² ≤ (α²−1)μ₀²` |
@@ -464,6 +464,15 @@ Problem transcription.
     `higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts_concrete_product_majorants`,
     `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_concrete_product_majorants_gamma_parts`, and
     `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_concrete_product_majorants_gamma_parts`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-08 Algorithm 11.6 tridiagonal alpha increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskyIndefinite.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyIndefinite` → `Build completed successfully (2979 jobs)`;
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    focused lookup/axiom check of
+    `bunch_tridiagonal_alpha_pos`, `bunch_tridiagonal_alpha_lt_one`,
+    `bunch_tridiagonal_alpha_sq`, and their `higham11_6_` wrappers
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - `lake env lean examples/LibraryLookup.lean` → still aborts with the pre-existing stack overflow in the older IEEE lookup section before reaching the Chapter 11 checks; the focused Chapter 11 lookup/axiom check below was used for this milestone.
   - Focused lookup check of `higham11_3_fl_blockLDLT_all_oneByOne_bound` → elaborates.

@@ -669,6 +669,22 @@ theorem higham11_6_bunch_tridiagonal_alpha_root :
       higham11_6_bunchTridiagonalAlpha - 1 = 0 :=
   bunch_tridiagonal_alpha_root
 
+/-- Bunch's tridiagonal pivoting parameter is strictly positive. -/
+theorem higham11_6_bunch_tridiagonal_alpha_pos :
+    0 < higham11_6_bunchTridiagonalAlpha :=
+  bunch_tridiagonal_alpha_pos
+
+/-- Bunch's tridiagonal pivoting parameter is less than one. -/
+theorem higham11_6_bunch_tridiagonal_alpha_lt_one :
+    higham11_6_bunchTridiagonalAlpha < 1 :=
+  bunch_tridiagonal_alpha_lt_one
+
+/-- The tridiagonal pivoting parameter satisfies `alpha^2 = 1 - alpha`. -/
+theorem higham11_6_bunch_tridiagonal_alpha_sq :
+    higham11_6_bunchTridiagonalAlpha ^ 2 =
+      1 - higham11_6_bunchTridiagonalAlpha :=
+  bunch_tridiagonal_alpha_sq
+
 /-- **Algorithm 11.6** source decision predicate for Bunch's tridiagonal
 pivot-size strategy. -/
 abbrev higham11_6_BunchTridiagonalPivotChoice

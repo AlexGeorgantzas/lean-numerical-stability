@@ -1289,6 +1289,24 @@ theorem bunch_tridiagonal_alpha_root :
   field_simp
   nlinarith [h5]
 
+/-- Bunch's symmetric-tridiagonal pivoting parameter is strictly positive. -/
+theorem bunch_tridiagonal_alpha_pos : 0 < bunchTridiagonalAlpha := by
+  unfold bunchTridiagonalAlpha
+  have h : (1 : ℝ) < Real.sqrt 5 :=
+    (Real.lt_sqrt (by norm_num : (0 : ℝ) ≤ 1)).mpr (by norm_num)
+  linarith
+
+/-- Bunch's symmetric-tridiagonal pivoting parameter is less than one. -/
+theorem bunch_tridiagonal_alpha_lt_one : bunchTridiagonalAlpha < 1 := by
+  unfold bunchTridiagonalAlpha
+  have h : Real.sqrt 5 < 3 := (Real.sqrt_lt' (by norm_num)).mpr (by norm_num)
+  linarith
+
+/-- From the root identity, `α² = 1 - α` for Bunch's tridiagonal parameter. -/
+theorem bunch_tridiagonal_alpha_sq :
+    bunchTridiagonalAlpha ^ 2 = 1 - bunchTridiagonalAlpha := by
+  nlinarith [bunch_tridiagonal_alpha_root]
+
 /-- Algorithm 11.6 source decision predicate for Bunch's tridiagonal pivot-size
 strategy. -/
 def BunchTridiagonalPivotChoice
