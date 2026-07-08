@@ -226,6 +226,39 @@ theorem theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
       (mul_le_mul_of_nonneg_left (hA k hk s hks) hphi)
       (hb k hk s hks)
 
+/-- Theorem 20.7 route audit: source row sorting alone does not imply the
+    stronger `sqrt(m)` row-scale domination hypothesis used by the Chapter 19
+    accumulated-error transfer.
+
+For two rows and one column, row sorting can hold with row scales `2, 1`, but
+the pivot row scale `2` is not bounded by `sqrt(2) * 1`. -/
+theorem theorem20_7_initialRowMax_sorted_not_imp_sqrt_row_domination_two_by_one :
+    ∃ A : Fin 2 → Fin 1 → ℝ,
+      (∀ k : ℕ, ∀ hk : k < 1, ∀ s : Fin 2, k ≤ s.val →
+        theorem20_7_initialRowMax (by norm_num : 0 < 1) A s ≤
+          theorem20_7_initialRowMax (by norm_num : 0 < 1) A
+            ⟨k, lt_of_lt_of_le hk (by norm_num : 1 ≤ 2)⟩) ∧
+      ¬ (∀ k : ℕ, ∀ hk : k < 1, ∀ r : Fin 2, k ≤ r.val →
+        theorem20_7_initialRowMax (by norm_num : 0 < 1) A
+            ⟨k, lt_of_lt_of_le hk (by norm_num : 1 ≤ 2)⟩ ≤
+          Real.sqrt (2 : ℝ) *
+            theorem20_7_initialRowMax (by norm_num : 0 < 1) A r) := by
+  let A : Fin 2 → Fin 1 → ℝ := fun i _ =>
+    if i.val = 0 then 2 else 1
+  refine ⟨A, ?_, ?_⟩
+  · intro k hk s _hks
+    have hk0 : k = 0 := Nat.lt_one_iff.mp hk
+    subst k
+    fin_cases s <;> simp [theorem20_7_initialRowMax, A]
+  · intro hdom
+    have h :=
+      hdom 0 (by norm_num) ⟨1, by norm_num⟩ (by norm_num)
+    simp [theorem20_7_initialRowMax, A] at h
+    have hsqrt2_lt_two : Real.sqrt (2 : ℝ) < 2 := by
+      nlinarith [Real.sq_sqrt (show 0 ≤ (2 : ℝ) by norm_num),
+        Real.sqrt_nonneg (2 : ℝ)]
+    linarith
+
 /-- Source-shaped nonzero-row hypotheses discharge both denominator
     positivity side conditions used by the Theorem 20.7 row-growth bridges. -/
 theorem theorem20_7_denominators_pos_of_rows_nonzero {m n : ℕ}
