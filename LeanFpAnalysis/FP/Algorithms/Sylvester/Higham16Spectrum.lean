@@ -5128,6 +5128,30 @@ theorem sylvesterTwoColumnBlockRhs_eq_of_two_column_updates_at_or_after
             sylvesterTwoColumnBlockRhs_eq_of_column_update_at_or_after
               m n T C x p q k xk hpk
 
+/-- A singleton recursive-state column update preserves every earlier column.
+    This is the prefix-invariant bookkeeping used by the eventual scheduled
+    quasi-Schur candidate. -/
+theorem sylvesterColumnFamily_update_eq_of_lt
+    {m n : Nat} (x : Fin n -> Fin m -> Real)
+    (p j : Fin n) (xp : Fin m -> Real)
+    (hjp : j < p) :
+    Function.update x p xp j = x j := by
+  rw [Function.update_of_ne (ne_of_lt hjp)]
+
+/-- A two-column recursive-state update at `p` and `q`, with `p <= q`,
+    preserves every column strictly before `p`. -/
+theorem sylvesterColumnFamily_two_updates_eq_of_lt
+    {m n : Nat} (x : Fin n -> Fin m -> Real)
+    (p q j : Fin n) (xp xq : Fin m -> Real)
+    (hpq : p <= q) (hjp : j < p) :
+    Function.update (Function.update x p xp) q xq j = x j := by
+  have hjq : j ≠ q := by
+    intro hjq
+    have hq_lt_p : q < p := by simpa [hjq] using hjp
+    exact (not_lt_of_ge hpq) hq_lt_p
+  rw [Function.update_of_ne hjq]
+  exact sylvesterColumnFamily_update_eq_of_lt x p j xp hjp
+
 /-- A direct two-column recursive-state update satisfies the generated
     two-column block formula against the final updated state.  This is the local
     block-step counterpart to the prefix-stability lemmas used by a future
