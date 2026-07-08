@@ -1450,6 +1450,21 @@ theorem higham11_7_abs_entry_le_infNorm (n : ℕ)
         (Finset.mem_univ j)
     _ ≤ infNorm A := row_sum_le_infNorm A i
 
+/-- **Theorem 11.7 solve-side interface bridge, infinity-norm budget**,
+specializing the printed componentwise budget to `c * u * ||A||_∞`. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (c u : ℝ) (hc : 0 ≤ c) (hu : 0 ≤ u)
+    (hsolve : ∃ ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * infNorm A) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ c * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * infNorm A) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_solve_delta_nonneg
+    n A b x_hat c u (infNorm A) hc hu (infNorm_nonneg A) hsolve
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
