@@ -2105,6 +2105,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_phi_le_peak` (the AM-GM peak bound `p x^j <= ((jx+p)/(j+1))^(j+1)` for `x <= p`)
 - `higham9_16_le_fosterPStar_iff` (shifted-root comparison = shifted-stage comparison)
 - `higham9_16_fosterPStar_ge_tail_iff` (**in-band characterization**: `P <= p*(P) ↔ P <= q^(j+1)`)
+- `higham9_16_fosterBandValue_inband_antitone` (**Foster (A.17), derivative-free**: within a band, the (A.7) value `1+jP+p*(P)` is antitone in the tail — division chain + two zones via the phi toolkit)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
