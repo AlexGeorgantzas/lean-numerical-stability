@@ -7942,6 +7942,55 @@ theorem sylvester_singleton_column_rhs_eq_of_column_update_at_or_after
           exact (not_lt_of_ge hle) hlt
         simp [Function.update_of_ne hjne])
 
+/-- A direct singleton recursive-state update satisfies the generated singleton
+    formula against the final updated state.  This is the local one-column
+    counterpart to `sylvesterTwoColumnBlock_formula_of_column_family_block_update`.
+    It is bookkeeping for the future scheduled quasi-Schur candidate, not the
+    full recursive construction. -/
+theorem sylvesterSingleton_formula_of_column_family_update
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n) (C : RMatFn m n)
+    (x : Fin n -> Fin m -> Real) (p : Fin n) :
+    let xp : Fin m -> Real :=
+      Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+        (fun i => C i p +
+          Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+            (fun j => S j p * x j i))
+    let xNew : Fin n -> Fin m -> Real := Function.update x p xp
+    forall i : Fin m,
+      xNew p i =
+        Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+          (fun i => C i p +
+            Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+              (fun j => S j p * xNew j i)) i := by
+  let xp : Fin m -> Real :=
+    Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+      (fun i => C i p +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => S j p * x j i))
+  let xNew : Fin n -> Fin m -> Real := Function.update x p xp
+  change forall i : Fin m,
+    xNew p i =
+      Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+        (fun i => C i p +
+          Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+            (fun j => S j p * xNew j i)) i
+  have hRhs :
+      (fun i : Fin m => C i p +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => S j p * xNew j i)) =
+      (fun i : Fin m => C i p +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => S j p * x j i)) := by
+    dsimp [xNew]
+    exact
+      sylvester_singleton_column_rhs_eq_of_column_update_at_or_after
+        m n S C x p p xp le_rfl
+  intro i
+  rw [hRhs]
+  dsimp [xNew, xp]
+  rw [Function.update_self]
+
 /-- Singleton-column solve/uniqueness bridge for the quasi-Schur traversal:
     if column `k` has the local zero-below property, the shifted coefficient is
     nonsingular, and `X(:,k)` is computed by the nonsingular inverse recurrence
