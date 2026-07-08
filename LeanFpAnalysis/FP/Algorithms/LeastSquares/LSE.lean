@@ -3333,6 +3333,219 @@ theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_active_entry_s
     _ ≤ slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
         mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
 
+/-- Theorem 20.7 support: signed nonbreakdown stages discharge the scalar
+    compact-coefficient slack premise for the active-tail completion adapters.
+
+The previous active-tail adapters exposed a raw reflector-dependent
+`householderCompactNormBudgetCoeff` comparison.  For the signed stored-QR
+stage, the source alpha definition and positive trailing norm give a nonzero
+Householder denominator, hence the Chapter 19 compact-coefficient estimate
+`u + 2 * factor`.  This lemma turns that estimate into the exact scalar
+slack premise used by the row-wise weighted-LS route. -/
+theorem theorem20_7_signed_stage_norm_coeff_slack_of_trailingNorm_pos_nat
+    {m n : ℕ} (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (alpha : ℕ → ℝ) (C slack : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val) :
+    ∀ i : Fin m, i.val + 1 < n →
+      householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          (Real.sqrt (m : ℝ) * C i.val) ≤
+        slack i.val := by
+  intro i hi
+  have hit : i.val < n := by omega
+  let pivot : Fin m := Fin.mk i.val (lt_of_lt_of_le hit hnm)
+  let pivotCol : Fin n := Fin.mk i.val hit
+  have hAlphaSq :
+      alpha i.val * alpha i.val =
+        householderTrailingNorm2Sq m pivot
+          (fun r => Ahat i.val r pivotCol) := by
+    rw [hAlphaDef i.val hit]
+    simpa [pivot, pivotCol] using
+      signedHouseholderAlpha_sqrt_trailingNorm2Sq_sq
+        m pivot (fun r => Ahat i.val r pivotCol)
+  have hsign :
+      alpha i.val * Ahat i.val pivot pivotCol ≤ 0 := by
+    rw [hAlphaDef i.val hit]
+    simpa [pivot, pivotCol] using
+      signedHouseholderAlpha_sqrt_trailingNorm2Sq_mul_pivot_nonpos
+        m pivot (fun r => Ahat i.val r pivotCol)
+  have hnorm :
+      0 < householderTrailingNorm2Sq m pivot
+          (fun r => Ahat i.val r pivotCol) := by
+    simpa [pivot, pivotCol] using htrailingPos i.val hit
+  have hden :
+      (∑ r : Fin m,
+        storedQRSignedStageVector hnm Ahat alpha i.val r *
+          storedQRSignedStageVector hnm Ahat alpha i.val r) ≠ 0 := by
+    have hden0 :
+        (∑ r : Fin m,
+          householderTrailingActiveVector m pivot
+            (fun a => Ahat i.val a pivotCol) (alpha i.val) r *
+            householderTrailingActiveVector m pivot
+              (fun a => Ahat i.val a pivotCol) (alpha i.val) r) ≠ 0 :=
+      householderTrailingActiveVector_inner_self_ne_zero_of_trailingNorm2Sq_pos_mul_nonpos
+        m pivot (fun a => Ahat i.val a pivotCol) (alpha i.val)
+        hAlphaSq hnorm hsign
+    simpa [storedQRSignedStageVector, hit, pivot, pivotCol] using hden0
+  have hcoeffStored :
+      storedQRCompactStepNormBudgetCoeff hnm fp Ahat alpha ⟨i.val, hit⟩ ≤
+        fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m :=
+    storedQRCompactStepNormBudgetCoeff_le_of_den_ne_zero
+      hnm fp Ahat alpha hm ⟨i.val, hit⟩ hden
+  have hcoeff :
+      householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) ≤
+        fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m := by
+    simpa [storedQRCompactStepNormBudgetCoeff] using hcoeffStored
+  have hscale_nonneg : 0 ≤ Real.sqrt (m : ℝ) * C i.val :=
+    mul_nonneg (Real.sqrt_nonneg _) (hC i hi)
+  exact
+    (mul_le_mul_of_nonneg_right hcoeff hscale_nonneg).trans
+      (hcoeffSlack i hi)
+
+/-- Theorem 20.7 support: matrix completion-budget domination from active-tail
+    entry bounds, signed-stage nonbreakdown, and a uniform compact-coefficient
+    slack comparison.
+
+This composes the active-tail component-budget adapter with the Chapter 19
+signed-stage compact-coefficient estimate, replacing the raw
+`householderCompactNormBudgetCoeff` slack premise by the concrete
+`u + 2 * factor` scalar comparison. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_active_entry_trailingNorm_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (err : ℝ) (C slack : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        ∀ r : Fin m, i.val ≤ r.val →
+          |Ahat i.val r j| ≤ C i.val * theorem20_7_initialRowMax hn A i)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  exact
+    theorem20_7_completionA_budget_of_signed_stage_norm_coeff_active_entry_slack_nat
+      hn hnm fp Ahat A alpha err C slack hm hC hentry
+      (theorem20_7_signed_stage_norm_coeff_slack_of_trailingNorm_pos_nat
+        hnm fp Ahat alpha C slack hm hC hAlphaDef htrailingPos hcoeffSlack)
+      hslack
+
+/-- Theorem 20.7 support: RHS completion-budget domination from active-tail
+    RHS entry bounds, signed-stage nonbreakdown, and a uniform
+    compact-coefficient slack comparison. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_active_entry_trailingNorm_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (err : ℝ) (C slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ r : Fin m, i.val ≤ r.val →
+        |bhat i.val r| ≤
+          C i.val * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completionB_budget_of_signed_stage_norm_coeff_active_entry_slack_nat
+      hn hnm fp Ahat bhat A b alpha err C slack hphi hm hC hentry
+      (theorem20_7_signed_stage_norm_coeff_slack_of_trailingNorm_pos_nat
+        hnm fp Ahat alpha C slack hm hC hAlphaDef htrailingPos hcoeffSlack)
+      hslack
+
 /-- Theorem 20.7 support: stored RHS steps preserve completed rows.
 
 Once row `i` has been processed, every later stored RHS step has active pivot
