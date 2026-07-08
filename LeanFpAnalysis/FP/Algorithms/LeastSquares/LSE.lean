@@ -45350,6 +45350,33 @@ theorem GeneralizedQRFactorization.null_B_iff_exists_Q2_coord
     rw [hc]
     exact rectMatMulVec_zero h.S
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
+    the concrete matrix whose columns are the `Q₂` basis vectors for the
+    supplied GQR factorization. -/
+noncomputable def GeneralizedQRFactorization.Q2Basis
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    Fin (p + q) → Fin q → ℝ :=
+  fun i j =>
+    matMulVec (p + q) h.Q
+      (Fin.append (0 : Fin p → ℝ) (finiteBasisVec j)) i
+
+/-- The concrete GQR `Q₂` basis lies in the nullspace of the constraint
+    matrix `B`. -/
+theorem GeneralizedQRFactorization.Q2Basis_nullspace
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    rectMatMul B h.Q2Basis =
+      (fun _ : Fin p => fun _ : Fin q => 0) := by
+  ext i j
+  have hc := congrFun (h.constraint_eq (0 : Fin p → ℝ) (finiteBasisVec j)) i
+  simpa [GeneralizedQRFactorization.Q2Basis, rectMatMul, rectMatMulVec]
+    using hc
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     the trailing `Q₂` coordinate block of the transformed data matrix `A Q`.
 
@@ -45380,6 +45407,32 @@ theorem gqrAQ2Block_mulVec {r p q : ℕ}
     _ = rectMatMulVec A
         (matMulVec (p + q) Q (Fin.append (0 : Fin p → ℝ) y2)) := by
       exact rectMatMulVec_rectMatMul A Q (Fin.append (0 : Fin p → ℝ) y2)
+
+/-- Multiplying `A` by the concrete GQR `Q₂` basis gives the trailing
+    transformed block `A Q₂`. -/
+theorem GeneralizedQRFactorization.A_mul_Q2Basis
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    rectMatMul A h.Q2Basis = gqrAQ2Block A h.Q := by
+  ext i j
+  have hblock :=
+    congrFun (gqrAQ2Block_mulVec A h.Q (finiteBasisVec j)) i
+  have hcol :=
+    congrFun (rectMatMulVec_finiteBasisVec_gsColumn
+      (gqrAQ2Block A h.Q) j) i
+  calc
+    rectMatMul A h.Q2Basis i j =
+        rectMatMulVec A
+          (matMulVec (p + q) h.Q
+            (Fin.append (0 : Fin p → ℝ) (finiteBasisVec j))) i := by
+          simp [GeneralizedQRFactorization.Q2Basis, rectMatMul,
+            rectMatMulVec]
+    _ = rectMatMulVec (gqrAQ2Block A h.Q) (finiteBasisVec j) i :=
+          hblock.symm
+    _ = gqrAQ2Block A h.Q i j := by
+          simpa [gsColumn] using hcol
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10 transport algebra:
     any perturbation of the trailing `A Q₂` block can be represented by a
