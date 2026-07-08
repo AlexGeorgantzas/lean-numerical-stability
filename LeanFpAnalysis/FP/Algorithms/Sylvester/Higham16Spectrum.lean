@@ -10436,6 +10436,23 @@ theorem exists_isSylvesterQuasiSchurGeneratedStepFormula_of_frontier_schedule
       isSylvesterQuasiSchurGeneratedStepFormula_of_column_family_generated_prefix
         m n R S C x pmap hprefix⟩
 
+/-- The automatically generated real-quasi-Schur frontier schedule constructs
+    an exact recursive Bartels-Stewart candidate satisfying the packaged
+    generated-step formula predicate. -/
+theorem exists_isSylvesterQuasiSchurGeneratedStepFormula_of_quasiSchur_schedule
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (pmap : Fin n -> Nat)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2) :
+    exists X : RMatFn m n,
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S C X pmap := by
+  rcases quasiSchur_exists_frontier_schedule n pmap hcard with
+    ⟨r, frontier, hstart, hend, _hfrontLt, hstep⟩
+  exact
+    exists_isSylvesterQuasiSchurGeneratedStepFormula_of_frontier_schedule
+      m n r R S C pmap frontier hstart hend hcard hstep
+
 /-- Column-family packaging for
     `IsSylvesterQuasiSchurGeneratedStepFormula`.  A recursive construction often
     maintains state as `Fin n -> Fin m -> Real`; this wrapper turns singleton
