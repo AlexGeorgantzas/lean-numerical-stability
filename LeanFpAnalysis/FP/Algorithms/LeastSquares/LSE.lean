@@ -9146,6 +9146,52 @@ theorem theorem20_7_compactActiveStepFactor_nonneg
   exact
     add_nonneg hactive (mul_nonneg hcoeff (Real.sqrt_nonneg _))
 
+/-- The current compact active-step factor cannot be absorbed into the printed
+    Cox--Higham rowwise factor in general.
+
+At `m = 9`, the repository's active-row factor is already at least `sqrt 9 = 3`,
+whereas the printed rowwise factor is `1 + sqrt 2 < 3`; the nonnegative compact
+term only increases the combined factor.  This rules out the naive scalar route
+for Theorem 20.7's concrete compact slack. -/
+theorem theorem20_7_compactActiveStepFactor_not_le_rowwise_step_growth_factor_nine
+    (fp : FPModel) (hmfp : gammaValid fp 9) :
+    ¬ theorem20_7_compactActiveStepFactor fp 9 ≤
+        H19.Theorem19_6.rowwise_step_growth_factor := by
+  have hcoeff : 0 ≤ fp.u + 2 * householderCompactNormBudgetCoeffFactor fp 9 := by
+    have hfac : 0 ≤ householderCompactNormBudgetCoeffFactor fp 9 :=
+      householderCompactNormBudgetCoeffFactor_nonneg fp 9 hmfp
+    have hu : 0 ≤ fp.u := fp.u_nonneg
+    nlinarith
+  have hcompact_nonneg :
+      0 ≤ (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp 9) *
+          Real.sqrt (9 : ℝ) :=
+    mul_nonneg hcoeff (Real.sqrt_nonneg _)
+  have hge_active :
+      H19.Theorem19_6.active_row_growth_factor 9 ≤
+        theorem20_7_compactActiveStepFactor fp 9 := by
+    dsimp [theorem20_7_compactActiveStepFactor]
+    linarith
+  have hactive_ge_three :
+      3 ≤ H19.Theorem19_6.active_row_growth_factor 9 := by
+    have hsqrt9 : Real.sqrt (9 : ℝ) = 3 := by
+      have h := Real.sqrt_sq (show 0 ≤ (3 : ℝ) by norm_num)
+      norm_num at h
+      exact h
+    dsimp [H19.Theorem19_6.active_row_growth_factor,
+      coxHighamActiveRowGrowthFactor]
+    rw [hsqrt9]
+    exact le_max_right _ _
+  have hrowlt : H19.Theorem19_6.rowwise_step_growth_factor < 3 := by
+    have hsqrt2_lt_two : Real.sqrt (2 : ℝ) < 2 := by
+      nlinarith [Real.sq_sqrt (show 0 ≤ (2 : ℝ) by norm_num),
+        Real.sqrt_nonneg (2 : ℝ)]
+    dsimp [H19.Theorem19_6.rowwise_step_growth_factor]
+    linarith
+  intro hle
+  have hthree_le_row : 3 ≤ H19.Theorem19_6.rowwise_step_growth_factor :=
+    le_trans hactive_ge_three (le_trans hge_active hle)
+  linarith
+
 /-- The combined active-plus-compact scalar factor implies the concrete compact
     slack recurrence used by the active-tail all-entry wrapper.
 
