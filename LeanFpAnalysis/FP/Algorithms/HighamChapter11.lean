@@ -1437,6 +1437,19 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_solve_delta_nonneg
   higham11_7_tridiagonal_backward_error_interface_of_solve_delta n A b x_hat
     c u Amax (mul_nonneg (mul_nonneg hc hu) hAmax) hsolve
 
+/-- **Theorem 11.7 entrywise norm bridge**, every matrix entry is bounded by
+the infinity norm through its row sum.  This is the bridge from local scalar
+tridiagonal hypotheses such as `|b| ≤ Amax` and `|c| ≤ Amax` to the final
+`Amax = ||A||_∞` budget. -/
+theorem higham11_7_abs_entry_le_infNorm (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (i j : Fin n) :
+    |A i j| ≤ infNorm A := by
+  calc
+    |A i j| ≤ ∑ k : Fin n, |A i k| := by
+      exact Finset.single_le_sum (fun k _ => abs_nonneg (A i k))
+        (Finset.mem_univ j)
+    _ ≤ infNorm A := row_sum_le_infNorm A i
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
