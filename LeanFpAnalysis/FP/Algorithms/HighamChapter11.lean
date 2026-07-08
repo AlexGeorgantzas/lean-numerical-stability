@@ -1010,6 +1010,23 @@ theorem higham11_7_tridiagonalTwoByTwoLiftTrailingPerturbation_leadingBlockSuppo
   tridiagonalTwoByTwoLiftTrailingPerturbation_leadingBlockSupport n offset E
     hEsupp
 
+/-- **Theorem 11.7 recursive support-shift package**, lifting a recursive
+trailing perturbation while preserving its componentwise bound, shifting
+zero-prefix support by two, and preserving embedded entries. -/
+theorem higham11_7_tridiagonalTwoByTwoLiftTrailingPerturbation_bound_leadingBlockSupport
+    (n offset : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ) (β : ℝ)
+    (hEbound : ∀ i j : Fin (n + 1), |E i j| ≤ β)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport (n + 1) offset E) :
+    ∃ ΔR : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔR i j| ≤ β) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) (offset + 2) ΔR ∧
+      (∀ i j : Fin (n + 1),
+        ΔR (higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex n i)
+          (higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex n j) =
+            E i j) :=
+  tridiagonalTwoByTwoLiftTrailingPerturbation_bound_leadingBlockSupport
+    n offset E β hEbound hEsupp
+
 /-- Any index with value `< 2` is outside the first trailing scalar after a
 leading `2 × 2` tridiagonal pivot. -/
 theorem higham11_7_ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two
