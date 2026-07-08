@@ -13738,6 +13738,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_16_fosterQ_le_iff_hat_le
 #check higham9_16_fosterQ_lt_iff_hat_lt
 #check higham9_16_fosterBandIdx_hat
+#check higham9_16_fosterPStar_scale
 #check higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowth_le
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowthValue_le
