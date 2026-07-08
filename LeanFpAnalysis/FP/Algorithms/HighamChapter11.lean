@@ -737,6 +737,45 @@ def higham11_4_bunchKaufmanMaxEntryProductBound
     (n : ℕ) (productMax ρ_n Amax : ℝ) : Prop :=
   productMax ≤ 36 * (n : ℝ) * ρ_n * Amax
 
+/-- The `(i,j)` entry of the nonnegative product `|L̂||D̂||L̂ᵀ|` used in
+Theorem 11.4. -/
+noncomputable def higham11_4_bunchKaufmanProductEntry (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n) : ℝ :=
+  ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+    |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂|
+
+/-- **Theorem 11.4 max-entry norm target**: the finite max-entry norm of
+`|L̂||D̂||L̂ᵀ|`, written as a finite supremum over entry pairs.  The positive
+dimension hypothesis supplies the nonempty finite set for `Finset.sup'`. -/
+noncomputable def higham11_4_bunchKaufmanProductMax (n : ℕ) (hn : 0 < n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) : ℝ :=
+  Finset.sup' (Finset.univ : Finset (Fin n × Fin n))
+    (by exact ⟨(⟨0, hn⟩, ⟨0, hn⟩), Finset.mem_univ _⟩)
+    (fun p => higham11_4_bunchKaufmanProductEntry n L_hat D_hat p.1 p.2)
+
+/-- Every entry of `|L̂||D̂||L̂ᵀ|` is bounded by its finite max-entry norm. -/
+theorem higham11_4_bunchKaufmanProductEntry_le_productMax (n : ℕ) (hn : 0 < n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n) :
+    higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+      higham11_4_bunchKaufmanProductMax n hn L_hat D_hat := by
+  unfold higham11_4_bunchKaufmanProductMax
+  exact Finset.le_sup'
+    (fun p : Fin n × Fin n => higham11_4_bunchKaufmanProductEntry n L_hat D_hat p.1 p.2)
+    (Finset.mem_univ (i, j))
+
+/-- The finite max-entry product is the least scalar that bounds every entry of
+`|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_bunchKaufmanProductMax_le_iff (n : ℕ) (hn : 0 < n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (B : ℝ) :
+    higham11_4_bunchKaufmanProductMax n hn L_hat D_hat ≤ B ↔
+      ∀ i j : Fin n, higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ B := by
+  constructor
+  · intro hB i j
+    exact (higham11_4_bunchKaufmanProductEntry_le_productMax n hn L_hat D_hat i j).trans hB
+  · intro hentries
+    unfold higham11_4_bunchKaufmanProductMax
+    exact Finset.sup'_le _ _ (fun p _ => hentries p.1 p.2)
+
 /-- **Theorem 11.4 constant (Higham [608, 1997], eq (4.13))**: the `36` in the
 bound `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36 n ρₙ ‖A‖_M` comes from
 `(3+α²)(3+α)/(1−α²)² ≤ 36` at `α = (1+√17)/8`. -/
@@ -792,6 +831,27 @@ theorem higham11_4_bunch_kaufman_stability_of_max_entry_product_bound (n : ℕ)
   higham11_4_bunch_kaufman_stability n A L_hat D_hat ρ_n maxNorm_A hmA hA_norm
     (fun i j => (hproduct_entries i j).trans hproduct)
 
+/-- **Theorem 11.4 max-entry product norm bridge**.  A proof of the source scalar
+max-entry statement `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36 n ρₙ ‖A‖_M` immediately supplies the
+pointwise product bound consumed by the Bunch-Kaufman stability interface. -/
+theorem higham11_4_bunch_kaufman_stability_of_productMax_le (n : ℕ) (hn : 0 < n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ_n maxNorm_A : ℝ) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hproductMax :
+      higham11_4_bunchKaufmanProductMax n hn L_hat D_hat ≤
+        36 * ↑n * ρ_n * maxNorm_A) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_max_entry_product_bound n A L_hat D_hat
+    ρ_n maxNorm_A (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) hmA hA_norm
+    (fun i j => by
+      simpa [higham11_4_bunchKaufmanProductEntry] using
+        higham11_4_bunchKaufmanProductEntry_le_productMax n hn L_hat D_hat i j)
+    hproductMax
+
 /-- **Theorem 11.4** solve backward-error target shape for Bunch-Kaufman
 partial pivoting. -/
 theorem higham11_4_bunch_kaufman_solve_backward_error_interface (n : ℕ)
@@ -827,6 +887,26 @@ theorem higham11_4_bunch_kaufman_solve_backward_error_of_max_entry_product_bound
     _ ≤ p * u * (36 * (n : ℝ) * ρ_n * Amax) :=
       mul_le_mul_of_nonneg_left hproduct hpu
     _ = (p * 36 * (n : ℝ)) * ρ_n * u * Amax := by ring
+
+/-- **Theorem 11.4 solve-budget finite-max bridge**.  This is the solve-side
+counterpart of `higham11_4_bunch_kaufman_stability_of_productMax_le`: once the
+source scalar finite maximum of `|L̂||D̂||L̂ᵀ|` satisfies eq. (4.14), a solve
+budget proportional to that maximum has the advertised `36nρₙ` form. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_productMax_le (n : ℕ)
+    (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u ρ_n Amax : ℝ) (hpu : 0 ≤ p * u)
+    (hproductMax :
+      higham11_4_bunchKaufmanProductMax n hn L_hat D_hat ≤
+        36 * (n : ℝ) * ρ_n * Amax)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_max_entry_product_bound n A b x_hat
+    p u (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax hpu hproductMax hsolve
 
 /-! ## §11.1.3 Rook pivoting -/
 
