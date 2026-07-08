@@ -11391,6 +11391,12 @@ theorem existsUnique_isSylvesterSolutionRect_schurTriangular (m n : Nat)
       X = rectMatMul U (rectMatMul YX (matTranspose V)) := hXexpand.symm
       _ = rectMatMul U (rectMatMul Y (matTranspose V)) := by rw [hYeq]
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.6):
+    source-numbered alias for the supplied Schur-triangular exact unique-solve
+    endpoint. -/
+alias H16_eq16_4_6_existsUnique_isSylvesterSolutionRect_schurTriangular :=
+  existsUnique_isSylvesterSolutionRect_schurTriangular
+
 /-- Real quasi-Schur-to-triangular uniqueness bridge.  The theorem returns the
     exact real quasi-Schur factors for `A` and `B`; if the returned `B`-side
     block map is supplied to be strictly increasing down the matrix order, so
@@ -11572,6 +11578,12 @@ theorem existsUnique_sylvesterVecCoeff_schurTriangular_mulVec (m n : Nat)
   intro y hy
   exact hinj (by rw [hy, hx])
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for the supplied Schur-triangular vectorized
+    unique-solve endpoint. -/
+alias H16_eq16_2_6_existsUnique_sylvesterVecCoeff_schurTriangular_mulVec :=
+  existsUnique_sylvesterVecCoeff_schurTriangular_mulVec
+
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6),
     supplied triangular Schur-coordinate case: the vec/Kronecker Sylvester
     coefficient itself is nonsingular under the exact supplied-factor
@@ -11597,6 +11609,12 @@ theorem sylvesterVecCoeff_schurTriangular_det_ne_zero (m n : Nat)
     apply hinj
     rw [hxzero, Matrix.mulVec_zero]
   exact hxne hxzero'
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered alias
+    for determinant nonsingularity of the supplied Schur-triangular
+    vec/Kronecker coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_schurTriangular_det_ne_zero :=
+  sylvesterVecCoeff_schurTriangular_det_ne_zero
 
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.4), strict singleton-block
     specialization of the supplied real quasi-Schur block map: if the supplied
