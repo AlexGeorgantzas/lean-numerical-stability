@@ -1289,12 +1289,258 @@ theorem bunch_tridiagonal_alpha_root :
   field_simp
   nlinarith [h5]
 
+/-- Bunch's symmetric-tridiagonal pivoting parameter is strictly positive. -/
+theorem bunch_tridiagonal_alpha_pos : 0 < bunchTridiagonalAlpha := by
+  unfold bunchTridiagonalAlpha
+  have h : (1 : ℝ) < Real.sqrt 5 :=
+    (Real.lt_sqrt (by norm_num : (0 : ℝ) ≤ 1)).mpr (by norm_num)
+  linarith
+
+/-- Bunch's symmetric-tridiagonal pivoting parameter is less than one. -/
+theorem bunch_tridiagonal_alpha_lt_one : bunchTridiagonalAlpha < 1 := by
+  unfold bunchTridiagonalAlpha
+  have h : Real.sqrt 5 < 3 := (Real.sqrt_lt' (by norm_num)).mpr (by norm_num)
+  linarith
+
+/-- From the root identity, `α² = 1 - α` for Bunch's tridiagonal parameter. -/
+theorem bunch_tridiagonal_alpha_sq :
+    bunchTridiagonalAlpha ^ 2 = 1 - bunchTridiagonalAlpha := by
+  nlinarith [bunch_tridiagonal_alpha_root]
+
 /-- Algorithm 11.6 source decision predicate for Bunch's tridiagonal pivot-size
 strategy. -/
 def BunchTridiagonalPivotChoice
     (σ a11 a21 : ℝ) (s : PivotSize) : Prop :=
   (σ * |a11| ≥ bunchTridiagonalAlpha * a21 ^ 2 ∧ s = PivotSize.one) ∨
   (σ * |a11| < bunchTridiagonalAlpha * a21 ^ 2 ∧ s = PivotSize.two)
+
+/-- The one-by-one branch of Algorithm 11.6 exposes the printed threshold
+inequality. -/
+theorem bunch_tridiagonal_pivot_choice_one_threshold (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one) :
+    σ * |a11| ≥ bunchTridiagonalAlpha * a21 ^ 2 := by
+  rcases hchoice with hchoice | hchoice
+  · exact hchoice.1
+  · cases hchoice.2
+
+/-- The two-by-two branch of Algorithm 11.6 exposes the strict printed
+threshold inequality. -/
+theorem bunch_tridiagonal_pivot_choice_two_threshold (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two) :
+    σ * |a11| < bunchTridiagonalAlpha * a21 ^ 2 := by
+  rcases hchoice with hchoice | hchoice
+  · cases hchoice.2
+  · exact hchoice.1
+
+/-- The printed non-strict threshold certifies the one-by-one branch of
+Algorithm 11.6. -/
+theorem bunch_tridiagonal_pivot_choice_one_of_threshold (σ a11 a21 : ℝ)
+    (hthreshold : σ * |a11| ≥ bunchTridiagonalAlpha * a21 ^ 2) :
+    BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one :=
+  Or.inl ⟨hthreshold, rfl⟩
+
+/-- The printed strict threshold certifies the two-by-two branch of
+Algorithm 11.6. -/
+theorem bunch_tridiagonal_pivot_choice_two_of_threshold (σ a11 a21 : ℝ)
+    (hthreshold : σ * |a11| < bunchTridiagonalAlpha * a21 ^ 2) :
+    BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two :=
+  Or.inr ⟨hthreshold, rfl⟩
+
+/-- In the one-by-one branch, a nonzero adjacent offdiagonal entry forces the
+accepted scalar pivot to be nonzero.  This is the local nonsingularity fact used
+when the tridiagonal factorization step divides by `a11`. -/
+theorem bunch_tridiagonal_pivot_choice_one_a11_ne_zero_of_a21_ne_zero
+    (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one)
+    (ha21 : a21 ≠ 0) :
+    a11 ≠ 0 := by
+  have hthreshold :=
+    bunch_tridiagonal_pivot_choice_one_threshold σ a11 a21 hchoice
+  have hsquare : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have hright_pos : 0 < bunchTridiagonalAlpha * a21 ^ 2 :=
+    mul_pos bunch_tridiagonal_alpha_pos hsquare
+  have hleft_pos : 0 < σ * |a11| := lt_of_lt_of_le hright_pos hthreshold
+  intro ha11
+  rw [ha11] at hleft_pos
+  simp at hleft_pos
+
+/-- In the two-by-two branch, if the left side of the printed comparison is
+nonnegative, the accepted offdiagonal pivot is nonzero. -/
+theorem bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_left_nonneg
+    (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hleft_nonneg : 0 ≤ σ * |a11|) :
+    a21 ≠ 0 := by
+  have hthreshold :=
+    bunch_tridiagonal_pivot_choice_two_threshold σ a11 a21 hchoice
+  have hright_pos : 0 < bunchTridiagonalAlpha * a21 ^ 2 :=
+    lt_of_le_of_lt hleft_nonneg hthreshold
+  intro ha21
+  rw [ha21] at hright_pos
+  simp at hright_pos
+
+/-- A source-shaped variant of the two-by-two branch nonsingularity fact when
+`σ` is known nonnegative. -/
+theorem bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg
+    (σ a11 a21 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσ : 0 ≤ σ) :
+    a21 ≠ 0 :=
+  bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_left_nonneg σ a11 a21
+    hchoice (mul_nonneg hσ (abs_nonneg a11))
+
+/-- In the two-by-two branch of Algorithm 11.6, if `σ` dominates the second
+diagonal entry, the accepted tridiagonal pivot block has determinant bounded
+away from zero by `(1 - α) a21²`. -/
+theorem bunch_tridiagonal_twoByTwo_absdet_lower_of_sigma_bound
+    (σ a11 a21 a22 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa22 : |a22| ≤ σ) :
+    (1 - bunchTridiagonalAlpha) * a21 ^ 2 ≤ |a11 * a22 - a21 ^ 2| := by
+  have hthreshold :=
+    bunch_tridiagonal_pivot_choice_two_threshold σ a11 a21 hchoice
+  have hprod_le : |a11 * a22| ≤ σ * |a11| := by
+    have hmul := mul_le_mul_of_nonneg_left hσa22 (abs_nonneg a11)
+    rw [abs_mul]
+    nlinarith
+  have hprod_lt : |a11 * a22| < bunchTridiagonalAlpha * a21 ^ 2 :=
+    lt_of_le_of_lt hprod_le hthreshold
+  have hdecomp : (a21 ^ 2 - a11 * a22) + a11 * a22 = a21 ^ 2 := by ring
+  have hsum : |a21 ^ 2| ≤ |a21 ^ 2 - a11 * a22| + |a11 * a22| := by
+    calc
+      |a21 ^ 2| = |(a21 ^ 2 - a11 * a22) + a11 * a22| := by rw [hdecomp]
+      _ ≤ |a21 ^ 2 - a11 * a22| + |a11 * a22| := abs_add_le _ _
+  have hsq_abs : |a21 ^ 2| = a21 ^ 2 := abs_of_nonneg (sq_nonneg a21)
+  have hlower_basic : a21 ^ 2 - |a11 * a22| ≤
+      |a21 ^ 2 - a11 * a22| := by
+    rw [hsq_abs] at hsum
+    linarith
+  have hcoeff_le_basic :
+      (1 - bunchTridiagonalAlpha) * a21 ^ 2 ≤ a21 ^ 2 - |a11 * a22| := by
+    nlinarith [hprod_lt]
+  calc
+    (1 - bunchTridiagonalAlpha) * a21 ^ 2 ≤
+        a21 ^ 2 - |a11 * a22| := hcoeff_le_basic
+    _ ≤ |a21 ^ 2 - a11 * a22| := hlower_basic
+    _ = |a11 * a22 - a21 ^ 2| := by rw [abs_sub_comm]
+
+/-- The two-by-two tridiagonal pivot block accepted by Algorithm 11.6 is
+nonsingular when `σ` dominates the second diagonal entry. -/
+theorem bunch_tridiagonal_twoByTwo_det_ne_zero_of_sigma_bound
+    (σ a11 a21 a22 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa22 : |a22| ≤ σ) :
+    a11 * a22 - a21 ^ 2 ≠ 0 := by
+  have hσ : 0 ≤ σ := le_trans (abs_nonneg a22) hσa22
+  have ha21 :=
+    bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg σ a11 a21
+      hchoice hσ
+  have hsquare : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have halpha_gap : 0 < 1 - bunchTridiagonalAlpha := by
+    linarith [bunch_tridiagonal_alpha_lt_one]
+  have hlower :=
+    bunch_tridiagonal_twoByTwo_absdet_lower_of_sigma_bound σ a11 a21 a22
+      hchoice hσa22
+  have hdet_abs_pos : 0 < |a11 * a22 - a21 ^ 2| :=
+    lt_of_lt_of_le (mul_pos halpha_gap hsquare) hlower
+  exact abs_pos.mp hdet_abs_pos
+
+/-- Entrywise inverse bounds for the `2 × 2` tridiagonal pivot block
+`[[a11, a21], [a21, a22]]` accepted by Algorithm 11.6.  The inverse entries are
+`a22/det`, `-a21/det`, and `a11/det`, with
+`det = a11*a22 - a21²`. -/
+theorem bunch_tridiagonal_twoByTwo_inverse_entry_bounds_of_sigma_bound
+    (σ a11 a21 a22 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ) :
+    |a22 / (a11 * a22 - a21 ^ 2)| ≤
+        σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ∧
+    |(-a21) / (a11 * a22 - a21 ^ 2)| ≤
+        |a21| / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ∧
+    |a11 / (a11 * a22 - a21 ^ 2)| ≤
+        σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) := by
+  let det := a11 * a22 - a21 ^ 2
+  let lower := (1 - bunchTridiagonalAlpha) * a21 ^ 2
+  have hσ : 0 ≤ σ := le_trans (abs_nonneg a11) hσa11
+  have ha21 :=
+    bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg σ a11 a21
+      hchoice hσ
+  have hsquare : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have halpha_gap : 0 < 1 - bunchTridiagonalAlpha := by
+    linarith [bunch_tridiagonal_alpha_lt_one]
+  have hlower_pos : 0 < lower := by
+    dsimp [lower]
+    exact mul_pos halpha_gap hsquare
+  have hdet_lower : lower ≤ |det| := by
+    dsimp [lower, det]
+    exact bunch_tridiagonal_twoByTwo_absdet_lower_of_sigma_bound σ a11 a21 a22
+      hchoice hσa22
+  have hdet_abs_pos : 0 < |det| := lt_of_lt_of_le hlower_pos hdet_lower
+  constructor
+  · rw [abs_div]
+    have hnum : |a22| / |det| ≤ σ / |det| :=
+      div_le_div_of_nonneg_right hσa22 (le_of_lt hdet_abs_pos)
+    have hden : σ / |det| ≤ σ / lower :=
+      div_le_div_of_nonneg_left hσ hlower_pos hdet_lower
+    exact hnum.trans hden
+  · constructor
+    · rw [abs_div, abs_neg]
+      exact div_le_div_of_nonneg_left (abs_nonneg a21) hlower_pos hdet_lower
+    · rw [abs_div]
+      have hnum : |a11| / |det| ≤ σ / |det| :=
+        div_le_div_of_nonneg_right hσa11 (le_of_lt hdet_abs_pos)
+      have hden : σ / |det| ≤ σ / lower :=
+        div_le_div_of_nonneg_left hσ hlower_pos hdet_lower
+      exact hnum.trans hden
+
+/-- Floating-point backward error of the scalar Schur update in a tridiagonal
+`2 × 2` pivot step.  In a symmetric tridiagonal matrix, after accepting the
+leading `2 × 2` block, the only trailing update has the form
+`b - c*f*c`, where `f` is the bottom-right entry of the inverse pivot block.
+The rounded computation `fl(b - fl(fl(c*f)*c))` differs from the exact update by
+a residual bounded by `γ₃ (|b| + |c*f*c|)`. -/
+theorem fl_tridiagonal_twoByTwo_schur_step_error
+    (fp : FPModel) (b c f : ℝ) (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ gamma fp 3 * (|b| + |c * f * c|) ∧
+      fp.fl_sub b (fp.fl_mul (fp.fl_mul c f) c) = (b - c * f * c) + Δ := by
+  obtain ⟨δ1, hδ1, hm1⟩ := fp.model_mul c f
+  obtain ⟨δ2, hδ2, hm2⟩ := fp.model_mul (fp.fl_mul c f) c
+  obtain ⟨δ3, hδ3, hs⟩ := fp.model_sub b (fp.fl_mul (fp.fl_mul c f) c)
+  obtain ⟨θ, hθ, hprod⟩ :=
+    prod_error_bound fp 3 ![δ1, δ2, δ3]
+      (by intro i; fin_cases i <;> simp_all) hval
+  have hfactor : (1 + δ1) * (1 + δ2) * (1 + δ3) = 1 + θ := by
+    have h := hprod
+    rw [Fin.prod_univ_three] at h
+    simpa using h
+  have hs_eq : fp.fl_sub b (fp.fl_mul (fp.fl_mul c f) c)
+      = b * (1 + δ3) - (c * f * c) * (1 + θ) := by
+    rw [hs, hm2, hm1, ← hfactor]
+    ring
+  refine ⟨b * δ3 - (c * f * c) * θ, ?_, ?_⟩
+  · have hu3 : fp.u ≤ gamma fp 3 := u_le_gamma fp (by norm_num) hval
+    have hγ0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+    have htri : |b * δ3 - (c * f * c) * θ| ≤
+        |b * δ3| + |(c * f * c) * θ| := by
+      have h := abs_add_le (b * δ3) (-((c * f * c) * θ))
+      rwa [← sub_eq_add_neg, abs_neg] at h
+    have e1 : |b * δ3 - (c * f * c) * θ|
+        ≤ |b| * fp.u + |c * f * c| * gamma fp 3 := by
+      calc |b * δ3 - (c * f * c) * θ|
+          ≤ |b * δ3| + |(c * f * c) * θ| := htri
+        _ = |b| * |δ3| + |c * f * c| * |θ| := by rw [abs_mul, abs_mul]
+        _ ≤ |b| * fp.u + |c * f * c| * gamma fp 3 :=
+            add_le_add (mul_le_mul_of_nonneg_left hδ3 (abs_nonneg _))
+              (mul_le_mul_of_nonneg_left hθ (abs_nonneg _))
+    have e2 : |b| * fp.u + |c * f * c| * gamma fp 3
+        ≤ gamma fp 3 * (|b| + |c * f * c|) := by
+      have hle : |b| * fp.u ≤ |b| * gamma fp 3 :=
+        mul_le_mul_of_nonneg_left hu3 (abs_nonneg _)
+      nlinarith [hle, abs_nonneg (c * f * c), hγ0]
+    exact le_trans e1 e2
+  · rw [hs_eq]
+    ring
 
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
