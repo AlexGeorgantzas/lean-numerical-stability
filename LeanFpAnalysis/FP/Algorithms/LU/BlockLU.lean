@@ -52,6 +52,8 @@
     determinant-nonzero positivity/right-inverse interface for the exact-κ
     base chain and base witness cases
   - higham13_blockMatrixFirstSplitFlat_nonsingInv_rightInverse_of_det_ne_zero,
+    det_blockMatrixFlat_eq_blockMatrixFlatFin,
+    det_ne_zero_blockMatrixFlatFin_of_blockMatrixNonsingular,
     det_ne_zero_blockMatrixFlatFin_blockSchur_of_first_split_invertible,
     maxEntryNorm_blockMatrixFlatFin_blockSchur_pos_of_first_split_invertible,
     higham13_eq13_22_blockLUBudgetChain_succ_from_matrix_stage_history_first_split_exact_kappa_of_det_ne_zero:
@@ -274,6 +276,8 @@
     blockMatrixFirstSplitA21, blockMatrixFirstSplitA22,
     blockMatrixFirstSplit_schur_eq_blockMatrixFlatFin_blockSchur,
     maxEntryNorm_blockMatrixFlatFin_eq_blockMaxNorm,
+    det_blockMatrixFlat_eq_blockMatrixFlatFin,
+    det_ne_zero_blockMatrixFlatFin_of_blockMatrixNonsingular,
     blockMatrixFirstSplitToFlatFinEquiv,
     blockMatrixFirstSplitFlat_eq_blockMatrixFlatFin_reindex,
     maxEntryNormRect_nonsingInv_blockMatrixFirstSplitFlat_le_blockMatrixFlatFin,
@@ -288,6 +292,8 @@
   - blockMatrixNonsingular_of_flat_inverse,
     blockMatrixNonsingular_of_isUnit_det_flat,
     blockMatrixNonsingular_of_det_ne_zero_flat,
+    higham13_blockMatrixNonsingular_of_all_leadingBlockPrefixes,
+    higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes,
     blockMatrixNonsingular_of_posDef_flat,
     leadingBlockPrefix13_2_posDef_flat_of_posDef_flat,
     LeadingPrincipalBlockNonsingular13_2.of_posDef_flat,
@@ -483,6 +489,7 @@
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_det_ne_zero_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table_of_pivot_right_inverse,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_initial_diag_right_inverse_of_pivot_right_inverse,
@@ -2237,6 +2244,29 @@ noncomputable def blockMatrixFlatFin {m r : ℕ}
       A i j s t := by
   simp [blockMatrixFlatFin]
 
+/-- The product-index and `Fin (m*r)` flattenings have the same determinant,
+    because they are simultaneous row/column reindexings of the same scalar
+    block matrix. -/
+theorem det_blockMatrixFlat_eq_blockMatrixFlatFin {m r : ℕ}
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ)) :
+    Matrix.det (blockMatrixFlat A :
+      Matrix (Fin m × Fin r) (Fin m × Fin r) ℝ) =
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) := by
+  have hflat :
+      blockMatrixFlat A =
+        (blockMatrixFlatFin A).submatrix finProdFinEquiv finProdFinEquiv := by
+    ext is jt
+    rcases is with ⟨i, s⟩
+    rcases jt with ⟨j, t⟩
+    simp [blockMatrixFlat, blockMatrixFlatFin]
+  rw [hflat]
+  simpa [Matrix.submatrix] using
+    (Matrix.det_submatrix_equiv_self
+      (finProdFinEquiv : Fin m × Fin r ≃ Fin (m * r))
+      (blockMatrixFlatFin A :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ))
+
 lemma maxEntryNorm_blockMatrixFlatFin_le_blockMaxNorm {m r : ℕ}
     (hm : 0 < m) (hr : 0 < r)
     (A : Fin m → Fin m → (Fin r → Fin r → ℝ)) :
@@ -3036,6 +3066,16 @@ theorem blockMatrixFlat_det_ne_zero_of_blockMatrixNonsingular {m r : ℕ}
       Matrix.one_apply, hId] using h
   exact Matrix.det_ne_zero_of_right_inverse hRightFlat
 
+/-- A block-nonsingular matrix has nonzero determinant after uniform
+    `Fin (m*r)` flattening. -/
+theorem det_ne_zero_blockMatrixFlatFin_of_blockMatrixNonsingular {m r : ℕ}
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (hA : BlockMatrixNonsingular A) :
+    Matrix.det (blockMatrixFlatFin A :
+      Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0 := by
+  rw [← det_blockMatrixFlat_eq_blockMatrixFlatFin A]
+  exact blockMatrixFlat_det_ne_zero_of_blockMatrixNonsingular A hA
+
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
     if one block column has zero off-diagonal blocks and the diagonal block has
     a nonzero right-kernel vector, then the flattened block matrix is singular.
@@ -3215,6 +3255,35 @@ theorem blockMatrixFlat_leadingBlockPrefix13_2 {m r : ℕ}
   rcases is with ⟨i, s⟩
   rcases jt with ⟨j, t⟩
   simp [blockMatrixFlat, leadingBlockPrefix13_2]
+
+/-- The all-leading-prefix nonsingularity table contains the full matrix when
+    the block dimension is positive. -/
+theorem higham13_blockMatrixNonsingular_of_all_leadingBlockPrefixes {m r : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp)) :
+    BlockMatrixNonsingular A := by
+  cases m with
+  | zero =>
+      exact False.elim ((Nat.lt_irrefl 0) hm)
+  | succ m =>
+      simpa [leadingBlockPrefix13_2] using hPrefix m (Nat.lt_succ_self m)
+
+/-- Determinant form of the full-matrix certificate contained in an
+    all-leading-prefix nonsingularity table, stated for the uniform
+    `Fin (m*r)` flattening used by the Chapter 13 growth-factor API. -/
+theorem higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes
+    {m r : ℕ} (hm : 0 < m)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp)) :
+    Matrix.det (blockMatrixFlatFin A :
+      Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0 := by
+  exact
+    det_ne_zero_blockMatrixFlatFin_of_blockMatrixNonsingular A
+      (higham13_blockMatrixNonsingular_of_all_leadingBlockPrefixes
+        hm A hPrefix)
 
 /-- Higham, 2nd ed., Chapter 13, §13.3.2:
     if the flattened full block matrix is positive definite, then every leading
@@ -24821,6 +24890,48 @@ theorem
       (maxEntryNorm_pos_of_det_ne_zero
         (Nat.mul_pos hm hr) (blockMatrixFlatFin A) hdet)
       invDiagBound hPrefix hDom hBound hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equations (13.21),(13.23):
+    source-facing BDD matrix-`∞` max-entry/growth-factor package from
+    all-leading-prefix nonsingularity data and certified active pivot right
+    inverses.
+
+    The all-leading-prefix table supplies the full-matrix determinant
+    certificate needed only for the positive denominator of `growthFactorEntry`.
+    The active-stage bounds still come from the BDD matrix-`∞` source data, so
+    the conclusion remains the current dimension-aware `ρ <= 2*r` endpoint. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * ((r : ℝ) * blockMaxNorm hm hr A) ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero
+            (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+            (higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes
+              hm (fun i j a b => A i j a b) hPrefix)) ≤
+        2 * (r : ℝ) := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_det_ne_zero_of_pos_dim
+      hm hr A pivotInv invDiagBound
+      (higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes
+        hm (fun i j a b => A i j a b) hPrefix)
+      hPrefix hDom hBound hPivotRight
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equations (13.21),(13.23):
     positive-block-size form of the paired matrix-`∞` endpoint from initial
