@@ -10090,6 +10090,129 @@ theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_traili
       (theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat fp err)
       (theorem20_7_compactActiveHorizonStepSlack_recurrence_nat fp err)
 
+/-- Theorem 20.7 support: the Chapter 19 row-sorting active-tail matrix-stage
+    bound also satisfies the larger compact-active horizon. -/
+theorem theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ)
+    (AstepBudget : ℕ → ℝ) (err : ℝ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ j : Fin n,
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r) :
+    ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n, k ≤ j.val →
+      |Ahat k r j| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialRowMax hn A r := by
+  intro r k hk hkr j hkj
+  have hprinted :
+      |Ahat k r j| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialRowMax hn A r :=
+    theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_accumulated_error_nat
+      hn hnm Ahat Aexact A AstepBudget err
+      hAexact0 hAsorted hAstepExact hAstepErr hArow0 hAacc
+      r k hk hkr j hkj
+  have hhorizon :
+      Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err ≤
+        theorem20_7_compactActiveHorizon fp m err k :=
+    theorem20_7_rowwise_horizon_le_compactActiveHorizon fp m err k hmfp herr
+  exact
+    hprinted.trans
+      (mul_le_mul_of_nonneg_right hhorizon
+        (theorem20_7_initialRowMax_nonneg hn A r))
+
+/-- Theorem 20.7 support: the Chapter 19 row-sorting active-tail right-hand-side
+    bound also satisfies the larger compact-active horizon. -/
+theorem theorem20_7_active_tail_stageB_bound_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (bhat bexact : ℕ → Fin m → ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ)
+    (bstepBudget : ℕ → ℝ) (err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |bhat 0 r - bexact 0 r| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r) :
+    ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+      |bhat k r| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialWeightedRowMax hn A b phi r := by
+  intro r k hk hkr
+  have hprinted :
+      |bhat k r| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi r :=
+    theorem20_7_active_tail_stageB_bound_of_h19_row_sorting_source_initial_accumulated_error_nat
+      hn hnm bhat bexact A b phi bstepBudget err
+      hbexact0 hbsorted hbstepExact hbstepErr hbrow0 hbacc
+      r k hk hkr
+  have hhorizon :
+      Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err ≤
+        theorem20_7_compactActiveHorizon fp m err k :=
+    theorem20_7_rowwise_horizon_le_compactActiveHorizon fp m err k hmfp herr
+  exact
+    hprinted.trans
+      (mul_le_mul_of_nonneg_right hhorizon
+        (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi r))
+
 /-- The current compact active-step factor cannot be absorbed into the printed
     Cox--Higham rowwise factor in general.
 
