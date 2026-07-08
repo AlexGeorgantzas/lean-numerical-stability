@@ -3662,6 +3662,66 @@ theorem rectMatMul_schur_coords_expand {m n : Nat}
     _ = C := by
             rw [rectMatMul_id_right]
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.5) and (16.9):
+    exact residual transport under supplied orthogonal Schur coordinates.
+    If `A = U R U^T`, `B = V S V^T`, and `Xhat = U Y V^T`, then the original
+    residual is `U` times the Schur-coordinate residual times `V^T`. -/
+theorem sylvesterResidualRect_schur_transform_identity (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n) (C Y : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V))) :
+    sylvesterResidualRect m n A B C
+        (rectMatMul U (rectMatMul Y (matTranspose V))) =
+      rectMatMul U
+        (rectMatMul
+          (sylvesterResidualRect m n R S
+            (rectMatMul (matTranspose U) (rectMatMul C V)) Y)
+          (matTranspose V)) := by
+  let Cs : RMatFn m n := rectMatMul (matTranspose U) (rectMatMul C V)
+  have hCexpand : rectMatMul U (rectMatMul Cs (matTranspose V)) = C := by
+    simpa [Cs] using rectMatMul_schur_coords_expand U V C hU hV
+  have hop :=
+    sylvester_schur_transform_identity m n U R A V S B Y hU hV hA hB
+  have hsub :=
+    rectMatMul_left_right_sub U Cs (sylvesterOpRect m n R S Y) (matTranspose V)
+  ext i j
+  unfold sylvesterResidualRect
+  rw [hop]
+  have hCij := congrFun (congrFun hCexpand i) j
+  have hsubij := congrFun (congrFun hsub i) j
+  rw [← hCij, ← hsubij]
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.9), exact residual norm
+    transport for supplied orthogonal Schur coordinates.  This is the
+    exact-arithmetic norm bridge used before any rounded Schur-solve residual
+    model is introduced. -/
+theorem frobNormRect_sylvesterResidualRect_schur_transform (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n) (C Y : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V))) :
+    frobNormRect
+        (sylvesterResidualRect m n A B C
+          (rectMatMul U (rectMatMul Y (matTranspose V)))) =
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) := by
+  let Rs : RMatFn m n :=
+    sylvesterResidualRect m n R S
+      (rectMatMul (matTranspose U) (rectMatMul C V)) Y
+  rw [sylvesterResidualRect_schur_transform_identity m n U R A V S B C Y
+    hU hV hA hB]
+  calc
+    frobNormRect (rectMatMul U (rectMatMul Rs (matTranspose V))) =
+        frobNormRect (rectMatMul Rs (matTranspose V)) := by
+          simpa [Rs, matMulRectLeft] using
+            frobNormRect_orthogonal_left U
+              (rectMatMul Rs (matTranspose V)) hU
+    _ = frobNormRect Rs := by
+          simpa [Rs, matMulRectRight] using
+            frobNormRect_orthogonal_right Rs (matTranspose V) hV.transpose
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5):
     equation-level Schur-coordinate form.  Under supplied orthogonal
     factorizations `A = U R U^T` and `B = V S V^T`, the substitution
