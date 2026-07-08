@@ -867,6 +867,43 @@ noncomputable def theorem20_7_activeInitialWeightedRowMaxRatioMax {m n : ℕ}
           theorem20_7_initialWeightedRowMax hn A b phi p.2
       else 0)
 
+/-- Pointwise active-suffix source-row ratio bounds give the corresponding
+    finite active-ratio maximum bound. -/
+theorem theorem20_7_activeInitialRowMaxRatioMax_le_of_forall_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) {C : ℝ} (hC : 0 ≤ C)
+    (hpoint :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A
+            ⟨k, lt_of_lt_of_le hk hnm⟩ /
+          theorem20_7_initialRowMax hn A r ≤ C) :
+    theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤ C := by
+  unfold theorem20_7_activeInitialRowMaxRatioMax
+  apply Finset.sup'_le
+  intro p _hp
+  by_cases hpactive : p.1.val ≤ p.2.val
+  · simpa [hpactive] using hpoint p.1.val p.1.isLt p.2 hpactive
+  · simpa [hpactive] using hC
+
+/-- Pointwise active-suffix weighted source-row ratio bounds give the
+    corresponding finite active-ratio maximum bound. -/
+theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_of_forall_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ) {C : ℝ}
+    (hC : 0 ≤ C)
+    (hpoint :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ /
+          theorem20_7_initialWeightedRowMax hn A b phi r ≤ C) :
+    theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm A b phi ≤ C := by
+  unfold theorem20_7_activeInitialWeightedRowMaxRatioMax
+  apply Finset.sup'_le
+  intro p _hp
+  by_cases hpactive : p.1.val ≤ p.2.val
+  · simpa [hpactive] using hpoint p.1.val p.1.isLt p.2 hpactive
+  · simpa [hpactive] using hC
+
 /-- A finite active-suffix source-row ratio maximum gives every pointwise
     active-suffix source-row ratio. -/
 theorem theorem20_7_initialRowMax_ratio_le_of_activeRatioMax_le_nat
