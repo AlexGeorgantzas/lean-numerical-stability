@@ -1791,6 +1791,49 @@ theorem tridiagonalTwoByTwoTrailingSubproblemIndex_injective (n : ℕ) :
   simpa [tridiagonalTwoByTwoTrailingSubproblemIndex] using
     Nat.add_right_cancel hval
 
+/-- An ambient perturbation is supported in the trailing block left after a
+leading `2 × 2` tridiagonal pivot if it vanishes on the first two rows and
+columns. -/
+def TridiagonalTwoByTwoTrailingBlockSupport (n : ℕ)
+    (E : Fin (n + 3) → Fin (n + 3) → ℝ) : Prop :=
+  ∀ i j : Fin (n + 3), i.val < 2 ∨ j.val < 2 → E i j = 0
+
+/-- Supported perturbations in the trailing block after a leading `2 × 2`
+tridiagonal pivot are closed under addition, and their componentwise bounds add. -/
+theorem tridiagonalTwoByTwoTrailingBlockSupport_add_bound
+    (n : ℕ) (E F : Fin (n + 3) → Fin (n + 3) → ℝ) (βE βF : ℝ)
+    (hEbound : ∀ i j : Fin (n + 3), |E i j| ≤ βE)
+    (hFbound : ∀ i j : Fin (n + 3), |F i j| ≤ βF)
+    (hEsupp : TridiagonalTwoByTwoTrailingBlockSupport n E)
+    (hFsupp : TridiagonalTwoByTwoTrailingBlockSupport n F) :
+    ∃ G : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |G i j| ≤ βE + βF) ∧
+      TridiagonalTwoByTwoTrailingBlockSupport n G ∧
+      (∀ i j : Fin (n + 3), G i j = E i j + F i j) := by
+  refine ⟨fun i j => E i j + F i j, ?_, ?_, ?_⟩
+  · intro i j
+    calc
+      |E i j + F i j| ≤ |E i j| + |F i j| := abs_add_le _ _
+      _ ≤ βE + βF := add_le_add (hEbound i j) (hFbound i j)
+  · intro i j hlead
+    change E i j + F i j = 0
+    rw [hEsupp i j hlead, hFsupp i j hlead, add_zero]
+  · intro i j
+    rfl
+
+/-- Any index with value `< 2` is outside the first trailing scalar after a
+leading `2 × 2` tridiagonal pivot. -/
+theorem ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two
+    {n : ℕ} {i : Fin (n + 3)} (hi : i.val < 2) :
+    i ≠ tridiagonalTwoByTwoFirstTrailingIndex n := by
+  intro h
+  have hlt : (tridiagonalTwoByTwoFirstTrailingIndex n).val < 2 := by
+    rw [← h]
+    exact hi
+  have hval : (tridiagonalTwoByTwoFirstTrailingIndex n).val = 2 := by simp
+  rw [hval] at hlt
+  exact (Nat.lt_irrefl 2) hlt
+
 /-- Dimension-generic first-stage embedding of the printed `2 × 2`
 tridiagonal trailing scalar backward error.  In a local block of size `n+3`,
 the first accepted `2 × 2` pivot only touches the first trailing scalar of a
@@ -1840,6 +1883,113 @@ theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed
       · exact hj htail.2
     simp [ΔA, htail]
   · simpa [ΔA, tail, zero] using hstep zero zero
+
+/-- Dimension-generic first-stage embedding of the printed `2 × 2`
+tridiagonal trailing scalar backward error, with the support property needed to
+compose with a recursive trailing-subproblem hypothesis. -/
+theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_support
+    (n : ℕ) (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound u : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ c_bound * u * Amax) ∧
+      TridiagonalTwoByTwoTrailingBlockSupport n ΔA ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  obtain ⟨ΔA, hΔA, hzero, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed n fp
+      σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
+      hb hc hratio hbudget hval
+  refine ⟨ΔA, hΔA, ?_, hstep⟩
+  intro i j hlead
+  apply hzero
+  rcases hlead with hi | hj
+  · exact Or.inl (ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two hi)
+  · exact Or.inr (ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two hj)
+
+/-- Accumulate the local printed-budget residual from a leading `2 × 2`
+tridiagonal pivot with an already-supported recursive trailing perturbation.
+This is the local algebraic handoff used when iterating the tridiagonal
+block-LDLᵀ recursion. -/
+theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate
+    (n : ℕ) (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound u βR : ℝ)
+    (ΔR : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3)
+    (hRbound : ∀ i j : Fin (n + 3), |ΔR i j| ≤ βR)
+    (hRsupp : TridiagonalTwoByTwoTrailingBlockSupport n ΔR) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ c_bound * u * Amax + βR) ∧
+      TridiagonalTwoByTwoTrailingBlockSupport n ΔA ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c) +
+          ΔR (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  obtain ⟨ΔS, hΔS, hSsupp, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_support n fp
+      σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
+      hb hc hratio hbudget hval
+  obtain ⟨ΔA, hΔA, hAsupp, hsum⟩ :=
+    tridiagonalTwoByTwoTrailingBlockSupport_add_bound n ΔS ΔR
+      (c_bound * u * Amax) βR hΔS hRbound hSsupp hRsupp
+  refine ⟨ΔA, hΔA, hAsupp, ?_⟩
+  rw [hstep, hsum (tridiagonalTwoByTwoFirstTrailingIndex n)
+    (tridiagonalTwoByTwoFirstTrailingIndex n)]
+  ring
+
+/-- Printed-coefficient form of the local recursive accumulation step: if the
+recursive trailing perturbation is already bounded by `c_rec * u * Amax`, then
+the accumulated perturbation is bounded by `(c_bound + c_rec) * u * Amax`. -/
+theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate_printed
+    (n : ℕ) (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound c_rec u : ℝ)
+    (ΔR : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3)
+    (hRbound : ∀ i j : Fin (n + 3), |ΔR i j| ≤ c_rec * u * Amax)
+    (hRsupp : TridiagonalTwoByTwoTrailingBlockSupport n ΔR) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * Amax) ∧
+      TridiagonalTwoByTwoTrailingBlockSupport n ΔA ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c) +
+          ΔR (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  obtain ⟨ΔA, hΔA, hAsupp, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate n fp
+      σ a11 a21 a22 b c Amax κ c_bound u (c_rec * u * Amax) ΔR
+      hchoice hσa11 hσa22 hAmax hκ hb hc hratio hbudget hval hRbound hRsupp
+  refine ⟨ΔA, ?_, hAsupp, hstep⟩
+  intro i j
+  calc
+    |ΔA i j| ≤ c_bound * u * Amax + c_rec * u * Amax := hΔA i j
+    _ = (c_bound + c_rec) * u * Amax := by ring
 
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
