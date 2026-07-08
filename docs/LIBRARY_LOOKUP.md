@@ -2073,6 +2073,15 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_fosterFeasible_rescale_std` (Foster A.2 rescaling: dividing out `1+t` yields a k-dimensional feasible tuple at `sqrt(k^k)` — the exact constraint transformation of the induction)
 - `higham9_16_fosterFeasible_rescale_prod` (the sharpened product constant `C/(t(1+t)^k)` for `t > 0`)
 - `higham9_16_fosterFeasible_head_eq`
+- `higham9_16_fosterQShift` (Foster (A.6) shifted stage `sqrt(m^m)·p·(a+p)^m`) with continuity/strict-mono/witness lemmas
+- `higham9_16_existsUnique_fosterQShift_root` / `higham9_16_fosterPStar` (the (A.6) root `p*`) with spec/uniqueness
+- `higham9_16_fosterV` (Foster band-1 / equality-case value `t_(k-1)·(1 + q_k(C))`)
+- `higham9_16_fosterV_chapter` (`V(k, sqrt(k^k)) = t_k`) / `higham9_16_fosterV_pos` / `higham9_16_fosterV_mono_const`
+- `higham9_16_case1_iff` (Foster case-1 boundary: `sqrt(k^k)·t(1+t)^k <= C ↔ t <= fosterQ (k+1) 1 C`)
+- `higham9_16_fosterBandIdx` (Foster (A.5) band index: number of band roots strictly below the tail `P`)
+- `higham9_16_fosterBandIdx_eq_zero` / `higham9_16_fosterBandIdx_zero_of_tail_zero`
+- `higham9_16_fosterBandValue` (Foster (A.5)-(A.8) band value function `M(k, C, P)`)
+- `higham9_16_fosterBandValue_of_idx_zero` (band-1 value is `V(k, C)`)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
