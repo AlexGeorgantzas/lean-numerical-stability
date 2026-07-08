@@ -9146,6 +9146,170 @@ theorem theorem20_7_compactActiveStepFactor_nonneg
   exact
     add_nonneg hactive (mul_nonneg hcoeff (Real.sqrt_nonneg _))
 
+/-- The active-row growth factor is below the combined active-plus-compact
+    factor under the compact Householder roundoff guard. -/
+theorem theorem20_7_active_row_growth_factor_le_compactActiveStepFactor
+    (fp : FPModel) (m : ℕ) (hmfp : gammaValid fp m) :
+    H19.Theorem19_6.active_row_growth_factor m ≤
+      theorem20_7_compactActiveStepFactor fp m := by
+  have hcoeff : 0 ≤ fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m := by
+    have hfac : 0 ≤ householderCompactNormBudgetCoeffFactor fp m :=
+      householderCompactNormBudgetCoeffFactor_nonneg fp m hmfp
+    have hu : 0 ≤ fp.u := fp.u_nonneg
+    nlinarith
+  dsimp [theorem20_7_compactActiveStepFactor]
+  exact le_add_of_nonneg_right (mul_nonneg hcoeff (Real.sqrt_nonneg _))
+
+/-- The printed rowwise step factor is below the combined active-plus-compact
+    factor.  This is the direction needed for an honest larger horizon. -/
+theorem theorem20_7_rowwise_step_growth_factor_le_compactActiveStepFactor
+    (fp : FPModel) (m : ℕ) (hmfp : gammaValid fp m) :
+    H19.Theorem19_6.rowwise_step_growth_factor ≤
+      theorem20_7_compactActiveStepFactor fp m := by
+  have hrow_active :
+      H19.Theorem19_6.rowwise_step_growth_factor ≤
+        H19.Theorem19_6.active_row_growth_factor m := by
+    dsimp [H19.Theorem19_6.rowwise_step_growth_factor,
+      H19.Theorem19_6.active_row_growth_factor,
+      coxHighamActiveRowGrowthFactor]
+    exact le_max_left _ _
+  exact le_trans hrow_active
+    (theorem20_7_active_row_growth_factor_le_compactActiveStepFactor
+      fp m hmfp)
+
+/-- The combined active-plus-compact factor is at least one. -/
+theorem theorem20_7_one_le_compactActiveStepFactor
+    (fp : FPModel) (m : ℕ) (hmfp : gammaValid fp m) :
+    1 ≤ theorem20_7_compactActiveStepFactor fp m := by
+  exact le_trans (H19.Theorem19_6.one_le_active_row_growth_factor m)
+    (theorem20_7_active_row_growth_factor_le_compactActiveStepFactor
+      fp m hmfp)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    honest larger active-tail scalar horizon after the printed rowwise horizon
+    is not large enough for the current compact active-step factor.
+
+The term `err` is grown with the same combined factor, avoiding the false
+constant-error recurrence for the printed rowwise factor. -/
+noncomputable def theorem20_7_compactActiveHorizon
+    (fp : FPModel) (m : ℕ) (err : ℝ) (i : ℕ) : ℝ :=
+  (Real.sqrt (m : ℝ) + err) *
+    theorem20_7_compactActiveStepFactor fp m ^ i
+
+/-- Compact-step slack associated with the larger compact-active horizon. -/
+noncomputable def theorem20_7_compactActiveHorizonStepSlack
+    (fp : FPModel) (m : ℕ) (err : ℝ) (i : ℕ) : ℝ :=
+  (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+    Real.sqrt (m : ℝ) *
+      theorem20_7_compactActiveHorizon fp m err i
+
+/-- The compact-active horizon is nonnegative under the standard roundoff guard
+    and nonnegative accumulated-error coefficient. -/
+theorem theorem20_7_compactActiveHorizon_nonneg
+    (fp : FPModel) (m : ℕ) (err : ℝ) (i : ℕ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err) :
+    0 ≤ theorem20_7_compactActiveHorizon fp m err i := by
+  have hbase :
+      0 ≤ Real.sqrt (m : ℝ) + err :=
+    add_nonneg (Real.sqrt_nonneg _) herr
+  have hfactor :
+      0 ≤ theorem20_7_compactActiveStepFactor fp m :=
+    theorem20_7_compactActiveStepFactor_nonneg fp m hmfp
+  exact
+    mul_nonneg hbase (pow_nonneg hfactor _)
+
+/-- The printed rowwise coefficient is dominated by the larger compact-active
+    horizon.  This is the scalar replacement for the disproved domination of
+    the compact factor by `rowwise_step_growth_factor`. -/
+theorem theorem20_7_rowwise_horizon_le_compactActiveHorizon
+    (fp : FPModel) (m : ℕ) (err : ℝ) (i : ℕ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err) :
+    Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ i + err ≤
+      theorem20_7_compactActiveHorizon fp m err i := by
+  have hrow0 : 0 ≤ H19.Theorem19_6.rowwise_step_growth_factor :=
+    H19.Theorem19_6.rowwise_step_growth_factor_nonneg
+  have hrow_factor :
+      H19.Theorem19_6.rowwise_step_growth_factor ≤
+        theorem20_7_compactActiveStepFactor fp m :=
+    theorem20_7_rowwise_step_growth_factor_le_compactActiveStepFactor
+      fp m hmfp
+  have hpow :
+      H19.Theorem19_6.rowwise_step_growth_factor ^ i ≤
+        theorem20_7_compactActiveStepFactor fp m ^ i :=
+    pow_le_pow_left₀ hrow0 hrow_factor i
+  have hsqrt_pow :
+      Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ i ≤
+        Real.sqrt (m : ℝ) *
+          theorem20_7_compactActiveStepFactor fp m ^ i :=
+    mul_le_mul_of_nonneg_left hpow (Real.sqrt_nonneg _)
+  have hfactor_one :
+      1 ≤ theorem20_7_compactActiveStepFactor fp m :=
+    theorem20_7_one_le_compactActiveStepFactor fp m hmfp
+  have herr_pow :
+      err ≤ err * theorem20_7_compactActiveStepFactor fp m ^ i :=
+    le_mul_of_one_le_right herr (one_le_pow₀ hfactor_one)
+  have hsum :
+      Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ i + err ≤
+        Real.sqrt (m : ℝ) *
+            theorem20_7_compactActiveStepFactor fp m ^ i +
+          err * theorem20_7_compactActiveStepFactor fp m ^ i :=
+    add_le_add hsqrt_pow herr_pow
+  calc
+    Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ i + err
+        ≤ Real.sqrt (m : ℝ) *
+            theorem20_7_compactActiveStepFactor fp m ^ i +
+          err * theorem20_7_compactActiveStepFactor fp m ^ i := hsum
+    _ = theorem20_7_compactActiveHorizon fp m err i := by
+      simp [theorem20_7_compactActiveHorizon]
+      ring
+
+/-- The larger compact-active slack discharges the compact-coefficient side
+    for any caller using `theorem20_7_compactActiveHorizon` as the stage
+    coefficient. -/
+theorem theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat
+    {m n : ℕ} (fp : FPModel) (err : ℝ) :
+    ∀ i : Fin m, i.val + 1 < n →
+      (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+          (Real.sqrt (m : ℝ) *
+            theorem20_7_compactActiveHorizon fp m err i.val) ≤
+        theorem20_7_compactActiveHorizonStepSlack fp m err i.val := by
+  intro i _hi
+  rw [show theorem20_7_compactActiveHorizonStepSlack fp m err i.val =
+      (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+        (Real.sqrt (m : ℝ) *
+          theorem20_7_compactActiveHorizon fp m err i.val) by
+        simp [theorem20_7_compactActiveHorizonStepSlack]
+        ring]
+
+/-- The larger compact-active horizon has the exact one-step recurrence needed
+    by the active-tail compact-budget route. -/
+theorem theorem20_7_compactActiveHorizonStepSlack_recurrence_nat
+    {m n : ℕ} (fp : FPModel) (err : ℝ) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            theorem20_7_compactActiveHorizon fp m err i.val +
+          theorem20_7_compactActiveHorizonStepSlack fp m err i.val ≤
+        theorem20_7_compactActiveHorizon fp m err (i.val + 1) := by
+  intro i _hi
+  have hleft :
+      H19.Theorem19_6.active_row_growth_factor m *
+            theorem20_7_compactActiveHorizon fp m err i.val +
+          theorem20_7_compactActiveHorizonStepSlack fp m err i.val =
+        theorem20_7_compactActiveStepFactor fp m *
+          theorem20_7_compactActiveHorizon fp m err i.val := by
+    simp [theorem20_7_compactActiveHorizonStepSlack,
+      theorem20_7_compactActiveStepFactor]
+    ring
+  rw [hleft]
+  dsimp [theorem20_7_compactActiveHorizon]
+  rw [pow_succ]
+  ring_nf
+  exact le_rfl
+
 /-- The current compact active-step factor cannot be absorbed into the printed
     Cox--Higham rowwise factor in general.
 
