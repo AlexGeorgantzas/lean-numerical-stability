@@ -226,6 +226,39 @@ theorem theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
       (mul_le_mul_of_nonneg_left (hA k hk s hks) hphi)
       (hb k hk s hks)
 
+/-- Theorem 20.7 route audit: source row sorting alone does not imply the
+    stronger `sqrt(m)` row-scale domination hypothesis used by the Chapter 19
+    accumulated-error transfer.
+
+For two rows and one column, row sorting can hold with row scales `2, 1`, but
+the pivot row scale `2` is not bounded by `sqrt(2) * 1`. -/
+theorem theorem20_7_initialRowMax_sorted_not_imp_sqrt_row_domination_two_by_one :
+    ∃ A : Fin 2 → Fin 1 → ℝ,
+      (∀ k : ℕ, ∀ hk : k < 1, ∀ s : Fin 2, k ≤ s.val →
+        theorem20_7_initialRowMax (by norm_num : 0 < 1) A s ≤
+          theorem20_7_initialRowMax (by norm_num : 0 < 1) A
+            ⟨k, lt_of_lt_of_le hk (by norm_num : 1 ≤ 2)⟩) ∧
+      ¬ (∀ k : ℕ, ∀ hk : k < 1, ∀ r : Fin 2, k ≤ r.val →
+        theorem20_7_initialRowMax (by norm_num : 0 < 1) A
+            ⟨k, lt_of_lt_of_le hk (by norm_num : 1 ≤ 2)⟩ ≤
+          Real.sqrt (2 : ℝ) *
+            theorem20_7_initialRowMax (by norm_num : 0 < 1) A r) := by
+  let A : Fin 2 → Fin 1 → ℝ := fun i _ =>
+    if i.val = 0 then 2 else 1
+  refine ⟨A, ?_, ?_⟩
+  · intro k hk s _hks
+    have hk0 : k = 0 := Nat.lt_one_iff.mp hk
+    subst k
+    fin_cases s <;> simp [theorem20_7_initialRowMax, A]
+  · intro hdom
+    have h :=
+      hdom 0 (by norm_num) ⟨1, by norm_num⟩ (by norm_num)
+    simp [theorem20_7_initialRowMax, A] at h
+    have hsqrt2_lt_two : Real.sqrt (2 : ℝ) < 2 := by
+      nlinarith [Real.sq_sqrt (show 0 ≤ (2 : ℝ) by norm_num),
+        Real.sqrt_nonneg (2 : ℝ)]
+    linarith
+
 /-- Source-shaped nonzero-row hypotheses discharge both denominator
     positivity side conditions used by the Theorem 20.7 row-growth bridges. -/
 theorem theorem20_7_denominators_pos_of_rows_nonzero {m n : ℕ}
@@ -2572,6 +2605,1879 @@ theorem theorem20_7_completionB_bound_of_h19_signed_stage_row_sorting_active_sta
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b hphi hAsourceSorted hbAbsSorted)
       hbudget
+
+/-- Theorem 20.7 support: source-row-scale compact-budget domination for the
+    matrix completion step from a componentwise compact-budget slack.
+
+This isolates the scalar part of the `hAbudgetCompletion` obligation used by
+the active-tail wrappers.  A later QR-specific proof may bound the concrete
+Householder component budget by `slack i * max_j |a_ij|`; this lemma turns that
+component estimate plus the scalar slack inequality into the exact completion
+budget required by the row-wise weighted-LS route. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_component_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (err : ℝ) (slack : ℕ → ℝ)
+    (hcompact :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val)
+              (fun r => Ahat i.val r j) i ≤
+          slack i.val * theorem20_7_initialRowMax hn A i)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  intro i hi j hij
+  have hrow_nonneg : 0 ≤ theorem20_7_initialRowMax hn A i :=
+    theorem20_7_initialRowMax_nonneg hn A i
+  calc
+    H19.Theorem19_6.active_row_growth_factor m *
+          ((Real.sqrt (m : ℝ) *
+                H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+            theorem20_7_initialRowMax hn A i) +
+        householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (fun r => Ahat i.val r j) i
+        ≤ H19.Theorem19_6.active_row_growth_factor m *
+              ((Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+                theorem20_7_initialRowMax hn A i) +
+            slack i.val * theorem20_7_initialRowMax hn A i :=
+          add_le_add le_rfl (hcompact i hi j hij)
+    _ = (H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val) *
+          theorem20_7_initialRowMax hn A i := by
+          ring
+    _ ≤ (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i :=
+          mul_le_mul_of_nonneg_right (hslack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: weighted source-row-scale compact-budget domination
+    for the RHS completion step from a componentwise compact-budget slack.
+
+This is the right-hand-side analogue of
+`theorem20_7_completionA_budget_of_signed_stage_component_slack_nat`, using the
+weighted row scale `max(phi * max_j |a_ij|, |b_i|)`. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_component_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (err : ℝ) (slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi)
+    (hcompact :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val)
+              (bhat i.val) i ≤
+          slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  intro i hi
+  have hrow_nonneg :
+      0 ≤ theorem20_7_initialWeightedRowMax hn A b phi i :=
+    theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i
+  calc
+    H19.Theorem19_6.active_row_growth_factor m *
+          ((Real.sqrt (m : ℝ) *
+                H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i) +
+        householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (bhat i.val) i
+        ≤ H19.Theorem19_6.active_row_growth_factor m *
+              ((Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+                theorem20_7_initialWeightedRowMax hn A b phi i) +
+            slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
+          add_le_add le_rfl (hcompact i hi)
+    _ = (H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+          ring
+    _ ≤ (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i :=
+          mul_le_mul_of_nonneg_right (hslack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: source-row-scale compact-budget domination for the
+    matrix completion step from an abstract scalar horizon recurrence.
+
+This generic form lets the weighted-LS completion route use a horizon larger
+than the printed rowwise factor once the corresponding one-step scalar
+recurrence has been proved. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_component_slack_horizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (horizon slack : ℕ → ℝ)
+    (hcompact :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val)
+              (fun r => Ahat i.val r j) i ≤
+          slack i.val * theorem20_7_initialRowMax hn A i)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val ≤
+          horizon (i.val + 1)) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (horizon i.val * theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        horizon (i.val + 1) * theorem20_7_initialRowMax hn A i := by
+  intro i hi j hij
+  have hrow_nonneg : 0 ≤ theorem20_7_initialRowMax hn A i :=
+    theorem20_7_initialRowMax_nonneg hn A i
+  calc
+    H19.Theorem19_6.active_row_growth_factor m *
+          (horizon i.val * theorem20_7_initialRowMax hn A i) +
+        householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (fun r => Ahat i.val r j) i
+        ≤ H19.Theorem19_6.active_row_growth_factor m *
+              (horizon i.val * theorem20_7_initialRowMax hn A i) +
+            slack i.val * theorem20_7_initialRowMax hn A i :=
+          add_le_add le_rfl (hcompact i hi j hij)
+    _ = (H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val) *
+          theorem20_7_initialRowMax hn A i := by
+          ring
+    _ ≤ horizon (i.val + 1) * theorem20_7_initialRowMax hn A i :=
+          mul_le_mul_of_nonneg_right (hslack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: weighted source-row-scale compact-budget domination
+    for the RHS completion step from an abstract scalar horizon recurrence.
+
+This is the right-hand-side analogue of
+`theorem20_7_completionA_budget_of_signed_stage_component_slack_horizon_nat`,
+using the weighted row scale `max(phi * max_j |a_ij|, |b_i|)`. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_component_slack_horizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (horizon slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi)
+    (hcompact :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val)
+              (bhat i.val) i ≤
+          slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val ≤
+          horizon (i.val + 1)) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (horizon i.val * theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        horizon (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  intro i hi
+  have hrow_nonneg :
+      0 ≤ theorem20_7_initialWeightedRowMax hn A b phi i :=
+    theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i
+  calc
+    H19.Theorem19_6.active_row_growth_factor m *
+          (horizon i.val * theorem20_7_initialWeightedRowMax hn A b phi i) +
+        householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (bhat i.val) i
+        ≤ H19.Theorem19_6.active_row_growth_factor m *
+              (horizon i.val * theorem20_7_initialWeightedRowMax hn A b phi i) +
+            slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
+          add_le_add le_rfl (hcompact i hi)
+    _ = (H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+          ring
+    _ ≤ horizon (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i :=
+          mul_le_mul_of_nonneg_right (hslack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: a single compact Householder component budget is
+    controlled by the reflector's norm-budget coefficient times the input
+    vector norm.
+
+This is the pointwise form needed by the weighted-LS completion route: the
+repository already proves the corresponding normwise compact-budget bound, and
+this adapter extracts one nonnegative component from that norm bound. -/
+theorem theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_vecNorm2
+    (fp : FPModel) (m : ℕ) (v : Fin m → ℝ) (beta : ℝ)
+    (x : Fin m → ℝ) (hm : gammaValid fp m) (i : Fin m) :
+    householderCompactComponentBudget fp m v beta x i ≤
+      householderCompactNormBudgetCoeff fp m v beta * vecNorm2 x := by
+  have hnonneg :
+      0 ≤ householderCompactComponentBudget fp m v beta x i :=
+    householderCompactComponentBudget_nonneg fp m v beta x hm i
+  have hcoord :
+      |(fun r : Fin m =>
+          householderCompactComponentBudget fp m v beta x r) i| ≤
+        vecNorm2 (fun r : Fin m =>
+          householderCompactComponentBudget fp m v beta x r) :=
+    abs_coord_le_vecNorm2
+      (fun r : Fin m =>
+        householderCompactComponentBudget fp m v beta x r) i
+  have hcomponent_norm :
+      householderCompactComponentBudget fp m v beta x i ≤
+        vecNorm2 (fun r : Fin m =>
+          householderCompactComponentBudget fp m v beta x r) := by
+    simpa [abs_of_nonneg hnonneg] using hcoord
+  have hnorm :
+      vecNorm2 (fun r : Fin m =>
+          householderCompactComponentBudget fp m v beta x r) ≤
+        householderCompactNormBudgetCoeff fp m v beta * vecNorm2 x := by
+    have h :=
+      householderCompactNormBudget_le_normBudgetCoeff_mul
+        fp m v beta x hm
+    simpa [householderCompactNormBudget] using h
+  exact hcomponent_norm.trans hnorm
+
+/-- Theorem 20.7 support: source-row-scale matrix completion-budget domination
+    from norm-budget-coefficient slack.
+
+This is the next layer below
+`theorem20_7_completionA_budget_of_signed_stage_component_slack_nat`: callers
+may prove the norm-budget coefficient times the current column norm is below a
+source-row-scale slack, and this adapter converts it to the exact matrix
+completion-budget hypothesis used by the active-tail wrappers. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_norm_coeff_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (err : ℝ) (slack : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hcompact :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            vecNorm2 (fun r : Fin m => Ahat i.val r j) ≤
+          slack i.val * theorem20_7_initialRowMax hn A i)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  exact
+    theorem20_7_completionA_budget_of_signed_stage_component_slack_nat
+      hn hnm fp Ahat A alpha err slack
+      (fun i hi j hij =>
+        (theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_vecNorm2
+          fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (fun r : Fin m => Ahat i.val r j) hm i).trans
+          (hcompact i hi j hij))
+      hslack
+
+/-- Theorem 20.7 support: weighted RHS completion-budget domination from
+    norm-budget-coefficient slack.
+
+This is the right-hand-side analogue of
+`theorem20_7_completionA_budget_of_signed_stage_norm_coeff_slack_nat`; it
+reduces the compact RHS budget obligation to a norm-budget-coefficient bound
+against the weighted source row scale. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (err : ℝ) (slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m)
+    (hcompact :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            vecNorm2 (bhat i.val) ≤
+          slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completionB_budget_of_signed_stage_component_slack_nat
+      hn hnm fp Ahat bhat A b alpha err slack hphi
+      (fun i hi =>
+        (theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_vecNorm2
+          fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (bhat i.val) hm i).trans
+          (hcompact i hi))
+      hslack
+
+/-- Theorem 20.7 support: a vector whose entries are bounded by a scalar
+    multiple of a source row scale has the corresponding `sqrt(m)` norm bound.
+
+This is the finite-dimensional norm bridge used to turn entrywise QR stage
+bounds into the column/RHS norm estimates consumed by the compact-budget
+coefficient adapters. -/
+theorem theorem20_7_vecNorm2_le_sqrt_card_mul_scale_of_abs_le
+    {m : ℕ} (x : Fin m → ℝ) {C S : ℝ}
+    (hC : 0 ≤ C) (hS : 0 ≤ S)
+    (hentry : ∀ r : Fin m, |x r| ≤ C * S) :
+    vecNorm2 x ≤ (Real.sqrt (m : ℝ) * C) * S := by
+  have hB : 0 ≤ C * S := mul_nonneg hC hS
+  calc
+    vecNorm2 x ≤ Real.sqrt (m : ℝ) * (C * S) :=
+      vecNorm2_le_sqrt_card_mul_of_abs_le x hB hentry
+    _ = (Real.sqrt (m : ℝ) * C) * S := by ring
+
+/-- Theorem 20.7 support: the concrete stored signed-stage Householder vector
+    has the zero prefix expected of the active trailing reflector. -/
+theorem theorem20_7_storedQRSignedStageVector_zero_prefix_nat
+    {m n : ℕ} (hnm : n ≤ m)
+    (Ahat : ℕ → Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    {t : ℕ} (ht : t < n) :
+    ∀ r : Fin m, r.val < t →
+      storedQRSignedStageVector hnm Ahat alpha t r = 0 := by
+  intro r hr
+  simpa [storedQRSignedStageVector, ht] using
+    householderTrailingActiveVector_zero_prefix m
+      ⟨t, lt_of_lt_of_le ht hnm⟩
+      (fun a => Ahat t a ⟨t, ht⟩) (alpha t) r hr
+
+/-- Theorem 20.7 support: active-tail entry bounds control the norm of the
+    trailing part of a vector.
+
+This is the active-tail analogue of
+`theorem20_7_vecNorm2_le_sqrt_card_mul_scale_of_abs_le`: entries above the
+pivot are zeroed by `householderTrailingPart`, so callers only need bounds on
+rows `p.val <= r.val`. -/
+theorem theorem20_7_vecNorm2_trailingPart_le_sqrt_card_mul_scale_of_active_abs_le
+    {m : ℕ} (p : Fin m) (x : Fin m → ℝ) {C S : ℝ}
+    (hC : 0 ≤ C) (hS : 0 ≤ S)
+    (hentry : ∀ r : Fin m, p.val ≤ r.val → |x r| ≤ C * S) :
+    vecNorm2 (householderTrailingPart m p x) ≤
+      (Real.sqrt (m : ℝ) * C) * S := by
+  refine
+    theorem20_7_vecNorm2_le_sqrt_card_mul_scale_of_abs_le
+      (householderTrailingPart m p x) hC hS ?_
+  intro r
+  by_cases hr : r.val < p.val
+  · have hnonneg : 0 ≤ C * S := mul_nonneg hC hS
+    simpa [householderTrailingPart, hr] using hnonneg
+  · exact
+      (by
+        simpa [householderTrailingPart, hr] using
+          hentry r (Nat.le_of_not_gt hr))
+
+/-- Theorem 20.7 support: a zero-prefix reflector sees only the active
+    trailing part of the updated vector in a single active component budget.
+
+The compact component budget depends on the absolute dot-product budget and the
+local updated entry.  If the reflector has zero prefix and the requested
+component lies in the active tail, replacing the input by
+`householderTrailingPart` leaves that component budget unchanged. -/
+theorem theorem20_7_householderCompactComponentBudget_eq_trailingPart_of_zero_prefix
+    (fp : FPModel) (n : ℕ) (p : Fin n)
+    (v : Fin n → ℝ) (beta : ℝ) (b : Fin n → ℝ) (i : Fin n)
+    (hprefix : ∀ r : Fin n, r.val < p.val → v r = 0)
+    (hi : p.val ≤ i.val) :
+    householderCompactComponentBudget fp n v beta b i =
+      householderCompactComponentBudget fp n v beta
+        (householderTrailingPart n p b) i := by
+  have hS :
+      householderAbsDotBudget n v b =
+        householderAbsDotBudget n v (householderTrailingPart n p b) := by
+    unfold householderAbsDotBudget
+    refine Finset.sum_congr rfl ?_
+    intro r _
+    by_cases hr : r.val < p.val
+    · have hv : v r = 0 := hprefix r hr
+      simp [householderTrailingPart, hr, hv]
+    · simp [householderTrailingPart, hr]
+  have hbi : householderTrailingPart n p b i = b i := by
+    have hnot : ¬ i.val < p.val := Nat.not_lt.mpr hi
+    simp [householderTrailingPart, hnot]
+  simp [householderCompactComponentBudget, hS, hbi]
+
+/-- Theorem 20.7 support: a zero-prefix reflector bounds a single active
+    component by the compact norm-budget coefficient times the active-tail
+    input norm.
+
+This removes the too-strong full-column norm requirement from the weighted-LS
+completion route: prefix rows do not contribute to the compact Householder
+budget when the stage reflector is a trailing active vector. -/
+theorem theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_trailingPart_vecNorm2
+    (fp : FPModel) (n : ℕ) (p : Fin n)
+    (v : Fin n → ℝ) (beta : ℝ) (b : Fin n → ℝ)
+    (hn : gammaValid fp n) (i : Fin n)
+    (hprefix : ∀ r : Fin n, r.val < p.val → v r = 0)
+    (hi : p.val ≤ i.val) :
+    householderCompactComponentBudget fp n v beta b i ≤
+      householderCompactNormBudgetCoeff fp n v beta *
+        vecNorm2 (householderTrailingPart n p b) := by
+  rw [
+    theorem20_7_householderCompactComponentBudget_eq_trailingPart_of_zero_prefix
+      fp n p v beta b i hprefix hi]
+  exact
+    theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_vecNorm2
+      fp n v beta (householderTrailingPart n p b) hn i
+
+/-- Theorem 20.7 support: matrix completion-budget domination from entrywise
+    column bounds and a scalar norm-coefficient slack comparison.
+
+Compared with
+`theorem20_7_completionA_budget_of_signed_stage_norm_coeff_slack_nat`, this
+adapter removes the explicit column-norm hypothesis: entrywise bounds by
+`C i * max_j |a_ij|` and the scalar comparison
+`compactCoeff_i * sqrt(m) * C i <= slack i` suffice. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_norm_coeff_entry_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (err : ℝ) (C slack : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        ∀ r : Fin m,
+          |Ahat i.val r j| ≤ C i.val * theorem20_7_initialRowMax hn A i)
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  refine
+    theorem20_7_completionA_budget_of_signed_stage_norm_coeff_slack_nat
+      hn hnm fp Ahat A alpha err slack hm ?_ hslack
+  intro i hi j hij
+  have hrow_nonneg : 0 ≤ theorem20_7_initialRowMax hn A i :=
+    theorem20_7_initialRowMax_nonneg hn A i
+  have hcoeff_nonneg :
+      0 ≤ householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) :=
+    householderCompactNormBudgetCoeff_nonneg fp m
+      (storedQRSignedStageVector hnm Ahat alpha i.val)
+      (storedQRSignedStageBeta hnm Ahat alpha i.val) hm
+  have hnorm :
+      vecNorm2 (fun r : Fin m => Ahat i.val r j) ≤
+        (Real.sqrt (m : ℝ) * C i.val) *
+          theorem20_7_initialRowMax hn A i :=
+    theorem20_7_vecNorm2_le_sqrt_card_mul_scale_of_abs_le
+      (fun r : Fin m => Ahat i.val r j) (hC i hi) hrow_nonneg
+      (fun r => hentry i hi j hij r)
+  calc
+    householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+        vecNorm2 (fun r : Fin m => Ahat i.val r j)
+      ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          ((Real.sqrt (m : ℝ) * C i.val) *
+            theorem20_7_initialRowMax hn A i) :=
+        mul_le_mul_of_nonneg_left hnorm hcoeff_nonneg
+    _ = (householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          (Real.sqrt (m : ℝ) * C i.val)) *
+            theorem20_7_initialRowMax hn A i := by ring
+    _ ≤ slack i.val * theorem20_7_initialRowMax hn A i :=
+        mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: RHS completion-budget domination from entrywise RHS
+    bounds and a scalar norm-coefficient slack comparison.
+
+This is the weighted right-hand-side analogue of
+`theorem20_7_completionA_budget_of_signed_stage_norm_coeff_entry_slack_nat`. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_entry_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (err : ℝ) (C slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ r : Fin m,
+        |bhat i.val r| ≤
+          C i.val * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  refine
+    theorem20_7_completionB_budget_of_signed_stage_norm_coeff_slack_nat
+      hn hnm fp Ahat bhat A b alpha err slack hphi hm ?_ hslack
+  intro i hi
+  have hrow_nonneg :
+      0 ≤ theorem20_7_initialWeightedRowMax hn A b phi i :=
+    theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i
+  have hcoeff_nonneg :
+      0 ≤ householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) :=
+    householderCompactNormBudgetCoeff_nonneg fp m
+      (storedQRSignedStageVector hnm Ahat alpha i.val)
+      (storedQRSignedStageBeta hnm Ahat alpha i.val) hm
+  have hnorm :
+      vecNorm2 (bhat i.val) ≤
+        (Real.sqrt (m : ℝ) * C i.val) *
+          theorem20_7_initialWeightedRowMax hn A b phi i :=
+    theorem20_7_vecNorm2_le_sqrt_card_mul_scale_of_abs_le
+      (bhat i.val) (hC i hi) hrow_nonneg
+      (fun r => hentry i hi r)
+  calc
+    householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+        vecNorm2 (bhat i.val)
+      ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          ((Real.sqrt (m : ℝ) * C i.val) *
+            theorem20_7_initialWeightedRowMax hn A b phi i) :=
+        mul_le_mul_of_nonneg_left hnorm hcoeff_nonneg
+    _ = (householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          (Real.sqrt (m : ℝ) * C i.val)) *
+            theorem20_7_initialWeightedRowMax hn A b phi i := by ring
+    _ ≤ slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
+        mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: matrix completion-budget domination from active-tail
+    entrywise column bounds and a scalar compact-coefficient slack comparison.
+
+Unlike
+`theorem20_7_completionA_budget_of_signed_stage_norm_coeff_entry_slack_nat`,
+this adapter only asks for entry bounds on rows in the active tail of the
+stored Householder stage.  Prefix rows are removed by
+`householderTrailingPart` and the zero-prefix stored-stage reflector. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_norm_coeff_active_entry_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (err : ℝ) (C slack : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        ∀ r : Fin m, i.val ≤ r.val →
+          |Ahat i.val r j| ≤ C i.val * theorem20_7_initialRowMax hn A i)
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  refine
+    theorem20_7_completionA_budget_of_signed_stage_component_slack_nat
+      hn hnm fp Ahat A alpha err slack ?_ hslack
+  intro i hi j hij
+  have ht : i.val < n := by omega
+  have hrow_nonneg : 0 ≤ theorem20_7_initialRowMax hn A i :=
+    theorem20_7_initialRowMax_nonneg hn A i
+  have hprefix :
+      ∀ r : Fin m, r.val < i.val →
+        storedQRSignedStageVector hnm Ahat alpha i.val r = 0 :=
+    theorem20_7_storedQRSignedStageVector_zero_prefix_nat
+      hnm Ahat alpha ht
+  have hcoeff_nonneg :
+      0 ≤ householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) :=
+    householderCompactNormBudgetCoeff_nonneg fp m
+      (storedQRSignedStageVector hnm Ahat alpha i.val)
+      (storedQRSignedStageBeta hnm Ahat alpha i.val) hm
+  have hnorm :
+      vecNorm2
+          (householderTrailingPart m i (fun r : Fin m => Ahat i.val r j)) ≤
+        (Real.sqrt (m : ℝ) * C i.val) *
+          theorem20_7_initialRowMax hn A i :=
+    theorem20_7_vecNorm2_trailingPart_le_sqrt_card_mul_scale_of_active_abs_le
+      i (fun r : Fin m => Ahat i.val r j) (hC i hi) hrow_nonneg
+      (fun r hr => hentry i hi j hij r hr)
+  calc
+    householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (fun r => Ahat i.val r j) i
+      ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          vecNorm2
+            (householderTrailingPart m i
+              (fun r : Fin m => Ahat i.val r j)) :=
+        theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_trailingPart_vecNorm2
+          fp m i
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (fun r : Fin m => Ahat i.val r j) hm i hprefix le_rfl
+    _ ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          ((Real.sqrt (m : ℝ) * C i.val) *
+            theorem20_7_initialRowMax hn A i) :=
+        mul_le_mul_of_nonneg_left hnorm hcoeff_nonneg
+    _ = (householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          (Real.sqrt (m : ℝ) * C i.val)) *
+            theorem20_7_initialRowMax hn A i := by ring
+    _ ≤ slack i.val * theorem20_7_initialRowMax hn A i :=
+        mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: RHS completion-budget domination from active-tail
+    RHS entry bounds and a scalar compact-coefficient slack comparison. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_active_entry_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (err : ℝ) (C slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ r : Fin m, i.val ≤ r.val →
+        |bhat i.val r| ≤
+          C i.val * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  refine
+    theorem20_7_completionB_budget_of_signed_stage_component_slack_nat
+      hn hnm fp Ahat bhat A b alpha err slack hphi ?_ hslack
+  intro i hi
+  have ht : i.val < n := by omega
+  have hrow_nonneg :
+      0 ≤ theorem20_7_initialWeightedRowMax hn A b phi i :=
+    theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i
+  have hprefix :
+      ∀ r : Fin m, r.val < i.val →
+        storedQRSignedStageVector hnm Ahat alpha i.val r = 0 :=
+    theorem20_7_storedQRSignedStageVector_zero_prefix_nat
+      hnm Ahat alpha ht
+  have hcoeff_nonneg :
+      0 ≤ householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) :=
+    householderCompactNormBudgetCoeff_nonneg fp m
+      (storedQRSignedStageVector hnm Ahat alpha i.val)
+      (storedQRSignedStageBeta hnm Ahat alpha i.val) hm
+  have hnorm :
+      vecNorm2 (householderTrailingPart m i (bhat i.val)) ≤
+        (Real.sqrt (m : ℝ) * C i.val) *
+          theorem20_7_initialWeightedRowMax hn A b phi i :=
+    theorem20_7_vecNorm2_trailingPart_le_sqrt_card_mul_scale_of_active_abs_le
+      i (bhat i.val) (hC i hi) hrow_nonneg
+      (fun r hr => hentry i hi r hr)
+  calc
+    householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (bhat i.val) i
+      ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          vecNorm2 (householderTrailingPart m i (bhat i.val)) :=
+        theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_trailingPart_vecNorm2
+          fp m i
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (bhat i.val) hm i hprefix le_rfl
+    _ ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          ((Real.sqrt (m : ℝ) * C i.val) *
+            theorem20_7_initialWeightedRowMax hn A b phi i) :=
+        mul_le_mul_of_nonneg_left hnorm hcoeff_nonneg
+    _ = (householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          (Real.sqrt (m : ℝ) * C i.val)) *
+            theorem20_7_initialWeightedRowMax hn A b phi i := by ring
+    _ ≤ slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
+        mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: matrix completion-budget domination from active-tail
+    entrywise column bounds and an abstract scalar horizon recurrence.
+
+This is the horizon-parametric analogue of
+`theorem20_7_completionA_budget_of_signed_stage_norm_coeff_active_entry_slack_nat`.
+It removes the hardwired printed rowwise coefficient from the completion-budget
+conclusion while retaining the same active-tail compact-budget proof. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_norm_coeff_active_entry_slack_horizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (C horizon slack : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        ∀ r : Fin m, i.val ≤ r.val →
+          |Ahat i.val r j| ≤ C i.val * theorem20_7_initialRowMax hn A i)
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val ≤
+          horizon (i.val + 1)) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (horizon i.val * theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        horizon (i.val + 1) * theorem20_7_initialRowMax hn A i := by
+  refine
+    theorem20_7_completionA_budget_of_signed_stage_component_slack_horizon_nat
+      hn hnm fp Ahat A alpha horizon slack ?_ hslack
+  intro i hi j hij
+  have ht : i.val < n := by omega
+  have hrow_nonneg : 0 ≤ theorem20_7_initialRowMax hn A i :=
+    theorem20_7_initialRowMax_nonneg hn A i
+  have hprefix :
+      ∀ r : Fin m, r.val < i.val →
+        storedQRSignedStageVector hnm Ahat alpha i.val r = 0 :=
+    theorem20_7_storedQRSignedStageVector_zero_prefix_nat
+      hnm Ahat alpha ht
+  have hcoeff_nonneg :
+      0 ≤ householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) :=
+    householderCompactNormBudgetCoeff_nonneg fp m
+      (storedQRSignedStageVector hnm Ahat alpha i.val)
+      (storedQRSignedStageBeta hnm Ahat alpha i.val) hm
+  have hnorm :
+      vecNorm2
+          (householderTrailingPart m i (fun r : Fin m => Ahat i.val r j)) ≤
+        (Real.sqrt (m : ℝ) * C i.val) *
+          theorem20_7_initialRowMax hn A i :=
+    theorem20_7_vecNorm2_trailingPart_le_sqrt_card_mul_scale_of_active_abs_le
+      i (fun r : Fin m => Ahat i.val r j) (hC i hi) hrow_nonneg
+      (fun r hr => hentry i hi j hij r hr)
+  calc
+    householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (fun r => Ahat i.val r j) i
+      ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          vecNorm2
+            (householderTrailingPart m i
+              (fun r : Fin m => Ahat i.val r j)) :=
+        theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_trailingPart_vecNorm2
+          fp m i
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (fun r : Fin m => Ahat i.val r j) hm i hprefix le_rfl
+    _ ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          ((Real.sqrt (m : ℝ) * C i.val) *
+            theorem20_7_initialRowMax hn A i) :=
+        mul_le_mul_of_nonneg_left hnorm hcoeff_nonneg
+    _ = (householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          (Real.sqrt (m : ℝ) * C i.val)) *
+            theorem20_7_initialRowMax hn A i := by ring
+    _ ≤ slack i.val * theorem20_7_initialRowMax hn A i :=
+        mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: RHS completion-budget domination from active-tail
+    RHS entry bounds and an abstract scalar horizon recurrence.
+
+This is the weighted right-hand-side analogue of
+`theorem20_7_completionA_budget_of_signed_stage_norm_coeff_active_entry_slack_horizon_nat`. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_active_entry_slack_horizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (C horizon slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ r : Fin m, i.val ≤ r.val →
+        |bhat i.val r| ≤
+          C i.val * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val ≤
+          horizon (i.val + 1)) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (horizon i.val * theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        horizon (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  refine
+    theorem20_7_completionB_budget_of_signed_stage_component_slack_horizon_nat
+      hn hnm fp Ahat bhat A b alpha horizon slack hphi ?_ hslack
+  intro i hi
+  have ht : i.val < n := by omega
+  have hrow_nonneg :
+      0 ≤ theorem20_7_initialWeightedRowMax hn A b phi i :=
+    theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i
+  have hprefix :
+      ∀ r : Fin m, r.val < i.val →
+        storedQRSignedStageVector hnm Ahat alpha i.val r = 0 :=
+    theorem20_7_storedQRSignedStageVector_zero_prefix_nat
+      hnm Ahat alpha ht
+  have hcoeff_nonneg :
+      0 ≤ householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) :=
+    householderCompactNormBudgetCoeff_nonneg fp m
+      (storedQRSignedStageVector hnm Ahat alpha i.val)
+      (storedQRSignedStageBeta hnm Ahat alpha i.val) hm
+  have hnorm :
+      vecNorm2 (householderTrailingPart m i (bhat i.val)) ≤
+        (Real.sqrt (m : ℝ) * C i.val) *
+          theorem20_7_initialWeightedRowMax hn A b phi i :=
+    theorem20_7_vecNorm2_trailingPart_le_sqrt_card_mul_scale_of_active_abs_le
+      i (bhat i.val) (hC i hi) hrow_nonneg
+      (fun r hr => hentry i hi r hr)
+  calc
+    householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (bhat i.val) i
+      ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          vecNorm2 (householderTrailingPart m i (bhat i.val)) :=
+        theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_trailingPart_vecNorm2
+          fp m i
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (bhat i.val) hm i hprefix le_rfl
+    _ ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          ((Real.sqrt (m : ℝ) * C i.val) *
+            theorem20_7_initialWeightedRowMax hn A b phi i) :=
+        mul_le_mul_of_nonneg_left hnorm hcoeff_nonneg
+    _ = (householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          (Real.sqrt (m : ℝ) * C i.val)) *
+            theorem20_7_initialWeightedRowMax hn A b phi i := by ring
+    _ ≤ slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
+        mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: signed nonbreakdown stages discharge the scalar
+    compact-coefficient slack premise for the active-tail completion adapters.
+
+The previous active-tail adapters exposed a raw reflector-dependent
+`householderCompactNormBudgetCoeff` comparison.  For the signed stored-QR
+stage, the source alpha definition and positive trailing norm give a nonzero
+Householder denominator, hence the Chapter 19 compact-coefficient estimate
+`u + 2 * factor`.  This lemma turns that estimate into the exact scalar
+slack premise used by the row-wise weighted-LS route. -/
+theorem theorem20_7_signed_stage_norm_coeff_slack_of_trailingNorm_pos_nat
+    {m n : ℕ} (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (alpha : ℕ → ℝ) (C slack : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val) :
+    ∀ i : Fin m, i.val + 1 < n →
+      householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          (Real.sqrt (m : ℝ) * C i.val) ≤
+        slack i.val := by
+  intro i hi
+  have hit : i.val < n := by omega
+  let pivot : Fin m := Fin.mk i.val (lt_of_lt_of_le hit hnm)
+  let pivotCol : Fin n := Fin.mk i.val hit
+  have hAlphaSq :
+      alpha i.val * alpha i.val =
+        householderTrailingNorm2Sq m pivot
+          (fun r => Ahat i.val r pivotCol) := by
+    rw [hAlphaDef i.val hit]
+    simpa [pivot, pivotCol] using
+      signedHouseholderAlpha_sqrt_trailingNorm2Sq_sq
+        m pivot (fun r => Ahat i.val r pivotCol)
+  have hsign :
+      alpha i.val * Ahat i.val pivot pivotCol ≤ 0 := by
+    rw [hAlphaDef i.val hit]
+    simpa [pivot, pivotCol] using
+      signedHouseholderAlpha_sqrt_trailingNorm2Sq_mul_pivot_nonpos
+        m pivot (fun r => Ahat i.val r pivotCol)
+  have hnorm :
+      0 < householderTrailingNorm2Sq m pivot
+          (fun r => Ahat i.val r pivotCol) := by
+    simpa [pivot, pivotCol] using htrailingPos i.val hit
+  have hden :
+      (∑ r : Fin m,
+        storedQRSignedStageVector hnm Ahat alpha i.val r *
+          storedQRSignedStageVector hnm Ahat alpha i.val r) ≠ 0 := by
+    have hden0 :
+        (∑ r : Fin m,
+          householderTrailingActiveVector m pivot
+            (fun a => Ahat i.val a pivotCol) (alpha i.val) r *
+            householderTrailingActiveVector m pivot
+              (fun a => Ahat i.val a pivotCol) (alpha i.val) r) ≠ 0 :=
+      householderTrailingActiveVector_inner_self_ne_zero_of_trailingNorm2Sq_pos_mul_nonpos
+        m pivot (fun a => Ahat i.val a pivotCol) (alpha i.val)
+        hAlphaSq hnorm hsign
+    simpa [storedQRSignedStageVector, hit, pivot, pivotCol] using hden0
+  have hcoeffStored :
+      storedQRCompactStepNormBudgetCoeff hnm fp Ahat alpha ⟨i.val, hit⟩ ≤
+        fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m :=
+    storedQRCompactStepNormBudgetCoeff_le_of_den_ne_zero
+      hnm fp Ahat alpha hm ⟨i.val, hit⟩ hden
+  have hcoeff :
+      householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) ≤
+        fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m := by
+    simpa [storedQRCompactStepNormBudgetCoeff] using hcoeffStored
+  have hscale_nonneg : 0 ≤ Real.sqrt (m : ℝ) * C i.val :=
+    mul_nonneg (Real.sqrt_nonneg _) (hC i hi)
+  exact
+    (mul_le_mul_of_nonneg_right hcoeff hscale_nonneg).trans
+      (hcoeffSlack i hi)
+
+/-- Theorem 20.7 support: matrix completion-budget domination from active-tail
+    entry bounds, signed-stage nonbreakdown, and a uniform compact-coefficient
+    slack comparison.
+
+This composes the active-tail component-budget adapter with the Chapter 19
+signed-stage compact-coefficient estimate, replacing the raw
+`householderCompactNormBudgetCoeff` slack premise by the concrete
+`u + 2 * factor` scalar comparison. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_active_entry_trailingNorm_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (err : ℝ) (C slack : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        ∀ r : Fin m, i.val ≤ r.val →
+          |Ahat i.val r j| ≤ C i.val * theorem20_7_initialRowMax hn A i)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  exact
+    theorem20_7_completionA_budget_of_signed_stage_norm_coeff_active_entry_slack_nat
+      hn hnm fp Ahat A alpha err C slack hm hC hentry
+      (theorem20_7_signed_stage_norm_coeff_slack_of_trailingNorm_pos_nat
+        hnm fp Ahat alpha C slack hm hC hAlphaDef htrailingPos hcoeffSlack)
+      hslack
+
+/-- Theorem 20.7 support: RHS completion-budget domination from active-tail
+    RHS entry bounds, signed-stage nonbreakdown, and a uniform
+    compact-coefficient slack comparison. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_active_entry_trailingNorm_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (err : ℝ) (C slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ r : Fin m, i.val ≤ r.val →
+        |bhat i.val r| ≤
+          C i.val * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completionB_budget_of_signed_stage_norm_coeff_active_entry_slack_nat
+      hn hnm fp Ahat bhat A b alpha err C slack hphi hm hC hentry
+      (theorem20_7_signed_stage_norm_coeff_slack_of_trailingNorm_pos_nat
+        hnm fp Ahat alpha C slack hm hC hAlphaDef htrailingPos hcoeffSlack)
+      hslack
+
+/-- Theorem 20.7 support: matrix completion-budget domination from active-tail
+    entry bounds, signed-stage nonbreakdown, and an abstract scalar horizon
+    recurrence.
+
+This is the horizon-parametric analogue of
+`theorem20_7_completionA_budget_of_signed_stage_active_entry_trailingNorm_slack_nat`. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_active_entry_trailingNorm_slack_horizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (C horizon slack : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        ∀ r : Fin m, i.val ≤ r.val →
+          |Ahat i.val r j| ≤ C i.val * theorem20_7_initialRowMax hn A i)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val ≤
+          horizon (i.val + 1)) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (horizon i.val * theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        horizon (i.val + 1) * theorem20_7_initialRowMax hn A i := by
+  exact
+    theorem20_7_completionA_budget_of_signed_stage_norm_coeff_active_entry_slack_horizon_nat
+      hn hnm fp Ahat A alpha C horizon slack hm hC hentry
+      (theorem20_7_signed_stage_norm_coeff_slack_of_trailingNorm_pos_nat
+        hnm fp Ahat alpha C slack hm hC hAlphaDef htrailingPos hcoeffSlack)
+      hslack
+
+/-- Theorem 20.7 support: RHS completion-budget domination from active-tail
+    entry bounds, signed-stage nonbreakdown, and an abstract scalar horizon
+    recurrence.
+
+This is the weighted right-hand-side analogue of
+`theorem20_7_completionA_budget_of_signed_stage_active_entry_trailingNorm_slack_horizon_nat`. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_active_entry_trailingNorm_slack_horizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (C horizon slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ r : Fin m, i.val ≤ r.val →
+        |bhat i.val r| ≤
+          C i.val * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val ≤
+          horizon (i.val + 1)) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (horizon i.val * theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        horizon (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completionB_budget_of_signed_stage_norm_coeff_active_entry_slack_horizon_nat
+      hn hnm fp Ahat bhat A b alpha C horizon slack hphi hm hC hentry
+      (theorem20_7_signed_stage_norm_coeff_slack_of_trailingNorm_pos_nat
+        hnm fp Ahat alpha C slack hm hC hAlphaDef htrailingPos hcoeffSlack)
+      hslack
+
+/-- Theorem 20.7 support: matrix completion-budget domination from row-sorted
+    active-tail stage bounds.
+
+This instantiates the active-tail compact-budget adapter with the natural
+Chapter 19 rowwise coefficient `sqrt(m) * rowwise_step_growth_factor^i + err`.
+The row-sorted active-stage hypothesis supplies the needed active-tail entry
+bounds, and the signed-stage nonbreakdown hypotheses discharge the concrete
+compact-coefficient estimate. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_trailingNorm_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (err : ℝ) (slack : ℕ → ℝ)
+    (hm : gammaValid fp m) (herr : 0 ≤ err)
+    (hAactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n,
+        k ≤ j.val →
+          |Ahat k r j| ≤
+            (Real.sqrt (m : ℝ) *
+                H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+              theorem20_7_initialRowMax hn A r)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) *
+              (Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err)) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  refine
+    theorem20_7_completionA_budget_of_signed_stage_active_entry_trailingNorm_slack_nat
+      hn hnm fp Ahat A alpha err
+      (fun k =>
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err)
+      slack hm ?_ ?_ hAlphaDef htrailingPos hcoeffSlack hslack
+  · intro i _hi
+    exact
+      add_nonneg
+        (mul_nonneg (Real.sqrt_nonneg _)
+          (pow_nonneg H19.Theorem19_6.rowwise_step_growth_factor_nonneg _))
+        herr
+  · intro i hi j hij r hir
+    have hit : i.val < n := by omega
+    have hpivot :
+        (⟨i.val, lt_of_lt_of_le hit hnm⟩ : Fin m) = i := by
+      exact Fin.ext rfl
+    have hscale :
+        theorem20_7_initialRowMax hn A r ≤
+          theorem20_7_initialRowMax hn A i := by
+      simpa [hpivot] using hAsorted i.val hit r hir
+    have hfactor_nonneg :
+        0 ≤ Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err := by
+      exact
+        add_nonneg
+          (mul_nonneg (Real.sqrt_nonneg _)
+            (pow_nonneg H19.Theorem19_6.rowwise_step_growth_factor_nonneg _))
+          herr
+    calc
+      |Ahat i.val r j|
+          ≤ (Real.sqrt (m : ℝ) *
+                H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialRowMax hn A r :=
+          hAactive r i.val hit hir j hij
+      _ ≤ (Real.sqrt (m : ℝ) *
+                H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialRowMax hn A i :=
+          mul_le_mul_of_nonneg_left hscale hfactor_nonneg
+
+/-- Theorem 20.7 support: RHS completion-budget domination from row-sorted
+    active RHS stage bounds.
+
+This is the right-hand-side analogue of
+`theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_trailingNorm_slack_nat`,
+using the weighted source row scale. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (err : ℝ) (slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m) (herr : 0 ≤ err)
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bhat k r| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) *
+              (Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err)) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  refine
+    theorem20_7_completionB_budget_of_signed_stage_active_entry_trailingNorm_slack_nat
+      hn hnm fp Ahat bhat A b alpha err
+      (fun k =>
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err)
+      slack hphi hm ?_ ?_ hAlphaDef htrailingPos hcoeffSlack hslack
+  · intro i _hi
+    exact
+      add_nonneg
+        (mul_nonneg (Real.sqrt_nonneg _)
+          (pow_nonneg H19.Theorem19_6.rowwise_step_growth_factor_nonneg _))
+        herr
+  · intro i hi r hir
+    have hit : i.val < n := by omega
+    have hpivot :
+        (⟨i.val, lt_of_lt_of_le hit hnm⟩ : Fin m) = i := by
+      exact Fin.ext rfl
+    have hscale :
+        theorem20_7_initialWeightedRowMax hn A b phi r ≤
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+      simpa [hpivot] using hbsorted i.val hit r hir
+    have hfactor_nonneg :
+        0 ≤ Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err := by
+      exact
+        add_nonneg
+          (mul_nonneg (Real.sqrt_nonneg _)
+            (pow_nonneg H19.Theorem19_6.rowwise_step_growth_factor_nonneg _))
+          herr
+    calc
+      |bhat i.val r|
+          ≤ (Real.sqrt (m : ℝ) *
+                H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialWeightedRowMax hn A b phi r :=
+          hbactive r i.val hit hir
+      _ ≤ (Real.sqrt (m : ℝ) *
+                H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialWeightedRowMax hn A b phi i :=
+          mul_le_mul_of_nonneg_left hscale hfactor_nonneg
+
+/-- Theorem 20.7 support: source-sorted RHS completion-budget domination.
+
+This discharges the weighted row-sorting premise of
+`theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_slack_nat`
+from source row-max sorting and source right-hand-side magnitude sorting. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_slack_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (err : ℝ) (slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m) (herr : 0 ≤ err)
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bhat k r| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hAsourceSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) *
+              (Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err)) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_slack_nat
+      hn hnm fp Ahat bhat A b alpha err slack hphi hm herr hbactive
+      (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
+        hn hnm A b hphi hAsourceSorted hbAbsSorted)
+      hAlphaDef htrailingPos hcoeffSlack hslack
+
+/-- Theorem 20.7 support: matrix completion-budget domination from row-sorted
+    active-tail stage bounds and an abstract scalar horizon recurrence.
+
+This is the horizon-parametric analogue of
+`theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_trailingNorm_slack_nat`.
+It is intended for the larger compact-active horizon after the printed-rowwise
+domination route has been ruled out. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_trailingNorm_slack_horizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (horizon slack : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hhorizon_nonneg :
+      ∀ i : Fin m, i.val + 1 < n → 0 ≤ horizon i.val)
+    (hAactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n,
+        k ≤ j.val →
+          |Ahat k r j| ≤
+            horizon k * theorem20_7_initialRowMax hn A r)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) * horizon i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val ≤
+          horizon (i.val + 1)) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (horizon i.val * theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        horizon (i.val + 1) * theorem20_7_initialRowMax hn A i := by
+  refine
+    theorem20_7_completionA_budget_of_signed_stage_active_entry_trailingNorm_slack_horizon_nat
+      hn hnm fp Ahat A alpha horizon horizon slack hm hhorizon_nonneg ?_
+      hAlphaDef htrailingPos hcoeffSlack hslack
+  intro i hi j hij r hir
+  have hit : i.val < n := by omega
+  have hpivot :
+      (⟨i.val, lt_of_lt_of_le hit hnm⟩ : Fin m) = i := by
+    exact Fin.ext rfl
+  have hscale :
+      theorem20_7_initialRowMax hn A r ≤
+        theorem20_7_initialRowMax hn A i := by
+    simpa [hpivot] using hAsorted i.val hit r hir
+  calc
+    |Ahat i.val r j|
+        ≤ horizon i.val * theorem20_7_initialRowMax hn A r :=
+        hAactive r i.val hit hir j hij
+    _ ≤ horizon i.val * theorem20_7_initialRowMax hn A i :=
+        mul_le_mul_of_nonneg_left hscale (hhorizon_nonneg i hi)
+
+/-- Theorem 20.7 support: RHS completion-budget domination from row-sorted
+    active RHS stage bounds and an abstract scalar horizon recurrence.
+
+This is the weighted right-hand-side analogue of
+`theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_trailingNorm_slack_horizon_nat`. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_slack_horizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (horizon slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m)
+    (hhorizon_nonneg :
+      ∀ i : Fin m, i.val + 1 < n → 0 ≤ horizon i.val)
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bhat k r| ≤
+          horizon k * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) * horizon i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val ≤
+          horizon (i.val + 1)) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (horizon i.val * theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        horizon (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  refine
+    theorem20_7_completionB_budget_of_signed_stage_active_entry_trailingNorm_slack_horizon_nat
+      hn hnm fp Ahat bhat A b alpha horizon horizon slack hphi hm
+      hhorizon_nonneg ?_ hAlphaDef htrailingPos hcoeffSlack hslack
+  intro i hi r hir
+  have hit : i.val < n := by omega
+  have hpivot :
+      (⟨i.val, lt_of_lt_of_le hit hnm⟩ : Fin m) = i := by
+    exact Fin.ext rfl
+  have hscale :
+      theorem20_7_initialWeightedRowMax hn A b phi r ≤
+        theorem20_7_initialWeightedRowMax hn A b phi i := by
+    simpa [hpivot] using hbsorted i.val hit r hir
+  calc
+    |bhat i.val r|
+        ≤ horizon i.val * theorem20_7_initialWeightedRowMax hn A b phi r :=
+        hbactive r i.val hit hir
+    _ ≤ horizon i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
+        mul_le_mul_of_nonneg_left hscale (hhorizon_nonneg i hi)
+
+/-- Theorem 20.7 support: source-sorted RHS completion-budget domination from
+    an abstract scalar horizon recurrence.
+
+This discharges the weighted row-sorting premise in
+`theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_slack_horizon_nat`
+from source row-max sorting and source right-hand-side magnitude sorting. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_slack_horizon_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (horizon slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m)
+    (hhorizon_nonneg :
+      ∀ i : Fin m, i.val + 1 < n → 0 ≤ horizon i.val)
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bhat k r| ≤
+          horizon k * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hAsourceSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) * horizon i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val ≤
+          horizon (i.val + 1)) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (horizon i.val * theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        horizon (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_slack_horizon_nat
+      hn hnm fp Ahat bhat A b alpha horizon slack hphi hm hhorizon_nonneg
+      hbactive
+      (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
+        hn hnm A b hphi hAsourceSorted hbAbsSorted)
+      hAlphaDef htrailingPos hcoeffSlack hslack
 
 /-- Theorem 20.7 support: stored RHS steps preserve completed rows.
 
@@ -7642,6 +9548,2649 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
       hAacc hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    active-tail, source-initial all-entry perturbation wrapper with compact
+    completion budgets discharged by row-sorted active bounds and concrete
+    signed-stage slack.
+
+This composes the active-bound discharge theorem with the row-sorted
+compact-budget adapters.  Callers no longer supply `hAactive`, `hbactive`,
+`hAbudgetCompletion`, or `hbbudgetCompletion` separately; the remaining
+compact-budget scalar obligation is the concrete
+`(u + 2 * factor) * sqrt(m) * (sqrt(m) * rowwise_step_growth_factor^i + err)`
+slack comparison plus the one-step slack recurrence. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_active_bounds_compact_slack_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ) (slack : ℕ → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+            (Real.sqrt (m : ℝ) *
+              (Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err)) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ j : Fin n,
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |bhat 0 r - bexact 0 r| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  let hAactive :=
+    theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_accumulated_error_nat
+      hn hnm Ahat Aexact A AstepBudget err hAexact0 hAsorted
+      hAstepExact hAstepErr hArow0 hAacc
+  let hbactive :=
+    theorem20_7_active_tail_stageB_bound_of_h19_row_sorting_source_initial_accumulated_error_nat
+      hn hnm bhat bexact A b phi bstepBudget err hbexact0
+      (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
+        hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
+      hbstepExact hbstepErr hbrow0 hbacc
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm fp Ahat Aexact A bhat bexact b alpha gammaTilde err
+      AstepBudget bstepBudget DeltaA Deltab hphi hgamma herr hmfp hrows
+      hAexact0 hbexact0 hStepA hStepB hAlphaDef htrailingPos hcopy
+      hpivotMax hAactive
+      (theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_trailingNorm_slack_nat
+        hn hnm fp Ahat A alpha err slack hmfp herr hAactive hAsorted
+        hAlphaDef htrailingPos hcoeffSlack hslack)
+      hbactive
+      (theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_slack_of_initialRowMax_abs_b_sorted_nat
+        hn hnm fp Ahat bhat A b alpha err slack (le_of_lt hphi) hmfp herr
+        hbactive hAsorted hbAbsSorted hAlphaDef htrailingPos hcoeffSlack
+        hslack)
+      hAsorted hbAbsSorted hAstepExact hAstepErr hArow0 hAacc
+      hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    concrete scalar compact slack used by the active-tail signed-stage route.
+
+This is the per-stage scalar charged by the compact Householder coefficient
+`fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m` against the natural
+rowwise active-tail coefficient
+`sqrt(m) * (sqrt(m) * rowwise_step_growth_factor^i + err)`. -/
+noncomputable def theorem20_7_compactStepSlack
+    (fp : FPModel) (m : ℕ) (err : ℝ) (i : ℕ) : ℝ :=
+  (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+    (Real.sqrt (m : ℝ) *
+      (Real.sqrt (m : ℝ) *
+        H19.Theorem19_6.rowwise_step_growth_factor ^ i + err))
+
+/-- The concrete compact slack is nonnegative under the usual roundoff guard
+    and a nonnegative accumulated-error coefficient. -/
+theorem theorem20_7_compactStepSlack_nonneg
+    (fp : FPModel) (m : ℕ) (err : ℝ) (i : ℕ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err) :
+    0 ≤ theorem20_7_compactStepSlack fp m err i := by
+  have hcoeff : 0 ≤ fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m := by
+    have hfac : 0 ≤ householderCompactNormBudgetCoeffFactor fp m :=
+      householderCompactNormBudgetCoeffFactor_nonneg fp m hmfp
+    have hu : 0 ≤ fp.u := fp.u_nonneg
+    nlinarith
+  have hinner :
+      0 ≤ Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ i + err := by
+    exact
+      add_nonneg
+        (mul_nonneg (Real.sqrt_nonneg _)
+          (pow_nonneg H19.Theorem19_6.rowwise_step_growth_factor_nonneg _))
+        herr
+  have hscale :
+      0 ≤ Real.sqrt (m : ℝ) *
+        (Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ i + err) :=
+    mul_nonneg (Real.sqrt_nonneg _) hinner
+  simpa [theorem20_7_compactStepSlack] using mul_nonneg hcoeff hscale
+
+/-- The concrete compact slack definition discharges the coefficient side of
+    the signed-stage compact-budget scalar comparison. -/
+theorem theorem20_7_compactStepSlack_coeff_bound_nat
+    {m n : ℕ} (fp : FPModel) (err : ℝ) :
+    ∀ i : Fin m, i.val + 1 < n →
+      (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+          (Real.sqrt (m : ℝ) *
+            (Real.sqrt (m : ℝ) *
+                H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err)) ≤
+        theorem20_7_compactStepSlack fp m err i.val := by
+  intro i _hi
+  simp [theorem20_7_compactStepSlack]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    combined exact-growth plus compact-update scalar factor for one active-tail
+    signed stored-QR step. -/
+noncomputable def theorem20_7_compactActiveStepFactor
+    (fp : FPModel) (m : ℕ) : ℝ :=
+  H19.Theorem19_6.active_row_growth_factor m +
+    (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+      Real.sqrt (m : ℝ)
+
+/-- The combined active-plus-compact step factor is nonnegative under the usual
+    compact Householder roundoff guard. -/
+theorem theorem20_7_compactActiveStepFactor_nonneg
+    (fp : FPModel) (m : ℕ) (hmfp : gammaValid fp m) :
+    0 ≤ theorem20_7_compactActiveStepFactor fp m := by
+  have hactive : 0 ≤ H19.Theorem19_6.active_row_growth_factor m :=
+    H19.Theorem19_6.active_row_growth_factor_nonneg m
+  have hcoeff : 0 ≤ fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m := by
+    have hfac : 0 ≤ householderCompactNormBudgetCoeffFactor fp m :=
+      householderCompactNormBudgetCoeffFactor_nonneg fp m hmfp
+    have hu : 0 ≤ fp.u := fp.u_nonneg
+    nlinarith
+  exact
+    add_nonneg hactive (mul_nonneg hcoeff (Real.sqrt_nonneg _))
+
+/-- The active-row growth factor is below the combined active-plus-compact
+    factor under the compact Householder roundoff guard. -/
+theorem theorem20_7_active_row_growth_factor_le_compactActiveStepFactor
+    (fp : FPModel) (m : ℕ) (hmfp : gammaValid fp m) :
+    H19.Theorem19_6.active_row_growth_factor m ≤
+      theorem20_7_compactActiveStepFactor fp m := by
+  have hcoeff : 0 ≤ fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m := by
+    have hfac : 0 ≤ householderCompactNormBudgetCoeffFactor fp m :=
+      householderCompactNormBudgetCoeffFactor_nonneg fp m hmfp
+    have hu : 0 ≤ fp.u := fp.u_nonneg
+    nlinarith
+  dsimp [theorem20_7_compactActiveStepFactor]
+  exact le_add_of_nonneg_right (mul_nonneg hcoeff (Real.sqrt_nonneg _))
+
+/-- The printed rowwise step factor is below the combined active-plus-compact
+    factor.  This is the direction needed for an honest larger horizon. -/
+theorem theorem20_7_rowwise_step_growth_factor_le_compactActiveStepFactor
+    (fp : FPModel) (m : ℕ) (hmfp : gammaValid fp m) :
+    H19.Theorem19_6.rowwise_step_growth_factor ≤
+      theorem20_7_compactActiveStepFactor fp m := by
+  have hrow_active :
+      H19.Theorem19_6.rowwise_step_growth_factor ≤
+        H19.Theorem19_6.active_row_growth_factor m := by
+    dsimp [H19.Theorem19_6.rowwise_step_growth_factor,
+      H19.Theorem19_6.active_row_growth_factor,
+      coxHighamActiveRowGrowthFactor]
+    exact le_max_left _ _
+  exact le_trans hrow_active
+    (theorem20_7_active_row_growth_factor_le_compactActiveStepFactor
+      fp m hmfp)
+
+/-- The combined active-plus-compact factor is at least one. -/
+theorem theorem20_7_one_le_compactActiveStepFactor
+    (fp : FPModel) (m : ℕ) (hmfp : gammaValid fp m) :
+    1 ≤ theorem20_7_compactActiveStepFactor fp m := by
+  exact le_trans (H19.Theorem19_6.one_le_active_row_growth_factor m)
+    (theorem20_7_active_row_growth_factor_le_compactActiveStepFactor
+      fp m hmfp)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    honest larger active-tail scalar horizon after the printed rowwise horizon
+    is not large enough for the current compact active-step factor.
+
+The term `err` is grown with the same combined factor, avoiding the false
+constant-error recurrence for the printed rowwise factor. -/
+noncomputable def theorem20_7_compactActiveHorizon
+    (fp : FPModel) (m : ℕ) (err : ℝ) (i : ℕ) : ℝ :=
+  (Real.sqrt (m : ℝ) + err) *
+    theorem20_7_compactActiveStepFactor fp m ^ i
+
+/-- Compact-step slack associated with the larger compact-active horizon. -/
+noncomputable def theorem20_7_compactActiveHorizonStepSlack
+    (fp : FPModel) (m : ℕ) (err : ℝ) (i : ℕ) : ℝ :=
+  (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+    Real.sqrt (m : ℝ) *
+      theorem20_7_compactActiveHorizon fp m err i
+
+/-- The compact-active horizon is nonnegative under the standard roundoff guard
+    and nonnegative accumulated-error coefficient. -/
+theorem theorem20_7_compactActiveHorizon_nonneg
+    (fp : FPModel) (m : ℕ) (err : ℝ) (i : ℕ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err) :
+    0 ≤ theorem20_7_compactActiveHorizon fp m err i := by
+  have hbase :
+      0 ≤ Real.sqrt (m : ℝ) + err :=
+    add_nonneg (Real.sqrt_nonneg _) herr
+  have hfactor :
+      0 ≤ theorem20_7_compactActiveStepFactor fp m :=
+    theorem20_7_compactActiveStepFactor_nonneg fp m hmfp
+  exact
+    mul_nonneg hbase (pow_nonneg hfactor _)
+
+/-- The printed rowwise coefficient is dominated by the larger compact-active
+    horizon.  This is the scalar replacement for the disproved domination of
+    the compact factor by `rowwise_step_growth_factor`. -/
+theorem theorem20_7_rowwise_horizon_le_compactActiveHorizon
+    (fp : FPModel) (m : ℕ) (err : ℝ) (i : ℕ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err) :
+    Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ i + err ≤
+      theorem20_7_compactActiveHorizon fp m err i := by
+  have hrow0 : 0 ≤ H19.Theorem19_6.rowwise_step_growth_factor :=
+    H19.Theorem19_6.rowwise_step_growth_factor_nonneg
+  have hrow_factor :
+      H19.Theorem19_6.rowwise_step_growth_factor ≤
+        theorem20_7_compactActiveStepFactor fp m :=
+    theorem20_7_rowwise_step_growth_factor_le_compactActiveStepFactor
+      fp m hmfp
+  have hpow :
+      H19.Theorem19_6.rowwise_step_growth_factor ^ i ≤
+        theorem20_7_compactActiveStepFactor fp m ^ i :=
+    pow_le_pow_left₀ hrow0 hrow_factor i
+  have hsqrt_pow :
+      Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ i ≤
+        Real.sqrt (m : ℝ) *
+          theorem20_7_compactActiveStepFactor fp m ^ i :=
+    mul_le_mul_of_nonneg_left hpow (Real.sqrt_nonneg _)
+  have hfactor_one :
+      1 ≤ theorem20_7_compactActiveStepFactor fp m :=
+    theorem20_7_one_le_compactActiveStepFactor fp m hmfp
+  have herr_pow :
+      err ≤ err * theorem20_7_compactActiveStepFactor fp m ^ i :=
+    le_mul_of_one_le_right herr (one_le_pow₀ hfactor_one)
+  have hsum :
+      Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ i + err ≤
+        Real.sqrt (m : ℝ) *
+            theorem20_7_compactActiveStepFactor fp m ^ i +
+          err * theorem20_7_compactActiveStepFactor fp m ^ i :=
+    add_le_add hsqrt_pow herr_pow
+  calc
+    Real.sqrt (m : ℝ) *
+          H19.Theorem19_6.rowwise_step_growth_factor ^ i + err
+        ≤ Real.sqrt (m : ℝ) *
+            theorem20_7_compactActiveStepFactor fp m ^ i +
+          err * theorem20_7_compactActiveStepFactor fp m ^ i := hsum
+    _ = theorem20_7_compactActiveHorizon fp m err i := by
+      simp [theorem20_7_compactActiveHorizon]
+      ring
+
+/-- The larger compact-active slack discharges the compact-coefficient side
+    for any caller using `theorem20_7_compactActiveHorizon` as the stage
+    coefficient. -/
+theorem theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat
+    {m n : ℕ} (fp : FPModel) (err : ℝ) :
+    ∀ i : Fin m, i.val + 1 < n →
+      (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+          (Real.sqrt (m : ℝ) *
+            theorem20_7_compactActiveHorizon fp m err i.val) ≤
+        theorem20_7_compactActiveHorizonStepSlack fp m err i.val := by
+  intro i _hi
+  rw [show theorem20_7_compactActiveHorizonStepSlack fp m err i.val =
+      (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
+        (Real.sqrt (m : ℝ) *
+          theorem20_7_compactActiveHorizon fp m err i.val) by
+        simp [theorem20_7_compactActiveHorizonStepSlack]
+        ring]
+
+/-- The larger compact-active horizon has the exact one-step recurrence needed
+    by the active-tail compact-budget route. -/
+theorem theorem20_7_compactActiveHorizonStepSlack_recurrence_nat
+    {m n : ℕ} (fp : FPModel) (err : ℝ) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            theorem20_7_compactActiveHorizon fp m err i.val +
+          theorem20_7_compactActiveHorizonStepSlack fp m err i.val ≤
+        theorem20_7_compactActiveHorizon fp m err (i.val + 1) := by
+  intro i _hi
+  have hleft :
+      H19.Theorem19_6.active_row_growth_factor m *
+            theorem20_7_compactActiveHorizon fp m err i.val +
+          theorem20_7_compactActiveHorizonStepSlack fp m err i.val =
+        theorem20_7_compactActiveStepFactor fp m *
+          theorem20_7_compactActiveHorizon fp m err i.val := by
+    simp [theorem20_7_compactActiveHorizonStepSlack,
+      theorem20_7_compactActiveStepFactor]
+    ring
+  rw [hleft]
+  dsimp [theorem20_7_compactActiveHorizon]
+  rw [pow_succ]
+  ring_nf
+  exact le_rfl
+
+/-- Theorem 20.7 support: row-sorted matrix completion-budget domination for
+    the larger compact-active horizon.
+
+This specializes the generic row-sorted horizon adapter to
+`theorem20_7_compactActiveHorizon` and its proved compact-active slack. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_trailingNorm_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ) (err : ℝ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hAactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n,
+        k ≤ j.val →
+          |Ahat k r j| ≤
+            theorem20_7_compactActiveHorizon fp m err k *
+              theorem20_7_initialRowMax hn A r)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht))) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (theorem20_7_compactActiveHorizon fp m err i.val *
+              theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+          theorem20_7_initialRowMax hn A i := by
+  exact
+    theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_trailingNorm_slack_horizon_nat
+      hn hnm fp Ahat A alpha
+      (theorem20_7_compactActiveHorizon fp m err)
+      (theorem20_7_compactActiveHorizonStepSlack fp m err)
+      hmfp
+      (fun i _hi =>
+        theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp herr)
+      hAactive hAsorted hAlphaDef htrailingPos
+      (theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat fp err)
+      (theorem20_7_compactActiveHorizonStepSlack_recurrence_nat fp err)
+
+/-- Theorem 20.7 support: row-sorted RHS completion-budget domination for the
+    larger compact-active horizon. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ} (err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bhat k r| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht))) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (theorem20_7_compactActiveHorizon fp m err i.val *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_slack_horizon_nat
+      hn hnm fp Ahat bhat A b alpha
+      (theorem20_7_compactActiveHorizon fp m err)
+      (theorem20_7_compactActiveHorizonStepSlack fp m err)
+      hphi hmfp
+      (fun i _hi =>
+        theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp herr)
+      hbactive hbsorted hAlphaDef htrailingPos
+      (theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat fp err)
+      (theorem20_7_compactActiveHorizonStepSlack_recurrence_nat fp err)
+
+/-- Theorem 20.7 support: source-sorted RHS completion-budget domination for
+    the larger compact-active horizon. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_compactActiveHorizon_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ} (err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bhat k r| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hAsourceSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht))) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (theorem20_7_compactActiveHorizon fp m err i.val *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_slack_horizon_of_initialRowMax_abs_b_sorted_nat
+      hn hnm fp Ahat bhat A b alpha
+      (theorem20_7_compactActiveHorizon fp m err)
+      (theorem20_7_compactActiveHorizonStepSlack fp m err)
+      hphi hmfp
+      (fun i _hi =>
+        theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp herr)
+      hbactive hAsourceSorted hbAbsSorted hAlphaDef htrailingPos
+      (theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat fp err)
+      (theorem20_7_compactActiveHorizonStepSlack_recurrence_nat fp err)
+
+/-- Theorem 20.7 support: the Chapter 19 row-sorting active-tail matrix-stage
+    bound also satisfies the larger compact-active horizon. -/
+theorem theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ)
+    (AstepBudget : ℕ → ℝ) (err : ℝ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ j : Fin n,
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r) :
+    ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n, k ≤ j.val →
+      |Ahat k r j| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialRowMax hn A r := by
+  intro r k hk hkr j hkj
+  have hprinted :
+      |Ahat k r j| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialRowMax hn A r :=
+    theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_accumulated_error_nat
+      hn hnm Ahat Aexact A AstepBudget err
+      hAexact0 hAsorted hAstepExact hAstepErr hArow0 hAacc
+      r k hk hkr j hkj
+  have hhorizon :
+      Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err ≤
+        theorem20_7_compactActiveHorizon fp m err k :=
+    theorem20_7_rowwise_horizon_le_compactActiveHorizon fp m err k hmfp herr
+  exact
+    hprinted.trans
+      (mul_le_mul_of_nonneg_right hhorizon
+        (theorem20_7_initialRowMax_nonneg hn A r))
+
+/-- Theorem 20.7 support: the Chapter 19 row-sorting active-tail right-hand-side
+    bound also satisfies the larger compact-active horizon. -/
+theorem theorem20_7_active_tail_stageB_bound_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (bhat bexact : ℕ → Fin m → ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ)
+    (bstepBudget : ℕ → ℝ) (err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |bhat 0 r - bexact 0 r| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r) :
+    ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+      |bhat k r| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialWeightedRowMax hn A b phi r := by
+  intro r k hk hkr
+  have hprinted :
+      |bhat k r| ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi r :=
+    theorem20_7_active_tail_stageB_bound_of_h19_row_sorting_source_initial_accumulated_error_nat
+      hn hnm bhat bexact A b phi bstepBudget err
+      hbexact0 hbsorted hbstepExact hbstepErr hbrow0 hbacc
+      r k hk hkr
+  have hhorizon :
+      Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ k + err ≤
+        theorem20_7_compactActiveHorizon fp m err k :=
+    theorem20_7_rowwise_horizon_le_compactActiveHorizon fp m err k hmfp herr
+  exact
+    hprinted.trans
+      (mul_le_mul_of_nonneg_right hhorizon
+        (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi r))
+
+/-- The compact-active horizon is monotone in the stage index. -/
+theorem theorem20_7_compactActiveHorizon_le_of_le
+    (fp : FPModel) (m : ℕ) (err : ℝ) {i j : ℕ}
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err) (hij : i ≤ j) :
+    theorem20_7_compactActiveHorizon fp m err i ≤
+      theorem20_7_compactActiveHorizon fp m err j := by
+  have hbase : 0 ≤ Real.sqrt (m : ℝ) + err :=
+    add_nonneg (Real.sqrt_nonneg _) herr
+  have hfactor :
+      1 ≤ theorem20_7_compactActiveStepFactor fp m :=
+    theorem20_7_one_le_compactActiveStepFactor fp m hmfp
+  have hpow :
+      theorem20_7_compactActiveStepFactor fp m ^ i ≤
+        theorem20_7_compactActiveStepFactor fp m ^ j :=
+    pow_le_pow_right₀ hfactor hij
+  dsimp [theorem20_7_compactActiveHorizon]
+  exact mul_le_mul_of_nonneg_left hpow hbase
+
+/-- Any stage before `n` is bounded by the final compact-active horizon
+    coefficient at `n - 1`. -/
+theorem theorem20_7_compactActiveHorizon_le_final_nat
+    {n : ℕ} (fp : FPModel) (m : ℕ) (err : ℝ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err) {k : ℕ} (hk : k < n) :
+    theorem20_7_compactActiveHorizon fp m err k ≤
+      theorem20_7_compactActiveHorizon fp m err (n - 1) :=
+  theorem20_7_compactActiveHorizon_le_of_le fp m err hmfp herr
+    (Nat.le_sub_one_of_lt hk)
+
+/-- Theorem 20.7 support: active/completed stage bounds with the larger
+    compact-active horizon control the finite `max_i {alpha_i, beta_i}` ratio. -/
+theorem theorem20_7_alphaBetaMax_le_of_active_completed_entry_growth_compactActiveHorizon_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) (phi err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hdenA : ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i)
+    (hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val → ∀ j : Fin n,
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i)
+    (hbactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val →
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i) :
+    theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤
+      theorem20_7_compactActiveHorizon fp m err (n - 1) := by
+  have hC :
+      0 ≤ theorem20_7_compactActiveHorizon fp m err (n - 1) :=
+    theorem20_7_compactActiveHorizon_nonneg fp m err (n - 1) hmfp herr
+  apply
+    theorem20_7_alphaBetaMax_le_of_uniform_entry_growth_nat
+      hm hn Astage A bstage b phi hC hphi hdenA hdenW
+  · intro i k hk j
+    have hstage :
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i := by
+      by_cases hcompleted : i.val < k
+      · exact hAcompleted i k hk hcompleted j
+      · exact hAactive i k hk (le_of_not_gt hcompleted) j
+    exact
+      hstage.trans
+        (mul_le_mul_of_nonneg_right
+          (theorem20_7_compactActiveHorizon_le_final_nat fp m err hmfp
+            herr hk)
+          (theorem20_7_initialRowMax_nonneg hn A i))
+  · intro i k hk
+    have hstage :
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i := by
+      by_cases hcompleted : i.val < k
+      · exact hbcompleted i k hk hcompleted
+      · exact hbactive i k hk (le_of_not_gt hcompleted)
+    exact
+      hstage.trans
+        (mul_le_mul_of_nonneg_right
+          (theorem20_7_compactActiveHorizon_le_final_nat fp m err hmfp
+            herr hk)
+          (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
+
+/-- Theorem 20.7 support: all-entry perturbation budgets from active/completed
+    stage bounds against the larger compact-active horizon. -/
+theorem theorem20_7_deltaEntries_bound_all_of_active_completed_entry_growth_compactActiveHorizon_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (gammaTilde err : ℝ) (DeltaA : Fin m → Fin n → ℝ)
+    (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val → ∀ j : Fin n,
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i)
+    (hbactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val →
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Astage A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Astage A bstage b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  have hdenA :
+      ∀ i : Fin m, 0 < theorem20_7_initialRowMax hn A i := by
+    intro i
+    exact theorem20_7_initialRowMax_pos_of_exists_entry_ne_zero hn A i
+      (hrows i)
+  have hdenW :
+      ∀ i : Fin m, 0 < theorem20_7_initialWeightedRowMax hn A b phi i := by
+    intro i
+    exact theorem20_7_initialWeightedRowMax_pos_of_exists_entry_ne_zero
+      hn A b hphi i (hrows i)
+  have hmax :
+      theorem20_7_alphaBetaMax hm hn Astage A bstage b phi ≤
+        theorem20_7_compactActiveHorizon fp m err (n - 1) :=
+    theorem20_7_alphaBetaMax_le_of_active_completed_entry_growth_compactActiveHorizon_nat
+      hm hn fp Astage A bstage b phi err (le_of_lt hphi) hmfp herr
+      hdenA hdenW hAcompleted hbcompleted hAactive hbactive
+  constructor
+  · intro i j
+    exact
+      theorem20_7_deltaAEntry_bound_of_alphaBetaMax_le
+        hm hn Astage A bstage b phi gammaTilde DeltaA i j hgamma hmax
+        (hDeltaA i j)
+  · intro i
+    exact
+      theorem20_7_deltaBEntry_bound_of_alphaBetaMax_le
+        hm hn Astage A bstage b phi gammaTilde Deltab i (le_of_lt hphi)
+        hgamma hmax (hDeltab i)
+
+/-- Theorem 20.7 support: certificate-level version of the compact-active
+    active/completed all-entry budget bridge. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_completed_entry_growth_compactActiveHorizon_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (gammaTilde err : ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val → ∀ j : Fin n,
+        |Astage k i j| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A i)
+    (hbactive :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → k ≤ i.val →
+        |bstage k i| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Astage bstage phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  refine ⟨hcert.exact_solution, ?_⟩
+  exact
+    theorem20_7_deltaEntries_bound_all_of_active_completed_entry_growth_compactActiveHorizon_rows_nonzero_nat
+      hm hn fp Astage A bstage b gammaTilde err hcert.DeltaA hcert.Deltab
+      hphi hgamma hmfp herr hrows hAcompleted hbcompleted hAactive hbactive
+      hcert.deltaA_bound hcert.deltab_bound
+
+/-- Theorem 20.7 support: signed-stage exact same-reflector matrix completion
+    growth from row-sorted active-tail bounds against the compact-active
+    horizon. -/
+theorem theorem20_7_signed_stage_exact_completionA_bound_of_row_sorting_active_tail_stage_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (alpha : ℕ → ℝ) (err : ℝ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) (Fin.mk t ht))
+    (hAactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n,
+        k ≤ j.val →
+          |Astage k r j| ≤
+            theorem20_7_compactActiveHorizon fp m err k *
+              theorem20_7_initialRowMax hn A r)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      |matMulVec m
+          (householder m
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val))
+          (fun r => Astage i.val r j) i| ≤
+        H19.Theorem19_6.active_row_growth_factor m *
+          (theorem20_7_compactActiveHorizon fp m err i.val *
+            theorem20_7_initialRowMax hn A i) := by
+  have hB :
+      ∀ i : Fin m,
+        0 ≤ theorem20_7_compactActiveHorizon fp m err i.val *
+          theorem20_7_initialRowMax hn A i := by
+    intro i
+    exact
+      mul_nonneg
+        (theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp herr)
+        (theorem20_7_initialRowMax_nonneg hn A i)
+  refine
+    theorem20_7_signed_stage_exact_completionA_bound_of_active_stage_bounds_nat
+      hnm Astage alpha
+      (fun i =>
+        theorem20_7_compactActiveHorizon fp m err i.val *
+          theorem20_7_initialRowMax hn A i)
+      hAlphaDef htrailingPos hpivotMax hB ?_ ?_
+  · intro i hi l hil
+    have hit : i.val < n := by omega
+    exact hAactive i i.val hit (le_refl i.val) l hil
+  · intro i hi r hir j hij
+    have hit : i.val < n := by omega
+    have hpivot :
+        (⟨i.val, lt_of_lt_of_le hit hnm⟩ : Fin m) = i := by
+      exact Fin.ext rfl
+    have hscale :
+        theorem20_7_initialRowMax hn A r ≤
+          theorem20_7_initialRowMax hn A i := by
+      simpa [hpivot] using hAsorted i.val hit r hir
+    calc
+      |Astage i.val r j|
+          ≤ theorem20_7_compactActiveHorizon fp m err i.val *
+              theorem20_7_initialRowMax hn A r :=
+          hAactive r i.val hit hir j hij
+      _ ≤ theorem20_7_compactActiveHorizon fp m err i.val *
+              theorem20_7_initialRowMax hn A i :=
+          mul_le_mul_of_nonneg_left hscale
+            (theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp
+              herr)
+
+/-- Theorem 20.7 support: signed-stage exact same-reflector RHS completion
+    growth from row-sorted active RHS bounds against the compact-active
+    horizon. -/
+theorem theorem20_7_signed_stage_exact_completionB_bound_of_row_sorting_active_stage_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) (phi err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bstage k r| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩) :
+    ∀ i : Fin m, i.val + 1 < n →
+      |matMulVec m
+          (householder m
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val))
+          (bstage i.val) i| ≤
+        H19.Theorem19_6.active_row_growth_factor m *
+          (theorem20_7_compactActiveHorizon fp m err i.val *
+            theorem20_7_initialWeightedRowMax hn A b phi i) := by
+  have hB :
+      ∀ i : Fin m,
+        0 ≤ theorem20_7_compactActiveHorizon fp m err i.val *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+    intro i
+    exact
+      mul_nonneg
+        (theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp herr)
+        (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i)
+  refine
+    theorem20_7_signed_stage_exact_completionB_bound_of_active_stage_bounds_nat
+      hnm Astage bstage alpha
+      (fun i =>
+        theorem20_7_compactActiveHorizon fp m err i.val *
+          theorem20_7_initialWeightedRowMax hn A b phi i)
+      hAlphaDef htrailingPos hB ?_
+  intro i hi r hir
+  have hit : i.val < n := by omega
+  have hpivot :
+      (⟨i.val, lt_of_lt_of_le hit hnm⟩ : Fin m) = i := by
+    exact Fin.ext rfl
+  have hscale :
+      theorem20_7_initialWeightedRowMax hn A b phi r ≤
+        theorem20_7_initialWeightedRowMax hn A b phi i := by
+    simpa [hpivot] using hbsorted i.val hit r hir
+  calc
+    |bstage i.val r|
+        ≤ theorem20_7_compactActiveHorizon fp m err i.val *
+            theorem20_7_initialWeightedRowMax hn A b phi r :=
+        hbactive r i.val hit hir
+    _ ≤ theorem20_7_compactActiveHorizon fp m err i.val *
+            theorem20_7_initialWeightedRowMax hn A b phi i :=
+        mul_le_mul_of_nonneg_left hscale
+          (theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp
+            herr)
+
+/-- Theorem 20.7 support: signed stored-QR matrix completion-time rows from
+    row-sorted compact-active active-tail bounds.
+
+This composes the compact-active exact same-reflector growth bridge and compact
+budget bridge with the stored-panel step equation, yielding the completed row
+bound against the larger compact-active horizon. -/
+theorem theorem20_7_completionA_bound_of_h19_signed_stage_row_sorting_active_tail_stage_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (alpha : ℕ → ℝ) (err : ℝ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hStep : ∀ k, k < n →
+      Astage (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Astage alpha k)
+          (storedQRSignedStageBeta hnm Astage alpha k)
+          (Astage k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) (Fin.mk t ht))
+    (hAactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n,
+        k ≤ j.val →
+          |Astage k r j| ≤
+            theorem20_7_compactActiveHorizon fp m err k *
+              theorem20_7_initialRowMax hn A r)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n,
+      |Astage (i.val + 1) i j| ≤
+        theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+          theorem20_7_initialRowMax hn A i := by
+  intro i hi j
+  by_cases hji : j.val < i.val
+  · have hk_le : i.val + 1 ≤ n := Nat.le_of_lt hi
+    have hzero :
+        Astage (i.val + 1) i j = 0 := by
+      exact
+        fl_householderStoredPanel_sequence_prefix_lower_zero
+          fp
+          (fun k => storedQRSignedStageVector hnm Astage alpha k)
+          (fun k => storedQRSignedStageBeta hnm Astage alpha k)
+          Astage hStep (i.val + 1) hk_le i j
+          (Nat.lt_succ_of_lt hji) hji
+    have hbound_nonneg :
+        0 ≤
+          theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+            theorem20_7_initialRowMax hn A i :=
+      mul_nonneg
+        (theorem20_7_compactActiveHorizon_nonneg fp m err (i.val + 1)
+          hmfp herr)
+        (theorem20_7_initialRowMax_nonneg hn A i)
+    rw [hzero]
+    simpa using hbound_nonneg
+  · have hij : i.val ≤ j.val := le_of_not_gt hji
+    have hik : i.val < n := Nat.lt_trans (Nat.lt_succ_self i.val) hi
+    have hstepPoint :
+        Astage (i.val + 1) i j =
+          fl_householderStoredPanelStep fp m n i.val
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val)
+            (Astage i.val) i j := by
+      exact congrFun (congrFun (hStep i.val hik) i) j
+    rw [hstepPoint]
+    exact
+      (H19.Theorem19_6.stored_panel_step_active_entry_bound_of_exact_stage_budget_factor
+        fp m n i.val
+        (storedQRSignedStageVector hnm Astage alpha i.val)
+        (storedQRSignedStageBeta hnm Astage alpha i.val)
+        (H19.Theorem19_6.active_row_growth_factor m)
+        (theorem20_7_compactActiveHorizon fp m err i.val *
+          theorem20_7_initialRowMax hn A i)
+        (Astage i.val) hmfp i j hij
+        (fun hj =>
+          theorem20_7_signed_stage_completed_column_preservation_nat
+            hnm fp Astage alpha hStep i hi j hj)
+        (fun hj =>
+          theorem20_7_signed_stage_pivot_column_zero_below_of_trailingNorm_pos_nat
+            hnm Astage alpha hAlphaDef htrailingPos i hi j hj)
+        (theorem20_7_signed_stage_exact_completionA_bound_of_row_sorting_active_tail_stage_compactActiveHorizon_nat
+          hn hnm fp Astage A alpha err hmfp herr hAlphaDef htrailingPos
+          hpivotMax hAactive hAsorted i hi j hij)).trans
+        (theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_trailingNorm_compactActiveHorizon_nat
+          hn hnm fp Astage A alpha err hmfp herr hAactive hAsorted
+          hAlphaDef htrailingPos i hi j hij)
+
+/-- Theorem 20.7 support: signed stored-QR RHS completion-time rows from
+    row-sorted compact-active active RHS bounds.
+
+This is the RHS analogue of
+`theorem20_7_completionA_bound_of_h19_signed_stage_row_sorting_active_tail_stage_compactActiveHorizon_nat`. -/
+theorem theorem20_7_completionB_bound_of_h19_signed_stage_row_sorting_active_stage_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) (phi err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hStep : ∀ k, k < n →
+      bstage (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Astage alpha k)
+          (storedQRSignedStageBeta hnm Astage alpha k)
+          (bstage k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bstage k r| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩) :
+    ∀ i : Fin m, i.val + 1 < n →
+      |bstage (i.val + 1) i| ≤
+        theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  intro i hi
+  have hik : i.val < n := Nat.lt_trans (Nat.lt_succ_self i.val) hi
+  let exactUpdate : ℝ :=
+    matMulVec m
+      (householder m
+        (storedQRSignedStageVector hnm Astage alpha i.val)
+        (storedQRSignedStageBeta hnm Astage alpha i.val))
+      (bstage i.val) i
+  have hstepPoint :
+      bstage (i.val + 1) i =
+        fl_householderStoredRhsStep fp m i.val
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i := by
+    exact congrFun (hStep i.val hik) i
+  rw [hstepPoint]
+  have hround :
+      |fl_householderStoredRhsStep fp m i.val
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i - exactUpdate| ≤
+        householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i := by
+    have hnot : ¬ i.val < i.val := lt_irrefl i.val
+    simpa [fl_householderStoredRhsStep, exactUpdate, hnot] using
+      fl_householderApplyCompact_componentwise_error_bound
+        fp m
+        (storedQRSignedStageVector hnm Astage alpha i.val)
+        (storedQRSignedStageBeta hnm Astage alpha i.val)
+        (bstage i.val) hmfp i
+  have htri :
+      |fl_householderStoredRhsStep fp m i.val
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i| ≤
+        |fl_householderStoredRhsStep fp m i.val
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val)
+            (bstage i.val) i - exactUpdate| +
+          |exactUpdate| := by
+    have hsum :
+        fl_householderStoredRhsStep fp m i.val
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val)
+            (bstage i.val) i =
+          (fl_householderStoredRhsStep fp m i.val
+              (storedQRSignedStageVector hnm Astage alpha i.val)
+              (storedQRSignedStageBeta hnm Astage alpha i.val)
+              (bstage i.val) i - exactUpdate) +
+            exactUpdate := by
+      ring
+    calc
+      |fl_householderStoredRhsStep fp m i.val
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i|
+          = |(fl_householderStoredRhsStep fp m i.val
+              (storedQRSignedStageVector hnm Astage alpha i.val)
+              (storedQRSignedStageBeta hnm Astage alpha i.val)
+              (bstage i.val) i - exactUpdate) +
+              exactUpdate| := by
+              exact congrArg (fun z : ℝ => |z|) hsum
+      _ ≤ |fl_householderStoredRhsStep fp m i.val
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val)
+            (bstage i.val) i - exactUpdate| +
+          |exactUpdate| := by
+            exact abs_add_le
+              (fl_householderStoredRhsStep fp m i.val
+                (storedQRSignedStageVector hnm Astage alpha i.val)
+                (storedQRSignedStageBeta hnm Astage alpha i.val)
+                (bstage i.val) i - exactUpdate)
+              exactUpdate
+  calc
+    |fl_householderStoredRhsStep fp m i.val
+        (storedQRSignedStageVector hnm Astage alpha i.val)
+        (storedQRSignedStageBeta hnm Astage alpha i.val)
+        (bstage i.val) i|
+        ≤ |fl_householderStoredRhsStep fp m i.val
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val)
+            (bstage i.val) i - exactUpdate| +
+          |exactUpdate| := htri
+    _ ≤ householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i +
+        H19.Theorem19_6.active_row_growth_factor m *
+          (theorem20_7_compactActiveHorizon fp m err i.val *
+            theorem20_7_initialWeightedRowMax hn A b phi i) :=
+          add_le_add hround
+            (by
+              simpa [exactUpdate] using
+                theorem20_7_signed_stage_exact_completionB_bound_of_row_sorting_active_stage_compactActiveHorizon_nat
+                  hn hnm fp Astage bstage A b alpha phi err hphi hmfp herr
+                  hAlphaDef htrailingPos hbactive hbsorted i hi)
+    _ = H19.Theorem19_6.active_row_growth_factor m *
+          (theorem20_7_compactActiveHorizon fp m err i.val *
+            theorem20_7_initialWeightedRowMax hn A b phi i) +
+        householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Astage alpha i.val)
+          (storedQRSignedStageBeta hnm Astage alpha i.val)
+          (bstage i.val) i := by ring
+    _ ≤ theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i :=
+        theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_compactActiveHorizon_nat
+          hn hnm fp Astage bstage A b alpha err hphi hmfp herr
+          hbactive hbsorted hAlphaDef htrailingPos i hi
+
+/-- Theorem 20.7 support: turn a compact-active completion-time matrix row
+    bound plus preservation of already completed rows into the completed-row
+    bound used by the active/completed all-entry bridge. -/
+theorem theorem20_7_completedA_bound_of_completion_preservation_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (err : ℝ) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hcomplete :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n,
+        |Astage (i.val + 1) i j| ≤
+          theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+            theorem20_7_initialRowMax hn A i)
+    (hpreserve :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        Astage k i j = Astage (i.val + 1) i j) :
+    ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+      |Astage k i j| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialRowMax hn A i := by
+  intro i k hk hik j
+  have hsucc_le : i.val + 1 ≤ k := Nat.succ_le_of_lt hik
+  have hi_succ_lt : i.val + 1 < n := lt_of_le_of_lt hsucc_le hk
+  have hhorizon :
+      theorem20_7_compactActiveHorizon fp m err (i.val + 1) ≤
+        theorem20_7_compactActiveHorizon fp m err k :=
+    theorem20_7_compactActiveHorizon_le_of_le fp m err hmfp herr hsucc_le
+  rw [hpreserve i k hk hik j]
+  exact
+    (hcomplete i hi_succ_lt j).trans
+      (mul_le_mul_of_nonneg_right hhorizon
+        (theorem20_7_initialRowMax_nonneg hn A i))
+
+/-- Theorem 20.7 support: RHS analogue of
+    `theorem20_7_completedA_bound_of_completion_preservation_compactActiveHorizon_nat`
+    for the weighted row scale. -/
+theorem theorem20_7_completedB_bound_of_completion_preservation_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n)
+    (fp : FPModel)
+    (bstage : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (phi err : ℝ) (hphi : 0 ≤ phi)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hcomplete :
+      ∀ i : Fin m, i.val + 1 < n →
+        |bstage (i.val + 1) i| ≤
+          theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hpreserve :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        bstage k i = bstage (i.val + 1) i) :
+    ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+      |bstage k i| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  intro i k hk hik
+  have hsucc_le : i.val + 1 ≤ k := Nat.succ_le_of_lt hik
+  have hi_succ_lt : i.val + 1 < n := lt_of_le_of_lt hsucc_le hk
+  have hhorizon :
+      theorem20_7_compactActiveHorizon fp m err (i.val + 1) ≤
+        theorem20_7_compactActiveHorizon fp m err k :=
+    theorem20_7_compactActiveHorizon_le_of_le fp m err hmfp herr hsucc_le
+  rw [hpreserve i k hk hik]
+  exact
+    (hcomplete i hi_succ_lt).trans
+      (mul_le_mul_of_nonneg_right hhorizon
+        (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
+
+/-- Theorem 20.7 support: signed stored-QR matrix completed rows from
+    compact-active completion-time bounds and subtract-zero preservation. -/
+theorem theorem20_7_completedA_bound_of_h19_signed_stage_row_sorting_active_tail_stage_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (alpha : ℕ → ℝ) (err : ℝ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hStep : ∀ k, k < n →
+      Astage (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Astage alpha k)
+          (storedQRSignedStageBeta hnm Astage alpha k)
+          (Astage k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) (Fin.mk t ht))
+    (hAactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n,
+        k ≤ j.val →
+          |Astage k r j| ≤
+            theorem20_7_compactActiveHorizon fp m err k *
+              theorem20_7_initialRowMax hn A r)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩) :
+    ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+      |Astage k i j| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialRowMax hn A i := by
+  exact
+    theorem20_7_completedA_bound_of_completion_preservation_compactActiveHorizon_nat
+      hn fp Astage A err hmfp herr
+      (theorem20_7_completionA_bound_of_h19_signed_stage_row_sorting_active_tail_stage_compactActiveHorizon_nat
+        hn hnm fp Astage A alpha err hmfp herr hStep hAlphaDef htrailingPos
+        hpivotMax hAactive hAsorted)
+      (theorem20_7_completedA_preservation_of_signed_stage_subtractZeroExact_nat
+        hnm fp Astage alpha hcopy hStep)
+
+/-- Theorem 20.7 support: signed stored-QR RHS completed rows from
+    compact-active completion-time bounds and stored RHS prefix preservation. -/
+theorem theorem20_7_completedB_bound_of_h19_signed_stage_row_sorting_active_stage_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) (phi err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hStep : ∀ k, k < n →
+      bstage (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Astage alpha k)
+          (storedQRSignedStageBeta hnm Astage alpha k)
+          (bstage k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bstage k r| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩) :
+    ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+      |bstage k i| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completedB_bound_of_completion_preservation_compactActiveHorizon_nat
+      hn fp bstage A b phi err hphi hmfp herr
+      (theorem20_7_completionB_bound_of_h19_signed_stage_row_sorting_active_stage_compactActiveHorizon_nat
+        hn hnm fp Astage bstage A b alpha phi err hphi hmfp herr hStep
+        hAlphaDef htrailingPos hbactive hbsorted)
+      (theorem20_7_completedB_preservation_of_stored_rhs_steps_nat
+        fp
+        (fun k => storedQRSignedStageVector hnm Astage alpha k)
+        (fun k => storedQRSignedStageBeta hnm Astage alpha k)
+        bstage hStep)
+
+/-- Theorem 20.7 support: stored lower-prefix zeros extend compact-active
+    active-tail matrix bounds to all active-row columns. -/
+theorem theorem20_7_active_stageA_bound_all_of_stored_panel_lower_zero_and_active_tail_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n)
+    (fp : FPModel) (v : ℕ → Fin m → ℝ) (beta : ℕ → ℝ)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (err : ℝ) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hStep : ∀ k, k < n →
+      Astage (k + 1) =
+        fl_householderStoredPanelStep fp m n k (v k) (beta k) (Astage k))
+    (hactiveTail :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n,
+        k ≤ j.val →
+          |Astage k r j| ≤
+            theorem20_7_compactActiveHorizon fp m err k *
+              theorem20_7_initialRowMax hn A r) :
+    ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n,
+      |Astage k r j| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialRowMax hn A r := by
+  intro r k hk hkr j
+  by_cases hkj : k ≤ j.val
+  · exact hactiveTail r k hk hkr j hkj
+  · have hjk : j.val < k := lt_of_not_ge hkj
+    have hjr : j.val < r.val := lt_of_lt_of_le hjk hkr
+    have hzero : Astage k r j = 0 := by
+      exact
+        fl_householderStoredPanel_sequence_prefix_lower_zero
+          fp v beta Astage hStep k (Nat.le_of_lt hk) r j hjk hjr
+    have hbound_nonneg :
+        0 ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialRowMax hn A r :=
+      mul_nonneg
+        (theorem20_7_compactActiveHorizon_nonneg fp m err k hmfp herr)
+        (theorem20_7_initialRowMax_nonneg hn A r)
+    rw [hzero]
+    simpa using hbound_nonneg
+
+/-- Theorem 20.7 support: source-initial Chapter 19 active-tail matrix-stage
+    bounds supply all active-row columns for the compact-active horizon. -/
+theorem theorem20_7_active_stageA_bound_all_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (AstepBudget : ℕ → ℝ) (err : ℝ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ j : Fin n,
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r) :
+    ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n,
+      |Ahat k r j| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialRowMax hn A r := by
+  exact
+    theorem20_7_active_stageA_bound_all_of_stored_panel_lower_zero_and_active_tail_compactActiveHorizon_nat
+      hn fp (fun k => storedQRSignedStageVector hnm Ahat alpha k)
+      (fun k => storedQRSignedStageBeta hnm Ahat alpha k)
+      Ahat A err hmfp herr hStepA
+      (theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
+        hn hnm fp Ahat Aexact A AstepBudget err hmfp herr hAexact0
+        hAsorted hAstepExact hAstepErr hArow0 hAacc)
+
+/-- Theorem 20.7 support: source-initial signed stored-QR all-entry
+    perturbation budgets against the compact-active horizon.
+
+This composes the compact-active active-stage transfers, completed-row
+preservation wrappers, and active/completed all-entry bridge. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ j : Fin n,
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |bhat 0 r - bexact 0 r| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  let hbsortedWeighted :=
+    theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
+      hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted
+  let hAactiveTail :=
+    theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
+      hn hnm fp Ahat Aexact A AstepBudget err hmfp herr hAexact0
+      hAsorted hAstepExact hAstepErr hArow0 hAacc
+  let hAactiveAll :=
+    theorem20_7_active_stageA_bound_all_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
+      hn hnm fp Ahat Aexact A alpha AstepBudget err hmfp herr hAexact0
+      hStepA hAsorted hAstepExact hAstepErr hArow0 hAacc
+  let hbactive :=
+    theorem20_7_active_tail_stageB_bound_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
+      hn hnm fp bhat bexact A b phi bstepBudget err (le_of_lt hphi)
+      hmfp herr hbexact0 hbsortedWeighted hbstepExact hbstepErr hbrow0
+      hbacc
+  exact
+    theorem20_7_deltaEntries_bound_all_of_active_completed_entry_growth_compactActiveHorizon_rows_nonzero_nat
+      hm hn fp Ahat A bhat b gammaTilde err DeltaA Deltab hphi hgamma
+      hmfp herr hrows
+      (theorem20_7_completedA_bound_of_h19_signed_stage_row_sorting_active_tail_stage_compactActiveHorizon_nat
+        hn hnm fp Ahat A alpha err hmfp herr hcopy hStepA hAlphaDef
+        htrailingPos hpivotMax hAactiveTail hAsorted)
+      (theorem20_7_completedB_bound_of_h19_signed_stage_row_sorting_active_stage_compactActiveHorizon_nat
+        hn hnm fp Ahat bhat A b alpha phi err (le_of_lt hphi) hmfp herr
+        hStepB hAlphaDef htrailingPos hbactive hbsortedWeighted)
+      hAactiveAll hbactive hDeltaA hDeltab
+
+/-- Theorem 20.7 support: certificate-level source-initial signed stored-QR
+    compact-active perturbation budgets. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ j : Fin n,
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |bhat 0 r - bexact 0 r| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Ahat bhat phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  refine ⟨hcert.exact_solution, ?_⟩
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm fp Ahat Aexact A bhat bexact b alpha gammaTilde err
+      AstepBudget bstepBudget hcert.DeltaA hcert.Deltab hphi hgamma herr
+      hmfp hrows hAexact0 hbexact0 hStepA hStepB hAlphaDef htrailingPos
+      hcopy hpivotMax hAsorted hbAbsSorted hAstepExact hAstepErr hArow0
+      hAacc hbstepExact hbstepErr hbrow0 hbacc hcert.deltaA_bound
+      hcert.deltab_bound
+
+/-- Theorem 20.7 support: zero-start specialization of the compact-active
+    source-initial signed stored-QR all-entry perturbation wrapper.
+
+When the rounded and exact stage-zero data both equal the source `A` and `b`,
+the initial discrepancy terms in the accumulated-error hypotheses collapse to
+zero.  The remaining scalar affine step-budget domination assumptions are kept
+explicit. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ _ : Fin n,
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm fp Ahat Aexact A bhat bexact b alpha gammaTilde err
+      AstepBudget bstepBudget DeltaA Deltab hphi hgamma herr hmfp hrows
+      hAexact0 hbexact0 hStepA hStepB hAlphaDef htrailingPos hcopy
+      hpivotMax hAsorted hbAbsSorted hAstepExact hAstepErr hArow0
+      (fun k r hkr j => by
+        have hzero : |Ahat 0 r j - Aexact 0 r j| = 0 := by
+          rw [hAhat0 r j, hAexact0 r j, sub_self, abs_zero]
+        simpa [hzero] using hAaccBudget k r hkr j)
+      hbstepExact hbstepErr hbrow0
+      (fun k r hkr => by
+        have hzero : |bhat 0 r - bexact 0 r| = 0 := by
+          rw [hbhat0 r, hbexact0 r, sub_self, abs_zero]
+        simpa [hzero] using hbaccBudget k r hkr)
+      hDeltaA hDeltab
+
+/-- Theorem 20.7 support: zero-start, zero-step-budget specialization of the
+    compact-active source-initial signed stored-QR all-entry perturbation
+    wrapper. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Ahat t r j - Aexact t r j|)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bhat t r - bexact t r|)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm fp Ahat Aexact A bhat bexact b alpha gammaTilde err
+      (fun _ : ℕ => (0 : ℝ)) (fun _ : ℕ => (0 : ℝ))
+      DeltaA Deltab hphi hgamma herr hmfp hrows hAhat0 hAexact0
+      hbhat0 hbexact0 hStepA hStepB hAlphaDef htrailingPos hcopy
+      hpivotMax hAsorted hbAbsSorted hAstepExact
+      (fun r j t => by
+        simpa using hAstepErr r j t)
+      hArow0
+      (fun _k r _hkr _j => by
+        rw [theorem20_7_scalarAffineGrowthBudget_zero_stepBudget]
+        exact mul_nonneg herr (theorem20_7_initialRowMax_nonneg hn A r))
+      hbstepExact
+      (fun r t => by
+        simpa using hbstepErr r t)
+      hbrow0
+      (fun _k r _hkr => by
+        rw [theorem20_7_scalarAffineGrowthBudget_zero_stepBudget]
+        exact mul_nonneg herr
+          (theorem20_7_initialWeightedRowMax_nonneg hn A b (le_of_lt hphi) r))
+      hDeltaA hDeltab
+
+/-- Theorem 20.7 support: certificate-level zero-start specialization of the
+    compact-active source-initial signed stored-QR perturbation budgets. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ _ : Fin n,
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Ahat bhat phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  refine ⟨hcert.exact_solution, ?_⟩
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm fp Ahat Aexact A bhat bexact b alpha gammaTilde err
+      AstepBudget bstepBudget hcert.DeltaA hcert.Deltab hphi hgamma herr
+      hmfp hrows hAhat0 hAexact0 hbhat0 hbexact0 hStepA hStepB
+      hAlphaDef htrailingPos hcopy hpivotMax hAsorted hbAbsSorted
+      hAstepExact hAstepErr hArow0 hAaccBudget hbstepExact hbstepErr
+      hbrow0 hbaccBudget hcert.deltaA_bound hcert.deltab_bound
+
+/-- Theorem 20.7 support: certificate-level zero-start, zero-step-budget
+    specialization of the compact-active source-initial signed stored-QR
+    perturbation budgets. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Ahat t r j - Aexact t r j|)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bhat t r - bexact t r|)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Ahat bhat phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  refine ⟨hcert.exact_solution, ?_⟩
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm fp Ahat Aexact A bhat bexact b alpha gammaTilde err
+      hcert.DeltaA hcert.Deltab hphi hgamma herr hmfp hrows hAhat0
+      hAexact0 hbhat0 hbexact0 hStepA hStepB hAlphaDef htrailingPos
+      hcopy hpivotMax hAsorted hbAbsSorted hAstepExact hAstepErr
+      hArow0 hbstepExact hbstepErr hbrow0 hcert.deltaA_bound
+      hcert.deltab_bound
+
+/-- The current compact active-step factor cannot be absorbed into the printed
+    Cox--Higham rowwise factor in general.
+
+At `m = 9`, the repository's active-row factor is already at least `sqrt 9 = 3`,
+whereas the printed rowwise factor is `1 + sqrt 2 < 3`; the nonnegative compact
+term only increases the combined factor.  This rules out the naive scalar route
+for Theorem 20.7's concrete compact slack. -/
+theorem theorem20_7_compactActiveStepFactor_not_le_rowwise_step_growth_factor_nine
+    (fp : FPModel) (hmfp : gammaValid fp 9) :
+    ¬ theorem20_7_compactActiveStepFactor fp 9 ≤
+        H19.Theorem19_6.rowwise_step_growth_factor := by
+  have hcoeff : 0 ≤ fp.u + 2 * householderCompactNormBudgetCoeffFactor fp 9 := by
+    have hfac : 0 ≤ householderCompactNormBudgetCoeffFactor fp 9 :=
+      householderCompactNormBudgetCoeffFactor_nonneg fp 9 hmfp
+    have hu : 0 ≤ fp.u := fp.u_nonneg
+    nlinarith
+  have hcompact_nonneg :
+      0 ≤ (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp 9) *
+          Real.sqrt (9 : ℝ) :=
+    mul_nonneg hcoeff (Real.sqrt_nonneg _)
+  have hge_active :
+      H19.Theorem19_6.active_row_growth_factor 9 ≤
+        theorem20_7_compactActiveStepFactor fp 9 := by
+    dsimp [theorem20_7_compactActiveStepFactor]
+    linarith
+  have hactive_ge_three :
+      3 ≤ H19.Theorem19_6.active_row_growth_factor 9 := by
+    have hsqrt9 : Real.sqrt (9 : ℝ) = 3 := by
+      have h := Real.sqrt_sq (show 0 ≤ (3 : ℝ) by norm_num)
+      norm_num at h
+      exact h
+    dsimp [H19.Theorem19_6.active_row_growth_factor,
+      coxHighamActiveRowGrowthFactor]
+    rw [hsqrt9]
+    exact le_max_right _ _
+  have hrowlt : H19.Theorem19_6.rowwise_step_growth_factor < 3 := by
+    have hsqrt2_lt_two : Real.sqrt (2 : ℝ) < 2 := by
+      nlinarith [Real.sq_sqrt (show 0 ≤ (2 : ℝ) by norm_num),
+        Real.sqrt_nonneg (2 : ℝ)]
+    dsimp [H19.Theorem19_6.rowwise_step_growth_factor]
+    linarith
+  intro hle
+  have hthree_le_row : 3 ≤ H19.Theorem19_6.rowwise_step_growth_factor :=
+    le_trans hactive_ge_three (le_trans hge_active hle)
+  linarith
+
+/-- The combined active-plus-compact scalar factor implies the concrete compact
+    slack recurrence used by the active-tail all-entry wrapper.
+
+This is only an algebraic reduction: the hard remaining scalar condition is the
+product inequality for `theorem20_7_compactActiveStepFactor`. -/
+theorem theorem20_7_compactStepSlack_recurrence_of_compactActiveStepFactor_bound_nat
+    {m n : ℕ} (fp : FPModel) (err : ℝ)
+    (hfactor :
+      ∀ i : Fin m, i.val + 1 < n →
+        theorem20_7_compactActiveStepFactor fp m *
+            (Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+          theorem20_7_compactStepSlack fp m err i.val ≤
+        Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err := by
+  intro i hi
+  have hleft :
+      H19.Theorem19_6.active_row_growth_factor m *
+            (Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+          theorem20_7_compactStepSlack fp m err i.val =
+        theorem20_7_compactActiveStepFactor fp m *
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) := by
+    simp [theorem20_7_compactStepSlack,
+      theorem20_7_compactActiveStepFactor]
+    ring
+  rw [hleft]
+  exact hfactor i hi
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    active-tail source-initial all-entry wrapper with the concrete compact
+    scalar slack inlined.
+
+Compared with
+`theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_active_bounds_compact_slack_of_initialRowMax_abs_b_sorted_nat`,
+this removes the separate `hcoeffSlack` argument.  The remaining scalar
+obligation is the one-step recurrence for `theorem20_7_compactStepSlack`. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_active_bounds_compact_step_slack_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hcompactStepSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            theorem20_7_compactStepSlack fp m err i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ j : Fin n,
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |bhat 0 r - bexact 0 r| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_active_bounds_compact_slack_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm fp Ahat Aexact A bhat bexact b alpha gammaTilde err
+      AstepBudget bstepBudget (theorem20_7_compactStepSlack fp m err)
+      DeltaA Deltab hphi hgamma herr hmfp hrows hAexact0 hbexact0
+      hStepA hStepB hAlphaDef htrailingPos hcopy hpivotMax hAsorted
+      hbAbsSorted
+      (theorem20_7_compactStepSlack_coeff_bound_nat (m := m) (n := n)
+        fp err)
+      hcompactStepSlack hAstepExact hAstepErr hArow0 hAacc
+      hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-tail, source-initial, source-sorted row-sorted signed-stage H19
     wrapper for a row-wise backward-error certificate with explicit
     accumulated-error step budgets.
@@ -7817,6 +12366,169 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hbbudgetCompletion hAsorted hbAbsSorted hAstepExact hAstepErr hArow0
       hAacc hbstepExact hbstepErr hbrow0 hbacc hcert.deltaA_bound
       hcert.deltab_bound
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    active-tail, source-initial, source-sorted row-sorted signed-stage H19
+    wrapper for a row-wise backward-error certificate with active-stage bounds
+    discharged from accumulated-error hypotheses.
+
+This is the certificate-level counterpart of
+`theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_active_bounds_of_initialRowMax_abs_b_sorted_nat`.
+It packages the exact perturbed least-squares solution from the certificate
+with the uniform active-tail perturbation budgets, without requiring separate
+`hAactive` and `hbactive` hypotheses. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_tail_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_active_bounds_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAbudgetCompletion :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        H19.Theorem19_6.active_row_growth_factor m *
+              ((Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+                theorem20_7_initialRowMax hn A i) +
+            householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val)
+              (fun r => Ahat i.val r j) i ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbbudgetCompletion :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              ((Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+                theorem20_7_initialWeightedRowMax hn A b phi i) +
+            householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val)
+              (bhat i.val) i ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ j : Fin n,
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |bhat 0 r - bexact 0 r| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Ahat bhat phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  refine ⟨hcert.exact_solution, ?_⟩
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_active_bounds_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm fp Ahat Aexact A bhat bexact b alpha gammaTilde err
+      AstepBudget bstepBudget hcert.DeltaA hcert.Deltab hphi hgamma herr
+      hmfp hrows hAexact0 hbexact0 hStepA hStepB hAlphaDef htrailingPos
+      hcopy hpivotMax hAbudgetCompletion hbbudgetCompletion hAsorted
+      hbAbsSorted hAstepExact hAstepErr hArow0 hAacc hbstepExact hbstepErr
+      hbrow0 hbacc hcert.deltaA_bound hcert.deltab_bound
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start specialization of the active-tail source-initial row-sorted
@@ -12058,6 +16770,124 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    source-initial all-entry H19 accumulated-error wrapper from source row-max
+    sorting and right-hand-side magnitude sorting.
+
+This source-facing variant of
+`theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_nat`
+derives the weighted source-row sorting hypothesis from
+`theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted`. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Ahat k i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bhat k i| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ j : Fin n,
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |bhat 0 r - bexact 0 r| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_nat
+      hm hn hnm Ahat Aexact A bhat bexact b gammaTilde err
+      AstepBudget bstepBudget DeltaA Deltab hphi hgamma herr hrows
+      hAexact0 hbexact0 hAcompleted hbcompleted hAsorted hAstepExact
+      hAstepErr hArow0 hAacc
+      (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
+        hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
+      hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-initial H19 row-sorting wrapper for a row-wise backward-error
     certificate.  It packages the exact perturbed least-squares minimizer
     statement with the uniform accumulated-error perturbation budgets from the
@@ -12169,6 +16999,117 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hrows hAexact0 hbexact0 hAcompleted hbcompleted hAsorted hAstepExact
       hAstepErr hArow0 hAacc hbsorted hbstepExact hbstepErr hbrow0 hbacc
       hcert.deltaA_bound hcert.deltab_bound
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    certificate-level source-initial H19 accumulated-error wrapper from source
+    row-max sorting and right-hand-side magnitude sorting.
+
+This is the certificate counterpart of
+`theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_of_initialRowMax_abs_b_sorted_nat`.
+It keeps the exact perturbed least-squares solution from the row-wise backward
+error certificate and derives the weighted sorting premise internally. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Ahat k i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bhat k i| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ j : Fin n,
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbacc :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+        H19.Theorem19_6.rowwise_step_growth_factor ^ k *
+            |bhat 0 r - bexact 0 r| +
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Ahat bhat phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_nat
+      hm hn hnm Ahat Aexact A bhat bexact b gammaTilde err
+      AstepBudget bstepBudget xhat hphi hgamma herr hrows hAexact0
+      hbexact0 hAcompleted hbcompleted hAsorted hAstepExact hAstepErr
+      hArow0 hAacc
+      (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
+        hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
+      hbstepExact hbstepErr hbrow0 hbacc hcert
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start specialization of the source-initial all-entry H19
@@ -12293,6 +17234,121 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
       hDeltaA hDeltab
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    source-sorted zero-start H19 accumulated-error wrapper.
+
+This refines
+`theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_zero_start_nat`
+by deriving the weighted source-row sorting premise from source row-max sorting
+and source right-hand-side magnitude sorting. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_zero_start_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Ahat k i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bhat k i| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ _ : Fin n,
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_zero_start_nat
+      hm hn hnm Ahat Aexact A bhat bexact b gammaTilde err
+      AstepBudget bstepBudget DeltaA Deltab hphi hgamma herr hrows
+      hAhat0 hAexact0 hbhat0 hbexact0 hAcompleted hbcompleted hAsorted
+      hAstepExact hAstepErr hArow0 hAaccBudget
+      (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
+        hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
+      hbstepExact hbstepErr hbrow0 hbaccBudget hDeltaA hDeltab
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-initial zero-start H19 row-sorting wrapper for a row-wise
     backward-error certificate with explicit accumulated-error step budgets.
     It combines the exact perturbed least-squares solution carried by
@@ -12404,6 +17460,114 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hAsorted hAstepExact hAstepErr hArow0 hAaccBudget hbsorted
       hbstepExact hbstepErr hbrow0 hbaccBudget hcert.deltaA_bound
       hcert.deltab_bound
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    certificate-level source-sorted zero-start H19 accumulated-error wrapper.
+
+This is the certificate counterpart of
+`theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_zero_start_of_initialRowMax_abs_b_sorted_nat`.
+It keeps the row-wise backward-error certificate's exact least-squares
+minimizer and derives the weighted sorting premise internally. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_zero_start_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Ahat k i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bhat k i| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ _ : Fin n,
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Ahat bhat phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_zero_start_nat
+      hm hn hnm Ahat Aexact A bhat bexact b gammaTilde err
+      AstepBudget bstepBudget xhat hphi hgamma herr hrows hAhat0
+      hAexact0 hbhat0 hbexact0 hAcompleted hbcompleted hAsorted
+      hAstepExact hAstepErr hArow0 hAaccBudget
+      (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
+        hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
+      hbstepExact hbstepErr hbrow0 hbaccBudget hcert
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start and zero-step-budget specialization of the source-initial
@@ -12521,6 +17685,106 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
       hDeltaA hDeltab
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    source-sorted specialization of the source-initial, zero-start,
+    zero-step-budget H19 accumulated-error all-entry wrapper.  The direct
+    weighted row-sorting premise is derived from source row-max sorting and
+    source right-hand-side magnitude sorting. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    {phi : ℝ} (gammaTilde err : ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Ahat k i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bhat k i| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Ahat t r j - Aexact t r j|)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bhat t r - bexact t r|)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_zero_start_zero_budget_nat
+      hm hn hnm Ahat Aexact A bhat bexact b gammaTilde err
+      DeltaA Deltab hphi hgamma herr hrows hAhat0 hAexact0 hbhat0
+      hbexact0 hAcompleted hbcompleted hAsorted hAstepExact hAstepErr
+      hArow0
+      (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
+        hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
+      hbstepExact hbstepErr hbrow0 hDeltaA hDeltab
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-initial, zero-start, zero-step-budget H19 row-sorting wrapper for a
     row-wise backward-error certificate.  It combines the exact perturbed
     least-squares solution carried by `Theorem20_7RowwiseBackwardError` with
@@ -12617,6 +17881,96 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcert.DeltaA hcert.Deltab hphi hgamma herr hrows hAhat0 hAexact0
       hbhat0 hbexact0 hAcompleted hbcompleted hAsorted hAstepExact
       hAstepErr hArow0 hbsorted hbstepExact hbstepErr hbrow0
+      hcert.deltaA_bound hcert.deltab_bound
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    source-sorted specialization of the zero-start, zero-step-budget
+    H19 row-sorting wrapper for a row-wise backward-error certificate. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    {phi : ℝ} (gammaTilde err : ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hAcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        |Ahat k i j| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbcompleted :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        |bhat k i| ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ k + err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Ahat t r j - Aexact t r j|)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bhat t r - bexact t r|)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Ahat bhat phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  refine ⟨hcert.exact_solution, ?_⟩
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_accumulated_error_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm Ahat Aexact A bhat bexact b gammaTilde err
+      hcert.DeltaA hcert.Deltab hphi hgamma herr hrows hAhat0 hAexact0
+      hbhat0 hbexact0 hAcompleted hbcompleted hAsorted hAstepExact
+      hAstepErr hArow0 hbAbsSorted hbstepExact hbstepErr hbrow0
       hcert.deltaA_bound hcert.deltab_bound
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
@@ -13348,6 +18702,19 @@ noncomputable def theorem20_8MaxRelativePerturbation {m n p : ℕ}
       (max (frobNormRect DeltaB / frobNormRect B)
         (vecNorm2 Deltad / vecNorm2 d)))
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the displayed maximum of relative perturbation sizes is nonnegative when
+    the source `A` denominator is positive. -/
+theorem theorem20_8MaxRelativePerturbation_nonneg {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (hApos : 0 < frobNormRect A) :
+    0 ≤ theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad := by
+  dsimp [theorem20_8MaxRelativePerturbation]
+  exact
+    (div_nonneg (frobNormRect_nonneg DeltaA) hApos.le).trans
+      (le_max_left _ _)
+
 /-- Multiplicative form of the Theorem 20.8 relative perturbation budget,
     avoiding repeated division once the source maximum assumption has been
     unpacked. -/
@@ -13751,6 +19118,265 @@ theorem theorem20_8AP_unconstrained_minimizer_of_lse_minimizer {m n p : ℕ}
     _ = lsObjective (theorem20_8AP A B Bplus)
           (fun i => b i - rectMatMulVec A x0 i) z := by
         exact theorem20_8AP_feasible_step_objective A b B Bplus x0 z
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    a minimizer of the perturbed equality-constrained problem gives an exact
+    minimizer of the perturbed reduced `AP` least-squares problem, relative to
+    a perturbed feasible base point. -/
+theorem theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bpertplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ)
+    (hright :
+      rectMatMul (fun i j => B i j + DeltaB i j) Bpertplus =
+        idMatrix p)
+    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) x0)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    IsLeastSquaresMinimizer
+      (theorem20_8AP (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) Bpertplus)
+      (fun i =>
+        b i + Deltab i -
+          rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+      (fun j => y j - x0 j) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
+    (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i)
+    (fun i j => B i j + DeltaB i j) Bpertplus
+    (fun i => d i + Deltad i) x0 y hright hx0 hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the reduced Higham residual for the perturbed `AP` least-squares problem is
+    orthogonal to every reduced column whenever it comes from an exact
+    perturbed LSE minimizer and a perturbed feasible base point. -/
+theorem theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bpertplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ) (s : Fin m → ℝ)
+    (hright :
+      rectMatMul (fun i j => B i j + DeltaB i j) Bpertplus =
+        idMatrix p)
+    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) x0)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hs :
+      s =
+        fun i =>
+          b i + Deltab i -
+            rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+            rectMatMulVec
+              (theorem20_8AP (fun i j => A i j + DeltaA i j)
+                (fun i j => B i j + DeltaB i j) Bpertplus)
+              (fun j => y j - x0 j) i) :
+    ∀ j : Fin n,
+      ∑ i : Fin m,
+        theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) Bpertplus i j *
+          s i = 0 := by
+  have hred :
+      IsLeastSquaresMinimizer
+        (theorem20_8AP (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) Bpertplus)
+        (fun i =>
+          b i + Deltab i -
+            rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+        (fun j => y j - x0 j) :=
+    theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+      A DeltaA b Deltab B DeltaB Bpertplus d Deltad x0 y hright hx0 hy
+  exact
+    IsLeastSquaresMinimizer.higham_residual_orthogonal
+      (A := theorem20_8AP (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) Bpertplus)
+      (b := fun i =>
+        b i + Deltab i -
+          rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+      (x := fun j => y j - x0 j) (s := s)
+      hred (by simpa [lsResidualHigham] using hs)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    an exact LSE minimizer induces an exact unconstrained least-squares
+    minimizer in any supplied coordinate basis for homogeneous feasible
+    directions. -/
+theorem IsLSEMinimizer.reduced_nullspace_minimizer {m n p q : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (N : Fin n → Fin q → ℝ)
+    (hmin : IsLSEMinimizer A b B d x)
+    (hN : rectMatMul B N = (fun _i : Fin p => fun _j : Fin q => 0)) :
+    IsLeastSquaresMinimizer (rectMatMul A N) (lsResidualHigham A b x)
+      (0 : Fin q → ℝ) := by
+  intro z
+  let candidate : Fin n → ℝ := fun j => x j + rectMatMulVec N z j
+  have hNz : rectMatMulVec B (rectMatMulVec N z) =
+      (fun _i : Fin p => 0) := by
+    rw [← rectMatMulVec_rectMatMul B N z, hN]
+    ext i
+    simp [rectMatMulVec]
+  have hfeas : LSEFeasible B d candidate := by
+    intro i
+    have hzi := congrFun hNz i
+    change rectMatMulVec B (fun j => x j + rectMatMulVec N z j) i = d i
+    rw [rectMatMulVec_add]
+    change rectMatMulVec B x i +
+        rectMatMulVec B (rectMatMulVec N z) i = d i
+    rw [hmin.1 i, hzi]
+    simp
+  have hle : lsObjective A b x ≤ lsObjective A b candidate :=
+    hmin.2 candidate hfeas
+  have hobj0 :
+      lsObjective (rectMatMul A N) (lsResidualHigham A b x)
+          (0 : Fin q → ℝ) =
+        lsObjective A b x := by
+    unfold lsObjective lsResidual lsResidualHigham
+    apply congrArg vecNorm2Sq
+    ext i
+    simp [rectMatMulVec]
+  have hobjz :
+      lsObjective A b candidate =
+        lsObjective (rectMatMul A N) (lsResidualHigham A b x) z := by
+    unfold lsObjective lsResidual lsResidualHigham
+    apply congrArg vecNorm2Sq
+    ext i
+    rw [rectMatMulVec_add, rectMatMulVec_rectMatMul]
+    ring
+  calc
+    lsObjective (rectMatMul A N) (lsResidualHigham A b x)
+        (0 : Fin q → ℝ) = lsObjective A b x := hobj0
+    _ ≤ lsObjective A b candidate := hle
+    _ = lsObjective (rectMatMul A N) (lsResidualHigham A b x) z := hobjz
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    Wedin residual-side bound for source and perturbed LSE problems after
+    reducing each problem to supplied homogeneous-nullspace coordinates.
+
+This is a reduced-coordinate bridge for the Eldén--Cox--Higham route.  It
+uses exact optimality of the source and perturbed constrained problems to
+obtain the two reduced least-squares minimizers, then applies the minimizer
+form of Wedin's Theorem 20.1 residual estimate. -/
+theorem theorem20_8_nullspace_reduced_wedinResidualRHS_le_of_lse_minimizers
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r s : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : r = lsResidualHigham A b x)
+    (hs : s = lsResidualHigham
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i) y)
+    (hrpos : 0 < vecNorm2 r)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (heps_nonneg : 0 ≤ eps)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => s i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus)) :
+    vecNorm2 (fun i => r i - s i) / vecNorm2 r ≤
+      wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+  let Ared : Fin m → Fin (k + 1) → ℝ := rectMatMul A N
+  let Bred : Fin m → Fin (k + 1) → ℝ :=
+    rectMatMul (fun i j => A i j + DeltaA i j) Npert
+  let DeltaAred : Fin m → Fin (k + 1) → ℝ :=
+    fun i j => Bred i j - Ared i j
+  have hxred :
+      IsLeastSquaresMinimizer Ared r (0 : Fin (k + 1) → ℝ) := by
+    have hraw :
+        IsLeastSquaresMinimizer (rectMatMul A N) (lsResidualHigham A b x)
+          (0 : Fin (k + 1) → ℝ) :=
+      IsLSEMinimizer.reduced_nullspace_minimizer A b B d x N hx hN
+    simpa [Ared, hr] using hraw
+  have hyred_s :
+      IsLeastSquaresMinimizer Bred s (0 : Fin (k + 1) → ℝ) := by
+    have hraw :
+        IsLeastSquaresMinimizer
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+          (lsResidualHigham (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i) y)
+          (0 : Fin (k + 1) → ℝ) :=
+      IsLSEMinimizer.reduced_nullspace_minimizer
+        (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) (fun i => d i + Deltad i)
+        y Npert hy hNpert
+    simpa [Bred, hs] using hraw
+  have hyred :
+      IsLeastSquaresMinimizer Bred (fun i => r i + (s i - r i))
+        (0 : Fin (k + 1) → ℝ) := by
+    have hbrhs : (fun i : Fin m => r i + (s i - r i)) = s := by
+      ext i
+      ring
+    simpa [hbrhs] using hyred_s
+  have hBred_eq : Bred = fun i j => Ared i j + DeltaAred i j := by
+    ext i j
+    simp [DeltaAred]
+  have hrRed :
+      r = fun i => r i - rectMatMulVec Ared (0 : Fin (k + 1) → ℝ) i := by
+    ext i
+    simp [rectMatMulVec]
+  have hsRed :
+      s =
+        fun i =>
+          (r i + (s i - r i)) -
+            rectMatMulVec Bred (0 : Fin (k + 1) → ℝ) i := by
+    ext i
+    simp [rectMatMulVec]
+  exact
+    IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_min_surface_geometry_source_minimizer
+      hm Ared Bred AredPlus BredPlus DeltaAred r (fun i => s i - r i) r s
+      (0 : Fin (k + 1) → ℝ) (0 : Fin (k + 1) → ℝ)
+      hxred hyred hrpos hAredPlus_pos hAred_norm_nonneg heps_nonneg
+      hkappa hdelta hsmall hAredPlus
+      (by simpa [Ared, Bred, DeltaAred] using hDelta)
+      (by simpa [Ared, Bred, DeltaAred] using hDeltaAred)
+      hDeltabred hDeltaAred_norm_budget hDeltabred_norm_budget
+      (by simpa [Ared] using hleftA)
+      (by simpa [Bred] using hleftB)
+      (by simpa [Ared] using hSymA)
+      (by simpa [Bred] using hSymB)
+      hBred_eq hrRed hsRed
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     applying `P = I - B^+B` to a vector with a known constraint residual
@@ -20199,6 +25825,96 @@ theorem theorem20_8_wedinResidualRHS_scaled_residual_le_of_scalar_op2_le
     mul_le_mul_of_nonneg_right hscalar (vecNorm2_nonneg r)
   simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv] using hmul
 
+/-- Higham, 2nd ed., Chapter 20, Theorems 20.1 and 20.8:
+    expanding Wedin's residual RHS `(1 + 2*kappa)*eps` turns the scalar
+    residual-amplifier comparison into an `eps`-free coefficient comparison. -/
+theorem theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A) :
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        wedinTheorem20_1ResidualRelativeRHS kappa eps ≤
+      eps * theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A := by
+  unfold wedinTheorem20_1ResidualRelativeRHS
+  have hmul := mul_le_mul_of_nonneg_right hcoeff heps_nonneg
+  calc
+    complexMatrixOp2 (realRectToCMatrix APplus) * ((1 + 2 * kappa) * eps)
+        = (complexMatrixOp2 (realRectToCMatrix APplus) *
+            (1 + 2 * kappa)) * eps := by
+            ring
+    _ ≤ (theorem20_8ResidualAmplifier A B APplus BAplus /
+          frobNormRect A) * eps := hmul
+    _ = eps * theorem20_8ResidualAmplifier A B APplus BAplus /
+          frobNormRect A := by
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual-gap scaling from an `eps`-free first-order coefficient comparison
+    for Wedin's residual RHS. -/
+theorem theorem20_8_wedinResidualRHS_scaled_residual_le_of_first_order_coeff_le
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (r : Fin m → ℝ) {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A) :
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        (wedinTheorem20_1ResidualRelativeRHS kappa eps * vecNorm2 r) ≤
+      eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+        (vecNorm2 r / frobNormRect A) :=
+  theorem20_8_wedinResidualRHS_scaled_residual_le_of_scalar_op2_le
+    A B APplus BAplus r
+    (theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+      A B APplus BAplus heps_nonneg hcoeff)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    after identifying Wedin's reduced-problem condition number with
+    `kappa_B(A)`, the first-order residual-amplifier coefficient comparison
+    follows from the remaining scalar bracket inequality. -/
+theorem theorem20_8_wedinResidualRHS_first_order_coeff_le_of_kappaB_bracket
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    {kappa : ℝ}
+    (hApos : 0 < frobNormRect A)
+    (hkappa : kappa = theorem20_8KappaB A APplus)
+    (hbracket :
+      1 + 2 * kappa ≤
+        kappa *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) +
+            1)) :
+    complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+      theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A := by
+  subst kappa
+  let APnorm : ℝ := complexMatrixOp2 (realRectToCMatrix APplus)
+  let bracket : ℝ :=
+    (frobNormRect B / frobNormRect A) *
+        complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) +
+      1
+  have hAPnorm_nonneg : 0 ≤ APnorm := by
+    dsimp [APnorm]
+    exact complexMatrixOp2_nonneg (realRectToCMatrix APplus)
+  have hmul :=
+    mul_le_mul_of_nonneg_left hbracket hAPnorm_nonneg
+  calc
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        (1 + 2 * theorem20_8KappaB A APplus)
+        = APnorm * (1 + 2 * theorem20_8KappaB A APplus) := by
+            rfl
+    _ ≤ APnorm * (theorem20_8KappaB A APplus * bracket) := hmul
+    _ = theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A := by
+      dsimp [APnorm, bracket]
+      unfold theorem20_8ResidualAmplifier theorem20_8KappaB
+      field_simp [ne_of_gt hApos]
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action first-order handoff when the reduced residual-relative
     estimate has Wedin's Theorem 20.1 residual RHS.  The comparison between
@@ -20305,6 +26021,513 @@ theorem
     A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
     heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hAPaction
     hx hy hr hres hrelative hscale
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    projected-action first-order solution bound whose reduced residual estimate
+    is supplied by Wedin's Theorem 20.1 on explicit source and perturbed
+    homogeneous-nullspace coordinate bases.
+
+The theorem deliberately keeps the concrete nullspace bases, reduced
+pseudoinverses, reduced perturbation budgets, projected-action identity, and
+scalar residual-amplifier comparison on the surface. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_nullspace_reduced_wedinResidualRHS_projected_action_op2_le
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => rHigh i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hscale :
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+          (wedinTheorem20_1ResidualRelativeRHS kappa eps * vecNorm2 r) ≤
+        eps * theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) := by
+  have hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+    have hdelta_rhs :
+        vecNorm2 (fun i : Fin m => rHigh i - r i) ≤ Deltabred_norm :=
+      hDeltabred
+    have hwedin :=
+      theorem20_8_nullspace_reduced_wedinResidualRHS_le_of_lse_minimizers
+        hm A DeltaA b Deltab B DeltaB d Deltad N Npert AredPlus BredPlus
+        x y r rHigh hx hy hN hNpert hr.symm hres.symm hrpos
+        hAredPlus_pos hAred_norm_nonneg heps_nonneg hkappa hdelta hsmall
+        hAredPlus hDelta hDeltaAred hdelta_rhs hDeltaAred_norm_budget
+        hDeltabred_norm_budget hleftA hleftB hSymA hSymB
+    simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using hwedin
+  exact
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_wedinResidualRHS_projected_action_op2_le
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hAPaction
+      hx.1 hy.1 hr hres hrelative hscale
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    nullspace-coordinate Wedin route with the residual-amplifier comparison
+    reduced to the first-order coefficient inequality. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_nullspace_reduced_wedinResidualRHS_first_order_coeff_projected_action_op2_le
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => rHigh i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B Bplus APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) :=
+  theorem20_8_solution_difference_relative_le_firstOrderRHS_of_nullspace_reduced_wedinResidualRHS_projected_action_op2_le
+    hm A DeltaA b Deltab B DeltaB Bplus APplus d Deltad N Npert
+    AredPlus BredPlus x y r rHigh heps_nonneg hApos hbpos hBpos hdpos
+    hxpos hyx hrpos hmax hAPaction hx hy hN hNpert hr hres
+    hAredPlus_pos hAred_norm_nonneg hkappa hdelta hsmall hAredPlus
+    hDelta hDeltaAred hDeltabred hDeltaAred_norm_budget
+    hDeltabred_norm_budget hleftA hleftB hSymA hSymB
+    (theorem20_8_wedinResidualRHS_scaled_residual_le_of_first_order_coeff_le
+      A B APplus (theorem20_8BAplus A B Bplus APplus) r heps_nonneg hcoeff)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    nullspace-coordinate Wedin route with the scalar residual-amplifier
+    comparison reduced to the `kappa_B(A)` bracket inequality. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_projected_action_op2_le
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hkappaB : kappa = theorem20_8KappaB A APplus)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => rHigh i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * kappa ≤
+        kappa *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) :=
+  theorem20_8_solution_difference_relative_le_firstOrderRHS_of_nullspace_reduced_wedinResidualRHS_first_order_coeff_projected_action_op2_le
+    hm A DeltaA b Deltab B DeltaB Bplus APplus d Deltad N Npert
+    AredPlus BredPlus x y r rHigh heps_nonneg hApos hbpos hBpos hdpos
+    hxpos hyx hrpos hmax hAPaction hx hy hN hNpert hr hres
+    hAredPlus_pos hAred_norm_nonneg hkappa hdelta hsmall hAredPlus
+    hDelta hDeltaAred hDeltabred hDeltaAred_norm_budget
+    hDeltabred_norm_budget hleftA hleftB hSymA hSymB
+    (theorem20_8_wedinResidualRHS_first_order_coeff_le_of_kappaB_bracket
+      A B APplus (theorem20_8BAplus A B Bplus APplus) hApos hkappaB
+      hbracket)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    nullspace-coordinate Wedin route with `kappa_B(A)` bracket scalar
+    reduction, packaged in the source-shaped first-order plus explicit
+    `eps^2`-coefficient form. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_projected_action_op2_le
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hkappaB : kappa = theorem20_8KappaB A APplus)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => rHigh i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * kappa ≤
+        kappa *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  let BAplus := theorem20_8BAplus A B Bplus APplus
+  have hbase :=
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_projected_action_op2_le
+      hm A DeltaA b Deltab B DeltaB Bplus APplus d Deltad N Npert
+      AredPlus BredPlus x y r rHigh heps_nonneg hApos hbpos hBpos hdpos
+      hxpos hyx hrpos hmax hAPaction hx hy hN hNpert hr hres
+      hAredPlus_pos hAred_norm_nonneg hkappa hkappaB hdelta hsmall
+      hAredPlus hDelta hDeltaAred hDeltabred hDeltaAred_norm_budget
+      hDeltabred_norm_budget hleftA hleftB hSymA hSymB hbracket
+  have hquad_nonneg :
+      0 ≤
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
+          (complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+    have hfirst :
+        0 ≤ theorem20_8FirstOrderRHS A b B d x r APplus BAplus :=
+      theorem20_8FirstOrderRHS_nonneg A b B d x r APplus BAplus
+        hApos hBpos hxpos
+    have hcoef :
+        0 ≤ complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
+          complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A := by
+      exact add_nonneg
+        (mul_nonneg (complexMatrixOp2_nonneg (realRectToCMatrix BAplus))
+          (frobNormRect_nonneg B))
+        (mul_nonneg (complexMatrixOp2_nonneg (realRectToCMatrix APplus))
+          (frobNormRect_nonneg A))
+    exact mul_nonneg (mul_nonneg (sq_nonneg eps) hfirst) hcoef
+  exact hbase.trans (le_add_of_nonneg_right (by simpa [BAplus] using hquad_nonneg))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    nullspace-coordinate Wedin route with the projected-action identity derived
+    from the source-style `(AP)^+ AP` left-inverse condition on
+    `null(B)`. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_AP_left_inverse_on_nullspace
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B Bplus) z) = z)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hkappaB : kappa = theorem20_8KappaB A APplus)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => rHigh i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * kappa ≤
+        kappa *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k) :=
+    theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
+      A B Bplus APplus hright hAPleft_null (fun k => y k - x k)
+  exact
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_projected_action_op2_le
+      hm A DeltaA b Deltab B DeltaB Bplus APplus d Deltad N Npert
+      AredPlus BredPlus x y r rHigh heps_nonneg hApos hbpos hBpos hdpos
+      hxpos hyx hrpos hmax hAPaction hx hy hN hNpert hr hres
+      hAredPlus_pos hAred_norm_nonneg hkappa hkappaB hdelta hsmall
+      hAredPlus hDelta hDeltaAred hDeltabred hDeltaAred_norm_budget
+      hDeltabred_norm_budget hleftA hleftB hSymA hSymB hbracket
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action Wedin-residual-RHS handoff with the residual norm factored
@@ -20414,6 +26637,114 @@ theorem
     hx hy hr hres hrelative
     (theorem20_8_wedinResidualRHS_scaled_residual_le_of_scalar_op2_le
       A B APplus (theorem20_8BAplus A B Bplus APplus) r hscale_scalar)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    projected-action Wedin-residual-RHS handoff using the source first-order
+    coefficient comparison instead of the expanded `eps`-scaled scalar
+    residual-amplifier comparison. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_wedinResidualRHS_first_order_coeff_projected_action_op2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B Bplus APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) :=
+  theorem20_8_solution_difference_relative_le_firstOrderRHS_of_wedinResidualRHS_scalar_projected_action_op2_le
+    A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+    heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hAPaction
+    hx hy hr hres hrelative
+    (theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+      A B APplus (theorem20_8BAplus A B Bplus APplus) heps_nonneg hcoeff)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    projected-action Wedin-residual-RHS handoff with explicit `eps^2`
+    coefficient, using the source first-order coefficient comparison. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_wedinResidualRHS_first_order_coeff_projected_action_op2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B Bplus APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) :=
+  theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_wedinResidualRHS_scalar_projected_action_op2_le
+    A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+    heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hAPaction
+    hx hy hr hres hrelative
+    (theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+      A B APplus (theorem20_8BAplus A B Bplus APplus) heps_nonneg hcoeff)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-gap first-order handoff.  If the missing Wedin/reduced-LS step
@@ -20959,6 +27290,70 @@ theorem LSEFullRowRank.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
       (fun j => x j - x0 j) :=
   _root_.LeanFpAnalysis.FP.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
     A b B hB.rightInverse d x0 x hB.rightInverse_spec hx0 hx
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    perturbed-data reduced-`AP` minimizer handoff using the right inverse
+    supplied by full row rank of the perturbed constraint matrix. -/
+theorem
+    LSEFullRowRank.theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ)
+    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) x0)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    IsLeastSquaresMinimizer
+      (theorem20_8AP (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+      (fun i =>
+        b i + Deltab i -
+          rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+      (fun j => y j - x0 j) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+    A DeltaA b Deltab B DeltaB hBpert.rightInverse d Deltad x0 y
+    hBpert.rightInverse_spec hx0 hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-instantiated reduced residual orthogonality for the
+    perturbed `AP` least-squares problem obtained from a perturbed LSE
+    minimizer. -/
+theorem
+    LSEFullRowRank.theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ) (s : Fin m → ℝ)
+    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) x0)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hs :
+      s =
+        fun i =>
+          b i + Deltab i -
+            rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+            rectMatMulVec
+              (theorem20_8AP (fun i j => A i j + DeltaA i j)
+                (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+              (fun j => y j - x0 j) i) :
+    ∀ j : Fin n,
+      ∑ i : Fin m,
+        theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
+          s i = 0 :=
+  _root_.LeanFpAnalysis.FP.theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
+    A DeltaA b Deltab B DeltaB hBpert.rightInverse d Deltad x0 y s
+    hBpert.rightInverse_spec hx0 hy hs
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated form of applying `P = I - Bplus*B` to a vector
@@ -25855,6 +32250,1126 @@ theorem
       hmax hAPaction hx hy hr hres hrelative hscale_scalar
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-stacked-full-column-rank Wedin-residual-RHS first-order bound for
+    the Moore--Penrose/transpose-range route, using the source first-order
+    coefficient comparison. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_of_MP_transpose_range_lseStackedFullColumnRank_wedinResidualRHS_first_order_coeff_op2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B hB.rightInverse APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B hB.rightInverse APplus) := by
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_of_MP_transpose_range_lseStackedFullColumnRank_wedinResidualRHS_scalar_op2_le
+      A DeltaA b Deltab hB DeltaB APplus d Deltad x y r rHigh
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos hmax hx hy
+      hMP hBAPt hstack hr hres hrelative
+      (_root_.LeanFpAnalysis.FP.theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+        A B APplus (theorem20_8BAplus A B hB.rightInverse APplus)
+        heps_nonneg hcoeff)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-stacked-full-column-rank Wedin-residual-RHS first-order plus
+    explicit `eps^2` bound for the Moore--Penrose/transpose-range route,
+    using the source first-order coefficient comparison. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_transpose_range_lseStackedFullColumnRank_wedinResidualRHS_first_order_coeff_op2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B hB.rightInverse APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) :=
+  LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_transpose_range_lseStackedFullColumnRank_wedinResidualRHS_scalar_op2_le
+    A DeltaA b Deltab hB DeltaB APplus d Deltad x y r rHigh
+    heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos hmax hx hy
+    hMP hBAPt hstack hr hres hrelative
+    (_root_.LeanFpAnalysis.FP.theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+      A B APplus (theorem20_8BAplus A B hB.rightInverse APplus)
+      heps_nonneg hcoeff)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-stacked-full-column-rank nullspace-Wedin route for the
+    Moore--Penrose/transpose-range `(AP)^+` certificate.  This derives the
+    projected-action side from the printed rank conditions plus the
+    rank-tolerant Moore--Penrose certificate, while keeping the reduced
+    nullspace bases, Wedin budgets, `kappa_B` identification, and bracket
+    inequality explicit. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hkappaB : kappa = theorem20_8KappaB A APplus)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => rHigh i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * kappa ≤
+        kappa *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  exact
+    _root_.LeanFpAnalysis.FP.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_AP_left_inverse_on_nullspace
+      hm A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad
+      N Npert AredPlus BredPlus x y r rHigh heps_nonneg hApos hbpos
+      hBpos hdpos hxpos hyx hrpos hmax hB.rightInverse_spec
+      (LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_lseStackedFullColumnRank
+        A hB APplus hMP hBAPt hstack)
+      hx hy hN hNpert hr hres hAredPlus_pos hAred_norm_nonneg
+      hkappa hkappaB hdelta hsmall hAredPlus hDelta hDeltaAred
+      hDeltabred hDeltaAred_norm_budget hDeltabred_norm_budget
+      hleftA hleftB hSymA hSymB hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-residual specialization of the MP/transpose-range nullspace-Wedin
+    route.  This wrapper uses the actual source and perturbed Higham residuals
+    directly, removing the caller-facing residual-vector equality witnesses
+    while preserving the concrete reduced-coordinate and scalar bracket
+    obligations. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residuals
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hkappaB : kappa = theorem20_8KappaB A APplus)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) ≤
+        Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget :
+      Deltabred_norm ≤ eps * vecNorm2 (lsResidualHigham A b x))
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * kappa ≤
+        kappa *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank
+      hm A DeltaA b Deltab hB DeltaB APplus d Deltad N Npert
+      AredPlus BredPlus x y (lsResidualHigham A b x)
+      (lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y)
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax
+      hMP hBAPt hstack hx hy hN hNpert rfl rfl hAredPlus_pos
+      hAred_norm_nonneg hkappa hkappaB hdelta hsmall hAredPlus
+      hDelta hDeltaAred hDeltabred hDeltaAred_norm_budget
+      hDeltabred_norm_budget hleftA hleftB hSymA hSymB hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    relative residual-gap form of the MP/transpose-range nullspace-Wedin
+    route.  The reduced right-hand-side budget is instantiated by the single
+    source-relative residual inequality, so callers no longer supply a
+    separate `Deltabred_norm` and budget certificate. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_relative
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ)
+    {delta AredPlus_norm DeltaAred_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hkappaB : kappa = theorem20_8KappaB A APplus)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hres_relative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * kappa ≤
+        kappa *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hDeltabred :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) ≤
+        eps * vecNorm2 (lsResidualHigham A b x) :=
+    (div_le_iff₀ hrpos).mp hres_relative
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residuals
+      hm A DeltaA b Deltab hB DeltaB APplus d Deltad N Npert
+      AredPlus BredPlus x y heps_nonneg hApos hbpos hBpos hdpos
+      hxpos hyx hrpos hmax hMP hBAPt hstack hx hy hN hNpert
+      hAredPlus_pos hAred_norm_nonneg hkappa hkappaB hdelta hsmall
+      hAredPlus hDelta hDeltaAred hDeltabred hDeltaAred_norm_budget
+      le_rfl hleftA hleftB hSymA hSymB hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    relative residual-gap form of the MP/transpose-range nullspace-Wedin
+    route with the reduced operator budget instantiated by the same Wedin
+    smallness radius `delta = eps * ||Ared||`.  This removes the separate
+    `DeltaAred_norm` caller obligation while keeping the concrete nullspace
+    bases, reduced pseudoinverses, `kappa_B`, and bracket inequality explicit. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_relative_delta
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ)
+    {delta AredPlus_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hkappaB : kappa = theorem20_8KappaB A APplus)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hres_relative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * kappa ≤
+        kappa *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hDelta_budget : delta ≤ eps * Ared_norm := by
+    simp [hdelta]
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_relative
+      hm A DeltaA b Deltab hB DeltaB APplus d Deltad N Npert
+      AredPlus BredPlus x y heps_nonneg hApos hbpos hBpos hdpos
+      hxpos hyx hrpos hmax hMP hBAPt hstack hx hy hN hNpert
+      hAredPlus_pos hAred_norm_nonneg hkappa hkappaB hdelta hsmall
+      hAredPlus hDelta hDelta hres_relative hDelta_budget hleftA
+      hleftB hSymA hSymB hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    relative residual-gap and reduced-operator-budget form with Wedin's
+    reduced-condition parameter specialized to the source-facing
+    `kappa_B(A)` quantity used in (20.25).  The scalar bracket and reduced
+    residual-gap estimate remain explicit obligations. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_relative_delta_kappaB
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ)
+    {delta AredPlus_norm eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : theorem20_8KappaB A APplus = AredPlus_norm * Ared_norm)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : theorem20_8KappaB A APplus * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hres_relative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) :=
+  LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_relative_delta
+    hm A DeltaA b Deltab hB DeltaB APplus d Deltad N Npert
+    AredPlus BredPlus x y heps_nonneg hApos hbpos hBpos hdpos
+    hxpos hyx hrpos hmax hMP hBAPt hstack hx hy hN hNpert
+    hAredPlus_pos hAred_norm_nonneg hkappa rfl hdelta hsmall
+    hAredPlus hDelta hres_relative hleftA hleftB hSymA hSymB hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-facing `kappa_B(A)` nullspace-Wedin handoff with the reduced
+    operator perturbation radius written directly as `eps * ||Ared||`.  This
+    removes the auxiliary `delta` equality while keeping the residual-gap,
+    reduced norm identity, smallness, and scalar bracket obligations explicit. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_relative_kappaB
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ)
+    {AredPlus_norm eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : theorem20_8KappaB A APplus = AredPlus_norm * Ared_norm)
+    (hsmall : theorem20_8KappaB A APplus * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) (eps * Ared_norm))
+    (hres_relative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) :=
+  LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_relative_delta_kappaB
+    hm A DeltaA b Deltab hB DeltaB APplus d Deltad N Npert
+    AredPlus BredPlus x y heps_nonneg hApos hbpos hBpos hdpos
+    hxpos hyx hrpos hmax hMP hBAPt hstack hx hy hN hNpert
+    hAredPlus_pos hAred_norm_nonneg hkappa rfl hsmall hAredPlus
+    hDelta hres_relative hleftA hleftB hSymA hSymB hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-facing `kappa_B(A)` direct-radius wrapper deriving the reduced
+    operator norm's nonnegativity from `kappa_B(A) >= 0`, a positive
+    pseudoinverse norm bound, and the reduced norm identity.  The reduced
+    pseudoinverse, source-relative residual-gap, smallness, and bracket
+    obligations remain explicit. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_relative_kappaB_norm_nonneg
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ)
+    {AredPlus_norm eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hkappa : theorem20_8KappaB A APplus = AredPlus_norm * Ared_norm)
+    (hsmall : theorem20_8KappaB A APplus * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) (eps * Ared_norm))
+    (hres_relative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hprod_nonneg : 0 ≤ AredPlus_norm * Ared_norm := by
+    simpa [hkappa] using theorem20_8KappaB_nonneg A APplus
+  have hAred_norm_nonneg : 0 ≤ Ared_norm :=
+    (mul_nonneg_iff_of_pos_left hAredPlus_pos).mp hprod_nonneg
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_relative_kappaB
+      hm A DeltaA b Deltab hB DeltaB APplus d Deltad N Npert
+      AredPlus BredPlus x y heps_nonneg hApos hbpos hBpos hdpos
+      hxpos hyx hrpos hmax hMP hBAPt hstack hx hy hN hNpert
+      hAredPlus_pos hAred_norm_nonneg hkappa hsmall hAredPlus
+      hDelta hres_relative hleftA hleftB hSymA hSymB hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-facing `kappa_B(A)` direct-radius wrapper with the reduced residual
+    gap supplied in norm form rather than divided-relative form.  Since the
+    source residual norm is positive, `||rHigh-r|| <= eps*||r||` implies the
+    relative residual-gap hypothesis consumed by the Wedin handoff. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_norm_kappaB_norm_nonneg
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ)
+    {AredPlus_norm eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hkappa : theorem20_8KappaB A APplus = AredPlus_norm * Ared_norm)
+    (hsmall : theorem20_8KappaB A APplus * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) (eps * Ared_norm))
+    (hres_norm :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) ≤
+        eps * vecNorm2 (lsResidualHigham A b x))
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hres_relative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps := by
+    exact (div_le_iff₀ hrpos).2 (by simpa using hres_norm)
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_relative_kappaB_norm_nonneg
+      hm A DeltaA b Deltab hB DeltaB APplus d Deltad N Npert
+      AredPlus BredPlus x y heps_nonneg hApos hbpos hBpos hdpos
+      hxpos hyx hrpos hmax hMP hBAPt hstack hx hy hN hNpert
+      hAredPlus_pos hkappa hsmall hAredPlus hDelta hres_relative
+      hleftA hleftB hSymA hSymB hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-facing `kappa_B(A)` direct-radius wrapper deriving `eps >= 0` from
+    the displayed maximum-relative perturbation budget and positive source
+    denominators.  The residual gap is supplied in norm form, while the
+    reduced pseudoinverse, reduced operator budget, smallness, and bracket
+    obligations remain explicit. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_norm_kappaB_eps_nonneg
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ)
+    {AredPlus_norm eps Ared_norm : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hkappa : theorem20_8KappaB A APplus = AredPlus_norm * Ared_norm)
+    (hsmall : theorem20_8KappaB A APplus * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) (eps * Ared_norm))
+    (hres_norm :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) ≤
+        eps * vecNorm2 (lsResidualHigham A b x))
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_norm_kappaB_norm_nonneg
+      hm A DeltaA b Deltab hB DeltaB APplus d Deltad N Npert
+      AredPlus BredPlus x y heps_nonneg hApos hbpos hBpos hdpos
+      hxpos hyx hrpos hmax hMP hBAPt hstack hx hy hN hNpert
+      hAredPlus_pos hkappa hsmall hAredPlus hDelta hres_norm
+      hleftA hleftB hSymA hSymB hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-facing `kappa_B(A)` direct-radius wrapper taking the residual gap
+    in divided-relative form while deriving both `eps >= 0` and the norm-form
+    residual-gap budget used by the latest source-residual surface. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_relative_kappaB_eps_nonneg
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ)
+    {AredPlus_norm eps Ared_norm : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hkappa : theorem20_8KappaB A APplus = AredPlus_norm * Ared_norm)
+    (hsmall : theorem20_8KappaB A APplus * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) (eps * Ared_norm))
+    (hres_relative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hres_norm :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) ≤
+        eps * vecNorm2 (lsResidualHigham A b x) :=
+    (div_le_iff₀ hrpos).mp hres_relative
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_norm_kappaB_eps_nonneg
+      hm A DeltaA b Deltab hB DeltaB APplus d Deltad N Npert
+      AredPlus BredPlus x y hApos hbpos hBpos hdpos hxpos hyx hrpos
+      hmax hMP hBAPt hstack hx hy hN hNpert hAredPlus_pos hkappa
+      hsmall hAredPlus hDelta hres_norm hleftA hleftB hSymA hSymB
+      hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank projected-difference handoff for the
     Moore--Penrose/transpose-range route. -/
 theorem
@@ -26795,6 +34310,115 @@ theorem
         A B APplus
         (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
         r hscale_scalar)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    Gram-`B` source-rank Wedin-residual-RHS first-order bound using the source
+    first-order coefficient comparison. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_of_MP_gram_projection_lseStackedFullColumnRank_wedinResidualRHS_first_order_coeff_op2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus) :=
+  LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_of_MP_gram_projection_lseStackedFullColumnRank_wedinResidualRHS_scalar_op2_le
+    A DeltaA b Deltab hB DeltaB APplus d Deltad x y r rHigh
+    heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos hmax hx hy
+    hMP hstack hr hres hrelative
+    (_root_.LeanFpAnalysis.FP.theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+      A B APplus
+      (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
+      heps_nonneg hcoeff)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    Gram-`B` source-rank Wedin-residual-RHS first-order plus explicit `eps^2`
+    bound using the source first-order coefficient comparison. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_gram_projection_lseStackedFullColumnRank_wedinResidualRHS_first_order_coeff_op2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) :=
+  LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_gram_projection_lseStackedFullColumnRank_wedinResidualRHS_scalar_op2_le
+    A DeltaA b Deltab hB DeltaB APplus d Deltad x y r rHigh
+    heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos hmax hx hy
+    hMP hstack hr hres hrelative
+    (_root_.LeanFpAnalysis.FP.theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+      A B APplus
+      (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
+      heps_nonneg hcoeff)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     determinant-facing concrete Gram-pseudoinverse version of the
@@ -36343,6 +43967,159 @@ theorem theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturba
       A DeltaA b Deltab B DeltaB d Deltad
       hApos hbpos hBpos hdpos hmax)
     hBsmall hStackSmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    perturbed-rank witness package for the reduced `AP` problem.
+
+    If the perturbed LSE data satisfy the two rank conditions in (20.24), then
+    there are a perturbed feasible base point, a perturbed LSE minimizer, and
+    the corresponding reduced least-squares minimizer.  The reduced Higham
+    residual is orthogonal to the columns of the perturbed reduced `AP`
+    matrix, which is the exact optimality side needed by the Wedin residual
+    route. -/
+theorem theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_conditions20_24
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ)
+    (B DeltaB : Fin p → Fin (p + q) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hStackPert : LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j)) :
+    ∃ (x0 y : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
+      LSEFeasible (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) x0 ∧
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+      IsLeastSquaresMinimizer
+          (theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+          (fun j => y j - x0 j) ∧
+      s =
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+              rectMatMulVec
+                (theorem20_8AP (fun i j => A i j + DeltaA i j)
+                  (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+                (fun j => y j - x0 j) i) ∧
+      (∀ j : Fin (p + q),
+        ∑ i : Fin (r + q),
+          theorem20_8AP (fun i j => A i j + DeltaA i j)
+              (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
+            s i = 0) := by
+  rcases hBpert.exists_feasible (fun i => d i + Deltad i) with
+    ⟨x0, hx0⟩
+  rcases exists_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+      (A := fun i j => A i j + DeltaA i j)
+      (B := fun i j => B i j + DeltaB i j)
+      (b := fun i => b i + Deltab i)
+      (d := fun i => d i + Deltad i) hBpert hStackPert with
+    ⟨y, hy⟩
+  let s : Fin (r + q) → ℝ :=
+    fun i =>
+      b i + Deltab i -
+        rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+        rectMatMulVec
+          (theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+          (fun j => y j - x0 j) i
+  have hred :
+      IsLeastSquaresMinimizer
+          (theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+          (fun j => y j - x0 j) :=
+    LSEFullRowRank.theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+      A DeltaA b Deltab B DeltaB hBpert d Deltad x0 y hx0 hy
+  have horth :
+      ∀ j : Fin (p + q),
+        ∑ i : Fin (r + q),
+          theorem20_8AP (fun i j => A i j + DeltaA i j)
+              (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
+            s i = 0 :=
+    LSEFullRowRank.theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
+      A DeltaA b Deltab B DeltaB hBpert d Deltad x0 y s hx0 hy rfl
+  exact ⟨x0, y, s, hx0, hy, hred, rfl, horth⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    maximum-relative-perturbation version of the reduced `AP` witness package.
+
+    Source rank conditions and strict margin smallness first preserve (20.24)
+    for the perturbed problem; the resulting perturbed rank facts then supply
+    the reduced minimizer and residual orthogonality witnesses. -/
+theorem
+    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lt_margins
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {eps : ℝ}
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hBsrc.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    ∃ (x0 y : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
+      LSEFeasible (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) x0 ∧
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+      IsLeastSquaresMinimizer
+          (theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j)
+            (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
+              hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse)
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+          (fun j => y j - x0 j) ∧
+      s =
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+              rectMatMulVec
+                (theorem20_8AP (fun i j => A i j + DeltaA i j)
+                  (fun i j => B i j + DeltaB i j)
+                  (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
+                    hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse)
+                (fun j => y j - x0 j) i) ∧
+      (∀ j : Fin (p + q),
+        ∑ i : Fin (r + q),
+          theorem20_8AP (fun i j => A i j + DeltaA i j)
+              (fun i j => B i j + DeltaB i j)
+              (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
+                hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse i j *
+            s i = 0) := by
+  let hcond :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
+      hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall
+  exact
+    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_conditions20_24
+      A DeltaA b Deltab B DeltaB d Deltad hcond.1 hcond.2
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, exact perturbed-data
     GQR core for the same-constraint-right-hand-side branch.
