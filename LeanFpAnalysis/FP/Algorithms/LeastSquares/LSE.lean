@@ -3,6 +3,7 @@
 -- Exact equality-constrained least-squares infrastructure (Higham §20.9).
 
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Fin.Tuple.Sort
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.LinearAlgebra.Dual.Lemmas
@@ -227,6 +228,25 @@ theorem theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
       (hb k hk s hks)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    every finite row key admits a row permutation that is descending on each
+    displayed active suffix.
+
+This is the generic `Tuple.sort` bridge used to instantiate source row sorting
+without importing heavier chapter-specific enumeration lemmas. -/
+theorem theorem20_7_exists_descending_key_permutation_nat {m n : ℕ}
+    (hnm : n ≤ m) (key : Fin m → ℝ) :
+    ∃ σ : Fin m ≃ Fin m,
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        key (σ s) ≤ key (σ ⟨k, lt_of_lt_of_le hk hnm⟩) := by
+  let σ : Fin m ≃ Fin m := Tuple.sort (fun i : Fin m => - key i)
+  refine ⟨σ, ?_⟩
+  intro k hk s hks
+  have hle : (⟨k, lt_of_lt_of_le hk hnm⟩ : Fin m) ≤ s := by
+    exact hks
+  have hmono := (Tuple.monotone_sort (fun i : Fin m => - key i)) hle
+  exact neg_le_neg_iff.mp hmono
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row sorting relabels the source row maximum by the sorting permutation. -/
 theorem theorem20_7_initialRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
     (A : Fin m → Fin n → ℝ) (σ : Fin m ≃ Fin m) (i : Fin m) :
@@ -365,6 +385,60 @@ theorem theorem20_7_initialWeightedRowMax_ratio_of_permuteRows_ratio_nat
   intro k hk r hkr
   simpa [theorem20_7_initialWeightedRowMax_permuteRows] using
     hσratio k hk r hkr
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
+    the source matrix row scale admits a concrete row permutation whose
+    displayed active suffixes are sorted for the permuted matrix. -/
+theorem theorem20_7_exists_initialRowMax_sorted_permuteRows_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) :
+    ∃ σ : Fin m ≃ Fin m,
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn (fun r j => A (σ r) j) s ≤
+          theorem20_7_initialRowMax hn (fun r j => A (σ r) j)
+            ⟨k, lt_of_lt_of_le hk hnm⟩ := by
+  rcases theorem20_7_exists_descending_key_permutation_nat hnm
+      (fun i : Fin m => theorem20_7_initialRowMax hn A i) with
+    ⟨σ, hσ⟩
+  exact
+    ⟨σ, theorem20_7_initialRowMax_sorted_of_permuteRows_sorted_nat
+      hn hnm A σ hσ⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
+    the source right-hand-side magnitudes have a concrete row permutation
+    whose displayed active suffixes are sorted for the permuted vector. -/
+theorem theorem20_7_exists_abs_b_sorted_permuteRows_nat
+    {m n : ℕ} (hnm : n ≤ m) (b : Fin m → ℝ) :
+    ∃ σ : Fin m ≃ Fin m,
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |(fun r => b (σ r)) s| ≤
+          |(fun r => b (σ r)) ⟨k, lt_of_lt_of_le hk hnm⟩| := by
+  rcases theorem20_7_exists_descending_key_permutation_nat hnm
+      (fun i : Fin m => |b i|) with
+    ⟨σ, hσ⟩
+  refine ⟨σ, ?_⟩
+  intro k hk s hks
+  simpa using hσ k hk s hks
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
+    the weighted row scale admits a concrete common row permutation of `A`
+    and `b` whose displayed active suffixes are sorted. -/
+theorem theorem20_7_exists_initialWeightedRowMax_sorted_permuteRows_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ) :
+    ∃ σ : Fin m ≃ Fin m,
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn
+            (fun r j => A (σ r) j) (fun r => b (σ r)) phi s ≤
+          theorem20_7_initialWeightedRowMax hn
+            (fun r j => A (σ r) j) (fun r => b (σ r)) phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ := by
+  rcases theorem20_7_exists_descending_key_permutation_nat hnm
+      (fun i : Fin m => theorem20_7_initialWeightedRowMax hn A b phi i) with
+    ⟨σ, hσ⟩
+  refine ⟨σ, ?_⟩
+  intro k hk s hks
+  simpa [theorem20_7_initialWeightedRowMax_permuteRows] using hσ k hk s hks
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     the raw pivot-maximality field follows from choosing the current active
@@ -13943,6 +14017,109 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alp
       fp hnm A hmfp htrailingPos ?_
   intro k hk
   exact lt_of_le_of_lt (hbudgetBound k hk) (hbudgetLt k hk)
+
+/-- Theorem 20.7 support: a dimensioned square margin for a scalar diagonal
+    budget implies the strict square-root budget used by the signed-alpha
+    stored-QR route.
+
+The nonnegativity of `diagBudget k` is derived from the compact component
+budget lower bound and the caller's component-budget domination hypothesis. -/
+theorem theorem20_7_storedHouseholderQRMatrixSeq_diagBudget_lt_sqrt_of_component_budget_bound_sq_nat
+    {m n : ℕ} (fp : FPModel) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (diagBudget : ℕ → ℝ)
+    (hmfp : gammaValid fp m)
+    (hbudgetBound : ∀ k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+            (storedHouseholderQRAlphaSeq fp hnm A k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hnm A k)))
+          (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+          ⟨k, lt_of_lt_of_le hk hnm⟩ ≤ diagBudget k)
+    (hmargin : ∀ k (hk : k < n),
+      (m : ℝ) * (diagBudget k) ^ 2 <
+        householderTrailingNorm2Sq m
+          ⟨k, lt_of_lt_of_le hk hnm⟩
+          (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩)) :
+    ∀ k (hk : k < n),
+      diagBudget k <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩)) := by
+  intro k hk
+  let p : Fin m := ⟨k, lt_of_lt_of_le hk hnm⟩
+  let v :=
+    householderTrailingActiveVector m p
+      (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+      (storedHouseholderQRAlphaSeq fp hnm A k)
+  let beta := householderBetaSpec m v
+  let budget :=
+    householderCompactComponentBudget fp m v beta
+      (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩) p
+  have hbudget_nonneg : 0 ≤ budget := by
+    simpa [budget, beta, v, p] using
+      householderCompactComponentBudget_nonneg fp m v beta
+        (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩) hmfp p
+  have hdiagBudget_nonneg : 0 ≤ diagBudget k :=
+    le_trans hbudget_nonneg (by simpa [budget, beta, v, p] using hbudgetBound k hk)
+  simpa [p] using
+    budget_lt_sqrt_householderTrailingNorm2Sq_of_dim_mul_budget_sq_lt_trailingNorm2Sq
+      m p
+      (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩)
+      (diagBudget k) hdiagBudget_nonneg (by simpa [p] using hmargin k hk)
+
+/-- Theorem 20.7 support: a scalar diagonal budget square margin discharges
+    the exact strict compact-budget premise consumed by the direct
+    square-root nonbreakdown wrappers. -/
+theorem theorem20_7_storedHouseholderQRMatrixSeq_budgetSqrt_of_component_budget_bound_sq_nat
+    {m n : ℕ} (fp : FPModel) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (diagBudget : ℕ → ℝ)
+    (hmfp : gammaValid fp m)
+    (hbudgetBound : ∀ k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+            (storedHouseholderQRAlphaSeq fp hnm A k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hnm A k)))
+          (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+          ⟨k, lt_of_lt_of_le hk hnm⟩ ≤ diagBudget k)
+    (hmargin : ∀ k (hk : k < n),
+      (m : ℝ) * (diagBudget k) ^ 2 <
+        householderTrailingNorm2Sq m
+          ⟨k, lt_of_lt_of_le hk hnm⟩
+          (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩)) :
+    ∀ k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+            (storedHouseholderQRAlphaSeq fp hnm A k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hnm A k)))
+          (fun a => storedHouseholderQRMatrixSeq fp hnm A k a ⟨k, hk⟩)
+          ⟨k, lt_of_lt_of_le hk hnm⟩ <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩)) := by
+  intro k hk
+  exact lt_of_le_of_lt (hbudgetBound k hk)
+    (theorem20_7_storedHouseholderQRMatrixSeq_diagBudget_lt_sqrt_of_component_budget_bound_sq_nat
+      fp hnm A diagBudget hmfp hbudgetBound hmargin k hk)
 
 /-- Theorem 20.7 support: a scalar diagonal budget strictly below the trailing
     norm square root already implies positive trailing norm. -/
