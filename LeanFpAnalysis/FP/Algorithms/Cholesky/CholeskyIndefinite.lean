@@ -1821,6 +1821,113 @@ theorem tridiagonalTwoByTwoTrailingBlockSupport_add_bound
   · intro i j
     rfl
 
+/-- Lift a perturbation on the recursive trailing subproblem after a leading
+`2 × 2` tridiagonal pivot into the ambient local block.  Entries outside the
+embedded trailing subproblem are set to zero. -/
+noncomputable def tridiagonalTwoByTwoLiftTrailingPerturbation (n : ℕ)
+    (E : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    Fin (n + 3) → Fin (n + 3) → ℝ :=
+  fun i j =>
+    if hi : ∃ a : Fin (n + 1),
+        tridiagonalTwoByTwoTrailingSubproblemIndex n a = i then
+      if hj : ∃ b : Fin (n + 1),
+          tridiagonalTwoByTwoTrailingSubproblemIndex n b = j then
+        E (Classical.choose hi) (Classical.choose hj)
+      else 0
+    else 0
+
+/-- A leading-row/column index is not in the embedded recursive trailing
+subproblem after a leading `2 × 2` tridiagonal pivot. -/
+theorem not_exists_tridiagonalTwoByTwoTrailingSubproblemIndex_of_val_lt_two
+    {n : ℕ} {i : Fin (n + 3)} (hi : i.val < 2) :
+    ¬ ∃ a : Fin (n + 1), tridiagonalTwoByTwoTrailingSubproblemIndex n a = i := by
+  intro h
+  rcases h with ⟨a, ha⟩
+  have hval := congrArg Fin.val ha
+  have hge : 2 ≤ i.val := by
+    rw [← hval]
+    simp [tridiagonalTwoByTwoTrailingSubproblemIndex]
+  exact (not_lt_of_ge hge) hi
+
+/-- The lifted recursive trailing perturbation agrees with the source
+perturbation on embedded trailing-subproblem entries. -/
+@[simp] theorem tridiagonalTwoByTwoLiftTrailingPerturbation_apply_embedded
+    (n : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (i j : Fin (n + 1)) :
+    tridiagonalTwoByTwoLiftTrailingPerturbation n E
+        (tridiagonalTwoByTwoTrailingSubproblemIndex n i)
+        (tridiagonalTwoByTwoTrailingSubproblemIndex n j) =
+      E i j := by
+  classical
+  let emb := tridiagonalTwoByTwoTrailingSubproblemIndex n
+  have hi : ∃ a : Fin (n + 1), emb a = emb i := ⟨i, rfl⟩
+  have hj : ∃ b : Fin (n + 1), emb b = emb j := ⟨j, rfl⟩
+  have hci : Classical.choose hi = i := by
+    exact (tridiagonalTwoByTwoTrailingSubproblemIndex_injective n)
+      (Classical.choose_spec hi)
+  have hcj : Classical.choose hj = j := by
+    exact (tridiagonalTwoByTwoTrailingSubproblemIndex_injective n)
+      (Classical.choose_spec hj)
+  simp [tridiagonalTwoByTwoLiftTrailingPerturbation, emb, hi, hj, hci, hcj]
+
+/-- Componentwise bounds lift from the recursive trailing subproblem to the
+ambient perturbation. -/
+theorem tridiagonalTwoByTwoLiftTrailingPerturbation_bound
+    (n : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ) (β : ℝ)
+    (hEbound : ∀ i j : Fin (n + 1), |E i j| ≤ β) :
+    ∀ i j : Fin (n + 3),
+      |tridiagonalTwoByTwoLiftTrailingPerturbation n E i j| ≤ β := by
+  classical
+  have hβ : 0 ≤ β := by
+    exact (abs_nonneg (E 0 0)).trans (hEbound 0 0)
+  intro i j
+  by_cases hi : ∃ a : Fin (n + 1),
+      tridiagonalTwoByTwoTrailingSubproblemIndex n a = i
+  · by_cases hj : ∃ b : Fin (n + 1),
+        tridiagonalTwoByTwoTrailingSubproblemIndex n b = j
+    · rw [tridiagonalTwoByTwoLiftTrailingPerturbation, dif_pos hi, dif_pos hj]
+      exact hEbound (Classical.choose hi) (Classical.choose hj)
+    · rw [tridiagonalTwoByTwoLiftTrailingPerturbation, dif_pos hi, dif_neg hj]
+      simpa using hβ
+  · rw [tridiagonalTwoByTwoLiftTrailingPerturbation, dif_neg hi]
+    simpa using hβ
+
+/-- The lifted recursive trailing perturbation is supported entirely in the
+trailing block left after the leading `2 × 2` pivot. -/
+theorem tridiagonalTwoByTwoLiftTrailingPerturbation_support
+    (n : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    TridiagonalTwoByTwoTrailingBlockSupport n
+      (tridiagonalTwoByTwoLiftTrailingPerturbation n E) := by
+  classical
+  intro i j hlead
+  rcases hlead with hi | hj
+  · have hnot :=
+      not_exists_tridiagonalTwoByTwoTrailingSubproblemIndex_of_val_lt_two hi
+    simp [tridiagonalTwoByTwoLiftTrailingPerturbation, hnot]
+  · by_cases hi : ∃ a : Fin (n + 1),
+        tridiagonalTwoByTwoTrailingSubproblemIndex n a = i
+    · have hnot :=
+        not_exists_tridiagonalTwoByTwoTrailingSubproblemIndex_of_val_lt_two hj
+      simp [tridiagonalTwoByTwoLiftTrailingPerturbation, hi, hnot]
+    · simp [tridiagonalTwoByTwoLiftTrailingPerturbation, hi]
+
+/-- Package the recursive trailing perturbation lift with its ambient bound,
+support, and embedded-entry identity. -/
+theorem tridiagonalTwoByTwoLiftTrailingPerturbation_bound_support
+    (n : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ) (β : ℝ)
+    (hEbound : ∀ i j : Fin (n + 1), |E i j| ≤ β) :
+    ∃ ΔR : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔR i j| ≤ β) ∧
+      TridiagonalTwoByTwoTrailingBlockSupport n ΔR ∧
+      (∀ i j : Fin (n + 1),
+        ΔR (tridiagonalTwoByTwoTrailingSubproblemIndex n i)
+          (tridiagonalTwoByTwoTrailingSubproblemIndex n j) = E i j) := by
+  refine ⟨tridiagonalTwoByTwoLiftTrailingPerturbation n E, ?_, ?_, ?_⟩
+  · exact tridiagonalTwoByTwoLiftTrailingPerturbation_bound n E β hEbound
+  · exact tridiagonalTwoByTwoLiftTrailingPerturbation_support n E
+  · intro i j
+    exact tridiagonalTwoByTwoLiftTrailingPerturbation_apply_embedded n E i j
+
 /-- Any index with value `< 2` is outside the first trailing scalar after a
 leading `2 × 2` tridiagonal pivot. -/
 theorem ne_tridiagonalTwoByTwoFirstTrailingIndex_of_val_lt_two
@@ -1990,6 +2097,47 @@ theorem fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate_prin
   calc
     |ΔA i j| ≤ c_bound * u * Amax + c_rec * u * Amax := hΔA i j
     _ = (c_bound + c_rec) * u * Amax := by ring
+
+/-- Recursive-subproblem form of the printed accumulation step.  A perturbation
+proved on the trailing subproblem `Fin (n+1)` is first lifted into the ambient
+`Fin (n+3)` block, then accumulated with the local `2 × 2` tridiagonal rounded
+Schur residual. -/
+theorem fl_tridiagonal_twoByTwo_trailing_subproblem_printed_bound_accumulate
+    (n : ℕ) (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound c_rec u : ℝ)
+    (ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3)
+    (hRtail_bound : ∀ i j : Fin (n + 1),
+      |ΔRtail i j| ≤ c_rec * u * Amax) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * Amax) ∧
+      TridiagonalTwoByTwoTrailingBlockSupport n ΔA ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c) +
+          ΔRtail 0 0
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (tridiagonalTwoByTwoFirstTrailingIndex n)
+            (tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  obtain ⟨ΔR, hRbound, hRsupp, hRembed⟩ :=
+    tridiagonalTwoByTwoLiftTrailingPerturbation_bound_support n ΔRtail
+      (c_rec * u * Amax) hRtail_bound
+  obtain ⟨ΔA, hΔA, hAsupp, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate_printed
+      n fp σ a11 a21 a22 b c Amax κ c_bound c_rec u ΔR hchoice
+      hσa11 hσa22 hAmax hκ hb hc hratio hbudget hval hRbound hRsupp
+  refine ⟨ΔA, hΔA, hAsupp, ?_⟩
+  have htail :
+      ΔR (tridiagonalTwoByTwoFirstTrailingIndex n)
+          (tridiagonalTwoByTwoFirstTrailingIndex n) = ΔRtail 0 0 := by
+    simpa [tridiagonalTwoByTwoTrailingSubproblemIndex_zero] using
+      hRembed 0 0
+  simpa [htail] using hstep
 
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
