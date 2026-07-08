@@ -5484,6 +5484,8 @@ simplification, the exact Hyman block identities
 - `higham14_problem14_15_theta_product_bound`
 - `higham14_problem14_15_abs_det_add_rel_le_of_singularValue_theta`
 - `higham14_problem14_15_det_add_rel_le_of_singularValue_theta_of_det_pos`
+- `higham14_problem14_15_abs_det_add_rel_le_of_singularValue_abs_sub_bound`
+- `higham14_problem14_15_det_add_rel_le_of_singularValue_abs_sub_bound_of_det_pos`
 - `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_of_sub_rectOpNorm2Le`
 - `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le`
 - `higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt`
