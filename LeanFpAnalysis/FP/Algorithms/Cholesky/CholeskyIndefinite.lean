@@ -1822,6 +1822,15 @@ theorem tridiagonalLeadingBlockSupport_zero_bound
   · intro i j
     rfl
 
+/-- Printed-coefficient version of the zero perturbation package. -/
+theorem tridiagonalLeadingBlockSupport_zero_printed_bound
+    (m offset : ℕ) (c u Amax : ℝ) (hβ : 0 ≤ c * u * Amax) :
+    ∃ Z : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |Z i j| ≤ c * u * Amax) ∧
+      TridiagonalLeadingBlockSupport m offset Z ∧
+      (∀ i j : Fin m, Z i j = 0) :=
+  tridiagonalLeadingBlockSupport_zero_bound m offset (c * u * Amax) hβ
+
 /-- Zero-prefix supported perturbations are closed under addition, and their
 componentwise bounds add.  This is the offset-generic version used when several
 recursive tridiagonal lifts are accumulated at different depths. -/
@@ -1845,6 +1854,36 @@ theorem tridiagonalLeadingBlockSupport_add_bound
     rw [hEsupp i j hlead, hFsupp i j hlead, add_zero]
   · intro i j
     rfl
+
+/-- Printed-coefficient version of the zero-prefix support add/bound combiner:
+two perturbations bounded by `cE * u * Amax` and `cF * u * Amax` combine with
+coefficient `cE + cF`. -/
+theorem tridiagonalLeadingBlockSupport_add_bound_printed
+    (m offset : ℕ) (E F : Fin m → Fin m → ℝ) (cE cF u Amax : ℝ)
+    (hEbound : ∀ i j : Fin m, |E i j| ≤ cE * u * Amax)
+    (hFbound : ∀ i j : Fin m, |F i j| ≤ cF * u * Amax)
+    (hEsupp : TridiagonalLeadingBlockSupport m offset E)
+    (hFsupp : TridiagonalLeadingBlockSupport m offset F) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ (cE + cF) * u * Amax) ∧
+      TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = E i j + F i j) := by
+  obtain ⟨G, hG, hGsupp, hsum⟩ :=
+    tridiagonalLeadingBlockSupport_add_bound m offset E F
+      (cE * u * Amax) (cF * u * Amax) hEbound hFbound hEsupp hFsupp
+  refine ⟨G, ?_, hGsupp, hsum⟩
+  intro i j
+  calc
+    |G i j| ≤ cE * u * Amax + cF * u * Amax := hG i j
+    _ = (cE + cF) * u * Amax := by ring
+
+/-- The specialized trailing-block support predicate is exactly the
+zero-prefix support predicate with offset two. -/
+theorem tridiagonalTwoByTwoTrailingBlockSupport_iff_leadingBlockSupport
+    (n : ℕ) (E : Fin (n + 3) → Fin (n + 3) → ℝ) :
+    TridiagonalTwoByTwoTrailingBlockSupport n E ↔
+      TridiagonalLeadingBlockSupport (n + 3) 2 E := by
+  rfl
 
 /-- Supported perturbations in the trailing block after a leading `2 × 2`
 tridiagonal pivot are closed under addition, and their componentwise bounds add. -/

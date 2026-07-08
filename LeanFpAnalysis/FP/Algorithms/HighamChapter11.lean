@@ -973,6 +973,17 @@ theorem higham11_7_tridiagonalLeadingBlockSupport_zero_bound
       (∀ i j : Fin m, Z i j = 0) :=
   tridiagonalLeadingBlockSupport_zero_bound m offset β hβ
 
+/-- **Theorem 11.7 recursive base support package, printed coefficients**,
+giving the zero perturbation with any zero-prefix support and bound
+`c * u * Amax`. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_zero_printed_bound
+    (m offset : ℕ) (c u Amax : ℝ) (hβ : 0 ≤ c * u * Amax) :
+    ∃ Z : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |Z i j| ≤ c * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset Z ∧
+      (∀ i j : Fin m, Z i j = 0) :=
+  tridiagonalLeadingBlockSupport_zero_printed_bound m offset c u Amax hβ
+
 /-- **Theorem 11.7 recursive support-add combiner**, accumulating two
 zero-prefix supported perturbations at an arbitrary recursive offset while
 adding their componentwise bounds. -/
@@ -988,6 +999,30 @@ theorem higham11_7_tridiagonalLeadingBlockSupport_add_bound
       (∀ i j : Fin m, G i j = E i j + F i j) :=
   tridiagonalLeadingBlockSupport_add_bound m offset E F βE βF
     hEbound hFbound hEsupp hFsupp
+
+/-- **Theorem 11.7 recursive support-add combiner, printed coefficients**,
+accumulating two zero-prefix supported perturbations bounded by
+`cE * u * Amax` and `cF * u * Amax`. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_add_bound_printed
+    (m offset : ℕ) (E F : Fin m → Fin m → ℝ) (cE cF u Amax : ℝ)
+    (hEbound : ∀ i j : Fin m, |E i j| ≤ cE * u * Amax)
+    (hFbound : ∀ i j : Fin m, |F i j| ≤ cF * u * Amax)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m offset E)
+    (hFsupp : higham11_7_TridiagonalLeadingBlockSupport m offset F) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ (cE + cF) * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = E i j + F i j) :=
+  tridiagonalLeadingBlockSupport_add_bound_printed m offset E F cE cF u Amax
+    hEbound hFbound hEsupp hFsupp
+
+/-- **Theorem 11.7 support predicate bridge**, identifying the specialized
+trailing-block support predicate with zero-prefix support at offset two. -/
+theorem higham11_7_tridiagonalTwoByTwoTrailingBlockSupport_iff_leadingBlockSupport
+    (n : ℕ) (E : Fin (n + 3) → Fin (n + 3) → ℝ) :
+    higham11_7_TridiagonalTwoByTwoTrailingBlockSupport n E ↔
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 E :=
+  tridiagonalTwoByTwoTrailingBlockSupport_iff_leadingBlockSupport n E
 
 /-- Supported perturbations in the trailing block after a leading `2 × 2`
 tridiagonal pivot are closed under addition, and their componentwise bounds add. -/
