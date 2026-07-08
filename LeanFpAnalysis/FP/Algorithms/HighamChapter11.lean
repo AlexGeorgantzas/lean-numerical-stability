@@ -744,6 +744,35 @@ noncomputable def higham11_4_bunchKaufmanProductEntry (n : ℕ)
   ∑ k₁ : Fin n, ∑ k₂ : Fin n,
     |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂|
 
+/-- The matrix product `|L̂||D̂||L̂ᵀ|` from Higham [608, 1997], eq. (4.14),
+written with the project matrix product primitives. -/
+noncomputable def higham11_4_absLDLTProduct (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  matMul n (matMul n (absMatrix n L_hat) (absMatrix n D_hat))
+    (absMatrix n (fun r c => L_hat c r))
+
+/-- The expanded double-sum product entry is exactly the `(i,j)` entry of
+`|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n) :
+    higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j =
+      higham11_4_absLDLTProduct n L_hat D_hat i j := by
+  unfold higham11_4_bunchKaufmanProductEntry higham11_4_absLDLTProduct
+  dsimp [matMul, absMatrix]
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro k₂ _
+  rw [Finset.sum_mul]
+
+/-- Each entry of `|L̂||D̂||L̂ᵀ|` is nonnegative. -/
+theorem higham11_4_bunchKaufmanProductEntry_nonneg (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n) :
+    0 ≤ higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j := by
+  unfold higham11_4_bunchKaufmanProductEntry
+  exact Finset.sum_nonneg (fun k₁ _ =>
+    Finset.sum_nonneg (fun k₂ _ =>
+      mul_nonneg (mul_nonneg (abs_nonneg _) (abs_nonneg _)) (abs_nonneg _)))
+
 /-- **Theorem 11.4 max-entry norm target**: the finite max-entry norm of
 `|L̂||D̂||L̂ᵀ|`, written as a finite supremum over entry pairs.  The positive
 dimension hypothesis supplies the nonempty finite set for `Finset.sup'`. -/
@@ -763,6 +792,22 @@ theorem higham11_4_bunchKaufmanProductEntry_le_productMax (n : ℕ) (hn : 0 < n)
     (fun p : Fin n × Fin n => higham11_4_bunchKaufmanProductEntry n L_hat D_hat p.1 p.2)
     (Finset.mem_univ (i, j))
 
+/-- Every matrix-product entry of `|L̂||D̂||L̂ᵀ|` is bounded by the same finite
+max-entry norm. -/
+theorem higham11_4_absLDLTProduct_entry_le_productMax (n : ℕ) (hn : 0 < n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n) :
+    higham11_4_absLDLTProduct n L_hat D_hat i j ≤
+      higham11_4_bunchKaufmanProductMax n hn L_hat D_hat := by
+  rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+  exact higham11_4_bunchKaufmanProductEntry_le_productMax n hn L_hat D_hat i j
+
+/-- The finite max-entry norm of `|L̂||D̂||L̂ᵀ|` is nonnegative. -/
+theorem higham11_4_bunchKaufmanProductMax_nonneg (n : ℕ) (hn : 0 < n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) :
+    0 ≤ higham11_4_bunchKaufmanProductMax n hn L_hat D_hat :=
+  (higham11_4_bunchKaufmanProductEntry_nonneg n L_hat D_hat ⟨0, hn⟩ ⟨0, hn⟩).trans
+    (higham11_4_bunchKaufmanProductEntry_le_productMax n hn L_hat D_hat ⟨0, hn⟩ ⟨0, hn⟩)
+
 /-- The finite max-entry product is the least scalar that bounds every entry of
 `|L̂||D̂||L̂ᵀ|`. -/
 theorem higham11_4_bunchKaufmanProductMax_le_iff (n : ℕ) (hn : 0 < n)
@@ -775,6 +820,89 @@ theorem higham11_4_bunchKaufmanProductMax_le_iff (n : ℕ) (hn : 0 < n)
   · intro hentries
     unfold higham11_4_bunchKaufmanProductMax
     exact Finset.sup'_le _ _ (fun p _ => hentries p.1 p.2)
+
+/-- The finite max-entry product is equivalently the least scalar that bounds
+the project matrix-product entries of `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_bunchKaufmanProductMax_le_iff_absLDLTProduct (n : ℕ) (hn : 0 < n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (B : ℝ) :
+    higham11_4_bunchKaufmanProductMax n hn L_hat D_hat ≤ B ↔
+      ∀ i j : Fin n, higham11_4_absLDLTProduct n L_hat D_hat i j ≤ B := by
+  rw [higham11_4_bunchKaufmanProductMax_le_iff n hn L_hat D_hat B]
+  constructor
+  · intro hentries i j
+    simpa [higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+      using hentries i j
+  · intro hentries i j
+    simpa [higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+      using hentries i j
+
+/-- The specialized finite maximum used for Theorem 11.4 is exactly the
+repository max-entry norm of the matrix product `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) :
+    higham11_4_bunchKaufmanProductMax n hn L_hat D_hat =
+      maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) := by
+  apply le_antisymm
+  · rw [higham11_4_bunchKaufmanProductMax_le_iff_absLDLTProduct n hn L_hat D_hat]
+    intro i j
+    have hnonneg : 0 ≤ higham11_4_absLDLTProduct n L_hat D_hat i j := by
+      rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+      exact higham11_4_bunchKaufmanProductEntry_nonneg n L_hat D_hat i j
+    calc
+      higham11_4_absLDLTProduct n L_hat D_hat i j
+          = |higham11_4_absLDLTProduct n L_hat D_hat i j| := by
+            rw [abs_of_nonneg hnonneg]
+      _ ≤ maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) :=
+          entry_le_maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) i j
+  · apply maxEntryNorm_le_of_entry_le_bound
+    intro i j
+    have hnonneg : 0 ≤ higham11_4_absLDLTProduct n L_hat D_hat i j := by
+      rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+      exact higham11_4_bunchKaufmanProductEntry_nonneg n L_hat D_hat i j
+    calc
+      |higham11_4_absLDLTProduct n L_hat D_hat i j|
+          = higham11_4_absLDLTProduct n L_hat D_hat i j := abs_of_nonneg hnonneg
+      _ ≤ higham11_4_bunchKaufmanProductMax n hn L_hat D_hat :=
+          higham11_4_absLDLTProduct_entry_le_productMax n hn L_hat D_hat i j
+
+/-- Pointwise product-entry estimates package into the scalar max-entry product
+certificate used in Theorem 11.4. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries (n : ℕ)
+    (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax : ℝ)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  (higham11_4_bunchKaufmanProductMax_le_iff n hn L_hat D_hat
+    (36 * (n : ℝ) * ρ_n * Amax)).mpr hentries
+
+/-- Matrix-product entry estimates for `|L̂||D̂||L̂ᵀ|` package into the scalar
+max-entry product certificate used in Theorem 11.4. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_absLDLTProduct_entries (n : ℕ)
+    (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax : ℝ)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_absLDLTProduct n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries n hn L_hat D_hat
+    ρ_n Amax (fun i j => by
+      simpa [higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+        using hentries i j)
+
+/-- A source-style max-entry norm proof for `|L̂||D̂||L̂ᵀ|` packages into the
+scalar product certificate used by Theorem 11.4. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax : ℝ)
+    (hproduct :
+      maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+        36 * (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax := by
+  simpa [higham11_4_bunchKaufmanMaxEntryProductBound,
+    higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct n hn L_hat D_hat]
+    using hproduct
 
 /-- **Theorem 11.4 constant (Higham [608, 1997], eq (4.13))**: the `36` in the
 bound `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36 n ρₙ ‖A‖_M` comes from
