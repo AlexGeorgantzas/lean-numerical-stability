@@ -18465,6 +18465,265 @@ theorem theorem20_8AP_unconstrained_minimizer_of_lse_minimizer {m n p : ℕ}
         exact theorem20_8AP_feasible_step_objective A b B Bplus x0 z
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    a minimizer of the perturbed equality-constrained problem gives an exact
+    minimizer of the perturbed reduced `AP` least-squares problem, relative to
+    a perturbed feasible base point. -/
+theorem theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bpertplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ)
+    (hright :
+      rectMatMul (fun i j => B i j + DeltaB i j) Bpertplus =
+        idMatrix p)
+    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) x0)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    IsLeastSquaresMinimizer
+      (theorem20_8AP (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) Bpertplus)
+      (fun i =>
+        b i + Deltab i -
+          rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+      (fun j => y j - x0 j) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
+    (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i)
+    (fun i j => B i j + DeltaB i j) Bpertplus
+    (fun i => d i + Deltad i) x0 y hright hx0 hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the reduced Higham residual for the perturbed `AP` least-squares problem is
+    orthogonal to every reduced column whenever it comes from an exact
+    perturbed LSE minimizer and a perturbed feasible base point. -/
+theorem theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bpertplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ) (s : Fin m → ℝ)
+    (hright :
+      rectMatMul (fun i j => B i j + DeltaB i j) Bpertplus =
+        idMatrix p)
+    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) x0)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hs :
+      s =
+        fun i =>
+          b i + Deltab i -
+            rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+            rectMatMulVec
+              (theorem20_8AP (fun i j => A i j + DeltaA i j)
+                (fun i j => B i j + DeltaB i j) Bpertplus)
+              (fun j => y j - x0 j) i) :
+    ∀ j : Fin n,
+      ∑ i : Fin m,
+        theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) Bpertplus i j *
+          s i = 0 := by
+  have hred :
+      IsLeastSquaresMinimizer
+        (theorem20_8AP (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) Bpertplus)
+        (fun i =>
+          b i + Deltab i -
+            rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+        (fun j => y j - x0 j) :=
+    theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+      A DeltaA b Deltab B DeltaB Bpertplus d Deltad x0 y hright hx0 hy
+  exact
+    IsLeastSquaresMinimizer.higham_residual_orthogonal
+      (A := theorem20_8AP (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) Bpertplus)
+      (b := fun i =>
+        b i + Deltab i -
+          rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+      (x := fun j => y j - x0 j) (s := s)
+      hred (by simpa [lsResidualHigham] using hs)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    an exact LSE minimizer induces an exact unconstrained least-squares
+    minimizer in any supplied coordinate basis for homogeneous feasible
+    directions. -/
+theorem IsLSEMinimizer.reduced_nullspace_minimizer {m n p q : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (N : Fin n → Fin q → ℝ)
+    (hmin : IsLSEMinimizer A b B d x)
+    (hN : rectMatMul B N = (fun _i : Fin p => fun _j : Fin q => 0)) :
+    IsLeastSquaresMinimizer (rectMatMul A N) (lsResidualHigham A b x)
+      (0 : Fin q → ℝ) := by
+  intro z
+  let candidate : Fin n → ℝ := fun j => x j + rectMatMulVec N z j
+  have hNz : rectMatMulVec B (rectMatMulVec N z) =
+      (fun _i : Fin p => 0) := by
+    rw [← rectMatMulVec_rectMatMul B N z, hN]
+    ext i
+    simp [rectMatMulVec]
+  have hfeas : LSEFeasible B d candidate := by
+    intro i
+    have hzi := congrFun hNz i
+    change rectMatMulVec B (fun j => x j + rectMatMulVec N z j) i = d i
+    rw [rectMatMulVec_add]
+    change rectMatMulVec B x i +
+        rectMatMulVec B (rectMatMulVec N z) i = d i
+    rw [hmin.1 i, hzi]
+    simp
+  have hle : lsObjective A b x ≤ lsObjective A b candidate :=
+    hmin.2 candidate hfeas
+  have hobj0 :
+      lsObjective (rectMatMul A N) (lsResidualHigham A b x)
+          (0 : Fin q → ℝ) =
+        lsObjective A b x := by
+    unfold lsObjective lsResidual lsResidualHigham
+    apply congrArg vecNorm2Sq
+    ext i
+    simp [rectMatMulVec]
+  have hobjz :
+      lsObjective A b candidate =
+        lsObjective (rectMatMul A N) (lsResidualHigham A b x) z := by
+    unfold lsObjective lsResidual lsResidualHigham
+    apply congrArg vecNorm2Sq
+    ext i
+    rw [rectMatMulVec_add, rectMatMulVec_rectMatMul]
+    ring
+  calc
+    lsObjective (rectMatMul A N) (lsResidualHigham A b x)
+        (0 : Fin q → ℝ) = lsObjective A b x := hobj0
+    _ ≤ lsObjective A b candidate := hle
+    _ = lsObjective (rectMatMul A N) (lsResidualHigham A b x) z := hobjz
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    Wedin residual-side bound for source and perturbed LSE problems after
+    reducing each problem to supplied homogeneous-nullspace coordinates.
+
+This is a reduced-coordinate bridge for the Eldén--Cox--Higham route.  It
+uses exact optimality of the source and perturbed constrained problems to
+obtain the two reduced least-squares minimizers, then applies the minimizer
+form of Wedin's Theorem 20.1 residual estimate. -/
+theorem theorem20_8_nullspace_reduced_wedinResidualRHS_le_of_lse_minimizers
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r s : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : r = lsResidualHigham A b x)
+    (hs : s = lsResidualHigham
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i) y)
+    (hrpos : 0 < vecNorm2 r)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (heps_nonneg : 0 ≤ eps)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => s i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus)) :
+    vecNorm2 (fun i => r i - s i) / vecNorm2 r ≤
+      wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+  let Ared : Fin m → Fin (k + 1) → ℝ := rectMatMul A N
+  let Bred : Fin m → Fin (k + 1) → ℝ :=
+    rectMatMul (fun i j => A i j + DeltaA i j) Npert
+  let DeltaAred : Fin m → Fin (k + 1) → ℝ :=
+    fun i j => Bred i j - Ared i j
+  have hxred :
+      IsLeastSquaresMinimizer Ared r (0 : Fin (k + 1) → ℝ) := by
+    have hraw :
+        IsLeastSquaresMinimizer (rectMatMul A N) (lsResidualHigham A b x)
+          (0 : Fin (k + 1) → ℝ) :=
+      IsLSEMinimizer.reduced_nullspace_minimizer A b B d x N hx hN
+    simpa [Ared, hr] using hraw
+  have hyred_s :
+      IsLeastSquaresMinimizer Bred s (0 : Fin (k + 1) → ℝ) := by
+    have hraw :
+        IsLeastSquaresMinimizer
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+          (lsResidualHigham (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i) y)
+          (0 : Fin (k + 1) → ℝ) :=
+      IsLSEMinimizer.reduced_nullspace_minimizer
+        (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) (fun i => d i + Deltad i)
+        y Npert hy hNpert
+    simpa [Bred, hs] using hraw
+  have hyred :
+      IsLeastSquaresMinimizer Bred (fun i => r i + (s i - r i))
+        (0 : Fin (k + 1) → ℝ) := by
+    have hbrhs : (fun i : Fin m => r i + (s i - r i)) = s := by
+      ext i
+      ring
+    simpa [hbrhs] using hyred_s
+  have hBred_eq : Bred = fun i j => Ared i j + DeltaAred i j := by
+    ext i j
+    simp [DeltaAred]
+  have hrRed :
+      r = fun i => r i - rectMatMulVec Ared (0 : Fin (k + 1) → ℝ) i := by
+    ext i
+    simp [rectMatMulVec]
+  have hsRed :
+      s =
+        fun i =>
+          (r i + (s i - r i)) -
+            rectMatMulVec Bred (0 : Fin (k + 1) → ℝ) i := by
+    ext i
+    simp [rectMatMulVec]
+  exact
+    IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_min_surface_geometry_source_minimizer
+      hm Ared Bred AredPlus BredPlus DeltaAred r (fun i => s i - r i) r s
+      (0 : Fin (k + 1) → ℝ) (0 : Fin (k + 1) → ℝ)
+      hxred hyred hrpos hAredPlus_pos hAred_norm_nonneg heps_nonneg
+      hkappa hdelta hsmall hAredPlus
+      (by simpa [Ared, Bred, DeltaAred] using hDelta)
+      (by simpa [Ared, Bred, DeltaAred] using hDeltaAred)
+      hDeltabred hDeltaAred_norm_budget hDeltabred_norm_budget
+      (by simpa [Ared] using hleftA)
+      (by simpa [Bred] using hleftB)
+      (by simpa [Ared] using hSymA)
+      (by simpa [Bred] using hSymB)
+      hBred_eq hrRed hsRed
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     applying `P = I - B^+B` to a vector with a known constraint residual
     subtracts the supplied `B^+` correction. -/
 theorem theorem20_8Projection_apply_of_constraint {p n : ℕ}
@@ -24911,6 +25170,96 @@ theorem theorem20_8_wedinResidualRHS_scaled_residual_le_of_scalar_op2_le
     mul_le_mul_of_nonneg_right hscalar (vecNorm2_nonneg r)
   simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv] using hmul
 
+/-- Higham, 2nd ed., Chapter 20, Theorems 20.1 and 20.8:
+    expanding Wedin's residual RHS `(1 + 2*kappa)*eps` turns the scalar
+    residual-amplifier comparison into an `eps`-free coefficient comparison. -/
+theorem theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A) :
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        wedinTheorem20_1ResidualRelativeRHS kappa eps ≤
+      eps * theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A := by
+  unfold wedinTheorem20_1ResidualRelativeRHS
+  have hmul := mul_le_mul_of_nonneg_right hcoeff heps_nonneg
+  calc
+    complexMatrixOp2 (realRectToCMatrix APplus) * ((1 + 2 * kappa) * eps)
+        = (complexMatrixOp2 (realRectToCMatrix APplus) *
+            (1 + 2 * kappa)) * eps := by
+            ring
+    _ ≤ (theorem20_8ResidualAmplifier A B APplus BAplus /
+          frobNormRect A) * eps := hmul
+    _ = eps * theorem20_8ResidualAmplifier A B APplus BAplus /
+          frobNormRect A := by
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual-gap scaling from an `eps`-free first-order coefficient comparison
+    for Wedin's residual RHS. -/
+theorem theorem20_8_wedinResidualRHS_scaled_residual_le_of_first_order_coeff_le
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (r : Fin m → ℝ) {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A) :
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        (wedinTheorem20_1ResidualRelativeRHS kappa eps * vecNorm2 r) ≤
+      eps * theorem20_8ResidualAmplifier A B APplus BAplus *
+        (vecNorm2 r / frobNormRect A) :=
+  theorem20_8_wedinResidualRHS_scaled_residual_le_of_scalar_op2_le
+    A B APplus BAplus r
+    (theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+      A B APplus BAplus heps_nonneg hcoeff)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    after identifying Wedin's reduced-problem condition number with
+    `kappa_B(A)`, the first-order residual-amplifier coefficient comparison
+    follows from the remaining scalar bracket inequality. -/
+theorem theorem20_8_wedinResidualRHS_first_order_coeff_le_of_kappaB_bracket
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    {kappa : ℝ}
+    (hApos : 0 < frobNormRect A)
+    (hkappa : kappa = theorem20_8KappaB A APplus)
+    (hbracket :
+      1 + 2 * kappa ≤
+        kappa *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) +
+            1)) :
+    complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+      theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A := by
+  subst kappa
+  let APnorm : ℝ := complexMatrixOp2 (realRectToCMatrix APplus)
+  let bracket : ℝ :=
+    (frobNormRect B / frobNormRect A) *
+        complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) +
+      1
+  have hAPnorm_nonneg : 0 ≤ APnorm := by
+    dsimp [APnorm]
+    exact complexMatrixOp2_nonneg (realRectToCMatrix APplus)
+  have hmul :=
+    mul_le_mul_of_nonneg_left hbracket hAPnorm_nonneg
+  calc
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        (1 + 2 * theorem20_8KappaB A APplus)
+        = APnorm * (1 + 2 * theorem20_8KappaB A APplus) := by
+            rfl
+    _ ≤ APnorm * (theorem20_8KappaB A APplus * bracket) := hmul
+    _ = theorem20_8ResidualAmplifier A B APplus BAplus / frobNormRect A := by
+      dsimp [APnorm, bracket]
+      unfold theorem20_8ResidualAmplifier theorem20_8KappaB
+      field_simp [ne_of_gt hApos]
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action first-order handoff when the reduced residual-relative
     estimate has Wedin's Theorem 20.1 residual RHS.  The comparison between
@@ -25017,6 +25366,513 @@ theorem
     A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
     heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hAPaction
     hx hy hr hres hrelative hscale
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    projected-action first-order solution bound whose reduced residual estimate
+    is supplied by Wedin's Theorem 20.1 on explicit source and perturbed
+    homogeneous-nullspace coordinate bases.
+
+The theorem deliberately keeps the concrete nullspace bases, reduced
+pseudoinverses, reduced perturbation budgets, projected-action identity, and
+scalar residual-amplifier comparison on the surface. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_nullspace_reduced_wedinResidualRHS_projected_action_op2_le
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => rHigh i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hscale :
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+          (wedinTheorem20_1ResidualRelativeRHS kappa eps * vecNorm2 r) ≤
+        eps * theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) := by
+  have hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+    have hdelta_rhs :
+        vecNorm2 (fun i : Fin m => rHigh i - r i) ≤ Deltabred_norm :=
+      hDeltabred
+    have hwedin :=
+      theorem20_8_nullspace_reduced_wedinResidualRHS_le_of_lse_minimizers
+        hm A DeltaA b Deltab B DeltaB d Deltad N Npert AredPlus BredPlus
+        x y r rHigh hx hy hN hNpert hr.symm hres.symm hrpos
+        hAredPlus_pos hAred_norm_nonneg heps_nonneg hkappa hdelta hsmall
+        hAredPlus hDelta hDeltaAred hdelta_rhs hDeltaAred_norm_budget
+        hDeltabred_norm_budget hleftA hleftB hSymA hSymB
+    simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using hwedin
+  exact
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_wedinResidualRHS_projected_action_op2_le
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hAPaction
+      hx.1 hy.1 hr hres hrelative hscale
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    nullspace-coordinate Wedin route with the residual-amplifier comparison
+    reduced to the first-order coefficient inequality. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_nullspace_reduced_wedinResidualRHS_first_order_coeff_projected_action_op2_le
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => rHigh i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B Bplus APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) :=
+  theorem20_8_solution_difference_relative_le_firstOrderRHS_of_nullspace_reduced_wedinResidualRHS_projected_action_op2_le
+    hm A DeltaA b Deltab B DeltaB Bplus APplus d Deltad N Npert
+    AredPlus BredPlus x y r rHigh heps_nonneg hApos hbpos hBpos hdpos
+    hxpos hyx hrpos hmax hAPaction hx hy hN hNpert hr hres
+    hAredPlus_pos hAred_norm_nonneg hkappa hdelta hsmall hAredPlus
+    hDelta hDeltaAred hDeltabred hDeltaAred_norm_budget
+    hDeltabred_norm_budget hleftA hleftB hSymA hSymB
+    (theorem20_8_wedinResidualRHS_scaled_residual_le_of_first_order_coeff_le
+      A B APplus (theorem20_8BAplus A B Bplus APplus) r heps_nonneg hcoeff)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    nullspace-coordinate Wedin route with the scalar residual-amplifier
+    comparison reduced to the `kappa_B(A)` bracket inequality. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_projected_action_op2_le
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hkappaB : kappa = theorem20_8KappaB A APplus)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => rHigh i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * kappa ≤
+        kappa *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) :=
+  theorem20_8_solution_difference_relative_le_firstOrderRHS_of_nullspace_reduced_wedinResidualRHS_first_order_coeff_projected_action_op2_le
+    hm A DeltaA b Deltab B DeltaB Bplus APplus d Deltad N Npert
+    AredPlus BredPlus x y r rHigh heps_nonneg hApos hbpos hBpos hdpos
+    hxpos hyx hrpos hmax hAPaction hx hy hN hNpert hr hres
+    hAredPlus_pos hAred_norm_nonneg hkappa hdelta hsmall hAredPlus
+    hDelta hDeltaAred hDeltabred hDeltaAred_norm_budget
+    hDeltabred_norm_budget hleftA hleftB hSymA hSymB
+    (theorem20_8_wedinResidualRHS_first_order_coeff_le_of_kappaB_bracket
+      A B APplus (theorem20_8BAplus A B Bplus APplus) hApos hkappaB
+      hbracket)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    nullspace-coordinate Wedin route with `kappa_B(A)` bracket scalar
+    reduction, packaged in the source-shaped first-order plus explicit
+    `eps^2`-coefficient form. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_projected_action_op2_le
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hkappaB : kappa = theorem20_8KappaB A APplus)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => rHigh i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * kappa ≤
+        kappa *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  let BAplus := theorem20_8BAplus A B Bplus APplus
+  have hbase :=
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_projected_action_op2_le
+      hm A DeltaA b Deltab B DeltaB Bplus APplus d Deltad N Npert
+      AredPlus BredPlus x y r rHigh heps_nonneg hApos hbpos hBpos hdpos
+      hxpos hyx hrpos hmax hAPaction hx hy hN hNpert hr hres
+      hAredPlus_pos hAred_norm_nonneg hkappa hkappaB hdelta hsmall
+      hAredPlus hDelta hDeltaAred hDeltabred hDeltaAred_norm_budget
+      hDeltabred_norm_budget hleftA hleftB hSymA hSymB hbracket
+  have hquad_nonneg :
+      0 ≤
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
+          (complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+    have hfirst :
+        0 ≤ theorem20_8FirstOrderRHS A b B d x r APplus BAplus :=
+      theorem20_8FirstOrderRHS_nonneg A b B d x r APplus BAplus
+        hApos hBpos hxpos
+    have hcoef :
+        0 ≤ complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
+          complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A := by
+      exact add_nonneg
+        (mul_nonneg (complexMatrixOp2_nonneg (realRectToCMatrix BAplus))
+          (frobNormRect_nonneg B))
+        (mul_nonneg (complexMatrixOp2_nonneg (realRectToCMatrix APplus))
+          (frobNormRect_nonneg A))
+    exact mul_nonneg (mul_nonneg (sq_nonneg eps) hfirst) hcoef
+  exact hbase.trans (le_add_of_nonneg_right (by simpa [BAplus] using hquad_nonneg))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    nullspace-coordinate Wedin route with the projected-action identity derived
+    from the source-style `(AP)^+ AP` left-inverse condition on
+    `null(B)`. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_AP_left_inverse_on_nullspace
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hright : rectMatMul B Bplus = idMatrix p)
+    (hAPleft_null :
+      ∀ z : Fin n → ℝ,
+        rectMatMulVec B z = (fun _i : Fin p => 0) →
+          rectMatMulVec APplus
+            (rectMatMulVec (theorem20_8AP A B Bplus) z) = z)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hkappaB : kappa = theorem20_8KappaB A APplus)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => rHigh i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * kappa ≤
+        kappa *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k) :=
+    theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
+      A B Bplus APplus hright hAPleft_null (fun k => y k - x k)
+  exact
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_projected_action_op2_le
+      hm A DeltaA b Deltab B DeltaB Bplus APplus d Deltad N Npert
+      AredPlus BredPlus x y r rHigh heps_nonneg hApos hbpos hBpos hdpos
+      hxpos hyx hrpos hmax hAPaction hx hy hN hNpert hr hres
+      hAredPlus_pos hAred_norm_nonneg hkappa hkappaB hdelta hsmall
+      hAredPlus hDelta hDeltaAred hDeltabred hDeltaAred_norm_budget
+      hDeltabred_norm_budget hleftA hleftB hSymA hSymB hbracket
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action Wedin-residual-RHS handoff with the residual norm factored
@@ -25126,6 +25982,114 @@ theorem
     hx hy hr hres hrelative
     (theorem20_8_wedinResidualRHS_scaled_residual_le_of_scalar_op2_le
       A B APplus (theorem20_8BAplus A B Bplus APplus) r hscale_scalar)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    projected-action Wedin-residual-RHS handoff using the source first-order
+    coefficient comparison instead of the expanded `eps`-scaled scalar
+    residual-amplifier comparison. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_of_wedinResidualRHS_first_order_coeff_projected_action_op2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B Bplus APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B Bplus APplus) :=
+  theorem20_8_solution_difference_relative_le_firstOrderRHS_of_wedinResidualRHS_scalar_projected_action_op2_le
+    A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+    heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hAPaction
+    hx hy hr hres hrelative
+    (theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+      A B APplus (theorem20_8BAplus A B Bplus APplus) heps_nonneg hcoeff)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    projected-action Wedin-residual-RHS handoff with explicit `eps^2`
+    coefficient, using the source first-order coefficient comparison. -/
+theorem
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_wedinResidualRHS_first_order_coeff_projected_action_op2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B Bplus APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B Bplus APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) :=
+  theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_wedinResidualRHS_scalar_projected_action_op2_le
+    A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+    heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hAPaction
+    hx hy hr hres hrelative
+    (theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+      A B APplus (theorem20_8BAplus A B Bplus APplus) heps_nonneg hcoeff)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-gap first-order handoff.  If the missing Wedin/reduced-LS step
@@ -25671,6 +26635,70 @@ theorem LSEFullRowRank.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
       (fun j => x j - x0 j) :=
   _root_.LeanFpAnalysis.FP.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
     A b B hB.rightInverse d x0 x hB.rightInverse_spec hx0 hx
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    perturbed-data reduced-`AP` minimizer handoff using the right inverse
+    supplied by full row rank of the perturbed constraint matrix. -/
+theorem
+    LSEFullRowRank.theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ)
+    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) x0)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    IsLeastSquaresMinimizer
+      (theorem20_8AP (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+      (fun i =>
+        b i + Deltab i -
+          rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+      (fun j => y j - x0 j) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+    A DeltaA b Deltab B DeltaB hBpert.rightInverse d Deltad x0 y
+    hBpert.rightInverse_spec hx0 hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-instantiated reduced residual orthogonality for the
+    perturbed `AP` least-squares problem obtained from a perturbed LSE
+    minimizer. -/
+theorem
+    LSEFullRowRank.theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ) (s : Fin m → ℝ)
+    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) x0)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hs :
+      s =
+        fun i =>
+          b i + Deltab i -
+            rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+            rectMatMulVec
+              (theorem20_8AP (fun i j => A i j + DeltaA i j)
+                (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+              (fun j => y j - x0 j) i) :
+    ∀ j : Fin n,
+      ∑ i : Fin m,
+        theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
+          s i = 0 :=
+  _root_.LeanFpAnalysis.FP.theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
+    A DeltaA b Deltab B DeltaB hBpert.rightInverse d Deltad x0 y s
+    hBpert.rightInverse_spec hx0 hy hs
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated form of applying `P = I - Bplus*B` to a vector
@@ -30567,6 +31595,121 @@ theorem
       hmax hAPaction hx hy hr hres hrelative hscale_scalar
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-stacked-full-column-rank Wedin-residual-RHS first-order bound for
+    the Moore--Penrose/transpose-range route, using the source first-order
+    coefficient comparison. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_of_MP_transpose_range_lseStackedFullColumnRank_wedinResidualRHS_first_order_coeff_op2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B hB.rightInverse APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B hB.rightInverse APplus) := by
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_of_MP_transpose_range_lseStackedFullColumnRank_wedinResidualRHS_scalar_op2_le
+      A DeltaA b Deltab hB DeltaB APplus d Deltad x y r rHigh
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos hmax hx hy
+      hMP hBAPt hstack hr hres hrelative
+      (_root_.LeanFpAnalysis.FP.theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+        A B APplus (theorem20_8BAplus A B hB.rightInverse APplus)
+        heps_nonneg hcoeff)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-stacked-full-column-rank Wedin-residual-RHS first-order plus
+    explicit `eps^2` bound for the Moore--Penrose/transpose-range route,
+    using the source first-order coefficient comparison. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_transpose_range_lseStackedFullColumnRank_wedinResidualRHS_first_order_coeff_op2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B hB.rightInverse APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) :=
+  LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_transpose_range_lseStackedFullColumnRank_wedinResidualRHS_scalar_op2_le
+    A DeltaA b Deltab hB DeltaB APplus d Deltad x y r rHigh
+    heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos hmax hx hy
+    hMP hBAPt hstack hr hres hrelative
+    (_root_.LeanFpAnalysis.FP.theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+      A B APplus (theorem20_8BAplus A B hB.rightInverse APplus)
+      heps_nonneg hcoeff)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank projected-difference handoff for the
     Moore--Penrose/transpose-range route. -/
 theorem
@@ -31507,6 +32650,115 @@ theorem
         A B APplus
         (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
         r hscale_scalar)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    Gram-`B` source-rank Wedin-residual-RHS first-order bound using the source
+    first-order coefficient comparison. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_of_MP_gram_projection_lseStackedFullColumnRank_wedinResidualRHS_first_order_coeff_op2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+        (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus) :=
+  LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_of_MP_gram_projection_lseStackedFullColumnRank_wedinResidualRHS_scalar_op2_le
+    A DeltaA b Deltab hB DeltaB APplus d Deltad x y r rHigh
+    heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos hmax hx hy
+    hMP hstack hr hres hrelative
+    (_root_.LeanFpAnalysis.FP.theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+      A B APplus
+      (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
+      heps_nonneg hcoeff)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    Gram-`B` source-rank Wedin-residual-RHS first-order plus explicit `eps^2`
+    bound using the source first-order coefficient comparison. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_gram_projection_lseStackedFullColumnRank_wedinResidualRHS_first_order_coeff_op2_le
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    (d Deltad : Fin p → ℝ) (x y : Fin n → ℝ)
+    (r rHigh : Fin m → ℝ) {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 r)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) / vecNorm2 r ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix APplus) * (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x r APplus
+          (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x r APplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) :=
+  LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_gram_projection_lseStackedFullColumnRank_wedinResidualRHS_scalar_op2_le
+    A DeltaA b Deltab hB DeltaB APplus d Deltad x y r rHigh
+    heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos hmax hx hy
+    hMP hstack hr hres hrelative
+    (_root_.LeanFpAnalysis.FP.theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
+      A B APplus
+      (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
+      heps_nonneg hcoeff)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     determinant-facing concrete Gram-pseudoinverse version of the
@@ -41055,6 +42307,159 @@ theorem theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturba
       A DeltaA b Deltab B DeltaB d Deltad
       hApos hbpos hBpos hdpos hmax)
     hBsmall hStackSmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    perturbed-rank witness package for the reduced `AP` problem.
+
+    If the perturbed LSE data satisfy the two rank conditions in (20.24), then
+    there are a perturbed feasible base point, a perturbed LSE minimizer, and
+    the corresponding reduced least-squares minimizer.  The reduced Higham
+    residual is orthogonal to the columns of the perturbed reduced `AP`
+    matrix, which is the exact optimality side needed by the Wedin residual
+    route. -/
+theorem theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_conditions20_24
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ)
+    (B DeltaB : Fin p → Fin (p + q) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hStackPert : LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j)) :
+    ∃ (x0 y : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
+      LSEFeasible (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) x0 ∧
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+      IsLeastSquaresMinimizer
+          (theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+          (fun j => y j - x0 j) ∧
+      s =
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+              rectMatMulVec
+                (theorem20_8AP (fun i j => A i j + DeltaA i j)
+                  (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+                (fun j => y j - x0 j) i) ∧
+      (∀ j : Fin (p + q),
+        ∑ i : Fin (r + q),
+          theorem20_8AP (fun i j => A i j + DeltaA i j)
+              (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
+            s i = 0) := by
+  rcases hBpert.exists_feasible (fun i => d i + Deltad i) with
+    ⟨x0, hx0⟩
+  rcases exists_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+      (A := fun i j => A i j + DeltaA i j)
+      (B := fun i j => B i j + DeltaB i j)
+      (b := fun i => b i + Deltab i)
+      (d := fun i => d i + Deltad i) hBpert hStackPert with
+    ⟨y, hy⟩
+  let s : Fin (r + q) → ℝ :=
+    fun i =>
+      b i + Deltab i -
+        rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+        rectMatMulVec
+          (theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+          (fun j => y j - x0 j) i
+  have hred :
+      IsLeastSquaresMinimizer
+          (theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+          (fun j => y j - x0 j) :=
+    LSEFullRowRank.theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+      A DeltaA b Deltab B DeltaB hBpert d Deltad x0 y hx0 hy
+  have horth :
+      ∀ j : Fin (p + q),
+        ∑ i : Fin (r + q),
+          theorem20_8AP (fun i j => A i j + DeltaA i j)
+              (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
+            s i = 0 :=
+    LSEFullRowRank.theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
+      A DeltaA b Deltab B DeltaB hBpert d Deltad x0 y s hx0 hy rfl
+  exact ⟨x0, y, s, hx0, hy, hred, rfl, horth⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    maximum-relative-perturbation version of the reduced `AP` witness package.
+
+    Source rank conditions and strict margin smallness first preserve (20.24)
+    for the perturbed problem; the resulting perturbed rank facts then supply
+    the reduced minimizer and residual orthogonality witnesses. -/
+theorem
+    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lt_margins
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {eps : ℝ}
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hBsrc.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    ∃ (x0 y : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
+      LSEFeasible (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) x0 ∧
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+      IsLeastSquaresMinimizer
+          (theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j)
+            (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
+              hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse)
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+          (fun j => y j - x0 j) ∧
+      s =
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+              rectMatMulVec
+                (theorem20_8AP (fun i j => A i j + DeltaA i j)
+                  (fun i j => B i j + DeltaB i j)
+                  (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
+                    hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse)
+                (fun j => y j - x0 j) i) ∧
+      (∀ j : Fin (p + q),
+        ∑ i : Fin (r + q),
+          theorem20_8AP (fun i j => A i j + DeltaA i j)
+              (fun i j => B i j + DeltaB i j)
+              (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
+                hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse i j *
+            s i = 0) := by
+  let hcond :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
+      hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall
+  exact
+    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_conditions20_24
+      A DeltaA b Deltab B DeltaB d Deltad hcond.1 hcond.2
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, exact perturbed-data
     GQR core for the same-constraint-right-hand-side branch.
