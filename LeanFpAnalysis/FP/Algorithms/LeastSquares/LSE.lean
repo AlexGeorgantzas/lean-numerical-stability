@@ -10868,6 +10868,183 @@ theorem theorem20_7_completionB_bound_of_h19_signed_stage_row_sorting_active_sta
           hn hnm fp Astage bstage A b alpha err hphi hmfp herr
           hbactive hbsorted hAlphaDef htrailingPos i hi
 
+/-- Theorem 20.7 support: turn a compact-active completion-time matrix row
+    bound plus preservation of already completed rows into the completed-row
+    bound used by the active/completed all-entry bridge. -/
+theorem theorem20_7_completedA_bound_of_completion_preservation_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (err : ℝ) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hcomplete :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n,
+        |Astage (i.val + 1) i j| ≤
+          theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+            theorem20_7_initialRowMax hn A i)
+    (hpreserve :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+        Astage k i j = Astage (i.val + 1) i j) :
+    ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+      |Astage k i j| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialRowMax hn A i := by
+  intro i k hk hik j
+  have hsucc_le : i.val + 1 ≤ k := Nat.succ_le_of_lt hik
+  have hi_succ_lt : i.val + 1 < n := lt_of_le_of_lt hsucc_le hk
+  have hhorizon :
+      theorem20_7_compactActiveHorizon fp m err (i.val + 1) ≤
+        theorem20_7_compactActiveHorizon fp m err k :=
+    theorem20_7_compactActiveHorizon_le_of_le fp m err hmfp herr hsucc_le
+  rw [hpreserve i k hk hik j]
+  exact
+    (hcomplete i hi_succ_lt j).trans
+      (mul_le_mul_of_nonneg_right hhorizon
+        (theorem20_7_initialRowMax_nonneg hn A i))
+
+/-- Theorem 20.7 support: RHS analogue of
+    `theorem20_7_completedA_bound_of_completion_preservation_compactActiveHorizon_nat`
+    for the weighted row scale. -/
+theorem theorem20_7_completedB_bound_of_completion_preservation_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n)
+    (fp : FPModel)
+    (bstage : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (phi err : ℝ) (hphi : 0 ≤ phi)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hcomplete :
+      ∀ i : Fin m, i.val + 1 < n →
+        |bstage (i.val + 1) i| ≤
+          theorem20_7_compactActiveHorizon fp m err (i.val + 1) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hpreserve :
+      ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+        bstage k i = bstage (i.val + 1) i) :
+    ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+      |bstage k i| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  intro i k hk hik
+  have hsucc_le : i.val + 1 ≤ k := Nat.succ_le_of_lt hik
+  have hi_succ_lt : i.val + 1 < n := lt_of_le_of_lt hsucc_le hk
+  have hhorizon :
+      theorem20_7_compactActiveHorizon fp m err (i.val + 1) ≤
+        theorem20_7_compactActiveHorizon fp m err k :=
+    theorem20_7_compactActiveHorizon_le_of_le fp m err hmfp herr hsucc_le
+  rw [hpreserve i k hk hik]
+  exact
+    (hcomplete i hi_succ_lt).trans
+      (mul_le_mul_of_nonneg_right hhorizon
+        (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
+
+/-- Theorem 20.7 support: signed stored-QR matrix completed rows from
+    compact-active completion-time bounds and subtract-zero preservation. -/
+theorem theorem20_7_completedA_bound_of_h19_signed_stage_row_sorting_active_tail_stage_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (alpha : ℕ → ℝ) (err : ℝ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hStep : ∀ k, k < n →
+      Astage (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Astage alpha k)
+          (storedQRSignedStageBeta hnm Astage alpha k)
+          (Astage k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) (Fin.mk t ht))
+    (hAactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n,
+        k ≤ j.val →
+          |Astage k r j| ≤
+            theorem20_7_compactActiveHorizon fp m err k *
+              theorem20_7_initialRowMax hn A r)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩) :
+    ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k → ∀ j : Fin n,
+      |Astage k i j| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialRowMax hn A i := by
+  exact
+    theorem20_7_completedA_bound_of_completion_preservation_compactActiveHorizon_nat
+      hn fp Astage A err hmfp herr
+      (theorem20_7_completionA_bound_of_h19_signed_stage_row_sorting_active_tail_stage_compactActiveHorizon_nat
+        hn hnm fp Astage A alpha err hmfp herr hStep hAlphaDef htrailingPos
+        hpivotMax hAactive hAsorted)
+      (theorem20_7_completedA_preservation_of_signed_stage_subtractZeroExact_nat
+        hnm fp Astage alpha hcopy hStep)
+
+/-- Theorem 20.7 support: signed stored-QR RHS completed rows from
+    compact-active completion-time bounds and stored RHS prefix preservation. -/
+theorem theorem20_7_completedB_bound_of_h19_signed_stage_row_sorting_active_stage_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) (phi err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hStep : ∀ k, k < n →
+      bstage (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Astage alpha k)
+          (storedQRSignedStageBeta hnm Astage alpha k)
+          (bstage k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bstage k r| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩) :
+    ∀ i : Fin m, ∀ k : ℕ, k < n → i.val < k →
+      |bstage k i| ≤
+        theorem20_7_compactActiveHorizon fp m err k *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  exact
+    theorem20_7_completedB_bound_of_completion_preservation_compactActiveHorizon_nat
+      hn fp bstage A b phi err hphi hmfp herr
+      (theorem20_7_completionB_bound_of_h19_signed_stage_row_sorting_active_stage_compactActiveHorizon_nat
+        hn hnm fp Astage bstage A b alpha phi err hphi hmfp herr hStep
+        hAlphaDef htrailingPos hbactive hbsorted)
+      (theorem20_7_completedB_preservation_of_stored_rhs_steps_nat
+        fp
+        (fun k => storedQRSignedStageVector hnm Astage alpha k)
+        (fun k => storedQRSignedStageBeta hnm Astage alpha k)
+        bstage hStep)
+
 /-- The current compact active-step factor cannot be absorbed into the printed
     Cox--Higham rowwise factor in general.
 
