@@ -744,6 +744,15 @@ noncomputable def higham11_4_bunchKaufmanProductEntry (n : ℕ)
   ∑ k₁ : Fin n, ∑ k₂ : Fin n,
     |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂|
 
+/-- Each entry of `|L̂||D̂||L̂ᵀ|` is nonnegative. -/
+theorem higham11_4_bunchKaufmanProductEntry_nonneg (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n) :
+    0 ≤ higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j := by
+  unfold higham11_4_bunchKaufmanProductEntry
+  exact Finset.sum_nonneg (fun k₁ _ =>
+    Finset.sum_nonneg (fun k₂ _ =>
+      mul_nonneg (mul_nonneg (abs_nonneg _) (abs_nonneg _)) (abs_nonneg _)))
+
 /-- **Theorem 11.4 max-entry norm target**: the finite max-entry norm of
 `|L̂||D̂||L̂ᵀ|`, written as a finite supremum over entry pairs.  The positive
 dimension hypothesis supplies the nonempty finite set for `Finset.sup'`. -/
@@ -763,6 +772,13 @@ theorem higham11_4_bunchKaufmanProductEntry_le_productMax (n : ℕ) (hn : 0 < n)
     (fun p : Fin n × Fin n => higham11_4_bunchKaufmanProductEntry n L_hat D_hat p.1 p.2)
     (Finset.mem_univ (i, j))
 
+/-- The finite max-entry norm of `|L̂||D̂||L̂ᵀ|` is nonnegative. -/
+theorem higham11_4_bunchKaufmanProductMax_nonneg (n : ℕ) (hn : 0 < n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) :
+    0 ≤ higham11_4_bunchKaufmanProductMax n hn L_hat D_hat :=
+  (higham11_4_bunchKaufmanProductEntry_nonneg n L_hat D_hat ⟨0, hn⟩ ⟨0, hn⟩).trans
+    (higham11_4_bunchKaufmanProductEntry_le_productMax n hn L_hat D_hat ⟨0, hn⟩ ⟨0, hn⟩)
+
 /-- The finite max-entry product is the least scalar that bounds every entry of
 `|L̂||D̂||L̂ᵀ|`. -/
 theorem higham11_4_bunchKaufmanProductMax_le_iff (n : ℕ) (hn : 0 < n)
@@ -775,6 +791,18 @@ theorem higham11_4_bunchKaufmanProductMax_le_iff (n : ℕ) (hn : 0 < n)
   · intro hentries
     unfold higham11_4_bunchKaufmanProductMax
     exact Finset.sup'_le _ _ (fun p _ => hentries p.1 p.2)
+
+/-- Pointwise product-entry estimates package into the scalar max-entry product
+certificate used in Theorem 11.4. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries (n : ℕ)
+    (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax : ℝ)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  (higham11_4_bunchKaufmanProductMax_le_iff n hn L_hat D_hat
+    (36 * (n : ℝ) * ρ_n * Amax)).mpr hentries
 
 /-- **Theorem 11.4 constant (Higham [608, 1997], eq (4.13))**: the `36` in the
 bound `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36 n ρₙ ‖A‖_M` comes from
