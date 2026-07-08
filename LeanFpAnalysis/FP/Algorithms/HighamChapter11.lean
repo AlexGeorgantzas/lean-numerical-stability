@@ -962,6 +962,15 @@ abbrev higham11_7_TridiagonalLeadingBlockSupport (m offset : ℕ)
     (E : Fin m → Fin m → ℝ) : Prop :=
   TridiagonalLeadingBlockSupport m offset E
 
+/-- **Theorem 11.7 zero-prefix support monotonicity**, lowering a deeper
+recursive zero-prefix support fact to any shallower prefix. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_of_le_offset
+    (m offset offset' : ℕ) (E : Fin m → Fin m → ℝ)
+    (hoff : offset ≤ offset')
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m offset' E) :
+    higham11_7_TridiagonalLeadingBlockSupport m offset E :=
+  tridiagonalLeadingBlockSupport_of_le_offset m offset offset' E hoff hEsupp
+
 /-- **Theorem 11.7 recursive base support package**, giving the zero
 perturbation with any zero-prefix support and any nonnegative componentwise
 bound. -/
@@ -1000,6 +1009,23 @@ theorem higham11_7_tridiagonalLeadingBlockSupport_add_bound
   tridiagonalLeadingBlockSupport_add_bound m offset E F βE βF
     hEbound hFbound hEsupp hFsupp
 
+/-- **Theorem 11.7 recursive support-add combiner, mixed offsets**,
+accumulating two zero-prefix supported perturbations into a common shallower
+recursive offset while adding their componentwise bounds. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_add_bound_of_le_offset
+    (m offset offsetE offsetF : ℕ) (E F : Fin m → Fin m → ℝ) (βE βF : ℝ)
+    (hoffE : offset ≤ offsetE) (hoffF : offset ≤ offsetF)
+    (hEbound : ∀ i j : Fin m, |E i j| ≤ βE)
+    (hFbound : ∀ i j : Fin m, |F i j| ≤ βF)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m offsetE E)
+    (hFsupp : higham11_7_TridiagonalLeadingBlockSupport m offsetF F) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ βE + βF) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = E i j + F i j) :=
+  tridiagonalLeadingBlockSupport_add_bound_of_le_offset m offset offsetE
+    offsetF E F βE βF hoffE hoffF hEbound hFbound hEsupp hFsupp
+
 /-- **Theorem 11.7 recursive support-add combiner, printed coefficients**,
 accumulating two zero-prefix supported perturbations bounded by
 `cE * u * Amax` and `cF * u * Amax`. -/
@@ -1015,6 +1041,25 @@ theorem higham11_7_tridiagonalLeadingBlockSupport_add_bound_printed
       (∀ i j : Fin m, G i j = E i j + F i j) :=
   tridiagonalLeadingBlockSupport_add_bound_printed m offset E F cE cF u Amax
     hEbound hFbound hEsupp hFsupp
+
+/-- **Theorem 11.7 recursive support-add combiner, printed mixed offsets**,
+accumulating two zero-prefix supported perturbations into a common shallower
+recursive offset with printed coefficients. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_add_bound_printed_of_le_offset
+    (m offset offsetE offsetF : ℕ) (E F : Fin m → Fin m → ℝ)
+    (cE cF u Amax : ℝ)
+    (hoffE : offset ≤ offsetE) (hoffF : offset ≤ offsetF)
+    (hEbound : ∀ i j : Fin m, |E i j| ≤ cE * u * Amax)
+    (hFbound : ∀ i j : Fin m, |F i j| ≤ cF * u * Amax)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m offsetE E)
+    (hFsupp : higham11_7_TridiagonalLeadingBlockSupport m offsetF F) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ (cE + cF) * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = E i j + F i j) :=
+  tridiagonalLeadingBlockSupport_add_bound_printed_of_le_offset m offset
+    offsetE offsetF E F cE cF u Amax hoffE hoffF hEbound hFbound
+    hEsupp hFsupp
 
 /-- **Theorem 11.7 support predicate bridge**, identifying the specialized
 trailing-block support predicate with zero-prefix support at offset two. -/

@@ -1805,6 +1805,19 @@ def TridiagonalLeadingBlockSupport (m offset : ℕ)
     (E : Fin m → Fin m → ℝ) : Prop :=
   ∀ i j : Fin m, i.val < offset ∨ j.val < offset → E i j = 0
 
+/-- A perturbation that vanishes on a deeper zero-prefix also vanishes on any
+shallower zero-prefix. -/
+theorem tridiagonalLeadingBlockSupport_of_le_offset
+    (m offset offset' : ℕ) (E : Fin m → Fin m → ℝ)
+    (hoff : offset ≤ offset')
+    (hEsupp : TridiagonalLeadingBlockSupport m offset' E) :
+    TridiagonalLeadingBlockSupport m offset E := by
+  intro i j hlead
+  apply hEsupp
+  rcases hlead with hi | hj
+  · exact Or.inl (Nat.lt_of_lt_of_le hi hoff)
+  · exact Or.inr (Nat.lt_of_lt_of_le hj hoff)
+
 /-- The zero perturbation has any zero-prefix support, with any nonnegative
 componentwise bound.  This is the base bookkeeping object for recursive
 tridiagonal perturbation assembly. -/
@@ -1855,6 +1868,26 @@ theorem tridiagonalLeadingBlockSupport_add_bound
   · intro i j
     rfl
 
+/-- Add two zero-prefix supported perturbations, allowing each input to be
+supported at a deeper offset than the common output offset. -/
+theorem tridiagonalLeadingBlockSupport_add_bound_of_le_offset
+    (m offset offsetE offsetF : ℕ) (E F : Fin m → Fin m → ℝ) (βE βF : ℝ)
+    (hoffE : offset ≤ offsetE) (hoffF : offset ≤ offsetF)
+    (hEbound : ∀ i j : Fin m, |E i j| ≤ βE)
+    (hFbound : ∀ i j : Fin m, |F i j| ≤ βF)
+    (hEsupp : TridiagonalLeadingBlockSupport m offsetE E)
+    (hFsupp : TridiagonalLeadingBlockSupport m offsetF F) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ βE + βF) ∧
+      TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = E i j + F i j) :=
+  tridiagonalLeadingBlockSupport_add_bound m offset E F βE βF
+    hEbound hFbound
+    (tridiagonalLeadingBlockSupport_of_le_offset m offset offsetE E
+      hoffE hEsupp)
+    (tridiagonalLeadingBlockSupport_of_le_offset m offset offsetF F
+      hoffF hFsupp)
+
 /-- Printed-coefficient version of the zero-prefix support add/bound combiner:
 two perturbations bounded by `cE * u * Amax` and `cF * u * Amax` combine with
 coefficient `cE + cF`. -/
@@ -1876,6 +1909,27 @@ theorem tridiagonalLeadingBlockSupport_add_bound_printed
   calc
     |G i j| ≤ cE * u * Amax + cF * u * Amax := hG i j
     _ = (cE + cF) * u * Amax := by ring
+
+/-- Printed-coefficient mixed-depth version of the zero-prefix support
+add/bound combiner. -/
+theorem tridiagonalLeadingBlockSupport_add_bound_printed_of_le_offset
+    (m offset offsetE offsetF : ℕ) (E F : Fin m → Fin m → ℝ)
+    (cE cF u Amax : ℝ)
+    (hoffE : offset ≤ offsetE) (hoffF : offset ≤ offsetF)
+    (hEbound : ∀ i j : Fin m, |E i j| ≤ cE * u * Amax)
+    (hFbound : ∀ i j : Fin m, |F i j| ≤ cF * u * Amax)
+    (hEsupp : TridiagonalLeadingBlockSupport m offsetE E)
+    (hFsupp : TridiagonalLeadingBlockSupport m offsetF F) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ (cE + cF) * u * Amax) ∧
+      TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = E i j + F i j) :=
+  tridiagonalLeadingBlockSupport_add_bound_printed m offset E F cE cF u Amax
+    hEbound hFbound
+    (tridiagonalLeadingBlockSupport_of_le_offset m offset offsetE E
+      hoffE hEsupp)
+    (tridiagonalLeadingBlockSupport_of_le_offset m offset offsetF F
+      hoffF hFsupp)
 
 /-- The specialized trailing-block support predicate is exactly the
 zero-prefix support predicate with offset two. -/
