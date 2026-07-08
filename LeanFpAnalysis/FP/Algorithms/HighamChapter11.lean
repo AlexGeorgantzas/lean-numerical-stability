@@ -915,6 +915,40 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embe
     σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
     hb hc hratio hbudget hval
 
+/-- Local index of the first trailing scalar after a leading `2 × 2`
+tridiagonal pivot inside a block of size `n+3`. -/
+abbrev higham11_7_tridiagonalTwoByTwoFirstTrailingIndex (n : ℕ) :
+    Fin (n + 3) :=
+  tridiagonalTwoByTwoFirstTrailingIndex n
+
+/-- **Theorem 11.7 local recursion embedding**, placing the printed-budget
+trailing scalar perturbation from an accepted `2 × 2` tridiagonal pivot into an
+ambient local block of size `n+3`, with zeros outside the first trailing entry. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed
+    (n : ℕ) (fp : FPModel) (σ a11 a21 a22 b c Amax κ c_bound u : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ c_bound * u * Amax) ∧
+      (∀ i j : Fin (n + 3),
+        i ≠ higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n ∨
+          j ≠ higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n →
+        ΔA i j = 0) ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) :=
+  fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed n fp
+    σ a11 a21 a22 b c Amax κ c_bound u hchoice hσa11 hσa22 hAmax hκ
+    hb hc hratio hbudget hval
+
 /-- **Equation (11.8)** source predicate: unpermuted block LDL^T
 factorization for a symmetric tridiagonal matrix. -/
 abbrev higham11_8_tridiagonalBlockLDLTSpec (n : ℕ)
