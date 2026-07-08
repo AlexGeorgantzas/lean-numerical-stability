@@ -226,6 +226,39 @@ theorem theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
       (mul_le_mul_of_nonneg_left (hA k hk s hks) hphi)
       (hb k hk s hks)
 
+/-- Theorem 20.7 route audit: source row sorting alone does not imply the
+    stronger `sqrt(m)` row-scale domination hypothesis used by the Chapter 19
+    accumulated-error transfer.
+
+For two rows and one column, row sorting can hold with row scales `2, 1`, but
+the pivot row scale `2` is not bounded by `sqrt(2) * 1`. -/
+theorem theorem20_7_initialRowMax_sorted_not_imp_sqrt_row_domination_two_by_one :
+    ∃ A : Fin 2 → Fin 1 → ℝ,
+      (∀ k : ℕ, ∀ hk : k < 1, ∀ s : Fin 2, k ≤ s.val →
+        theorem20_7_initialRowMax (by norm_num : 0 < 1) A s ≤
+          theorem20_7_initialRowMax (by norm_num : 0 < 1) A
+            ⟨k, lt_of_lt_of_le hk (by norm_num : 1 ≤ 2)⟩) ∧
+      ¬ (∀ k : ℕ, ∀ hk : k < 1, ∀ r : Fin 2, k ≤ r.val →
+        theorem20_7_initialRowMax (by norm_num : 0 < 1) A
+            ⟨k, lt_of_lt_of_le hk (by norm_num : 1 ≤ 2)⟩ ≤
+          Real.sqrt (2 : ℝ) *
+            theorem20_7_initialRowMax (by norm_num : 0 < 1) A r) := by
+  let A : Fin 2 → Fin 1 → ℝ := fun i _ =>
+    if i.val = 0 then 2 else 1
+  refine ⟨A, ?_, ?_⟩
+  · intro k hk s _hks
+    have hk0 : k = 0 := Nat.lt_one_iff.mp hk
+    subst k
+    fin_cases s <;> simp [theorem20_7_initialRowMax, A]
+  · intro hdom
+    have h :=
+      hdom 0 (by norm_num) ⟨1, by norm_num⟩ (by norm_num)
+    simp [theorem20_7_initialRowMax, A] at h
+    have hsqrt2_lt_two : Real.sqrt (2 : ℝ) < 2 := by
+      nlinarith [Real.sq_sqrt (show 0 ≤ (2 : ℝ) by norm_num),
+        Real.sqrt_nonneg (2 : ℝ)]
+    linarith
+
 /-- Source-shaped nonzero-row hypotheses discharge both denominator
     positivity side conditions used by the Theorem 20.7 row-growth bridges. -/
 theorem theorem20_7_denominators_pos_of_rows_nonzero {m n : ℕ}
@@ -11415,6 +11448,514 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hmfp hrows hAexact0 hbexact0 hStepA hStepB hAlphaDef htrailingPos
       hcopy hpivotMax hAsorted hbAbsSorted hAstepExact hAstepErr hArow0
       hAacc hbstepExact hbstepErr hbrow0 hbacc hcert.deltaA_bound
+      hcert.deltab_bound
+
+/-- Theorem 20.7 support: zero-start specialization of the compact-active
+    source-initial signed stored-QR all-entry perturbation wrapper.
+
+When the rounded and exact stage-zero data both equal the source `A` and `b`,
+the initial discrepancy terms in the accumulated-error hypotheses collapse to
+zero.  The remaining scalar affine step-budget domination assumptions are kept
+explicit. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ _ : Fin n,
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm fp Ahat Aexact A bhat bexact b alpha gammaTilde err
+      AstepBudget bstepBudget DeltaA Deltab hphi hgamma herr hmfp hrows
+      hAexact0 hbexact0 hStepA hStepB hAlphaDef htrailingPos hcopy
+      hpivotMax hAsorted hbAbsSorted hAstepExact hAstepErr hArow0
+      (fun k r hkr j => by
+        have hzero : |Ahat 0 r j - Aexact 0 r j| = 0 := by
+          rw [hAhat0 r j, hAexact0 r j, sub_self, abs_zero]
+        simpa [hzero] using hAaccBudget k r hkr j)
+      hbstepExact hbstepErr hbrow0
+      (fun k r hkr => by
+        have hzero : |bhat 0 r - bexact 0 r| = 0 := by
+          rw [hbhat0 r, hbexact0 r, sub_self, abs_zero]
+        simpa [hzero] using hbaccBudget k r hkr)
+      hDeltaA hDeltab
+
+/-- Theorem 20.7 support: zero-start, zero-step-budget specialization of the
+    compact-active source-initial signed stored-QR all-entry perturbation
+    wrapper. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Ahat t r j - Aexact t r j|)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bhat t r - bexact t r|)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm fp Ahat Aexact A bhat bexact b alpha gammaTilde err
+      (fun _ : ℕ => (0 : ℝ)) (fun _ : ℕ => (0 : ℝ))
+      DeltaA Deltab hphi hgamma herr hmfp hrows hAhat0 hAexact0
+      hbhat0 hbexact0 hStepA hStepB hAlphaDef htrailingPos hcopy
+      hpivotMax hAsorted hbAbsSorted hAstepExact
+      (fun r j t => by
+        simpa using hAstepErr r j t)
+      hArow0
+      (fun _k r _hkr _j => by
+        rw [theorem20_7_scalarAffineGrowthBudget_zero_stepBudget]
+        exact mul_nonneg herr (theorem20_7_initialRowMax_nonneg hn A r))
+      hbstepExact
+      (fun r t => by
+        simpa using hbstepErr r t)
+      hbrow0
+      (fun _k r _hkr => by
+        rw [theorem20_7_scalarAffineGrowthBudget_zero_stepBudget]
+        exact mul_nonneg herr
+          (theorem20_7_initialWeightedRowMax_nonneg hn A b (le_of_lt hphi) r))
+      hDeltaA hDeltab
+
+/-- Theorem 20.7 support: certificate-level zero-start specialization of the
+    compact-active source-initial signed stored-QR perturbation budgets. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ _ : Fin n,
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Ahat bhat phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  refine ⟨hcert.exact_solution, ?_⟩
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm fp Ahat Aexact A bhat bexact b alpha gammaTilde err
+      AstepBudget bstepBudget hcert.DeltaA hcert.Deltab hphi hgamma herr
+      hmfp hrows hAhat0 hAexact0 hbhat0 hbexact0 hStepA hStepB
+      hAlphaDef htrailingPos hcopy hpivotMax hAsorted hbAbsSorted
+      hAstepExact hAstepErr hArow0 hAaccBudget hbstepExact hbstepErr
+      hbrow0 hbaccBudget hcert.deltaA_bound hcert.deltab_bound
+
+/-- Theorem 20.7 support: certificate-level zero-start, zero-step-budget
+    specialization of the compact-active source-initial signed stored-QR
+    perturbation budgets. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Ahat t r j - Aexact t r j|)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bhat t r - bexact t r|)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b Ahat bhat phi gammaTilde
+        xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  refine ⟨hcert.exact_solution, ?_⟩
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm fp Ahat Aexact A bhat bexact b alpha gammaTilde err
+      hcert.DeltaA hcert.Deltab hphi hgamma herr hmfp hrows hAhat0
+      hAexact0 hbhat0 hbexact0 hStepA hStepB hAlphaDef htrailingPos
+      hcopy hpivotMax hAsorted hbAbsSorted hAstepExact hAstepErr
+      hArow0 hbstepExact hbstepErr hbrow0 hcert.deltaA_bound
       hcert.deltab_bound
 
 /-- The current compact active-step factor cannot be absorbed into the printed
