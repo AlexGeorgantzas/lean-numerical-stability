@@ -2033,6 +2033,36 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_completePivotingUTraceGrowthSup_ge_succ`
 - `higham9_16_rookPivotFosterBound`
 - `higham9_16_foster_subset_hadamard`
+- `higham9_16_exists_antitone_enumeration` (every real tuple has a descending enumeration)
+- `higham9_16_card_filter_val_lt`
+- `higham9_16_foster_nested_constraints` (Foster eq. (10): nested subset-Hadamard pivot constraints for any enumeration)
+- `higham9_16_foster_sorted_constraints` (Foster eq. (10), sorted existential form — the exact input of Foster Lemma 2)
+- `higham9_16_fosterStage` / `higham9_16_fosterStageConst` (Foster eq. (6) stage function `s(1+s)^(k-1)` and constant `C_k = sqrt(k^k)/sqrt((k-1)^(k-1))`)
+- `higham9_16_fosterStageConst_one` / `higham9_16_fosterStageConst_pos`
+- `higham9_16_fosterStage_continuous` / `higham9_16_fosterStage_strictMonoOn` / `higham9_16_fosterStage_ge_self`
+- `higham9_16_existsUnique_fosterStage_root` (existence/uniqueness of the positive stage root, via IVT + strict monotonicity)
+- `higham9_16_fosterS` (the implicit stage root `s_k` of Foster eq. (6))
+- `higham9_16_fosterS_spec` / `higham9_16_fosterS_eq` / `higham9_16_fosterS_unique` / `higham9_16_fosterS_nonneg` / `higham9_16_fosterS_pos` / `higham9_16_fosterS_one`
+- `higham9_16_fosterT` (Foster eq. (7) bound `t_n = s_1(1+s_2)⋯(1+s_n)`)
+- `higham9_16_fosterT_one` / `higham9_16_fosterT_pos` / `higham9_16_fosterT_succ`
+- `higham9_16_sqrt_pow` (`sqrt(x^k) = (sqrt x)^k`)
+- `higham9_16_prod_fosterStageConst` (telescoping `C_1⋯C_n = sqrt(n^n)`)
+- `higham9_16_fosterS_lt_sqrt` (Foster Lemma A.1: `s_k < sqrt k` for `k >= 2`)
+- `higham9_16_sqrt_ratio_lt_one_add_fosterS` (`sqrt(k/(k-1)) < 1 + s_k`)
+- `higham9_16_bernoulli_pow_ratio` (`(k+1)^(k+1)(k-1)^k < k^(2k+1)`, via Bernoulli)
+- `higham9_16_fosterStageConst_succ_le` (`C_(k+1) <= sqrt(k/(k-1)) C_k`)
+- `higham9_16_fosterS_succ_lt` (Foster Lemma A.1 (A.1): `s_(k+1) < s_k` for `k >= 2`, derivative-free)
+- `higham9_16_fosterS_two` (`s_2 = 1`)
+- `higham9_16_fosterS_le_one` (`s_k <= 1` for `k >= 1`)
+- `higham9_16_existsUnique_root` (general positive-root existence/uniqueness for strictly monotone continuous `f` with `f 0 = 0`)
+- `higham9_16_fosterQStage` (Foster (A.5) band-stage function `sqrt((k-r)^(k-r)) q^r (1+rq)^(k-r)`)
+- `higham9_16_fosterQStage_continuous` / `higham9_16_fosterQStage_strictMonoOn` / `higham9_16_fosterQStage_zero` / `higham9_16_fosterQStage_witness` / `higham9_16_fosterQStage_sqrt_ge_one`
+- `higham9_16_existsUnique_fosterQ_root` / `higham9_16_fosterQ` (Foster (A.5) band root `q_(k-r+1)`)
+- `higham9_16_fosterQ_spec` / `higham9_16_fosterQ_eq` / `higham9_16_fosterQ_unique` / `higham9_16_fosterQ_nonneg` / `higham9_16_fosterQ_pos`
+- `higham9_16_fosterQ_mono_const` (band root monotone in the constant)
+- `higham9_16_fosterQ_one_eq_fosterS` / `higham9_16_fosterQ_one_sqrt_eq_fosterS` (Foster's (A.5)-(6) link: the `r = 1` root at `sqrt(k^k)` is `s_k`)
+- `higham9_16_fosterQ_one_le_fosterS` (`q_k <= s_k` for `C <= sqrt(k^k)`)
+- `higham9_16_one_add_mul_hat` (Möbius identity `(1+x)(1+m·x/(1+x)) = 1+(m+1)x`)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
