@@ -3904,6 +3904,182 @@ theorem sylvester_practical_error_bound_of_schur_transform_residual_bound
       hXhat
 
 /-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    scalar-cap conservative practical max-entry bound from a Schur-coordinate
+    Frobenius residual bound. -/
+theorem sylvester_practical_error_bound_of_schur_transform_residual_bound_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Y : RMatFn m n) (rho eta : Real)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p,
+        sylvesterPracticalBudgetVec m n PinvAbs
+            (fun _ _ => 0) (fun _ _ => rho) p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n
+      (rectMatMul U (rectMatMul Y (matTranspose V)))) :
+    sylvesterMaxEntryNormRect m n
+        (fun i j =>
+          X i j - rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <=
+      eta /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_scalar
+      m n A B C X (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (fun _ _ => 0) (fun _ _ => rho) Pinv PinvAbs eta
+      hX hLeft hPinvAbs
+      (sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
+        m n U R A V S B C Y rho hU hV hA hB hres)
+      heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    monotone conservative practical max-entry bound from a Schur-coordinate
+    Frobenius residual bound.  This estimator-facing wrapper permits a larger
+    supplied inverse/residual budget without proving the estimator itself. -/
+theorem sylvester_practical_error_bound_of_schur_transform_residual_bound_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Y Rhat' Ru' : RMatFn m n) (rho : Real)
+    (Pinv PinvAbs PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hPinvAbs_le : forall p q, PinvAbs p q <= PinvAbs' p q)
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho)
+    (hRhat : forall i j, |(0 : Real)| <= |Rhat' i j|)
+    (hRu_le : forall i j, rho <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n
+      (rectMatMul U (rectMatMul Y (matTranspose V)))) :
+    sylvesterMaxEntryNormRect m n
+        (fun i j =>
+          X i j - rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_mono m n
+      A B C X (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (fun _ _ => 0) Rhat' (fun _ _ => rho) Ru'
+      Pinv PinvAbs PinvAbs'
+      hX hLeft hPinvAbs hPinvAbs_le
+      (sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
+        m n U R A V S B C Y rho hU hV hA hB hres)
+      hRhat hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    monotone scalar-cap conservative practical max-entry bound from a
+    Schur-coordinate Frobenius residual bound. -/
+theorem sylvester_practical_error_bound_of_schur_transform_residual_bound_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Y Rhat' Ru' : RMatFn m n) (rho eta : Real)
+    (Pinv PinvAbs PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hPinvAbs_le : forall p q, PinvAbs p q <= PinvAbs' p q)
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho)
+    (hRhat : forall i j, |(0 : Real)| <= |Rhat' i j|)
+    (hRu_le : forall i j, rho <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n
+      (rectMatMul U (rectMatMul Y (matTranspose V)))) :
+    sylvesterMaxEntryNormRect m n
+        (fun i j =>
+          X i j - rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <=
+      eta /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_mono_scalar
+      m n A B C X (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (fun _ _ => 0) Rhat' (fun _ _ => rho) Ru'
+      Pinv PinvAbs PinvAbs' eta
+      hX hLeft hPinvAbs hPinvAbs_le
+      (sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
+        m n U R A V S B C Y rho hU hV hA hB hres)
+      hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    practical max-entry bound from a Schur-coordinate Frobenius residual-error
+    model.  This wrapper consumes the exact residual-arithmetic certificate and
+    does not prove rounded Bartels-Stewart arithmetic. -/
+theorem sylvester_practical_error_bound_of_schur_frobenius_error_model
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Y RhatS dR : RMatFn m n) (rho : Real)
+    (Pinv PinvAbs :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hLeft : Pinv * sylvesterVecCoeff m n A B = 1)
+    (hPinvAbs : forall p q, |Pinv p q| <= PinvAbs p q)
+    (hRhatS : forall i j,
+      RhatS i j = sylvesterResidualRect m n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) Y i j + dR i j)
+    (hrho : 0 <= rho)
+    (hdR : frobNorm dR <= rho)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n
+      (rectMatMul U (rectMatMul Y (matTranspose V)))) :
+    sylvesterMaxEntryNormRect m n
+        (fun i j =>
+          X i j - rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs
+          (rectMatMul U (rectMatMul RhatS (matTranspose V)))
+          (fun _ _ => rho)) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate m n
+      A B C X (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (rectMatMul U (rectMatMul RhatS (matTranspose V)))
+      (fun _ _ => rho) Pinv PinvAbs hX hLeft hPinvAbs
+      (sylvesterComputedResidualBudget_of_schur_frobenius_error_model
+        m n U R A V S B C Y RhatS dR rho
+        hU hV hA hB hRhatS hrho hdR)
+      hXhat
+
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
     denominator-free conservative practical max-entry bound from a
     Schur-coordinate Frobenius residual bound. -/
 theorem sylvester_practical_abs_error_bound_of_schur_transform_residual_bound
@@ -3976,6 +4152,26 @@ theorem sylvester_practical_abs_error_bound_of_schur_transform_residual_bound_sc
     for the conservative practical wrapper from a Schur residual bound. -/
 alias H16_eq16_29_sylvester_practical_error_bound_of_schur_transform_residual_bound :=
   sylvester_practical_error_bound_of_schur_transform_residual_bound
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered alias
+    for the scalar-cap conservative Schur residual practical wrapper. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schur_transform_residual_bound_scalar :=
+  sylvester_practical_error_bound_of_schur_transform_residual_bound_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered alias
+    for the monotone conservative Schur residual practical wrapper. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schur_transform_residual_bound_mono :=
+  sylvester_practical_error_bound_of_schur_transform_residual_bound_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered alias
+    for the monotone scalar-cap conservative Schur residual practical wrapper. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schur_transform_residual_bound_mono_scalar :=
+  sylvester_practical_error_bound_of_schur_transform_residual_bound_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered alias
+    for the Schur-coordinate Frobenius residual-error practical wrapper. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_schur_frobenius_error_model :=
+  sylvester_practical_error_bound_of_schur_frobenius_error_model
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered alias
     for the denominator-free conservative Schur residual practical wrapper. -/
