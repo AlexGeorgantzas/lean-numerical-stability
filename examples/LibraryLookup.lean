@@ -13740,6 +13740,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_16_fosterBandIdx_hat
 #check higham9_16_fosterPStar_scale
 #check higham9_16_fosterBandValue_hat_compose
+#check higham9_16_pow_sub_pow_ge
+#check higham9_16_phi_strictMono
+#check higham9_16_phi_le_peak
+#check higham9_16_le_fosterPStar_iff
+#check higham9_16_fosterPStar_ge_tail_iff
 #check higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowth_le
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowthValue_le
