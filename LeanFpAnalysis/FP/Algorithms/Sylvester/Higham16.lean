@@ -7363,4 +7363,9 @@ theorem riccatiResidual_zero_iff_solution (m n : Nat)
     intro h i j
     exact h i j
 
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.32): source-numbered alias
+    for the zero-residual characterization of the algebraic Riccati form. -/
+alias H16_eq16_32_riccatiResidual_zero_iff_solution :=
+  riccatiResidual_zero_iff_solution
+
 end LeanFpAnalysis.FP
