@@ -962,6 +962,33 @@ abbrev higham11_7_TridiagonalLeadingBlockSupport (m offset : ℕ)
     (E : Fin m → Fin m → ℝ) : Prop :=
   TridiagonalLeadingBlockSupport m offset E
 
+/-- **Theorem 11.7 recursive base support package**, giving the zero
+perturbation with any zero-prefix support and any nonnegative componentwise
+bound. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_zero_bound
+    (m offset : ℕ) (β : ℝ) (hβ : 0 ≤ β) :
+    ∃ Z : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |Z i j| ≤ β) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset Z ∧
+      (∀ i j : Fin m, Z i j = 0) :=
+  tridiagonalLeadingBlockSupport_zero_bound m offset β hβ
+
+/-- **Theorem 11.7 recursive support-add combiner**, accumulating two
+zero-prefix supported perturbations at an arbitrary recursive offset while
+adding their componentwise bounds. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_add_bound
+    (m offset : ℕ) (E F : Fin m → Fin m → ℝ) (βE βF : ℝ)
+    (hEbound : ∀ i j : Fin m, |E i j| ≤ βE)
+    (hFbound : ∀ i j : Fin m, |F i j| ≤ βF)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m offset E)
+    (hFsupp : higham11_7_TridiagonalLeadingBlockSupport m offset F) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ βE + βF) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = E i j + F i j) :=
+  tridiagonalLeadingBlockSupport_add_bound m offset E F βE βF
+    hEbound hFbound hEsupp hFsupp
+
 /-- Supported perturbations in the trailing block after a leading `2 × 2`
 tridiagonal pivot are closed under addition, and their componentwise bounds add. -/
 theorem higham11_7_tridiagonalTwoByTwoTrailingBlockSupport_add_bound
