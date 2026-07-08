@@ -10445,6 +10445,169 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_completed_entry
       hphi hgamma hmfp herr hrows hAcompleted hbcompleted hAactive hbactive
       hcert.deltaA_bound hcert.deltab_bound
 
+/-- Theorem 20.7 support: signed-stage exact same-reflector matrix completion
+    growth from row-sorted active-tail bounds against the compact-active
+    horizon. -/
+theorem theorem20_7_signed_stage_exact_completionA_bound_of_row_sorting_active_tail_stage_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (alpha : ℕ → ℝ) (err : ℝ)
+    (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) (Fin.mk t ht))
+    (hAactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val → ∀ j : Fin n,
+        k ≤ j.val →
+          |Astage k r j| ≤
+            theorem20_7_compactActiveHorizon fp m err k *
+              theorem20_7_initialRowMax hn A r)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      |matMulVec m
+          (householder m
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val))
+          (fun r => Astage i.val r j) i| ≤
+        H19.Theorem19_6.active_row_growth_factor m *
+          (theorem20_7_compactActiveHorizon fp m err i.val *
+            theorem20_7_initialRowMax hn A i) := by
+  have hB :
+      ∀ i : Fin m,
+        0 ≤ theorem20_7_compactActiveHorizon fp m err i.val *
+          theorem20_7_initialRowMax hn A i := by
+    intro i
+    exact
+      mul_nonneg
+        (theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp herr)
+        (theorem20_7_initialRowMax_nonneg hn A i)
+  refine
+    theorem20_7_signed_stage_exact_completionA_bound_of_active_stage_bounds_nat
+      hnm Astage alpha
+      (fun i =>
+        theorem20_7_compactActiveHorizon fp m err i.val *
+          theorem20_7_initialRowMax hn A i)
+      hAlphaDef htrailingPos hpivotMax hB ?_ ?_
+  · intro i hi l hil
+    have hit : i.val < n := by omega
+    exact hAactive i i.val hit (le_refl i.val) l hil
+  · intro i hi r hir j hij
+    have hit : i.val < n := by omega
+    have hpivot :
+        (⟨i.val, lt_of_lt_of_le hit hnm⟩ : Fin m) = i := by
+      exact Fin.ext rfl
+    have hscale :
+        theorem20_7_initialRowMax hn A r ≤
+          theorem20_7_initialRowMax hn A i := by
+      simpa [hpivot] using hAsorted i.val hit r hir
+    calc
+      |Astage i.val r j|
+          ≤ theorem20_7_compactActiveHorizon fp m err i.val *
+              theorem20_7_initialRowMax hn A r :=
+          hAactive r i.val hit hir j hij
+      _ ≤ theorem20_7_compactActiveHorizon fp m err i.val *
+              theorem20_7_initialRowMax hn A i :=
+          mul_le_mul_of_nonneg_left hscale
+            (theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp
+              herr)
+
+/-- Theorem 20.7 support: signed-stage exact same-reflector RHS completion
+    growth from row-sorted active RHS bounds against the compact-active
+    horizon. -/
+theorem theorem20_7_signed_stage_exact_completionB_bound_of_row_sorting_active_stage_compactActiveHorizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (bstage : ℕ → Fin m → ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) (phi err : ℝ)
+    (hphi : 0 ≤ phi) (hmfp : gammaValid fp m) (herr : 0 ≤ err)
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Astage t a (Fin.mk t ht))))
+          (Astage t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Astage t a (Fin.mk t ht)))
+    (hbactive :
+      ∀ r : Fin m, ∀ k : ℕ, k < n → k ≤ r.val →
+        |bstage k r| ≤
+          theorem20_7_compactActiveHorizon fp m err k *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn A b phi s ≤
+          theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩) :
+    ∀ i : Fin m, i.val + 1 < n →
+      |matMulVec m
+          (householder m
+            (storedQRSignedStageVector hnm Astage alpha i.val)
+            (storedQRSignedStageBeta hnm Astage alpha i.val))
+          (bstage i.val) i| ≤
+        H19.Theorem19_6.active_row_growth_factor m *
+          (theorem20_7_compactActiveHorizon fp m err i.val *
+            theorem20_7_initialWeightedRowMax hn A b phi i) := by
+  have hB :
+      ∀ i : Fin m,
+        0 ≤ theorem20_7_compactActiveHorizon fp m err i.val *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+    intro i
+    exact
+      mul_nonneg
+        (theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp herr)
+        (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i)
+  refine
+    theorem20_7_signed_stage_exact_completionB_bound_of_active_stage_bounds_nat
+      hnm Astage bstage alpha
+      (fun i =>
+        theorem20_7_compactActiveHorizon fp m err i.val *
+          theorem20_7_initialWeightedRowMax hn A b phi i)
+      hAlphaDef htrailingPos hB ?_
+  intro i hi r hir
+  have hit : i.val < n := by omega
+  have hpivot :
+      (⟨i.val, lt_of_lt_of_le hit hnm⟩ : Fin m) = i := by
+    exact Fin.ext rfl
+  have hscale :
+      theorem20_7_initialWeightedRowMax hn A b phi r ≤
+        theorem20_7_initialWeightedRowMax hn A b phi i := by
+    simpa [hpivot] using hbsorted i.val hit r hir
+  calc
+    |bstage i.val r|
+        ≤ theorem20_7_compactActiveHorizon fp m err i.val *
+            theorem20_7_initialWeightedRowMax hn A b phi r :=
+        hbactive r i.val hit hir
+    _ ≤ theorem20_7_compactActiveHorizon fp m err i.val *
+            theorem20_7_initialWeightedRowMax hn A b phi i :=
+        mul_le_mul_of_nonneg_left hscale
+          (theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp
+            herr)
+
 /-- The current compact active-step factor cannot be absorbed into the printed
     Cox--Higham rowwise factor in general.
 
