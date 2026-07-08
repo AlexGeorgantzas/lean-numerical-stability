@@ -18549,6 +18549,181 @@ theorem theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimi
       hred (by simpa [lsResidualHigham] using hs)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    an exact LSE minimizer induces an exact unconstrained least-squares
+    minimizer in any supplied coordinate basis for homogeneous feasible
+    directions. -/
+theorem IsLSEMinimizer.reduced_nullspace_minimizer {m n p q : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x : Fin n → ℝ) (N : Fin n → Fin q → ℝ)
+    (hmin : IsLSEMinimizer A b B d x)
+    (hN : rectMatMul B N = (fun _i : Fin p => fun _j : Fin q => 0)) :
+    IsLeastSquaresMinimizer (rectMatMul A N) (lsResidualHigham A b x)
+      (0 : Fin q → ℝ) := by
+  intro z
+  let candidate : Fin n → ℝ := fun j => x j + rectMatMulVec N z j
+  have hNz : rectMatMulVec B (rectMatMulVec N z) =
+      (fun _i : Fin p => 0) := by
+    rw [← rectMatMulVec_rectMatMul B N z, hN]
+    ext i
+    simp [rectMatMulVec]
+  have hfeas : LSEFeasible B d candidate := by
+    intro i
+    have hzi := congrFun hNz i
+    change rectMatMulVec B (fun j => x j + rectMatMulVec N z j) i = d i
+    rw [rectMatMulVec_add]
+    change rectMatMulVec B x i +
+        rectMatMulVec B (rectMatMulVec N z) i = d i
+    rw [hmin.1 i, hzi]
+    simp
+  have hle : lsObjective A b x ≤ lsObjective A b candidate :=
+    hmin.2 candidate hfeas
+  have hobj0 :
+      lsObjective (rectMatMul A N) (lsResidualHigham A b x)
+          (0 : Fin q → ℝ) =
+        lsObjective A b x := by
+    unfold lsObjective lsResidual lsResidualHigham
+    apply congrArg vecNorm2Sq
+    ext i
+    simp [rectMatMulVec]
+  have hobjz :
+      lsObjective A b candidate =
+        lsObjective (rectMatMul A N) (lsResidualHigham A b x) z := by
+    unfold lsObjective lsResidual lsResidualHigham
+    apply congrArg vecNorm2Sq
+    ext i
+    rw [rectMatMulVec_add, rectMatMulVec_rectMatMul]
+    ring
+  calc
+    lsObjective (rectMatMul A N) (lsResidualHigham A b x)
+        (0 : Fin q → ℝ) = lsObjective A b x := hobj0
+    _ ≤ lsObjective A b candidate := hle
+    _ = lsObjective (rectMatMul A N) (lsResidualHigham A b x) z := hobjz
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    Wedin residual-side bound for source and perturbed LSE problems after
+    reducing each problem to supplied homogeneous-nullspace coordinates.
+
+This is a reduced-coordinate bridge for the Eldén--Cox--Higham route.  It
+uses exact optimality of the source and perturbed constrained problems to
+obtain the two reduced least-squares minimizers, then applies the minimizer
+form of Wedin's Theorem 20.1 residual estimate. -/
+theorem theorem20_8_nullspace_reduced_wedinResidualRHS_le_of_lse_minimizers
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ) (r s : Fin m → ℝ)
+    {delta AredPlus_norm DeltaAred_norm Deltabred_norm kappa eps Ared_norm : ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hr : r = lsResidualHigham A b x)
+    (hs : s = lsResidualHigham
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i) y)
+    (hrpos : 0 < vecNorm2 r)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hAred_norm_nonneg : 0 ≤ Ared_norm)
+    (heps_nonneg : 0 ≤ eps)
+    (hkappa : kappa = AredPlus_norm * Ared_norm)
+    (hdelta : delta = eps * Ared_norm)
+    (hsmall : kappa * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) delta)
+    (hDeltaAred :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) DeltaAred_norm)
+    (hDeltabred : vecNorm2 (fun i => s i - r i) ≤ Deltabred_norm)
+    (hDeltaAred_norm_budget : DeltaAred_norm ≤ eps * Ared_norm)
+    (hDeltabred_norm_budget : Deltabred_norm ≤ eps * vecNorm2 r)
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus)) :
+    vecNorm2 (fun i => r i - s i) / vecNorm2 r ≤
+      wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+  let Ared : Fin m → Fin (k + 1) → ℝ := rectMatMul A N
+  let Bred : Fin m → Fin (k + 1) → ℝ :=
+    rectMatMul (fun i j => A i j + DeltaA i j) Npert
+  let DeltaAred : Fin m → Fin (k + 1) → ℝ :=
+    fun i j => Bred i j - Ared i j
+  have hxred :
+      IsLeastSquaresMinimizer Ared r (0 : Fin (k + 1) → ℝ) := by
+    have hraw :
+        IsLeastSquaresMinimizer (rectMatMul A N) (lsResidualHigham A b x)
+          (0 : Fin (k + 1) → ℝ) :=
+      IsLSEMinimizer.reduced_nullspace_minimizer A b B d x N hx hN
+    simpa [Ared, hr] using hraw
+  have hyred_s :
+      IsLeastSquaresMinimizer Bred s (0 : Fin (k + 1) → ℝ) := by
+    have hraw :
+        IsLeastSquaresMinimizer
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+          (lsResidualHigham (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i) y)
+          (0 : Fin (k + 1) → ℝ) :=
+      IsLSEMinimizer.reduced_nullspace_minimizer
+        (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) (fun i => d i + Deltad i)
+        y Npert hy hNpert
+    simpa [Bred, hs] using hraw
+  have hyred :
+      IsLeastSquaresMinimizer Bred (fun i => r i + (s i - r i))
+        (0 : Fin (k + 1) → ℝ) := by
+    have hbrhs : (fun i : Fin m => r i + (s i - r i)) = s := by
+      ext i
+      ring
+    simpa [hbrhs] using hyred_s
+  have hBred_eq : Bred = fun i j => Ared i j + DeltaAred i j := by
+    ext i j
+    simp [DeltaAred]
+  have hrRed :
+      r = fun i => r i - rectMatMulVec Ared (0 : Fin (k + 1) → ℝ) i := by
+    ext i
+    simp [rectMatMulVec]
+  have hsRed :
+      s =
+        fun i =>
+          (r i + (s i - r i)) -
+            rectMatMulVec Bred (0 : Fin (k + 1) → ℝ) i := by
+    ext i
+    simp [rectMatMulVec]
+  exact
+    IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_min_surface_geometry_source_minimizer
+      hm Ared Bred AredPlus BredPlus DeltaAred r (fun i => s i - r i) r s
+      (0 : Fin (k + 1) → ℝ) (0 : Fin (k + 1) → ℝ)
+      hxred hyred hrpos hAredPlus_pos hAred_norm_nonneg heps_nonneg
+      hkappa hdelta hsmall hAredPlus
+      (by simpa [Ared, Bred, DeltaAred] using hDelta)
+      (by simpa [Ared, Bred, DeltaAred] using hDeltaAred)
+      hDeltabred hDeltaAred_norm_budget hDeltabred_norm_budget
+      (by simpa [Ared] using hleftA)
+      (by simpa [Bred] using hleftB)
+      (by simpa [Ared] using hSymA)
+      (by simpa [Bred] using hSymB)
+      hBred_eq hrRed hsRed
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     applying `P = I - B^+B` to a vector with a known constraint residual
     subtracts the supplied `B^+` correction. -/
 theorem theorem20_8Projection_apply_of_constraint {p n : ℕ}
