@@ -1397,6 +1397,59 @@ theorem higham11_7_tridiagonal_backward_error_interface (n : ℕ)
       (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
   hsolve
 
+/-- **Theorem 11.7 solve-side bridge**, filling the factorization-side
+perturbation with zero once the solve-side perturbation `DeltaA2` has been
+constructed.  This connects the recursive tridiagonal solve perturbation
+assembly to the source-facing `higham11_7_tridiagonal_backward_error_interface`
+shape. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_solve_delta
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (c u Amax : ℝ) (hβ : 0 ≤ c * u * Amax)
+    (hsolve : ∃ ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ c * u * Amax) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  obtain ⟨ΔA1, hΔA1, _hΔA1supp, _hΔA1zero⟩ :=
+    higham11_7_tridiagonalLeadingBlockSupport_zero_bound n 0
+      (c * u * Amax) hβ
+  obtain ⟨ΔA2, hΔA2, hsolve_eq⟩ := hsolve
+  exact higham11_7_tridiagonal_backward_error_interface n A b x_hat c u Amax
+    ⟨ΔA1, ΔA2, hΔA1, hΔA2, hsolve_eq⟩
+
+/-- **Theorem 11.7 solve-side bridge, nonnegative printed budget**, a
+convenience form of
+`higham11_7_tridiagonal_backward_error_interface_of_solve_delta` when the
+printed coefficient, unit roundoff, and matrix budget are separately
+nonnegative. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_solve_delta_nonneg
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (c u Amax : ℝ) (hc : 0 ≤ c) (hu : 0 ≤ u) (hAmax : 0 ≤ Amax)
+    (hsolve : ∃ ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ c * u * Amax) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ c * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_solve_delta n A b x_hat
+    c u Amax (mul_nonneg (mul_nonneg hc hu) hAmax) hsolve
+
+/-- **Theorem 11.7 entrywise norm bridge**, every matrix entry is bounded by
+the infinity norm through its row sum.  This is the bridge from local scalar
+tridiagonal hypotheses such as `|b| ≤ Amax` and `|c| ≤ Amax` to the final
+`Amax = ||A||_∞` budget. -/
+theorem higham11_7_abs_entry_le_infNorm (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (i j : Fin n) :
+    |A i j| ≤ infNorm A := by
+  calc
+    |A i j| ≤ ∑ k : Fin n, |A i k| := by
+      exact Finset.single_le_sum (fun k _ => abs_nonneg (A i k))
+        (Finset.mem_univ j)
+    _ ≤ infNorm A := row_sum_le_infNorm A i
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
