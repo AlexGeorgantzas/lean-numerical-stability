@@ -323,6 +323,52 @@ theorem theorem20_7_denominators_pos_of_rows_nonzero {m n : ℕ}
       theorem20_7_initialWeightedRowMax_pos_of_exists_entry_ne_zero
         hn A b hphi i (hrows i)
 
+/-- Theorem 20.7 row-scale bridge: an explicit source-row ratio bound
+    discharges the `sqrt(m)` domination hypothesis used by the Chapter 19
+    accumulated-error transfer for the unweighted row normalizer. -/
+theorem theorem20_7_initialRowMax_sqrt_domination_of_ratio_le_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hratio :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A
+            ⟨k, lt_of_lt_of_le hk hnm⟩ /
+          theorem20_7_initialRowMax hn A r ≤ Real.sqrt (m : ℝ)) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+      theorem20_7_initialRowMax hn A
+          ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+        Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r := by
+  intro k hk r hkr
+  have hden : 0 < theorem20_7_initialRowMax hn A r :=
+    theorem20_7_initialRowMax_pos_of_exists_entry_ne_zero hn A r (hrows r)
+  exact (div_le_iff₀ hden).mp (hratio k hk r hkr)
+
+/-- Theorem 20.7 row-scale bridge: an explicit weighted source-row ratio
+    bound discharges the `sqrt(m)` domination hypothesis used by the Chapter 19
+    accumulated-error transfer for `max(phi * max_j |a_ij|, |b_i|)`. -/
+theorem theorem20_7_initialWeightedRowMax_sqrt_domination_of_ratio_le_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (hphi : 0 < phi)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hratio :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ /
+          theorem20_7_initialWeightedRowMax hn A b phi r ≤
+            Real.sqrt (m : ℝ)) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+      theorem20_7_initialWeightedRowMax hn A b phi
+          ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+        Real.sqrt (m : ℝ) *
+          theorem20_7_initialWeightedRowMax hn A b phi r := by
+  intro k hk r hkr
+  have hden : 0 < theorem20_7_initialWeightedRowMax hn A b phi r :=
+    theorem20_7_initialWeightedRowMax_pos_of_exists_entry_ne_zero
+      hn A b hphi r (hrows r)
+  exact (div_le_iff₀ hden).mp (hratio k hk r hkr)
+
 /-- The additive-error accumulator used by the Chapter 19 row-wise QR bridge
     vanishes when every step budget is zero. -/
 theorem theorem20_7_scalarAffineGrowthBudget_zero_stepBudget
