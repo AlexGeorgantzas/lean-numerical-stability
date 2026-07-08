@@ -4690,6 +4690,57 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_fac
       m n R S pmap p q hmono hcard hzero hpq_adj hsame hspectral
       (by simpa [Matrix.of_apply] using hnoRS)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): automatic
+    real-quasi-Schur factor package for active `B`-side two-column blocks.
+    Under original-coordinate no-common-complex-right-eigenvalue separation,
+    the constructed real quasi-Schur factors carry enough spectral data to
+    prove both the adjacent block shape and determinant nonsingularity for
+    every adjacent same-labelled `B` block.  This packages the exact
+    block-determinant production used by the Bartels-Stewart traversal; it
+    does not model rounded Schur solves or any estimator. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_no_common_complex_right_eigenvalue
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (hno :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A) (realMatrixToComplex B)) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB ∧
+      (∀ p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsAdjacentQuasiTriangularBlockFn n S p q ∧
+          Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n R S p q) = 0)) := by
+  obtain ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero, hAspectral,
+    hpBmono, hpBcard, hSzero, hBspectral, _hiff⟩ :=
+    sylvester_realQuasiSchur_transform_solution_iff_twoBlockSpectral
+      m n A B (0 : RMatFn m n) (0 : RMatFn m n)
+  refine ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero, hAspectral,
+    hpBmono, hpBcard, hSzero, hBspectral, ?_⟩
+  intro p q hpq hsame
+  exact
+    sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+      m n U R A V S B pB p q hU hV hA hB hpBmono hpBcard hSzero
+      hpq hsame hBspectral hno
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-numbered
+    alias for the automatic real-quasi-Schur active-block determinant package
+    under no-common complex spectrum. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_no_common_complex_right_eigenvalue :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_no_common_complex_right_eigenvalue
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     determinant-shaped complex-separation route from a negative real
     discriminant: `sqrt (-disc)` supplies the complex root and no-real-line
