@@ -2873,6 +2873,98 @@ theorem theorem20_7_vecNorm2_le_sqrt_card_mul_scale_of_abs_le
       vecNorm2_le_sqrt_card_mul_of_abs_le x hB hentry
     _ = (Real.sqrt (m : ℝ) * C) * S := by ring
 
+/-- Theorem 20.7 support: the concrete stored signed-stage Householder vector
+    has the zero prefix expected of the active trailing reflector. -/
+theorem theorem20_7_storedQRSignedStageVector_zero_prefix_nat
+    {m n : ℕ} (hnm : n ≤ m)
+    (Ahat : ℕ → Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    {t : ℕ} (ht : t < n) :
+    ∀ r : Fin m, r.val < t →
+      storedQRSignedStageVector hnm Ahat alpha t r = 0 := by
+  intro r hr
+  simpa [storedQRSignedStageVector, ht] using
+    householderTrailingActiveVector_zero_prefix m
+      ⟨t, lt_of_lt_of_le ht hnm⟩
+      (fun a => Ahat t a ⟨t, ht⟩) (alpha t) r hr
+
+/-- Theorem 20.7 support: active-tail entry bounds control the norm of the
+    trailing part of a vector.
+
+This is the active-tail analogue of
+`theorem20_7_vecNorm2_le_sqrt_card_mul_scale_of_abs_le`: entries above the
+pivot are zeroed by `householderTrailingPart`, so callers only need bounds on
+rows `p.val <= r.val`. -/
+theorem theorem20_7_vecNorm2_trailingPart_le_sqrt_card_mul_scale_of_active_abs_le
+    {m : ℕ} (p : Fin m) (x : Fin m → ℝ) {C S : ℝ}
+    (hC : 0 ≤ C) (hS : 0 ≤ S)
+    (hentry : ∀ r : Fin m, p.val ≤ r.val → |x r| ≤ C * S) :
+    vecNorm2 (householderTrailingPart m p x) ≤
+      (Real.sqrt (m : ℝ) * C) * S := by
+  refine
+    theorem20_7_vecNorm2_le_sqrt_card_mul_scale_of_abs_le
+      (householderTrailingPart m p x) hC hS ?_
+  intro r
+  by_cases hr : r.val < p.val
+  · have hnonneg : 0 ≤ C * S := mul_nonneg hC hS
+    simpa [householderTrailingPart, hr] using hnonneg
+  · exact
+      (by
+        simpa [householderTrailingPart, hr] using
+          hentry r (Nat.le_of_not_gt hr))
+
+/-- Theorem 20.7 support: a zero-prefix reflector sees only the active
+    trailing part of the updated vector in a single active component budget.
+
+The compact component budget depends on the absolute dot-product budget and the
+local updated entry.  If the reflector has zero prefix and the requested
+component lies in the active tail, replacing the input by
+`householderTrailingPart` leaves that component budget unchanged. -/
+theorem theorem20_7_householderCompactComponentBudget_eq_trailingPart_of_zero_prefix
+    (fp : FPModel) (n : ℕ) (p : Fin n)
+    (v : Fin n → ℝ) (beta : ℝ) (b : Fin n → ℝ) (i : Fin n)
+    (hprefix : ∀ r : Fin n, r.val < p.val → v r = 0)
+    (hi : p.val ≤ i.val) :
+    householderCompactComponentBudget fp n v beta b i =
+      householderCompactComponentBudget fp n v beta
+        (householderTrailingPart n p b) i := by
+  have hS :
+      householderAbsDotBudget n v b =
+        householderAbsDotBudget n v (householderTrailingPart n p b) := by
+    unfold householderAbsDotBudget
+    refine Finset.sum_congr rfl ?_
+    intro r _
+    by_cases hr : r.val < p.val
+    · have hv : v r = 0 := hprefix r hr
+      simp [householderTrailingPart, hr, hv]
+    · simp [householderTrailingPart, hr]
+  have hbi : householderTrailingPart n p b i = b i := by
+    have hnot : ¬ i.val < p.val := Nat.not_lt.mpr hi
+    simp [householderTrailingPart, hnot]
+  simp [householderCompactComponentBudget, hS, hbi]
+
+/-- Theorem 20.7 support: a zero-prefix reflector bounds a single active
+    component by the compact norm-budget coefficient times the active-tail
+    input norm.
+
+This removes the too-strong full-column norm requirement from the weighted-LS
+completion route: prefix rows do not contribute to the compact Householder
+budget when the stage reflector is a trailing active vector. -/
+theorem theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_trailingPart_vecNorm2
+    (fp : FPModel) (n : ℕ) (p : Fin n)
+    (v : Fin n → ℝ) (beta : ℝ) (b : Fin n → ℝ)
+    (hn : gammaValid fp n) (i : Fin n)
+    (hprefix : ∀ r : Fin n, r.val < p.val → v r = 0)
+    (hi : p.val ≤ i.val) :
+    householderCompactComponentBudget fp n v beta b i ≤
+      householderCompactNormBudgetCoeff fp n v beta *
+        vecNorm2 (householderTrailingPart n p b) := by
+  rw [
+    theorem20_7_householderCompactComponentBudget_eq_trailingPart_of_zero_prefix
+      fp n p v beta b i hprefix hi]
+  exact
+    theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_vecNorm2
+      fp n v beta (householderTrailingPart n p b) hn i
+
 /-- Theorem 20.7 support: matrix completion-budget domination from entrywise
     column bounds and a scalar norm-coefficient slack comparison.
 
@@ -3029,6 +3121,205 @@ theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_entry_slack_na
           (storedQRSignedStageBeta hnm Ahat alpha i.val) *
         vecNorm2 (bhat i.val)
       ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          ((Real.sqrt (m : ℝ) * C i.val) *
+            theorem20_7_initialWeightedRowMax hn A b phi i) :=
+        mul_le_mul_of_nonneg_left hnorm hcoeff_nonneg
+    _ = (householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          (Real.sqrt (m : ℝ) * C i.val)) *
+            theorem20_7_initialWeightedRowMax hn A b phi i := by ring
+    _ ≤ slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
+        mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: matrix completion-budget domination from active-tail
+    entrywise column bounds and a scalar compact-coefficient slack comparison.
+
+Unlike
+`theorem20_7_completionA_budget_of_signed_stage_norm_coeff_entry_slack_nat`,
+this adapter only asks for entry bounds on rows in the active tail of the
+stored Householder stage.  Prefix rows are removed by
+`householderTrailingPart` and the zero-prefix stored-stage reflector. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_norm_coeff_active_entry_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (err : ℝ) (C slack : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        ∀ r : Fin m, i.val ≤ r.val →
+          |Ahat i.val r j| ≤ C i.val * theorem20_7_initialRowMax hn A i)
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialRowMax hn A i := by
+  refine
+    theorem20_7_completionA_budget_of_signed_stage_component_slack_nat
+      hn hnm fp Ahat A alpha err slack ?_ hslack
+  intro i hi j hij
+  have ht : i.val < n := by omega
+  have hrow_nonneg : 0 ≤ theorem20_7_initialRowMax hn A i :=
+    theorem20_7_initialRowMax_nonneg hn A i
+  have hprefix :
+      ∀ r : Fin m, r.val < i.val →
+        storedQRSignedStageVector hnm Ahat alpha i.val r = 0 :=
+    theorem20_7_storedQRSignedStageVector_zero_prefix_nat
+      hnm Ahat alpha ht
+  have hcoeff_nonneg :
+      0 ≤ householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) :=
+    householderCompactNormBudgetCoeff_nonneg fp m
+      (storedQRSignedStageVector hnm Ahat alpha i.val)
+      (storedQRSignedStageBeta hnm Ahat alpha i.val) hm
+  have hnorm :
+      vecNorm2
+          (householderTrailingPart m i (fun r : Fin m => Ahat i.val r j)) ≤
+        (Real.sqrt (m : ℝ) * C i.val) *
+          theorem20_7_initialRowMax hn A i :=
+    theorem20_7_vecNorm2_trailingPart_le_sqrt_card_mul_scale_of_active_abs_le
+      i (fun r : Fin m => Ahat i.val r j) (hC i hi) hrow_nonneg
+      (fun r hr => hentry i hi j hij r hr)
+  calc
+    householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (fun r => Ahat i.val r j) i
+      ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          vecNorm2
+            (householderTrailingPart m i
+              (fun r : Fin m => Ahat i.val r j)) :=
+        theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_trailingPart_vecNorm2
+          fp m i
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (fun r : Fin m => Ahat i.val r j) hm i hprefix le_rfl
+    _ ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          ((Real.sqrt (m : ℝ) * C i.val) *
+            theorem20_7_initialRowMax hn A i) :=
+        mul_le_mul_of_nonneg_left hnorm hcoeff_nonneg
+    _ = (householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          (Real.sqrt (m : ℝ) * C i.val)) *
+            theorem20_7_initialRowMax hn A i := by ring
+    _ ≤ slack i.val * theorem20_7_initialRowMax hn A i :=
+        mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: RHS completion-budget domination from active-tail
+    RHS entry bounds and a scalar compact-coefficient slack comparison. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_active_entry_slack_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (err : ℝ) (C slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi) (hm : gammaValid fp m)
+    (hC : ∀ i : Fin m, i.val + 1 < n → 0 ≤ C i.val)
+    (hentry :
+      ∀ i : Fin m, i.val + 1 < n → ∀ r : Fin m, i.val ≤ r.val →
+        |bhat i.val r| ≤
+          C i.val * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hcoeffSlack :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactNormBudgetCoeff fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+            (Real.sqrt (m : ℝ) * C i.val) ≤
+          slack i.val)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              (Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) +
+            slack i.val ≤
+          Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            ((Real.sqrt (m : ℝ) *
+                  H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+              theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  refine
+    theorem20_7_completionB_budget_of_signed_stage_component_slack_nat
+      hn hnm fp Ahat bhat A b alpha err slack hphi ?_ hslack
+  intro i hi
+  have ht : i.val < n := by omega
+  have hrow_nonneg :
+      0 ≤ theorem20_7_initialWeightedRowMax hn A b phi i :=
+    theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i
+  have hprefix :
+      ∀ r : Fin m, r.val < i.val →
+        storedQRSignedStageVector hnm Ahat alpha i.val r = 0 :=
+    theorem20_7_storedQRSignedStageVector_zero_prefix_nat
+      hnm Ahat alpha ht
+  have hcoeff_nonneg :
+      0 ≤ householderCompactNormBudgetCoeff fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val) :=
+    householderCompactNormBudgetCoeff_nonneg fp m
+      (storedQRSignedStageVector hnm Ahat alpha i.val)
+      (storedQRSignedStageBeta hnm Ahat alpha i.val) hm
+  have hnorm :
+      vecNorm2 (householderTrailingPart m i (bhat i.val)) ≤
+        (Real.sqrt (m : ℝ) * C i.val) *
+          theorem20_7_initialWeightedRowMax hn A b phi i :=
+    theorem20_7_vecNorm2_trailingPart_le_sqrt_card_mul_scale_of_active_abs_le
+      i (bhat i.val) (hC i hi) hrow_nonneg
+      (fun r hr => hentry i hi r hr)
+  calc
+    householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (bhat i.val) i
+      ≤ householderCompactNormBudgetCoeff fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val) *
+          vecNorm2 (householderTrailingPart m i (bhat i.val)) :=
+        theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_trailingPart_vecNorm2
+          fp m i
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (bhat i.val) hm i hprefix le_rfl
+    _ ≤ householderCompactNormBudgetCoeff fp m
             (storedQRSignedStageVector hnm Ahat alpha i.val)
             (storedQRSignedStageBeta hnm Ahat alpha i.val) *
           ((Real.sqrt (m : ℝ) * C i.val) *
