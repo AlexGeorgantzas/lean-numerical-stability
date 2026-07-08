@@ -2712,6 +2712,115 @@ theorem theorem20_7_completionB_budget_of_signed_stage_component_slack_nat
           theorem20_7_initialWeightedRowMax hn A b phi i :=
           mul_le_mul_of_nonneg_right (hslack i hi) hrow_nonneg
 
+/-- Theorem 20.7 support: source-row-scale compact-budget domination for the
+    matrix completion step from an abstract scalar horizon recurrence.
+
+This generic form lets the weighted-LS completion route use a horizon larger
+than the printed rowwise factor once the corresponding one-step scalar
+recurrence has been proved. -/
+theorem theorem20_7_completionA_budget_of_signed_stage_component_slack_horizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (A : Fin m → Fin n → ℝ) (alpha : ℕ → ℝ)
+    (horizon slack : ℕ → ℝ)
+    (hcompact :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val)
+              (fun r => Ahat i.val r j) i ≤
+          slack i.val * theorem20_7_initialRowMax hn A i)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val ≤
+          horizon (i.val + 1)) :
+    ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (horizon i.val * theorem20_7_initialRowMax hn A i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (fun r => Ahat i.val r j) i ≤
+        horizon (i.val + 1) * theorem20_7_initialRowMax hn A i := by
+  intro i hi j hij
+  have hrow_nonneg : 0 ≤ theorem20_7_initialRowMax hn A i :=
+    theorem20_7_initialRowMax_nonneg hn A i
+  calc
+    H19.Theorem19_6.active_row_growth_factor m *
+          (horizon i.val * theorem20_7_initialRowMax hn A i) +
+        householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (fun r => Ahat i.val r j) i
+        ≤ H19.Theorem19_6.active_row_growth_factor m *
+              (horizon i.val * theorem20_7_initialRowMax hn A i) +
+            slack i.val * theorem20_7_initialRowMax hn A i :=
+          add_le_add le_rfl (hcompact i hi j hij)
+    _ = (H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val) *
+          theorem20_7_initialRowMax hn A i := by
+          ring
+    _ ≤ horizon (i.val + 1) * theorem20_7_initialRowMax hn A i :=
+          mul_le_mul_of_nonneg_right (hslack i hi) hrow_nonneg
+
+/-- Theorem 20.7 support: weighted source-row-scale compact-budget domination
+    for the RHS completion step from an abstract scalar horizon recurrence.
+
+This is the right-hand-side analogue of
+`theorem20_7_completionA_budget_of_signed_stage_component_slack_horizon_nat`,
+using the weighted row scale `max(phi * max_j |a_ij|, |b_i|)`. -/
+theorem theorem20_7_completionB_budget_of_signed_stage_component_slack_horizon_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (Ahat : ℕ → Fin m → Fin n → ℝ)
+    (bhat : ℕ → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (alpha : ℕ → ℝ) {phi : ℝ}
+    (horizon slack : ℕ → ℝ)
+    (hphi : 0 ≤ phi)
+    (hcompact :
+      ∀ i : Fin m, i.val + 1 < n →
+        householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val)
+              (bhat i.val) i ≤
+          slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hslack :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val ≤
+          horizon (i.val + 1)) :
+    ∀ i : Fin m, i.val + 1 < n →
+      H19.Theorem19_6.active_row_growth_factor m *
+            (horizon i.val * theorem20_7_initialWeightedRowMax hn A b phi i) +
+          householderCompactComponentBudget fp m
+            (storedQRSignedStageVector hnm Ahat alpha i.val)
+            (storedQRSignedStageBeta hnm Ahat alpha i.val)
+            (bhat i.val) i ≤
+        horizon (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+  intro i hi
+  have hrow_nonneg :
+      0 ≤ theorem20_7_initialWeightedRowMax hn A b phi i :=
+    theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i
+  calc
+    H19.Theorem19_6.active_row_growth_factor m *
+          (horizon i.val * theorem20_7_initialWeightedRowMax hn A b phi i) +
+        householderCompactComponentBudget fp m
+          (storedQRSignedStageVector hnm Ahat alpha i.val)
+          (storedQRSignedStageBeta hnm Ahat alpha i.val)
+          (bhat i.val) i
+        ≤ H19.Theorem19_6.active_row_growth_factor m *
+              (horizon i.val * theorem20_7_initialWeightedRowMax hn A b phi i) +
+            slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
+          add_le_add le_rfl (hcompact i hi)
+    _ = (H19.Theorem19_6.active_row_growth_factor m * horizon i.val +
+            slack i.val) *
+          theorem20_7_initialWeightedRowMax hn A b phi i := by
+          ring
+    _ ≤ horizon (i.val + 1) *
+          theorem20_7_initialWeightedRowMax hn A b phi i :=
+          mul_le_mul_of_nonneg_right (hslack i hi) hrow_nonneg
+
 /-- Theorem 20.7 support: a single compact Householder component budget is
     controlled by the reflector's norm-budget coefficient times the input
     vector norm.
