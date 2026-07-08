@@ -18465,6 +18465,90 @@ theorem theorem20_8AP_unconstrained_minimizer_of_lse_minimizer {m n p : ℕ}
         exact theorem20_8AP_feasible_step_objective A b B Bplus x0 z
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    a minimizer of the perturbed equality-constrained problem gives an exact
+    minimizer of the perturbed reduced `AP` least-squares problem, relative to
+    a perturbed feasible base point. -/
+theorem theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bpertplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ)
+    (hright :
+      rectMatMul (fun i j => B i j + DeltaB i j) Bpertplus =
+        idMatrix p)
+    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) x0)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    IsLeastSquaresMinimizer
+      (theorem20_8AP (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) Bpertplus)
+      (fun i =>
+        b i + Deltab i -
+          rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+      (fun j => y j - x0 j) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
+    (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i)
+    (fun i j => B i j + DeltaB i j) Bpertplus
+    (fun i => d i + Deltad i) x0 y hright hx0 hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the reduced Higham residual for the perturbed `AP` least-squares problem is
+    orthogonal to every reduced column whenever it comes from an exact
+    perturbed LSE minimizer and a perturbed feasible base point. -/
+theorem theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bpertplus : Fin n → Fin p → ℝ)
+    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ) (s : Fin m → ℝ)
+    (hright :
+      rectMatMul (fun i j => B i j + DeltaB i j) Bpertplus =
+        idMatrix p)
+    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) x0)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hs :
+      s =
+        fun i =>
+          b i + Deltab i -
+            rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+            rectMatMulVec
+              (theorem20_8AP (fun i j => A i j + DeltaA i j)
+                (fun i j => B i j + DeltaB i j) Bpertplus)
+              (fun j => y j - x0 j) i) :
+    ∀ j : Fin n,
+      ∑ i : Fin m,
+        theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) Bpertplus i j *
+          s i = 0 := by
+  have hred :
+      IsLeastSquaresMinimizer
+        (theorem20_8AP (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) Bpertplus)
+        (fun i =>
+          b i + Deltab i -
+            rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+        (fun j => y j - x0 j) :=
+    theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+      A DeltaA b Deltab B DeltaB Bpertplus d Deltad x0 y hright hx0 hy
+  exact
+    IsLeastSquaresMinimizer.higham_residual_orthogonal
+      (A := theorem20_8AP (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) Bpertplus)
+      (b := fun i =>
+        b i + Deltab i -
+          rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+      (x := fun j => y j - x0 j) (s := s)
+      hred (by simpa [lsResidualHigham] using hs)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     applying `P = I - B^+B` to a vector with a known constraint residual
     subtracts the supplied `B^+` correction. -/
 theorem theorem20_8Projection_apply_of_constraint {p n : ℕ}
@@ -25869,6 +25953,70 @@ theorem LSEFullRowRank.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
       (fun j => x j - x0 j) :=
   _root_.LeanFpAnalysis.FP.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
     A b B hB.rightInverse d x0 x hB.rightInverse_spec hx0 hx
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    perturbed-data reduced-`AP` minimizer handoff using the right inverse
+    supplied by full row rank of the perturbed constraint matrix. -/
+theorem
+    LSEFullRowRank.theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ)
+    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) x0)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    IsLeastSquaresMinimizer
+      (theorem20_8AP (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+      (fun i =>
+        b i + Deltab i -
+          rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+      (fun j => y j - x0 j) :=
+  _root_.LeanFpAnalysis.FP.theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+    A DeltaA b Deltab B DeltaB hBpert.rightInverse d Deltad x0 y
+    hBpert.rightInverse_spec hx0 hy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    full-row-rank-instantiated reduced residual orthogonality for the
+    perturbed `AP` least-squares problem obtained from a perturbed LSE
+    minimizer. -/
+theorem
+    LSEFullRowRank.theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ) (s : Fin m → ℝ)
+    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) x0)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hs :
+      s =
+        fun i =>
+          b i + Deltab i -
+            rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+            rectMatMulVec
+              (theorem20_8AP (fun i j => A i j + DeltaA i j)
+                (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+              (fun j => y j - x0 j) i) :
+    ∀ j : Fin n,
+      ∑ i : Fin m,
+        theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
+          s i = 0 :=
+  _root_.LeanFpAnalysis.FP.theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
+    A DeltaA b Deltab B DeltaB hBpert.rightInverse d Deltad x0 y s
+    hBpert.rightInverse_spec hx0 hy hs
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated form of applying `P = I - Bplus*B` to a vector
@@ -41477,6 +41625,159 @@ theorem theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturba
       A DeltaA b Deltab B DeltaB d Deltad
       hApos hbpos hBpos hdpos hmax)
     hBsmall hStackSmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    perturbed-rank witness package for the reduced `AP` problem.
+
+    If the perturbed LSE data satisfy the two rank conditions in (20.24), then
+    there are a perturbed feasible base point, a perturbed LSE minimizer, and
+    the corresponding reduced least-squares minimizer.  The reduced Higham
+    residual is orthogonal to the columns of the perturbed reduced `AP`
+    matrix, which is the exact optimality side needed by the Wedin residual
+    route. -/
+theorem theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_conditions20_24
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ)
+    (B DeltaB : Fin p → Fin (p + q) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hStackPert : LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j)) :
+    ∃ (x0 y : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
+      LSEFeasible (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) x0 ∧
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+      IsLeastSquaresMinimizer
+          (theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+          (fun j => y j - x0 j) ∧
+      s =
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+              rectMatMulVec
+                (theorem20_8AP (fun i j => A i j + DeltaA i j)
+                  (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+                (fun j => y j - x0 j) i) ∧
+      (∀ j : Fin (p + q),
+        ∑ i : Fin (r + q),
+          theorem20_8AP (fun i j => A i j + DeltaA i j)
+              (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
+            s i = 0) := by
+  rcases hBpert.exists_feasible (fun i => d i + Deltad i) with
+    ⟨x0, hx0⟩
+  rcases exists_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+      (A := fun i j => A i j + DeltaA i j)
+      (B := fun i j => B i j + DeltaB i j)
+      (b := fun i => b i + Deltab i)
+      (d := fun i => d i + Deltad i) hBpert hStackPert with
+    ⟨y, hy⟩
+  let s : Fin (r + q) → ℝ :=
+    fun i =>
+      b i + Deltab i -
+        rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+        rectMatMulVec
+          (theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+          (fun j => y j - x0 j) i
+  have hred :
+      IsLeastSquaresMinimizer
+          (theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+          (fun j => y j - x0 j) :=
+    LSEFullRowRank.theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
+      A DeltaA b Deltab B DeltaB hBpert d Deltad x0 y hx0 hy
+  have horth :
+      ∀ j : Fin (p + q),
+        ∑ i : Fin (r + q),
+          theorem20_8AP (fun i j => A i j + DeltaA i j)
+              (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
+            s i = 0 :=
+    LSEFullRowRank.theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
+      A DeltaA b Deltab B DeltaB hBpert d Deltad x0 y s hx0 hy rfl
+  exact ⟨x0, y, s, hx0, hy, hred, rfl, horth⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
+    maximum-relative-perturbation version of the reduced `AP` witness package.
+
+    Source rank conditions and strict margin smallness first preserve (20.24)
+    for the perturbed problem; the resulting perturbed rank facts then supply
+    the reduced minimizer and residual orthogonality witnesses. -/
+theorem
+    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lt_margins
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {eps : ℝ}
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hBsrc.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    ∃ (x0 y : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
+      LSEFeasible (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) x0 ∧
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+      IsLeastSquaresMinimizer
+          (theorem20_8AP (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j)
+            (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
+              hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse)
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
+          (fun j => y j - x0 j) ∧
+      s =
+          (fun i =>
+            b i + Deltab i -
+              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
+              rectMatMulVec
+                (theorem20_8AP (fun i j => A i j + DeltaA i j)
+                  (fun i j => B i j + DeltaB i j)
+                  (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
+                    hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse)
+                (fun j => y j - x0 j) i) ∧
+      (∀ j : Fin (p + q),
+        ∑ i : Fin (r + q),
+          theorem20_8AP (fun i j => A i j + DeltaA i j)
+              (fun i j => B i j + DeltaB i j)
+              (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
+                hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse i j *
+            s i = 0) := by
+  let hcond :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
+      hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall
+  exact
+    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_conditions20_24
+      A DeltaA b Deltab B DeltaB d Deltad hcond.1 hcond.2
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, exact perturbed-data
     GQR core for the same-constraint-right-hand-side branch.
