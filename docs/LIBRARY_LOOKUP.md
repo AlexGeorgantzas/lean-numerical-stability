@@ -2082,6 +2082,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_fosterBandIdx_eq_zero` / `higham9_16_fosterBandIdx_zero_of_tail_zero`
 - `higham9_16_fosterBandValue` (Foster (A.5)-(A.8) band value function `M(k, C, P)`)
 - `higham9_16_fosterBandValue_of_idx_zero` (band-1 value is `V(k, C)`)
+- `higham9_16_fosterFeasible_of_rook` (rook LU factorization sorted pivots are Lemma A.2-feasible at `sqrt(n^n)`, zero tail)
+- `higham9_16_fosterA2_one` (Lemma A.2 base case `k = 1`: `p_1 <= C`)
+- `higham9_16_fosterFeasible_head_max` (the head dominates every entry)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
