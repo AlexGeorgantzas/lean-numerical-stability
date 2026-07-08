@@ -226,6 +226,54 @@ theorem theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
       (mul_le_mul_of_nonneg_left (hA k hk s hks) hphi)
       (hb k hk s hks)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
+    the raw pivot-maximality field follows from choosing the current active
+    column with the finite active-max pivot selector. -/
+theorem theorem20_7_pivotMax_of_activeMaxPivotColumn_nat
+    {m n : ℕ} (hnm : n ≤ m)
+    (Astage : ℕ → Fin m → Fin n → ℝ)
+    (hpivotChoice : ∀ t (ht : t < n),
+      Fin.mk t ht =
+        householderActiveMaxPivotColumn
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht) (Astage t)) :
+    ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) (Fin.mk t ht) := by
+  intro t ht l hl
+  have hmax :=
+    householderActiveMaxPivotColumn_pivot_max
+      (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht) (Astage t) l hl
+  simpa [← hpivotChoice t ht] using hmax
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
+    after swapping the active-max column into the current displayed pivot
+    column, the displayed stage satisfies the raw pivot-maximality field used
+    by the signed stored-QR completion wrappers. -/
+theorem theorem20_7_pivotMax_of_activeMaxPivotColumn_stage_swaps_nat
+    {m n : ℕ} (hnm : n ≤ m)
+    (Araw Astage : ℕ → Fin m → Fin n → ℝ)
+    (hstageSorted : ∀ t (ht : t < n),
+      Astage t =
+        householderSwapColumns (Araw t) (Fin.mk t ht)
+          (householderActiveMaxPivotColumn
+            (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht) (Araw t))) :
+    ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Astage t) (Fin.mk t ht) := by
+  intro t ht l hl
+  rw [hstageSorted t ht]
+  exact
+    householderSwapColumns_activeMaxPivotColumn_pivot_max
+      (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht) (Araw t) l hl
+
 /-- Theorem 20.7 route audit: source row sorting alone does not imply the
     stronger `sqrt(m)` row-scale domination hypothesis used by the Chapter 19
     accumulated-error transfer.
