@@ -13726,6 +13726,10 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_16_fosterFeasible_head_max
 #check higham9_16_fosterA2_case1_slice
 #check higham9_16_fosterA2_case2_reduction
+#check higham9_16_hat_strictMonoOn
+#check higham9_16_fosterQStage_hat_transfer
+#check higham9_16_fosterQ_hat
+#check higham9_16_fosterQ_lt_succ
 #check higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowth_le
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowthValue_le
