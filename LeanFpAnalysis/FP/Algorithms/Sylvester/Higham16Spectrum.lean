@@ -2051,6 +2051,46 @@ theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_co
       (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
       hBudget hXhat
 
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    no-common-spectrum practical endpoint from a supplied Schur-coordinate
+    Frobenius residual bound.  The no-common complex spectrum hypothesis
+    supplies the exact nonsingular-inverse budget, while the Schur residual
+    transport supplies the computed-residual budget with `Rhat = 0`. -/
+theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Y : RMatFn m n) (rho : Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n
+      (rectMatMul U (rectMatMul Y (matTranspose V)))) :
+    sylvesterMaxEntryNormRect m n
+        (fun i j =>
+          X i j - rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B)
+          (fun _ _ => 0) (fun _ _ => rho)) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) := by
+  exact
+    sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate
+      m n A B C X (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (fun _ _ => 0) (fun _ _ => rho) hno hX
+      (sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
+        m n U R A V S B C Y rho hU hV hA hB hres)
+      hXhat
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), spectral-separation
     scalar endpoint for the practical computed-residual certificate. -/
 theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_scalar
@@ -2269,6 +2309,12 @@ theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_co
     for the spectral-separation practical computed-residual certificate. -/
 alias H16_eq16_29_sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate :=
   sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source-numbered alias
+    for the no-common-spectrum practical endpoint from a supplied Schur
+    residual bound. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound :=
+  sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source-numbered alias
     for the spectral-separation scalar computed-residual certificate. -/
