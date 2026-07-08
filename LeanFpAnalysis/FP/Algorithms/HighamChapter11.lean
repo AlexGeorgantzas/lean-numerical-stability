@@ -846,6 +846,26 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_schur_step_backward_error_uniform_bou
     σ a11 a21 a22 b c Amax κ hchoice hσa11 hσa22 hAmax hκ hb hc
     hratio hval
 
+/-- **Theorem 11.7 one-stage trailing block envelope**, for the single trailing
+entry affected by a `2 × 2` pivot in a symmetric tridiagonal matrix. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_bound
+    (fp : FPModel) (σ a11 a21 a22 b c Amax κ : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hval : gammaValid fp 3) :
+    ∃ ΔS : Fin 1 → Fin 1 → ℝ,
+      (∀ i j : Fin 1, |ΔS i j| ≤ gamma fp 3 * (Amax + Amax * κ * Amax)) ∧
+      (∀ i j : Fin 1,
+        fp.fl_sub b
+            (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+          = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) + ΔS i j) :=
+  fl_tridiagonal_twoByTwo_trailing_one_stage_bound fp
+    σ a11 a21 a22 b c Amax κ hchoice hσa11 hσa22 hAmax hκ hb hc
+    hratio hval
+
 /-- **Equation (11.8)** source predicate: unpermuted block LDL^T
 factorization for a symmetric tridiagonal matrix. -/
 abbrev higham11_8_tridiagonalBlockLDLTSpec (n : ℕ)

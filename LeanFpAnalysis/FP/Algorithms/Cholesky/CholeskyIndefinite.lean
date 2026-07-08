@@ -1645,6 +1645,35 @@ theorem fl_tridiagonal_twoByTwo_schur_step_backward_error_uniform_bound
   have hγ0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
   exact le_trans hΔb (mul_le_mul_of_nonneg_left hinside hγ0)
 
+/-- One-stage `1 × 1` trailing-block envelope for an accepted tridiagonal
+`2 × 2` pivot.  Since a symmetric tridiagonal matrix has only one trailing
+entry touched by the first `2 × 2` pivot, the scalar backward-error bound lifts
+to a `Fin 1 × Fin 1` perturbation directly. -/
+theorem fl_tridiagonal_twoByTwo_trailing_one_stage_bound
+    (fp : FPModel) (σ a11 a21 a22 b c Amax κ : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hval : gammaValid fp 3) :
+    ∃ ΔS : Fin 1 → Fin 1 → ℝ,
+      (∀ i j : Fin 1, |ΔS i j| ≤ gamma fp 3 * (Amax + Amax * κ * Amax)) ∧
+      (∀ i j : Fin 1,
+        fp.fl_sub b
+            (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+          = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) + ΔS i j) := by
+  obtain ⟨Δb, hΔb, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_schur_step_backward_error_uniform_bound fp
+      σ a11 a21 a22 b c Amax κ hchoice hσa11 hσa22 hAmax hκ hb hc
+      hratio hval
+  refine ⟨fun _ _ => Δb, ?_, ?_⟩
+  · intro _ _
+    exact hΔb
+  · intro _ _
+    rw [hstep]
+    ring
+
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
 -- ============================================================
