@@ -10406,6 +10406,36 @@ theorem exists_isSylvesterColumnFamilyGeneratedPrefix_of_frontier_schedule
   rcases hstates r le_rfl with ⟨x, hprefix⟩
   exact ⟨x, by simpa [hend] using hprefix⟩
 
+/-- A supplied generated frontier schedule constructs an `RMatFn` candidate
+    satisfying the packaged generated-step formula predicate. -/
+theorem exists_isSylvesterQuasiSchurGeneratedStepFormula_of_frontier_schedule
+    (m n r : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hstart : frontier 0 = 0) (hend : frontier r = n)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val + 1 = p.val -> pmap q ≠ pmap p) /\
+        (forall q : Fin n, q.val = p.val + 1 -> pmap p ≠ pmap q))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q)) :
+    exists X : RMatFn m n,
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S C X pmap := by
+  rcases exists_isSylvesterColumnFamilyGeneratedPrefix_of_frontier_schedule
+      m n r R S C pmap frontier hstart hend hcard hstep with ⟨x, hprefix⟩
+  exact
+    ⟨fun i j => x j i,
+      isSylvesterQuasiSchurGeneratedStepFormula_of_column_family_generated_prefix
+        m n R S C x pmap hprefix⟩
+
 /-- Column-family packaging for
     `IsSylvesterQuasiSchurGeneratedStepFormula`.  A recursive construction often
     maintains state as `Fin n -> Fin m -> Real`; this wrapper turns singleton
