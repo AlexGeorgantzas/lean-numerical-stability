@@ -5026,6 +5026,57 @@ theorem sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq (m n : Nat)
         rw [hprev j hjp i]
       simp [sylvesterTwoColumnBlockRhs, hsum]
 
+/-- Updating a column at or to the right of `p` does not change the singleton
+    recurrence right-hand side for column `p`, because that side only sees
+    columns `j < p`.  This is the column-update bookkeeping needed by a future
+    recursive quasi-Schur candidate construction. -/
+theorem sylvesterSingletonColumnRhs_eq_of_column_update_ge
+    (m n : Nat) (T : RMatFn n n) (C X : RMatFn m n)
+    (p k : Fin n) (xk : Fin m -> Real)
+    (hpk : p.val <= k.val) :
+    (fun i : Fin m => C i p +
+      Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+        (fun j => T j p *
+          (fun i j => Function.update (fun j => X i j) k (xk i) j) i j)) =
+    (fun i : Fin m => C i p +
+      Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+        (fun j => T j p * X i j)) := by
+  funext i
+  have hsum :
+      Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => T j p *
+            (fun i j => Function.update (fun j => X i j) k (xk i) j) i j) =
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => T j p * X i j) := by
+    apply Finset.sum_congr rfl
+    intro j hj
+    have hjp : j.val < p.val := Fin.lt_def.mp (Finset.mem_filter.mp hj).2
+    have hjne : Not (j = k) := by
+      intro hje
+      have hjval : j.val = k.val := by rw [hje]
+      omega
+    simp [Function.update_of_ne hjne]
+  rw [hsum]
+
+/-- Updating a column at or to the right of the active two-column block does
+    not change the block right-hand side, because that side only depends on
+    columns `j < p`. -/
+theorem sylvesterTwoColumnBlockRhs_eq_of_column_update_ge
+    (m n : Nat) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q k : Fin n) (xk : Fin m -> Real)
+    (hpk : p.val <= k.val) :
+    sylvesterTwoColumnBlockRhs m n T C
+        (fun i j => Function.update (fun j => X i j) k (xk i) j) p q =
+      sylvesterTwoColumnBlockRhs m n T C X p q := by
+  apply sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq
+  intro j hjp i
+  have hjpNat : j.val < p.val := Fin.lt_def.mp hjp
+  have hjne : Not (j = k) := by
+    intro hje
+    have hjval : j.val = k.val := by rw [hje]
+    omega
+  rw [Function.update_of_ne hjne]
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6), exact block-vector form:
     the supplied adjacent two-column predicate is equivalent to one combined
     linear system for the concatenated unknown vector `(Z(:,p), Z(:,q))`.
