@@ -2063,6 +2063,28 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_fosterQ_one_eq_fosterS` / `higham9_16_fosterQ_one_sqrt_eq_fosterS` (Foster's (A.5)-(6) link: the `r = 1` root at `sqrt(k^k)` is `s_k`)
 - `higham9_16_fosterQ_one_le_fosterS` (`q_k <= s_k` for `C <= sqrt(k^k)`)
 - `higham9_16_one_add_mul_hat` (Möbius identity `(1+x)(1+m·x/(1+x)) = 1+(m+1)x`)
+- `higham9_16_fosterS_le_pred` (`s_k <= s_(k-1)`)
+- `higham9_16_fosterQStage_succ_mul_const` (key ratio identity: `QStage_(r+1)(x)·C_(k-r) = QStage_r(x)·fosterStage_(k-r)(x/(1+rx))`)
+- `higham9_16_fosterQ_succ_gt_of_stage_lt` (interlacing criterion: `q_r < q_(r+1)` when the Möbius image of `q_r` is below `s_(k-r)`)
+- `higham9_16_fosterQ_one_lt_two` (Foster Lemma A.3 base step: `q_k < q_(k-1)` for `0 < C <= sqrt(k^k)`)
+- `higham9_16_FosterFeasible` (Foster (A.2)-(A.4) feasible set of Lemma A.2)
+- `higham9_16_fosterFeasible_nonneg`
+- `higham9_16_lead_prod_split` / `higham9_16_tail_sum_split` / `higham9_16_full_prod_split` (Fin (k+1) filter splitting)
+- `higham9_16_fosterFeasible_rescale_std` (Foster A.2 rescaling: dividing out `1+t` yields a k-dimensional feasible tuple at `sqrt(k^k)` — the exact constraint transformation of the induction)
+- `higham9_16_fosterFeasible_rescale_prod` (the sharpened product constant `C/(t(1+t)^k)` for `t > 0`)
+- `higham9_16_fosterFeasible_head_eq`
+- `higham9_16_fosterQShift` (Foster (A.6) shifted stage `sqrt(m^m)·p·(a+p)^m`) with continuity/strict-mono/witness lemmas
+- `higham9_16_existsUnique_fosterQShift_root` / `higham9_16_fosterPStar` (the (A.6) root `p*`) with spec/uniqueness
+- `higham9_16_fosterV` (Foster band-1 / equality-case value `t_(k-1)·(1 + q_k(C))`)
+- `higham9_16_fosterV_chapter` (`V(k, sqrt(k^k)) = t_k`) / `higham9_16_fosterV_pos` / `higham9_16_fosterV_mono_const`
+- `higham9_16_case1_iff` (Foster case-1 boundary: `sqrt(k^k)·t(1+t)^k <= C ↔ t <= fosterQ (k+1) 1 C`)
+- `higham9_16_fosterBandIdx` (Foster (A.5) band index: number of band roots strictly below the tail `P`)
+- `higham9_16_fosterBandIdx_eq_zero` / `higham9_16_fosterBandIdx_zero_of_tail_zero`
+- `higham9_16_fosterBandValue` (Foster (A.5)-(A.8) band value function `M(k, C, P)`)
+- `higham9_16_fosterBandValue_of_idx_zero` (band-1 value is `V(k, C)`)
+- `higham9_16_fosterFeasible_of_rook` (rook LU factorization sorted pivots are Lemma A.2-feasible at `sqrt(n^n)`, zero tail)
+- `higham9_16_fosterA2_one` (Lemma A.2 base case `k = 1`: `p_1 <= C`)
+- `higham9_16_fosterFeasible_head_max` (the head dominates every entry)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
