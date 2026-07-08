@@ -22,9 +22,9 @@
 -- * The complex Schur route is imported to prove determinant nonsingularity
 --   of the real vec/Kronecker coefficient from a supplied no-common complex
 --   right-eigenpair hypothesis on the entrywise complexifications of `A` and
---   `B`.  The full spectrum-characterization statement -- every eigenvalue of
---   the Kronecker coefficient is a difference `lam_i(A) - mu_j(B)` -- is still
---   not stated as a complete iff here.
+--   `B`.  The complex coefficient now also has the shifted determinant form of
+--   the full spectrum-characterization statement: a scalar shift is singular
+--   exactly when it is a difference `lambda(A) - mu(B)`.
 -- * The quasi-triangular (2x2 diagonal block, real-Schur) Bartels-Stewart
 --   route behind equations (16.4), (16.7), and (16.8) is represented by an
 --   imported real quasi-Schur existence wrapper plus supplied adjacent
@@ -1816,6 +1816,172 @@ theorem complexSylvesterVecCoeff_singular_of_common_right_eigenvalue
   rw [hOp] at hcoeff
   simpa using hcoeff
 
+/-- Scalar-shift bookkeeping for complex right eigenvalues: an eigenvalue `mu`
+    of `A - theta I` is the same as an eigenvalue `mu + theta` of `A`. -/
+theorem hasComplexRightEigenvalue_sub_scalar_iff
+    {idx : Type*} [Fintype idx] [DecidableEq idx]
+    (A : Matrix idx idx Complex) (theta mu : Complex) :
+    HasComplexRightEigenvalue (A - Matrix.scalar idx theta) mu ↔
+      HasComplexRightEigenvalue A (mu + theta) := by
+  classical
+  constructor
+  · intro h
+    let y := Classical.choose h
+    have hyprops := Classical.choose_spec h
+    have hyne := hyprops.1
+    have hy : Matrix.mulVec (A - Matrix.scalar idx theta) y =
+        fun i => mu * y i := hyprops.2
+    refine ⟨y, hyne, ?_⟩
+    funext i
+    have hi := congrFun hy i
+    have hcoord :
+        Matrix.mulVec A y i - theta * y i = mu * y i := by
+      simpa [Matrix.sub_mulVec, Matrix.scalar_apply] using hi
+    have hcoord' :
+        Matrix.mulVec A y i = mu * y i + theta * y i :=
+      sub_eq_iff_eq_add.mp hcoord
+    calc
+      Matrix.mulVec A y i = mu * y i + theta * y i := hcoord'
+      _ = (mu + theta) * y i := by ring
+  · intro h
+    let y := Classical.choose h
+    have hyprops := Classical.choose_spec h
+    have hyne := hyprops.1
+    have hy : Matrix.mulVec A y = fun i => (mu + theta) * y i :=
+      hyprops.2
+    refine ⟨y, hyne, ?_⟩
+    funext i
+    have hi := congrFun hy i
+    have hcoord :
+        Matrix.mulVec A y i = (mu + theta) * y i := by
+      simpa using hi
+    calc
+      Matrix.mulVec (A - Matrix.scalar idx theta) y i
+          = Matrix.mulVec A y i - theta * y i := by
+            simp [Matrix.sub_mulVec, Matrix.scalar_apply]
+      _ = (mu + theta) * y i - theta * y i := by rw [hcoord]
+      _ = mu * y i := by ring
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), complex shifted
+    coefficient identity: shifting the full vec/Kronecker Sylvester coefficient
+    by `theta I` is the same as replacing `A` by `A - theta I`. -/
+theorem complexSylvesterVecCoeff_left_shift_eq_shifted {m n : Nat}
+    (A : Matrix (Fin m) (Fin m) Complex)
+    (B : Matrix (Fin n) (Fin n) Complex) (theta : Complex) :
+    complexSylvesterVecCoeff (A - Matrix.scalar (Fin m) theta) B =
+      complexSylvesterVecCoeff A B -
+        Matrix.scalar (Prod (Fin n) (Fin m)) theta := by
+  ext p q
+  by_cases hpq : p = q
+  · subst q
+    simp [complexSylvesterVecCoeff, Matrix.kronecker, Matrix.scalar_apply,
+      Matrix.sub_apply]
+    ring
+  · have hdiag :
+        Matrix.diagonal (fun _ : Prod (Fin n) (Fin m) => theta) p q = 0 := by
+      simp [hpq]
+    by_cases hp : p.1 = q.1 <;> by_cases hq : p.2 = q.2
+    · exfalso
+      exact hpq (Prod.ext hp hq)
+    all_goals
+      simp [complexSylvesterVecCoeff, Matrix.kronecker, Matrix.scalar_apply,
+        Matrix.sub_apply, hp, hq, hdiag]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), complex form:
+    the complex vec/Kronecker Sylvester coefficient is nonsingular iff `A` and
+    `B` have no common complex right eigenvalue. -/
+theorem complexSylvesterVecCoeff_det_ne_zero_iff_no_common_complex_right_eigenvalue
+    {m n : Nat}
+    (A : Matrix (Fin m) (Fin m) Complex)
+    (B : Matrix (Fin n) (Fin n) Complex) :
+    Matrix.det (complexSylvesterVecCoeff A B) ≠ 0 ↔
+      NoCommonComplexRightEigenvalue A B := by
+  constructor
+  · intro hdet mu hcommon
+    exact hdet (complexSylvesterVecCoeff_singular_of_common_right_eigenvalue
+      A B mu hcommon.1 hcommon.2)
+  · intro hno
+    exact complexSylvesterVecCoeff_det_ne_zero_of_no_common_eigenpair A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), complex shifted spectrum
+    characterization in determinant form: a scalar `theta` makes the shifted
+    vec/Kronecker Sylvester coefficient singular iff `theta = lambda - mu` for
+    supplied complex right eigenvalues `lambda` of `A` and `mu` of `B`. -/
+theorem complexSylvesterVecCoeff_shifted_det_eq_zero_iff_exists_eigenvalue_difference
+    {m n : Nat}
+    (A : Matrix (Fin m) (Fin m) Complex)
+    (B : Matrix (Fin n) (Fin n) Complex) (theta : Complex) :
+    Matrix.det (complexSylvesterVecCoeff A B -
+        Matrix.scalar (Prod (Fin n) (Fin m)) theta) = 0 ↔
+      ∃ lam : Complex, ∃ mu : Complex,
+        HasComplexRightEigenvalue A lam ∧
+        HasComplexRightEigenvalue B mu ∧
+        lam - mu = theta := by
+  classical
+  constructor
+  · intro hzero
+    have hzero' :
+        Matrix.det (complexSylvesterVecCoeff
+          (A - Matrix.scalar (Fin m) theta) B) = 0 := by
+      rw [complexSylvesterVecCoeff_left_shift_eq_shifted]
+      exact hzero
+    have hnotno : ¬ NoCommonComplexRightEigenvalue
+        (A - Matrix.scalar (Fin m) theta) B := by
+      intro hno
+      have hne :=
+        (complexSylvesterVecCoeff_det_ne_zero_iff_no_common_complex_right_eigenvalue
+          (A - Matrix.scalar (Fin m) theta) B).mpr hno
+      exact hne hzero'
+    have hnotforall :
+        ¬ (∀ mu : Complex,
+          ¬ (HasComplexRightEigenvalue (A - Matrix.scalar (Fin m) theta) mu ∧
+            HasComplexRightEigenvalue B mu)) := by
+      simpa [NoCommonComplexRightEigenvalue] using hnotno
+    have hex_mu := not_forall.mp hnotforall
+    let mu := Classical.choose hex_mu
+    have hnn := Classical.choose_spec hex_mu
+    have hcommon :
+        HasComplexRightEigenvalue (A - Matrix.scalar (Fin m) theta) mu ∧
+          HasComplexRightEigenvalue B mu := by
+      exact not_not.mp hnn
+    have hA : HasComplexRightEigenvalue A (mu + theta) :=
+      (hasComplexRightEigenvalue_sub_scalar_iff A theta mu).mp hcommon.1
+    refine ⟨mu + theta, mu, hA, hcommon.2, ?_⟩
+    ring
+  · rintro ⟨lam, mu, hA, hB, hdiff⟩
+    rw [← complexSylvesterVecCoeff_left_shift_eq_shifted]
+    have hlam' : lam = theta + mu :=
+      sub_eq_iff_eq_add.mp hdiff
+    have hlam : lam = mu + theta := by
+      rw [add_comm] at hlam'
+      exact hlam'
+    have hA' : HasComplexRightEigenvalue A (mu + theta) := by
+      rw [← hlam]
+      exact hA
+    have hAshift :
+        HasComplexRightEigenvalue (A - Matrix.scalar (Fin m) theta) mu :=
+      (hasComplexRightEigenvalue_sub_scalar_iff A theta mu).mpr hA'
+    by_contra hne
+    have hno :=
+      (complexSylvesterVecCoeff_det_ne_zero_iff_no_common_complex_right_eigenvalue
+        (A - Matrix.scalar (Fin m) theta) B).mp hne
+    exact hno mu ⟨hAshift, hB⟩
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias for
+    the complex shifted vec/Kronecker spectrum/difference characterization. -/
+theorem H16_eq16_3_complexSylvesterVecCoeff_shifted_det_eq_zero_iff_exists_eigenvalue_difference
+    {m n : Nat}
+    (A : Matrix (Fin m) (Fin m) Complex)
+    (B : Matrix (Fin n) (Fin n) Complex) (theta : Complex) :
+    Matrix.det (complexSylvesterVecCoeff A B -
+        Matrix.scalar (Prod (Fin n) (Fin m)) theta) = 0 ↔
+      ∃ lam : Complex, ∃ mu : Complex,
+        HasComplexRightEigenvalue A lam ∧
+        HasComplexRightEigenvalue B mu ∧
+        lam - mu = theta :=
+  complexSylvesterVecCoeff_shifted_det_eq_zero_iff_exists_eigenvalue_difference
+    A B theta
+
 /-- Entrywise real-to-complex map for rectangular matrices.  This is the
     rectangular companion to the square complexification used in the real
     invariant-subspace development. -/
@@ -1904,6 +2070,37 @@ theorem realMatrixToComplex_sylvesterVecCoeff (m n : Nat)
   by_cases hp : p.1 = q.1 <;> by_cases hq : p.2 = q.2 <;>
     simp [realMatrixToComplex, sylvesterVecCoeff, complexSylvesterVecCoeff,
       Matrix.kronecker, Matrix.transpose_apply, Matrix.one_apply, hp, hq]
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), real source-facing
+    complexified shifted spectrum characterization: a complex scalar shift makes
+    the complexification of the real vec/Kronecker Sylvester coefficient
+    singular iff the shift is a difference of complex right eigenvalues of the
+    complexified real factors. -/
+theorem sylvesterVecCoeff_complexified_shifted_det_eq_zero_iff_exists_complex_eigenvalue_difference
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (theta : Complex) :
+    Matrix.det (realMatrixToComplex (sylvesterVecCoeff m n A B) -
+        Matrix.scalar (Prod (Fin n) (Fin m)) theta) = 0 ↔
+      ∃ lam : Complex, ∃ mu : Complex,
+        HasComplexRightEigenvalue (realMatrixToComplex A) lam ∧
+        HasComplexRightEigenvalue (realMatrixToComplex B) mu ∧
+        lam - mu = theta := by
+  rw [realMatrixToComplex_sylvesterVecCoeff]
+  exact
+    complexSylvesterVecCoeff_shifted_det_eq_zero_iff_exists_eigenvalue_difference
+      (realMatrixToComplex A) (realMatrixToComplex B) theta
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias for
+    the complexified real vec/Kronecker shifted spectrum/difference theorem. -/
+theorem H16_eq16_3_sylvesterVecCoeff_complexified_shifted_det_eq_zero_iff_exists_complex_eigenvalue_difference
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (theta : Complex) :
+    Matrix.det (realMatrixToComplex (sylvesterVecCoeff m n A B) -
+        Matrix.scalar (Prod (Fin n) (Fin m)) theta) = 0 ↔
+      ∃ lam : Complex, ∃ mu : Complex,
+        HasComplexRightEigenvalue (realMatrixToComplex A) lam ∧
+        HasComplexRightEigenvalue (realMatrixToComplex B) mu ∧
+        lam - mu = theta :=
+  sylvesterVecCoeff_complexified_shifted_det_eq_zero_iff_exists_complex_eigenvalue_difference
+    m n A B theta
 
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3), complex spectral
     nonsingularity route for the real vec/Kronecker coefficient: if the
@@ -2051,6 +2248,46 @@ theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_co
       (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
       hBudget hXhat
 
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    no-common-spectrum practical endpoint from a supplied Schur-coordinate
+    Frobenius residual bound.  The no-common complex spectrum hypothesis
+    supplies the exact nonsingular-inverse budget, while the Schur residual
+    transport supplies the computed-residual budget with `Rhat = 0`. -/
+theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Y : RMatFn m n) (rho : Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n
+      (rectMatMul U (rectMatMul Y (matTranspose V)))) :
+    sylvesterMaxEntryNormRect m n
+        (fun i j =>
+          X i j - rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B)
+          (fun _ _ => 0) (fun _ _ => rho)) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) := by
+  exact
+    sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate
+      m n A B C X (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (fun _ _ => 0) (fun _ _ => rho) hno hX
+      (sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
+        m n U R A V S B C Y rho hU hV hA hB hres)
+      hXhat
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), spectral-separation
     scalar endpoint for the practical computed-residual certificate. -/
 theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_scalar
@@ -2081,6 +2318,83 @@ theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_co
             m n A B hno)))
       (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
       hBudget heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), spectral-separation
+    monotone estimator-ready endpoint: after the no-common complex spectrum
+    certificate supplies the exact inverse budget, componentwise larger inverse
+    and residual-budget inputs preserve the practical computed-residual bound.
+    This does not prove any particular estimator. -/
+theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_mono
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_mono m n
+      A B C X Xhat Rhat Rhat' Ru Ru'
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      PinvAbs' hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr
+          (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_right_eigenvalue
+            m n A B hno)))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hPinvAbs_le hBudget hRhat hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), spectral-separation
+    monotone scalar endpoint: after componentwise estimator enlargement, a
+    scalar cap on the enlarged practical budget gives the relative
+    max-entry forward-error bound. -/
+theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_mono_scalar
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat Rhat' Ru Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j, |Rhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j, Ru i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_computed_residual_certificate_mono_scalar m n
+      A B C X Xhat Rhat Rhat' Ru Ru'
+      (Inv.inv (sylvesterVecCoeff m n A B))
+      (sylvesterVecCoeffNonsingInvAbs m n A B)
+      PinvAbs' eta hX
+      (Matrix.nonsing_inv_mul (sylvesterVecCoeff m n A B)
+        (isUnit_iff_ne_zero.mpr
+          (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_right_eigenvalue
+            m n A B hno)))
+      (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
+      hPinvAbs_le hBudget hRhat hRu_le heta hcomponent hXhat
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), spectral-separation
     absolute endpoint: the same practical budget bounds the unnormalized
@@ -2138,6 +2452,111 @@ theorem sylvester_practical_abs_error_bound_of_no_common_complex_right_eigenvalu
       (sylvesterVecCoeffNonsingInv_abs_le_invAbs m n A B)
       hBudget heta hcomponent
 
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    scalar-cap no-common-spectrum practical endpoint from a supplied
+    Schur-coordinate Frobenius residual bound. -/
+theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Y : RMatFn m n) (rho eta : Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B)
+          (fun _ _ => 0) (fun _ _ => rho) p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n
+      (rectMatMul U (rectMatMul Y (matTranspose V)))) :
+    sylvesterMaxEntryNormRect m n
+        (fun i j =>
+          X i j - rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <=
+      eta /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) := by
+  exact
+    sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_scalar
+      m n A B C X (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (fun _ _ => 0) (fun _ _ => rho) eta hno hX
+      (sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
+        m n U R A V S B C Y rho hU hV hA hB hres)
+      heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    denominator-free no-common-spectrum practical endpoint from a supplied
+    Schur-coordinate Frobenius residual bound. -/
+theorem sylvester_practical_abs_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Y : RMatFn m n) (rho : Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho) :
+    sylvesterMaxEntryNormRect m n
+        (fun i j =>
+          X i j - rectMatMul U (rectMatMul Y (matTranspose V)) i j) <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B)
+          (fun _ _ => 0) (fun _ _ => rho)) := by
+  exact
+    sylvester_practical_abs_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate
+      m n A B C X (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (fun _ _ => 0) (fun _ _ => rho) hno hX
+      (sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
+        m n U R A V S B C Y rho hU hV hA hB hres)
+
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    scalar-cap denominator-free no-common-spectrum practical endpoint from a
+    supplied Schur-coordinate Frobenius residual bound. -/
+theorem sylvester_practical_abs_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Y : RMatFn m n) (rho eta : Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B)
+          (fun _ _ => 0) (fun _ _ => rho) p <= eta) :
+    sylvesterMaxEntryNormRect m n
+        (fun i j =>
+          X i j - rectMatMul U (rectMatMul Y (matTranspose V)) i j) <=
+      eta := by
+  exact
+    sylvester_practical_abs_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_scalar
+      m n A B C X (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (fun _ _ => 0) (fun _ _ => rho) eta hno hX
+      (sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
+        m n U R A V S B C Y rho hU hV hA hB hres)
+      heta hcomponent
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), spectral-separation
     raw computed-residual budget endpoint. -/
 theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_budget
@@ -2194,9 +2613,43 @@ alias H16_eq16_29_sylvester_practical_error_bound_of_no_common_complex_right_eig
   sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source-numbered alias
+    for the no-common-spectrum practical endpoint from a supplied Schur
+    residual bound. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound :=
+  sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source-numbered alias
+    for the scalar no-common-spectrum practical endpoint from a supplied Schur
+    residual bound. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_scalar :=
+  sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source-numbered alias
+    for the denominator-free no-common-spectrum practical endpoint from a
+    supplied Schur residual bound. -/
+alias H16_eq16_29_sylvester_practical_abs_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound :=
+  sylvester_practical_abs_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source-numbered alias
+    for the scalar denominator-free no-common-spectrum practical endpoint from
+    a supplied Schur residual bound. -/
+alias H16_eq16_29_sylvester_practical_abs_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_scalar :=
+  sylvester_practical_abs_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source-numbered alias
     for the spectral-separation scalar computed-residual certificate. -/
 alias H16_eq16_29_sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_scalar :=
   sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source-numbered alias
+    for the spectral-separation monotone computed-residual certificate. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source-numbered alias
+    for the spectral-separation monotone scalar certificate. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_mono_scalar
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source-numbered alias
     for the spectral-separation absolute computed-residual certificate. -/
@@ -4272,6 +4725,91 @@ theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_det_
     sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_no_real_eigenvector_det_separation
       m n A T pmap p q hmono hcard hzero hpq_adj hsame hno hdetA
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), constructed
+    two-block spectral data plus exclusion of the matching complex root for
+    `A` gives the active two-column no-block-action certificate. -/
+theorem sylvesterTwoColumnBlock_no_block_action_of_twoBlockSpectral_complex_root_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of T) pmap)
+    (hnoA :
+      Not (exists y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i =>
+              sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))) *
+                  y i)) :
+    forall z : Sum (Fin m) (Fin m) -> Real, z ≠ 0 ->
+      Not (Matrix.mulVec (sylvesterTwoColumnBlockLeftAction m A) z =
+        Matrix.mulVec (sylvesterTwoColumnBlockSchurAction m n T p q) z) := by
+  let mu : Complex :=
+    sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+      (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p)))
+  have hnoReal :
+      forall x : Fin 2 -> Real, x ≠ 0 ->
+        Not (exists nu : Real,
+          Matrix.mulVec (sylvesterTwoColumnRealSchurBlock n T p q) x =
+            fun k => nu * x k) := by
+    simpa [HasRealQuasiSchurTwoBlockSpectral, MatrixNoRealEigenline,
+      principalTwoBlock, sylvesterTwoColumnRealSchurBlock, Matrix.of_apply] using
+      (hspectral p q hpq_adj hsame).1
+  have hdisc :
+      (T p p - T q q) ^ 2 + 4 * T p q * T q p < 0 :=
+    sylvesterTwoColumnRealSchurBlock_disc_neg_of_no_real_eigenvector
+      n T p q hnoReal
+  have hblockEig :
+      HasComplexRightEigenvalue
+        (realMatrixToComplex (sylvesterTwoColumnRealSchurBlock n T p q)) mu := by
+    simpa [mu] using
+      sylvesterTwoColumnRealSchurBlockComplexRoot_hasComplexRightEigenvalue_of_disc_neg
+        n T p q hdisc
+  rcases hblockEig with ⟨w, hwne, hwJ⟩
+  have hnoA_mu :
+      Not (exists y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i => mu * y i) := by
+    simpa [mu] using hnoA
+  exact
+    sylvesterTwoColumnBlock_no_block_action_of_complex_eigenpair_separation
+      m n A T p q mu w hwne hwJ hnoReal hnoA_mu
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), determinant
+    consequence of constructed two-block spectral data plus exclusion of the
+    matching complex root for `A`. -/
+theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_complex_root_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of T) pmap)
+    (hnoA :
+      Not (exists y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i =>
+              sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))) *
+                  y i)) :
+    IsAdjacentQuasiTriangularBlockFn n T p q /\
+      Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n A T p q) = 0) := by
+  refine ⟨?_, ?_⟩
+  · exact IsAdjacentQuasiTriangularBlockFn.of_quasiSchur_same_block
+      n T pmap p q hmono hcard hzero hpq_adj hsame
+  · exact sylvesterTwoColumnBlockCoeff_det_ne_zero_of_no_block_action
+      m n A T p q
+      (sylvesterTwoColumnBlock_no_block_action_of_twoBlockSpectral_complex_root_separation
+        m n A T pmap p q hpq_adj hsame hspectral hnoA)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
     real-quasi-Schur block-separation producer from canonical rotation-scaling
     entries for the adjacent `2 x 2` block.  The current `real_quasi_schur_blocks`
@@ -4602,6 +5140,57 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_fac
     sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
       m n R S pmap p q hmono hcard hzero hpq_adj hsame hspectral
       (by simpa [Matrix.of_apply] using hnoRS)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): automatic
+    real-quasi-Schur factor package for active `B`-side two-column blocks.
+    Under original-coordinate no-common-complex-right-eigenvalue separation,
+    the constructed real quasi-Schur factors carry enough spectral data to
+    prove both the adjacent block shape and determinant nonsingularity for
+    every adjacent same-labelled `B` block.  This packages the exact
+    block-determinant production used by the Bartels-Stewart traversal; it
+    does not model rounded Schur solves or any estimator. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_no_common_complex_right_eigenvalue
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (hno :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A) (realMatrixToComplex B)) :
+    ∃ (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U ∧
+      IsOrthogonal n V ∧
+      A = rectMatMul U (rectMatMul R (matTranspose U)) ∧
+      B = rectMatMul V (rectMatMul S (matTranspose V)) ∧
+      Monotone pA ∧
+      (∀ c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) ∧
+      (∀ i j : Fin m, pA j < pA i -> R i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA ∧
+      Monotone pB ∧
+      (∀ c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) ∧
+      (∀ i j : Fin n, pB j < pB i -> S i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB ∧
+      (∀ p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsAdjacentQuasiTriangularBlockFn n S p q ∧
+          Not (Matrix.det (sylvesterTwoColumnBlockCoeff m n R S p q) = 0)) := by
+  obtain ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero, hAspectral,
+    hpBmono, hpBcard, hSzero, hBspectral, _hiff⟩ :=
+    sylvester_realQuasiSchur_transform_solution_iff_twoBlockSpectral
+      m n A B (0 : RMatFn m n) (0 : RMatFn m n)
+  refine ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero, hAspectral,
+    hpBmono, hpBcard, hSzero, hBspectral, ?_⟩
+  intro p q hpq hsame
+  exact
+    sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+      m n U R A V S B pB p q hU hV hA hB hpBmono hpBcard hSzero
+      hpq hsame hBspectral hno
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-numbered
+    alias for the automatic real-quasi-Schur active-block determinant package
+    under no-common complex spectrum. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_no_common_complex_right_eigenvalue :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_no_common_complex_right_eigenvalue
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     determinant-shaped complex-separation route from a negative real
@@ -5025,6 +5614,233 @@ theorem sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq (m n : Nat)
         have hjp : j < p := (Finset.mem_filter.mp hj).2
         rw [hprev j hjp i]
       simp [sylvesterTwoColumnBlockRhs, hsum]
+
+/-- Updating a column at or to the right of `p` does not change the singleton
+    recurrence right-hand side for column `p`, because that side only sees
+    columns `j < p`.  This is the column-update bookkeeping needed by a future
+    recursive quasi-Schur candidate construction. -/
+theorem sylvesterSingletonColumnRhs_eq_of_column_update_ge
+    (m n : Nat) (T : RMatFn n n) (C X : RMatFn m n)
+    (p k : Fin n) (xk : Fin m -> Real)
+    (hpk : p.val <= k.val) :
+    (fun i : Fin m => C i p +
+      Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+        (fun j => T j p *
+          (fun i j => Function.update (fun j => X i j) k (xk i) j) i j)) =
+    (fun i : Fin m => C i p +
+      Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+        (fun j => T j p * X i j)) := by
+  funext i
+  have hsum :
+      Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => T j p *
+            (fun i j => Function.update (fun j => X i j) k (xk i) j) i j) =
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => T j p * X i j) := by
+    apply Finset.sum_congr rfl
+    intro j hj
+    have hjp : j.val < p.val := Fin.lt_def.mp (Finset.mem_filter.mp hj).2
+    have hjne : Not (j = k) := by
+      intro hje
+      have hjval : j.val = k.val := by rw [hje]
+      omega
+    simp [Function.update_of_ne hjne]
+  rw [hsum]
+
+/-- Updating a column at or to the right of the active two-column block does
+    not change the block right-hand side, because that side only depends on
+    columns `j < p`. -/
+theorem sylvesterTwoColumnBlockRhs_eq_of_column_update_ge
+    (m n : Nat) (T : RMatFn n n) (C X : RMatFn m n)
+    (p q k : Fin n) (xk : Fin m -> Real)
+    (hpk : p.val <= k.val) :
+    sylvesterTwoColumnBlockRhs m n T C
+        (fun i j => Function.update (fun j => X i j) k (xk i) j) p q =
+      sylvesterTwoColumnBlockRhs m n T C X p q := by
+  apply sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq
+  intro j hjp i
+  have hjpNat : j.val < p.val := Fin.lt_def.mp hjp
+  have hjne : Not (j = k) := by
+    intro hje
+    have hjval : j.val = k.val := by rw [hje]
+    omega
+  rw [Function.update_of_ne hjne]
+
+/-- Column-family version of
+    `sylvesterTwoColumnBlockRhs_eq_of_column_update_ge`: updating the recursive
+    column state at or to the right of the active block does not change the
+    two-column recurrence right-hand side. -/
+theorem sylvesterTwoColumnBlockRhs_eq_of_column_update_at_or_after
+    (m n : Nat)
+    (T : RMatFn n n) (C : RMatFn m n)
+    (x : Fin n -> Fin m -> Real) (p q l : Fin n) (xl : Fin m -> Real)
+    (hle : p <= l) :
+    sylvesterTwoColumnBlockRhs m n T C
+        (fun i j => Function.update x l xl j i) p q =
+      sylvesterTwoColumnBlockRhs m n T C
+        (fun i j => x j i) p q := by
+  exact
+    sylvesterTwoColumnBlockRhs_eq_of_prev_columns_eq m n T C
+      (fun i j => Function.update x l xl j i)
+      (fun i j => x j i) p q
+      (by
+        intro j hj i
+        have hjne : Not (j = l) := by
+          intro h
+          have hlt : l < p := by simpa [h] using hj
+          exact (not_lt_of_ge hle) hlt
+        simp [Function.update_of_ne hjne])
+
+/-- Updating two recursive-state columns at or to the right of the active
+    block still leaves the two-column recurrence right-hand side unchanged. -/
+theorem sylvesterTwoColumnBlockRhs_eq_of_two_column_updates_at_or_after
+    (m n : Nat)
+    (T : RMatFn n n) (C : RMatFn m n)
+    (x : Fin n -> Fin m -> Real) (p q k l : Fin n)
+    (xk xl : Fin m -> Real)
+    (hpk : p <= k) (hpl : p <= l) :
+    sylvesterTwoColumnBlockRhs m n T C
+        (fun i j => Function.update (Function.update x k xk) l xl j i) p q =
+      sylvesterTwoColumnBlockRhs m n T C
+        (fun i j => x j i) p q := by
+  calc
+    sylvesterTwoColumnBlockRhs m n T C
+        (fun i j => Function.update (Function.update x k xk) l xl j i) p q
+        = sylvesterTwoColumnBlockRhs m n T C
+            (fun i j => Function.update x k xk j i) p q := by
+            exact
+              sylvesterTwoColumnBlockRhs_eq_of_column_update_at_or_after
+                m n T C (Function.update x k xk) p q l xl hpl
+    _ = sylvesterTwoColumnBlockRhs m n T C
+          (fun i j => x j i) p q := by
+          exact
+            sylvesterTwoColumnBlockRhs_eq_of_column_update_at_or_after
+              m n T C x p q k xk hpk
+
+/-- A singleton recursive-state column update preserves every earlier column.
+    This is the prefix-invariant bookkeeping used by the eventual scheduled
+    quasi-Schur candidate. -/
+theorem sylvesterColumnFamily_update_eq_of_lt
+    {m n : Nat} (x : Fin n -> Fin m -> Real)
+    (p j : Fin n) (xp : Fin m -> Real)
+    (hjp : j < p) :
+    Function.update x p xp j = x j := by
+  rw [Function.update_of_ne (ne_of_lt hjp)]
+
+/-- A two-column recursive-state update at `p` and `q`, with `p <= q`,
+    preserves every column strictly before `p`. -/
+theorem sylvesterColumnFamily_two_updates_eq_of_lt
+    {m n : Nat} (x : Fin n -> Fin m -> Real)
+    (p q j : Fin n) (xp xq : Fin m -> Real)
+    (hpq : p <= q) (hjp : j < p) :
+    Function.update (Function.update x p xp) q xq j = x j := by
+  have hjq : j ≠ q := by
+    intro hjq
+    have hq_lt_p : q < p := by simpa [hjq] using hjp
+    exact (not_lt_of_ge hpq) hq_lt_p
+  rw [Function.update_of_ne hjq]
+  exact sylvesterColumnFamily_update_eq_of_lt x p j xp hjp
+
+/-- A recursive-state update at or beyond a natural-number frontier preserves
+    every column strictly before that frontier. -/
+theorem sylvesterColumnFamily_prefix_eq_of_column_update_ge_nat
+    {m n : Nat} (x : Fin n -> Fin m -> Real)
+    (N : Nat) (k : Fin n) (xk : Fin m -> Real)
+    (hNk : N <= k.val) :
+    forall j : Fin n, j.val < N -> forall i : Fin m,
+      Function.update x k xk j i = x j i := by
+  intro j hj i
+  have hjne : Not (j = k) := by
+    intro h
+    have hjk : j.val = k.val := by
+      exact congrArg Fin.val h
+    omega
+  rw [Function.update_of_ne hjne]
+
+/-- Two recursive-state updates at or beyond a natural-number frontier preserve
+    every column strictly before that frontier. -/
+theorem sylvesterColumnFamily_prefix_eq_of_two_column_updates_ge_nat
+    {m n : Nat} (x : Fin n -> Fin m -> Real)
+    (N : Nat) (k l : Fin n) (xk xl : Fin m -> Real)
+    (hNk : N <= k.val) (hNl : N <= l.val) :
+    forall j : Fin n, j.val < N -> forall i : Fin m,
+      Function.update (Function.update x k xk) l xl j i = x j i := by
+  intro j hj i
+  have hjl : Not (j = l) := by
+    intro h
+    have hjlval : j.val = l.val := by
+      exact congrArg Fin.val h
+    omega
+  rw [Function.update_of_ne hjl]
+  exact
+    sylvesterColumnFamily_prefix_eq_of_column_update_ge_nat
+      x N k xk hNk j hj i
+
+/-- A direct two-column recursive-state update satisfies the generated
+    two-column block formula against the final updated state.  This is the local
+    block-step counterpart to the prefix-stability lemmas used by a future
+    recursive quasi-Schur candidate construction. -/
+theorem sylvesterTwoColumnBlock_formula_of_column_family_block_update
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n) (C : RMatFn m n)
+    (x : Fin n -> Fin m -> Real) (p q : Fin n)
+    (hpq : q.val = p.val + 1) :
+    let z : Sum (Fin m) (Fin m) -> Real :=
+      Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+        (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+    let xNew : Fin n -> Fin m -> Real :=
+      Function.update (Function.update x p (fun i => z (Sum.inl i))) q
+        (fun i => z (Sum.inr i))
+    (forall i : Fin m,
+      xNew p i =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C (fun i j => xNew j i) p q)
+          (Sum.inl i)) /\
+    (forall i : Fin m,
+      xNew q i =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C (fun i j => xNew j i) p q)
+          (Sum.inr i)) := by
+  let z : Sum (Fin m) (Fin m) -> Real :=
+    Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+      (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+  let xNew : Fin n -> Fin m -> Real :=
+    Function.update (Function.update x p (fun i => z (Sum.inl i))) q
+      (fun i => z (Sum.inr i))
+  change
+    (forall i : Fin m,
+      xNew p i =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C (fun i j => xNew j i) p q)
+          (Sum.inl i)) /\
+    (forall i : Fin m,
+      xNew q i =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C (fun i j => xNew j i) p q)
+          (Sum.inr i))
+  have hp_le_q : p <= q := Fin.le_def.mpr (by omega)
+  have hp_ne_q : p ≠ q := by
+    intro hpqeq
+    have hval : p.val = q.val := congrArg Fin.val hpqeq
+    omega
+  have hRhs :
+      sylvesterTwoColumnBlockRhs m n S C (fun i j => xNew j i) p q =
+        sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q := by
+    dsimp [xNew]
+    exact
+      sylvesterTwoColumnBlockRhs_eq_of_two_column_updates_at_or_after
+        m n S C x p q p q
+        (fun i => z (Sum.inl i)) (fun i => z (Sum.inr i))
+        (le_rfl) hp_le_q
+  constructor
+  · intro i
+    rw [hRhs]
+    dsimp [xNew, z]
+    rw [Function.update_of_ne hp_ne_q, Function.update_self]
+  · intro i
+    rw [hRhs]
+    dsimp [xNew, z]
+    rw [Function.update_self]
 
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6), exact block-vector form:
     the supplied adjacent two-column predicate is equivalent to one combined
@@ -7747,6 +8563,82 @@ theorem sylvester_singleton_column_rhs_eq_of_prev_columns_eq (m n : Nat)
     rw [hprev j hjk i]
   rw [hsum]
 
+/-- Column-family version of
+    `sylvester_singleton_column_rhs_eq_of_prev_columns_eq`: updating the
+    recursive column state at or after the active singleton column does not
+    change that singleton recurrence right-hand side. -/
+theorem sylvester_singleton_column_rhs_eq_of_column_update_at_or_after
+    (m n : Nat)
+    (T : RMatFn n n) (C : RMatFn m n)
+    (x : Fin n -> Fin m -> Real) (k l : Fin n) (xl : Fin m -> Real)
+    (hle : k <= l) :
+    (fun i : Fin m => C i k +
+      Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+        (fun j => T j k * Function.update x l xl j i)) =
+    (fun i : Fin m => C i k +
+      Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+        (fun j => T j k * x j i)) := by
+  exact
+    sylvester_singleton_column_rhs_eq_of_prev_columns_eq m n T C
+      (fun i j => Function.update x l xl j i)
+      (fun i j => x j i) k
+      (by
+        intro j hj i
+        have hjne : Not (j = l) := by
+          intro h
+          have hlt : l < k := by simpa [h] using hj
+          exact (not_lt_of_ge hle) hlt
+        simp [Function.update_of_ne hjne])
+
+/-- A direct singleton recursive-state update satisfies the generated singleton
+    formula against the final updated state.  This is the local one-column
+    counterpart to `sylvesterTwoColumnBlock_formula_of_column_family_block_update`.
+    It is bookkeeping for the future scheduled quasi-Schur candidate, not the
+    full recursive construction. -/
+theorem sylvesterSingleton_formula_of_column_family_update
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n) (C : RMatFn m n)
+    (x : Fin n -> Fin m -> Real) (p : Fin n) :
+    let xp : Fin m -> Real :=
+      Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+        (fun i => C i p +
+          Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+            (fun j => S j p * x j i))
+    let xNew : Fin n -> Fin m -> Real := Function.update x p xp
+    forall i : Fin m,
+      xNew p i =
+        Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+          (fun i => C i p +
+            Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+              (fun j => S j p * xNew j i)) i := by
+  let xp : Fin m -> Real :=
+    Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+      (fun i => C i p +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => S j p * x j i))
+  let xNew : Fin n -> Fin m -> Real := Function.update x p xp
+  change forall i : Fin m,
+    xNew p i =
+      Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+        (fun i => C i p +
+          Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+            (fun j => S j p * xNew j i)) i
+  have hRhs :
+      (fun i : Fin m => C i p +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => S j p * xNew j i)) =
+      (fun i : Fin m => C i p +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => S j p * x j i)) := by
+    dsimp [xNew]
+    exact
+      sylvester_singleton_column_rhs_eq_of_column_update_at_or_after
+        m n S C x p p xp le_rfl
+  intro i
+  rw [hRhs]
+  dsimp [xNew, xp]
+  rw [Function.update_self]
+
 /-- Singleton-column solve/uniqueness bridge for the quasi-Schur traversal:
     if column `k` has the local zero-below property, the shifted coefficient is
     nonsingular, and `X(:,k)` is computed by the nonsingular inverse recurrence
@@ -8585,6 +9477,387 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_product_shift_det_fro
     exact
       sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_det_ne_zero
         m n R S p q hprod
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    Schur-coordinate solvability from a scheduled quasi-Schur traversal whose
+    same-block two-column steps use the real-Schur two-block spectral
+    certificate plus a supplied shifted determinant separation for the
+    constructed complex block root. Singleton steps still carry explicit
+    shifted determinant certificates. -/
+theorem sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_det_separation_frontier_step_oracle
+    (m n r : Nat)
+    (R : RMatFn m m) (S : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) /\
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => C i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        Not
+          ((Matrix.det
+            (realMatrixToComplex (Matrix.of R) -
+              Matrix.scalar (Fin m)
+                (sylvesterTwoColumnRealSchurBlockComplexRoot n S p q
+                  (Real.sqrt (-((S p p - S q q) ^ 2 + 4 * S p q * S q p))))) = 0)) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inr i)))) :
+    IsSylvesterSolutionRect m n R S C X := by
+  apply
+    sylvester_quasiSchur_blockTraversal_solution_of_det_frontier_step_oracle
+      m n r R S C X pmap frontier hstart hend hmono hcard hzero ?_
+  intro t ht
+  rcases hstep t ht with hsingle | hblock
+  · exact Or.inl hsingle
+  · rcases hblock with
+      ⟨p, q, hpval, hqval, hfront, hsame, hdetA, hXp, hXq⟩
+    refine Or.inr ⟨p, q, hpval, hqval, hfront, hsame, ?_, hXp, hXq⟩
+    have hpq_adj : q.val = p.val + 1 := by omega
+    exact
+      (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_det_separation
+        m n R S pmap p q hmono hcard hzero hpq_adj hsame hspectral hdetA).2
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    original-coordinate reconstruction from a scheduled quasi-Schur traversal
+    whose same-block two-column steps use real-Schur two-block spectral data
+    plus supplied shifted determinant separation. -/
+theorem sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_det_separation_frontier_step_oracle
+    (m n r : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C Cschur X Yorig : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hCschur : Cschur = rectMatMul (matTranspose U) (rectMatMul C V))
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) /\
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => Cschur i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        Not
+          ((Matrix.det
+            (realMatrixToComplex (Matrix.of R) -
+              Matrix.scalar (Fin m)
+                (sylvesterTwoColumnRealSchurBlockComplexRoot n S p q
+                  (Real.sqrt (-((S p p - S q q) ^ 2 + 4 * S p q * S q p))))) = 0)) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inr i))))
+    (hYorig : IsSylvesterSolutionRect m n A B C Yorig) :
+    rectMatMul U (rectMatMul X (matTranspose V)) = Yorig := by
+  apply
+    sylvester_quasiSchur_blockTraversal_original_solution_eq_of_det_frontier_step_oracle
+      m n r U R A V S B C Cschur X Yorig pmap frontier
+      hU hV hA hB hCschur hstart hend hmono hcard hzero ?_ hYorig
+  intro t ht
+  rcases hstep t ht with hsingle | hblock
+  · exact Or.inl hsingle
+  · rcases hblock with
+      ⟨p, q, hpval, hqval, hfront, hsame, hdetA, hXp, hXq⟩
+    refine Or.inr ⟨p, q, hpval, hqval, hfront, hsame, ?_, hXp, hXq⟩
+    have hpq_adj : q.val = p.val + 1 := by omega
+    exact
+      (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_det_separation
+        m n R S pmap p q hmono hcard hzero hpq_adj hsame hspectral hdetA).2
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    original-coordinate unique solvability from a scheduled quasi-Schur
+    traversal whose same-block two-column steps use real-Schur two-block
+    spectral data plus supplied shifted determinant separation. Singleton
+    steps still carry explicit shifted determinant certificates. -/
+theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_det_separation_frontier_step_oracle
+    (m n r : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C Cschur X : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hCschur : Cschur = rectMatMul (matTranspose U) (rectMatMul C V))
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) /\
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => Cschur i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        Not
+          ((Matrix.det
+            (realMatrixToComplex (Matrix.of R) -
+              Matrix.scalar (Fin m)
+                (sylvesterTwoColumnRealSchurBlockComplexRoot n S p q
+                  (Real.sqrt (-((S p p - S q q) ^ 2 + 4 * S p q * S q p))))) = 0)) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inr i)))) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  apply
+    existsUnique_isSylvesterSolutionRect_of_quasiSchur_det_frontier_step_oracle
+      m n r U R A V S B C Cschur X pmap frontier
+      hU hV hA hB hCschur hstart hend hmono hcard hzero ?_
+  intro t ht
+  rcases hstep t ht with hsingle | hblock
+  · exact Or.inl hsingle
+  · rcases hblock with
+      ⟨p, q, hpval, hqval, hfront, hsame, hdetA, hXp, hXq⟩
+    refine Or.inr ⟨p, q, hpval, hqval, hfront, hsame, ?_, hXp, hXq⟩
+    have hpq_adj : q.val = p.val + 1 := by omega
+    exact
+      (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_det_separation
+        m n R S pmap p q hmono hcard hzero hpq_adj hsame hspectral hdetA).2
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    Schur-coordinate solvability from a scheduled quasi-Schur traversal whose
+    same-block two-column steps supply the bundled real-quasi-Schur block
+    separation certificate. Singleton steps still carry explicit shifted
+    determinant certificates. -/
+theorem sylvester_quasiSchur_blockTraversal_solution_of_realQuasiSchur_block_separation_frontier_step_oracle
+    (m n r : Nat)
+    (R : RMatFn m m) (S : RMatFn n n) (C X : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) /\
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => C i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n R S pmap p q /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inr i)))) :
+    IsSylvesterSolutionRect m n R S C X := by
+  apply
+    sylvester_quasiSchur_blockTraversal_solution_of_det_frontier_step_oracle
+      m n r R S C X pmap frontier hstart hend hmono hcard hzero ?_
+  intro t ht
+  rcases hstep t ht with hsingle | hblock
+  · exact Or.inl hsingle
+  · rcases hblock with
+      ⟨p, q, hpval, hqval, hfront, hsame, hsep, hXp, hXq⟩
+    refine Or.inr ⟨p, q, hpval, hqval, hfront, hsame, ?_, hXp, hXq⟩
+    exact
+      (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_block_separation
+        m n R S pmap p q hsep).2
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    original-coordinate reconstruction from a scheduled quasi-Schur traversal
+    whose same-block two-column steps supply the bundled real-quasi-Schur
+    block separation certificate. -/
+theorem sylvester_quasiSchur_blockTraversal_original_solution_eq_of_realQuasiSchur_block_separation_frontier_step_oracle
+    (m n r : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C Cschur X Yorig : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hCschur : Cschur = rectMatMul (matTranspose U) (rectMatMul C V))
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) /\
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => Cschur i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n R S pmap p q /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inr i))))
+    (hYorig : IsSylvesterSolutionRect m n A B C Yorig) :
+    rectMatMul U (rectMatMul X (matTranspose V)) = Yorig := by
+  apply
+    sylvester_quasiSchur_blockTraversal_original_solution_eq_of_det_frontier_step_oracle
+      m n r U R A V S B C Cschur X Yorig pmap frontier
+      hU hV hA hB hCschur hstart hend hmono hcard hzero ?_ hYorig
+  intro t ht
+  rcases hstep t ht with hsingle | hblock
+  · exact Or.inl hsingle
+  · rcases hblock with
+      ⟨p, q, hpval, hqval, hfront, hsame, hsep, hXp, hXq⟩
+    refine Or.inr ⟨p, q, hpval, hqval, hfront, hsame, ?_, hXp, hXq⟩
+    exact
+      (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_block_separation
+        m n R S pmap p q hsep).2
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    original-coordinate unique solvability from a scheduled quasi-Schur
+    traversal whose same-block two-column steps supply the bundled
+    real-quasi-Schur block separation certificate. -/
+theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_realQuasiSchur_block_separation_frontier_step_oracle
+    (m n r : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C Cschur X : RMatFn m n)
+    (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hCschur : Cschur = rectMatMul (matTranspose U) (rectMatMul C V))
+    (hstart : frontier 0 = 0)
+    (hend : frontier r = n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) /\
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0) /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => Cschur i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * X i j)) i))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q /\
+        IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n R S pmap p q /\
+        (forall i : Fin m,
+          X i p =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inl i)) /\
+        (forall i : Fin m,
+          X i q =
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S Cschur X p q) (Sum.inr i)))) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  apply
+    existsUnique_isSylvesterSolutionRect_of_quasiSchur_det_frontier_step_oracle
+      m n r U R A V S B C Cschur X pmap frontier
+      hU hV hA hB hCschur hstart hend hmono hcard hzero ?_
+  intro t ht
+  rcases hstep t ht with hsingle | hblock
+  · exact Or.inl hsingle
+  · rcases hblock with
+      ⟨p, q, hpval, hqval, hfront, hsame, hsep, hXp, hXq⟩
+    refine Or.inr ⟨p, q, hpval, hqval, hfront, hsame, ?_, hXp, hXq⟩
+    exact
+      (sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_block_separation
+        m n R S pmap p q hsep).2
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     Schur-coordinate solvability from a scheduled quasi-Schur traversal whose
@@ -9714,6 +10987,481 @@ def IsSylvesterQuasiSchurGeneratedStepFormula (m n : Nat)
         Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
           (sylvesterTwoColumnBlockRhs m n S C X p q) (Sum.inr i)))
 
+/-- Prefix form of the generated Bartels-Stewart column formulas for a
+    recursive column-family state.  The predicate records that every singleton
+    or adjacent same-block formula whose active columns lie strictly before the
+    natural-number frontier `N` has already been established. -/
+def IsSylvesterColumnFamilyGeneratedPrefix (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (x : Fin n -> Fin m -> Real)
+    (pmap : Fin n -> Nat) (N : Nat) : Prop :=
+  (forall p : Fin n, p.val < N ->
+    (forall q : Fin n, q.val + 1 = p.val -> Not (pmap q = pmap p)) ->
+    (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) ->
+    forall i : Fin m,
+      x p i =
+        Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+          (fun i => C i p +
+            Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+              (fun j => S j p * x j i)) i) /\
+  (forall p q : Fin n, p.val < N -> q.val < N ->
+    q.val = p.val + 1 ->
+    pmap p = pmap q ->
+    (forall i : Fin m,
+      x p i =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+          (Sum.inl i)) /\
+    (forall i : Fin m,
+      x q i =
+        Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+          (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+          (Sum.inr i)))
+
+/-- Empty generated-prefix base case. -/
+theorem isSylvesterColumnFamilyGeneratedPrefix_zero
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (x : Fin n -> Fin m -> Real)
+    (pmap : Fin n -> Nat) :
+    IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap 0 := by
+  constructor
+  · intro p hp _ _ _
+    omega
+  · intro p q hp _ _ _
+    omega
+
+/-- A generated-prefix certificate can be restricted to any earlier frontier. -/
+theorem isSylvesterColumnFamilyGeneratedPrefix_mono
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (x : Fin n -> Fin m -> Real)
+    (pmap : Fin n -> Nat) {M N : Nat}
+    (hMN : M <= N)
+    (hprefix : IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap N) :
+    IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap M := by
+  rcases hprefix with ⟨hsingle, hblock⟩
+  constructor
+  · intro p hp hprev hnext i
+    exact hsingle p (by omega) hprev hnext i
+  · intro p q hp hq hpq hsame
+    exact hblock p q (by omega) (by omega) hpq hsame
+
+/-- A generated-prefix certificate through frontier `n` supplies the full
+    generated-step formula predicate for the corresponding `RMatFn`. -/
+theorem isSylvesterQuasiSchurGeneratedStepFormula_of_column_family_generated_prefix
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (x : Fin n -> Fin m -> Real)
+    (pmap : Fin n -> Nat)
+    (hprefix : IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap n) :
+    IsSylvesterQuasiSchurGeneratedStepFormula m n R S C
+      (fun i j => x j i) pmap := by
+  rcases hprefix with ⟨hsingle, hblock⟩
+  constructor
+  · intro p hprev hnext i
+    exact hsingle p p.isLt hprev hnext i
+  · intro p q hpq hsame
+    exact hblock p q p.isLt q.isLt hpq hsame
+
+/-- A singleton recursive update extends the generated-prefix certificate by
+    one frontier column, provided that the current frontier column is separated
+    from its immediate predecessor in the quasi-Schur block map. -/
+theorem isSylvesterColumnFamilyGeneratedPrefix_after_singleton_update
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (x : Fin n -> Fin m -> Real)
+    (pmap : Fin n -> Nat) (N : Nat) (p : Fin n)
+    (hp : p.val = N)
+    (hprefix : IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap N)
+    (hprev : forall q : Fin n, q.val + 1 = p.val -> Not (pmap q = pmap p)) :
+    let xp : Fin m -> Real :=
+      Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+        (fun i => C i p +
+          Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+            (fun j => S j p * x j i))
+    let xNew : Fin n -> Fin m -> Real := Function.update x p xp
+    IsSylvesterColumnFamilyGeneratedPrefix m n R S C xNew pmap (N + 1) := by
+  let xp : Fin m -> Real :=
+    Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+      (fun i => C i p +
+        Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+          (fun j => S j p * x j i))
+  let xNew : Fin n -> Fin m -> Real := Function.update x p xp
+  change IsSylvesterColumnFamilyGeneratedPrefix m n R S C xNew pmap (N + 1)
+  rcases hprefix with ⟨hsingle, hblock⟩
+  constructor
+  · intro k hk hprevk hnextk i
+    by_cases hkold : k.val < N
+    · have hkp : k <= p := Fin.le_def.mpr (by rw [hp]; omega)
+      have hk_ne_p : Not (k = p) := by
+        intro h
+        have hval : k.val = p.val := congrArg Fin.val h
+        omega
+      have hk_update : xNew k i = x k i := by
+        dsimp [xNew]
+        rw [Function.update_of_ne hk_ne_p]
+      have hRhs :
+          (fun i : Fin m => C i k +
+            Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+              (fun j => S j k * xNew j i)) =
+          (fun i : Fin m => C i k +
+            Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+              (fun j => S j k * x j i)) := by
+        dsimp [xNew]
+        exact
+          sylvester_singleton_column_rhs_eq_of_column_update_at_or_after
+            m n S C x k p xp hkp
+      rw [hk_update, hRhs]
+      exact hsingle k hkold hprevk hnextk i
+    · have hkp : k = p := by
+        apply Fin.ext
+        rw [hp]
+        omega
+      subst k
+      dsimp [xNew]
+      exact sylvesterSingleton_formula_of_column_family_update m n R S C x p i
+  · intro k l hk hl hkl hsame
+    by_cases hlold : l.val < N
+    · have hkold : k.val < N := by omega
+      have hkp : k <= p := Fin.le_def.mpr (by rw [hp]; omega)
+      have hk_ne_p : Not (k = p) := by
+        intro h
+        have hval : k.val = p.val := congrArg Fin.val h
+        omega
+      have hl_ne_p : Not (l = p) := by
+        intro h
+        have hval : l.val = p.val := congrArg Fin.val h
+        omega
+      have hk_update : forall i : Fin m, xNew k i = x k i := by
+        intro i
+        dsimp [xNew]
+        rw [Function.update_of_ne hk_ne_p]
+      have hl_update : forall i : Fin m, xNew l i = x l i := by
+        intro i
+        dsimp [xNew]
+        rw [Function.update_of_ne hl_ne_p]
+      have hRhs :
+          sylvesterTwoColumnBlockRhs m n S C (fun i j => xNew j i) k l =
+          sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) k l := by
+        dsimp [xNew]
+        exact
+          sylvesterTwoColumnBlockRhs_eq_of_column_update_at_or_after
+            m n S C x k l p xp hkp
+      rcases hblock k l hkold hlold hkl hsame with ⟨hkformula, hlformula⟩
+      constructor
+      · intro i
+        rw [hk_update i, hRhs]
+        exact hkformula i
+      · intro i
+        rw [hl_update i, hRhs]
+        exact hlformula i
+    · have hlp : l = p := by
+        apply Fin.ext
+        rw [hp]
+        omega
+      have hkpval : k.val + 1 = p.val := by
+        simpa [hlp] using hkl.symm
+      have hsame_kp : pmap k = pmap p := by
+        simpa [hlp] using hsame
+      exact False.elim ((hprev k hkpval) hsame_kp)
+
+/-- An adjacent same-block recursive update extends the generated-prefix
+    certificate by two frontier columns.  The size-at-most-two block-map
+    hypothesis rules out a hidden same-labelled predecessor block ending at the
+    first updated column. -/
+theorem isSylvesterColumnFamilyGeneratedPrefix_after_two_column_update
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (x : Fin n -> Fin m -> Real)
+    (pmap : Fin n -> Nat) (N : Nat) (p q : Fin n)
+    (hp : p.val = N) (hq : q.val = N + 1)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hsame : pmap p = pmap q)
+    (hprefix : IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap N) :
+    let z : Sum (Fin m) (Fin m) -> Real :=
+      Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+        (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+    let xNew : Fin n -> Fin m -> Real :=
+      Function.update (Function.update x p (fun i => z (Sum.inl i))) q
+        (fun i => z (Sum.inr i))
+    IsSylvesterColumnFamilyGeneratedPrefix m n R S C xNew pmap (N + 2) := by
+  let z : Sum (Fin m) (Fin m) -> Real :=
+    Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+      (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+  let xNew : Fin n -> Fin m -> Real :=
+    Function.update (Function.update x p (fun i => z (Sum.inl i))) q
+      (fun i => z (Sum.inr i))
+  have hpq : q.val = p.val + 1 := by omega
+  have hNp : N <= p.val := by omega
+  have hNq : N <= q.val := by omega
+  change IsSylvesterColumnFamilyGeneratedPrefix m n R S C xNew pmap (N + 2)
+  rcases hprefix with ⟨hsingle, hblock⟩
+  constructor
+  · intro k hk hprevk hnextk i
+    by_cases hkold : k.val < N
+    · have hk_update : xNew k i = x k i := by
+        dsimp [xNew]
+        exact
+          sylvesterColumnFamily_prefix_eq_of_two_column_updates_ge_nat
+            x N p q (fun i => z (Sum.inl i)) (fun i => z (Sum.inr i))
+            hNp hNq k hkold i
+      have hkp : k <= p := Fin.le_def.mpr (by rw [hp]; omega)
+      have hkq : k <= q := Fin.le_def.mpr (by rw [hq]; omega)
+      have hRhs :
+          (fun i : Fin m => C i k +
+            Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+              (fun j => S j k * xNew j i)) =
+          (fun i : Fin m => C i k +
+            Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+              (fun j => S j k * x j i)) := by
+        dsimp [xNew]
+        calc
+          (fun i : Fin m => C i k +
+            Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+              (fun j =>
+                S j k *
+                  Function.update (Function.update x p (fun i => z (Sum.inl i)))
+                    q (fun i => z (Sum.inr i)) j i)) =
+              (fun i : Fin m => C i k +
+                Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+                  (fun j =>
+                    S j k * Function.update x p (fun i => z (Sum.inl i)) j i)) := by
+                exact
+                  sylvester_singleton_column_rhs_eq_of_column_update_at_or_after
+                    m n S C (Function.update x p (fun i => z (Sum.inl i)))
+                    k q (fun i => z (Sum.inr i)) hkq
+          _ =
+              (fun i : Fin m => C i k +
+                Finset.sum (Finset.filter (fun j => j < k) Finset.univ)
+                  (fun j => S j k * x j i)) := by
+                exact
+                  sylvester_singleton_column_rhs_eq_of_column_update_at_or_after
+                    m n S C x k p (fun i => z (Sum.inl i)) hkp
+      rw [hk_update, hRhs]
+      exact hsingle k hkold hprevk hnextk i
+    · have hkcase : k = p ∨ k = q := by
+        have hkval : k.val = N ∨ k.val = N + 1 := by omega
+        rcases hkval with hkN | hkN1
+        · exact Or.inl (Fin.ext (by rw [hkN, hp]))
+        · exact Or.inr (Fin.ext (by rw [hkN1, hq]))
+      rcases hkcase with hkp_eq | hkq_eq
+      · subst k
+        exact False.elim ((hnextk q hpq) hsame)
+      · subst k
+        exact False.elim ((hprevk p hpq.symm) hsame)
+  · intro k l hk hl hkl hsamekl
+    by_cases hlold : l.val < N
+    · have hkold : k.val < N := by omega
+      have hkp : k <= p := Fin.le_def.mpr (by rw [hp]; omega)
+      have hkq : k <= q := Fin.le_def.mpr (by rw [hq]; omega)
+      have hk_update : forall i : Fin m, xNew k i = x k i := by
+        intro i
+        dsimp [xNew]
+        exact
+          sylvesterColumnFamily_prefix_eq_of_two_column_updates_ge_nat
+            x N p q (fun i => z (Sum.inl i)) (fun i => z (Sum.inr i))
+            hNp hNq k hkold i
+      have hl_update : forall i : Fin m, xNew l i = x l i := by
+        intro i
+        dsimp [xNew]
+        exact
+          sylvesterColumnFamily_prefix_eq_of_two_column_updates_ge_nat
+            x N p q (fun i => z (Sum.inl i)) (fun i => z (Sum.inr i))
+            hNp hNq l hlold i
+      have hRhs :
+          sylvesterTwoColumnBlockRhs m n S C (fun i j => xNew j i) k l =
+          sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) k l := by
+        dsimp [xNew]
+        exact
+          sylvesterTwoColumnBlockRhs_eq_of_two_column_updates_at_or_after
+            m n S C x k l p q
+            (fun i => z (Sum.inl i)) (fun i => z (Sum.inr i)) hkp hkq
+      rcases hblock k l hkold hlold hkl hsamekl with ⟨hkformula, hlformula⟩
+      constructor
+      · intro i
+        rw [hk_update i, hRhs]
+        exact hkformula i
+      · intro i
+        rw [hl_update i, hRhs]
+        exact hlformula i
+    · have hlcase : l.val = N ∨ l.val = N + 1 := by omega
+      rcases hlcase with hlN | hlN1
+      · have hlp : l = p := Fin.ext (by rw [hlN, hp])
+        have hkpmap : pmap k = pmap p := by
+          simpa [hlp] using hsamekl
+        rcases quasiSchur_blockMap_eq_left_or_right_of_adjacent_same_block
+            n pmap p q k hcard hpq hsame hkpmap with hk_eq_p | hk_eq_q
+        · have hkval : k.val = p.val := congrArg Fin.val hk_eq_p
+          omega
+        · have hkval : k.val = q.val := congrArg Fin.val hk_eq_q
+          omega
+      · have hlq : l = q := Fin.ext (by rw [hlN1, hq])
+        have hkpval : k.val = N := by
+          rw [hlN1] at hkl
+          omega
+        have hkp_eq : k = p := Fin.ext (by rw [hkpval, hp])
+        subst k
+        subst l
+        exact sylvesterTwoColumnBlock_formula_of_column_family_block_update
+          m n R S C x p q hpq
+
+/-- A supplied generated frontier schedule constructs a terminal recursive
+    column-family state satisfying all generated singleton and adjacent-block
+    formulas.  This is the noncomputable existence form of the scheduled
+    Bartels-Stewart candidate; it is still exact arithmetic and does not model
+    rounded residuals or estimator data. -/
+theorem exists_isSylvesterColumnFamilyGeneratedPrefix_of_frontier_schedule
+    (m n r : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hstart : frontier 0 = 0) (hend : frontier r = n)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val + 1 = p.val -> pmap q ≠ pmap p) /\
+        (forall q : Fin n, q.val = p.val + 1 -> pmap p ≠ pmap q))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q)) :
+    exists x : Fin n -> Fin m -> Real,
+      IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap n := by
+  have hstates : forall t : Nat, t <= r ->
+      exists x : Fin n -> Fin m -> Real,
+        IsSylvesterColumnFamilyGeneratedPrefix m n R S C x pmap (frontier t) := by
+    intro t
+    induction t with
+    | zero =>
+        intro _ht
+        refine ⟨fun _ _ => 0, ?_⟩
+        simpa [hstart] using
+          isSylvesterColumnFamilyGeneratedPrefix_zero
+            m n R S C (fun _ _ => 0) pmap
+    | succ t ih =>
+        intro ht
+        have htlt : t < r := by omega
+        rcases ih (by omega) with ⟨x, hprefix⟩
+        rcases hstep t htlt with hsingle | hblock
+        · rcases hsingle with ⟨p, hp, hfront, hprev, _hnext⟩
+          let xp : Fin m -> Real :=
+            Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+              (fun i => C i p +
+                Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                  (fun j => S j p * x j i))
+          let xNew : Fin n -> Fin m -> Real := Function.update x p xp
+          refine ⟨xNew, ?_⟩
+          have hprefix' :=
+            isSylvesterColumnFamilyGeneratedPrefix_after_singleton_update
+              m n R S C x pmap (frontier t) p hp hprefix hprev
+          simpa [xNew, xp, hfront] using hprefix'
+        · rcases hblock with ⟨p, q, hp, hq, hfront, hsame⟩
+          let z : Sum (Fin m) (Fin m) -> Real :=
+            Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+              (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+          let xNew : Fin n -> Fin m -> Real :=
+            Function.update (Function.update x p (fun i => z (Sum.inl i))) q
+              (fun i => z (Sum.inr i))
+          refine ⟨xNew, ?_⟩
+          have hprefix' :=
+            isSylvesterColumnFamilyGeneratedPrefix_after_two_column_update
+              m n R S C x pmap (frontier t) p q hp hq hcard hsame hprefix
+          simpa [xNew, z, hfront] using hprefix'
+  rcases hstates r le_rfl with ⟨x, hprefix⟩
+  exact ⟨x, by simpa [hend] using hprefix⟩
+
+/-- A supplied generated frontier schedule constructs an `RMatFn` candidate
+    satisfying the packaged generated-step formula predicate. -/
+theorem exists_isSylvesterQuasiSchurGeneratedStepFormula_of_frontier_schedule
+    (m n r : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (pmap : Fin n -> Nat) (frontier : Nat -> Nat)
+    (hstart : frontier 0 = 0) (hend : frontier r = n)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hstep : forall t : Nat, t < r ->
+      (exists p : Fin n,
+        p.val = frontier t /\
+        frontier (t + 1) = frontier t + 1 /\
+        (forall q : Fin n, q.val + 1 = p.val -> pmap q ≠ pmap p) /\
+        (forall q : Fin n, q.val = p.val + 1 -> pmap p ≠ pmap q))
+      \/
+      (exists p q : Fin n,
+        p.val = frontier t /\
+        q.val = frontier t + 1 /\
+        frontier (t + 1) = frontier t + 2 /\
+        pmap p = pmap q)) :
+    exists X : RMatFn m n,
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S C X pmap := by
+  rcases exists_isSylvesterColumnFamilyGeneratedPrefix_of_frontier_schedule
+      m n r R S C pmap frontier hstart hend hcard hstep with ⟨x, hprefix⟩
+  exact
+    ⟨fun i j => x j i,
+      isSylvesterQuasiSchurGeneratedStepFormula_of_column_family_generated_prefix
+        m n R S C x pmap hprefix⟩
+
+/-- The automatically generated real-quasi-Schur frontier schedule constructs
+    an exact recursive Bartels-Stewart candidate satisfying the packaged
+    generated-step formula predicate. -/
+theorem exists_isSylvesterQuasiSchurGeneratedStepFormula_of_quasiSchur_schedule
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (pmap : Fin n -> Nat)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2) :
+    exists X : RMatFn m n,
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S C X pmap := by
+  rcases quasiSchur_exists_frontier_schedule n pmap hcard with
+    ⟨r, frontier, hstart, hend, _hfrontLt, hstep⟩
+  exact
+    exists_isSylvesterQuasiSchurGeneratedStepFormula_of_frontier_schedule
+      m n r R S C pmap frontier hstart hend hcard hstep
+
+/-- Column-family packaging for
+    `IsSylvesterQuasiSchurGeneratedStepFormula`.  A recursive construction often
+    maintains state as `Fin n -> Fin m -> Real`; this wrapper turns singleton
+    and block formulas for that state into the existing `RMatFn` predicate. -/
+theorem isSylvesterQuasiSchurGeneratedStepFormula_of_column_family
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n) (x : Fin n -> Fin m -> Real)
+    (pmap : Fin n -> Nat)
+    (hsingle : forall p : Fin n,
+      (forall q : Fin n, q.val + 1 = p.val -> Not (pmap q = pmap p)) ->
+      (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) ->
+      forall i : Fin m,
+        x p i =
+          Matrix.mulVec (Inv.inv (sylvesterTriangularShiftedCoeff m R (S p p)))
+            (fun i => C i p +
+              Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+                (fun j => S j p * x j i)) i)
+    (hblock : forall p q : Fin n,
+      q.val = p.val + 1 ->
+      pmap p = pmap q ->
+      (forall i : Fin m,
+        x p i =
+          Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+            (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+            (Sum.inl i)) /\
+      (forall i : Fin m,
+        x q i =
+          Matrix.mulVec (Inv.inv (sylvesterTwoColumnBlockCoeff m n R S p q))
+            (sylvesterTwoColumnBlockRhs m n S C (fun i j => x j i) p q)
+            (Sum.inr i))) :
+    IsSylvesterQuasiSchurGeneratedStepFormula m n R S C
+      (fun i j => x j i) pmap := by
+  constructor
+  · intro p hprev hnext i
+    exact hsingle p hprev hnext i
+  · intro p q hpq hsame
+    exact hblock p q hpq hsame
+
 /-- Predicate-packaged version of
     `sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_generated_frontier_step_oracle`. -/
 theorem sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_generated_step_formula
@@ -9799,6 +11547,446 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_c
     existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_generated_frontier_step_oracle
       m n U R A V S B C Cschur X pmap hU hV hA hB hCschur hmono hcard
       hzero hspectral hnoOrig hXsingle hXblock
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    recursive-candidate witness: the automatically generated quasi-Schur
+    frontier schedule constructs a Schur-coordinate candidate satisfying the
+    generated-step formulas, and the existing spectral/no-common traversal
+    theorem proves that this candidate solves the Sylvester equation. -/
+theorem exists_isSylvesterSolutionRect_and_generatedStepFormula_of_quasiSchur_schedule_twoBlockSpectral_no_common
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    exists X : RMatFn m n,
+      IsSylvesterSolutionRect m n R S C X /\
+        IsSylvesterQuasiSchurGeneratedStepFormula m n R S C X pmap := by
+  rcases exists_isSylvesterQuasiSchurGeneratedStepFormula_of_quasiSchur_schedule
+      m n R S C pmap hcard with ⟨X, hXformula⟩
+  have hXsol :
+      IsSylvesterSolutionRect m n R S C X :=
+    sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_generated_step_formula
+      m n U R A V S B C X pmap hU hV hA hB hmono hcard hzero
+      hspectral hnoOrig hXformula
+  exact ⟨X, hXsol, hXformula⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    exact recursive-candidate witness: the automatically scheduled recursive
+    Schur-coordinate candidate satisfies the generated-step formulas for
+    `C_s = U^T C V`, and reconstructs an original-coordinate Sylvester
+    solution as `U X V^T`. -/
+theorem exists_original_solution_and_generated_step_formula_of_quasiSchur_schedule_twoBlockSpectral_no_common
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    exists X : RMatFn m n,
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap /\
+      IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) := by
+  obtain ⟨X, hXsol, hXformula⟩ :=
+    exists_isSylvesterSolutionRect_and_generatedStepFormula_of_quasiSchur_schedule_twoBlockSpectral_no_common
+      m n U R A V S B
+      (rectMatMul (matTranspose U) (rectMatMul C V)) pmap
+      hU hV hA hB hmono hcard hzero hspectral hnoOrig
+  refine ⟨X, hXformula, ?_⟩
+  exact
+    (sylvester_schur_transform_solution_iff m n
+      U R A V S B C X hU hV hA hB).mpr hXsol
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    exact recursive-candidate unique solvability: the automatically scheduled
+    recursive generated-step witness feeds the existing original-coordinate
+    unique-solvability wrapper. -/
+theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpectral_no_common_generated_step_formula_witness
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  obtain ⟨X, hXformula, _hXorig⟩ :=
+    exists_original_solution_and_generated_step_formula_of_quasiSchur_schedule_twoBlockSpectral_no_common
+      m n U R A V S B C pmap hU hV hA hB hmono hcard hzero
+      hspectral hnoOrig
+  exact
+    existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_generated_step_formula
+      m n U R A V S B C
+      (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap
+      hU hV hA hB rfl hmono hcard hzero hspectral hnoOrig hXformula
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    recursive-candidate witness with the real quasi-Schur factors chosen
+    internally.  Under the original no-common complex spectrum hypothesis, the
+    constructed real quasi-Schur factors provide the block-map, zero-below, and
+    adjacent two-block spectral certificates consumed by the generated
+    Bartels-Stewart traversal. -/
+theorem exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_no_common
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    exists (U R : RMatFn m m) (V S : RMatFn n n)
+        (pA : Fin m -> Nat) (pB : Fin n -> Nat) (X : RMatFn m n),
+      IsOrthogonal m U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) /\
+      (forall i j : Fin m, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) := by
+  obtain
+      ⟨U, R, V, S, pA, pB, hU, hV, hA, hB, hpAmono, hpAcard,
+        hAzero, hAspectral, hpBmono, hpBcard, hBzero, hBspectral, _hiff⟩ :=
+    sylvester_realQuasiSchur_transform_solution_iff_twoBlockSpectral
+      m n A B C (fun _ _ => 0)
+  obtain ⟨X, hXformula, hXorig⟩ :=
+    exists_original_solution_and_generated_step_formula_of_quasiSchur_schedule_twoBlockSpectral_no_common
+      m n U R A V S B C pB hU hV hA hB hpBmono hpBcard hBzero hBspectral hnoOrig
+  exact
+    ⟨U, R, V, S, pA, pB, X, hU, hV, hA, hB, hpAmono, hpAcard,
+      hAzero, hAspectral, hpBmono, hpBcard, hBzero, hBspectral, hXformula, hXorig⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    recursive-candidate unique solvability with internally chosen real
+    quasi-Schur factors.  This removes the caller-facing supplied block-map and
+    two-block spectral premises from the recursive generated-step witness route,
+    leaving the original no-common complex spectrum hypothesis. -/
+theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_no_common_generated_step_formula_witness
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  obtain
+      ⟨U, R, V, S, _pA, pB, hU, hV, hA, hB, _hpAmono, _hpAcard,
+        _hAzero, _hAspectral, hpBmono, hpBcard, hBzero, hBspectral, _hiff⟩ :=
+    sylvester_realQuasiSchur_transform_solution_iff_twoBlockSpectral
+      m n A B C (fun _ _ => 0)
+  exact
+    existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpectral_no_common_generated_step_formula_witness
+      m n U R A V S B C pB hU hV hA hB hpBmono hpBcard hBzero hBspectral hnoOrig
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-numbered
+    alias for the internally chosen real quasi-Schur recursive generated-step
+    original-coordinate witness under no common complex spectrum. -/
+theorem H16_eq16_4_8_exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_no_common
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    exists (U R : RMatFn m m) (V S : RMatFn n n)
+        (pA : Fin m -> Nat) (pB : Fin n -> Nat) (X : RMatFn m n),
+      IsOrthogonal m U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) /\
+      (forall i j : Fin m, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_no_common
+    m n A B C hnoOrig
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-numbered
+    alias for original-coordinate unique solvability via internally chosen real
+    quasi-Schur factors and the generated recursive candidate route. -/
+theorem H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_no_common
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_no_common_generated_step_formula_witness
+    m n A B C hnoOrig
+
+/-- Any exact Schur-coordinate solution satisfies the generated-step formula
+    oracle when the real quasi-Schur block map and original no-common spectrum
+    hypotheses provide the singleton and two-column nonsingularity
+    certificates.  This turns the packaged oracle into a consequence of exact
+    solvability, rather than a separate formula assumption. -/
+theorem isSylvesterQuasiSchurGeneratedStepFormula_of_solution_twoBlockSpectral_no_common
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B))
+    (hXsol : IsSylvesterSolutionRect m n R S C X) :
+    IsSylvesterQuasiSchurGeneratedStepFormula m n R S C X pmap := by
+  constructor
+  · intro p hprev hnext i
+    have hsingle :
+        forall q : Fin n, pmap q = pmap p -> q = p :=
+      quasiSchur_singleton_fiber_of_prev_next_not_same
+        n pmap p hmono hprev hnext
+    have hdet :
+        Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0) :=
+      sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_singleton_no_common_complex_right_eigenvalue
+        m n U R A V S B pmap p hU hV hA hB hzero hsingle hnoOrig
+    have hbelow : forall j : Fin n, p < j -> S j p = 0 :=
+      quasiSchur_zero_below_of_singleton_successor
+        n S pmap p hmono hzero hnext
+    let M : Matrix (Fin m) (Fin m) Real :=
+      sylvesterTriangularShiftedCoeff m R (S p p)
+    let rhs : Fin m -> Real := fun i => C i p +
+      Finset.sum (Finset.filter (fun j => j < p) Finset.univ)
+        (fun j => S j p * X i j)
+    have hMx : Matrix.mulVec M (fun i : Fin m => X i p) = rhs := by
+      dsimp [M, rhs]
+      exact sylvester_column_equation_of_solution_zero_below
+        m n R S C X p hbelow hXsol
+    have hleft : Inv.inv M * M = 1 := by
+      dsimp [M]
+      exact sylvesterTriangularShiftedCoeff_nonsingInv_mul
+        m R (S p p) hdet
+    have hvec :
+        (fun i : Fin m => X i p) =
+          Matrix.mulVec (Inv.inv M) rhs := by
+      calc
+        (fun i : Fin m => X i p) =
+            Matrix.mulVec (1 : Matrix (Fin m) (Fin m) Real)
+              (fun i : Fin m => X i p) := by
+              simp
+        _ = Matrix.mulVec (Inv.inv M * M) (fun i : Fin m => X i p) := by
+              rw [hleft]
+        _ = Matrix.mulVec (Inv.inv M)
+              (Matrix.mulVec M (fun i : Fin m => X i p)) := by
+              rw [Matrix.mulVec_mulVec]
+        _ = Matrix.mulVec (Inv.inv M) rhs := by
+              rw [hMx]
+    exact congrFun hvec i
+  · intro p q hpq hsame
+    have hblockdet :=
+      sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+        m n U R A V S B pmap p q hU hV hA hB hmono hcard hzero
+        hpq hsame hspectral hnoOrig
+    have hsystem : IsSylvesterTwoColumnBlockSystem m n R S C X p q :=
+      sylvester_quasiTriangular_two_column_block_system_of_solution
+        m n R S C X p q hblockdet.1 hXsol
+    have hz :
+        Matrix.mulVec (sylvesterTwoColumnBlockCoeff m n R S p q)
+            (Sum.elim (fun i : Fin m => X i p) (fun i : Fin m => X i q)) =
+          sylvesterTwoColumnBlockRhs m n S C X p q := by
+      have hz' :=
+        (sylvester_two_column_block_system_iff_blockCoeff_mulVec
+          m n R S C X p q).mp hsystem
+      simpa [sylvesterTwoColumnBlockRhs] using hz'
+    have hvec :=
+      sylvesterTwoColumnBlockCoeff_solutionVector_eq_nonsingInv_rhs_of_det_ne_zero
+        m n R S C X p q hblockdet.2 hz
+    constructor
+    · intro i
+      exact congrFun hvec (Sum.inl i)
+    · intro i
+      exact congrFun hvec (Sum.inr i)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    generated-step witness surface: under supplied real-quasi-Schur factors,
+    the two-block spectral block map, and original no-common complex spectrum,
+    some exact Schur-coordinate solution satisfies the packaged generated-step
+    formulas.
+
+    Scope: this proves existence of a formula-satisfying witness by the exact
+    vectorized Sylvester solve and the solution-characterization theorem above.
+    It is not yet the recursive Bartels-Stewart construction of the candidate
+    `X`. -/
+theorem exists_isSylvesterSolutionRect_and_generatedStepFormula_of_twoBlockSpectral_no_common
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    exists X : RMatFn m n,
+      IsSylvesterSolutionRect m n R S C X /\
+        IsSylvesterQuasiSchurGeneratedStepFormula m n R S C X pmap := by
+  have hnoRS :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex R)
+        (realMatrixToComplex S) :=
+    noCommonComplexRightEigenvalue_realQuasiSchur_factors
+      m n U R A V S B hU hV hA hB hnoOrig
+  have hdet :
+      Not (Matrix.det (sylvesterVecCoeff m n R S) = 0) :=
+    sylvesterVecCoeff_det_ne_zero_of_no_common_complex_right_eigenvalue
+      m n R S hnoRS
+  let x : Prod (Fin n) (Fin m) -> Real :=
+    Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n R S)) (Matrix.vec C)
+  have hx :
+      Matrix.mulVec (sylvesterVecCoeff m n R S) x = Matrix.vec C := by
+    dsimp [x]
+    rw [Matrix.mulVec_mulVec,
+      Matrix.mul_nonsing_inv (sylvesterVecCoeff m n R S)
+        (isUnit_iff_ne_zero.mpr hdet),
+      Matrix.one_mulVec]
+  obtain ⟨X, hXvec⟩ := Matrix.vec_bijective.surjective x
+  have hXsol : IsSylvesterSolutionRect m n R S C X :=
+    (sylvester_vec_system_iff_solution m n R S C X).mp
+      (by rw [hXvec]; exact hx)
+  exact ⟨X, hXsol,
+    isSylvesterQuasiSchurGeneratedStepFormula_of_solution_twoBlockSpectral_no_common
+      m n U R A V S B C X pmap hU hV hA hB hmono hcard hzero
+      hspectral hnoOrig hXsol⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    generated-step witness surface: the exact Schur-coordinate witness from
+    `exists_isSylvesterSolutionRect_and_generatedStepFormula_of_twoBlockSpectral_no_common`
+    reconstructs an exact original-coordinate solution after the standard
+    `C_s = U^T C V` right-hand-side transform.
+
+    Scope: the generated formulas are proved for the Schur-coordinate right
+    hand side displayed in the theorem.  The witness is still obtained through
+    the exact vec/Kronecker inverse route, not by the recursive
+    Bartels-Stewart frontier recurrence. -/
+theorem exists_original_solution_and_generated_step_formula_of_twoBlockSpectral_no_common
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    exists X : RMatFn m n,
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap /\
+      IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) := by
+  obtain ⟨X, hXsol, hXformula⟩ :=
+    exists_isSylvesterSolutionRect_and_generatedStepFormula_of_twoBlockSpectral_no_common
+      m n U R A V S B
+      (rectMatMul (matTranspose U) (rectMatMul C V)) pmap
+      hU hV hA hB hmono hcard hzero hspectral hnoOrig
+  refine ⟨X, hXformula, ?_⟩
+  exact
+    (sylvester_schur_transform_solution_iff m n
+      U R A V S B C X hU hV hA hB).mpr hXsol
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    original-coordinate unique solvability from the exact generated-formula
+    witness.  This removes the caller-facing generated-formula hypothesis by
+    producing such a witness from the exact vec/Kronecker solve, then feeding
+    it to the generated-step unique-solvability wrapper.
+
+    Scope: exact arithmetic only; this is not a rounded Bartels-Stewart solve
+    or LAPACK estimator theorem. -/
+theorem existsUnique_isSylvesterSolutionRect_of_twoBlockSpectral_no_common_generated_step_formula_witness
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  obtain ⟨X, hXformula, _hXorig⟩ :=
+    exists_original_solution_and_generated_step_formula_of_twoBlockSpectral_no_common
+      m n U R A V S B C pmap hU hV hA hB hmono hcard hzero
+      hspectral hnoOrig
+  exact
+    existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_generated_step_formula
+      m n U R A V S B C
+      (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap
+      hU hV hA hB rfl hmono hcard hzero hspectral hnoOrig hXformula
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
@@ -10035,6 +12223,12 @@ theorem existsUnique_isSylvesterSolutionRect_schurTriangular (m n : Nat)
       X = rectMatMul U (rectMatMul YX (matTranspose V)) := hXexpand.symm
       _ = rectMatMul U (rectMatMul Y (matTranspose V)) := by rw [hYeq]
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.6):
+    source-numbered alias for the supplied Schur-triangular exact unique-solve
+    endpoint. -/
+alias H16_eq16_4_6_existsUnique_isSylvesterSolutionRect_schurTriangular :=
+  existsUnique_isSylvesterSolutionRect_schurTriangular
+
 /-- Real quasi-Schur-to-triangular uniqueness bridge.  The theorem returns the
     exact real quasi-Schur factors for `A` and `B`; if the returned `B`-side
     block map is supplied to be strictly increasing down the matrix order, so
@@ -10216,6 +12410,12 @@ theorem existsUnique_sylvesterVecCoeff_schurTriangular_mulVec (m n : Nat)
   intro y hy
   exact hinj (by rw [hy, hx])
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for the supplied Schur-triangular vectorized
+    unique-solve endpoint. -/
+alias H16_eq16_2_6_existsUnique_sylvesterVecCoeff_schurTriangular_mulVec :=
+  existsUnique_sylvesterVecCoeff_schurTriangular_mulVec
+
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6),
     supplied triangular Schur-coordinate case: the vec/Kronecker Sylvester
     coefficient itself is nonsingular under the exact supplied-factor
@@ -10241,6 +12441,12 @@ theorem sylvesterVecCoeff_schurTriangular_det_ne_zero (m n : Nat)
     apply hinj
     rw [hxzero, Matrix.mulVec_zero]
   exact hxne hxzero'
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered alias
+    for determinant nonsingularity of the supplied Schur-triangular
+    vec/Kronecker coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_schurTriangular_det_ne_zero :=
+  sylvesterVecCoeff_schurTriangular_det_ne_zero
 
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.4), strict singleton-block
     specialization of the supplied real quasi-Schur block map: if the supplied

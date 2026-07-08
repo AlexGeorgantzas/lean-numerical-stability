@@ -470,9 +470,17 @@
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table_of_det_ne_zero,
+    higham13_blockDiagDomCol_piNorm_of_infNorm,
     higham13_algorithm13_3_matrix_infNorm_initial_diag_bound_of_diagBound_nonpos,
     higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos,
     higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_diag_lower_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse,
+    higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse,
+    higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_diag_lower_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table_of_pivot_right_inverse,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_initial_diag_right_inverse_of_pivot_right_inverse,
@@ -7179,6 +7187,33 @@ def IsBlockDiagDomCol (m : ℕ) (blockNorm : Fin m → Fin m → ℝ)
     (invDiagBound : Fin m → ℝ) : Prop :=
   ∀ j : Fin m,
     ∑ i : Fin m, (if i = j then 0 else blockNorm i j) ≤ invDiagBound j
+
+/-- Matrix-`∞` block diagonal dominance implies the finite-function block-norm
+    form used by the all-leading-prefix BDD inverse bridge.
+
+    The finite-function block norm is the chapter max-entry block norm, and it
+    is bounded by the matrix `∞` operator norm for positive block size. -/
+theorem higham13_blockDiagDomCol_piNorm_of_infNorm {m r : ℕ} (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound) :
+    IsBlockDiagDomCol m
+      (fun i j => ‖(fun a b => A i j a b : Fin r → Fin r → ℝ)‖)
+      invDiagBound := by
+  intro j
+  calc
+    ∑ i : Fin m,
+        (if i = j then 0 else
+          ‖(fun a b => A i j a b : Fin r → Fin r → ℝ)‖)
+        ≤ ∑ i : Fin m, (if i = j then 0 else infNorm (A i j)) := by
+          apply Finset.sum_le_sum
+          intro i _hi
+          by_cases hij : i = j
+          · simp [hij]
+          · simp [hij]
+            rw [higham13_block_norm_eq_maxEntryNorm hr]
+            exact maxEntryNorm_le_infNorm hr (A i j)
+    _ ≤ invDiagBound j := hDom j
 
 /-- **Block diagonal dominance by rows** (Higham, 2nd ed., §13.3.1):
     A is block diag dom by rows if Aᵀ is block diag dom by columns. -/
@@ -14862,6 +14897,158 @@ theorem
     (higham13_fin_fun_unit_sphere_nonempty hr) invDiagBound A pivotInv
     hPrefix hDom hBound
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 and equation (13.18):
+    BDD all-prefix data supplies the matrix-`∞` one-sided diagonal lower
+    certificate once the active Schur-stage pivots have certified right
+    inverses.
+
+    This composes the BDD initial lower table with the existing
+    `diagLowerCertGeneric` source-table route.  It removes the explicit
+    diagonal inverse and reciprocal-bound inputs from this surface, but still
+    leaves the real active-pivot right-inverse table as a source obligation. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_diag_lower_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse
+    {m r : ℕ}
+    (hunit : ({x : Fin r → ℝ | ‖x‖ = 1} : Set (Fin r → ℝ)).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol m
+      (fun i j => ‖(fun a b => A i j a b : Fin r → Fin r → ℝ)‖)
+      invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+    SchurStageActivePivotInvDiagLower13_7
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      (fun k => infNorm (pivotInv k)) := by
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hInit :
+      ∀ j : Fin m,
+        invDiagBound j ≤
+          continuousLinearMapLowerNorm
+            (matrixMulVecCLM
+              (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+            hunit :=
+    by
+      let Afn : Fin m → Fin m → Fin r → Fin r → ℝ :=
+        fun i j a b => A i j a b
+      let pivotFn : ℕ → Fin r → Fin r → ℝ :=
+        fun k a b => pivotInv k a b
+      have hInitFn :=
+        higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+          hunit invDiagBound Afn pivotFn hPrefix hDom hBound
+      simpa [Afn, pivotFn] using hInitFn
+  exact
+    higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table_of_pivot_right_inverse
+      hunit invDiagBound A pivotInv hInit hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 and equation (13.18):
+    BDD all-prefix data and certified active pivot right inverses supply the
+    direct matrix-`∞` active pivot product bound for `diagLowerCertGeneric`. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse
+    {m r : ℕ}
+    (hunit : ({x : Fin r → ℝ | ‖x‖ = 1} : Set (Fin r → ℝ)).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol m
+      (fun i j => ‖(fun a b => A i j a b : Fin r → Fin r → ℝ)‖)
+      invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+    ∀ k : ℕ, ∀ hk : k < m,
+      infNorm (pivotInv k) *
+          higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv
+            k ⟨k, hk⟩ ≤
+        1 := by
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hDiagLower :=
+    higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_diag_lower_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse
+      hunit invDiagBound A pivotInv hPrefix hDom hBound hPivotRight
+  exact
+    higham13_theorem13_7_pivot_inverse_bound_of_diag_lower
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      (fun k => infNorm (pivotInv k))
+      (fun k => infNorm_nonneg (pivotInv k))
+      hDiagLower
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 and equation (13.18):
+    positive block size discharges the unit-sphere witness in the BDD
+    all-prefix-to-`diagLowerCertGeneric` diagonal-lower bridge. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_diag_lower_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim
+    {m r : ℕ} (hr : 0 < r)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol m
+      (fun i j => ‖(fun a b => A i j a b : Fin r → Fin r → ℝ)‖)
+      invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+    SchurStageActivePivotInvDiagLower13_7
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      (fun k => infNorm (pivotInv k)) :=
+  higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_diag_lower_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse
+    (higham13_fin_fun_unit_sphere_nonempty hr) invDiagBound A pivotInv
+    hPrefix hDom hBound hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 and equation (13.18):
+    positive block size discharges the unit-sphere witness in the BDD
+    all-prefix-to-`diagLowerCertGeneric` pivot-bound bridge. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim
+    {m r : ℕ} (hr : 0 < r)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol m
+      (fun i j => ‖(fun a b => A i j a b : Fin r → Fin r → ℝ)‖)
+      invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+    ∀ k : ℕ, ∀ hk : k < m,
+      infNorm (pivotInv k) *
+          higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv
+            k ⟨k, hk⟩ ≤
+        1 :=
+  higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse
+    (higham13_fin_fun_unit_sphere_nonempty hr) invDiagBound A pivotInv
+    hPrefix hDom hBound hPivotRight
+
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
     matrix-`∞` CLM diagonal-lower certificate from initial diagonal inverse
     reciprocal data and active pivot right inverses. -/
@@ -21042,6 +21229,61 @@ theorem
       (higham13_algorithm13_3_diagLowerCertGeneric_zero invDiagBound A pivotInv)
       hPivotBound hDiagUpdate
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7:
+    BDD all-leading-prefix data gives matrix-`∞` active column dominance once
+    the active Algorithm 13.3 pivots have certified right inverses.
+
+    This positive-block-size wrapper accepts the source-facing matrix-`∞` BDD
+    hypothesis, transports it to the finite-function block norm needed by the
+    initial lower-table bridge, and then reuses the matrix-`∞` source-table
+    active-dominance route. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+    SchurStageActiveColumnDom13_7
+      (fun k i j => infNorm
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv) := by
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hDomPi :
+      IsBlockDiagDomCol m
+        (fun i j => ‖(fun a b => A i j a b : Fin r → Fin r → ℝ)‖)
+        invDiagBound :=
+    higham13_blockDiagDomCol_piNorm_of_infNorm hr A invDiagBound hDom
+  have hInit :
+      ∀ j : Fin m,
+        invDiagBound j ≤
+          continuousLinearMapLowerNorm
+            (matrixMulVecCLM
+              (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+            (higham13_fin_fun_unit_sphere_nonempty hr) := by
+    let Afn : Fin m → Fin m → Fin r → Fin r → ℝ :=
+      fun i j a b => A i j a b
+    let pivotFn : ℕ → Fin r → Fin r → ℝ :=
+      fun k a b => pivotInv k a b
+    have hInitFn :=
+      higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pos_dim
+        hr invDiagBound Afn pivotFn hPrefix hDomPi hBound
+    simpa [Afn, pivotFn] using hInitFn
+  exact
+    higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_continuousLinearMap_source_table_of_pivot_right_inverse
+      (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv invDiagBound
+      hDom hInit hPivotRight
+
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.7:
     matrix-`∞` active column dominance from initial diagonal inverse reciprocal
     data and certified active pivot right inverses. -/
@@ -21669,6 +21911,64 @@ theorem
       hDom hDiagBound
       (higham13_algorithm13_3_diagLowerCertGeneric_zero invDiagBound A pivotInv)
       hPivotBound hDiagUpdate normMax hMax k i j hik hjk
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
+    BDD all-leading-prefix data gives the matrix-`∞` active-stage `2 * max`
+    bound once the active Algorithm 13.3 pivots have certified right inverses.
+
+    The wrapper derives both source-table prerequisites from BDD data: the
+    initial lower table comes through the finite-function norm bridge, and
+    `invDiagBound <= ‖A_jj‖∞` follows from the nonpositive bound table. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k))
+    (normMax : ℝ)
+    (hMax : ∀ i j : Fin m, infNorm (A i j) ≤ normMax)
+    (k : ℕ) (i j : Fin m) (hik : k ≤ i.val) (hjk : k ≤ j.val) :
+    infNorm (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j) ≤
+      2 * normMax := by
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hDomPi :
+      IsBlockDiagDomCol m
+        (fun i j => ‖(fun a b => A i j a b : Fin r → Fin r → ℝ)‖)
+        invDiagBound :=
+    higham13_blockDiagDomCol_piNorm_of_infNorm hr A invDiagBound hDom
+  have hInit :
+      ∀ j : Fin m,
+        invDiagBound j ≤
+          continuousLinearMapLowerNorm
+            (matrixMulVecCLM
+              (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+            (higham13_fin_fun_unit_sphere_nonempty hr) := by
+    let Afn : Fin m → Fin m → Fin r → Fin r → ℝ :=
+      fun i j a b => A i j a b
+    let pivotFn : ℕ → Fin r → Fin r → ℝ :=
+      fun k a b => pivotInv k a b
+    have hInitFn :=
+      higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pos_dim
+        hr invDiagBound Afn pivotFn hPrefix hDomPi hBound
+    simpa [Afn, pivotFn] using hInitFn
+  have hDiagBound :
+      ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j) :=
+    higham13_algorithm13_3_matrix_infNorm_initial_diag_bound_of_diagBound_nonpos
+      A invDiagBound hBound
+  exact
+    higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_continuousLinearMap_source_table_of_pivot_right_inverse
+      (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv invDiagBound
+      hDom hDiagBound hInit hPivotRight normMax hMax k i j hik hjk
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.8:
     matrix-`∞` active-stage bound from initial diagonal inverse reciprocal data
@@ -24369,6 +24669,63 @@ theorem
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table_of_pivot_right_inverse
       hm (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv
       invDiagBound hDom hDiagBound hInit hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equations (13.21),(13.23):
+    paired matrix-`∞` upper-factor and stage-history bounds from BDD
+    all-leading-prefix data plus certified active pivot right inverses.
+
+    This is the endpoint form of the matrix-`∞` BDD bridge: callers supply the
+    source BDD/nonsingularity hypotheses and the active pivot right-inverse
+    table, while the initial lower table and diagonal comparison are derived
+    internally. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockInfNorm hm (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * blockInfNorm hm A ∧
+      higham13_algorithm13_3_matrixStageHistoryInfBound hm A pivotInv ≤
+        2 * blockInfNorm hm A := by
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hDomPi :
+      IsBlockDiagDomCol m
+        (fun i j => ‖(fun a b => A i j a b : Fin r → Fin r → ℝ)‖)
+        invDiagBound :=
+    higham13_blockDiagDomCol_piNorm_of_infNorm hr A invDiagBound hDom
+  have hInit :
+      ∀ j : Fin m,
+        invDiagBound j ≤
+          continuousLinearMapLowerNorm
+            (matrixMulVecCLM
+              (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+            (higham13_fin_fun_unit_sphere_nonempty hr) := by
+    let Afn : Fin m → Fin m → Fin r → Fin r → ℝ :=
+      fun i j a b => A i j a b
+    let pivotFn : ℕ → Fin r → Fin r → ℝ :=
+      fun k a b => pivotInv k a b
+    have hInitFn :=
+      higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pos_dim
+        hr invDiagBound Afn pivotFn hPrefix hDomPi hBound
+    simpa [Afn, pivotFn] using hInitFn
+  have hDiagBound :
+      ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j) :=
+    higham13_algorithm13_3_matrix_infNorm_initial_diag_bound_of_diagBound_nonpos
+      A invDiagBound hBound
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_pos_dim
+      hm hr A pivotInv invDiagBound hDom hDiagBound hInit hPivotRight
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equations (13.21),(13.23):
     positive-block-size form of the paired matrix-`∞` endpoint from initial
