@@ -19856,6 +19856,58 @@ theorem IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_crossProjection_
       hDeltaA_norm_budget hDeltab_norm_budget hleftA hleftB hSymA hSymB
       hrangeA_residual hEq hB hr hs horth_s
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2):
+    minimizer-facing residual-side Wedin bound using the proved Lemma 20.12
+    source `min` surface.
+
+This is the exact-LS caller-facing version of
+`wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_min_surface_geometry_column_orthogonal`.
+The perturbed residual column orthogonality is discharged from exact
+least-squares optimality; the Lemma 20.11 and Lemma 20.12 radius/projection
+steps are handled by the imported Wedin wrapper. -/
+theorem IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_min_surface_geometry
+    {m k : ℕ} (hm : 0 < m) (A B : Fin m → Fin (k + 1) → ℝ)
+    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
+    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
+    (x y : Fin (k + 1) → ℝ)
+    {delta Aplus_norm DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
+    (hPertMin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
+    (hb_norm_pos : 0 < vecNorm2 b)
+    (hAplus_pos : 0 < Aplus_norm)
+    (hA_norm_nonneg : 0 ≤ A_norm)
+    (heps_nonneg : 0 ≤ eps)
+    (hkappa : kappa = Aplus_norm * A_norm)
+    (hdelta : delta = eps * A_norm)
+    (hsmall : kappa * eps < 1)
+    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
+    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
+    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
+    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
+    (hDeltab_norm_budget : Deltab_norm ≤ eps * vecNorm2 b)
+    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
+    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
+    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
+    (hB : B = fun i j => A i j + DeltaA i j)
+    (hr : r = fun i => b i - rectMatMulVec A x i)
+    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
+    vecNorm2 (fun i => r i - s i) / vecNorm2 b ≤
+      wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+  have horth_s :
+      ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0 :=
+    IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
+      (B := B) (b := b) (Deltab := Deltab) (s := s) (y := y)
+      hPertMin hs
+  exact
+    wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_min_surface_geometry_column_orthogonal
+      hm A B Aplus Bplus DeltaA b Deltab r s x y hb_norm_pos
+      hAplus_pos hA_norm_nonneg heps_nonneg hkappa hdelta hsmall
+      hAplus hDelta hDeltaA hDeltab hDeltaA_norm_budget
+      hDeltab_norm_budget hleftA hleftB hSymA hSymB hrangeA_residual
+      hB hr hs horth_s
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2), conservative
     residual-side Wedin bound with perturbed least-squares optimality as the
     caller-facing hypothesis.
