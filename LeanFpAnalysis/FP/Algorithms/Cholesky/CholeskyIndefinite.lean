@@ -1578,6 +1578,27 @@ theorem fl_tridiagonal_twoByTwo_schur_step_error_of_sigma_bound
     mul_le_mul_of_nonneg_left (add_le_add (le_refl |b|) hcorr) hγ0
   exact le_trans hΔ hbudget
 
+/-- Backward-error form of the scalar rounded update for an accepted
+tridiagonal `2 × 2` pivot: the computed trailing Schur entry is the exact Schur
+update for a perturbed trailing scalar `b + Δb`. -/
+theorem fl_tridiagonal_twoByTwo_schur_step_backward_error_of_sigma_bound
+    (fp : FPModel) (σ a11 a21 a22 b c : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hval : gammaValid fp 3) :
+    ∃ Δb : ℝ,
+      |Δb| ≤ gamma fp 3 *
+        (|b| + |c| * (σ / ((1 - bunchTridiagonalAlpha) * a21 ^ 2)) * |c|) ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c)
+        = (b + Δb) - c * (a11 / (a11 * a22 - a21 ^ 2)) * c := by
+  obtain ⟨Δ, hΔ, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_schur_step_error_of_sigma_bound fp σ a11 a21 a22 b c
+      hchoice hσa11 hσa22 hval
+  refine ⟨Δ, hΔ, ?_⟩
+  rw [hstep]
+  ring
+
 -- ============================================================
 -- Chapter 11.3  Skew-symmetric block LDL^T
 -- ============================================================
