@@ -5168,6 +5168,91 @@ theorem higham14_problem14_15_det_add_rel_le_of_singularValue_theta_of_det_pos
   simpa [abs_of_pos hdetA_pos, abs_of_pos hdetB_pos] using hAbs
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    an all-index absolute singular-value perturbation bound, scaled by a
+    positive lower bound for the singular values of `A`, supplies the
+    determinant relative-change estimate.
+
+This is a dependency bridge toward the source theorem.  It does not prove the
+Weyl/Mirsky all-index singular-value perturbation inequality; that remains the
+missing spectral input. -/
+theorem higham14_problem14_15_abs_det_add_rel_le_of_singularValue_abs_sub_bound
+    {n : ℕ} (hnpos : 0 < n)
+    (A Delta : Fin n → Fin n → ℝ) {eps delta lower : ℝ}
+    (heps0 : 0 ≤ eps) (hsmall : (n : ℝ) * eps < (1 : ℝ))
+    (hlower_pos : 0 < lower)
+    (hlower : ∀ i : Fin n,
+      lower ≤ complexMatrixSingularValue (realRectToCMatrix A) i)
+    (habs : ∀ i : Fin n,
+      |complexMatrixSingularValue
+          (realRectToCMatrix (fun r c => A r c + Delta r c)) i -
+        complexMatrixSingularValue (realRectToCMatrix A) i| ≤ delta)
+    (hscale : delta ≤ eps * lower)
+    (hdetA_pos : 0 < |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)|) :
+    |(|Matrix.det
+          ((fun r c => A r c + Delta r c) : Matrix (Fin n) (Fin n) ℝ)| /
+        |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)|) - 1| ≤
+      ((n : ℝ) * eps) / (1 - (n : ℝ) * eps) := by
+  have hbase_pos :
+      ∀ i : Fin n,
+        0 < complexMatrixSingularValue (realRectToCMatrix A) i := by
+    intro i
+    exact lt_of_lt_of_le hlower_pos (hlower i)
+  have hrel :
+      ∀ i : Fin n,
+        |complexMatrixSingularValue
+            (realRectToCMatrix (fun r c => A r c + Delta r c)) i -
+          complexMatrixSingularValue (realRectToCMatrix A) i| ≤
+          eps * complexMatrixSingularValue (realRectToCMatrix A) i := by
+    intro i
+    calc
+      |complexMatrixSingularValue
+          (realRectToCMatrix (fun r c => A r c + Delta r c)) i -
+        complexMatrixSingularValue (realRectToCMatrix A) i| ≤ delta :=
+          habs i
+      _ ≤ eps * lower := hscale
+      _ ≤ eps * complexMatrixSingularValue (realRectToCMatrix A) i :=
+          mul_le_mul_of_nonneg_left (hlower i) heps0
+  obtain ⟨theta, htheta_sv, htheta_bound⟩ :=
+    exists_relative_theta_of_abs_sub_le_mul_pos
+      (fun i : Fin n => complexMatrixSingularValue (realRectToCMatrix A) i)
+      (fun i : Fin n =>
+        complexMatrixSingularValue
+          (realRectToCMatrix (fun r c => A r c + Delta r c)) i)
+      hbase_pos hrel
+  exact
+    higham14_problem14_15_abs_det_add_rel_le_of_singularValue_theta
+      hnpos A Delta heps0 hsmall theta hdetA_pos htheta_sv htheta_bound
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    signed determinant relative-change form of the all-index absolute
+    singular-value perturbation bridge, under positive determinants. -/
+theorem higham14_problem14_15_det_add_rel_le_of_singularValue_abs_sub_bound_of_det_pos
+    {n : ℕ} (hnpos : 0 < n)
+    (A Delta : Fin n → Fin n → ℝ) {eps delta lower : ℝ}
+    (heps0 : 0 ≤ eps) (hsmall : (n : ℝ) * eps < (1 : ℝ))
+    (hlower_pos : 0 < lower)
+    (hlower : ∀ i : Fin n,
+      lower ≤ complexMatrixSingularValue (realRectToCMatrix A) i)
+    (habs : ∀ i : Fin n,
+      |complexMatrixSingularValue
+          (realRectToCMatrix (fun r c => A r c + Delta r c)) i -
+        complexMatrixSingularValue (realRectToCMatrix A) i| ≤ delta)
+    (hscale : delta ≤ eps * lower)
+    (hdetA_pos : 0 < Matrix.det (A : Matrix (Fin n) (Fin n) ℝ))
+    (hdetB_pos :
+      0 < Matrix.det
+        ((fun r c => A r c + Delta r c) : Matrix (Fin n) (Fin n) ℝ)) :
+    |(Matrix.det
+          ((fun r c => A r c + Delta r c) : Matrix (Fin n) (Fin n) ℝ) /
+        Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) - 1| ≤
+      ((n : ℝ) * eps) / (1 - (n : ℝ) * eps) := by
+  have hAbs :=
+    higham14_problem14_15_abs_det_add_rel_le_of_singularValue_abs_sub_bound
+      hnpos A Delta heps0 hsmall hlower_pos hlower habs hscale
+      (abs_pos.mpr hdetA_pos.ne')
+  simpa [abs_of_pos hdetA_pos, abs_of_pos hdetB_pos] using hAbs
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
     the smallest ordered singular value of a perturbed square matrix is bounded
     below by `sigma_min(A) - delta` whenever `delta` bounds `B - A` in
     operator 2-norm.  This is the extremal singular-value perturbation line
