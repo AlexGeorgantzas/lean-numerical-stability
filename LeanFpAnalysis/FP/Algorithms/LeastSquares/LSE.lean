@@ -13550,6 +13550,47 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_diagLead_of_step_diag_and_curre
     subst r
     simpa [Ahat, qrLeadingRow, qrLeadingColumn] using hcurrentDiag t ht
 
+/-- Theorem 20.7 support: the stored QR prefix lower-zero invariant plus a
+    nonsingular current leading block supplies the current pivot diagonal. -/
+theorem theorem20_7_storedHouseholderQRMatrixSeq_current_diag_nonzero_of_leadingBlock_det_ne_zero_nat
+    {m n : ℕ} (fp : FPModel) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ)
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hnm A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hnm)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0) :
+    ∀ k (hk : k < n),
+      storedHouseholderQRMatrixSeq fp hnm A k
+        ⟨k, lt_of_lt_of_le hk hnm⟩ ⟨k, hk⟩ ≠ 0 := by
+  let Ahat : ℕ → Fin m → Fin n → ℝ := storedHouseholderQRMatrixSeq fp hnm A
+  let alpha : ℕ → ℝ := storedHouseholderQRAlphaSeq fp hnm A
+  have hStep : ∀ k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun a => Ahat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a => Ahat k a ⟨k, hk⟩) (alpha k)))
+          (Ahat k) := by
+    intro k hk
+    simpa [Ahat, alpha, storedQRSignedStageVector,
+        storedQRSignedStageBeta, hk] using
+      storedHouseholderQRMatrixSeq_succ_of_lt fp hnm A k hk
+  have hdetLead' : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (Ahat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hnm)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0 := by
+    intro k hk
+    simpa [Ahat] using hdetLead k hk
+  simpa [Ahat] using
+    fl_householderStoredTrailingPanel_sequence_current_pivot_ne_zero_of_leadingBlock_det_ne_zero
+      fp hnm Ahat alpha hStep hdetLead'
+
 /-- Theorem 20.7 support: the signed-alpha stored QR nonbreakdown route
     supplies the just-written diagonal entry after each completed step. -/
 theorem theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget_nat
