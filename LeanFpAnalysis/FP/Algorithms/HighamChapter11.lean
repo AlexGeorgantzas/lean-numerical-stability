@@ -5866,6 +5866,30 @@ theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTail
       (fun t => c_rec t.succ) (fun t => u t.succ)
       (fun t => tail_fl t.succ) (fun t => tail_exact t.succ) htail)
 
+/-- **Theorem 11.7 path supported witnesses**.  This predicate records the
+explicit per-branch perturbation matrices extracted from a finite mixed-pivot
+path residual package, together with their componentwise budget, zero-prefix
+support, and induced `∞`-norm bound. -/
+def higham11_7_TridiagonalBranchPathSupportedWitnesses
+    (k : ℕ) (_fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u _tail_fl _tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ) :
+    Prop :=
+  ∀ t : Fin k,
+    (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+      |ΔA t i j| ≤ (c_bound t + c_rec t) * u t * infNorm (A t)) ∧
+    higham11_7_TridiagonalLeadingBlockSupport
+      (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+      (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t) ∧
+    infNorm (ΔA t) ≤
+      ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
+        (c_bound t + c_rec t) * u t * infNorm (A t)
+
 /-- **Theorem 11.7 branch residual witness extraction**.  A single branch-local
 residual package supplies an explicit perturbation matrix with the componentwise
 budget, leading-block support, and `∞`-norm bound needed by later aggregation. -/
@@ -6102,6 +6126,178 @@ theorem higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_wit
     (higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
       k fp tailDim step A c_bound c_rec u tail_exact hpath)
     hentry hnorm
+
+/-- **Theorem 11.7 embedded path solve-delta aggregation**.  A finite
+mixed-pivot path residual package can be fed into the source-facing tridiagonal
+backward-error interface once the path-local perturbation witnesses have been
+embedded into one ambient system and the final summed solve equation is
+available. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum
+    (n offset k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (offsets : Fin k → ℕ) (c : Fin k → ℝ) (u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hembed :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∃ E : Fin k → Fin n → Fin n → ℝ,
+          (∀ t : Fin k, ∀ i j : Fin n,
+            |E t i j| ≤ c t * u * infNorm A) ∧
+          (∀ t : Fin k,
+            higham11_7_TridiagonalLeadingBlockSupport n (offsets t) (E t)) ∧
+          (∀ i : Fin n,
+            ∑ j : Fin n, (A i j + (∑ t : Fin k, E t i j)) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ (∑ t : Fin k, c t) * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ (∑ t : Fin k, c t) * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * (∑ t : Fin k, c t) * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * (∑ t : Fin k, c t) * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  obtain ⟨Δloc, hΔloc⟩ :=
+    higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact hpath
+  obtain ⟨E, hEbound, hEsupp, hEsolve⟩ := hembed Δloc hΔloc
+  exact
+    higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets
+      n offset k offsets A b x_hat E c u hc hu hoff hEbound hEsupp hEsolve
+
+/-- **Theorem 11.7 embedded path solve-delta aggregation, coefficient
+majorant form**.  This is the printed-constant endpoint for the path-local
+residual extraction plus same-ambient embedding bridge. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum_of_coeff_sum_le
+    (n offset k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (offsets : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hembed :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∃ E : Fin k → Fin n → Fin n → ℝ,
+          (∀ t : Fin k, ∀ i j : Fin n,
+            |E t i j| ≤ c t * u * infNorm A) ∧
+          (∀ t : Fin k,
+            higham11_7_TridiagonalLeadingBlockSupport n (offsets t) (E t)) ∧
+          (∀ i : Fin n,
+            ∑ j : Fin n, (A i j + (∑ t : Fin k, E t i j)) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  obtain ⟨Δloc, hΔloc⟩ :=
+    higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact hpath
+  obtain ⟨E, hEbound, hEsupp, hEsolve⟩ := hembed Δloc hΔloc
+  exact
+    higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets_of_coeff_sum_le
+      n offset k offsets A b x_hat E c C u hc hu hoff hC hEbound hEsupp hEsolve
+
+/-- **Theorem 11.7 embedded path solve-delta aggregation from local
+assumptions**.  This composes the finite path-local branch adapter, witness
+extraction, same-ambient embedding, and supported solve-delta aggregation. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_embedded_sum_of_coeff_sum_le
+    (n offset k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (offsets : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hembed :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∃ E : Fin k → Fin n → Fin n → ℝ,
+          (∀ t : Fin k, ∀ i j : Fin n,
+            |E t i j| ≤ c t * u * infNorm A) ∧
+          (∀ t : Fin k,
+            higham11_7_TridiagonalLeadingBlockSupport n (offsets t) (E t)) ∧
+          (∀ i : Fin n,
+            ∑ j : Fin n, (A i j + (∑ t : Fin k, E t i j)) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum_of_coeff_sum_le
+    n offset k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact
+    A b x_hat offsets c C u
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact hpath)
+    hc hu hoff hC hembed
+
+/-- **Theorem 11.7 embedded path solve-delta aggregation from terminal-tail
+assumptions**.  Terminal path assumptions first generate zero recursive-tail
+local residuals, then use the same same-ambient embedding bridge as the general
+path-local case. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_embedded_sum_of_coeff_sum_le
+    (n offset k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (offsets : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp tailDim
+      step Aloc c_bound c_rec u_loc)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hembed :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_exact tail_exact Δloc →
+        ∃ E : Fin k → Fin n → Fin n → ℝ,
+          (∀ t : Fin k, ∀ i j : Fin n,
+            |E t i j| ≤ c t * u * infNorm A) ∧
+          (∀ t : Fin k,
+            higham11_7_TridiagonalLeadingBlockSupport n (offsets t) (E t)) ∧
+          (∀ i : Fin n,
+            ∑ j : Fin n, (A i j + (∑ t : Fin k, E t i j)) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum_of_coeff_sum_le
+    n offset k fp tailDim step Aloc c_bound c_rec u_loc tail_exact tail_exact
+    A b x_hat offsets c C u
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_exact hpath)
+    hc hu hoff hC hembed
 
 /-! ## §11.2 Aasen's method -/
 
