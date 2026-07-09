@@ -2471,6 +2471,74 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_b
       (infNorm_nonneg A) hκ hb hc hratio hbudget hval hrec hc_bound
       hc_rec hu
 
+/-- **Theorem 11.7 recursive residual norm aggregation, exact inverse-ratio
+form**.  For the accepted Algorithm 11.6 `2 × 2` tridiagonal branch, choosing
+`κ` to be the exact inverse-entry ratio discharges the generic `κ ≥ 0` and
+`ratio ≤ κ` side conditions from the branch predicate and `σ ≥ 0`. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_exact_inverse_ratio
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (σ a11 a21 a22 c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσ : 0 ≤ σ)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hbudget :
+      gamma fp 3 *
+          (infNorm A +
+            infNorm A *
+              (σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2)) *
+                infNorm A) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      infNorm ΔA ≤ ((n + 3 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_mul
+              (A ⟨1, by omega⟩
+                (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+              (a11 / (a11 * a22 - a21 ^ 2)))
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) -
+          (A ⟨1, by omega⟩
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) *
+            (a11 / (a11 * a22 - a21 ^ 2)) *
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  let κ : ℝ := σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2)
+  have ha21 : a21 ≠ 0 :=
+    higham11_6_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg
+      σ a11 a21 hchoice hσ
+  have hαgap : 0 < 1 - higham11_6_bunchTridiagonalAlpha := by
+    have hlt := higham11_6_bunch_tridiagonal_alpha_lt_one
+    linarith
+  have ha21sq : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have hden_pos :
+      0 < (1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2 :=
+    mul_pos hαgap ha21sq
+  have hκ : 0 ≤ κ := by
+    dsimp [κ]
+    exact div_nonneg hσ (le_of_lt hden_pos)
+  simpa [κ] using
+    higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries
+      n fp A σ a11 a21 a22 κ c_bound c_rec u tail_fl tail_exact
+      hchoice hσa11 hσa22 hκ le_rfl hbudget hval hrec hc_bound hc_rec hu
+
 /-- Local index of the first trailing scalar after a leading `1 × 1`
 tridiagonal pivot inside a block of size `n+2`. -/
 abbrev higham11_7_tridiagonalOneByOneFirstTrailingIndex (n : ℕ) :
@@ -2847,6 +2915,58 @@ theorem higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_b
       n fp σ (A 0 0) (A tail 0) (A tail tail) (infNorm A)
       c_bound c_rec u tail_fl tail_exact hchoice ha11 hσA
       (infNorm_nonneg A) hb hbudget hval hrec hc_bound hc_rec hu
+
+/-- **Theorem 11.7 one-by-one recursive residual aggregation, branch-derived
+pivot nonzero form**.  For the accepted Algorithm 11.6 `1 × 1` tridiagonal
+branch, a nonzero subdiagonal coupling supplies the nonzero leading pivot
+required by the rounded Schur update. -/
+theorem higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_of_subdiagonal_ne_zero
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 2) → Fin (n + 2) → ℝ)
+    (σ c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ (A 0 0)
+      (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) PivotSize.one)
+    (ha21 : A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0 ≠ 0)
+    (hσA : σ ≤ infNorm A)
+    (hbudget :
+      gamma fp 3 *
+          (infNorm A + infNorm A / higham11_6_bunchTridiagonalAlpha) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 2) → Fin (n + 2) → ℝ,
+      (∀ i j : Fin (n + 2), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 2) 1 ΔA ∧
+      infNorm ΔA ≤ ((n + 2 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_div
+              (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)
+              (A 0 0))
+            (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)) -
+          (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) *
+            (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) /
+            (A 0 0)) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) := by
+  have ha11 : A 0 0 ≠ 0 :=
+    higham11_6_tridiagonal_pivot_choice_one_a11_ne_zero_of_a21_ne_zero
+      σ (A 0 0) (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)
+      hchoice ha21
+  exact
+    higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries
+      n fp A σ c_bound c_rec u tail_fl tail_exact hchoice ha11 hσA
+      hbudget hval hrec hc_bound hc_rec hu
 
 /-! ## §11.2 Aasen's method -/
 
@@ -12918,6 +13038,208 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_sourc
       higham11_8_relative_outer_factor_caps_of_entrywise_majorant
         n L (gamma fp n) κLentry ((n - 1 : ℕ) : ℝ)
         hγn hκLentry hκLentry_cap hL_entry with
+    ⟨hrelL_cap, hrelLT_cap⟩
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_T_norm_cap_checkerboard_middle
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hprod hThat_component hT_norm
+      hTNJ hdetJ hleadJ hLU hrelL_cap hrelLT_cap
+
+/-- Source-prefix checkerboard-middle endpoint where Aasen's exact outer-factor
+zero structure turns a uniform entrywise majorant into the relative outer-factor
+caps with the sharper `(n-1)` count, and `‖T‖∞≤‖T̂‖∞` follows from entrywise
+`|T|≤|T̂|`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T_checkerboard_middle
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_component : ∀ i j : Fin n, |T i j| ≤ |T_hat i j|)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hκLentry : 0 ≤ κLentry)
+    (hκLentry_cap :
+      (1 + gamma fp n) * (((n - 1 : ℕ) : ℝ) * κLentry) ≤
+        ((n - 1 : ℕ) : ℝ))
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  have hn : gammaValid fp n :=
+    (higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1
+  have hγn : 0 ≤ gamma fp n := gamma_nonneg fp hn
+  rcases
+      higham11_8_relative_outer_factor_caps_of_aasen_entry_bound
+        n hn_dim L (gamma fp n) κLentry ((n - 1 : ℕ) : ℝ)
+        hγn hκLentry hκLentry_cap hL_entry hL_strictUpperZero
+        hL_firstColZero with
+    ⟨hrelL_cap, hrelLT_cap⟩
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_componentwise_T_checkerboard_middle
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hprod hThat_component hT_component
+      hTNJ hdetJ hleadJ hLU hrelL_cap hrelLT_cap
+
+/-- Source-prefix checkerboard-middle endpoint where Aasen's exact outer-factor
+zero structure turns a uniform entrywise majorant into the relative outer-factor
+caps with the sharper `(n-1)` count, while the exact middle factor is related to
+`T_hat` by a direct norm cap. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap_checkerboard_middle
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_norm : infNorm T ≤ infNorm T_hat)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hκLentry : 0 ≤ κLentry)
+    (hκLentry_cap :
+      (1 + gamma fp n) * (((n - 1 : ℕ) : ℝ) * κLentry) ≤
+        ((n - 1 : ℕ) : ℝ))
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  have hn : gammaValid fp n :=
+    (higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1
+  have hγn : 0 ≤ gamma fp n := gamma_nonneg fp hn
+  rcases
+      higham11_8_relative_outer_factor_caps_of_aasen_entry_bound
+        n hn_dim L (gamma fp n) κLentry ((n - 1 : ℕ) : ℝ)
+        hγn hκLentry hκLentry_cap hL_entry hL_strictUpperZero
+        hL_firstColZero with
     ⟨hrelL_cap, hrelLT_cap⟩
   exact
     higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_T_norm_cap_checkerboard_middle
