@@ -6357,6 +6357,21 @@ theorem higham11_7_tridiagonalPathPrefixSpan_branch_end_le_branch_end_of_le
       k step starts hstarts htu
   simpa [hpref_t, hpref_u] using hle
 
+/-- Earlier explicit prefix branch endpoints are strictly before later branch
+endpoints in a mixed tridiagonal pivot path. -/
+theorem higham11_7_tridiagonalPathPrefixSpan_branch_end_lt_branch_end_of_lt
+    (k : ℕ) (step : Fin k → PivotSize) {t u : Fin k}
+    (htu : t.val < u.val) :
+    higham11_7_tridiagonalPathPrefixSpan k step t +
+        higham11_7_tridiagonalBranchSupportOffset (step t) <
+      higham11_7_tridiagonalPathPrefixSpan k step u +
+        higham11_7_tridiagonalBranchSupportOffset (step u) := by
+  have hle :=
+    higham11_7_tridiagonalPathPrefixSpan_branch_end_le_of_lt
+      k step htu
+  have hpos := higham11_7_tridiagonalBranchSupportOffset_pos (step u)
+  omega
+
 /-- Remaining recursive tail dimension after a branch in an explicit mixed
 tridiagonal pivot path.  The full path span is the current prefix, the current
 branch's consumed pivot block, and this remaining tail. -/
@@ -8415,6 +8430,17 @@ def higham11_7_tridiagonalPathFirstTrailingIndex_one
           (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one).val :=
   rfl
 
+/-- The full-ambient first-trailing row of a `1 × 1` path branch is exactly
+the endpoint of that branch's consumed pivot block. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_one_val_eq_branch_end
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.one) :
+    (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep).val =
+      higham11_7_tridiagonalPathPrefixSpan k step t +
+        higham11_7_tridiagonalBranchSupportOffset (step t) := by
+  simp [higham11_7_tridiagonalBranchFirstTrailingIndex,
+    higham11_7_tridiagonalBranchSupportOffset, hstep]
+
 @[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_pathFirstTrailing_one
     (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
     (hstep : step t = PivotSize.one)
@@ -8460,6 +8486,17 @@ def higham11_7_tridiagonalPathFirstTrailingIndex_two
         (higham11_7_tridiagonalBranchFirstTrailingIndex
           (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two).val :=
   rfl
+
+/-- The full-ambient first-trailing row of a `2 × 2` path branch is exactly
+the endpoint of that branch's consumed pivot block. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_two_val_eq_branch_end
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two) :
+    (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep).val =
+      higham11_7_tridiagonalPathPrefixSpan k step t +
+        higham11_7_tridiagonalBranchSupportOffset (step t) := by
+  simp [higham11_7_tridiagonalBranchFirstTrailingIndex,
+    higham11_7_tridiagonalBranchSupportOffset, hstep]
 
 @[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_pathFirstTrailing_two
     (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
