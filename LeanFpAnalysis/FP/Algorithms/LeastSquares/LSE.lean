@@ -45434,6 +45434,25 @@ theorem GeneralizedQRFactorization.A_mul_Q2Basis
     _ = gqrAQ2Block A h.Q i j := by
           simpa [gsColumn] using hcol
 
+/-- Reduced-operator perturbation bridge for Theorem 20.8:
+    a bound stated on the GQR reduced blocks `A Q₂` transfers to the
+    nullspace-basis form `A*N` with `N` chosen as the concrete GQR `Q₂` basis. -/
+theorem GeneralizedQRFactorization.rectOpNorm2Le_reduced_delta_of_gqrAQ2Block
+    {r p q : ℕ}
+    {A Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {B Bpert : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    {c : ℝ}
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j => gqrAQ2Block Apert hpert.Q i j -
+          gqrAQ2Block A h.Q i j) c) :
+    rectOpNorm2Le
+      (fun i j => rectMatMul Apert hpert.Q2Basis i j -
+        rectMatMul A h.Q2Basis i j) c := by
+  simpa [h.A_mul_Q2Basis, hpert.A_mul_Q2Basis] using hDelta
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10 transport algebra:
     any perturbation of the trailing `A Q₂` block can be represented by a
     full source-coordinate perturbation of `A`.
