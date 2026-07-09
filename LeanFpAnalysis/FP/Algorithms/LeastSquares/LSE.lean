@@ -26512,6 +26512,18 @@ theorem theorem20_8KappaB_nonneg {m n : ℕ}
     (complexMatrixOp2_nonneg (realRectToCMatrix APplus))
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-shaped smallness `eps < 1 / kappa_B(A)` implies the multiplied
+    Wedin smallness guard used by the reduced wrapper. -/
+theorem theorem20_8KappaB_mul_eps_lt_one_of_eps_lt_inv {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ)
+    {eps : ℝ}
+    (hkappa_pos : 0 < theorem20_8KappaB A APplus)
+    (heps : eps < 1 / theorem20_8KappaB A APplus) :
+    theorem20_8KappaB A APplus * eps < 1 := by
+  have hmul := mul_lt_mul_of_pos_left heps hkappa_pos
+  rwa [one_div, mul_inv_cancel₀ (ne_of_gt hkappa_pos)] at hmul
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the source coefficient `kappa_B(A)` is an operator-2 bound for
     `A (AP)^+`. -/
 theorem theorem20_8_rectOpNorm2Le_A_APplus_kappaB {m n : ℕ}
@@ -46965,6 +46977,54 @@ theorem complexMatrixOp2_realRectToCMatrix_pos_of_rect_left_inverse
     exact complexMatrixOp2_nonneg (realRectToCMatrix Aleft)
   exact lt_of_le_of_ne hop_nonneg (Ne.symm hop_ne)
 
+/-- A real rectangular table with a left inverse has positive complexified
+    operator norm on a nonempty domain. -/
+theorem complexMatrixOp2_realRectToCMatrix_pos_of_rect_has_left_inverse
+    {m n : ℕ} [Nonempty (Fin n)]
+    (A : Fin m → Fin n → ℝ) (Aleft : Fin n → Fin m → ℝ)
+    (hleft : rectMatMul Aleft A = idMatrix n) :
+    0 < complexMatrixOp2 (realRectToCMatrix A) := by
+  classical
+  let j0 : Fin n := Classical.choice (inferInstance : Nonempty (Fin n))
+  let e : Fin n → ℝ := finiteBasisVec j0
+  let op : ℝ := complexMatrixOp2 (realRectToCMatrix A)
+  have hOp : rectOpNorm2Le A op :=
+    rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le A le_rfl
+  have he : vecNorm2 e = 1 := by
+    simpa [e] using vecNorm2_finiteBasisVec j0
+  have hleft_vec : rectMatMulVec Aleft (rectMatMulVec A e) = e := by
+    calc
+      rectMatMulVec Aleft (rectMatMulVec A e)
+          = rectMatMulVec (rectMatMul Aleft A) e := by
+              exact (rectMatMulVec_rectMatMul Aleft A e).symm
+      _ = rectMatMulVec (idMatrix n) e := by rw [hleft]
+      _ = e := rectMatMulVec_idMatrix e
+  have hAe_ne_zero : rectMatMulVec A e ≠ 0 := by
+    intro hAe
+    have he_zero : e = 0 := by
+      ext i
+      have hi := congrFun hleft_vec i
+      rw [hAe] at hi
+      simpa [rectMatMulVec] using hi.symm
+    have hbad : (1 : ℝ) = 0 := by
+      simpa [he_zero, vecNorm2, vecNorm2Sq] using he.symm
+    norm_num at hbad
+  have hbound := hOp e
+  have hop_ne : op ≠ 0 := by
+    intro hop
+    have hAe_norm_zero : vecNorm2 (rectMatMulVec A e) = 0 := by
+      apply le_antisymm
+      · simpa [op, hop, he] using hbound
+      · exact vecNorm2_nonneg _
+    have hAe_zero : rectMatMulVec A e = 0 := by
+      funext i
+      exact (vecNorm2_eq_zero_iff (rectMatMulVec A e)).mp hAe_norm_zero i
+    exact hAe_ne_zero hAe_zero
+  have hop_nonneg : 0 ≤ op := by
+    dsimp [op]
+    exact complexMatrixOp2_nonneg (realRectToCMatrix A)
+  exact lt_of_le_of_ne hop_nonneg (Ne.symm hop_ne)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     stacked full column rank makes the concrete reduced Gram pseudoinverse for
     `A Q₂` a nonzero left inverse, hence its operator norm is positive. -/
@@ -46980,6 +47040,41 @@ theorem GeneralizedQRFactorization.A_Q2_reduced_gram_pseudoinverse_op2_pos
   exact complexMatrixOp2_realRectToCMatrix_pos_of_rect_left_inverse
     (gqrAQ2Block A h.Q)
     (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q)) hred.1
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
+    stacked full column rank makes the concrete reduced block `A Q₂` a
+    nonzero operator. -/
+theorem GeneralizedQRFactorization.A_Q2_reduced_block_op2_pos
+    {r p k : ℕ}
+    {A : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ}
+    {B : Fin p → Fin (p + (k + 1)) → ℝ}
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    0 < complexMatrixOp2 (realRectToCMatrix (gqrAQ2Block A h.Q)) := by
+  have hred := h.A_Q2_reduced_gram_left_inverse_and_projection_symmetric hstack
+  exact complexMatrixOp2_realRectToCMatrix_pos_of_rect_has_left_inverse
+    (gqrAQ2Block A h.Q)
+    (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q)) hred.1
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the concrete reduced GQR `kappa_B(A)` identity, together with stacked full
+    column rank, makes the source `kappa_B(A)` positive. -/
+theorem GeneralizedQRFactorization.theorem20_8KappaB_pos_of_gqrQ2_reducedGram_kappa
+    {r p k : ℕ}
+    {A : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ}
+    {B : Fin p → Fin (p + (k + 1)) → ℝ}
+    (APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ)
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hkappa :
+      theorem20_8KappaB A APplus =
+        complexMatrixOp2
+            (realRectToCMatrix (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) *
+          complexMatrixOp2 (realRectToCMatrix (gqrAQ2Block A h.Q))) :
+    0 < theorem20_8KappaB A APplus := by
+  rw [hkappa]
+  exact mul_pos (h.A_Q2_reduced_gram_pseudoinverse_op2_pos hstack)
+    (h.A_Q2_reduced_block_op2_pos hstack)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     GQR-specialized nullspace-Wedin handoff.  Choosing the nullspace bases as
@@ -47636,6 +47731,201 @@ theorem
       A DeltaA b Deltab hB DeltaB APplus d Deltad hpert x y hApos
       hbpos hBpos hdpos hxpos hyx hrpos hmax hMP hBAPt hstack hstackPert
       hx hy hAredPlus_pos hkappa hsmall hDeltaGQR hgapScale hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    Frobenius-budget concrete GQR/BAplus handoff with the reduced
+    Gram-pseudoinverse norm positivity derived from stacked full column rank. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gqrQ2_reducedGram_BAplus_residual_gap_concreteAredNorms_of_reduced_frob_delta_autoAredPlusPos_kappaB_eps_nonneg
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (hpert : GeneralizedQRFactorization r p (k + 1)
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (x y : Fin (p + (k + 1)) → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hstackPert : LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hkappa :
+      theorem20_8KappaB A APplus =
+        complexMatrixOp2
+            (realRectToCMatrix (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) *
+          complexMatrixOp2 (realRectToCMatrix (gqrAQ2Block A h.Q)))
+    (hsmall : theorem20_8KappaB A APplus * eps < 1)
+    (hDeltaGQRFrob :
+      frobNormRect
+        (fun i j =>
+          gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q i j -
+            gqrAQ2Block A h.Q i j)
+        ≤ eps * complexMatrixOp2 (realRectToCMatrix (gqrAQ2Block A h.Q)))
+    (hgapScale :
+      complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B hB.rightInverse)) *
+          vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) +
+        ((theorem20_8KappaB A APplus *
+              (complexMatrixOp2
+                  (realRectToCMatrix (rectMatMul A hB.rightInverse)) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B hB.rightInverse APplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b) ≤
+        eps * vecNorm2 (lsResidualHigham A b x))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hAredPlus_pos :
+      0 < complexMatrixOp2
+        (realRectToCMatrix (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) :=
+    h.A_Q2_reduced_gram_pseudoinverse_op2_pos hstack
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gqrQ2_reducedGram_BAplus_residual_gap_concreteAredNorms_of_reduced_frob_delta_kappaB_eps_nonneg
+      A DeltaA b Deltab hB DeltaB APplus d Deltad hpert x y hApos
+      hbpos hBpos hdpos hxpos hyx hrpos hmax hMP hBAPt hstack hstackPert
+      hx hy hAredPlus_pos hkappa hsmall hDeltaGQRFrob hgapScale hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-shaped smallness version of the Frobenius-budget concrete
+    GQR/BAplus handoff.  The source guard `eps < 1 / kappa_B(A)` is converted
+    to the multiplied reduced-Wedin guard using the concrete GQR `kappa_B(A)`
+    identity and stacked full column rank. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gqrQ2_reducedGram_BAplus_residual_gap_concreteAredNorms_of_reduced_frob_delta_autoAredPlusPos_of_eps_lt_inv_kappaB_eps_nonneg
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (hpert : GeneralizedQRFactorization r p (k + 1)
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (x y : Fin (p + (k + 1)) → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hstackPert : LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hkappa :
+      theorem20_8KappaB A APplus =
+        complexMatrixOp2
+            (realRectToCMatrix (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) *
+          complexMatrixOp2 (realRectToCMatrix (gqrAQ2Block A h.Q)))
+    (hepsSmall : eps < 1 / theorem20_8KappaB A APplus)
+    (hDeltaGQRFrob :
+      frobNormRect
+        (fun i j =>
+          gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q i j -
+            gqrAQ2Block A h.Q i j)
+        ≤ eps * complexMatrixOp2 (realRectToCMatrix (gqrAQ2Block A h.Q)))
+    (hgapScale :
+      complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B hB.rightInverse)) *
+          vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) +
+        ((theorem20_8KappaB A APplus *
+              (complexMatrixOp2
+                  (realRectToCMatrix (rectMatMul A hB.rightInverse)) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B hB.rightInverse APplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b) ≤
+        eps * vecNorm2 (lsResidualHigham A b x))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hkappa_pos :
+      0 < theorem20_8KappaB A APplus :=
+    h.theorem20_8KappaB_pos_of_gqrQ2_reducedGram_kappa APplus hstack hkappa
+  have hsmall : theorem20_8KappaB A APplus * eps < 1 :=
+    theorem20_8KappaB_mul_eps_lt_one_of_eps_lt_inv A APplus hkappa_pos hepsSmall
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gqrQ2_reducedGram_BAplus_residual_gap_concreteAredNorms_of_reduced_frob_delta_autoAredPlusPos_kappaB_eps_nonneg
+      A DeltaA b Deltab hB DeltaB APplus d Deltad hpert x y hApos
+      hbpos hBpos hdpos hxpos hyx hrpos hmax hMP hBAPt hstack hstackPert
+      hx hy hkappa hsmall hDeltaGQRFrob hgapScale hbracket
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS A-side bridge:
     the source null-intersection condition supplies every nonzero-stage
