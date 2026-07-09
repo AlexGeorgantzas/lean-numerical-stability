@@ -130,6 +130,33 @@ theorem higham11_1_growth_factor_recursion (α ρ0 : ℝ) (r : ℕ → ℝ)
     ∀ n, r n ≤ (1 + 1 / α) ^ n * ρ0 :=
   geom_growth_iterate α ρ0 r hα h0 hstep
 
+/-- **§11.1.1 finite-prefix growth recursion**: the same growth-factor
+iteration as `higham11_1_growth_factor_recursion`, but with one-step bounds
+available only for the finite active prefix `k < m`.  This is the shape needed
+when a concrete pivot path supplies stage bounds only up to the final Schur
+complement. -/
+theorem higham11_1_growth_factor_recursion_prefix (α ρ0 : ℝ) (r : ℕ → ℝ)
+    (m : ℕ) (hα : 0 < α) (h0 : r 0 = ρ0)
+    (hstep : ∀ k, k < m → r (k + 1) ≤ (1 + 1 / α) * r k) :
+    ∀ n, n ≤ m → r n ≤ (1 + 1 / α) ^ n * ρ0 := by
+  have hfactor_nonneg : 0 ≤ 1 + 1 / α := by
+    have hdiv_nonneg : 0 ≤ 1 / α := div_nonneg zero_le_one (le_of_lt hα)
+    linarith
+  intro n
+  induction n with
+  | zero =>
+      intro _hm
+      simp [h0]
+  | succ k ih =>
+      intro hk_succ
+      have hk_lt : k < m := Nat.lt_of_succ_le hk_succ
+      have hk_le : k ≤ m := Nat.le_of_lt hk_lt
+      calc
+        r (k + 1) ≤ (1 + 1 / α) * r k := hstep k hk_lt
+        _ ≤ (1 + 1 / α) * ((1 + 1 / α) ^ k * ρ0) :=
+          mul_le_mul_of_nonneg_left (ih hk_le) hfactor_nonneg
+        _ = (1 + 1 / α) ^ (k + 1) * ρ0 := by ring
+
 /-- **Equation (11.4)**, the scalar entry of the 2 by 2 Schur complement
 `b_ij - [c_i1 c_i2] E^{-1} [c_j1, c_j2]^T`. -/
 noncomputable def higham11_4_twoByTwoSchurEntry
