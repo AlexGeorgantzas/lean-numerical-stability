@@ -5804,6 +5804,16 @@ lemma vecNorm2_neg {n : ℕ} (x : Fin n → ℝ) :
     vecNorm2 (fun i => -x i) = vecNorm2 x := by
   simpa using vecNorm2_smul (-1 : ℝ) x
 
+/-- Euclidean norm of a difference is invariant under swapping the operands. -/
+lemma vecNorm2_sub_comm {n : ℕ} (x y : Fin n → ℝ) :
+    vecNorm2 (fun i => x i - y i) = vecNorm2 (fun i => y i - x i) := by
+  have hfun :
+      (fun i : Fin n => x i - y i) =
+        fun i : Fin n => -(y i - x i) := by
+    ext i
+    ring
+  rw [hfun, vecNorm2_neg]
+
 /-- Reverse triangle inequality for the repository Euclidean norm. -/
 theorem abs_vecNorm2_sub_le_vecNorm2_sub {n : ℕ} (x y : Fin n → ℝ) :
     |vecNorm2 x - vecNorm2 y| ≤ vecNorm2 (fun i => x i - y i) := by
