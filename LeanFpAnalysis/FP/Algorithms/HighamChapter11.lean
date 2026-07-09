@@ -5215,6 +5215,61 @@ theorem higham11_7_tridiagonalPathStartOffsetsFrom_exists
         higham11_7_tridiagonalPathStartOffsetsFrom_cons
           base k step starts (by simp [starts]) (by simpa [starts] using htail)
 
+/-- The base-offset start schedule for a finite mixed tridiagonal pivot path is
+unique. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_unique
+    (base k : ℕ) (step : Fin k → PivotSize)
+    (starts₁ starts₂ : Fin k → ℕ)
+    (hstarts₁ : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts₁)
+    (hstarts₂ : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts₂) :
+    starts₁ = starts₂ := by
+  induction k generalizing base with
+  | zero =>
+      funext t
+      exact Fin.elim0 t
+  | succ k ih =>
+      funext t
+      cases t using Fin.cases with
+      | zero =>
+          have hhead₁ :=
+            higham11_7_tridiagonalPathStartOffsetsFrom_head
+              base (k + 1) step starts₁ hstarts₁ (by omega)
+          have hhead₂ :=
+            higham11_7_tridiagonalPathStartOffsetsFrom_head
+              base (k + 1) step starts₂ hstarts₂ (by omega)
+          have hzero₁ : starts₁ (0 : Fin (k + 1)) = base := by
+            simpa using hhead₁
+          have hzero₂ : starts₂ (0 : Fin (k + 1)) = base := by
+            simpa using hhead₂
+          rw [hzero₁, hzero₂]
+      | succ t =>
+          have htail₁ :=
+            higham11_7_tridiagonalPathStartOffsetsFrom_tail
+              base k step starts₁ hstarts₁
+          have htail₂ :=
+            higham11_7_tridiagonalPathStartOffsetsFrom_tail
+              base k step starts₂ hstarts₂
+          have htail_eq :=
+            ih (base + higham11_7_tridiagonalBranchSupportOffset (step 0))
+              (fun t : Fin k => step t.succ)
+              (fun t : Fin k => starts₁ t.succ)
+              (fun t : Fin k => starts₂ t.succ) htail₁ htail₂
+          exact congrFun htail_eq t
+
+/-- Every finite mixed tridiagonal pivot path has a unique base-offset start
+schedule. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_exists_unique
+    (base k : ℕ) (step : Fin k → PivotSize) :
+    ∃! starts : Fin k → ℕ,
+      higham11_7_TridiagonalPathStartOffsetsFrom base k step starts := by
+  obtain ⟨starts, hstarts⟩ :=
+    higham11_7_tridiagonalPathStartOffsetsFrom_exists base k step
+  refine ⟨starts, hstarts, ?_⟩
+  intro starts' hstarts'
+  exact
+    higham11_7_tridiagonalPathStartOffsetsFrom_unique
+      base k step starts' starts hstarts' hstarts
+
 /-- Every start offset in a base-offset mixed path is at or after the base. -/
 theorem higham11_7_tridiagonalPathStartOffsetsFrom_base_le
     (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
@@ -5462,6 +5517,26 @@ theorem higham11_7_tridiagonalPathStartOffsets_exists
       higham11_7_TridiagonalPathStartOffsets k step starts := by
   simpa [higham11_7_TridiagonalPathStartOffsets] using
     higham11_7_tridiagonalPathStartOffsetsFrom_exists 0 k step
+
+/-- The zero-based start schedule for a finite mixed tridiagonal pivot path is
+unique. -/
+theorem higham11_7_tridiagonalPathStartOffsets_unique
+    (k : ℕ) (step : Fin k → PivotSize)
+    (starts₁ starts₂ : Fin k → ℕ)
+    (hstarts₁ : higham11_7_TridiagonalPathStartOffsets k step starts₁)
+    (hstarts₂ : higham11_7_TridiagonalPathStartOffsets k step starts₂) :
+    starts₁ = starts₂ :=
+  higham11_7_tridiagonalPathStartOffsetsFrom_unique
+    0 k step starts₁ starts₂ hstarts₁ hstarts₂
+
+/-- Every finite mixed tridiagonal pivot path has a unique zero-based start
+schedule. -/
+theorem higham11_7_tridiagonalPathStartOffsets_exists_unique
+    (k : ℕ) (step : Fin k → PivotSize) :
+    ∃! starts : Fin k → ℕ,
+      higham11_7_TridiagonalPathStartOffsets k step starts := by
+  simpa [higham11_7_TridiagonalPathStartOffsets] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_exists_unique 0 k step
 
 /-- Every zero-based start offset lies strictly before the full path span. -/
 theorem higham11_7_tridiagonalPathStartOffsets_lt_pivotSpan
