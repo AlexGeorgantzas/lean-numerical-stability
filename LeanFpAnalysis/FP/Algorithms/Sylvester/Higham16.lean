@@ -7510,6 +7510,16 @@ theorem sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge_total
       (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
       hExact hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total diagonal entrywise-gap a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_diagonal_of_entrywise_abs_ge_total :=
+  sylvester_aposteriori_bound_diagonal_of_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative diagonal entrywise-gap a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge_total :=
+  sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge_total
+
 -- ============================================================
 -- Generalized equations from Chapter 16.5
 -- ============================================================
