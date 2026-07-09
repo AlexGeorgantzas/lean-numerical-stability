@@ -5310,6 +5310,68 @@ theorem higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_base_add_pivotS
           simpa [Nat.add_assoc, add_comm, add_left_comm, add_assoc] using
             htail_le
 
+/-- Earlier branches end no later than any later branch's start in a scheduled
+mixed tridiagonal path. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_of_lt
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts)
+    {t u : Fin k} (htu : t.val < u.val) :
+    starts t + higham11_7_tridiagonalBranchSupportOffset (step t) ≤
+      starts u := by
+  induction k generalizing base with
+  | zero =>
+      exact Fin.elim0 t
+  | succ k ih =>
+      cases t using Fin.cases with
+      | zero =>
+          cases u using Fin.cases with
+          | zero =>
+              omega
+          | succ u =>
+              have htail :=
+                higham11_7_tridiagonalPathStartOffsetsFrom_tail
+                  base k step starts hstarts
+              have htail_base_le :=
+                higham11_7_tridiagonalPathStartOffsetsFrom_base_le
+                  (base + higham11_7_tridiagonalBranchSupportOffset (step 0))
+                  k (fun t : Fin k => step t.succ)
+                  (fun t : Fin k => starts t.succ) htail u
+              have hhead :=
+                higham11_7_tridiagonalPathStartOffsetsFrom_head
+                  base (k + 1) step starts hstarts (by omega)
+              have hzero : starts (0 : Fin (k + 1)) = base := by
+                simpa using hhead
+              simpa [hzero, add_comm, add_left_comm, add_assoc] using
+                htail_base_le
+      | succ t =>
+          cases u using Fin.cases with
+          | zero =>
+              simp [Fin.val_succ] at htu
+          | succ u =>
+              have htail :=
+                higham11_7_tridiagonalPathStartOffsetsFrom_tail
+                  base k step starts hstarts
+              have htu_tail : t.val < u.val := by
+                simpa [Fin.val_succ] using htu
+              exact
+                ih (base + higham11_7_tridiagonalBranchSupportOffset (step 0))
+                  (fun t : Fin k => step t.succ)
+                  (fun t : Fin k => starts t.succ) htail htu_tail
+
+/-- Start offsets are strictly ordered along a scheduled mixed tridiagonal
+path. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_lt_of_lt
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts)
+    {t u : Fin k} (htu : t.val < u.val) :
+    starts t < starts u := by
+  have hend :=
+    higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_of_lt
+      base k step starts hstarts htu
+  exact Nat.lt_of_lt_of_le
+    (Nat.lt_add_of_pos_right
+      (higham11_7_tridiagonalBranchSupportOffset_pos (step t))) hend
+
 /-- The end of the last branch in a nonempty scheduled path is exactly the
 base plus the total pivot span. -/
 theorem higham11_7_tridiagonalPathStartOffsetsFrom_last_branch_end_eq
@@ -5421,6 +5483,28 @@ theorem higham11_7_tridiagonalPathStartOffsets_branch_end_le_pivotSpan
   simpa [higham11_7_TridiagonalPathStartOffsets] using
     higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_base_add_pivotSpan
       0 k step starts hstarts t
+
+/-- Earlier zero-based scheduled branches end no later than any later
+branch's start. -/
+theorem higham11_7_tridiagonalPathStartOffsets_branch_end_le_of_lt
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets k step starts)
+    {t u : Fin k} (htu : t.val < u.val) :
+    starts t + higham11_7_tridiagonalBranchSupportOffset (step t) ≤
+      starts u := by
+  simpa [higham11_7_TridiagonalPathStartOffsets] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_of_lt
+      0 k step starts hstarts htu
+
+/-- Zero-based scheduled branch starts are strictly ordered by path index. -/
+theorem higham11_7_tridiagonalPathStartOffsets_lt_of_lt
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets k step starts)
+    {t u : Fin k} (htu : t.val < u.val) :
+    starts t < starts u := by
+  simpa [higham11_7_TridiagonalPathStartOffsets] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_lt_of_lt
+      0 k step starts hstarts htu
 
 /-- The end of the last branch in a nonempty zero-based scheduled path is the
 total pivot span. -/
