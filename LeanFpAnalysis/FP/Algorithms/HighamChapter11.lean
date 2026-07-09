@@ -4558,6 +4558,46 @@ theorem higham11_8_infNorm_le_mul_of_componentwise_T_bound (n : ℕ)
             mul_le_mul_of_nonneg_left (row_sum_le_infNorm T_hat i) hη
     · exact mul_nonneg hη (infNorm_nonneg T_hat)
 
+/-- The source-style relative `T_hat - T` comparison gives the corresponding
+infinity-norm perturbation budget for the actual middle-factor difference. -/
+theorem higham11_8_infNorm_T_hat_sub_T_le_mul_of_relative_error (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ) (γ : ℝ) (hγ : 0 ≤ γ)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ γ * |T_hat i j|) :
+    infNorm (fun i j : Fin n => T_hat i j - T i j) ≤ γ * infNorm T_hat :=
+  higham11_8_infNorm_le_mul_of_componentwise_T_bound n
+    (fun i j : Fin n => T_hat i j - T i j) T_hat γ hγ hThat
+
+/-- The concrete envelope `γ |T_hat|` used as a middle-factor budget has
+infinity norm at most `γ ‖T_hat‖∞` when `γ` is nonnegative. -/
+theorem higham11_8_infNorm_scaled_abs_T_hat_le (n : ℕ)
+    (T_hat : Fin n → Fin n → ℝ) (γ : ℝ) (hγ : 0 ≤ γ) :
+    infNorm (fun i j : Fin n => γ * |T_hat i j|) ≤ γ * infNorm T_hat := by
+  apply higham11_8_infNorm_le_mul_of_componentwise_T_bound n
+    (fun i j : Fin n => γ * |T_hat i j|) T_hat γ hγ
+  intro i j
+  have hnonneg : 0 ≤ γ * |T_hat i j| := mul_nonneg hγ (abs_nonneg _)
+  rw [abs_of_nonneg hnonneg]
+
+/-- A relative componentwise `T_hat - T` comparison also bounds the exact
+middle-factor norm by `(1+γ) ‖T_hat‖∞`.  This is weaker than the direct
+`‖T‖∞ ≤ ‖T_hat‖∞` cap needed by the exact-radius source endpoint, but records
+the norm consequence available from the relative error statement alone. -/
+theorem higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ) (γ : ℝ) (hγ : 0 ≤ γ)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ γ * |T_hat i j|) :
+    infNorm T ≤ (1 + γ) * infNorm T_hat := by
+  have hscale : 0 ≤ 1 + γ := by linarith
+  apply higham11_8_infNorm_le_mul_of_componentwise_T_bound n T T_hat (1 + γ) hscale
+  intro i j
+  have hrewrite : T i j = T_hat i j + (-(T_hat i j - T i j)) := by ring
+  calc
+    |T i j| = |T_hat i j + (-(T_hat i j - T i j))| :=
+      congrArg (fun x : ℝ => |x|) hrewrite
+    _ ≤ |T_hat i j| + |-(T_hat i j - T i j)| := abs_add_le _ _
+    _ = |T_hat i j| + |T_hat i j - T i j| := by rw [abs_neg]
+    _ ≤ |T_hat i j| + γ * |T_hat i j| := by linarith [hThat i j]
+    _ = (1 + γ) * |T_hat i j| := by ring
+
 /-- Componentwise absolute domination transfers directly to the matrix
 infinity norm. -/
 theorem higham11_8_infNorm_le_of_componentwise_abs_bound (n : ℕ)
