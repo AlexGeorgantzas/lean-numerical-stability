@@ -118,4 +118,52 @@ theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_
       exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_sylvesterTriangularShiftedCoeff_of_det_ne_zero_exists_hmax
         m hm R (S k k) hR (hshift k)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the supplied shifted-determinant
+    Hessenberg-Schur solve/trace-growth package. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_shifted_det_ne_zero :=
+  existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_shifted_det_ne_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8),
+    Hessenberg-Schur handoff with the shifted singleton determinant
+    certificates discharged from one global Schur-coordinate vec/Kronecker
+    determinant certificate.  This is an exact structural wrapper around the
+    supplied triangular solve and Chapter 9 Hessenberg GEPP trace-growth
+    package; it does not assert rounded Bartels-Stewart arithmetic. -/
+theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_det_ne_zero
+    (m n : Nat) (hm : 0 < m)
+    (R : RMatFn m m) (S : RMatFn n n) (C : RMatFn m n)
+    (hR : IsUpperHessenberg m R)
+    (hS : IsUpperTriangularFn n S)
+    (hdetGlobal : Not (Matrix.det (sylvesterVecCoeff m n R S) = 0)) :
+    ExistsUnique (IsSylvesterSolutionRect m n R S C) /\
+      (forall k : Fin n,
+        exists hmax : 0 < maxEntryNorm hm
+            (sylvesterTriangularShiftedCoeff m R (S k k)),
+        exists U : Fin m -> Fin m -> Real,
+          higham9_10_HessenbergGEPPUTrace
+            (maxEntryNorm hm (sylvesterTriangularShiftedCoeff m R (S k k)))
+            1 m (sylvesterTriangularShiftedCoeff m R (S k k)) U /\
+          growthFactorEntry hm (sylvesterTriangularShiftedCoeff m R (S k k))
+              U hmax <= (m : Real)) := by
+  exact
+    existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_shifted_det_ne_zero
+      m n hm R S C hR hS
+      (fun k =>
+        sylvesterTriangularShiftedCoeff_det_ne_zero_of_singleton_global_vecCoeff_det_ne_zero
+          m n R S (fun i : Fin n => i.val) k
+          (by
+            intro i j hij
+            exact hS i j (Fin.lt_def.mpr hij))
+          (by
+            intro i hi
+            exact Fin.ext hi)
+          hdetGlobal)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the Hessenberg-Schur solve/trace-growth package
+    from one global Schur-coordinate vec/Kronecker determinant certificate. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_det_ne_zero :=
+  existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_det_ne_zero
+
 end LeanFpAnalysis.FP
