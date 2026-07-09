@@ -5942,6 +5942,66 @@ theorem higham11_7_tridiagonalPathTailDim_succ
     higham11_7_tridiagonalPathPrefixSpan_succ]
   omega
 
+/-- Concrete branch-local matrix view cut from the full `pathSpan+1`
+tridiagonal ambient at the branch's prefix span. -/
+noncomputable def higham11_7_tridiagonalPathBranchMatrix
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (t : Fin k) :
+    higham11_7_TridiagonalBranchMatrix
+      (higham11_7_tridiagonalPathTailDim k step t) (step t) :=
+  fun i j => A (higham11_7_tridiagonalPathLocalBlockIndex k step t i)
+    (higham11_7_tridiagonalPathLocalBlockIndex k step t j)
+
+@[simp] theorem higham11_7_tridiagonalPathBranchMatrix_apply
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (t : Fin k)
+    (i j : Fin (higham11_7_tridiagonalBranchAmbientDim
+      (higham11_7_tridiagonalPathTailDim k step t) (step t))) :
+    higham11_7_tridiagonalPathBranchMatrix k step A t i j =
+      A (higham11_7_tridiagonalPathLocalBlockIndex k step t i)
+        (higham11_7_tridiagonalPathLocalBlockIndex k step t j) :=
+  rfl
+
+/-- Entries of a concrete branch-local matrix are bounded by the global
+ambient `∞` norm. -/
+theorem higham11_7_tridiagonalPathBranchMatrix_abs_entry_le_infNorm
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (t : Fin k)
+    (i j : Fin (higham11_7_tridiagonalBranchAmbientDim
+      (higham11_7_tridiagonalPathTailDim k step t) (step t))) :
+    |higham11_7_tridiagonalPathBranchMatrix k step A t i j| ≤ infNorm A := by
+  exact
+    higham11_7_abs_entry_le_infNorm
+      (higham11_7_tridiagonalPathPivotSpan k step + 1) A
+      (higham11_7_tridiagonalPathLocalBlockIndex k step t i)
+      (higham11_7_tridiagonalPathLocalBlockIndex k step t j)
+
+/-- The branch-local matrix `∞` norm is bounded by the branch ambient size times
+the global `∞` norm.  This coarse but concrete bound is enough for scalar budget
+routes that absorb the local row length into the coefficient. -/
+theorem higham11_7_tridiagonalPathBranchMatrix_infNorm_le_card_mul_global_infNorm
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (t : Fin k) :
+    infNorm (higham11_7_tridiagonalPathBranchMatrix k step A t) ≤
+      ((higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t) : ℕ) : ℝ) *
+        infNorm A := by
+  exact
+    higham11_7_infNorm_le_card_mul_of_uniform_componentwise_bound
+      (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t))
+      (higham11_7_tridiagonalPathBranchMatrix k step A t) (infNorm A)
+      (infNorm_nonneg A)
+      (higham11_7_tridiagonalPathBranchMatrix_abs_entry_le_infNorm k step A t)
+
 /-- **Theorem 11.7 mixed-recursion local assumptions**.  This branch-indexed
 predicate records exactly the local pivot choice, scalar budget, recursive tail
 certificate, and nonnegativity hypotheses needed by the already proved `1 × 1`
