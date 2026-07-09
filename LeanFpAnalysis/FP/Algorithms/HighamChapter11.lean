@@ -157,6 +157,53 @@ theorem higham11_1_growth_factor_recursion_prefix (α ρ0 : ℝ) (r : ℕ → �
           mul_le_mul_of_nonneg_left (ih hk_le) hfactor_nonneg
         _ = (1 + 1 / α) ^ (k + 1) * ρ0 := by ring
 
+/-- **§11.1.1 printed-alpha finite-prefix growth recursion**: specialization
+of `higham11_1_growth_factor_recursion_prefix` to the Bunch-Parlett value of
+`α` and the final active stage `n-1`. -/
+theorem higham11_1_growth_factor_bound_of_prefix_steps
+    (n : ℕ) (ρ0 : ℝ) (r : ℕ → ℝ)
+    (h0 : r 0 = ρ0)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k) :
+    r (n - 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * ρ0 := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hstep' : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + 1 / higham11_1_bunchParlettAlpha) * r k := by
+    intro k hk
+    simpa [one_div] using hstep k hk
+  have h :=
+    higham11_1_growth_factor_recursion_prefix
+      higham11_1_bunchParlettAlpha ρ0 r (n - 1) hα h0 hstep' (n - 1)
+      (le_refl _)
+  simpa [one_div] using h
+
+/-- **§11.1.1 normalized growth-factor bound**: if a concrete active pivot
+path has normalized initial maximum `ρ₀ ≤ 1`, each prefix stage grows by at
+most `1+α⁻¹`, and the advertised growth factor `ρₙ` is bounded by the final
+stage maximum, then `ρₙ ≤ (1+α⁻¹)^(n-1)`. -/
+theorem higham11_1_bunch_parlett_growth_bound_of_prefix_steps
+    (n : ℕ) (ρ_n ρ0 : ℝ) (r : ℕ → ℝ)
+    (h0 : r 0 = ρ0) (hρ0 : ρ0 ≤ 1)
+    (hρn : ρ_n ≤ r (n - 1))
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k) :
+    ρ_n ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hfactor_nonneg :
+      0 ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by
+    have hinv_nonneg : 0 ≤ higham11_1_bunchParlettAlpha⁻¹ :=
+      inv_nonneg.mpr (le_of_lt hα)
+    exact pow_nonneg (by linarith) _
+  calc
+    ρ_n ≤ r (n - 1) := hρn
+    _ ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * ρ0 :=
+      higham11_1_growth_factor_bound_of_prefix_steps n ρ0 r h0 hstep
+    _ ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * 1 :=
+      mul_le_mul_of_nonneg_left hρ0 hfactor_nonneg
+    _ = (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by ring
+
 /-- **Equation (11.4)**, the scalar entry of the 2 by 2 Schur complement
 `b_ij - [c_i1 c_i2] E^{-1} [c_j1, c_j2]^T`. -/
 noncomputable def higham11_4_twoByTwoSchurEntry
@@ -967,6 +1014,40 @@ theorem higham11_4_bound_const_le_36 :
       / (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2 ≤ 36 :=
   bunch_kaufman_bound_const_le_36
 
+/-- **Theorem 11.4 constant handoff**: pointwise eq-(4.14) estimates with
+Higham's exact coefficient `(3+α²)(3+α)/(1−α²)²` imply the source-facing
+`36 n ρₙ ‖A‖_M` max-entry norm bound for `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ_n Amax : ℝ) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_absLDLTProduct n L_hat D_hat i j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax := by
+  let C : ℝ :=
+    (3 + higham11_1_bunchParlettAlpha ^ 2) *
+      (3 + higham11_1_bunchParlettAlpha) /
+      (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2
+  have hC : C ≤ 36 := by
+    simpa [C] using higham11_4_bound_const_le_36
+  have htail_nonneg : 0 ≤ (n : ℝ) * ρ_n * Amax :=
+    mul_nonneg (mul_nonneg (Nat.cast_nonneg n) hρ) hAmax
+  calc
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)
+        ≤ C * (n : ℝ) * ρ_n * Amax :=
+      higham11_4_maxEntryNorm_absLDLTProduct_le_of_absLDLTProduct_entries
+        n hn L_hat D_hat (C * (n : ℝ) * ρ_n * Amax) (by
+          intro i j
+          simpa [C] using hentries i j)
+    _ = C * ((n : ℝ) * ρ_n * Amax) := by ring
+    _ ≤ 36 * ((n : ℝ) * ρ_n * Amax) :=
+      mul_le_mul_of_nonneg_right hC htail_nonneg
+    _ = 36 * (n : ℝ) * ρ_n * Amax := by ring
+
 /-- **Theorem 11.4 constant (Higham [608, 1997], appendix (A.3))**:
 `(3+α²)/(1−α²) ≤ 6`, bounding `|E||E⁻¹||E| ≤ 6|E|` for a 2×2 pivot. -/
 theorem higham11_4_pivot_norm_const_le_six :
@@ -1055,6 +1136,28 @@ theorem higham11_4_bunch_kaufman_stability_of_maxEntryNorm_absLDLTProduct_le
       simpa [higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct
         n hn L_hat D_hat] using hproduct)
 
+/-- **Theorem 11.4 direct exact-coefficient stability bridge**.  Pointwise
+eq-(4.14) estimates with Higham's exact coefficient feed the Bunch-Kaufman
+stability consumer after the proved `(3+α²)(3+α)/(1−α²)² ≤ 36` handoff. -/
+theorem higham11_4_bunch_kaufman_stability_of_higham_const_absLDLTProduct_entries
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ_n maxNorm_A : ℝ) (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_absLDLTProduct n L_hat D_hat i j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * maxNorm_A) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat ρ_n maxNorm_A hmA hA_norm
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
+      n hn L_hat D_hat ρ_n maxNorm_A hρ hmA hentries)
+
 /-- **Theorem 11.4** solve backward-error target shape for Bunch-Kaufman
 partial pivoting. -/
 theorem higham11_4_bunch_kaufman_solve_backward_error_interface (n : ℕ)
@@ -1137,6 +1240,32 @@ theorem higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTPro
     (by
       simpa [higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct
         n hn L_hat D_hat] using hsolve)
+
+/-- **Theorem 11.4 direct exact-coefficient solve bridge**.  The exact
+Higham-coefficient eq-(4.14) estimate supplies the max-entry product bound
+needed to convert a solve perturbation proportional to `|L̂||D̂||L̂ᵀ|` into
+the advertised `36nρₙ` budget. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_absLDLTProduct_entries
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u ρ_n Amax : ℝ) (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_absLDLTProduct n L_hat D_hat i j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
+      n hn L_hat D_hat ρ_n Amax hρ hAmax hentries)
+    hsolve
 
 /-! ## §11.1.3 Rook pivoting -/
 
