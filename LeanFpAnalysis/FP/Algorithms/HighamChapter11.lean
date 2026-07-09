@@ -762,6 +762,93 @@ theorem higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne
   · intro i j
     simp [ΔA1]
 
+/-- **Theorem 11.3 row-sum bridge**: a nonnegative entrywise perturbation
+envelope bounds the corresponding infinity norm. -/
+theorem higham11_3_infNorm_le_of_componentwise_bound_nonneg (n : ℕ)
+    (ΔA B : Fin n → Fin n → ℝ)
+    (hB_nonneg : ∀ i j : Fin n, 0 ≤ B i j)
+    (hΔ : ∀ i j : Fin n, |ΔA i j| ≤ B i j) :
+    infNorm ΔA ≤ infNorm B := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc
+      (∑ j : Fin n, |ΔA i j|)
+          ≤ ∑ j : Fin n, B i j := Finset.sum_le_sum (fun j _ => hΔ i j)
+      _ = ∑ j : Fin n, |B i j| := by
+          apply Finset.sum_congr rfl
+          intro j _
+          rw [abs_of_nonneg (hB_nonneg i j)]
+      _ ≤ infNorm B := row_sum_le_infNorm B i
+  · exact infNorm_nonneg B
+
+/-- **Theorem 11.3 all-`1 × 1` source-facing package with norm aggregation**,
+stored-symmetric path: the explicit perturbation witnesses also satisfy
+infinity-norm bounds induced by their recursive entrywise envelope. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne_with_norm_bounds
+    (fp : FPModel) (hval : gammaValid fp 3) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hsym : ∀ i j, A i j = A j i)
+    (hp : higham11_3_FlStoredAllOnePivots fp n A) :
+    ∃ L_hat D_hat : Fin n → Fin n → ℝ,
+      ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+        (∀ i j : Fin n,
+          |ΔA1 i j| ≤ higham11_3_fl_storedAllOneByOneBound fp n A i j) ∧
+        (∀ i j : Fin n,
+          |ΔA2 i j| ≤ higham11_3_fl_storedAllOneByOneBound fp n A i j) ∧
+        infNorm ΔA1 ≤ infNorm (higham11_3_fl_storedAllOneByOneBound fp n A) ∧
+        infNorm ΔA2 ≤ infNorm (higham11_3_fl_storedAllOneByOneBound fp n A) ∧
+        (∀ i j : Fin n,
+          ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+            L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+          A i j + ΔA1 i j) := by
+  obtain ⟨L_hat, D_hat, ΔA1, ΔA2, hΔA1, hΔA2, hLD⟩ :=
+    higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne
+      fp hval n A hsym hp
+  refine ⟨L_hat, D_hat, ΔA1, ΔA2, hΔA1, hΔA2, ?_, ?_, hLD⟩
+  · exact
+      higham11_3_infNorm_le_of_componentwise_bound_nonneg n ΔA1
+        (higham11_3_fl_storedAllOneByOneBound fp n A)
+        (fun i j => higham11_3_fl_storedAllOneByOneBound_nonneg fp hval n A i j)
+        hΔA1
+  · exact
+      higham11_3_infNorm_le_of_componentwise_bound_nonneg n ΔA2
+        (higham11_3_fl_storedAllOneByOneBound fp n A)
+        (fun i j => higham11_3_fl_storedAllOneByOneBound_nonneg fp hval n A i j)
+        hΔA2
+
+/-- **Theorem 11.3 all-`1 × 1` source-facing package with norm aggregation**,
+raw-Schur path: the explicit perturbation witnesses also satisfy infinity-norm
+bounds induced by their recursive entrywise envelope. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne_with_norm_bounds
+    (fp : FPModel) (hval : gammaValid fp 3) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hp : higham11_3_FlAllOneSymmetricPivots fp n A) :
+    ∃ L_hat D_hat : Fin n → Fin n → ℝ,
+      ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+        (∀ i j : Fin n,
+          |ΔA1 i j| ≤ higham11_3_fl_allOneByOneBound fp n A i j) ∧
+        (∀ i j : Fin n,
+          |ΔA2 i j| ≤ higham11_3_fl_allOneByOneBound fp n A i j) ∧
+        infNorm ΔA1 ≤ infNorm (higham11_3_fl_allOneByOneBound fp n A) ∧
+        infNorm ΔA2 ≤ infNorm (higham11_3_fl_allOneByOneBound fp n A) ∧
+        (∀ i j : Fin n,
+          ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+            L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+          A i j + ΔA1 i j) := by
+  obtain ⟨L_hat, D_hat, ΔA1, ΔA2, hΔA1, hΔA2, hLD⟩ :=
+    higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne
+      fp hval n A hp
+  refine ⟨L_hat, D_hat, ΔA1, ΔA2, hΔA1, hΔA2, ?_, ?_, hLD⟩
+  · exact
+      higham11_3_infNorm_le_of_componentwise_bound_nonneg n ΔA1
+        (higham11_3_fl_allOneByOneBound fp n A)
+        (fun i j => higham11_3_fl_allOneByOneBound_nonneg fp hval n A i j)
+        hΔA1
+  · exact
+      higham11_3_infNorm_le_of_componentwise_bound_nonneg n ΔA2
+        (higham11_3_fl_allOneByOneBound fp n A)
+        (fun i j => higham11_3_fl_allOneByOneBound_nonneg fp hval n A i j)
+        hΔA2
+
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
     (ε : ℝ) : Fin 3 → Fin 3 → ℝ :=
