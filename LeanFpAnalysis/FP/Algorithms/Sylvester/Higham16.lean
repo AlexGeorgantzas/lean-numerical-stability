@@ -110,6 +110,18 @@ theorem vec_right_mul_rect (m n p : Nat)
     (Matrix.kronecker_mulVec_vec (1 : Matrix (Fin m) (Fin m) Real)
       X (Matrix.transpose B)).symm
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for the rectangular `vec(A * X * B)` Kronecker identity. -/
+alias H16_eq16_2_vec_triple_product_rect := vec_triple_product_rect
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for the left-multiplication half of the rectangular vec/Kronecker system. -/
+alias H16_eq16_2_vec_left_mul_rect := vec_left_mul_rect
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for the right-multiplication half of the rectangular vec/Kronecker system. -/
+alias H16_eq16_2_vec_right_mul_rect := vec_right_mul_rect
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     the product-index Lyapunov coefficient `I_n kron A + A kron I_n`
     for vectorized Lyapunov systems `A X + X A^T = C`. -/
@@ -201,6 +213,16 @@ theorem sylvester_vec_system_iff_solution (m n : Nat)
     rw [sylvesterVecCoeff_mulVec_vec]
     ext p
     exact h p.2 p.1
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for applying the rectangular Sylvester vec/Kronecker coefficient to
+    `vec(X)`. -/
+alias H16_eq16_2_sylvesterVecCoeff_mulVec_vec := sylvesterVecCoeff_mulVec_vec
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for equivalence between the rectangular vec/Kronecker linear system and
+    the Sylvester equation. -/
+alias H16_eq16_2_sylvester_vec_system_iff_solution := sylvester_vec_system_iff_solution
 
 /-- Higham, 2nd ed., Chapter 16, equation (16.22):
     vectorized/Kronecker form of the full perturbation identity, including the
@@ -6538,6 +6560,28 @@ theorem sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_r
 -- ============================================================
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the rectangular determinant-nonzero practical certificate
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_rect :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_rect
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the rectangular determinant-nonzero denominator-free absolute
+    practical certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_rect :=
+  sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_rect
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the rectangular determinant-nonzero raw residual-budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_rect :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_rect
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the rectangular determinant-nonzero residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_rect :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_rect
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
     alias for the determinant-nonzero practical certificate endpoint. -/
 alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate :=
   sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate
@@ -7383,6 +7427,26 @@ theorem sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf_total
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
       hExact hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total `SepLowerBound` a posteriori residual-error endpoint. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_of_sepLowerBound_total :=
+  sylvester_aposteriori_bound_of_sepLowerBound_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative `SepLowerBound` a posteriori residual-error endpoint. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_of_sepLowerBound_total :=
+  sylvester_relative_aposteriori_bound_of_sepLowerBound_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the total exact-infimum a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_of_pos_le_sylvesterSepInf_total :=
+  sylvester_aposteriori_bound_of_pos_le_sylvesterSepInf_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the total relative exact-infimum a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf_total :=
+  sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf_total
+
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
     diagonal case: a uniform diagonal-difference gap instantiates the
     Frobenius a posteriori error-residual bound. -/
@@ -7467,6 +7531,16 @@ theorem sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge_total
       (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat sigma
       (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
       hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total diagonal entrywise-gap a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_diagonal_of_entrywise_abs_ge_total :=
+  sylvester_aposteriori_bound_diagonal_of_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative diagonal entrywise-gap a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge_total :=
+  sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge_total
 
 -- ============================================================
 -- Generalized equations from Chapter 16.5
