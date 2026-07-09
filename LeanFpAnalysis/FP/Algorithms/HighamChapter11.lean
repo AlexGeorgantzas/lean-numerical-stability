@@ -5215,6 +5215,61 @@ theorem higham11_7_tridiagonalPathStartOffsetsFrom_exists
         higham11_7_tridiagonalPathStartOffsetsFrom_cons
           base k step starts (by simp [starts]) (by simpa [starts] using htail)
 
+/-- The base-offset start schedule for a finite mixed tridiagonal pivot path is
+unique. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_unique
+    (base k : ℕ) (step : Fin k → PivotSize)
+    (starts₁ starts₂ : Fin k → ℕ)
+    (hstarts₁ : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts₁)
+    (hstarts₂ : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts₂) :
+    starts₁ = starts₂ := by
+  induction k generalizing base with
+  | zero =>
+      funext t
+      exact Fin.elim0 t
+  | succ k ih =>
+      funext t
+      cases t using Fin.cases with
+      | zero =>
+          have hhead₁ :=
+            higham11_7_tridiagonalPathStartOffsetsFrom_head
+              base (k + 1) step starts₁ hstarts₁ (by omega)
+          have hhead₂ :=
+            higham11_7_tridiagonalPathStartOffsetsFrom_head
+              base (k + 1) step starts₂ hstarts₂ (by omega)
+          have hzero₁ : starts₁ (0 : Fin (k + 1)) = base := by
+            simpa using hhead₁
+          have hzero₂ : starts₂ (0 : Fin (k + 1)) = base := by
+            simpa using hhead₂
+          rw [hzero₁, hzero₂]
+      | succ t =>
+          have htail₁ :=
+            higham11_7_tridiagonalPathStartOffsetsFrom_tail
+              base k step starts₁ hstarts₁
+          have htail₂ :=
+            higham11_7_tridiagonalPathStartOffsetsFrom_tail
+              base k step starts₂ hstarts₂
+          have htail_eq :=
+            ih (base + higham11_7_tridiagonalBranchSupportOffset (step 0))
+              (fun t : Fin k => step t.succ)
+              (fun t : Fin k => starts₁ t.succ)
+              (fun t : Fin k => starts₂ t.succ) htail₁ htail₂
+          exact congrFun htail_eq t
+
+/-- Every finite mixed tridiagonal pivot path has a unique base-offset start
+schedule. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_exists_unique
+    (base k : ℕ) (step : Fin k → PivotSize) :
+    ∃! starts : Fin k → ℕ,
+      higham11_7_TridiagonalPathStartOffsetsFrom base k step starts := by
+  obtain ⟨starts, hstarts⟩ :=
+    higham11_7_tridiagonalPathStartOffsetsFrom_exists base k step
+  refine ⟨starts, hstarts, ?_⟩
+  intro starts' hstarts'
+  exact
+    higham11_7_tridiagonalPathStartOffsetsFrom_unique
+      base k step starts' starts hstarts' hstarts
+
 /-- Every start offset in a base-offset mixed path is at or after the base. -/
 theorem higham11_7_tridiagonalPathStartOffsetsFrom_base_le
     (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
@@ -5310,6 +5365,68 @@ theorem higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_base_add_pivotS
           simpa [Nat.add_assoc, add_comm, add_left_comm, add_assoc] using
             htail_le
 
+/-- Earlier branches end no later than any later branch's start in a scheduled
+mixed tridiagonal path. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_of_lt
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts)
+    {t u : Fin k} (htu : t.val < u.val) :
+    starts t + higham11_7_tridiagonalBranchSupportOffset (step t) ≤
+      starts u := by
+  induction k generalizing base with
+  | zero =>
+      exact Fin.elim0 t
+  | succ k ih =>
+      cases t using Fin.cases with
+      | zero =>
+          cases u using Fin.cases with
+          | zero =>
+              omega
+          | succ u =>
+              have htail :=
+                higham11_7_tridiagonalPathStartOffsetsFrom_tail
+                  base k step starts hstarts
+              have htail_base_le :=
+                higham11_7_tridiagonalPathStartOffsetsFrom_base_le
+                  (base + higham11_7_tridiagonalBranchSupportOffset (step 0))
+                  k (fun t : Fin k => step t.succ)
+                  (fun t : Fin k => starts t.succ) htail u
+              have hhead :=
+                higham11_7_tridiagonalPathStartOffsetsFrom_head
+                  base (k + 1) step starts hstarts (by omega)
+              have hzero : starts (0 : Fin (k + 1)) = base := by
+                simpa using hhead
+              simpa [hzero, add_comm, add_left_comm, add_assoc] using
+                htail_base_le
+      | succ t =>
+          cases u using Fin.cases with
+          | zero =>
+              simp [Fin.val_succ] at htu
+          | succ u =>
+              have htail :=
+                higham11_7_tridiagonalPathStartOffsetsFrom_tail
+                  base k step starts hstarts
+              have htu_tail : t.val < u.val := by
+                simpa [Fin.val_succ] using htu
+              exact
+                ih (base + higham11_7_tridiagonalBranchSupportOffset (step 0))
+                  (fun t : Fin k => step t.succ)
+                  (fun t : Fin k => starts t.succ) htail htu_tail
+
+/-- Start offsets are strictly ordered along a scheduled mixed tridiagonal
+path. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_lt_of_lt
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts)
+    {t u : Fin k} (htu : t.val < u.val) :
+    starts t < starts u := by
+  have hend :=
+    higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_of_lt
+      base k step starts hstarts htu
+  exact Nat.lt_of_lt_of_le
+    (Nat.lt_add_of_pos_right
+      (higham11_7_tridiagonalBranchSupportOffset_pos (step t))) hend
+
 /-- The end of the last branch in a nonempty scheduled path is exactly the
 base plus the total pivot span. -/
 theorem higham11_7_tridiagonalPathStartOffsetsFrom_last_branch_end_eq
@@ -5401,6 +5518,26 @@ theorem higham11_7_tridiagonalPathStartOffsets_exists
   simpa [higham11_7_TridiagonalPathStartOffsets] using
     higham11_7_tridiagonalPathStartOffsetsFrom_exists 0 k step
 
+/-- The zero-based start schedule for a finite mixed tridiagonal pivot path is
+unique. -/
+theorem higham11_7_tridiagonalPathStartOffsets_unique
+    (k : ℕ) (step : Fin k → PivotSize)
+    (starts₁ starts₂ : Fin k → ℕ)
+    (hstarts₁ : higham11_7_TridiagonalPathStartOffsets k step starts₁)
+    (hstarts₂ : higham11_7_TridiagonalPathStartOffsets k step starts₂) :
+    starts₁ = starts₂ :=
+  higham11_7_tridiagonalPathStartOffsetsFrom_unique
+    0 k step starts₁ starts₂ hstarts₁ hstarts₂
+
+/-- Every finite mixed tridiagonal pivot path has a unique zero-based start
+schedule. -/
+theorem higham11_7_tridiagonalPathStartOffsets_exists_unique
+    (k : ℕ) (step : Fin k → PivotSize) :
+    ∃! starts : Fin k → ℕ,
+      higham11_7_TridiagonalPathStartOffsets k step starts := by
+  simpa [higham11_7_TridiagonalPathStartOffsets] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_exists_unique 0 k step
+
 /-- Every zero-based start offset lies strictly before the full path span. -/
 theorem higham11_7_tridiagonalPathStartOffsets_lt_pivotSpan
     (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
@@ -5421,6 +5558,28 @@ theorem higham11_7_tridiagonalPathStartOffsets_branch_end_le_pivotSpan
   simpa [higham11_7_TridiagonalPathStartOffsets] using
     higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_base_add_pivotSpan
       0 k step starts hstarts t
+
+/-- Earlier zero-based scheduled branches end no later than any later
+branch's start. -/
+theorem higham11_7_tridiagonalPathStartOffsets_branch_end_le_of_lt
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets k step starts)
+    {t u : Fin k} (htu : t.val < u.val) :
+    starts t + higham11_7_tridiagonalBranchSupportOffset (step t) ≤
+      starts u := by
+  simpa [higham11_7_TridiagonalPathStartOffsets] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_of_lt
+      0 k step starts hstarts htu
+
+/-- Zero-based scheduled branch starts are strictly ordered by path index. -/
+theorem higham11_7_tridiagonalPathStartOffsets_lt_of_lt
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets k step starts)
+    {t u : Fin k} (htu : t.val < u.val) :
+    starts t < starts u := by
+  simpa [higham11_7_TridiagonalPathStartOffsets] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_lt_of_lt
+      0 k step starts hstarts htu
 
 /-- The end of the last branch in a nonempty zero-based scheduled path is the
 total pivot span. -/
@@ -7261,6 +7420,148 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumpt
     (higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
       k fp tailDim step Aloc c_bound c_rec u_loc tail_exact hpath)
     hc_bound hc_rec hc hu hu_loc hu_le hcoeff hAnorm hC hsolve
+
+/-- **Theorem 11.7 scheduled lifted path endpoint, coefficient majorant
+form**, zero common offset.  This chooses an existing zero-based start-offset
+schedule before applying the lifted path endpoint. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_scheduled_lifted_sum_zero_offset_of_coeff_sum_le
+    (n k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hbudget : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u_loc t * infNorm (Aloc t) ≤
+        c t * u * infNorm A)
+    (hsolve :
+      ∀ starts : Fin k → ℕ,
+        higham11_7_TridiagonalPathStartOffsets k step starts →
+        ∀ Δloc : ∀ t : Fin k,
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+              Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+          higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+            Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+          ∀ i : Fin n,
+            ∑ j : Fin n,
+                (A i j +
+                  (∑ t : Fin k,
+                    higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+                      (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+                      (Δloc t) i j)) *
+                  x_hat j =
+              b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  obtain ⟨starts, hstarts⟩ :=
+    higham11_7_tridiagonalPathStartOffsets_exists k step
+  exact
+    higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_sum_le
+      n k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact
+      A b x_hat starts c C u hpath hc hu hC hbudget (hsolve starts hstarts)
+
+/-- **Theorem 11.7 scheduled lifted path endpoint from local assumptions,
+coefficient majorant form**, zero common offset. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_sum_le
+    (n k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hbudget : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u_loc t * infNorm (Aloc t) ≤
+        c t * u * infNorm A)
+    (hsolve :
+      ∀ starts : Fin k → ℕ,
+        higham11_7_TridiagonalPathStartOffsets k step starts →
+        ∀ Δloc : ∀ t : Fin k,
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+              Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+          higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+            Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+          ∀ i : Fin n,
+            ∑ j : Fin n,
+                (A i j +
+                  (∑ t : Fin k,
+                    higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+                      (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+                      (Δloc t) i j)) *
+                  x_hat j =
+              b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_scheduled_lifted_sum_zero_offset_of_coeff_sum_le
+    n k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact
+    A b x_hat c C u
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact hpath)
+    hc hu hC hbudget hsolve
+
+/-- **Theorem 11.7 scheduled lifted path endpoint from terminal-tail
+assumptions, coefficient majorant form**, zero common offset. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_sum_le
+    (n k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp tailDim
+      step Aloc c_bound c_rec u_loc)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hbudget : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u_loc t * infNorm (Aloc t) ≤
+        c t * u * infNorm A)
+    (hsolve :
+      ∀ starts : Fin k → ℕ,
+        higham11_7_TridiagonalPathStartOffsets k step starts →
+        ∀ Δloc : ∀ t : Fin k,
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+              Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+          higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+            Aloc c_bound c_rec u_loc tail_exact tail_exact Δloc →
+          ∀ i : Fin n,
+            ∑ j : Fin n,
+                (A i j +
+                  (∑ t : Fin k,
+                    higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+                      (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+                      (Δloc t) i j)) *
+                  x_hat j =
+              b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_scheduled_lifted_sum_zero_offset_of_coeff_sum_le
+    n k fp tailDim step Aloc c_bound c_rec u_loc tail_exact tail_exact
+    A b x_hat c C u
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_exact hpath)
+    hc hu hC hbudget hsolve
 
 /-- **Theorem 11.7 scheduled lifted path endpoint from scalar budget
 comparisons**, zero common offset.  This uses the proved existence of a
