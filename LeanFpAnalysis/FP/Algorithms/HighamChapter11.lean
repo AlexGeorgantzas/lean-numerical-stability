@@ -5415,6 +5415,43 @@ theorem higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_wit
     (higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
       k fp tailDim step A c_bound c_rec u tail_exact hpath)
 
+/-- **Theorem 11.7 path residual witnesses with supplied uniform budgets**.
+Once later work proves uniform entry and norm budgets for each local branch,
+the path residual package yields explicit perturbation matrices already bounded
+by those uniform budgets. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses_of_uniform_budgets
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (Bentry Bnorm : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact)
+    (hentry : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u t * infNorm (A t) ≤ Bentry)
+    (hnorm : ∀ t : Fin k,
+      ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
+        (c_bound t + c_rec t) * u t * infNorm (A t) ≤ Bnorm) :
+    ∃ ΔA : ∀ t : Fin k,
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+      ∀ t : Fin k,
+        (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+          |ΔA t i j| ≤ Bentry) ∧
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+          (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t) ∧
+        infNorm (ΔA t) ≤ Bnorm := by
+  obtain ⟨ΔA, hΔA⟩ :=
+    higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses
+      k fp tailDim step A c_bound c_rec u tail_fl tail_exact hpath
+  refine ⟨ΔA, ?_⟩
+  intro t
+  rcases hΔA t with ⟨hbound, hsupp, hnorm_local⟩
+  exact ⟨fun i j => (hbound i j).trans (hentry t), hsupp,
+    hnorm_local.trans (hnorm t)⟩
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
