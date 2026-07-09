@@ -1048,6 +1048,24 @@ theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
       mul_le_mul_of_nonneg_right hC htail_nonneg
     _ = 36 * (n : ℝ) * ρ_n * Amax := by ring
 
+/-- Exact-coefficient pointwise estimates package directly into the scalar
+max-entry product certificate used by the Bunch-Kaufman consumers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_absLDLTProduct_entries
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ_n Amax : ℝ) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_absLDLTProduct n L_hat D_hat i j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct
+    n hn L_hat D_hat ρ_n Amax
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
+      n hn L_hat D_hat ρ_n Amax hρ hAmax hentries)
+
 /-- **Theorem 11.4 constant (Higham [608, 1997], appendix (A.3))**:
 `(3+α²)/(1−α²) ≤ 6`, bounding `|E||E⁻¹||E| ≤ 6|E|` for a 2×2 pivot. -/
 theorem higham11_4_pivot_norm_const_le_six :
