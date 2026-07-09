@@ -2539,6 +2539,125 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_b
       n fp A σ a11 a21 a22 κ c_bound c_rec u tail_fl tail_exact
       hchoice hσa11 hσa22 hκ le_rfl hbudget hval hrec hc_bound hc_rec hu
 
+/-- **Theorem 11.7 recursive residual norm aggregation, exact inverse-ratio
+form from pivot-entry bounds**.  The displayed bound `|a11| ≤ σ` already
+implies `σ ≥ 0`, so this wrapper removes that separate side condition from the
+exact-ratio `2 × 2` local-recursive branch. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_exact_inverse_ratio_of_pivot_bounds
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (σ a11 a21 a22 c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hbudget :
+      gamma fp 3 *
+          (infNorm A +
+            infNorm A *
+              (σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2)) *
+                infNorm A) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      infNorm ΔA ≤ ((n + 3 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_mul
+              (A ⟨1, by omega⟩
+                (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+              (a11 / (a11 * a22 - a21 ^ 2)))
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) -
+          (A ⟨1, by omega⟩
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) *
+            (a11 / (a11 * a22 - a21 ^ 2)) *
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  have hσ : 0 ≤ σ := (abs_nonneg a11).trans hσa11
+  exact
+    higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_exact_inverse_ratio
+      n fp A σ a11 a21 a22 c_bound c_rec u tail_fl tail_exact
+      hchoice hσ hσa11 hσa22 hbudget hval hrec hc_bound hc_rec hu
+
+/-- **Theorem 11.7 recursive residual norm aggregation, infinity-norm pivot
+scale**.  This matrix-entry endpoint fixes Algorithm 11.6's local `2 × 2`
+pivot scalars to the leading tridiagonal entries and uses `σ = ‖A‖∞`, deriving
+the pivot-entry bounds from the matrix infinity norm. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_infNorm_choice
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice (infNorm A) (A 0 0)
+      (A ⟨1, by omega⟩ 0) PivotSize.two)
+    (hbudget :
+      gamma fp 3 *
+          (infNorm A +
+            infNorm A *
+              (infNorm A /
+                ((1 - higham11_6_bunchTridiagonalAlpha) *
+                  (A ⟨1, by omega⟩ 0) ^ 2)) *
+                infNorm A) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      infNorm ΔA ≤ ((n + 3 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_mul
+              (A ⟨1, by omega⟩
+                (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+              ((A 0 0) /
+                ((A 0 0) * (A ⟨1, by omega⟩ ⟨1, by omega⟩) -
+                  (A ⟨1, by omega⟩ 0) ^ 2)))
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) -
+          (A ⟨1, by omega⟩
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) *
+            ((A 0 0) /
+              ((A 0 0) * (A ⟨1, by omega⟩ ⟨1, by omega⟩) -
+                (A ⟨1, by omega⟩ 0) ^ 2)) *
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  let pivot₂ : Fin (n + 3) := ⟨1, by omega⟩
+  have hσa11 : |A 0 0| ≤ infNorm A :=
+    higham11_7_abs_entry_le_infNorm (n + 3) A 0 0
+  have hσa22 : |A pivot₂ pivot₂| ≤ infNorm A :=
+    higham11_7_abs_entry_le_infNorm (n + 3) A pivot₂ pivot₂
+  simpa [pivot₂] using
+    higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_exact_inverse_ratio_of_pivot_bounds
+      n fp A (infNorm A) (A 0 0) (A pivot₂ 0) (A pivot₂ pivot₂)
+      c_bound c_rec u tail_fl tail_exact hchoice hσa11 hσa22 hbudget hval
+      hrec hc_bound hc_rec hu
+
 /-- Local index of the first trailing scalar after a leading `1 × 1`
 tridiagonal pivot inside a block of size `n+2`. -/
 abbrev higham11_7_tridiagonalOneByOneFirstTrailingIndex (n : ℕ) :
@@ -2967,6 +3086,52 @@ theorem higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_b
     higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries
       n fp A σ c_bound c_rec u tail_fl tail_exact hchoice ha11 hσA
       hbudget hval hrec hc_bound hc_rec hu
+
+/-- **Theorem 11.7 one-by-one recursive residual aggregation, infinity-norm
+pivot scale**.  When the tridiagonal pivot test uses `σ = ‖A‖∞`, the
+matrix-entry branch wrapper no longer needs a separate `σ ≤ ‖A‖∞` handoff. -/
+theorem higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_infNorm_choice_of_subdiagonal_ne_zero
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 2) → Fin (n + 2) → ℝ)
+    (c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice (infNorm A) (A 0 0)
+      (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) PivotSize.one)
+    (ha21 : A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0 ≠ 0)
+    (hbudget :
+      gamma fp 3 *
+          (infNorm A + infNorm A / higham11_6_bunchTridiagonalAlpha) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 2) → Fin (n + 2) → ℝ,
+      (∀ i j : Fin (n + 2), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 2) 1 ΔA ∧
+      infNorm ΔA ≤ ((n + 2 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_div
+              (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)
+              (A 0 0))
+            (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)) -
+          (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) *
+            (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) /
+            (A 0 0)) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) := by
+  exact
+    higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_of_subdiagonal_ne_zero
+      n fp A (infNorm A) c_bound c_rec u tail_fl tail_exact hchoice ha21
+      le_rfl hbudget hval hrec hc_bound hc_rec hu
 
 /-! ## §11.2 Aasen's method -/
 
@@ -5355,6 +5520,42 @@ theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound (n : ℕ)
     higham11_8_relative_outer_factor_caps_of_row_col_sum_majorants
       n L γ (((n - 1 : ℕ) : ℝ) * κ) (((n - 1 : ℕ) : ℝ) * κ) cap
       hγ hcap hκcap hκcap hrows hcols
+
+/-- Scalar scale comparison for the Aasen `(n-1)` outer-factor route.  A
+normalized entry bound `(1+γ)κ≤1` implies the row/column cap
+`(1+γ)((n-1)κ)≤n-1` consumed by the exact-radius wrappers. -/
+theorem higham11_8_aasen_outer_factor_scaled_entry_cap (n : ℕ) (γ κ : ℝ)
+    (hκunit : (1 + γ) * κ ≤ 1) :
+    (1 + γ) * (((n - 1 : ℕ) : ℝ) * κ) ≤ ((n - 1 : ℕ) : ℝ) := by
+  have hcard : 0 ≤ ((n - 1 : ℕ) : ℝ) := Nat.cast_nonneg (n - 1)
+  calc
+    (1 + γ) * (((n - 1 : ℕ) : ℝ) * κ)
+        = ((n - 1 : ℕ) : ℝ) * ((1 + γ) * κ) := by ring
+    _ ≤ ((n - 1 : ℕ) : ℝ) * 1 :=
+      mul_le_mul_of_nonneg_left hκunit hcard
+    _ = ((n - 1 : ℕ) : ℝ) := by ring
+
+/-- Aasen outer-factor relative caps from a normalized uniform entry bound.
+This factors the remaining source scalar comparison for the exact-radius route:
+after proving `(1+γ)κ≤1` for the concrete Aasen factor entries, the strict
+upper-zero and first-column-zero structure supplies both relative norm caps with
+the printed `(n-1)` radius. -/
+theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : 0 ≤ κ)
+    (hκunit : (1 + γ) * κ ≤ 1)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (1 + γ) * infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) := by
+  exact
+    higham11_8_relative_outer_factor_caps_of_aasen_entry_bound
+      n hn L γ κ ((n - 1 : ℕ) : ℝ) hγ hκ
+      (higham11_8_aasen_outer_factor_scaled_entry_cap n γ κ hκunit)
+      hentry hstrictUpperZero hfirstColZero
 
 /-- A relative entrywise factor perturbation controls the perturbed factor's
 infinity norm by `(1+γ)` times the source factor norm. -/
