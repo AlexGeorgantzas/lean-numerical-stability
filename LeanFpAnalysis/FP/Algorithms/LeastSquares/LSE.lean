@@ -64560,6 +64560,62 @@ theorem theorem20_10_constructed_householder_returned_xhat_exact_perturbed_minim
   dsimp at htail
   exact htail
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    source-facing exact perturbed minimizer package for the named constructed
+    returned vector.
+
+    This is the previous theorem with the zero constraint perturbation removed
+    from the statement: the exact perturbed LSE problem uses the original
+    constraint right-hand side `d`. -/
+theorem theorem20_10_constructed_householder_returned_xhat_exact_perturbed_minimizer_unperturbed_constraint_rhs_of_source_ranks_unit_roundoff_smallnessThreshold_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    let xhat : Fin (p + q) → ℝ :=
+      theorem20_10_constructed_householder_returned_xhat
+        fp A B b d hp hq hB hStack hu
+    let gammaA : ℝ :=
+      theorem20_10_householder_composed_partA_gammaA fp r p q
+    let gammaB : ℝ :=
+      theorem20_10_householder_composed_partA_gammaB fp r p q
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) d xhat ∧
+      (∃! x : Fin (p + q) → ℝ,
+        IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j) d x) := by
+  have hraw :=
+    theorem20_10_constructed_householder_returned_xhat_exact_perturbed_minimizer_of_source_ranks_unit_roundoff_smallnessThreshold_composed_conservative_gamma
+      fp A B b d hp hq hB hStack hu
+  dsimp at hraw ⊢
+  rcases hraw with
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltad, hDeltaA, hDeltaB,
+      hDeltab, _hDeltad, hxhat, hunique⟩
+  refine ⟨DeltaA, DeltaB, Deltab, hDeltaA, hDeltaB, hDeltab, ?_, ?_⟩
+  · simpa [hDeltad] using hxhat
+  · rcases hunique with ⟨x, hx, huniq⟩
+    refine ⟨x, ?_, ?_⟩
+    · simpa [hDeltad] using hx
+    · intro y hy
+      exact huniq y (by simpa [hDeltad] using hy)
+
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
 theorem theorem20_10_partA_mixed_stability_of_householder_gamma_certificate
