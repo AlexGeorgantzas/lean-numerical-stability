@@ -33505,6 +33505,35 @@ theorem theorem20_8_kappaB_bracket_of_residual_amplifier_factor_ge_one_add_inv
       A B APplus BAplus (by simpa [kappa, factor] using hlower)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    obstruction to discharging the residual-amplifier factor automatically.
+
+    If the source product `A B_A^+` has zero operator norm while
+    `kappa_B(A)` is positive, the source-facing residual-amplifier lower-bound
+    side condition `1 + 1/kappa_B(A) <= (||B||_F/||A||_F)||A B_A^+||_2` is
+    impossible. -/
+theorem theorem20_8_not_residual_amplifier_factor_ge_one_add_inv_of_ABAplus_op2_eq_zero
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (hkappa_pos : 0 < theorem20_8KappaB A APplus)
+    (hABAplus_zero :
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) = 0) :
+    ¬
+      1 + (theorem20_8KappaB A APplus)⁻¹ ≤
+        (frobNormRect B / frobNormRect A) *
+          complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) := by
+  intro hfactor
+  have hleft_pos :
+      0 < 1 + (theorem20_8KappaB A APplus)⁻¹ := by
+    have hinv_pos : 0 < (theorem20_8KappaB A APplus)⁻¹ :=
+      inv_pos.mpr hkappa_pos
+    linarith
+  have hfactor_nonpos :
+      1 + (theorem20_8KappaB A APplus)⁻¹ ≤ 0 := by
+    simpa [hABAplus_zero] using hfactor
+  exact (not_le_of_gt hleft_pos) hfactor_nonpos
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     convert a source residual-radius comparison into the scaled
     residual-amplifier obligation once the residual-amplifier lower-bound
     factor is available.
