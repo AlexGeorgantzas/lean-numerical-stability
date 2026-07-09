@@ -1495,6 +1495,147 @@ theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_bou
       n s hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
       hlocal_budget hrec_budget hfirst htrail)
 
+/-- **Theorem 11.4 block-recursion exact-constant handoff**
+(Higham [608, 1997], eqs. (4.11)--(4.14)): if the local first-stage and
+recursive Schur-complement contributions are bounded with Higham's exact
+coefficient `(3+α²)(3+α)/(1−α²)^2`, the proved eq-(4.13) inequality still
+places their sum inside the printed `36nρₙ‖A‖_M` product budget. -/
+theorem higham11_4_first_stage_recursive_product_bound_of_higham_const
+    (n s : ℕ) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (ρ_n Amax localB recB : ℝ) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax) :
+    localB + recB ≤ 36 * (n : ℝ) * ρ_n * Amax := by
+  let C : ℝ :=
+    (3 + higham11_1_bunchParlettAlpha ^ 2) *
+      (3 + higham11_1_bunchParlettAlpha) /
+      (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2
+  have hC : C ≤ 36 := by
+    simpa [C] using higham11_4_bound_const_le_36
+  have hρA : 0 ≤ ρ_n * Amax := mul_nonneg hρ hAmax
+  have hlocal36 : localB ≤ 36 * ρ_n * Amax := by
+    calc
+      localB ≤ C * ρ_n * Amax := by simpa [C] using hlocal
+      _ = C * (ρ_n * Amax) := by ring
+      _ ≤ 36 * (ρ_n * Amax) := mul_le_mul_of_nonneg_right hC hρA
+      _ = 36 * ρ_n * Amax := by ring
+  have htail :
+      0 ≤ ((n - s : ℕ) : ℝ) * ρ_n * Amax :=
+    mul_nonneg (mul_nonneg (Nat.cast_nonneg _) hρ) hAmax
+  have hrec36 : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax := by
+    calc
+      recB ≤ C * ((n - s : ℕ) : ℝ) * ρ_n * Amax := by
+        simpa [C] using hrec
+      _ = C * (((n - s : ℕ) : ℝ) * ρ_n * Amax) := by ring
+      _ ≤ 36 * (((n - s : ℕ) : ℝ) * ρ_n * Amax) :=
+        mul_le_mul_of_nonneg_right hC htail
+      _ = 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax := by ring
+  exact
+    higham11_4_first_stage_recursive_product_bound n s hs_pos hs_le
+      ρ_n Amax localB recB hρ hAmax hlocal36 hrec36
+
+/-- Exact-coefficient first-stage plus recursive Schur-complement product-entry
+bounds imply the printed pointwise `36nρₙ‖A‖_M` estimate for every entry of
+`|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_product_entries_of_first_stage_recursive_higham_const_bounds
+    (n s : ℕ) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax := by
+  let C : ℝ :=
+    (3 + higham11_1_bunchParlettAlpha ^ 2) *
+      (3 + higham11_1_bunchParlettAlpha) /
+      (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2
+  have hC : C ≤ 36 := by
+    simpa [C] using higham11_4_bound_const_le_36
+  have hρA : 0 ≤ ρ_n * Amax := mul_nonneg hρ hAmax
+  have hn_one : (1 : ℝ) ≤ (n : ℝ) := by
+    have hs_one : 1 ≤ s := Nat.succ_le_of_lt hs_pos
+    exact_mod_cast hs_one.trans hs_le
+  have hlocal_final :
+      localB ≤ 36 * (n : ℝ) * ρ_n * Amax := by
+    calc
+      localB ≤ C * ρ_n * Amax := by simpa [C] using hlocal_budget
+      _ = C * (ρ_n * Amax) := by ring
+      _ ≤ 36 * (ρ_n * Amax) := mul_le_mul_of_nonneg_right hC hρA
+      _ = (1 : ℝ) * (36 * ρ_n * Amax) := by ring
+      _ ≤ (n : ℝ) * (36 * ρ_n * Amax) := by
+        have hscale : 0 ≤ 36 * ρ_n * Amax :=
+          mul_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 36) hρ) hAmax
+        exact mul_le_mul_of_nonneg_right hn_one hscale
+      _ = 36 * (n : ℝ) * ρ_n * Amax := by ring
+  have htrail_final :
+      localB + recB ≤ 36 * (n : ℝ) * ρ_n * Amax :=
+    higham11_4_first_stage_recursive_product_bound_of_higham_const
+      n s hs_pos hs_le ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget
+  intro i j
+  by_cases hi : i.val < s
+  · exact (hfirst i j (Or.inl hi)).trans hlocal_final
+  · by_cases hj : j.val < s
+    · exact (hfirst i j (Or.inr hj)).trans hlocal_final
+    · have hi_ge : s ≤ i.val := by omega
+      have hj_ge : s ≤ j.val := by omega
+      exact (htrail i j hi_ge hj_ge).trans htrail_final
+
+/-- Exact-coefficient first-stage plus recursive Schur-complement product-entry
+bounds package directly into the scalar max-entry product certificate consumed
+by the Theorem 11.4 stability and solve wrappers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries n hn L_hat D_hat
+    ρ_n Amax
+    (higham11_4_product_entries_of_first_stage_recursive_higham_const_bounds
+      n s hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
+      hlocal_budget hrec_budget hfirst htrail)
+
 /-- **Theorem 11.4 constant (Higham [608, 1997], appendix (A.3))**:
 `(3+α²)/(1−α²) ≤ 6`, bounding `|E||E⁻¹||E| ≤ 6|E|` for a 2×2 pivot. -/
 theorem higham11_4_pivot_norm_const_le_six :
