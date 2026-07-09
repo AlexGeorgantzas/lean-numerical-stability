@@ -110,6 +110,18 @@ theorem vec_right_mul_rect (m n p : Nat)
     (Matrix.kronecker_mulVec_vec (1 : Matrix (Fin m) (Fin m) Real)
       X (Matrix.transpose B)).symm
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for the rectangular `vec(A * X * B)` Kronecker identity. -/
+alias H16_eq16_2_vec_triple_product_rect := vec_triple_product_rect
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for the left-multiplication half of the rectangular vec/Kronecker system. -/
+alias H16_eq16_2_vec_left_mul_rect := vec_left_mul_rect
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for the right-multiplication half of the rectangular vec/Kronecker system. -/
+alias H16_eq16_2_vec_right_mul_rect := vec_right_mul_rect
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     the product-index Lyapunov coefficient `I_n kron A + A kron I_n`
     for vectorized Lyapunov systems `A X + X A^T = C`. -/
@@ -201,6 +213,16 @@ theorem sylvester_vec_system_iff_solution (m n : Nat)
     rw [sylvesterVecCoeff_mulVec_vec]
     ext p
     exact h p.2 p.1
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for applying the rectangular Sylvester vec/Kronecker coefficient to
+    `vec(X)`. -/
+alias H16_eq16_2_sylvesterVecCoeff_mulVec_vec := sylvesterVecCoeff_mulVec_vec
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for equivalence between the rectangular vec/Kronecker linear system and
+    the Sylvester equation. -/
+alias H16_eq16_2_sylvester_vec_system_iff_solution := sylvester_vec_system_iff_solution
 
 /-- Higham, 2nd ed., Chapter 16, equation (16.22):
     vectorized/Kronecker form of the full perturbation identity, including the
