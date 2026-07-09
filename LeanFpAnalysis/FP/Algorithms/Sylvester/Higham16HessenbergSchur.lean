@@ -86,4 +86,36 @@ theorem exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_sylvesterTriangula
       (sylvesterTriangularShiftedCoeff_isUpperHessenberg m R t hR)
       (by simpa [Matrix.of_apply] using hdet)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8),
+    Hessenberg-Schur handoff for the supplied triangular solve: if the left
+    Schur factor is upper Hessenberg, the right factor is upper triangular, and
+    every singleton shifted column coefficient is nonsingular, then the exact
+    triangular Sylvester equation is uniquely solvable and every shifted column
+    system admits the Chapter 9 upper-Hessenberg GEPP trace with growth bound.
+    This bundles exact structural certificates only; it does not assert a
+    rounded Bartels-Stewart implementation. -/
+theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_shifted_det_ne_zero
+    (m n : Nat) (hm : 0 < m)
+    (R : RMatFn m m) (S : RMatFn n n) (C : RMatFn m n)
+    (hR : IsUpperHessenberg m R)
+    (hS : IsUpperTriangularFn n S)
+    (hshift : forall k : Fin n,
+      Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) ≠ 0) :
+    ExistsUnique (IsSylvesterSolutionRect m n R S C) /\
+      (forall k : Fin n,
+        exists hmax : 0 < maxEntryNorm hm
+            (sylvesterTriangularShiftedCoeff m R (S k k)),
+        exists U : Fin m -> Fin m -> Real,
+          higham9_10_HessenbergGEPPUTrace
+            (maxEntryNorm hm (sylvesterTriangularShiftedCoeff m R (S k k)))
+            1 m (sylvesterTriangularShiftedCoeff m R (S k k)) U /\
+          growthFactorEntry hm (sylvesterTriangularShiftedCoeff m R (S k k))
+              U hmax <= (m : Real)) := by
+  constructor
+  · exact sylvester_triangular_solve_exists_unique m n R S C hS hshift
+  · intro k
+    exact
+      exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_sylvesterTriangularShiftedCoeff_of_det_ne_zero_exists_hmax
+        m hm R (S k k) hR (hshift k)
+
 end LeanFpAnalysis.FP
