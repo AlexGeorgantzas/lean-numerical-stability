@@ -3298,6 +3298,92 @@ theorem higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with
     m offset k E c u Amax (mul_nonneg (mul_nonneg hc hu) hAmax)
     hbound hsupp
 
+/-- **Theorem 11.7 finite mixed-offset support-sum combiner, printed
+coefficient form**.  This combines zero-prefix support lowering with the
+printed coefficient sum budget `(∑ t, c t) * u * Amax`. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_of_le_offsets
+    (m offset k : ℕ) (offsets : Fin k → ℕ)
+    (E : Fin k → Fin m → Fin m → ℝ) (c : Fin k → ℝ) (u Amax : ℝ)
+    (hβ : ∀ t : Fin k, 0 ≤ c t * u * Amax)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hbound : ∀ t : Fin k, ∀ i j : Fin m, |E t i j| ≤ c t * u * Amax)
+    (hsupp : ∀ t : Fin k, higham11_7_TridiagonalLeadingBlockSupport m (offsets t) (E t)) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ (∑ t : Fin k, c t) * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      infNorm G ≤ (m : ℝ) * ((∑ t : Fin k, c t) * u * Amax) ∧
+      (∀ i j : Fin m, G i j = ∑ t : Fin k, E t i j) := by
+  have hsum :
+      (∑ t : Fin k, c t * u * Amax) =
+        (∑ t : Fin k, c t) * u * Amax := by
+    simp [Finset.sum_mul, mul_assoc]
+  obtain ⟨G, hGbound, hGsupp, hGnorm, hGsum⟩ :=
+    higham11_7_tridiagonalLeadingBlockSupport_sum_bound_with_norm_of_le_offsets
+      m offset k offsets E (fun t => c t * u * Amax) hβ hoff hbound hsupp
+  refine ⟨G, ?_, hGsupp, ?_, hGsum⟩
+  · intro i j
+    simpa [hsum] using hGbound i j
+  · simpa [hsum] using hGnorm
+
+/-- **Theorem 11.7 finite mixed-offset support-sum combiner, uniform printed
+coefficient form**.  The common coefficient case yields the budget
+`k*c*u*Amax` after lowering all supports to a common offset. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm_of_le_offsets
+    (m offset k : ℕ) (offsets : Fin k → ℕ)
+    (E : Fin k → Fin m → Fin m → ℝ) (c u Amax : ℝ)
+    (hβ : 0 ≤ c * u * Amax)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hbound : ∀ t : Fin k, ∀ i j : Fin m, |E t i j| ≤ c * u * Amax)
+    (hsupp : ∀ t : Fin k, higham11_7_TridiagonalLeadingBlockSupport m (offsets t) (E t)) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ (k : ℝ) * c * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      infNorm G ≤ (m : ℝ) * ((k : ℝ) * c * u * Amax) ∧
+      (∀ i j : Fin m, G i j = ∑ t : Fin k, E t i j) := by
+  simpa [Finset.sum_const, nsmul_eq_mul, mul_assoc] using
+    higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_of_le_offsets
+      m offset k offsets E (fun _ => c) u Amax (fun _ => hβ)
+      hoff hbound hsupp
+
+/-- **Theorem 11.7 finite mixed-offset support-sum combiner, printed
+nonnegative form**.  This discharges the per-branch product nonnegativity after
+support-depth lowering. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_of_le_offsets_nonneg
+    (m offset k : ℕ) (offsets : Fin k → ℕ)
+    (E : Fin k → Fin m → Fin m → ℝ) (c : Fin k → ℝ) (u Amax : ℝ)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u) (hAmax : 0 ≤ Amax)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hbound : ∀ t : Fin k, ∀ i j : Fin m, |E t i j| ≤ c t * u * Amax)
+    (hsupp : ∀ t : Fin k, higham11_7_TridiagonalLeadingBlockSupport m (offsets t) (E t)) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ (∑ t : Fin k, c t) * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      infNorm G ≤ (m : ℝ) * ((∑ t : Fin k, c t) * u * Amax) ∧
+      (∀ i j : Fin m, G i j = ∑ t : Fin k, E t i j) :=
+  higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_of_le_offsets
+    m offset k offsets E c u Amax
+    (fun t => mul_nonneg (mul_nonneg (hc t) hu) hAmax)
+    hoff hbound hsupp
+
+/-- **Theorem 11.7 finite mixed-offset support-sum combiner, uniform printed
+nonnegative form**.  This is the common-coefficient mixed-offset endpoint with
+separate nonnegativity hypotheses. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm_of_le_offsets_nonneg
+    (m offset k : ℕ) (offsets : Fin k → ℕ)
+    (E : Fin k → Fin m → Fin m → ℝ) (c u Amax : ℝ)
+    (hc : 0 ≤ c) (hu : 0 ≤ u) (hAmax : 0 ≤ Amax)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hbound : ∀ t : Fin k, ∀ i j : Fin m, |E t i j| ≤ c * u * Amax)
+    (hsupp : ∀ t : Fin k, higham11_7_TridiagonalLeadingBlockSupport m (offsets t) (E t)) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ (k : ℝ) * c * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      infNorm G ≤ (m : ℝ) * ((k : ℝ) * c * u * Amax) ∧
+      (∀ i j : Fin m, G i j = ∑ t : Fin k, E t i j) :=
+  higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm_of_le_offsets
+    m offset k offsets E c u Amax (mul_nonneg (mul_nonneg hc hu) hAmax)
+    hoff hbound hsupp
+
 /-- **Theorem 11.7 support predicate bridge**, identifying the specialized
 trailing-block support predicate with zero-prefix support at offset two. -/
 theorem higham11_7_tridiagonalTwoByTwoTrailingBlockSupport_iff_leadingBlockSupport
