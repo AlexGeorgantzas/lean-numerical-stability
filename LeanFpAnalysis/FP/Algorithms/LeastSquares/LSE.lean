@@ -50047,6 +50047,154 @@ theorem
     heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack hx hy
     hres_source hres_pert hrelative rfl hbracket
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    Gram-projector source-rank Wedin-residual handoff for the concrete lifted
+    reduced-Gram table `Q₂(AQ₂)^+`.
+
+    Unlike the earlier lifted-table wrappers using the noncomputable full-row
+    right inverse, this route uses the source Gram pseudoinverse
+    `Bᵀ(BBᵀ)⁻¹` as `B^+` and discharges the rank-tolerant
+    Moore--Penrose certificate for `(AP)^+` internally.  The reduced residual
+    estimate and scalar first-order coefficient comparison remain explicit. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_gramProjection_wedinResidualRHS_first_order_coeff
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ)
+    {B : Fin p → Fin (p + q) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p q A B)
+    (x y : Fin (p + q) → ℝ)
+    (res resHigh : Fin (r + q) → ℝ)
+    {eps kappa : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 res)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres_source : lsResidualHigham A b x = res)
+    (hres_pert :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = resHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin (r + q) => res i - resHigh i) /
+          vecNorm2 res ≤
+        wedinTheorem20_1ResidualRelativeRHS kappa eps)
+    (hcoeff :
+      complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+          (1 + 2 * kappa) ≤
+        theorem20_8ResidualAmplifier A B h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) /
+          frobNormRect A) :
+    vecNorm2 (fun j : Fin (p + q) => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x res h.liftedReducedGramAPplus
+          (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+            h.liftedReducedGramAPplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x res h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+              frobNormRect A) :=
+  LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_MP_gram_projection_lseStackedFullColumnRank_wedinResidualRHS_first_order_coeff_op2_le
+    A DeltaA b Deltab hB DeltaB h.liftedReducedGramAPplus d Deltad x y
+    res resHigh heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax
+    hx hy
+    (h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
+      hB hstack)
+    hstack hres_source hres_pert hrelative hcoeff
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    Gram-projector lifted reduced-Gram Wedin-residual handoff with Wedin's
+    residual RHS specialized to the source condition quantity `kappa_B(A)`.
+
+    The GQR rank assumptions now discharge both the projected-action identity
+    and the rank-tolerant Moore--Penrose certificate for the concrete
+    `Q₂(AQ₂)^+` table.  The reduced residual-relative estimate and the scalar
+    source bracket remain the only exposed analytical obligations on this
+    surface. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_wedinResidualRHS_bracket
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ)
+    {B : Fin p → Fin (p + q) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p q A B)
+    (x y : Fin (p + q) → ℝ)
+    (res resHigh : Fin (r + q) → ℝ)
+    {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 res)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres_source : lsResidualHigham A b x = res)
+    (hres_pert :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = resHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin (r + q) => res i - resHigh i) /
+          vecNorm2 res ≤
+        wedinTheorem20_1ResidualRelativeRHS
+          (theorem20_8KappaB A h.liftedReducedGramAPplus) eps)
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A h.liftedReducedGramAPplus ≤
+        theorem20_8KappaB A h.liftedReducedGramAPplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                      h.liftedReducedGramAPplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin (p + q) => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x res h.liftedReducedGramAPplus
+          (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+            h.liftedReducedGramAPplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x res h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+              frobNormRect A) :=
+  h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_gramProjection_wedinResidualRHS_first_order_coeff
+    A DeltaA b Deltab hB DeltaB d Deltad x y res resHigh heps_nonneg
+    hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack hx hy hres_source
+    hres_pert hrelative
+    (theorem20_8_wedinResidualRHS_first_order_coeff_le_of_kappaB_bracket
+      A B h.liftedReducedGramAPplus
+      (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+        h.liftedReducedGramAPplus)
+      hApos rfl hbracket)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     for supplied GQR data, `B` has full row rank iff the displayed
     lower-triangular constraint block `S` has trivial kernel.
