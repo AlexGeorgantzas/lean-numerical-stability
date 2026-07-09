@@ -46650,6 +46650,24 @@ theorem GeneralizedQRFactorization.A_Q2_rectMatMulVec_injective_of_stackedFullCo
   h.A_Q2_rectMatMulVec_injective_of_nullIntersectionTrivial
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
+    stacked full column rank supplies the concrete Gram-pseudoinverse fields
+    for the reduced `A Q₂` block. -/
+theorem GeneralizedQRFactorization.A_Q2_reduced_gram_left_inverse_and_projection_symmetric
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    rectMatMul (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+        (gqrAQ2Block A h.Q) = idMatrix q ∧
+      IsSymmetricFiniteMatrix
+        (rectMatMul (gqrAQ2Block A h.Q)
+          (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) :=
+  lsAplusOfGramNonsingInv_left_inverse_and_projection_symmetric
+    (gqrAQ2Block A h.Q)
+    (h.A_Q2_rectMatMulVec_injective_of_stackedFullColumnRank hstack)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS A-side bridge:
     the source null-intersection condition supplies every nonzero-stage
     normalizer needed for exact MGS applied to the smaller `A Q₂` block. -/
