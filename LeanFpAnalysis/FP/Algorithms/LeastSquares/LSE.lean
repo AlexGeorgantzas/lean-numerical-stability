@@ -45674,6 +45674,92 @@ theorem GeneralizedQRFactorization.Q2Basis_vecNorm2
   rw [vecNorm2_orthogonal h.Q (Fin.append (0 : Fin p → ℝ) y) h.orthQ]
   exact vecNorm2_zeroLeft_append y
 
+/-- The concrete GQR `Q₂` basis has rectangular operator 2-norm at most one. -/
+theorem GeneralizedQRFactorization.Q2Basis_rectOpNorm2Le_one
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    rectOpNorm2Le h.Q2Basis 1 := by
+  intro y
+  rw [h.Q2Basis_vecNorm2 y]
+  simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
+    left multiplication by the concrete GQR `Q₂` basis preserves the vector
+    2-norm of every matrix-vector action. -/
+theorem GeneralizedQRFactorization.Q2Basis_rectMatMulVec_vecNorm2
+    {r p q s : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (C : Fin q → Fin s → ℝ) (x : Fin s → ℝ) :
+    vecNorm2 (rectMatMulVec (rectMatMul h.Q2Basis C) x) =
+      vecNorm2 (rectMatMulVec C x) := by
+  rw [rectMatMulVec_rectMatMul]
+  exact h.Q2Basis_vecNorm2 (rectMatMulVec C x)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
+    rectangular operator-2 certificates are unchanged by left multiplication
+    with the concrete GQR `Q₂` basis. -/
+theorem GeneralizedQRFactorization.rectOpNorm2Le_rectMatMul_Q2Basis_iff
+    {r p q s : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (C : Fin q → Fin s → ℝ) {c : ℝ} :
+    rectOpNorm2Le (rectMatMul h.Q2Basis C) c ↔ rectOpNorm2Le C c := by
+  constructor
+  · intro hQC x
+    calc
+      vecNorm2 (rectMatMulVec C x)
+          = vecNorm2 (rectMatMulVec (rectMatMul h.Q2Basis C) x) := by
+              rw [h.Q2Basis_rectMatMulVec_vecNorm2 C x]
+      _ ≤ c * vecNorm2 x := hQC x
+  · intro hC x
+    calc
+      vecNorm2 (rectMatMulVec (rectMatMul h.Q2Basis C) x)
+          = vecNorm2 (rectMatMulVec C x) :=
+              h.Q2Basis_rectMatMulVec_vecNorm2 C x
+      _ ≤ c * vecNorm2 x := hC x
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
+    left multiplication by the concrete GQR `Q₂` basis preserves the exact
+    complexified rectangular operator 2-norm. -/
+theorem GeneralizedQRFactorization.complexMatrixOp2_realRectToCMatrix_rectMatMul_Q2Basis_eq
+    {r p q s : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (C : Fin q → Fin s → ℝ) :
+    complexMatrixOp2 (realRectToCMatrix (rectMatMul h.Q2Basis C)) =
+      complexMatrixOp2 (realRectToCMatrix C) := by
+  apply le_antisymm
+  · have hC :
+        rectOpNorm2Le C (complexMatrixOp2 (realRectToCMatrix C)) :=
+      rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le C le_rfl
+    have hQC :
+        rectOpNorm2Le (rectMatMul h.Q2Basis C)
+          (complexMatrixOp2 (realRectToCMatrix C)) :=
+      (h.rectOpNorm2Le_rectMatMul_Q2Basis_iff C).2 hC
+    exact complexMatrixOp2_realRectToCMatrix_le_of_rectOpNorm2Le
+      (rectMatMul h.Q2Basis C)
+      (complexMatrixOp2_nonneg (realRectToCMatrix C)) hQC
+  · have hQC :
+        rectOpNorm2Le (rectMatMul h.Q2Basis C)
+          (complexMatrixOp2
+            (realRectToCMatrix (rectMatMul h.Q2Basis C))) :=
+      rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+        (rectMatMul h.Q2Basis C) le_rfl
+    have hC :
+        rectOpNorm2Le C
+          (complexMatrixOp2
+            (realRectToCMatrix (rectMatMul h.Q2Basis C))) :=
+      (h.rectOpNorm2Le_rectMatMul_Q2Basis_iff C).1 hQC
+    exact complexMatrixOp2_realRectToCMatrix_le_of_rectOpNorm2Le C
+      (complexMatrixOp2_nonneg
+        (realRectToCMatrix (rectMatMul h.Q2Basis C))) hC
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     the trailing `Q₂` coordinate block of the transformed data matrix `A Q`.
 
