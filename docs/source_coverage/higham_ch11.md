@@ -193,6 +193,12 @@ and
 `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTailAssumptions`,
 so an induction step can rebuild a full path residual from a proved head branch
 and an already packaged tail residual.
+The latest 2026-07-09 increment adds head-plus-tail assumption handoffs
+`higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_tail_localAssumptions`
+and
+`higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_tail_terminalTailAssumptions`,
+so the finite-path induction can consume a head branch certificate and tail path
+assumptions directly.
 The remaining Theorem 11.7 work is still instantiating those adapters over the
 full mixed pivot path and proving the final solve equation.
 
@@ -1061,6 +1067,15 @@ Problem transcription.
     `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions`
     and
     `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTailAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot head/tail assumption handoff increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_tail_localAssumptions`
+    and
+    `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_tail_terminalTailAssumptions`
     → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-08 Theorem 11.3 all-1×1 source-facing package increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
