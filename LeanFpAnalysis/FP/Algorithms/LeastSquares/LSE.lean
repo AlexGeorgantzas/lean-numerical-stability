@@ -48982,6 +48982,131 @@ theorem GeneralizedQRFactorization.s_bijective_iff_lseFullRowRank
       simpa [lseConstraintLinearMap] using hlinInj
     exact ⟨hinj, hsurj⟩
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
+    under the source rank assumptions, the concrete lifted reduced-Gram
+    candidate `Q₂ (A Q₂)^+` left-inverts the reduced operator `AP` on the
+    homogeneous constraint nullspace.
+
+    This is the GQR-specialized algebra behind `(AP)^+ AP z = z` for
+    `B z = 0`: write `z = Q₂ y₂`, replace `AP z` by `A z`, and use the
+    reduced Gram left-inverse for the `A Q₂` block. -/
+theorem GeneralizedQRFactorization.liftedReducedGramAPplus_AP_left_inverse_on_nullspace
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B)
+    (z : Fin (p + q) → ℝ)
+    (hz : rectMatMulVec B z = (fun _i : Fin p => 0)) :
+    rectMatMulVec h.liftedReducedGramAPplus
+        (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z := by
+  have hS_bij : Function.Bijective (rectMatMulVec h.S) :=
+    (h.s_bijective_iff_lseFullRowRank).2 hB
+  rcases (h.null_B_iff_exists_Q2_coord hS_bij.1 z).1 hz with
+    ⟨y2, hzQ⟩
+  have hzQ2 : z = rectMatMulVec h.Q2Basis y2 := by
+    calc
+      z = matMulVec (p + q) h.Q (Fin.append (0 : Fin p → ℝ) y2) := hzQ
+      _ = rectMatMulVec h.Q2Basis y2 := (h.Q2Basis_mulVec y2).symm
+  have hAPz :
+      rectMatMulVec (theorem20_8AP A B hB.rightInverse) z =
+        rectMatMulVec A z :=
+    theorem20_8AP_apply_nullspace A B hB.rightInverse z hz
+  have hAz :
+      rectMatMulVec A z =
+        rectMatMulVec (gqrAQ2Block A h.Q) y2 := by
+    rw [hzQ2]
+    calc
+      rectMatMulVec A (rectMatMulVec h.Q2Basis y2) =
+          rectMatMulVec (rectMatMul A h.Q2Basis) y2 := by
+            exact (rectMatMulVec_rectMatMul A h.Q2Basis y2).symm
+      _ = rectMatMulVec (gqrAQ2Block A h.Q) y2 := by
+            rw [h.A_mul_Q2Basis]
+  have hred :=
+    h.A_Q2_reduced_gram_left_inverse_and_projection_symmetric hstack
+  have hCleft :
+      rectMatMulVec
+          (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+          (rectMatMulVec (gqrAQ2Block A h.Q) y2) = y2 := by
+    calc
+      rectMatMulVec
+          (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+          (rectMatMulVec (gqrAQ2Block A h.Q) y2) =
+          rectMatMulVec
+            (rectMatMul
+              (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+              (gqrAQ2Block A h.Q)) y2 := by
+            exact
+              (rectMatMulVec_rectMatMul
+                (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+                (gqrAQ2Block A h.Q) y2).symm
+      _ = rectMatMulVec (idMatrix q) y2 := by
+            rw [hred.1]
+      _ = y2 := rectMatMulVec_idMatrix y2
+  calc
+    rectMatMulVec h.liftedReducedGramAPplus
+        (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) =
+        rectMatMulVec h.liftedReducedGramAPplus (rectMatMulVec A z) := by
+          rw [hAPz]
+    _ = rectMatMulVec h.liftedReducedGramAPplus
+        (rectMatMulVec (gqrAQ2Block A h.Q) y2) := by
+          rw [hAz]
+    _ = rectMatMulVec
+        (rectMatMul h.Q2Basis
+          (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q)))
+        (rectMatMulVec (gqrAQ2Block A h.Q) y2) := by
+          rfl
+    _ = rectMatMulVec h.Q2Basis
+        (rectMatMulVec
+          (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+          (rectMatMulVec (gqrAQ2Block A h.Q) y2)) := by
+          exact
+            rectMatMulVec_rectMatMul h.Q2Basis
+              (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+              (rectMatMulVec (gqrAQ2Block A h.Q) y2)
+    _ = rectMatMulVec h.Q2Basis y2 := by
+          rw [hCleft]
+    _ = z := hzQ2.symm
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
+    the concrete lifted reduced-Gram candidate realizes the projected action
+    `(AP)^+ AP v = P v` for the full-row-rank right-inverse projector. -/
+theorem GeneralizedQRFactorization.liftedReducedGramAPplus_projected_action
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B)
+    (v : Fin (p + q) → ℝ) :
+    rectMatMulVec h.liftedReducedGramAPplus
+        (rectMatMulVec (theorem20_8AP A B hB.rightInverse) v) =
+      rectMatMulVec (theorem20_8Projection B hB.rightInverse) v :=
+  theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
+    A B hB.rightInverse h.liftedReducedGramAPplus hB.rightInverse_spec
+    (fun z hz =>
+      h.liftedReducedGramAPplus_AP_left_inverse_on_nullspace hB hstack z hz)
+    v
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
+    matrix form of the GQR-specialized projected-action identity
+    `Q₂ (A Q₂)^+ AP = P`. -/
+theorem GeneralizedQRFactorization.liftedReducedGramAPplus_AP_eq_projection
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    rectMatMul h.liftedReducedGramAPplus
+        (theorem20_8AP A B hB.rightInverse) =
+      theorem20_8Projection B hB.rightInverse :=
+  theorem20_8_APplus_AP_eq_projection_of_AP_left_inverse_on_nullspace
+    A B hB.rightInverse h.liftedReducedGramAPplus hB.rightInverse_spec
+    (fun z hz =>
+      h.liftedReducedGramAPplus_AP_left_inverse_on_nullspace hB hstack z hz)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     for supplied GQR data, `B` has full row rank iff the displayed
     lower-triangular constraint block `S` has trivial kernel.
