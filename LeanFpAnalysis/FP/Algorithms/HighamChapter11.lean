@@ -1042,6 +1042,37 @@ theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_absLDLTProduct_entries
         = higham11_4_absLDLTProduct n L_hat D_hat i j := abs_of_nonneg hnonneg
     _ ≤ B := hentries i j
 
+/-- Each matrix-product entry of `|L̂||D̂||L̂ᵀ|` is bounded by the specialized
+source max-entry norm. -/
+theorem higham11_4_absLDLTProduct_entry_le_maxEntryNorm (n : ℕ) (hn : 0 < n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n) :
+    higham11_4_absLDLTProduct n L_hat D_hat i j ≤
+      maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) := by
+  have hnonneg : 0 ≤ higham11_4_absLDLTProduct n L_hat D_hat i j := by
+    rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+    exact higham11_4_bunchKaufmanProductEntry_nonneg n L_hat D_hat i j
+  calc
+    higham11_4_absLDLTProduct n L_hat D_hat i j
+        = |higham11_4_absLDLTProduct n L_hat D_hat i j| := by
+          rw [abs_of_nonneg hnonneg]
+    _ ≤ maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) :=
+        entry_le_maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) i j
+
+/-- For the nonnegative product matrix `|L̂||D̂||L̂ᵀ|`, the max-entry norm
+bound is equivalent to the pointwise source product-entry bounds. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_iff (n : ℕ) (hn : 0 < n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (B : ℝ) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤ B ↔
+      ∀ i j : Fin n, higham11_4_absLDLTProduct n L_hat D_hat i j ≤ B := by
+  constructor
+  · intro hB i j
+    exact
+      (higham11_4_absLDLTProduct_entry_le_maxEntryNorm n hn L_hat D_hat i j).trans hB
+  · intro hentries
+    exact
+      higham11_4_maxEntryNorm_absLDLTProduct_le_of_absLDLTProduct_entries
+        n hn L_hat D_hat B hentries
+
 /-- Pointwise expanded double-sum estimates package directly into the
 source-style max-entry norm estimate for `|L̂||D̂||L̂ᵀ|`. -/
 theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_product_entries
