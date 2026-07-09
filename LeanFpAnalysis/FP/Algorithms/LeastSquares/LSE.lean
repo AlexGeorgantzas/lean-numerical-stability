@@ -46930,6 +46930,57 @@ theorem GeneralizedQRFactorization.A_Q2_reduced_gram_left_inverse_and_projection
     (gqrAQ2Block A h.Q)
     (h.A_Q2_rectMatMulVec_injective_of_stackedFullColumnRank hstack)
 
+/-- A real rectangular table with a left inverse has positive complexified
+    operator norm on a nonempty domain. -/
+theorem complexMatrixOp2_realRectToCMatrix_pos_of_rect_left_inverse
+    {m n : ℕ} [Nonempty (Fin n)]
+    (A : Fin m → Fin n → ℝ) (Aleft : Fin n → Fin m → ℝ)
+    (hleft : rectMatMul Aleft A = idMatrix n) :
+    0 < complexMatrixOp2 (realRectToCMatrix Aleft) := by
+  classical
+  let j0 : Fin n := Classical.choice (inferInstance : Nonempty (Fin n))
+  let e : Fin n → ℝ := finiteBasisVec j0
+  let op : ℝ := complexMatrixOp2 (realRectToCMatrix Aleft)
+  have hOp : rectOpNorm2Le Aleft op :=
+    rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le Aleft le_rfl
+  have he : vecNorm2 e = 1 := by
+    simpa [e] using vecNorm2_finiteBasisVec j0
+  have hleft_vec : rectMatMulVec Aleft (rectMatMulVec A e) = e := by
+    calc
+      rectMatMulVec Aleft (rectMatMulVec A e)
+          = rectMatMulVec (rectMatMul Aleft A) e := by
+              exact (rectMatMulVec_rectMatMul Aleft A e).symm
+      _ = rectMatMulVec (idMatrix n) e := by rw [hleft]
+      _ = e := rectMatMulVec_idMatrix e
+  have hbound := hOp (rectMatMulVec A e)
+  have hle : (1 : ℝ) ≤ op * vecNorm2 (rectMatMulVec A e) := by
+    simpa [op, hleft_vec, he] using hbound
+  have hop_ne : op ≠ 0 := by
+    intro hop
+    have hbad : (1 : ℝ) ≤ 0 := by
+      simpa [hop] using hle
+    linarith
+  have hop_nonneg : 0 ≤ op := by
+    dsimp [op]
+    exact complexMatrixOp2_nonneg (realRectToCMatrix Aleft)
+  exact lt_of_le_of_ne hop_nonneg (Ne.symm hop_ne)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
+    stacked full column rank makes the concrete reduced Gram pseudoinverse for
+    `A Q₂` a nonzero left inverse, hence its operator norm is positive. -/
+theorem GeneralizedQRFactorization.A_Q2_reduced_gram_pseudoinverse_op2_pos
+    {r p k : ℕ}
+    {A : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ}
+    {B : Fin p → Fin (p + (k + 1)) → ℝ}
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    0 < complexMatrixOp2
+      (realRectToCMatrix (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) := by
+  have hred := h.A_Q2_reduced_gram_left_inverse_and_projection_symmetric hstack
+  exact complexMatrixOp2_realRectToCMatrix_pos_of_rect_left_inverse
+    (gqrAQ2Block A h.Q)
+    (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q)) hred.1
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     GQR-specialized nullspace-Wedin handoff.  Choosing the nullspace bases as
     the concrete trailing `Q₂` columns of supplied source and perturbed GQR
