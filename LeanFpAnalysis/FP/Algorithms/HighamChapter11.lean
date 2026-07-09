@@ -3094,6 +3094,45 @@ theorem higham11_7_tridiagonalLeadingBlockSupport_add_bound_printed_of_le_offset
     offsetE offsetF E F cE cF u Amax hoffE hoffF hEbound hFbound
     hEsupp hFsupp
 
+/-- **Theorem 11.7 finite support-sum combiner**, accumulating a finite family
+of same-ambient zero-prefix supported perturbations while summing their
+componentwise budgets. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_sum_bound
+    (m offset k : ℕ) (E : Fin k → Fin m → Fin m → ℝ) (β : Fin k → ℝ)
+    (hbound : ∀ t : Fin k, ∀ i j : Fin m, |E t i j| ≤ β t)
+    (hsupp : ∀ t : Fin k, higham11_7_TridiagonalLeadingBlockSupport m offset (E t)) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ ∑ t : Fin k, β t) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = ∑ t : Fin k, E t i j) := by
+  refine ⟨fun i j => ∑ t : Fin k, E t i j, ?_, ?_, ?_⟩
+  · intro i j
+    calc
+      |∑ t : Fin k, E t i j| ≤ ∑ t : Fin k, |E t i j| :=
+        Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ t : Fin k, β t :=
+        Finset.sum_le_sum (fun t _ => hbound t i j)
+  · intro i j hlead
+    change (∑ t : Fin k, E t i j) = 0
+    exact Finset.sum_eq_zero (fun t _ => hsupp t i j hlead)
+  · intro i j
+    rfl
+
+/-- **Theorem 11.7 finite support-sum combiner, uniform bound form**.  If every
+same-ambient supported perturbation is bounded by the same scalar `β`, their
+sum is bounded by `k*β`. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_sum_uniform_bound
+    (m offset k : ℕ) (E : Fin k → Fin m → Fin m → ℝ) (β : ℝ)
+    (hbound : ∀ t : Fin k, ∀ i j : Fin m, |E t i j| ≤ β)
+    (hsupp : ∀ t : Fin k, higham11_7_TridiagonalLeadingBlockSupport m offset (E t)) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ (k : ℝ) * β) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = ∑ t : Fin k, E t i j) := by
+  simpa [Finset.sum_const, nsmul_eq_mul] using
+    higham11_7_tridiagonalLeadingBlockSupport_sum_bound m offset k E
+      (fun _ => β) hbound hsupp
+
 /-- **Theorem 11.7 support predicate bridge**, identifying the specialized
 trailing-block support predicate with zero-prefix support at offset two. -/
 theorem higham11_7_tridiagonalTwoByTwoTrailingBlockSupport_iff_leadingBlockSupport
