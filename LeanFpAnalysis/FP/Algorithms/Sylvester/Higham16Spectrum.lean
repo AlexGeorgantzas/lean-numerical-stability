@@ -742,6 +742,36 @@ theorem H16_eq16_3_no_common_real_left_eigenpair_of_det_ne_zero :
     no_common_real_left_eigenpair_of_sylvesterVecCoeff_det_ne_zero
       m n A B hdet
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias:
+    a supplied common real eigenvalue of `A` and `B^T` makes the vectorized
+    Sylvester coefficient singular.  This is the constructive obstruction
+    direction only. -/
+theorem H16_eq16_3_sylvesterVecCoeff_singular_of_common_eigenvalue :
+    forall (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+      (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+      Not (v = 0) -> Not (w = 0) ->
+      Matrix.mulVec A v = (fun i => lam * v i) ->
+      Matrix.mulVec (Matrix.transpose B) w = (fun j => lam * w j) ->
+      Matrix.det (sylvesterVecCoeff m n A B) = 0 :=
+  fun m n A B v w lam hv0 hw0 hv hw =>
+    sylvesterVecCoeff_singular_of_common_eigenvalue
+      m n A B v w lam hv0 hw0 hv hw
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3), source-numbered alias:
+    determinant nonsingularity of the vec/Kronecker Sylvester coefficient
+    rules out supplied common real eigenpairs for `A` and `B^T`.  This does
+    not prove the full complex no-common-spectrum converse. -/
+theorem H16_eq16_3_no_common_real_eigenpair_of_det_ne_zero :
+    forall (m n : Nat) (A : RMatFn m m) (B : RMatFn n n),
+      Not (Matrix.det (sylvesterVecCoeff m n A B) = 0) ->
+      Not (exists (v : Fin m -> Real) (w : Fin n -> Real) (lam : Real),
+        Not (v = 0) /\ Not (w = 0) /\
+          Matrix.mulVec A v = (fun i => lam * v i) /\
+          Matrix.mulVec (Matrix.transpose B) w = (fun j => lam * w j)) :=
+  fun m n A B hdet =>
+    no_common_real_eigenpair_of_sylvesterVecCoeff_det_ne_zero
+      m n A B hdet
+
 -- ============================================================
 -- (16.4)-(16.8): Bartels-Stewart supplied-triangular column solve
 -- ============================================================
@@ -14833,6 +14863,18 @@ theorem no_common_real_left_eigenpair_of_schurTriangular (m n : Nat)
   no_common_real_left_eigenpair_of_sylvesterVecCoeff_det_ne_zero m n A B
     (sylvesterVecCoeff_schurTriangular_det_ne_zero
       m n U R A V S B hU hV hA hB hS hshift)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the supplied Schur-triangular exclusion of
+    common real eigenpairs of `A` and `B^T`. -/
+alias H16_eq16_3_no_common_real_eigenpair_of_schurTriangular :=
+  no_common_real_eigenpair_of_schurTriangular
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the supplied Schur-triangular exclusion of
+    common real eigenpairs in source-facing left-eigenvector form. -/
+alias H16_eq16_3_no_common_real_left_eigenpair_of_schurTriangular :=
+  no_common_real_left_eigenpair_of_schurTriangular
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), supplied triangular
     Schur-coordinate case: the practical componentwise error bound can use
