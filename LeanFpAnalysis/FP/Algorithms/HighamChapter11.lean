@@ -3898,6 +3898,72 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_sum_solve_delta_infNo
       (Finset.sum_nonneg (fun t _ => hc t)) hu
       ⟨ΔA2, hΔA2bound, hsolve⟩
 
+/-- **Theorem 11.7 finite solve-delta sum aggregation, coefficient majorant
+form**.  This support-free endpoint replaces the accumulated coefficient
+`∑ t, c t` by a supplied printed constant `C`. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_sum_solve_delta_infNorm_of_coeff_sum_le
+    (n k : ℕ) (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (E : Fin k → Fin n → Fin n → ℝ) (c : Fin k → ℝ) (C u : ℝ)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hbound : ∀ t : Fin k, ∀ i j : Fin n,
+      |E t i j| ≤ c t * u * infNorm A)
+    (hsolve : ∀ i : Fin n,
+      ∑ j : Fin n, (A i j + (∑ t : Fin k, E t i j)) * x_hat j = b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  let ΔA2 : Fin n → Fin n → ℝ := fun i j => ∑ t : Fin k, E t i j
+  have hC_nonneg : 0 ≤ C :=
+    (Finset.sum_nonneg (fun t _ => hc t)).trans hC
+  have hbudget :
+      (∑ t : Fin k, c t) * u * infNorm A ≤ C * u * infNorm A := by
+    exact mul_le_mul_of_nonneg_right
+      (mul_le_mul_of_nonneg_right hC hu) (infNorm_nonneg A)
+  have hsum :
+      (∑ t : Fin k, c t * u * infNorm A) =
+        (∑ t : Fin k, c t) * u * infNorm A := by
+    simp [Finset.sum_mul, mul_assoc]
+  have hΔA2bound : ∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A := by
+    intro i j
+    calc
+      |ΔA2 i j| = |∑ t : Fin k, E t i j| := rfl
+      _ ≤ ∑ t : Fin k, |E t i j| := Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ t : Fin k, c t * u * infNorm A :=
+        Finset.sum_le_sum (fun t _ => hbound t i j)
+      _ = (∑ t : Fin k, c t) * u * infNorm A := hsum
+      _ ≤ C * u * infNorm A := hbudget
+  exact
+    higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm_with_norm_bounds
+      n A b x_hat C u hC_nonneg hu ⟨ΔA2, hΔA2bound, hsolve⟩
+
+/-- **Theorem 11.7 finite solve-delta sum aggregation, uniform coefficient
+form**.  This support-free endpoint packages a common per-residual coefficient
+as the budget `k*c*u*||A||_∞`. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_uniform_sum_solve_delta_infNorm
+    (n k : ℕ) (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (E : Fin k → Fin n → Fin n → ℝ) (c u : ℝ)
+    (hc : 0 ≤ c) (hu : 0 ≤ u)
+    (hbound : ∀ t : Fin k, ∀ i j : Fin n,
+      |E t i j| ≤ c * u * infNorm A)
+    (hsolve : ∀ i : Fin n,
+      ∑ j : Fin n, (A i j + (∑ t : Fin k, E t i j)) * x_hat j = b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ (k : ℝ) * c * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ (k : ℝ) * c * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * ((k : ℝ) * c) * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * ((k : ℝ) * c) * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  have hC : (∑ _t : Fin k, c) ≤ (k : ℝ) * c := by
+    simp [Finset.sum_const, nsmul_eq_mul]
+  simpa [Finset.sum_const, nsmul_eq_mul, mul_assoc] using
+    higham11_7_tridiagonal_backward_error_interface_of_sum_solve_delta_infNorm_of_coeff_sum_le
+      n k A b x_hat E (fun _ => c) ((k : ℝ) * c) u
+      (fun _ => hc) hu hC hbound hsolve
+
 /-- **Theorem 11.7 finite supported solve-delta aggregation**.  A same-ambient
 family of supported residual matrices with printed coefficients can be summed
 and fed directly into the source-facing solve perturbation interface. -/
