@@ -1968,6 +1968,17 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_completePivotWilkinsonBound_succ_div_ge_one`
 - `higham9_14_completePivotWilkinsonBound_ge_two_of_ge_two`
 - `higham9_14_completePivotWilkinsonBound_monotone`
+- `higham9_14_wilkinson_max_pivot_bound`
+- `higham9_14_wilkinson_pivot_le_bound_mul`
+- `higham9_14_geShift`
+- `higham9_14_geShift_val`
+- `higham9_14_geIterate`
+- `higham9_14_geIterate_LUFactSpec`
+- `higham9_14_geIterate_zero_apply`
+- `higham9_14_geIterate_row_zero`
+- `higham9_14_completePivot_segment_pivot_bound`
+- `higham9_14_completePivot_growthFactorEntry_le_wilkinsonBound`
+- `higham9_14_completePivot_iterate_entry_le_wilkinsonBound_mul`
 - `higham9_completePivotGrowthSet`
 - `higham9_completePivotGrowthSup`
 - `higham9_completePivotGrowth_le_sup`
@@ -2021,6 +2032,84 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_completePivotingUTraceGrowthValues_exists_ge_succ`
 - `higham9_11_completePivotingUTraceGrowthSup_ge_succ`
 - `higham9_16_rookPivotFosterBound`
+- `higham9_16_foster_subset_hadamard`
+- `higham9_16_exists_antitone_enumeration` (every real tuple has a descending enumeration)
+- `higham9_16_card_filter_val_lt`
+- `higham9_16_foster_nested_constraints` (Foster eq. (10): nested subset-Hadamard pivot constraints for any enumeration)
+- `higham9_16_foster_sorted_constraints` (Foster eq. (10), sorted existential form — the exact input of Foster Lemma 2)
+- `higham9_16_fosterStage` / `higham9_16_fosterStageConst` (Foster eq. (6) stage function `s(1+s)^(k-1)` and constant `C_k = sqrt(k^k)/sqrt((k-1)^(k-1))`)
+- `higham9_16_fosterStageConst_one` / `higham9_16_fosterStageConst_pos`
+- `higham9_16_fosterStage_continuous` / `higham9_16_fosterStage_strictMonoOn` / `higham9_16_fosterStage_ge_self`
+- `higham9_16_existsUnique_fosterStage_root` (existence/uniqueness of the positive stage root, via IVT + strict monotonicity)
+- `higham9_16_fosterS` (the implicit stage root `s_k` of Foster eq. (6))
+- `higham9_16_fosterS_spec` / `higham9_16_fosterS_eq` / `higham9_16_fosterS_unique` / `higham9_16_fosterS_nonneg` / `higham9_16_fosterS_pos` / `higham9_16_fosterS_one`
+- `higham9_16_fosterT` (Foster eq. (7) bound `t_n = s_1(1+s_2)⋯(1+s_n)`)
+- `higham9_16_fosterT_one` / `higham9_16_fosterT_pos` / `higham9_16_fosterT_succ`
+- `higham9_16_sqrt_pow` (`sqrt(x^k) = (sqrt x)^k`)
+- `higham9_16_prod_fosterStageConst` (telescoping `C_1⋯C_n = sqrt(n^n)`)
+- `higham9_16_fosterS_lt_sqrt` (Foster Lemma A.1: `s_k < sqrt k` for `k >= 2`)
+- `higham9_16_sqrt_ratio_lt_one_add_fosterS` (`sqrt(k/(k-1)) < 1 + s_k`)
+- `higham9_16_bernoulli_pow_ratio` (`(k+1)^(k+1)(k-1)^k < k^(2k+1)`, via Bernoulli)
+- `higham9_16_fosterStageConst_succ_le` (`C_(k+1) <= sqrt(k/(k-1)) C_k`)
+- `higham9_16_fosterS_succ_lt` (Foster Lemma A.1 (A.1): `s_(k+1) < s_k` for `k >= 2`, derivative-free)
+- `higham9_16_fosterS_two` (`s_2 = 1`)
+- `higham9_16_fosterS_le_one` (`s_k <= 1` for `k >= 1`)
+- `higham9_16_existsUnique_root` (general positive-root existence/uniqueness for strictly monotone continuous `f` with `f 0 = 0`)
+- `higham9_16_fosterQStage` (Foster (A.5) band-stage function `sqrt((k-r)^(k-r)) q^r (1+rq)^(k-r)`)
+- `higham9_16_fosterQStage_continuous` / `higham9_16_fosterQStage_strictMonoOn` / `higham9_16_fosterQStage_zero` / `higham9_16_fosterQStage_witness` / `higham9_16_fosterQStage_sqrt_ge_one`
+- `higham9_16_existsUnique_fosterQ_root` / `higham9_16_fosterQ` (Foster (A.5) band root `q_(k-r+1)`)
+- `higham9_16_fosterQ_spec` / `higham9_16_fosterQ_eq` / `higham9_16_fosterQ_unique` / `higham9_16_fosterQ_nonneg` / `higham9_16_fosterQ_pos`
+- `higham9_16_fosterQ_mono_const` (band root monotone in the constant)
+- `higham9_16_fosterQ_one_eq_fosterS` / `higham9_16_fosterQ_one_sqrt_eq_fosterS` (Foster's (A.5)-(6) link: the `r = 1` root at `sqrt(k^k)` is `s_k`)
+- `higham9_16_fosterQ_one_le_fosterS` (`q_k <= s_k` for `C <= sqrt(k^k)`)
+- `higham9_16_one_add_mul_hat` (Möbius identity `(1+x)(1+m·x/(1+x)) = 1+(m+1)x`)
+- `higham9_16_fosterS_le_pred` (`s_k <= s_(k-1)`)
+- `higham9_16_fosterQStage_succ_mul_const` (key ratio identity: `QStage_(r+1)(x)·C_(k-r) = QStage_r(x)·fosterStage_(k-r)(x/(1+rx))`)
+- `higham9_16_fosterQ_succ_gt_of_stage_lt` (interlacing criterion: `q_r < q_(r+1)` when the Möbius image of `q_r` is below `s_(k-r)`)
+- `higham9_16_fosterQ_one_lt_two` (Foster Lemma A.3 base step: `q_k < q_(k-1)` for `0 < C <= sqrt(k^k)`)
+- `higham9_16_FosterFeasible` (Foster (A.2)-(A.4) feasible set of Lemma A.2)
+- `higham9_16_fosterFeasible_nonneg`
+- `higham9_16_lead_prod_split` / `higham9_16_tail_sum_split` / `higham9_16_full_prod_split` (Fin (k+1) filter splitting)
+- `higham9_16_fosterFeasible_rescale_std` (Foster A.2 rescaling: dividing out `1+t` yields a k-dimensional feasible tuple at `sqrt(k^k)` — the exact constraint transformation of the induction)
+- `higham9_16_fosterFeasible_rescale_prod` (the sharpened product constant `C/(t(1+t)^k)` for `t > 0`)
+- `higham9_16_fosterFeasible_head_eq`
+- `higham9_16_fosterQShift` (Foster (A.6) shifted stage `sqrt(m^m)·p·(a+p)^m`) with continuity/strict-mono/witness lemmas
+- `higham9_16_existsUnique_fosterQShift_root` / `higham9_16_fosterPStar` (the (A.6) root `p*`) with spec/uniqueness
+- `higham9_16_fosterV` (Foster band-1 / equality-case value `t_(k-1)·(1 + q_k(C))`)
+- `higham9_16_fosterV_chapter` (`V(k, sqrt(k^k)) = t_k`) / `higham9_16_fosterV_pos` / `higham9_16_fosterV_mono_const`
+- `higham9_16_case1_iff` (Foster case-1 boundary: `sqrt(k^k)·t(1+t)^k <= C ↔ t <= fosterQ (k+1) 1 C`)
+- `higham9_16_fosterBandIdx` (Foster (A.5) band index: number of band roots strictly below the tail `P`)
+- `higham9_16_fosterBandIdx_eq_zero` / `higham9_16_fosterBandIdx_zero_of_tail_zero`
+- `higham9_16_fosterBandValue` (Foster (A.5)-(A.8) band value function `M(k, C, P)`)
+- `higham9_16_fosterBandValue_of_idx_zero` (band-1 value is `V(k, C)`)
+- `higham9_16_fosterFeasible_of_rook` (rook LU factorization sorted pivots are Lemma A.2-feasible at `sqrt(n^n)`, zero tail)
+- `higham9_16_fosterA2_one` (Lemma A.2 base case `k = 1`: `p_1 <= C`)
+- `higham9_16_fosterFeasible_head_max` (the head dominates every entry)
+- `higham9_16_fosterA2_case1_slice` (A.2 induction step, case 1: small last variable gives `p_1 <= V(k+1, C)` from the k-level standard-constant bound)
+- `higham9_16_fosterA2_case2_reduction` (A.2 induction step, case-2 reduction: positive last variable gives k-level feasibility at `min(sqrt(k^k), C/(t(1+t)^k))`)
+- `higham9_16_hat_strictMonoOn` (`x ↦ x/(1+x)` strictly monotone on `[0,∞)`)
+- `higham9_16_fosterQStage_hat_transfer` (Foster (A.22)/(A.25) level-shift identity: `QStage_k^(r+1)(x) = QStage_(k-1)^r(x/(1+x))·x(1+x)^(k-1)`)
+- `higham9_16_fosterQ_hat` (the hat image of a level-`k` stage-`(r+1)` root is the level-`(k-1)` stage-`r` root at the hatted constant)
+- `higham9_16_fosterQ_lt_succ` (**Foster Lemma A.3 (A.18), general interlacing**: `q^(r) < q^(r+1)` for `2 <= k`, `0 < C <= sqrt(k^k)`, `1 <= r`, `r+1 <= k` — by Foster's double induction, derivative-free)
+- `higham9_16_fosterBandValue_one` (`M(1, C, P) = C`)
+- `higham9_16_fosterQ_one_le` (with A.3, the first band root is least)
+- `higham9_16_fosterBandIdx_eq_zero_of_le_first` (band index vanishes below the first root)
+- `higham9_16_fosterA2_step_case1` (A.2 induction step, case 1 assembled: bound by the full band value at the tail `P`)
+- `higham9_16_le_fosterQ_iff` (comparison with a band root = comparison of stage values)
+- `higham9_16_fosterQ_le_iff_hat_le` / `higham9_16_fosterQ_lt_iff_hat_lt` (**Foster (A.12)**: band membership transfers through the Möbius map)
+- `higham9_16_fosterBandIdx_hat` (Foster (A.12), band-index form: level-(k+1) index at `t` = level-k index of the hat image + 1)
+- `higham9_16_fosterPStar_scale` (**Foster (A.14)-(A.16) core**: the level-k shifted root at hatted data, scaled by `1+t`, is the level-(k+1) shifted root — the band-formula composition identity)
+- `higham9_16_fosterBandValue_hat_compose` (**Foster (A.14)-(A.16) assembled**: `(1+t)·M(k, C/(t(1+t)^k), t/(1+t)) = M(k+1, C, t)` for a case-2 tail — both if- and else-branches)
+- `higham9_16_pow_sub_pow_ge` (discrete convexity `y^j - x^j >= j x^(j-1)(y-x)`)
+- `higham9_16_phi_strictMono` (**Foster (A.17) replacement, zone 1**: `(a-jx)x^j` strictly increasing on `[0, a/(j+1)]` — derivative-free)
+- `higham9_16_phi_le_peak` (the AM-GM peak bound `p x^j <= ((jx+p)/(j+1))^(j+1)` for `x <= p`)
+- `higham9_16_le_fosterPStar_iff` (shifted-root comparison = shifted-stage comparison)
+- `higham9_16_fosterPStar_ge_tail_iff` (**in-band characterization**: `P <= p*(P) ↔ P <= q^(j+1)`)
+- `higham9_16_fosterBandValue_inband_antitone` (**Foster (A.17), derivative-free**: within a band, the (A.7) value `1+jP+p*(P)` is antitone in the tail — division chain + two zones via the phi toolkit)
+- `higham9_16_fosterQ_le_iff` / `higham9_16_fosterPStar_le_iff` (mirrored root/stage comparisons)
+- `higham9_16_fosterPStar_le_tail_iff` (mirrored in-band characterization `p*(P) <= P ↔ q^(j+1) <= P`)
+- `higham9_16_fosterBandIdx_mono` (band index monotone in the tail)
+- `higham9_16_fosterPStar_at_edge` (**band-edge value**: at `e = q^(j+1)` the band-(j+1) shifted root is `s_(K-j-1)·(1+(j+1)e)` — the gluing input, via the σ-substitution and `fosterS` uniqueness)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
@@ -2362,6 +2451,15 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal_growth_le`
 - `higham9_11_tridiagonal_bohte_solve_tight`
 - `higham9_11_tridiagonal_bohte_solve_tight_of_growth_le`
+- `higham9_11_TridiagActiveBound` (band-tracked tridiagonal GEPP active-stage bound)
+- `higham9_11_tridiag_pivot_val_le_one`
+- `higham9_11_tridiagActive_row_abs_le_two_mul`
+- `higham9_11_tridiagActive_schur_preserved` (one GEPP step preserves the tridiagonal `(2M, M)` profile)
+- `higham9_11_tridiag_PartialPivotGEPPUTrace_entry_abs_le_two_mul`
+- `higham9_11_tridiag_GEPPUTrace_entry_abs_le_two_mul`
+- `higham9_11_tridiag_GEPPUTrace_growthFactorEntry_le_two` (Theorem 9.11 `p = 1`: tridiagonal GEPP growth factor `<= 2`, proved unconditionally at the exact-trace level)
+- `higham9_11_tridiag_GEPPUTrace_growthFactorEntry_le_bohteBound`
+- `higham9_11_tridiag_wilkinson_source_bound_of_PartialPivotGEPPUTrace`
 - `higham9_11_matrix_bandwidth_one_bohte_solve_tight`
 - `higham9_11_matrix_bandwidth_one_bohte_solve_tight_of_growth_le`
 - `higham9_11_matrix_bandwidth_one_bohte_solve_tight_of_isBanded`
@@ -3176,6 +3274,67 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_chi_condition_chain_of_matrix_lu_inverse_identities`
 - `higham9_15_chi_condition_chain_min_of_lu_inverse_identities`
 - `higham9_15_chi_condition_chain_min_of_matrix_lu_inverse_identities`
+- `higham9_15_leadingSubmatrix_mul_of_lower_left`
+- `higham9_15_leadingSubmatrix_mul_of_upper_right`
+- `higham9_15_leadingSubmatrix_det_triple`
+- `higham9_15_perturbed_leading_minor_eq`
+- `higham9_15_opNorm2Le_leadingSubmatrix`
+- `higham9_15_det_one_add_ne_zero_of_opNorm2Le_lt_one`
+- `higham9_15_perturbed_leading_minor_ne_zero`
+- `higham9_15_selfMajorant_band_avoidance`
+- `higham9_15_selfMajorant_path_small_branch`
+- `higham9_1_LUFactSpec_pivots_ne_zero_of_leading_minors_ne_zero`
+- `higham9_15_perturbed_LUFactSpec_pivots_ne_zero`
+- `higham9_1_det_eq_pivot_mul_firstSchurComplement_det`
+- `higham9_1_firstSchurComplement_leadingSubmatrix_comm`
+- `higham9_1_leadingSubmatrix_det_eq_pivot_mul_schur`
+- `higham9_1_lu_exists_of_leading_minors_ne_zero`
+- `higham9_15_perturbed_lu_exists`
+- `higham9_15_leading_minor_path_continuous`
+- `higham9_15_pivot_ratio_path_continuousOn`
+- `higham9_1_pivot_eq_leading_minor_ratio`
+- `higham9_15_leadingRows_mul_of_lower_left`
+- `higham9_15_borderedCols`
+- `higham9_15_borderedCols_last`
+- `higham9_15_borderedCols_castSucc`
+- `higham9_15_borderedU_det`
+- `higham9_15_borderedMinor_eq_pivots_mul_U`
+- `higham9_15_leadingCols_mul_of_upper_right`
+- `higham9_15_borderedRows`
+- `higham9_15_borderedRows_last`
+- `higham9_15_borderedRows_castSucc`
+- `higham9_15_borderedL_det`
+- `higham9_15_borderedMinor_eq_L_mul_pivots`
+- `higham9_15_minor_path_continuous`
+- `higham9_15_U_entry_path_continuousOn`
+- `higham9_15_L_entry_path_continuousOn`
+- `higham9_15_U_entry_eq_minor_ratio`
+- `higham9_15_L_entry_eq_minor_ratio`
+- `higham9_15_opNorm2Le_smul_of_abs_le_one`
+- `higham9_15_path_G_opNorm2Le`
+- `higham9_15_path_lu_exists`
+- `higham9_15_pathL`
+- `higham9_15_pathU`
+- `higham9_15_pathLU_spec`
+- `higham9_15_pathLU_spec_of_barrlund`
+- `higham9_15_pathU_pivots_ne_zero`
+- `higham9_15_pathLU_unique`
+- `higham9_15_pathLU_zero`
+- `higham9_15_pathS`
+- `higham9_15_pathS_zero`
+- `higham9_15_frobNormRect_smul`
+- `higham9_15_pathS_selfMajorant`
+- `higham9_15_pathL_entry_continuousOn`
+- `higham9_15_pathU_entry_continuousOn`
+- `higham9_15_pathS_continuousOn`
+- `higham9_15_rigorous_pathS_endpoint_bound`
+- `higham9_15_rigorous_lu_perturbation_combined_bound`
+- `higham9_15_rigorous_lu_perturbation_split_bounds`
+- `higham9_15_matMul_eq_rectMatMul`
+- `higham9_15_frobNormRect_matMul_le_of_rectOpNorm2Le`
+- `higham9_15_frobNormRect_matMul_le_of_transpose_rectOpNorm2Le`
+- `higham9_15_barrlund_deltaL_bound`
+- `higham9_15_barrlund_deltaU_bound`
 - `higham9_15_normalized_G_factorization_matrix`
 - `higham9_15_normalized_Gtilde_factorization_matrix`
 - `higham9_15_strilPart`
@@ -4754,6 +4913,20 @@ Core symmetric-indefinite and skew-symmetric module:
 - `bunch_parlett_L_bound`
 - `bunch_kaufman_stability`
 - `bunch_kaufman_solve_backward_error`
+- `flSchurCompl`
+- `flStoredSymSchurCompl`
+- `flStoredSymSchurCompl_symm`
+- `flStoredSymSchurCompl_first_row_col`
+- `flStoredSymSchurDefect`
+- `fl_blockLDLT_oneByOne_stage_bound_of_stored_schur`
+- `FlStoredAllOnePivots`
+- `flBlockLDLTStoredAllOneByOneBound`
+- `fl_blockLDLT_stored_all_oneByOne_bound`
+- `FlAllOneSymmetricPivots`
+- `flBlockLDLTOneByOneStageBound`
+- `fl_blockLDLT_oneByOne_stage_bound`
+- `flBlockLDLTAllOneByOneBound`
+- `fl_blockLDLT_all_oneByOne_bound`
 - `bunchTridiagonalAlpha`
 - `bunch_tridiagonal_alpha_root`
 - `BunchTridiagonalPivotChoice`
@@ -4774,6 +4947,20 @@ Source-facing Chapter 11 wrappers:
 - `higham11_2_BunchKaufmanPartialPivotCase`
 - `higham11_5_twoByTwoPivotSolveStable`
 - `higham11_3_block_ldlt_backward_error_interface`
+- `higham11_3_fl_schurCompl`
+- `higham11_3_fl_storedSymSchurCompl`
+- `higham11_3_fl_storedSymSchurCompl_symm`
+- `higham11_3_fl_storedSymSchurCompl_first_row_col`
+- `higham11_3_fl_storedSymSchurDefect`
+- `higham11_3_fl_blockLDLT_oneByOne_stage_bound_of_stored_schur`
+- `higham11_3_FlStoredAllOnePivots`
+- `higham11_3_fl_storedAllOneByOneBound`
+- `higham11_3_fl_blockLDLT_stored_all_oneByOne_bound`
+- `higham11_3_FlAllOneSymmetricPivots`
+- `higham11_3_fl_oneByOneStageBound`
+- `higham11_3_fl_blockLDLT_oneByOne_stage_bound`
+- `higham11_3_fl_allOneByOneBound`
+- `higham11_3_fl_blockLDLT_all_oneByOne_bound`
 - `higham11_6_partialPivotExampleA`
 - `higham11_6_partialPivotExampleL`
 - `higham11_6_partialPivotExampleD`
@@ -4796,9 +4983,56 @@ Source-facing Chapter 11 wrappers:
 - `higham11_12_aasenDiagonalEquation`
 - `higham11_13_aasenSubdiagonalEquation`
 - `higham11_14_aasenNextColumnEquation`
+- `higham11_14_fl_aasenPrefixDot`
+- `higham11_14_fl_aasenSourcePrefixDot`
+- `higham11_14_fl_aasen_next_column_update_rel_error`
+- `higham11_14_fl_aasen_next_column_update_abs_error`
+- `higham11_14_fl_aasen_next_column_update_sum_abs_error`
+- `higham11_14_fl_aasen_next_column_update_abs_error_of_exact_recurrence`
+- `higham11_14_fl_aasen_prefix_dot_abs_error`
+- `higham11_14_fl_aasen_source_prefix_dot_abs_error`
+- `higham11_14_fl_aasen_next_column_update_formed_sum_abs_error_of_exact_recurrence`
+- `higham11_14_fl_aasen_next_column_update_formed_sum_single_abs_error_of_exact_recurrence`
+- `higham11_14_fl_aasen_next_column_update_formed_sum_abs_sub_bound_of_exact_recurrence`
+- `higham11_14_fl_aasen_next_column_update_source_prefix_abs_sub_bound_of_exact_recurrence`
+- `higham11_14_fl_aasen_next_column_update_source_prefix_column_component_bound_of_exact_recurrence`
+- `higham11_14_fl_aasen_next_column_source_prefix_Lhat_column_relative_bound_of_exact_recurrence`
+- `higham11_14_fl_aasen_source_prefix_Lhat_global_relative_bound_of_exact_recurrence`
 - `higham11_15_aasenSolveChain`
+- `higham11_15_fl_aasen_outer_triangular_solves_backward_error`
+- `higham11_15_fl_aasen_middle_tridiagonal_solve_backward_error`
+- `higham11_15_fl_aasen_solve_chain_backward_error_components`
+- `higham11_15_aasenChainDeltaA`
+- `higham11_15_aasenTripleTerm_abs_bound`
+- `higham11_15_aasenTripleTerm_abs_bound_gamma`
+- `higham11_15_aasenChainDeltaA_abs_bound_of_entrywise`
+- `higham11_15_aasenChainDeltaABound`
+- `higham11_15_aasenChainDeltaA_abs_bound_gamma`
+- `higham11_15_aasenChainDeltaABound_nonneg`
+- `higham11_15_aasenChainDeltaABound_infNorm_le`
+- `higham11_15_infNorm_le_of_aasenChainDeltaABound`
+- `higham11_8_infNorm_le_of_sum_aasenChainDeltaABounds`
+- `higham11_8_aasenFactorizationProductBudget`
+- `higham11_8_aasen_factorization_product_abs_bound_of_entrywise_factor_bounds`
+- `higham11_8_aasen_factorization_product_abs_bound_gamma`
+- `higham11_8_aasen_factorization_product_abs_bound_of_source_prefix_updates`
+- `higham11_8_aasen_source_backward_error_of_factor_and_solve_residuals`
+- `higham11_8_fl_aasen_factor_solve_source_backward_error`
+- `higham11_15_aasenMiddleSolveBudget`
+- `higham11_15_aasen_chain_source_backward_error_of_components`
+- `higham11_15_fl_aasen_solve_chain_source_backward_error_of_delta_bound`
+- `higham11_15_fl_aasen_solve_chain_source_backward_error`
+- `higham11_15_aasenSolveChain_identity_solve_of_product`
 - `higham11_8_aasen_backward_error_interface`
 - `higham11_8_aasenNormwiseBackwardBound`
+- `higham11_8_infNorm_le_card_mul_of_uniform_componentwise_bound`
+- `higham11_8_aasenNormwiseBackwardBound_of_uniform_componentwise_bound`
+- `higham11_8_infNorm_le_mul_of_componentwise_T_bound`
+- `higham11_8_aasenNormwiseBackwardBound_of_componentwise_T_bound`
+- `higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound`
+- `higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound_coeff_le`
+- `higham11_8_fl_aasen_solve_chain_source_normwise_backward_error`
+- `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error`
 - `higham11_8_aasenGrowthFactor`
 - `higham11_8_aasenGrowthBound`
 - `higham11_16_IsSkewSymmetric`
@@ -5245,6 +5479,208 @@ The safest way to classify a theorem is to inspect the statement. If a
 hypothesis already contains the algorithmic stability conclusion, the theorem is
 a transfer or packaging result rather than a complete local analysis.
 
+Chapter 14 GJE declarations in `Algorithms/GaussJordan.lean` include the
+cumulative-product and exact recurrence-accumulation support for
+(14.27)--(14.28), abstract second-stage interfaces, and the proved overall
+composition wrappers:
+
+- `gje_c₃`
+- `GJEStage2Spec`
+- `gje_stage2_matrix_recurrence`
+- `gje_stage2_rhs_recurrence`
+- `gje_cumulative_product`
+- `gje_cumulative_product_base`
+- `gje_cumulative_product_step`
+- `gje_cumulative_product_oob`
+- `gje_cumulative_product_nonneg`
+- `gje_cumulative_product_abs_nonneg`
+- `gje_cumulative_product_matrix_accumulation`
+- `gje_cumulative_product_rhs_accumulation`
+- `gje_stage2_forward_error_bound`
+- `gje_stage2_backward_error`
+- `gje_overall_residual`
+- `gje_overall_forward_error`
+- `gje_spd_residual`
+
+Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
+Problem 14.3, the explicit residual-ratio family from Problem 14.4, the residual
+and forward-error consequences from Problem 14.5, Problem 14.7, Problem 14.8's
+complex-to-real block inverse and HPD-to-SPD bridge, the p.279
+Hadamard determinant condition number, equation (14.34) in its exact
+no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
+Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence,
+Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
+Problem 14.15's scalar product-radius support, Method D's expanded
+componentwise residual-budget dependency and printed-coefficient scalar
+simplification, the exact Hyman block identities
+(14.35)--(14.36), and Problem 14.10:
+
+- `inverseRightResidual`, `inverseLeftResidual`
+- `higham14_infNorm_le_of_componentwise_abs_matmul_bound`
+- `higham14_infNorm_le_of_componentwise_matmul_bound`
+- `triInv_method2_left_residual_normwise`
+- `triInv_method1B_right_residual_normwise`
+- `triInv_method1B_right_residual_normwise_from_spec`
+- `triInv_method2C_left_residual_normwise`
+- `higham14_problem14_3_right_residual_eq_mul_left_residual`
+- `higham14_problem14_3_left_residual_eq_mul_right_residual`
+- `higham14_problem14_3_right_over_left_residual_infNorm_le_kappa`
+- `higham14_problem14_3_left_over_right_residual_infNorm_le_kappa`
+- `higham14_problem14_3_max_residual_ratio_infNorm_le_kappa`
+- `higham14_problem14_4_A`, `higham14_problem14_4_X`
+- `higham14_problem14_4_XA_eq`, `higham14_problem14_4_AX_eq`
+- `higham14_problem14_4_left_residual_eq`
+- `higham14_problem14_4_left_residual_infNorm_eq`
+- `higham14_problem14_4_right_residual_infNorm_ge_inv_cube`
+- `higham14_problem14_4_right_over_left_ratio_ge`
+- `higham14_problem14_4_right_over_left_ratio_arbitrarily_large`
+- `higham14_unit_roundoff_add_gamma_le_gamma_succ`
+- `higham14_problem14_5_right_inverse_solve_residual_bound`
+- `higham14_problem14_5_left_inverse_solve_residual_bound`
+- `higham14_inverseLeftResidual_mulVec_add_self`
+- `higham14_problem14_5_forward_error_of_residual_bound`
+- `higham14_problem14_5_right_inverse_solve_forward_error_bound`
+- `higham14_problem14_5_left_inverse_solve_forward_error_bound`
+- `higham14_absMatrix_matMulVec_mono`
+- `higham14_absMatrix_matMulVec_nonneg`
+- `higham14_problem14_5_right_inverse_solve_forward_error_bound_of_abs_X_le`
+- `higham14_problem14_5_right_inverse_solve_forward_error_firstorder_replacement`
+- `higham14_problem14_5_left_inverse_solve_forward_error_bound_of_abs_Y_le`
+- `higham14_problem14_5_left_inverse_solve_forward_error_firstorder_replacement`
+- `higham14_problem14_5_left_firstorder_envelope_le_right_exact_rhs_envelope`
+- `higham14_problem14_7_inverse_entries_sum_eq_one_of_row_ones`
+- `higham14_problem14_7_inverse_entries_sum_eq_one_of_col_ones`
+- `higham14_problem14_8_realBlockMatrix`
+- `higham14_problem14_8_realToComplexVec`
+- `higham14_problem14_8_complexToRealVec`
+- `higham14_problem14_8_complexQuadraticForm`
+- `higham14_problem14_8_realBlockSymPosDef`
+- `higham14_problem14_8_complexHermitianPosDef`
+- `higham14_problem14_8_realBlockMatrix_finiteMatVec_eq_complexToRealVec`
+- `higham14_problem14_8_realBlockMatrix_rightInverse_of_complex`
+- `higham14_problem14_8_realBlockMatrix_leftInverse_of_complex`
+- `higham14_problem14_8_realBlockMatrix_inverse_of_complex`
+- `higham14_problem14_8_realBlockMatrix_quadratic_eq_complexQuadratic`
+- `higham14_problem14_8_realBlockMatrix_symPosDef_of_complexHermitianPosDef`
+- `higham14_method2BBlockUpdateExact`
+- `higham14_method2BBlockUpdateDelta`
+- `higham14_eq14_14_method2B_block_update_decomposition`
+- `higham14_eq14_14_method2B_block_update_delta_bound`
+- `higham14_eq14_14_method2B_exact_offdiag_block_update`
+- `higham14_methodDProductDelta`
+- `higham14_methodDLUBackwardDelta`
+- `higham14_methodDXLLeftResidual`
+- `higham14_methodDXULeftResidual`
+- `higham14_eq14_20_methodD_product_decomposition`
+- `higham14_eq14_20_methodD_productDelta_bound`
+- `higham14_eq14_21_methodD_lu_substitution`
+- `higham14_eq14_21_methodD_luDelta_bound`
+- `higham14_eq14_22_methodD_left_residual_expansion`
+- `higham14_eq14_22_methodD_left_residual_abs_le_expanded_terms`
+- `higham14_eq14_23_methodD_left_residual_expanded_budget`
+- `higham14_methodD_abs_product_assoc`
+- `higham14_methodD_abs_XL_L_diag_ge_inv_scale`
+- `higham14_methodD_abs_XU_U_le_scaled_abs_product`
+- `higham14_methodD_abs_Xhat_le_scaled_abs_product`
+- `higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget`
+- `higham14_eq14_23_methodD_left_residual_bound`
+- `higham14_rowNorm2`
+- `higham14_rowNormDiagonal`
+- `higham14_hadamardConditionNumber`
+- `higham14_hadamardConditionNumberRaw`
+- `higham14_det_rowNormDiagonal_eq_prod_rowNorm2`
+- `higham14_hadamardConditionNumber_eq_det_rowNormDiagonal_div_abs_det`
+- `higham14_hadamardConditionNumberRaw_eq_conditionNumber_of_det_pos`
+- `higham14_hadamardConditionNumber_nonneg`
+- `higham14_rowNorm2_pos_of_det_ne_zero`
+- `higham14_hadamardConditionNumber_pos_of_det_ne_zero`
+- `higham14_problem14_11_hadamard_det_sq_le_prod_rowNorm2_sq`
+- `higham14_problem14_11_abs_det_le_prod_rowNorm2`
+- `higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero`
+- `higham14_rowsOrthogonal`
+- `higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal`
+- `higham14_problem14_11_hadamardConditionNumber_eq_one_of_abs_det_eq_prod_rowNorm2`
+- `higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumber_eq_one`
+- `higham14_problem14_11_hadamardConditionNumber_eq_one_iff_abs_det_eq_prod_rowNorm2`
+- `higham14_problem14_11_hadamardConditionNumber_eq_one_of_rowsOrthogonal`
+- `higham14_colNorm2`
+- `higham14_abs_det_eq_one_of_isOrthogonal`
+- `higham14_colNorm2_matMul_orthogonal_left`
+- `higham14_rowNorm2_eq_colNorm2_of_transpose_qr`
+- `higham14_problem14_12_hadamardConditionNumber_eq_prod_colNorm2_div_abs_diag_of_transpose_qr_det_product`
+- `higham14_problem14_12_hadamardConditionNumber_eq_prod_colNorm2_div_abs_diag_of_transpose_qr`
+- `higham14_problem14_12_hadamardConditionNumber_stressUpper_one_eq_sqrt_factorial`
+- `higham14_peiMatrix`
+- `higham14_problem14_12_peiMatrix_det`
+- `higham14_problem14_12_peiMatrix_rowNorm2`
+- `higham14_problem14_12_peiMatrix_prod_rowNorm2`
+- `higham14_problem14_12_hadamardConditionNumber_peiMatrix_abs`
+- `higham14_problem14_12_hadamardConditionNumber_peiMatrix`
+- `higham14_problem14_13_amgm_prod_le_pow_sum_div_card`
+- `higham14_problem14_13_gej_squared_bound_from_amgm`
+- `higham14_problem14_13_gej_bound_from_squared`
+- `higham14_problem14_13_gej_bound_from_amgm_certificate`
+- `higham14_problem14_13_opNorm2_eq_complexMatrixOp2_realRectToCMatrix`
+- `higham14_problem14_13_opNorm2_eq_complex_top_singularValue`
+- `higham14_problem14_13_frobNorm_sq_eq_complexMatrixFrobeniusSq`
+- `higham14_problem14_13_frobNorm_sq_eq_sum_complex_singularValue_sq`
+- `higham14_problem14_13_lowerNorm_eq_complex_last_singularValue`
+- `higham14_problem14_13_opNorm2_rightInverse_eq_inv_complex_last_singularValue`
+- `higham14_problem14_13_kappa2_eq_top_div_last_singularValue_of_rightInverse`
+- `higham14_problem14_13_complexGramLin_det_eq_prod_gramEigenvalues`
+- `higham14_problem14_13_complex_det_conjTranspose_mul_self_eq_prod_singularValue_sq`
+- `higham14_problem14_13_real_det_sq_eq_prod_complex_singularValue_sq`
+- `higham14_problem14_13_abs_det_eq_prod_complex_singularValue`
+- `higham14_problem14_13_abs_det_pos_of_isRightInverse`
+- `higham14_problem14_13_gej_bound_from_matrix_amgm_certificate`
+- `higham14_problem14_13_gejAmgmFamily`
+- `higham14_problem14_13_gejAmgmFamily_nonneg`
+- `higham14_problem14_13_last_singularValue_pos_of_isRightInverse`
+- `higham14_problem14_13_gejAmgmFamily_prod`
+- `higham14_problem14_13_gejAmgmFamily_sum_add_last_singularValue_sq`
+- `higham14_problem14_13_gejAmgmFamily_sum_lt_frobNorm_sq`
+- `higham14_problem14_13_gej_bound_of_isRightInverse`
+- `higham14_problem14_13_kappa2_lt_two_mul_hadamardConditionNumber_of_unit_rows`
+- `higham14_problem14_13_frobNorm_eq_sqrt_card_of_rowNorm2_eq_one`
+- `higham14_problem14_13_hadamardConditionNumber_eq_inv_abs_det_of_rowNorm2_eq_one`
+- `higham14_problem14_13_two_over_abs_det_eq_two_mul_hadamardConditionNumber`
+- `higham14_problem14_13_kappa_lt_two_mul_hadamardConditionNumber_of_unit_rows`
+- `exists_relative_theta_of_abs_sub_le_mul_pos`
+- `prod_one_add_delta_abs_sub_one_le_gamma_radius`
+- `higham14_problem14_15_theta_product_bound`
+- `higham14_problem14_15_abs_det_add_rel_le_of_singularValue_theta`
+- `higham14_problem14_15_det_add_rel_le_of_singularValue_theta_of_det_pos`
+- `higham14_problem14_15_abs_det_add_rel_le_of_singularValue_abs_sub_bound`
+- `higham14_problem14_15_det_add_rel_le_of_singularValue_abs_sub_bound_of_det_pos`
+- `higham14_problem14_15_last_singularValue_pos_of_isRightInverse`
+- `higham14_problem14_15_last_singularValue_le_singularValue`
+- `higham14_problem14_15_opNorm2_le_kappa2_scaled_last_singularValue`
+- `higham14_problem14_15_abs_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound`
+- `higham14_problem14_15_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_of_det_pos`
+- `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_of_sub_rectOpNorm2Le`
+- `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le`
+- `higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt`
+- `higham14_problem14_15_opNorm2_add_le_of_opNorm2Le`
+- `higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le`
+- `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`
+- `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec`
+- `higham14_eq14_34_perm_sign_mul_det_eq_prod_U_diag_of_PermutedLUFactSpec`
+- `higham14_eq14_34_det_eq_perm_sign_mul_prod_U_diag_of_PermutedLUFactSpec`
+- `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_PermutedLUFactSpec`
+- `higham14_hymanRowTimesInv`
+- `higham14_hymanSchur`
+- `higham14_hymanBlockMatrix`
+- `higham14_hymanLowerFactor`
+- `higham14_hymanUpperFactor`
+- `higham14_hymanRowTimesInv_mul_T`
+- `higham14_eq14_35_hyman_block_lu_factorization`
+- `higham14_eq14_36_hyman_det_cyclic_block`
+- `higham14_eq14_36_hyman_det_original_of_row_permutation`
+- `matrixEntryPerturb`
+- `higham14_problem14_10_det_entry_perturb_eq`
+- `higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero`
+- `higham14_problem14_10_det_entry_independent_iff_adjugate_eq_zero`
+
 ## Search Recipes
 
 Inside the repository:
@@ -5308,7 +5744,7 @@ Current reusable declarations:
 | First-order residual specs for Theorem 13.6 computed-operation models | `BlockSolveFirstOrderSpec`, `DiagonalBlockSolveFirstOrderSpec`, `higham13_eq13_14_from_block_solve_spec`, `higham13_eq13_15_from_diagonal_block_solve_spec` |
 | Algorithm 13.3 Implementation 1/2 local computed paths | `Algorithm13_3Implementation1LocalSpec` packages the Implementation 1 Eq.13.14/Eq.13.15 model assumptions used by Theorem 13.6; `higham13_algorithm13_3_implementation1_eq13_14_15_from_spec` unpacks them. `Algorithm13_3Implementation2ExplicitInverseSpec` and `higham13_algorithm13_3_implementation2_explicit_inverse_equations` record the explicit-inverse multiplication path; `higham13_algorithm13_3_implementation2_eq13_16_firstOrder_multiplier` proves the p.251 scalar consequence that the combined (13.16) first-order terms inherit the common `max_i κ(Û_ii)` multiplier from supplied conditioned factor/solve bounds. |
 | Chapter 13 entrywise max norm convention | `blockMaxNorm`, `block_le_blockMaxNorm`, `blockMaxNorm_nonneg`, `higham13_norm_convention_blockMaxNorm_eq_entrywise_sup`, `block_entry_abs_le_blockMaxNorm`, `blockMaxNorm_le_of_entry_abs_le`, `maxEntryNorm_zeroBlock`, `maxEntryNorm_le_zero_of_eq_zeroBlock`, `higham13_block_norm_eq_maxEntryNorm` |
-| Block LU specification, Schur complement, Theorem 13.2 iff, block-to-standard bridge, partition displays, SPD existence route, and algorithm output checks | `BlockLUFactSpec`, `blockMatrixIdentity`, `BlockMatrixTwoSidedInverse`, `BlockMatrixNonsingular`, `blockMatrixFlat`, `blockMatrixNonsingular_of_flat_inverse`, `blockMatrixNonsingular_of_isUnit_det_flat`, `blockMatrixNonsingular_of_det_ne_zero_flat`, `blockMatrixFlat_det_ne_zero_of_blockMatrixNonsingular`, `higham13_blockMatrixFlat_det_eq_zero_of_offdiag_col_zero_of_diag_kernel`, `higham13_not_blockMatrixNonsingular_of_offdiag_col_zero_of_diag_kernel`, `higham13_exists_nonzero_coord_of_vec_ne_zero`, `higham13_exists_diag_kernel_coord_of_det_eq_zero`, `higham13_blockMatrixFlat_det_eq_zero_of_offdiag_col_zero_of_diag_det_eq_zero`, `higham13_not_blockMatrixNonsingular_of_offdiag_col_zero_of_diag_det_eq_zero`, `higham13_block_entries_zero_of_norm_eq_zero`, `higham13_blockDiagDomCol_offdiag_entries_zero_of_norm_table_nonpos`, `higham13_not_blockMatrixNonsingular_of_blockDiagDomCol_diagBound_nonpos_diag_det_eq_zero`, `higham13_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`, `higham13_leadingBlockPrefix_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`, `higham13_leadingBlockPrefix_diag_det_ne_zero_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos`, `higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`, `higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos`, `blockMatrixNonsingular_of_posDef_flat`, `matrix_posDef_submatrix_of_injective`, `leadingBlockPrefix13_2`, `blockMatrixFlat_leadingBlockPrefix13_2`, `leadingBlockPrefix13_2_posDef_flat_of_posDef_flat`, `LeadingPrincipalBlockNonsingular13_2`, `LeadingPrincipalBlockNonsingular13_2.of_posDef_flat`, `BlockLUFactSpec.existsUnique_of_posDef_flat`, `LeadingPrincipalBlockNonsingular13_2.first_block_inverse`, `first_block_inverse_of_isUnit_det`, `BlockLUFactSpec.first_block_inverse_of_existsUnique`, `leadingBlockPrefix13_2_zero_nonsingular_of_first_block_inverse`, `LeadingPrincipalBlockNonsingular13_2.of_first_block_inverse_of_schur`, `blockSchur`, `leadingBlockPrefix13_2_blockSchur`, `blockSchur_nonsingular_of_nonsingular_of_first_block_inverse`, `blockMatrixNonsingular_of_first_block_inverse_of_blockSchur_nonsingular`, `LeadingPrincipalBlockNonsingular13_2.schur`, `blockLUOneStepL`, `blockLUOneStepU`, `block_lu_one_step_explicit`, `block_lu_one_step`, `BlockLUFactSpec.firstRow_eq`, `BlockLUFactSpec.firstColumnBelow_eq_of_right_inverse`, `BlockLUFactSpec.of_leadingBlockPrefix13_2`, `BlockLUFactSpec.schurTailFactSpec_of_right_inverse`, `BlockLUFactSpec.eq_of_schurTail_unique_of_right_inverse`, `BlockLUFactSpec.existsUnique_step_of_schurTail_existsUnique`, `BlockLUFactSpec.schurTail_existsUnique_of_existsUnique_of_first_block_inverse`, `BlockLUFactSpec.existsUnique_one`, `BlockLUFactSpec.existsUnique_of_leadingPrincipalBlockNonsingular13_2`, `LeadingPrincipalBlockNonsingular13_2.of_existsUnique`, `BlockLUFactSpec.existsUnique_iff_leadingPrincipalBlockNonsingular13_2`, `higham13_standardUpperFromBlockUpper`, `higham13_block_upper_refinement_eq`, `higham13_block_lu_to_standard_lu_product`, `higham13_algorithm13_1_schur_complement_eq`, `higham13_eq13_1_partitioned_outer_product_lu`, `higham13_eq13_2_block_lu_step`, `higham13_eq13_3_recursive_partitioned_lu`, `higham13_eq13_20_partition`, `higham13_eq13_26_partition`, `higham13_algorithm13_1_partitioned_lu_reconstructs`, `higham13_algorithm13_3_block_lu_reconstructs`, `higham13_algorithm13_4_recursive_partitioned_lu_reconstructs`. The flat-kernel lemmas formalize the Theorem 13.7 proof step that a zero off-diagonal block column plus a nonzero diagonal-block kernel vector makes the whole flattened block matrix singular, contradicting `BlockMatrixNonsingular`; the determinant-zero diagonal-block wrappers derive that kernel vector from singularity of the active diagonal block; the actual-block BDD wrappers turn nonpositive diagonal lower bounds in the concrete block norm table into zero off-column entries and the corresponding nonsingularity contradiction; the leading-prefix wrappers apply this contradiction after BDD inheritance to nonsingular leading prefixes and convert the resulting determinant nonzero fact into the canonical `nonsingInv` two-sided inverse. |
+| Block LU specification, Schur complement, Theorem 13.2 iff, block-to-standard bridge, partition displays, SPD existence route, and algorithm output checks | `BlockLUFactSpec`, `blockMatrixIdentity`, `BlockMatrixTwoSidedInverse`, `BlockMatrixNonsingular`, `blockMatrixFlat`, `blockMatrixFlatFin`, `det_blockMatrixFlat_eq_blockMatrixFlatFin`, `blockMatrixNonsingular_of_flat_inverse`, `blockMatrixNonsingular_of_isUnit_det_flat`, `blockMatrixNonsingular_of_det_ne_zero_flat`, `blockMatrixFlat_det_ne_zero_of_blockMatrixNonsingular`, `det_ne_zero_blockMatrixFlatFin_of_blockMatrixNonsingular`, `higham13_blockMatrixNonsingular_of_all_leadingBlockPrefixes`, `higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes`, `higham13_blockMatrixFlat_det_eq_zero_of_offdiag_col_zero_of_diag_kernel`, `higham13_not_blockMatrixNonsingular_of_offdiag_col_zero_of_diag_kernel`, `higham13_exists_nonzero_coord_of_vec_ne_zero`, `higham13_exists_diag_kernel_coord_of_det_eq_zero`, `higham13_blockMatrixFlat_det_eq_zero_of_offdiag_col_zero_of_diag_det_eq_zero`, `higham13_not_blockMatrixNonsingular_of_offdiag_col_zero_of_diag_det_eq_zero`, `higham13_block_entries_zero_of_norm_eq_zero`, `higham13_blockDiagDomCol_offdiag_entries_zero_of_norm_table_nonpos`, `higham13_not_blockMatrixNonsingular_of_blockDiagDomCol_diagBound_nonpos_diag_det_eq_zero`, `higham13_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`, `higham13_leadingBlockPrefix_diag_det_ne_zero_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`, `higham13_leadingBlockPrefix_diag_det_ne_zero_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos`, `higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_blockMatrixNonsingular_blockDiagDomCol_diagBound_nonpos`, `higham13_leadingBlockPrefix_diag_nonsingInv_isInverse_of_leadingPrincipalBlockNonsingular13_2_blockDiagDomCol_diagBound_nonpos`, `blockMatrixNonsingular_of_posDef_flat`, `matrix_posDef_submatrix_of_injective`, `leadingBlockPrefix13_2`, `blockMatrixFlat_leadingBlockPrefix13_2`, `leadingBlockPrefix13_2_posDef_flat_of_posDef_flat`, `LeadingPrincipalBlockNonsingular13_2`, `LeadingPrincipalBlockNonsingular13_2.of_posDef_flat`, `BlockLUFactSpec.existsUnique_of_posDef_flat`, `LeadingPrincipalBlockNonsingular13_2.first_block_inverse`, `first_block_inverse_of_isUnit_det`, `BlockLUFactSpec.first_block_inverse_of_existsUnique`, `leadingBlockPrefix13_2_zero_nonsingular_of_first_block_inverse`, `LeadingPrincipalBlockNonsingular13_2.of_first_block_inverse_of_schur`, `blockSchur`, `leadingBlockPrefix13_2_blockSchur`, `blockSchur_nonsingular_of_nonsingular_of_first_block_inverse`, `blockMatrixNonsingular_of_first_block_inverse_of_blockSchur_nonsingular`, `LeadingPrincipalBlockNonsingular13_2.schur`, `blockLUOneStepL`, `blockLUOneStepU`, `block_lu_one_step_explicit`, `block_lu_one_step`, `BlockLUFactSpec.firstRow_eq`, `BlockLUFactSpec.firstColumnBelow_eq_of_right_inverse`, `BlockLUFactSpec.of_leadingBlockPrefix13_2`, `BlockLUFactSpec.schurTailFactSpec_of_right_inverse`, `BlockLUFactSpec.eq_of_schurTail_unique_of_right_inverse`, `BlockLUFactSpec.existsUnique_step_of_schurTail_existsUnique`, `BlockLUFactSpec.schurTail_existsUnique_of_existsUnique_of_first_block_inverse`, `BlockLUFactSpec.existsUnique_one`, `BlockLUFactSpec.existsUnique_of_leadingPrincipalBlockNonsingular13_2`, `LeadingPrincipalBlockNonsingular13_2.of_existsUnique`, `BlockLUFactSpec.existsUnique_iff_leadingPrincipalBlockNonsingular13_2`, `higham13_standardUpperFromBlockUpper`, `higham13_block_upper_refinement_eq`, `higham13_block_lu_to_standard_lu_product`, `higham13_algorithm13_1_schur_complement_eq`, `higham13_eq13_1_partitioned_outer_product_lu`, `higham13_eq13_2_block_lu_step`, `higham13_eq13_3_recursive_partitioned_lu`, `higham13_eq13_20_partition`, `higham13_eq13_26_partition`, `higham13_algorithm13_1_partitioned_lu_reconstructs`, `higham13_algorithm13_3_block_lu_reconstructs`, `higham13_algorithm13_4_recursive_partitioned_lu_reconstructs`. The flat-kernel lemmas formalize the Theorem 13.7 proof step that a zero off-diagonal block column plus a nonzero diagonal-block kernel vector makes the whole flattened block matrix singular, contradicting `BlockMatrixNonsingular`; the determinant-zero diagonal-block wrappers derive that kernel vector from singularity of the active diagonal block; the actual-block BDD wrappers turn nonpositive diagonal lower bounds in the concrete block norm table into zero off-column entries and the corresponding nonsingularity contradiction; the flattening bridges transport determinant nonzero facts between product-index and `Fin (m*r)` block matrices; the all-prefix bridge extracts the full-matrix nonsingularity/determinant certificate from the last leading prefix; the leading-prefix wrappers apply this contradiction after BDD inheritance to nonsingular leading prefixes and convert the resulting determinant nonzero fact into the canonical `nonsingInv` two-sided inverse. |
 | Theorem 13.5 trailing Schur proof-step equations | `higham13_eq13_11a_subtraction_error`, `higham13_eq13_11b_trailing_schur_error_firstOrder`, `higham13_eq13_11_from_matmul_subtraction_specs`, `higham13_eq13_13_trailing_block_identity`, `higham13_eq13_13_trailing_block_error_firstOrder`, `higham13_eq13_13_from_matmul_subtraction_induction_specs` |
 | Theorem 13.5 exact assembled residual identity | `higham13_theorem13_5_block_residual_identity`, `higham13_theorem13_5_block_residual_identity_from_specs` |
 | Theorem 13.5 scalar recurrence support | `blockErrorDelta`, `blockErrorDelta_nonneg`, `blockErrorDelta_succ_succ`, `blockErrorDelta_le_self`, `blockErrorTheta`, `blockErrorTheta_nonneg_of_c3_nonneg`, `blockErrorTheta_succ_succ`, `blockErrorTheta_le_linear_of_step_bound`, `blockErrorTheta_le_cubic_of_quadratic_constants`, `higham13_theta_isBigO_cubic_of_quadratic_constants`, `higham13_theta_conventional_isBigO_cubic`, `partitioned_lu_backward_error_step`, `higham13_theorem13_5_recurrence_step`, `FirstOrderLe.add`, `FirstOrderLe.max_same`, `FirstOrderLe.max`, `higham13_theorem13_5_recurrence_step_firstOrder` |
@@ -5334,8 +5770,11 @@ Current reusable declarations:
 | Algorithm 13.3 matrix-`∞` to max-entry transfer | `higham13_algorithm13_3_matrix_infNorm_block_le_card_mul_blockMaxNorm`, `higham13_algorithm13_3_matrix_infNorm_active_stage_maxEntry_bound`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_of_active_stage_bound`, `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthMatrix_le_of_active_stage_bound`, `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_active_stage_bound`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_continuousLinearMap_source_table`, `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_continuousLinearMap_source_table`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_det_ne_zero`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_det_ne_zero_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_continuousLinearMap_source_table_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_det_ne_zero`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_det_ne_zero_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_initial_diag_right_inverse_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_initial_diag_right_inverse_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_initial_diag_right_inverse_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_initial_diag_right_inverse_of_pivot_right_inverse_of_det_ne_zero` | Transfers the matrix-`∞` active-stage route into the Chapter 13 entrywise max-norm APIs. The generic active-stage wrapper controls the assembled matrix-stage upper factor and the finite matrix-stage history growth matrix in max-entry norm. The source-table corollaries now compose the matrix-`∞` continuous-linear source-table route, and its pivot-right-inverse variant, directly into those max-entry APIs while keeping the initial lower table/diagonal comparison and active inverse certificates explicit; the determinant variants derive the positive growth-factor denominator from `det(blockMatrixFlatFin A) != 0`, and the positive-block-size variants remove the artificial unit-sphere witness from the raw source-table packages using `0 < r`. The initial-diagonal/right-inverse corollaries specialize this further to reciprocal diagonal data, with a matching determinant variant. All of these transferred endpoints are dimension-aware: the upper-factor bound is `2 * ((r : ℝ) * blockMaxNorm A)` and the growth-factor bound is `growthFactorEntry <= 2 * (r : ℝ)`. The explicit factor `r` records the norm-comparison loss `infNorm <= r * maxEntryNorm`; this is dependency-strength progress and deliberately not the source-strength Eq.13.21/`rho <= 2` endpoint. |
 | Algorithm 13.3 canonical active-pivot matrix-`∞` wrappers | `higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_nonsingInv`, `higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv`, `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv_of_det_ne_zero` | Derives active pivot right-inverse certificates from active pivot determinant nonzero plus `pivotInv k = nonsingInv r pivot_k`, then threads this canonical active-pivot surface through the matrix-`∞` active-stage, assembled upper-factor, finite-history, and dimension-aware max-entry/growth packages with canonical initial diagonal inverses. This removes a proof-artifact right-inverse hypothesis from the strongest current canonical route; it still leaves the active pivot determinant/equality table and the source-strength dimension-free Eq.13.21/Eq.13.23 max-entry endpoint open. |
 | Algorithm 13.3 BDD initial active-pivot bridge | `higham13_algorithm13_3_initial_pivot_nonsingInv_isInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_initial_pivot_nonsingInv_isRightInverse_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_initial_pivot_det_ne_zero_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_initial_pivot_right_inverse_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos` | Specializes the BDD all-prefix original diagonal inverse table to Algorithm 13.3 stage `k = 0`, where the active pivot is definitionally the original first diagonal block.  The determinant wrapper gives first-pivot nonsingularity directly from the canonical BDD inverse, and the last wrapper turns the canonical inverse equality `pivotInv 0 = nonsingInv r (A 0 0)` into the exact first active pivot right-inverse certificate consumed by the matrix-stage APIs.  This closes only the base-pivot bridge; later active Schur-stage pivot certificates remain open. |
+| Algorithm 13.3 BDD matrix-`∞` lower-table and source-endpoint bridge | `higham13_blockDiagDomCol_piNorm_of_infNorm`, `higham13_algorithm13_3_matrix_infNorm_initial_diag_bound_of_diagBound_nonpos`, `higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_diag_lower_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse`, `higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_diag_lower_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_det_ne_zero_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse` | Converts the column-BDD nonpositive diagonal-bound table and all-leading-prefix nonsingularity table into the initial matrix-`∞` lower table for the original diagonal blocks, then feeds that table through `diagLowerCertGeneric` to prove the diagonal-lower and direct pivot-product certificates once the active Schur-stage pivots have certified right inverses.  The helper `higham13_blockDiagDomCol_piNorm_of_infNorm` transports source-facing matrix-`∞` BDD hypotheses to the finite-function block norm required by the BDD inverse bridge.  The positive-block-size endpoint wrappers derive active column dominance, the active-stage `2 * normMax` bound, paired upper-factor/stage-history `blockInfNorm` bounds, and the dimension-aware max-entry upper/growth-factor package directly from matrix-`∞` BDD data plus active pivot right inverses.  The determinant variant derives the positive growth-factor denominator from `det(blockMatrixFlatFin A) != 0`; the source-facing variant derives that determinant from the all-leading-prefix table itself.  This removes explicit initial diagonal inverse/reciprocal-bound, source-table, and standalone determinant proof artifacts from those matrix-`∞` surfaces, but it does not construct the all-active Schur-stage pivot table, the dimension-free max-entry product/update theorem, or the remaining Problem 13.4/Theorem 13.6 source obligations. |
 | Algorithm 13.3 BDD first Schur-tail nonsingularity handoff | `higham13_algorithm13_3_first_schur_tail_blockMatrixNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_first_schur_tail_leadingPrincipalBlockNonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_first_schur_tail_all_leadingBlockPrefixes_nonsingular_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_first_schur_tail_blockMatrixFlat_det_ne_zero_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos` | Uses the BDD all-prefix canonical first-pivot inverse together with full/all-leading-prefix nonsingularity to prove that the first Algorithm 13.3 Schur tail `blockSchur A (pivotInv 0)` is block-nonsingular, transfers the leading-principal-block nonsingularity condition to that tail, packages all leading prefixes of the tail in the exact table shape consumed by the all-prefix BDD diagonal-inverse theorem, and exposes the corresponding product-index flattened determinant certificate.  This is the first recursive nonsingularity handoff after the base pivot bridge; it does not derive later active Schur-stage reciprocal/source-table data. |
 | Algorithm 13.3 BDD first Schur-tail diagonal inverse handoff | `higham13_algorithm13_3_first_schur_tail_diag_nonsingInv_isInverse_of_tail_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_first_schur_tail_diag_nonsingInv_isRightInverse_of_tail_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_first_schur_tail_diag_det_ne_zero_of_tail_blockDiagDomCol_diagBound_nonpos` | Applies the first-Schur-tail all-prefix handoff to the existing BDD all-prefix diagonal-inverse theorem.  If the first Schur tail has its own column-BDD lower-bound table with nonpositive bounds, these wrappers provide canonical `nonsingInv` two-sided/right-inverse certificates and determinant nonzero facts for every tail diagonal block.  This is recursive pivot-certificate packaging; it does not prove the tail BDD/source reciprocal table itself. |
+| Algorithm 13.3 BDD stage-1 pivot bridge | `higham13_algorithm13_3_stage1_pivot_eq_first_schur_tail_diag`, `higham13_algorithm13_3_stage1_pivot_nonsingInv_isInverse_of_first_schur_tail_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_stage1_pivot_right_inverse_of_pivotInv_eq_nonsingInv_first_schur_tail_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_stage1_pivot_det_ne_zero_of_first_schur_tail_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_first_two_pivots_right_inverse_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_first_schur_tail_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_first_two_pivots_det_ne_zero_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_first_schur_tail_blockDiagDomCol_diagBound_nonpos` | Specializes the Algorithm 13.3 tail-shift theorem to identify the original stage-1 active pivot with the first diagonal block of `blockSchur A (pivotInv 0)`, then transports the first-tail BDD diagonal inverse handoff to the actual stage-1 pivot.  The right-inverse wrapper accepts the source-style equality `pivotInv 1 = nonsingInv r ((blockSchur A (pivotInv 0)) 0 0)`, and the first-two-pivots wrappers package the stage-zero and stage-one right-inverse/determinant certificates as a small `Fin 2` active table.  This is stage-1 recursive pivot-certificate packaging; it still assumes the first-tail BDD table and does not prove the full active Schur-stage source reciprocal table. |
+| Algorithm 13.3 recursive pivot-table lift | `higham13_algorithm13_3_pivot_right_inverse_of_initial_pivot_and_first_schur_tail_pivot_right_inverse`, `higham13_algorithm13_3_pivot_det_ne_zero_of_initial_pivot_and_first_schur_tail_pivot_right_inverse`, `higham13_algorithm13_3_pivot_right_inverse_of_first_schur_tail_pivot_right_inverse_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_pivot_det_ne_zero_of_first_schur_tail_pivot_right_inverse_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_pivot_right_inverse_of_initial_pivot_and_first_schur_tail_pivotInv_eq_nonsingInv`, `higham13_algorithm13_3_pivot_det_ne_zero_of_initial_pivot_and_first_schur_tail_pivotInv_eq_nonsingInv`, `higham13_algorithm13_3_pivot_right_inverse_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, `higham13_algorithm13_3_pivot_det_ne_zero_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos` | Exposes the raw Algorithm 13.3 structural recursion for active pivot certificates: a stage-zero right-inverse certificate plus the shifted all-active pivot table for the first Schur tail yields the full active pivot table for the original matrix, with determinant projections.  The canonical-tail variants first convert first-Schur-tail determinant nonzero facts plus `pivotInv (k+1) = nonsingInv r tailPivot_k` into the shifted tail right-inverse table.  The BDD wrappers discharge the stage-zero certificate from the all-leading-prefix BDD table and `pivotInv 0 = nonsingInv r (A 0 0)`, while leaving either the first-Schur-tail all-active table or its determinant/equality canonical data as the remaining recursive obligation.  This is induction glue for the BDD pivot-table route, not a proof of the tail BDD/source table or the dimension-free Eq.13.21/Eq.13.23 endpoint. |
 | Algorithm 13.3 matrix-`∞` positive-dimension wrappers | `higham13_fin_fun_unit_sphere_nonempty`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_det_ne_zero_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_det_ne_zero_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_reciprocal_diag_right_inverse_of_pivot_right_inverse_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_reciprocal_diag_right_inverse_of_pivot_right_inverse_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_reciprocal_diag_right_inverse_of_pivot_right_inverse_of_det_ne_zero_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv_of_pos_dim`, `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv_of_det_ne_zero_of_pos_dim` | Thin positive-block-size adapters for the raw source-table, reciprocal, and canonical matrix-`∞` routes. They use `0 < r` to construct the finite unit-sphere witness required by the underlying continuous-linear lower-norm infrastructure, preserving the same constants and conclusions as the existing hunit-taking theorems; the canonical route now includes the paired source-norm upper/history endpoint as well as the dimension-aware max-entry/growth wrappers. This removes a suspicious proof-artifact hypothesis from these finite matrix endpoints; it does not close the remaining active pivot determinant/equality table, BDD source-table construction, or dimension-free max-entry `rho <= 2` obligations. |
 | Eq.13.18 abstract inverse-action lower-bound adapters | `higham13_eq13_18_unit_lower_bound_of_inverse_action_bound`, `higham13_eq13_18_active_diag_table_unit_lower_bound_of_inverse_action_bound`, `SchurStageActiveDiagLowerUpdate13_7.of_inverse_action_bounds`. These prove the arbitrary normed-space lower-bound half used by the source lower-norm route: if an inverse action is bounded by `normInv` and inverts the diagonal block action, then `normInv⁻¹ <= ‖B x‖` for every unit vector, and the active wrapper feeds that fact into the Eq.13.18 Schur lower-update predicate. They still assume the inverse-action bound/left-inverse data, the updated Schur minimum, and the perturbation estimate; they do not construct the lower-norm table. |
 | Eq.13.18 generic continuous-linear lower-norm table | `continuousLinearMapLowerNorm`, `continuousLinearMapLowerNorm_attained`, `continuousLinearMapLowerNorm_le`, `continuousLinearMapLowerNorm_eq_inv_opNorm_of_inverse`, `continuousLinearMap_triple_norm_le_of_unit`, `SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_stage_lower_norms`, `SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_schur_composition`, `SchurStageActivePivotInvReciprocal13_7.of_continuousLinearMap_inverse`. These construct the source lower-norm table for continuous linear actions on a proper normed real vector space with nonempty unit sphere, prove the active Eq.13.18 diagonal-update predicate from a continuous-linear stage table, discharge the Schur perturbation estimate when the correction is the composed block action `A_jk A_kk^{-1} A_kj`, and derive the active reciprocal table from a two-sided continuous-linear pivot inverse. This is the arbitrary-norm analogue of the Euclidean table infrastructure, but it is still a dependency: the concrete Chapter 13 block actions, inverse certificates, entrywise max-norm branch, and BDD nonsingularity integration remain open. |
@@ -5385,6 +5824,7 @@ Current reusable declarations:
 | Problem 13.4 global-tableau source-chain Eq.13.23 product-update method | `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update`, `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update_reciprocal`, `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`, and `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero` are fixed-ambient source-chain-level wrappers for the full flat Algorithm 13.3 matrix. Given any already-built `Higham13Eq1322GlobalTableauSourceChain`, an ambient right inverse or `det(blockMatrixFlatFin A) != 0`, and the source product-bound/diagonal-update BDD data, they derive the required `rho <= 2` condition internally and produce the Eq.13.23 `BlockLUFactSpec` product witness. The reciprocal variants accept the Theorem 13.7-style reciprocal pivot table and derive the scalar pivot-product premise internally; the determinant variants derive the ambient canonical `nonsingInv` right-inverse. They do not construct the all-tail source chain or the inverse-entry/source comparison; they remove the raw growth-factor and ambient-right-inverse plumbing once those source certificates exist. |
 | Problem 13.4 active-tail derived inverse-entry successor | `Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_with_derived_tail_inverse_entry_exact_kappa`. Given a recorded active-tail successor and a caller-supplied tail constructor that only needs the next tail's inverse-entry certificate, this theorem derives that certificate from the parent block-inverse certificate using `higham13_problem13_4_firstSplit_schurTail_inverse_entry_bound_from_block_inverse`, derives the tail `Matrix.fromBlocks` invertibility from the Schur-complement invertibility bridge, then invokes the active-tail successor. This is reusable all-tail infrastructure; it does not by itself supply the remaining all-tail constructor, Schur-complement/source-chain invertibility data, or Eq.13.23 `rho <= 2`/BDD data. |
 | Problem 13.4 canonical active-suffix global-tableau source chain | `higham13_algorithm13_3_activeSuffixTail`, `higham13_algorithm13_3_activeSuffixStageTailBlock`, `higham13_algorithm13_3_activeSuffixStageTailBlock_zero_eq`, `higham13_algorithm13_3_activeSuffixStageTailBlock_one_eq_blockSchur`, `higham13_activeSuffix_dimension_budget_of_global_bound`, `Higham13Eq1322GlobalTableauSourceChain.activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa`, `Higham13Eq1322GlobalTableauSourceChain.activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound`, `Higham13Eq1322GlobalTableauSourceChain.activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound_of_det_tables`, `Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa`, `Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_parent_inverse_entry_exact_kappa`, `higham13_problem13_4_firstSplit_parent_inverse_entry_bound_from_nonsingInv`, `Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_canonical_parent_inverse_entry_exact_kappa`, `Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound`, `Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_global_dimension_bound_of_det_tables`, `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa`, `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_parent_inverse_entry`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_parent_inverse_entry`, `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_canonical_parent_inverse_entry`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_canonical_parent_inverse_entry`, `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_canonical_parent_inverse_entry_of_det_ne_zero`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_canonical_parent_inverse_entry_of_det_ne_zero`, `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_det_tables`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_det_tables`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_canonical_parent_inverse_entry`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_canonical_parent_inverse_entry`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_canonical_parent_inverse_entry_of_det_ne_zero`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_canonical_parent_inverse_entry_of_det_ne_zero`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_det_tables`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_tables`, `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_det_ne_zero`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_det_ne_zero`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`, and `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero`. These provide the canonical all-tail source-chain constructor for Algorithm 13.3 active suffixes, its first-Schur-tail specializations, and the Eq.13.22/Eq.13.23 first-split product-witness consumers. The all-tail theorem recursively builds `Higham13Eq1322GlobalTableauSourceChain` from the genuine per-stage source obligations: current-tail `Matrix.fromBlocks` invertibility and inverse-entry comparison, current pivot identity, first-split and Schur-complement invertibility for nonterminal active suffixes, and global matrix-stage tableau containment. The global-dimension-bound helper and wrappers derive the per-tail `(m+1)*r <= n` budget table internally from one ambient bound `M*r <= n` (or the first-split specialization `((m+1)+1)*r <= n`), and the determinant-table wrappers derive the current-tail, pivot-block, and Schur-complement invertibility instances internally from determinant-nonzero source tables. Recursive Schur-tail inverse-entry certificates are derived internally by the active-tail handoff theorem, so callers no longer need to prebuild every recursive `hTail`; the parent-inverse-entry first-Schur-tail wrapper derives the first Schur-tail inverse-entry certificate from the parent first-split block inverse, and the canonical helper/wrapper derive the parent comparison itself from the canonical ambient `nonsingInv`. The first-Schur-tail specialization identifies the canonical stage-one suffix with `blockSchur A (pivotInv 0)`, and the Eq.13.22/Eq.13.23 wrappers construct the recursive tail certificate from that active-suffix theorem before producing concrete `BlockLUFactSpec` product witnesses; the parent-inverse-entry product wrappers keep only the current parent inverse-entry comparison explicit, while the canonical parent-inverse-entry product wrappers derive even that comparison internally. The raw canonical-parent determinant product wrappers additionally derive the ambient canonical `nonsingInv` right-inverse from `det A != 0`. The Eq.13.22/Eq.13.23 `..._of_det_tables` wrappers feed the determinant-table first-Schur-tail constructor directly into those product witnesses, removing the caller-supplied active-suffix invertibility instances while keeping the source inverse-entry comparisons and, for Eq.13.23, the `rho <= 2` theorem explicit. The Eq.13.23 product-update wrappers derive the first-split `rho <= 2` premise from the source product-bound/diagonal-update or reciprocal-table route; their canonical-parent companions also derive the parent inverse-entry comparison internally, and the `..._of_det_tables` product-update companions combine that `rho <= 2` route with the determinant-table product witness so the active-suffix invertibility tables are also internal there. The determinant wrappers derive the canonical ambient `nonsingInv` right-inverse certificate from `det A != 0` for the raw and product-update active-suffix surfaces. This closes the general all-tail source-chain, dimension-budget packaging, determinant-table invertibility packaging, determinant-table product-witness packaging, determinant-table product-update packaging, parent-to-first-Schur-tail inverse-entry packaging, parent inverse-entry canonical packaging, canonical-parent raw determinant product packaging, product-update canonical-parent packaging, and right-inverse packaging layers; the all-tail parent inverse-entry/source comparisons themselves, source-strength BDD table construction, and Theorem 13.6 cited-estimate rows remain open. |
+| Problem 13.4 active-suffix BDD initial-pivot product witnesses | `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_initial_pivot_nonsingInv_bdd_of_det_ne_zero`, `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_initial_pivot_nonsingInv_bdd_of_det_ne_zero`. These consume the BDD all-leading-prefix initial pivot bridge to derive the first-split `pivotInv 0 = ⅟(blockMatrixFirstSplitA11 A)` identity from `pivotInv 0 = nonsingInv r (A 0 0)`, then call the determinant-nonzero Eq.13.22/Eq.13.23 active-suffix product witnesses. They remove a first-pivot `⅟` proof-artifact premise from those consumer surfaces; the all-tail pivot identities, all-tail inverse-entry/source comparisons, and source-strength BDD product/update data remain open. |
 | Problem 13.4 active-tail derived product witnesses | `higham13_eq13_22_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa`, `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa`. These feed the derived-tail active successor directly into the fixed-ambient Eq.13.22/Eq.13.23 `BlockLUFactSpec` product APIs. The recursive tail constructor now only consumes the derived tail inverse-entry certificate under the locally derived tail representation instance, while all-tail Schur-complement/source-chain invertibility data and the Eq.13.23 `rho <= 2`/BDD theorem remain explicit obligations. |
 | Problem 13.4 full-flat derived active-tail Eq.13.23 product-update witnesses | `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update`, `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update_reciprocal`, `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`, `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero`. These specialize the generic derived-tail active Eq.13.23 product witness to the full flat Algorithm 13.3 source matrix, derive the `rho <= 2` side condition from the source product-bound/diagonal-update BDD route, accept either scalar pivot-product or reciprocal-table data, and optionally derive the canonical ambient `nonsingInv` right-inverse from `det(blockMatrixFlatFin A) != 0`. The successor-tail source-chain constructor and derived tail inverse-entry comparison remain explicit, so this is dependency progress rather than closure of the all-tail source row. |
 | Problem 13.4 three-block global-tableau active-tail constructor | `Higham13Eq1322GlobalTableauSourceChain.three_from_matrix_stage_history_active_tail_exact_kappa` composes the recorded active-tail successor with the two-block active-tail constructor, uses `higham13_problem13_4_firstSplit_schurTail_inverse_entry_bound_from_block_inverse` to derive the first recursive tail inverse-entry certificate from the parent active-tail inverse-entry certificate, and now derives the two-block recursive tail `Matrix.fromBlocks` invertibility from the Schur-tail bridge instead of asking callers for it. This closes the first length-three instance of the recursive inverse-entry/representation handoff in the fixed-ambient global-tableau route, while the all-tail source certificate, required Schur-complement/source-chain invertibility data, Eq.13.23 `rho <= 2`/BDD data, and Theorem 13.6 cited estimates remain open. |
@@ -5392,7 +5832,7 @@ Current reusable declarations:
 | Problem 13.4 full-flat two-block Eq.13.23 product-update witnesses | `higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update`, `higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal`, `higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`, `higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero`. These specialize the two-block active-tail global-tableau Eq.13.23 witness to the full flat Algorithm 13.3 source matrix, so the product-bound/diagonal-update BDD route supplies the `rho <= 2` side condition internally. The reciprocal variants accept the source-style active reciprocal table; the determinant variants derive the canonical ambient `nonsingInv` right-inverse from `det(blockMatrixFlatFin A) != 0`. The ambient inverse-entry comparison for the current two-block tail and the global all-tail source-table/product-update data remain explicit obligations. |
 | Problem 13.4 full-flat three-block Eq.13.23 product-update witnesses | `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update`, `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal`, `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`, `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero`. These are the three-block companions of the two-block product-update witnesses: they specialize the length-three active-tail Eq.13.23 product witness to the full flat Algorithm 13.3 source matrix, derive the `rho <= 2` side condition from the existing product-bound/diagonal-update BDD route, accept either scalar pivot-product or reciprocal-table data, and optionally derive the canonical ambient `nonsingInv` right-inverse from `det(blockMatrixFlatFin A) != 0`. They remain dependency progress only; the parent inverse-entry certificate, Schur-complement/source-chain invertibility data, all-tail constructor, and source BDD product/update data remain open. |
 | Problem 13.4 single-block multiplier adapter | `higham13_problem13_4_single_block_multiplier_bound_from_local_growth_budget`. Views one active Algorithm 13.3 multiplier block as the lower-left product in a local `2 × 2` block partition, applies the source max-entry Problem 13.4 lower-left bridge, and compares the local `ρ²κ` budget to an explicit ambient budget `C`. This closes the multiplier extraction step but intentionally leaves the recursive Schur-condition/budget propagation visible. |
-| Matrix inverse identification bridge | `matrix_invOf_eq_of_isRightInverse`, `isRightInverse_of_eq_invOf`, `higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_invOf`. Converts between explicit `IsRightInverse r A P` certificates and `P = ⅟A` data for square real matrices with an `Invertible` instance, useful for discharging stage-pivot identification hypotheses without assuming a norm bound. |
+| Matrix inverse identification bridge | `matrix_invOf_eq_of_isRightInverse`, `isRightInverse_of_eq_invOf`, `higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_invOf`, `higham13_algorithm13_3_initial_pivot_eq_invOf_blockMatrixFirstSplitA11_of_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos`, and `higham13_algorithm13_3_stage1_pivot_eq_invOf_first_schur_tail_of_pivotInv_eq_nonsingInv_blockDiagDomCol_diagBound_nonpos`. Converts between explicit `IsRightInverse r A P` certificates and `P = ⅟A` data for square real matrices with an `Invertible` instance, useful for discharging stage-pivot identification hypotheses without assuming a norm bound. The BDD wrappers specialize this route to the initial and first Schur-tail Algorithm 13.3 pivots when the pivots are supplied as canonical `nonsingInv` values; they remove an `⅟`-identification proof artifact but still leave the source BDD reciprocal table open. |
 | Algorithm 13.3 stage multiplier adapter | `higham13_algorithm13_3_stage_multiplier_bound_from_local_growth_budget`. Specializes the single-block adapter to the concrete Algorithm 13.3 stage table at an active pair `j < i`, with local blocks `(j,j)`, `(j,i)`, `(i,j)`, `(i,i)` and the supplied `pivotInv j`. |
 | Stability scalar consequences and table-row support | `block_lu_normU_bound`, `higham13_eq13_21_blockMaxNorm_bound`, `SchurStageUpperBlockBound13_21`, `SchurStageUpperBlockBound13_21.of_eq_stageBlock`, `higham13_algorithm13_3_upper_block_bound_of_eq_stage`, `higham13_algorithm13_3_upperFromStages_upper_block_bound`, `higham13_eq13_21_blockMaxNorm_bound_of_active_stage`, `higham13_eq13_21_blockMaxNorm_bound_of_local_schur_bound`, `higham13_eq13_21_blockMaxNorm_bound_of_exact_update`, `higham13_eq13_21_blockMaxNorm_bound_of_exact_update_reciprocal`, `higham13_eq13_21_blockMaxNorm_bound_of_exact_update_reciprocal_zero_lower`, `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_reciprocal_zero_lower`, `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq`, `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq_upper_eq`, `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq`, `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_diagLowerCert`, `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_diagLowerCert_active_mul_eq_one`, `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd_reciprocal`, `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd`, `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd_active_mul_eq_one`, `block_lu_normLU_bound_general`, `block_lu_normLU_bound_general_higham_13_22`, `higham13_eq13_23_point_row_from_growth`, `higham13_table13_1_backward_error_from_product_bound`, `higham13_table13_1_col_bdd_backward_error`, `higham13_table13_1_point_col_bdd_backward_error`, `higham13_table13_1_point_row_backward_error_from_growth`, `higham13_table13_1_arbitrary_backward_error_from_growth`, `higham13_table13_1_block_row_bdd_backward_error_from_growth`, `higham13_table13_1_spd_backward_error`, `block_lu_stability_block_diagDom_col`, `higham13_col_bdd_stability_bound`, `higham13_col_bdd_oneNorm_stability_bound`, `higham13_col_bdd_infNorm_stability_bound`, `block_lu_stability_point_diagDom_col`, `block_lu_stability_block_diagDom_row`, `block_lu_stability_point_diagDom_row`, `block_lu_stability_spd`, `higham13_eq13_24_spd_scalar_bound`, `spd_backward_error_bound`, `spd_backward_error_bound_higham_13_25` |
 | Problem 13.1 block-tridiagonal local norm bounds | `higham13_problem13_1_column_step_bounds`, `higham13_problem13_1_row_step_bounds` |

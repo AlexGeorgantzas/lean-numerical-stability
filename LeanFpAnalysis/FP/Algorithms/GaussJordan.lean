@@ -1,6 +1,6 @@
 -- Algorithms/GaussJordan.lean
 --
--- Higham Chapter 13, §13.4: Gauss–Jordan Elimination.
+-- Higham Chapter 14, §14.4: Gauss–Jordan Elimination.
 --
 -- The second stage of GJE reduces the upper triangular factor U from
 -- Gaussian elimination to diagonal form via matrices N_k.
@@ -26,10 +26,10 @@ namespace LeanFpAnalysis.FP
 open Finset BigOperators
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4  GJE second-stage cumulative error constant
+-- §14.4  GJE second-stage cumulative error constant
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **GJE second-stage cumulative error constant** (Higham §13.4).
+/-- **GJE second-stage cumulative error constant** (Higham §14.4).
 
     The accumulation of n−1 elimination steps, each introducing error γ₃
     with (1+γ₃) amplification per subsequent step, gives the cumulative
@@ -38,7 +38,7 @@ noncomputable def gje_c₃ (fp : FPModel) (n : ℕ) : ℝ :=
   ((n : ℝ) - 1) * gamma fp 3 * (1 + gamma fp 3) ^ (n - 2)
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.1  GJE Second Stage: Specification
+-- §14.4.1  GJE Second Stage: Specification
 -- ══════════════════════════════════════════════════════════════════════
 
 /-- **GJE second-stage Nₖ matrix specification**.
@@ -61,10 +61,10 @@ structure GJEStage2Spec (n : ℕ) (U : Fin n → Fin n → ℝ)
     i.val ≥ k.val → i ≠ k → N_hat k i k = 0
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.2  Error Recurrences (eqs. 13.25–13.26)
+-- §14.4.2  Error Recurrences (eqs. 14.25–14.26)
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Abstract Eq. 13.25a interface**: matrix recurrence error bound for
+/-- **Abstract Eq. 14.25a interface**: matrix recurrence error bound for
     the GJE second stage.
 
     At each step k, the computed upper triangular factor satisfies:
@@ -85,7 +85,7 @@ theorem gje_stage2_matrix_recurrence (n : ℕ) (fp : FPModel)
       gamma fp 3 * ∑ l : Fin n, |N_k i l| * |U_k l j| :=
   hComp
 
-/-- **Abstract Eq. 13.26 interface**: RHS recurrence error bound for the
+/-- **Abstract Eq. 14.26 interface**: RHS recurrence error bound for the
     GJE second stage.
 
     The computed right-hand side satisfies:
@@ -106,7 +106,7 @@ theorem gje_stage2_rhs_recurrence (n : ℕ) (fp : FPModel)
   hComp
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.3  Cumulative Product (eqs. 13.27–13.28)
+-- §14.4.3  Cumulative Product (eqs. 14.27–14.28)
 -- ══════════════════════════════════════════════════════════════════════
 
 /-- **Cumulative product of N̂ matrices** for the GJE second stage.
@@ -126,11 +126,187 @@ noncomputable def gje_cumulative_product (n : ℕ)
   else fun i j => if i = j then 1 else 0
 termination_by finish_ - start
 
+/-- Equation (14.27) base case for the GJE cumulative product:
+    an empty stage range is the identity. -/
+theorem gje_cumulative_product_base (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ) {start finish_ : ℕ}
+    (hfinish : finish_ ≤ start) :
+    gje_cumulative_product n N_hat start finish_ = idMatrix n := by
+  conv_lhs => unfold gje_cumulative_product
+  ext i j
+  simp [hfinish, idMatrix]
+
+/-- Equation (14.27) step case for the GJE cumulative product:
+    when the stage index `finish - 1` is valid, the product is obtained by
+    multiplying that stage on the left of the previous cumulative product. -/
+theorem gje_cumulative_product_step (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ) {start finish_ : ℕ}
+    (hstep : start < finish_) (hidx : finish_ - 1 < n) :
+    gje_cumulative_product n N_hat start finish_ =
+      matMul n (N_hat ⟨finish_ - 1, hidx⟩)
+        (gje_cumulative_product n N_hat start (finish_ - 1)) := by
+  conv_lhs => unfold gje_cumulative_product
+  ext i j
+  simp [not_le_of_gt hstep, hidx, matMul]
+
+/-- Out-of-range guard for the cumulative product: if the requested stage
+    `finish - 1` is not a valid `Fin n` index, the definition returns the
+    identity.  This keeps the total function honest outside the source range. -/
+theorem gje_cumulative_product_oob (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ) {start finish_ : ℕ}
+    (hstep : start < finish_) (hidx : ¬ finish_ - 1 < n) :
+    gje_cumulative_product n N_hat start finish_ = idMatrix n := by
+  conv_lhs => unfold gje_cumulative_product
+  ext i j
+  simp [not_le_of_gt hstep, hidx, idMatrix]
+
+/-- Entrywise nonnegative stage matrices have entrywise nonnegative GJE
+    cumulative products.  This is the basic monotonicity fact needed before
+    turning (14.27)--(14.28) into componentwise absolute-value bounds. -/
+theorem gje_cumulative_product_nonneg (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ)
+    (hN : ∀ k i j : Fin n, 0 ≤ N_hat k i j) :
+    ∀ start finish_ : ℕ, ∀ i j : Fin n,
+      0 ≤ gje_cumulative_product n N_hat start finish_ i j := by
+  intro start finish_
+  induction finish_ using Nat.strong_induction_on generalizing start with
+  | h finish_ ih =>
+      intro i j
+      by_cases hfinish : finish_ ≤ start
+      · rw [gje_cumulative_product_base n N_hat hfinish]
+        simp [idMatrix]
+        split <;> norm_num
+      · by_cases hidx : finish_ - 1 < n
+        · have hstep : start < finish_ := lt_of_not_ge hfinish
+          have hfinish_ne : finish_ ≠ 0 :=
+            Nat.ne_of_gt (lt_of_le_of_lt (Nat.zero_le start) hstep)
+          rw [gje_cumulative_product_step n N_hat hstep hidx]
+          simp [matMul]
+          exact Finset.sum_nonneg fun k _ =>
+            mul_nonneg (hN ⟨finish_ - 1, hidx⟩ i k)
+              (ih (finish_ - 1) (Nat.sub_one_lt hfinish_ne) start k j)
+        · have hstep : start < finish_ := lt_of_not_ge hfinish
+          rw [gje_cumulative_product_oob n N_hat hstep hidx]
+          simp [idMatrix]
+          split <;> norm_num
+
+/-- The absolute-value stage matrices used in the GJE error bounds have
+    nonnegative cumulative products. -/
+theorem gje_cumulative_product_abs_nonneg (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ) :
+    ∀ start finish_ : ℕ, ∀ i j : Fin n,
+      0 ≤ gje_cumulative_product n
+        (fun k i j => |N_hat k i j|) start finish_ i j :=
+  gje_cumulative_product_nonneg n
+    (fun k i j => |N_hat k i j|)
+    (fun _ _ _ => abs_nonneg _)
+
+/-- Equation (14.27) accumulation algebra for the GJE second-stage matrix
+    recurrence.  If the exact stage matrices obey
+    `U_{start+t+1} = N_{start+t} U_{start+t}` for `steps` valid stages, then
+    the last stage is the cumulative product times the initial stage. -/
+theorem gje_cumulative_product_matrix_accumulation (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ)
+    (U_stage : ℕ → Fin n → Fin n → ℝ)
+    (start steps : ℕ)
+    (hidx : ∀ t : ℕ, t < steps → start + t < n)
+    (hrec : ∀ t : ℕ, (ht : t < steps) →
+      U_stage (start + (t + 1)) =
+        matMul n (N_hat ⟨start + t, hidx t ht⟩) (U_stage (start + t))) :
+    U_stage (start + steps) =
+      matMul n (gje_cumulative_product n N_hat start (start + steps))
+        (U_stage start) := by
+  induction steps with
+  | zero =>
+      simp
+      rw [gje_cumulative_product_base n N_hat (le_refl start), matMul_id_left]
+  | succ steps ih =>
+      have hidx_prev : ∀ t : ℕ, t < steps → start + t < n := by
+        intro t ht
+        exact hidx t (Nat.lt_trans ht (Nat.lt_succ_self steps))
+      have hrec_prev : ∀ t : ℕ, (ht : t < steps) →
+          U_stage (start + (t + 1)) =
+            matMul n (N_hat ⟨start + t, hidx_prev t ht⟩)
+              (U_stage (start + t)) := by
+        intro t ht
+        simpa [hidx_prev] using hrec t (Nat.lt_trans ht (Nat.lt_succ_self steps))
+      have ih' := ih hidx_prev hrec_prev
+      have hstage := hrec steps (Nat.lt_succ_self steps)
+      have hstep : start < start + (steps + 1) :=
+        Nat.lt_add_of_pos_right (Nat.succ_pos steps)
+      have hfinish_eq : start + (steps + 1) - 1 = start + steps := by
+        simp
+      have hfinish_idx : start + (steps + 1) - 1 < n := by
+        simpa [hfinish_eq] using hidx steps (Nat.lt_succ_self steps)
+      have hfin : (⟨start + (steps + 1) - 1, hfinish_idx⟩ : Fin n) =
+          ⟨start + steps, hidx steps (Nat.lt_succ_self steps)⟩ := by
+        apply Fin.ext
+        simp
+      have hcp_prev :
+          gje_cumulative_product n N_hat start (start + (steps + 1) - 1) =
+            gje_cumulative_product n N_hat start (start + steps) := by
+        rw [hfinish_eq]
+      have hcp := gje_cumulative_product_step n N_hat hstep hfinish_idx
+      rw [hstage, ih', hcp, hfin, hcp_prev, matMul_assoc]
+
+/-- Equation (14.28) accumulation algebra for the GJE second-stage right-hand
+    side recurrence.  If the exact stage vectors obey
+    `x_{start+t+1} = N_{start+t} x_{start+t}` for `steps` valid stages, then
+    the last vector is the cumulative product applied to the initial vector. -/
+theorem gje_cumulative_product_rhs_accumulation (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ)
+    (x_stage : ℕ → Fin n → ℝ)
+    (start steps : ℕ)
+    (hidx : ∀ t : ℕ, t < steps → start + t < n)
+    (hrec : ∀ t : ℕ, (ht : t < steps) →
+      x_stage (start + (t + 1)) =
+        matMulVec n (N_hat ⟨start + t, hidx t ht⟩) (x_stage (start + t))) :
+    x_stage (start + steps) =
+      matMulVec n (gje_cumulative_product n N_hat start (start + steps))
+        (x_stage start) := by
+  induction steps with
+  | zero =>
+      simp
+      rw [gje_cumulative_product_base n N_hat (le_refl start), matMulVec_id]
+  | succ steps ih =>
+      have hidx_prev : ∀ t : ℕ, t < steps → start + t < n := by
+        intro t ht
+        exact hidx t (Nat.lt_trans ht (Nat.lt_succ_self steps))
+      have hrec_prev : ∀ t : ℕ, (ht : t < steps) →
+          x_stage (start + (t + 1)) =
+            matMulVec n (N_hat ⟨start + t, hidx_prev t ht⟩)
+              (x_stage (start + t)) := by
+        intro t ht
+        simpa [hidx_prev] using hrec t (Nat.lt_trans ht (Nat.lt_succ_self steps))
+      have ih' := ih hidx_prev hrec_prev
+      have hstage := hrec steps (Nat.lt_succ_self steps)
+      have hstep : start < start + (steps + 1) :=
+        Nat.lt_add_of_pos_right (Nat.succ_pos steps)
+      have hfinish_eq : start + (steps + 1) - 1 = start + steps := by
+        simp
+      have hfinish_idx : start + (steps + 1) - 1 < n := by
+        simpa [hfinish_eq] using hidx steps (Nat.lt_succ_self steps)
+      have hfin : (⟨start + (steps + 1) - 1, hfinish_idx⟩ : Fin n) =
+          ⟨start + steps, hidx steps (Nat.lt_succ_self steps)⟩ := by
+        apply Fin.ext
+        simp
+      have hcp_prev :
+          gje_cumulative_product n N_hat start (start + (steps + 1) - 1) =
+            gje_cumulative_product n N_hat start (start + steps) := by
+        rw [hfinish_eq]
+      have hcp := gje_cumulative_product_step n N_hat hstep hfinish_idx
+      rw [hstage, ih', hcp, hfin, hcp_prev]
+      ext i
+      exact (matMulVec_matMul n
+        (N_hat ⟨start + steps, hidx steps (Nat.lt_succ_self steps)⟩)
+        (gje_cumulative_product n N_hat start (start + steps))
+        (x_stage start) i).symm
+
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.4  Forward Error (eq. 13.29)
+-- §14.4.4  Forward Error (eq. 14.29)
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Abstract Eq. 13.29 interface**: forward error bound for the GJE
+/-- **Abstract Eq. 14.29 interface**: forward error bound for the GJE
     second stage.
 
     The componentwise forward error for the second stage satisfies:
@@ -159,14 +335,14 @@ theorem gje_stage2_forward_error_bound (n : ℕ) (fp : FPModel)
   hErr
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.5  Backward Error (eq. 13.30)
+-- §14.4.5  Backward Error (eq. 14.30)
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Abstract Eq. 13.30 interface**: GJE second-stage backward error.
+/-- **Abstract Eq. 14.30 interface**: GJE second-stage backward error.
 
     The computed solution x̂ of Ux = y satisfies:
       (U + ΔU)x̂ = y + Δy
-    with componentwise bounds (eqs. 13.30b–c):
+    with componentwise bounds (eqs. 14.30b–c):
       |ΔU| ≤ (n−1)γ₃(1+γ₃)^{n−2} · |X̂| · |U|
       |Δy| ≤ (n−1)γ₃(1+γ₃)^{n−2} · |X̂| · |y|
 
@@ -195,13 +371,13 @@ theorem gje_stage2_backward_error (n : ℕ) (fp : FPModel)
   hBackward
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.6  Theorem 13.5: Overall GJE Error (eqs. 13.31–13.32)
+-- §14.4.6  Theorem 14.5: Overall GJE Error (eqs. 14.31–14.32)
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Theorem 13.5, eq. 13.31**: Overall GJE residual bound.
+/-- **Theorem 14.5, eq. 14.31**: Overall GJE residual bound.
 
     Combining the first-stage error (GE: A + ΔA = L̂Û with |ΔA| ≤ γₙ|L̂||Û|)
-    with the second-stage backward error (eq. 13.30), the residual satisfies:
+    with the second-stage backward error (eq. 14.30), the residual satisfies:
       |b − Ax̂| ≤ γₙ|L̂||Û||x̂| + c₃|L̂||X̂|(|Û||x̂| + |y|)
 
     where X̂ = |N̂ₙ|···|N̂₂| and c₃ = (n−1)γ₃(1+γ₃)^{n−2}.
@@ -361,12 +537,12 @@ theorem gje_overall_residual (n : ℕ) (fp : FPModel)
     rw [← Finset.sum_sub_distrib]
     apply Finset.sum_congr rfl; intro j _; ring]
 
-/-- **Theorem 13.5, eq. 13.32**: Overall GJE forward error.
+/-- **Theorem 14.5, eq. 14.32**: Overall GJE forward error.
 
     The forward error satisfies:
       |x − x̂| ≤ |A⁻¹| · |b − Ax̂|.
 
-    Combined with the residual bound (eq. 13.31), this gives:
+    Combined with the residual bound (eq. 14.31), this gives:
       |x − x̂| ≤ |A⁻¹| · (γₙ|L̂||Û||x̂| + c₃|L̂||X̂|(|Û||x̂| + |y|)). -/
 theorem gje_overall_forward_error (n : ℕ) (fp : FPModel)
     (A A_inv L_hat U_hat : Fin n → Fin n → ℝ)
@@ -446,10 +622,10 @@ theorem gje_overall_forward_error (n : ℕ) (fp : FPModel)
         exact mul_le_mul_of_nonneg_left (hResidual j) (abs_nonneg _)
 
 -- ══════════════════════════════════════════════════════════════════════
--- §13.4.7  Corollary 13.6: SPD Specialization
+-- §14.4.7  Corollary 14.6: SPD Specialization
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Abstract Corollary 13.6 interface** (Higham p. 275): GJE for SPD matrices.
+/-- **Abstract Corollary 14.6 interface** (Higham p. 277): GJE for SPD matrices.
 
     For SPD A with Cholesky factorization A + ΔA = R̂ᵀR̂, the GJE
     residual simplifies because L̂ = R̂ᵀ, Û = R̂, and the cumulative
@@ -458,7 +634,7 @@ theorem gje_overall_forward_error (n : ℕ) (fp : FPModel)
     The componentwise residual specializes to:
       |b − Ax̂| ≤ γₙ|R̂ᵀ||R̂||x̂| + c₃|R̂ᵀ||R̂⁻¹|(|R̂||x̂| + |y|)
 
-    which gives the normwise bound (Higham eq. 13.33):
+    which gives the normwise bound (Higham eq. 14.33):
       ‖b − Ax̂‖ / (‖A‖ · ‖x̂‖) ≤ 8n³u κ(A)^{1/2} + O(u²).
 
     The specialized residual is supplied as `hResidual`; the general
@@ -472,7 +648,7 @@ theorem gje_spd_residual (n : ℕ) (fp : FPModel)
     (_hn3 : gammaValid fp 3)
     -- Cholesky: A + ΔA = R̂ᵀR̂ (L̂ = R̂ᵀ, Û = R̂)
     (_hLU : LUBackwardError n A (fun i j => R_hat j i) R_hat (gamma fp n))
-    -- The overall residual bound specializing Theorem 13.5
+    -- The overall residual bound specializing Theorem 14.5
     -- with L̂ = R̂ᵀ, Û = R̂, X_abs = |R̂⁻¹|
     (hResidual : ∀ i : Fin n,
       |b i - ∑ j : Fin n, A i j * x_hat j| ≤

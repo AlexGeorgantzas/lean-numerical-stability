@@ -7,6 +7,7 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16PerturbationSigmaMin
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16PsiSigmaMin
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16LyapunovSigmaMin
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Spectrum
 
 namespace LeanFpAnalysis.FP
 
@@ -475,6 +476,310 @@ theorem existsUnique_finiteMatrix_mulVec_of_det_ne_zero
   refine ⟨x, hx, ?_⟩
   intro y hy
   exact hinj (by rw [hy, hx])
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.3):
+    determinant nonsingularity of the Sylvester vec/Kronecker coefficient
+    gives a unique exact real Sylvester matrix solution for every right-hand
+    side. -/
+theorem existsUnique_isSylvesterSolutionRect_of_sylvesterVecCoeff_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hdet : Matrix.det (sylvesterVecCoeff m n A B) ≠ 0) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  obtain ⟨x, hx, huniq⟩ :=
+    existsUnique_finiteMatrix_mulVec_of_det_ne_zero
+      (sylvesterVecCoeff m n A B) hdet (Matrix.vec C)
+  obtain ⟨X, hXvec⟩ := Matrix.vec_bijective.surjective x
+  refine ⟨X, ?_, ?_⟩
+  · exact
+      (sylvester_vec_system_iff_solution m n A B C X).mp
+        (by rw [hXvec]; exact hx)
+  · intro Y hY
+    apply Matrix.vec_inj.mp
+    have hYvec :
+        Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec Y) =
+          Matrix.vec C :=
+      (sylvester_vec_system_iff_solution m n A B C Y).mpr hY
+    rw [huniq (Matrix.vec Y) hYvec, hXvec]
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.3):
+    source-numbered alias for the determinant-to-matrix Sylvester unique-solve
+    bridge. -/
+theorem H16_eq16_3_existsUnique_isSylvesterSolutionRect_of_sylvesterVecCoeff_det_ne_zero
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hdet : Matrix.det (sylvesterVecCoeff m n A B) ≠ 0) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_sylvesterVecCoeff_det_ne_zero
+    m n A B C hdet
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
+    supplied complex right eigenpair for the complexified real factors makes
+    the real Sylvester vec coefficient action injective. -/
+theorem sylvesterVecCoeff_mulVec_injective_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j))) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    finiteMatrix_mulVec_injective_of_det_ne_zero
+      (sylvesterVecCoeff m n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
+    supplied complex right eigenpair for the complexified real factors gives
+    the exact zero-kernel characterization for the real Sylvester vec
+    coefficient. -/
+theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j)))
+    (x : Prod (Fin n) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff m n A B) x = 0 ↔ x = 0 := by
+  exact
+    finiteMatrix_mulVec_eq_zero_iff_of_det_ne_zero
+      (sylvesterVecCoeff m n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
+      x
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
+    supplied complex right eigenpair for the complexified real factors makes
+    the real Sylvester vec coefficient action surjective. -/
+theorem sylvesterVecCoeff_mulVec_surjective_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j))) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    finiteMatrix_mulVec_surjective_of_det_ne_zero
+      (sylvesterVecCoeff m n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
+    supplied complex right eigenpair for the complexified real factors makes
+    the real Sylvester vec coefficient solve bijective. -/
+theorem sylvesterVecCoeff_mulVec_bijective_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j))) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    finiteMatrix_mulVec_bijective_of_det_ne_zero
+      (sylvesterVecCoeff m n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
+    supplied complex right eigenpair for the complexified real factors gives a
+    unique vectorized real Sylvester coefficient solution for every right-hand
+    side. -/
+theorem existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j)))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ∃! x : Prod (Fin n) (Fin m) -> Real,
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c := by
+  exact
+    existsUnique_finiteMatrix_mulVec_of_det_ne_zero
+      (sylvesterVecCoeff m n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
+      c
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): no common
+    supplied complex right eigenpair for the complexified real factors gives a
+    unique vectorized real Sylvester coefficient solution whose witness is
+    Mathlib's nonsingular-inverse vector formula. -/
+theorem existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j)))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c ∧
+        x = Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c := by
+  exact
+    existsUnique_finiteMatrix_nonsingInv_mulVec_solution_of_det_ne_zero
+      (sylvesterVecCoeff m n A B)
+      (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
+      c
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors makes the real Sylvester vec coefficient action
+    injective. -/
+theorem sylvesterVecCoeff_mulVec_injective_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    Function.Injective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    sylvesterVecCoeff_mulVec_injective_of_no_common_complex_eigenpair
+      m n A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors gives the exact zero-kernel characterization for
+    the real Sylvester vec coefficient. -/
+theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (x : Prod (Fin n) (Fin m) -> Real) :
+    Matrix.mulVec (sylvesterVecCoeff m n A B) x = 0 <-> x = 0 := by
+  exact
+    sylvesterVecCoeff_mulVec_eq_zero_iff_of_no_common_complex_eigenpair
+      m n A B hno x
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors makes the real Sylvester vec coefficient action
+    surjective. -/
+theorem sylvesterVecCoeff_mulVec_surjective_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    Function.Surjective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    sylvesterVecCoeff_mulVec_surjective_of_no_common_complex_eigenpair
+      m n A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors makes the real Sylvester vec coefficient solve
+    bijective. -/
+theorem sylvesterVecCoeff_mulVec_bijective_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    Function.Bijective (Matrix.mulVec (sylvesterVecCoeff m n A B)) := by
+  exact
+    sylvesterVecCoeff_mulVec_bijective_of_no_common_complex_eigenpair
+      m n A B hno
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors gives a unique vectorized real Sylvester
+    coefficient solution for every right-hand side. -/
+theorem existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c := by
+  exact
+    existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair
+      m n A B hno c
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors gives a unique vectorized solution whose witness
+    is Mathlib's nonsingular-inverse vector formula. -/
+theorem existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c ∧
+        x = Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c := by
+  exact
+    existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_eigenpair
+      m n A B hno c
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the named no-common-complex-right-eigenvalue
+    real vec/Kronecker unique-solve route. -/
+theorem H16_eq16_3_existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c :=
+  existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_right_eigenvalue
+    m n A B hno c
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the named no-common-complex-right-eigenvalue
+    real vec/Kronecker unique-solve route with the explicit nonsingular-inverse
+    vector formula. -/
+theorem H16_eq16_3_existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (c : Prod (Fin n) (Fin m) -> Real) :
+    ExistsUnique fun x : Prod (Fin n) (Fin m) -> Real =>
+      Matrix.mulVec (sylvesterVecCoeff m n A B) x = c ∧
+        x = Matrix.mulVec (Inv.inv (sylvesterVecCoeff m n A B)) c :=
+  existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_right_eigenvalue
+    m n A B hno c
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.6): no common
+    supplied complex right eigenpair for the complexified real factors gives a
+    unique exact real Sylvester matrix solution for every right-hand side. -/
+theorem existsUnique_isSylvesterSolutionRect_of_no_common_complex_eigenpair
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hno : ∀ μ : Complex,
+      ¬ ((∃ y : Fin m → Complex,
+            y ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex A) y = fun i => μ * y i) ∧
+          (∃ z : Fin n → Complex,
+            z ≠ 0 ∧ Matrix.mulVec (realMatrixToComplex B) z = fun j => μ * z j))) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  obtain ⟨x, hx, huniq⟩ :=
+    existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair
+      m n A B hno (Matrix.vec C)
+  obtain ⟨X, hXvec⟩ := Matrix.vec_bijective.surjective x
+  refine ⟨X, ?_, ?_⟩
+  · exact
+      (sylvester_vec_system_iff_solution m n A B C X).mp
+        (by rw [hXvec]; exact hx)
+  · intro Y hY
+    apply Matrix.vec_inj.mp
+    have hYvec :
+        Matrix.mulVec (sylvesterVecCoeff m n A B) (Matrix.vec Y) =
+          Matrix.vec C :=
+      (sylvester_vec_system_iff_solution m n A B C Y).mpr hY
+    rw [huniq (Matrix.vec Y) hYvec, hXvec]
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.6), named
+    spectral-separation form: no common complex right eigenvalue for the
+    complexified real factors gives a unique exact real Sylvester matrix
+    solution for every right-hand side. -/
+theorem existsUnique_isSylvesterSolutionRect_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  exact existsUnique_isSylvesterSolutionRect_of_no_common_complex_eigenpair
+    m n A B C hno
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the named no-common-complex-right-eigenvalue
+    exact real Sylvester matrix unique-solve route. -/
+theorem H16_eq16_3_existsUnique_isSylvesterSolutionRect_of_no_common_complex_right_eigenvalue
+    (m n : Nat) (A : RMatFn m m) (B : RMatFn n n) (C : RMatFn m n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_no_common_complex_right_eigenvalue
+    m n A B C hno
 
 /-- A concrete left inverse and operator-2 radius for the printed Sylvester
     vec/Kronecker coefficient gives its sigma-min lower-bound route directly,
@@ -2183,6 +2488,246 @@ theorem sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf (n : Nat)
     sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26):
+    source `SepLowerBound` data supplies the internally chosen real-Schur
+    active-block determinant package by way of the square vec/Kronecker
+    determinant route. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound
+    (n : Nat)
+    (A B : RMatFn n n) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+      (pA : Fin n -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      (forall p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsAdjacentQuasiTriangularBlockFn n S p q /\
+          Not (Matrix.det (sylvesterTwoColumnBlockCoeff n n R S p q) = 0)) := by
+  exact
+    sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_det_ne_zero
+      n n A B
+      (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26),
+    source-numbered alias for the exact real-Schur active-block determinant
+    package from source `SepLowerBound` data. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26):
+    a positive lower bound on the exact `sylvesterSepInf` model supplies the
+    internally chosen real-Schur active-block determinant package through the
+    source `SepLowerBound` bridge. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_pos_le_sylvesterSepInf
+    (n : Nat)
+    (A B : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+      (pA : Fin n -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      (forall p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsAdjacentQuasiTriangularBlockFn n S p q /\
+          Not (Matrix.det (sylvesterTwoColumnBlockCoeff n n R S p q) = 0)) := by
+  exact
+    sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound
+      n A B sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26),
+    source-numbered alias for the exact real-Schur active-block determinant
+    package from a positive lower bound on `sylvesterSepInf`. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_pos_le_sylvesterSepInf :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26):
+    a source `SepLowerBound` certificate feeds the exact real-Schur generated
+    recursive-candidate route by first making the square vec/Kronecker
+    Sylvester coefficient nonsingular.  This is an exact arithmetic bridge, not
+    rounded Bartels-Stewart arithmetic or estimator production. -/
+theorem exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_sepLowerBound
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+        (pA : Fin n -> Nat) (pB : Fin n -> Nat) (X : RMatFn n n),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula n n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect n n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_det_ne_zero
+    n n A B C
+    (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26):
+    original-coordinate unique solvability from a source `SepLowerBound`
+    certificate and the exact real-Schur generated recursive-candidate route. -/
+theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound_generated_step_formula_witness
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_det_ne_zero_generated_step_formula_witness
+    n n A B C
+    (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26),
+    source-numbered alias for the exact real-Schur generated-step witness from
+    a source `SepLowerBound` certificate. -/
+theorem H16_eq16_4_8_exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_sepLowerBound
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+        (pA : Fin n -> Nat) (pB : Fin n -> Nat) (X : RMatFn n n),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula n n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect n n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_sepLowerBound
+    n A B C sigma hSep
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26),
+    source-numbered alias for original-coordinate unique solvability from a
+    source `SepLowerBound` certificate. -/
+theorem H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound_generated_step_formula_witness
+    n A B C sigma hSep
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26):
+    a positive lower bound on the exact `sylvesterSepInf` model feeds the
+    exact real-Schur generated recursive-candidate route through the
+    `SepLowerBound` bridge. -/
+theorem exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_pos_le_sylvesterSepInf
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+        (pA : Fin n -> Nat) (pB : Fin n -> Nat) (X : RMatFn n n),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula n n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect n n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_sepLowerBound
+    n A B C sigma
+    (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26):
+    original-coordinate unique solvability from a positive lower bound on the
+    exact `sylvesterSepInf` model and the exact real-Schur generated route. -/
+theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_pos_le_sylvesterSepInf_generated_step_formula_witness
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound_generated_step_formula_witness
+    n A B C sigma
+    (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26),
+    source-numbered alias for the exact real-Schur generated-step witness from
+    a positive lower bound on `sylvesterSepInf`. -/
+theorem H16_eq16_4_8_exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_pos_le_sylvesterSepInf
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+        (pA : Fin n -> Nat) (pB : Fin n -> Nat) (X : RMatFn n n),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula n n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect n n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_pos_le_sylvesterSepInf
+    n A B C sigma hsigma hle
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26),
+    source-numbered alias for original-coordinate unique solvability from a
+    positive lower bound on `sylvesterSepInf`. -/
+theorem H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_pos_le_sylvesterSepInf
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_pos_le_sylvesterSepInf_generated_step_formula_witness
+    n A B C sigma hsigma hle
+
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
     a supplied `SepLowerBound` certificate gives the exact trivial-kernel
     statement for the vectorized Sylvester coefficient. -/
@@ -2432,6 +2977,102 @@ theorem sylvesterVecCoeff_det_ne_zero_of_operator_sigmaMin
     (sylvesterVecCoeff n n A B).det ≠ 0 := by
   have hSep := SepLowerBound_sylvester_of_sigmaMin n A B sigma hsigma hSigmaMin
   exact sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.25)-(16.26): a Sylvester operator sigma-min certificate supplies the
+    internally chosen real-Schur active-block determinant package through the
+    source `SepLowerBound` bridge. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_operator_sigmaMin
+    (n : Nat) (A B : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : RMatFn n n,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+      (pA : Fin n -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      (forall p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsAdjacentQuasiTriangularBlockFn n S p q /\
+          Not (Matrix.det (sylvesterTwoColumnBlockCoeff n n R S p q) = 0)) := by
+  exact
+    sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound
+      n A B sigma
+      (SepLowerBound_sylvester_of_sigmaMin n A B sigma hsigma hSigmaMin)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.25)-(16.26): an operator sigma-min certificate supplies a real-Schur
+    generated-step formula witness and transfers it back to the original
+    Sylvester equation. -/
+theorem exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_operator_sigmaMin
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : RMatFn n n,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+        (pA : Fin n -> Nat) (pB : Fin n -> Nat) (X : RMatFn n n),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula n n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect n n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_sepLowerBound
+    n A B C sigma
+    (SepLowerBound_sylvester_of_sigmaMin n A B sigma hsigma hSigmaMin)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.25)-(16.26): the operator sigma-min certificate yields uniqueness of
+    the original Sylvester solution via the generated real-Schur witness. -/
+theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_operator_sigmaMin_generated_step_formula_witness
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : RMatFn n n,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound_generated_step_formula_witness
+    n A B C sigma
+    (SepLowerBound_sylvester_of_sigmaMin n A B sigma hsigma hSigmaMin)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.25)-(16.26): source-numbered alias for the operator-sigma-min route to
+    the internally chosen real-Schur active-block determinant package. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_operator_sigmaMin :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.25)-(16.26): source-numbered alias for the operator-sigma-min route to
+    a real-Schur generated-step original solution witness. -/
+alias H16_eq16_4_8_exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_operator_sigmaMin :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.25)-(16.26): source-numbered alias for the operator-sigma-min route to
+    original-coordinate unique solvability via the generated real-Schur
+    witness. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_operator_sigmaMin :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_operator_sigmaMin_generated_step_formula_witness
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     a Sylvester operator sigma-min certificate gives the exact trivial-kernel
@@ -3173,6 +3814,107 @@ theorem SepLowerBound_of_vecCoeff_sigmaMin (n : Nat)
     sepLowerBound_of_sylvesterOp_sigmaMin n A B sigma hsigma
       (sylvesterOp_sigmaMin_of_vecCoeff_sigmaMin n A B sigma hCoeff)
 
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): a concrete vectorized Sylvester coefficient sigma-min
+    certificate supplies the internally chosen real-Schur active-block
+    determinant package through the source `SepLowerBound` bridge. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_sigmaMin
+    (n : Nat) (A B : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x)) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+      (pA : Fin n -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      (forall p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsAdjacentQuasiTriangularBlockFn n S p q /\
+          Not (Matrix.det (sylvesterTwoColumnBlockCoeff n n R S p q) = 0)) := by
+  exact
+    sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound
+      n A B sigma
+      (SepLowerBound_of_vecCoeff_sigmaMin n A B sigma hsigma hCoeff)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): a concrete vectorized Sylvester coefficient sigma-min
+    certificate supplies a real-Schur generated-step formula witness and
+    transfers it back to the original Sylvester equation. -/
+theorem exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_sigmaMin
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x)) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+        (pA : Fin n -> Nat) (pB : Fin n -> Nat) (X : RMatFn n n),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula n n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect n n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_sepLowerBound
+    n A B C sigma
+    (SepLowerBound_of_vecCoeff_sigmaMin n A B sigma hsigma hCoeff)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): the concrete vectorized Sylvester coefficient sigma-min
+    certificate yields uniqueness of the original Sylvester solution via the
+    generated real-Schur witness. -/
+theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_sigmaMin_generated_step_formula_witness
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x)) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound_generated_step_formula_witness
+    n A B C sigma
+    (SepLowerBound_of_vecCoeff_sigmaMin n A B sigma hsigma hCoeff)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete vec-coefficient
+    sigma-min route to the internally chosen real-Schur active-block
+    determinant package. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_sigmaMin :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete vec-coefficient
+    sigma-min route to a real-Schur generated-step original solution witness. -/
+alias H16_eq16_4_8_exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_sigmaMin :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete vec-coefficient
+    sigma-min route to original-coordinate unique solvability via the generated
+    real-Schur witness. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_sigmaMin :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_sigmaMin_generated_step_formula_witness
+
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
     in positive dimension, a positive lower bound for the concrete vectorized
     Sylvester coefficient lower-bounds the exact `sep` infimum. -/
@@ -3218,6 +3960,110 @@ theorem SepLowerBound_of_vecCoeff_gram_eigenvalues (n : Nat)
       (Real.sqrt_pos.mpr hlam)
       (sylvesterOp_sigmaMin_of_vecCoeff_gram_eigenvalues n A B
         (le_of_lt hlam) hEig)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): a positive Gram-eigenvalue lower bound for the concrete
+    vectorized Sylvester coefficient supplies the internally chosen real-Schur
+    active-block determinant package through the source `SepLowerBound`
+    bridge. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_gram_eigenvalues
+    (n : Nat) (A B : RMatFn n n) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+      (pA : Fin n -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      (forall p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsAdjacentQuasiTriangularBlockFn n S p q /\
+          Not (Matrix.det (sylvesterTwoColumnBlockCoeff n n R S p q) = 0)) := by
+  exact
+    sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound
+      n A B (Real.sqrt lam)
+      (SepLowerBound_of_vecCoeff_gram_eigenvalues n A B hlam hEig)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): a positive Gram-eigenvalue lower bound for the concrete
+    vectorized Sylvester coefficient supplies a real-Schur generated-step
+    formula witness and transfers it back to the original Sylvester equation. -/
+theorem exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_gram_eigenvalues
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+        (pA : Fin n -> Nat) (pB : Fin n -> Nat) (X : RMatFn n n),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula n n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect n n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_sepLowerBound
+    n A B C (Real.sqrt lam)
+    (SepLowerBound_of_vecCoeff_gram_eigenvalues n A B hlam hEig)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): the concrete Gram-eigenvalue certificate yields uniqueness
+    of the original Sylvester solution via the generated real-Schur witness. -/
+theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_gram_eigenvalues_generated_step_formula_witness
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) {lam : Real} (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound_generated_step_formula_witness
+    n A B C (Real.sqrt lam)
+    (SepLowerBound_of_vecCoeff_gram_eigenvalues n A B hlam hEig)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete Gram-eigenvalue
+    route to the internally chosen real-Schur active-block determinant
+    package. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_gram_eigenvalues :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete Gram-eigenvalue
+    route to a real-Schur generated-step original solution witness. -/
+alias H16_eq16_4_8_exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_gram_eigenvalues :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete Gram-eigenvalue
+    route to original-coordinate unique solvability via the generated
+    real-Schur witness. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_gram_eigenvalues :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_gram_eigenvalues_generated_step_formula_witness
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
     in positive dimension, a positive Gram-eigenvalue lower bound for the
@@ -3274,6 +4120,113 @@ theorem SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
   exact
     sepLowerBound_of_sylvesterOp_sigmaMin n A B (1 / M)
       (one_div_pos.mpr hM) hOp
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): a supplied concrete left inverse and finite operator norm
+    bound for the vectorized Sylvester coefficient supplies the internally
+    chosen real-Schur active-block determinant package through the source
+    `SepLowerBound` bridge. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A B : RMatFn n n)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+      (pA : Fin n -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      (forall p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsAdjacentQuasiTriangularBlockFn n S p q /\
+          Not (Matrix.det (sylvesterTwoColumnBlockCoeff n n R S p q) = 0)) := by
+  exact
+    sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound
+      n A B (1 / M)
+      (SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A B Pinv hM hLeft hPinv)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): a supplied concrete left inverse and finite operator norm
+    bound for the vectorized Sylvester coefficient supplies a real-Schur
+    generated-step formula witness and transfers it back to the original
+    Sylvester equation. -/
+theorem exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+        (pA : Fin n -> Nat) (pB : Fin n -> Nat) (X : RMatFn n n),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula n n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect n n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_sepLowerBound
+    n A B C (1 / M)
+    (SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+      n A B Pinv hM hLeft hPinv)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): the concrete left-inverse finite-op-norm certificate
+    yields uniqueness of the original Sylvester solution via the generated
+    real-Schur witness. -/
+theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_left_inverse_finiteOpNorm2Le_generated_step_formula_witness
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound_generated_step_formula_witness
+    n A B C (1 / M)
+    (SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+      n A B Pinv hM hLeft hPinv)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete left-inverse
+    finite-op-norm route to the internally chosen real-Schur active-block
+    determinant package. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete left-inverse
+    finite-op-norm route to a real-Schur generated-step original solution
+    witness. -/
+alias H16_eq16_4_8_exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete left-inverse
+    finite-op-norm route to original-coordinate unique solvability via the
+    generated real-Schur witness. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_left_inverse_finiteOpNorm2Le_generated_step_formula_witness
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
     in positive dimension, a supplied concrete left inverse for the printed

@@ -1395,6 +1395,168 @@ theorem sylvester_practical_error_bound_fl_of_left_inverse (fp : FPModel)
       hXhat
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), spectral-separation floating-point residual endpoint:
+    if the entrywise complexifications of `A` and `B` have no common supplied
+    complex right eigenvalue, then the floating-point residual computation
+    `flSylvesterResidualRect` and budget `flSylvesterResidualBudget` feed the
+    practical relative max-entry forward-error bound.  Scope: this models only
+    the residual computation in floating point, not the solve algorithm that
+    produced `Xhat`. -/
+theorem sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue
+    (fp : FPModel) (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat : RMatFn m n)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B)
+          (flSylvesterResidualRect fp m n A B C Xhat)
+          (flSylvesterResidualBudget fp m n A B C Xhat)) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate
+      m n A B C X Xhat
+      (flSylvesterResidualRect fp m n A B C Xhat)
+      (flSylvesterResidualBudget fp m n A B C Xhat)
+      hno hX
+      (isSylvesterComputedResidualBudget_fl fp m n A B C Xhat hm hn)
+      hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), source-numbered alias for the no-common-complex-spectrum
+    floating-point residual endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue :=
+  sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), spectral-separation floating-point scalar endpoint:
+    after the no-common complex spectrum certificate supplies the exact inverse
+    budget, a scalar cap on the floating residual practical budget gives the
+    source-shaped `eta / ||Xhat||` relative bound. -/
+theorem sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_scalar
+    (fp : FPModel) (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n) (C X Xhat : RMatFn m n)
+    (eta : Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B)
+          (flSylvesterResidualRect fp m n A B C Xhat)
+          (flSylvesterResidualBudget fp m n A B C Xhat) p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_scalar
+      m n A B C X Xhat
+      (flSylvesterResidualRect fp m n A B C Xhat)
+      (flSylvesterResidualBudget fp m n A B C Xhat)
+      eta hno hX
+      (isSylvesterComputedResidualBudget_fl fp m n A B C Xhat hm hn)
+      heta hcomponent hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), spectral-separation floating-point monotone endpoint:
+    componentwise larger inverse and residual-budget inputs preserve the
+    practical relative bound for the floating residual computation.  This is an
+    estimator-ready adapter, not an estimator proof. -/
+theorem sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_mono
+    (fp : FPModel) (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat' Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      |flSylvesterResidualRect fp m n A B C Xhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j,
+      flSylvesterResidualBudget fp m n A B C Xhat i j <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_mono
+      m n A B C X Xhat
+      (flSylvesterResidualRect fp m n A B C Xhat) Rhat'
+      (flSylvesterResidualBudget fp m n A B C Xhat) Ru'
+      PinvAbs' hno hX
+      (isSylvesterComputedResidualBudget_fl fp m n A B C Xhat hm hn)
+      hPinvAbs_le hRhat hRu_le hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), spectral-separation floating-point monotone scalar endpoint:
+    after componentwise estimator enlargement, a scalar cap on the enlarged
+    practical budget gives the relative max-entry forward-error bound. -/
+theorem sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_mono_scalar
+    (fp : FPModel) (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (C X Xhat Rhat' Ru' : RMatFn m n)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (eta : Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hm : gammaValid fp (m + 2)) (hn : gammaValid fp (n + 1))
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hRhat : forall i j,
+      |flSylvesterResidualRect fp m n A B C Xhat i j| <= |Rhat' i j|)
+    (hRu_le : forall i j,
+      flSylvesterResidualBudget fp m n A B C Xhat i j <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  exact
+    sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_mono_scalar
+      m n A B C X Xhat
+      (flSylvesterResidualRect fp m n A B C Xhat) Rhat'
+      (flSylvesterResidualBudget fp m n A B C Xhat) Ru'
+      PinvAbs' eta hno hX
+      (isSylvesterComputedResidualBudget_fl fp m n A B C Xhat hm hn)
+      hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), source-numbered alias for the scalar no-common-complex-spectrum
+    floating-point residual endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_scalar :=
+  sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_scalar
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), source-numbered alias for the monotone no-common-complex-spectrum
+    floating-point residual endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_mono :=
+  sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_mono
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
+    eq (16.29), source-numbered alias for the monotone scalar
+    no-common-complex-spectrum floating-point residual endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_mono_scalar :=
+  sylvester_practical_error_bound_fl_of_no_common_complex_right_eigenvalue_mono_scalar
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., §16.4,
     eq (16.29), square arbitrary-coefficient determinant endpoint:
     nonsingularity of the vec/Kronecker Sylvester coefficient discharges the
     inverse left-inverse hypothesis in the floating-point practical residual
@@ -4877,6 +5039,54 @@ theorem lyapunov_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_b
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
     Section 16.4, equation (16.29): source-numbered alias for the Sylvester
     Frobenius relative-error endpoint from a raw computed-residual budget and
+    a supplied operator sigma-min lower bound. -/
+theorem H16_eq16_29_sylvester_relative_error_le_of_operator_sigmaMin_computed_residual_budget
+    (n : Nat)
+    (A B C X Xhat Rhat Ru : RMatFn n n) (sigma eta : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y))
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_operator_sigmaMin_computed_residual_budget
+      n A B C X Xhat Rhat Ru sigma eta hsigma hSigmaMin
+      hX hRu hRhat hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered alias for the Lyapunov
+    Frobenius relative-error endpoint from a raw computed-residual budget and
+    a supplied Lyapunov operator sigma-min lower bound. -/
+theorem H16_eq16_29_lyapunov_relative_error_le_of_operator_sigmaMin_computed_residual_budget
+    (n : Nat)
+    (A C X Xhat Rhat Ru : RMatFn n n) (sigma eta : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : Fin n -> Fin n -> Real,
+      sigma * frobNorm Y <= frobNorm (lyapunovOp n A Y))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hRhat : forall i j,
+      |lyapunovResidual n A C Xhat i j - Rhat i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    lyapunov_relative_error_le_of_operator_sigmaMin_computed_residual_budget
+      n A C X Xhat Rhat Ru sigma eta hsigma hSigmaMin
+      hX hRu hRhat hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered alias for the Sylvester
+    Frobenius relative-error endpoint from a raw computed-residual budget and
     a `SepLowerBound` certificate. -/
 theorem H16_eq16_29_sylvester_relative_error_le_of_sepLowerBound_computed_residual_budget
     (n : Nat)
@@ -4960,6 +5170,106 @@ theorem H16_eq16_29_lyapunov_relative_error_le_of_pos_le_sylvesterSepInf_compute
       n A C X Xhat Rhat Ru hsigma hle hX hRu hRhat hX_pos hResidualCap
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29), Sylvester Frobenius residual-error-model endpoint:
+    an explicit `Rhat = residual + dR` model derives the raw residual-budget
+    hypothesis under a source `SepLowerBound(A,B)` certificate. -/
+theorem sylvester_relative_error_le_of_sepLowerBound_computed_residual_error_model
+    (n : Nat)
+    (A B C X Xhat Rhat Ru dR : RMatFn n n) {sigma eta : Real}
+    (hSep : SepLowerBound n A B sigma)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect n n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  have hRhatBudget : forall i j,
+      |sylvesterResidualRect n n A B C Xhat i j - Rhat i j| <= Ru i j := by
+    intro i j
+    have hdiff :
+        sylvesterResidualRect n n A B C Xhat i j - Rhat i j = -dR i j := by
+      rw [hRhat i j]
+      ring
+    rw [hdiff, abs_neg]
+    exact hdR i j
+  exact
+    sylvester_relative_error_le_of_sepLowerBound_computed_residual_budget
+      n A B C X Xhat Rhat Ru hSep hX hRu hRhatBudget hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered alias for the Sylvester
+    Frobenius relative-error endpoint from an explicit residual-error model
+    and a `SepLowerBound(A,B)` certificate. -/
+theorem H16_eq16_29_sylvester_relative_error_le_of_sepLowerBound_computed_residual_error_model
+    (n : Nat)
+    (A B C X Xhat Rhat Ru dR : RMatFn n n) {sigma eta : Real}
+    (hSep : SepLowerBound n A B sigma)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect n n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_sepLowerBound_computed_residual_error_model
+      n A B C X Xhat Rhat Ru dR hSep hX hRhat hRu hdR hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29), Sylvester Frobenius residual-error-model endpoint:
+    a positive lower bound on `sylvesterSepInf` supplies the separation
+    certificate for the explicit computed-residual model. -/
+theorem sylvester_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_error_model
+    (n : Nat)
+    (A B C X Xhat Rhat Ru dR : RMatFn n n) {sigma eta : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect n n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_sepLowerBound_computed_residual_error_model
+      n A B C X Xhat Rhat Ru dR
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
+      hX hRhat hRu hdR hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered alias for the Sylvester
+    Frobenius relative-error endpoint from an explicit residual-error model
+    and a positive lower bound on `sylvesterSepInf`. -/
+theorem H16_eq16_29_sylvester_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_error_model
+    (n : Nat)
+    (A B C X Xhat Rhat Ru dR : RMatFn n n) {sigma eta : Real}
+    (hsigma : 0 < sigma) (hle : sigma <= sylvesterSepInf n A B)
+    (hX : IsSylvesterSolutionRect n n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect n n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_error_model
+      n A B C X Xhat Rhat Ru dR hsigma hle hX hRhat hRu hdR
+      hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, equation (16.29), Lyapunov Frobenius residual-error-model endpoint:
     an explicit `Rhat = residual + dR` model derives the raw residual-budget
     hypothesis under a source `SepLowerBound(A,-A^T)` certificate. -/
@@ -4989,6 +5299,28 @@ theorem lyapunov_relative_error_le_of_sepLowerBound_computed_residual_error_mode
   exact
     lyapunov_relative_error_le_of_sepLowerBound_computed_residual_budget
       n A C X Xhat Rhat Ru hSep hX hRu hRhatBudget hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered alias for the Lyapunov
+    Frobenius relative-error endpoint from an explicit residual-error model and
+    a `SepLowerBound(A,-A^T)` certificate. -/
+theorem H16_eq16_29_lyapunov_relative_error_le_of_sepLowerBound_computed_residual_error_model
+    (n : Nat)
+    (A C X Xhat Rhat Ru dR : RMatFn n n) {sigma eta : Real}
+    (hSep : SepLowerBound n A (fun i j => -matTranspose A i j) sigma)
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRhat : forall i j,
+      Rhat i j = lyapunovResidual n A C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    lyapunov_relative_error_le_of_sepLowerBound_computed_residual_error_model
+      n A C X Xhat Rhat Ru dR hSep hX hRhat hRu hdR hX_pos hResidualCap
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, eq (16.29), square arbitrary-coefficient raw residual-budget

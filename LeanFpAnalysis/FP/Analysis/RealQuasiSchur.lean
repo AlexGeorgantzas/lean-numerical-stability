@@ -30,6 +30,19 @@ open Module
 
 namespace LeanFpAnalysis.FP
 
+/-- Spectral certificates for adjacent `2 x 2` blocks in a constructed real
+    quasi-Schur block map.  For every adjacent pair in the same block, the
+    ordered principal block has no real eigenline, hence its discriminant is
+    negative.  This is the certificate layer needed before exporting
+    source-facing real `2 x 2` Schur block data from the recursive construction. -/
+def HasRealQuasiSchurTwoBlockSpectral {n : ℕ}
+    (R : Matrix (Fin n) (Fin n) ℝ) (pmap : Fin n → ℕ) : Prop :=
+  ∀ p q : Fin n,
+    (q : ℕ) = (p : ℕ) + 1 →
+    pmap p = pmap q →
+      MatrixNoRealEigenline (principalTwoBlock R p q) ∧
+        (R p p - R q q) ^ 2 + 4 * R p q * R q p < 0
+
 namespace RealQuasiSchurAux
 
 /-! ### The quasi-upper-triangular predicate (Higham (16.4))
@@ -294,6 +307,330 @@ lemma exists_orthogonal_frame (W : Submodule ℝ (Fin n → ℝ)) (d : ℕ)
     rw [LinearMap.range_eq_top_of_surjective _ (euclEquiv n).surjective]
     exact le_top
 
+lemma eq_zero_of_mem_span_pair_orthogonal_cols_dot_eq_zero
+    {Q : Matrix (Fin n) (Fin n) ℝ} {p q : Fin n}
+    (hQ : Q ∈ Matrix.orthogonalGroup (Fin n) ℝ) (hpq : p ≠ q)
+    {v : Fin n → ℝ}
+    (hv : v ∈
+      Submodule.span ℝ
+        ({(fun k : Fin n => Q k p), (fun k : Fin n => Q k q)}
+          : Set (Fin n → ℝ)))
+    (hp : (fun k : Fin n => Q k p) ⬝ᵥ v = 0)
+    (hq : (fun k : Fin n => Q k q) ⬝ᵥ v = 0) :
+    v = 0 := by
+  rcases (Submodule.mem_span_pair.mp hv) with ⟨a, b, hrepr⟩
+  have ha : a = 0 := by
+    have hdot :=
+      congrArg (fun z : Fin n → ℝ => (fun k : Fin n => Q k p) ⬝ᵥ z) hrepr
+    change (fun k : Fin n => Q k p) ⬝ᵥ
+        ((a • fun k : Fin n => Q k p) + b • fun k : Fin n => Q k q) =
+      (fun k : Fin n => Q k p) ⬝ᵥ v at hdot
+    rw [hp] at hdot
+    simpa [dotProduct_add, dotProduct_smul, orthogonal_col_dotProduct hQ, hpq,
+      Ne.symm hpq] using hdot
+  have hb : b = 0 := by
+    have hdot :=
+      congrArg (fun z : Fin n → ℝ => (fun k : Fin n => Q k q) ⬝ᵥ z) hrepr
+    change (fun k : Fin n => Q k q) ⬝ᵥ
+        ((a • fun k : Fin n => Q k p) + b • fun k : Fin n => Q k q) =
+      (fun k : Fin n => Q k q) ⬝ᵥ v at hdot
+    rw [hq] at hdot
+    simpa [dotProduct_add, dotProduct_smul, orthogonal_col_dotProduct hQ, hpq,
+      Ne.symm hpq] using hdot
+  rw [← hrepr, ha, hb]
+  simp
+
+/-- If two orthogonal columns span an invariant plane with no real eigenline for
+    `A`, then the corresponding principal `2 x 2` block of `Qᵀ * A * Q` has no
+    real eigenline. This is the source-side bridge that lets the quasi-Schur
+    deflation carry irreducibility data from an invariant plane to the explicit
+    diagonal block seen by Higham (16.4). -/
+lemma matrixNoRealEigenline_principalTwoBlock_of_invariant_noRealEigenline_columnSpan
+    (A Q : Matrix (Fin n) (Fin n) ℝ) {p q : Fin n}
+    (hQ : Q ∈ Matrix.orthogonalGroup (Fin n) ℝ) (hpq : p ≠ q)
+    (W : Submodule ℝ (Fin n → ℝ))
+    (hWspan :
+      Submodule.span ℝ
+        ({(fun k : Fin n => Q k p), (fun k : Fin n => Q k q)}
+          : Set (Fin n → ℝ)) = W)
+    (hWinv : ∀ w ∈ W, A.mulVecLin w ∈ W)
+    (hWno :
+      ∀ w ∈ W, w ≠ 0 →
+        ¬ ∃ nu : ℝ, A *ᵥ w = nu • w) :
+    LeanFpAnalysis.FP.MatrixNoRealEigenline
+      (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q) := by
+  intro x hx hEig
+  rcases hEig with ⟨nu, hnu⟩
+  let cp : Fin n → ℝ := fun k => Q k p
+  let cq : Fin n → ℝ := fun k => Q k q
+  let w : Fin n → ℝ := x 0 • cp + x 1 • cq
+  have hWspan' : Submodule.span ℝ ({cp, cq} : Set (Fin n → ℝ)) = W := by
+    simpa [cp, cq] using hWspan
+  have hw_span : w ∈ Submodule.span ℝ ({cp, cq} : Set (Fin n → ℝ)) := by
+    rw [Submodule.mem_span_pair]
+    exact ⟨x 0, x 1, rfl⟩
+  have hwW : w ∈ W := by
+    rw [← hWspan']
+    exact hw_span
+  have hdotp_w : cp ⬝ᵥ w = x 0 := by
+    simp [w, cp, cq, dotProduct_add, dotProduct_smul, orthogonal_col_dotProduct hQ, hpq]
+  have hdotq_w : cq ⬝ᵥ w = x 1 := by
+    simp [w, cp, cq, dotProduct_add, dotProduct_smul, orthogonal_col_dotProduct hQ,
+      Ne.symm hpq]
+  have hwne : w ≠ 0 := by
+    intro hzero
+    have hx0 : x 0 = 0 := by
+      have hdot := hdotp_w
+      rw [hzero, dotProduct_zero] at hdot
+      exact hdot.symm
+    have hx1 : x 1 = 0 := by
+      have hdot := hdotq_w
+      rw [hzero, dotProduct_zero] at hdot
+      exact hdot.symm
+    apply hx
+    funext k
+    fin_cases k <;> simp [hx0, hx1]
+  have hrow0 :
+      (Qᵀ * A * Q) p p * x 0 + (Qᵀ * A * Q) p q * x 1 = nu * x 0 := by
+    have hcoord := congrFun hnu (0 : Fin 2)
+    simpa [Matrix.mulVec, dotProduct, Fin.sum_univ_two, principalTwoBlock] using hcoord
+  have hrow1 :
+      (Qᵀ * A * Q) q p * x 0 + (Qᵀ * A * Q) q q * x 1 = nu * x 1 := by
+    have hcoord := congrFun hnu (1 : Fin 2)
+    simpa [Matrix.mulVec, dotProduct, Fin.sum_univ_two, principalTwoBlock] using hcoord
+  have hAw_dotp : cp ⬝ᵥ (A *ᵥ w) = nu * x 0 := by
+    calc
+      cp ⬝ᵥ (A *ᵥ w)
+          = x 0 * (cp ⬝ᵥ (A *ᵥ cp)) + x 1 * (cp ⬝ᵥ (A *ᵥ cq)) := by
+            simp [w, Matrix.mulVec_add, Matrix.mulVec_smul, dotProduct_add,
+              dotProduct_smul]
+      _ = (Qᵀ * A * Q) p p * x 0 + (Qᵀ * A * Q) p q * x 1 := by
+            rw [← conj_entry_eq_dotProduct A Q p p, ← conj_entry_eq_dotProduct A Q p q]
+            ring
+      _ = nu * x 0 := hrow0
+  have hAw_dotq : cq ⬝ᵥ (A *ᵥ w) = nu * x 1 := by
+    calc
+      cq ⬝ᵥ (A *ᵥ w)
+          = x 0 * (cq ⬝ᵥ (A *ᵥ cp)) + x 1 * (cq ⬝ᵥ (A *ᵥ cq)) := by
+            simp [w, Matrix.mulVec_add, Matrix.mulVec_smul, dotProduct_add,
+              dotProduct_smul]
+      _ = (Qᵀ * A * Q) q p * x 0 + (Qᵀ * A * Q) q q * x 1 := by
+            rw [← conj_entry_eq_dotProduct A Q q p, ← conj_entry_eq_dotProduct A Q q q]
+            ring
+      _ = nu * x 1 := hrow1
+  have hresW : A *ᵥ w - nu • w ∈ W := by
+    have hAwW : A *ᵥ w ∈ W := by
+      simpa [Matrix.mulVecLin_apply] using hWinv w hwW
+    exact W.sub_mem hAwW (W.smul_mem nu hwW)
+  have hres_span :
+      A *ᵥ w - nu • w ∈ Submodule.span ℝ ({cp, cq} : Set (Fin n → ℝ)) := by
+    rw [hWspan']
+    exact hresW
+  have hres_dotp : cp ⬝ᵥ (A *ᵥ w - nu • w) = 0 := by
+    rw [dotProduct_sub, dotProduct_smul, hAw_dotp, hdotp_w]
+    rw [smul_eq_mul]
+    ring
+  have hres_dotq : cq ⬝ᵥ (A *ᵥ w - nu • w) = 0 := by
+    rw [dotProduct_sub, dotProduct_smul, hAw_dotq, hdotq_w]
+    rw [smul_eq_mul]
+    ring
+  have hres_zero : A *ᵥ w - nu • w = 0 :=
+    eq_zero_of_mem_span_pair_orthogonal_cols_dot_eq_zero
+      hQ hpq (by simpa [cp, cq] using hres_span)
+      (by simpa [cp] using hres_dotp)
+      (by simpa [cq] using hres_dotq)
+  exact hWno w hwW hwne ⟨nu, sub_eq_zero.mp hres_zero⟩
+
+/-- A framed invariant plane with no real eigenline gives the negative
+    discriminant certificate for the corresponding principal `2 x 2` block of
+    `Qᵀ * A * Q`. -/
+lemma principalTwoBlock_disc_neg_of_invariant_noRealEigenline_columnSpan
+    (A Q : Matrix (Fin n) (Fin n) ℝ) {p q : Fin n}
+    (hQ : Q ∈ Matrix.orthogonalGroup (Fin n) ℝ) (hpq : p ≠ q)
+    (W : Submodule ℝ (Fin n → ℝ))
+    (hWspan :
+      Submodule.span ℝ
+        ({(fun k : Fin n => Q k p), (fun k : Fin n => Q k q)}
+          : Set (Fin n → ℝ)) = W)
+    (hWinv : ∀ w ∈ W, A.mulVecLin w ∈ W)
+    (hWno :
+      ∀ w ∈ W, w ≠ 0 →
+        ¬ ∃ nu : ℝ, A *ᵥ w = nu • w) :
+    ((Qᵀ * A * Q) p p - (Qᵀ * A * Q) q q) ^ 2 +
+      4 * (Qᵀ * A * Q) p q * (Qᵀ * A * Q) q p < 0 := by
+  exact
+    LeanFpAnalysis.FP.principalTwoBlock_disc_neg_of_matrixNoRealEigenline
+      (Qᵀ * A * Q) p q
+      (matrixNoRealEigenline_principalTwoBlock_of_invariant_noRealEigenline_columnSpan
+        A Q hQ hpq W hWspan hWinv hWno)
+
+/-- The span of the first two columns of an orthogonal frame, represented by the
+    `{c // c < 2}` index set used by `exists_orthogonal_frame`, is the ordinary
+    pair-span of the columns whose values are `0` and `1`. -/
+lemma span_frame_lt_two_eq_span_pair_of_val_zero_one
+    (Q : Matrix (Fin n) (Fin n) ℝ) {p q : Fin n}
+    (hp : (p : ℕ) = 0) (hq : (q : ℕ) = 1) :
+    Submodule.span ℝ
+        (Set.range
+          (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1))) =
+      Submodule.span ℝ
+        ({(fun k : Fin n => Q k p), (fun k : Fin n => Q k q)}
+          : Set (Fin n → ℝ)) := by
+  have hrange :
+      Set.range
+          (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1)) =
+        ({(fun k : Fin n => Q k p), (fun k : Fin n => Q k q)}
+          : Set (Fin n → ℝ)) := by
+    ext v
+    constructor
+    · rintro ⟨c, rfl⟩
+      have hc : (c.1 : ℕ) = 0 ∨ (c.1 : ℕ) = 1 := by omega
+      rcases hc with h0 | h1
+      · left
+        have hcp : c.1 = p := Fin.ext (by rw [h0, hp])
+        funext k
+        change Q k c.1 = Q k p
+        rw [hcp]
+      · right
+        have hcq : c.1 = q := Fin.ext (by rw [h1, hq])
+        funext k
+        change Q k c.1 = Q k q
+        rw [hcq]
+    · rintro (rfl | rfl)
+      · exact ⟨⟨p, by omega⟩, rfl⟩
+      · exact ⟨⟨q, by omega⟩, rfl⟩
+  rw [hrange]
+
+/-- The `d = 2` frame-span form of the invariant-plane bridge: if the first two
+    frame columns span a no-real-eigenline invariant plane, then the corresponding
+    principal block of `Qᵀ * A * Q` has no real eigenline. -/
+lemma matrixNoRealEigenline_principalTwoBlock_of_frameSpan_two
+    (A Q : Matrix (Fin n) (Fin n) ℝ) {p q : Fin n}
+    (hp : (p : ℕ) = 0) (hq : (q : ℕ) = 1)
+    (hQ : Q ∈ Matrix.orthogonalGroup (Fin n) ℝ)
+    (W : Submodule ℝ (Fin n → ℝ))
+    (hQspan :
+      Submodule.span ℝ
+        (Set.range
+          (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1))) = W)
+    (hWinv : ∀ w ∈ W, A.mulVecLin w ∈ W)
+    (hWno :
+      ∀ w ∈ W, w ≠ 0 →
+        ¬ ∃ nu : ℝ, A *ᵥ w = nu • w) :
+    LeanFpAnalysis.FP.MatrixNoRealEigenline
+      (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q) := by
+  have hpq : p ≠ q := by
+    intro h
+    have hval := congrArg (fun r : Fin n => (r : ℕ)) h
+    omega
+  have hpair_span :
+      Submodule.span ℝ
+          ({(fun k : Fin n => Q k p), (fun k : Fin n => Q k q)}
+            : Set (Fin n → ℝ)) = W := by
+    rw [← span_frame_lt_two_eq_span_pair_of_val_zero_one Q hp hq]
+    exact hQspan
+  exact
+    matrixNoRealEigenline_principalTwoBlock_of_invariant_noRealEigenline_columnSpan
+      A Q hQ hpq W hpair_span hWinv hWno
+
+/-- The `d = 2` frame-span form of the discriminant bridge for a no-real-eigenline
+    invariant plane. -/
+lemma principalTwoBlock_disc_neg_of_frameSpan_two
+    (A Q : Matrix (Fin n) (Fin n) ℝ) {p q : Fin n}
+    (hp : (p : ℕ) = 0) (hq : (q : ℕ) = 1)
+    (hQ : Q ∈ Matrix.orthogonalGroup (Fin n) ℝ)
+    (W : Submodule ℝ (Fin n → ℝ))
+    (hQspan :
+      Submodule.span ℝ
+        (Set.range
+          (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1))) = W)
+    (hWinv : ∀ w ∈ W, A.mulVecLin w ∈ W)
+    (hWno :
+      ∀ w ∈ W, w ≠ 0 →
+        ¬ ∃ nu : ℝ, A *ᵥ w = nu • w) :
+    ((Qᵀ * A * Q) p p - (Qᵀ * A * Q) q q) ^ 2 +
+      4 * (Qᵀ * A * Q) p q * (Qᵀ * A * Q) q p < 0 := by
+  exact
+    LeanFpAnalysis.FP.principalTwoBlock_disc_neg_of_matrixNoRealEigenline
+      (Qᵀ * A * Q) p q
+      (matrixNoRealEigenline_principalTwoBlock_of_frameSpan_two
+        A Q hp hq hQ W hQspan hWinv hWno)
+
+/-- A two-dimensional invariant subspace with no real eigenline can be framed by
+    the first two columns of an orthogonal matrix so that the leading principal
+    `2 x 2` block has both the no-real-eigenline and negative-discriminant
+    certificates. This packages the `d = 2` branch data before recursive
+    split/reindex threading. -/
+lemma exists_orthogonal_frame_two_principalBlock_noRealEigenline_disc_neg
+    (A : Matrix (Fin n) (Fin n) ℝ)
+    (W : Submodule ℝ (Fin n → ℝ))
+    (hd : finrank ℝ W = 2)
+    (hWinv : ∀ w ∈ W, A.mulVecLin w ∈ W)
+    (hWno :
+      ∀ w ∈ W, w ≠ 0 →
+        ¬ ∃ nu : ℝ, A *ᵥ w = nu • w) :
+    ∃ (Q : Matrix (Fin n) (Fin n) ℝ) (p q : Fin n),
+      Q ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+        (p : ℕ) = 0 ∧
+        (q : ℕ) = 1 ∧
+        Submodule.span ℝ
+          (Set.range
+            (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1))) = W ∧
+        LeanFpAnalysis.FP.MatrixNoRealEigenline
+          (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q) ∧
+        ((Qᵀ * A * Q) p p - (Qᵀ * A * Q) q q) ^ 2 +
+          4 * (Qᵀ * A * Q) p q * (Qᵀ * A * Q) q p < 0 := by
+  have hdn : 2 ≤ n := by
+    have hle : finrank ℝ W ≤ finrank ℝ (Fin n → ℝ) := Submodule.finrank_le W
+    rw [hd] at hle
+    simpa using hle
+  obtain ⟨Q, hQ, _hQmem, hQspan⟩ := exists_orthogonal_frame W 2 hd
+  let p : Fin n := ⟨0, by omega⟩
+  let q : Fin n := ⟨1, by omega⟩
+  have hp : (p : ℕ) = 0 := rfl
+  have hq : (q : ℕ) = 1 := rfl
+  have hno :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q) :=
+    matrixNoRealEigenline_principalTwoBlock_of_frameSpan_two
+      A Q hp hq hQ W hQspan hWinv hWno
+  have hdisc :
+      ((Qᵀ * A * Q) p p - (Qᵀ * A * Q) q q) ^ 2 +
+        4 * (Qᵀ * A * Q) p q * (Qᵀ * A * Q) q p < 0 :=
+    principalTwoBlock_disc_neg_of_frameSpan_two
+      A Q hp hq hQ W hQspan hWinv hWno
+  exact ⟨Q, p, q, hQ, hp, hq, hQspan, hno, hdisc⟩
+
+/-- Source-side peel data with the two-dimensional branch already framed as a
+    leading `2 x 2` block carrying no-real-eigenline and negative-discriminant
+    certificates. This is the nonrecursive input surface needed before the full
+    quasi-Schur recursion can export spectral data for its `2 x 2` blocks. -/
+lemma exists_invariant_subspace_dim_one_or_two_frame_twoBlock_spectral
+    {n : ℕ} (hn : 0 < n) (A : Matrix (Fin n) (Fin n) ℝ) :
+    ∃ W : Submodule ℝ (Fin n → ℝ),
+      (finrank ℝ W = 1 ∨
+        ∃ (Q : Matrix (Fin n) (Fin n) ℝ) (p q : Fin n),
+          finrank ℝ W = 2 ∧
+            Q ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+            (p : ℕ) = 0 ∧
+            (q : ℕ) = 1 ∧
+            Submodule.span ℝ
+              (Set.range
+                (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1))) = W ∧
+            LeanFpAnalysis.FP.MatrixNoRealEigenline
+              (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q) ∧
+            ((Qᵀ * A * Q) p p - (Qᵀ * A * Q) q q) ^ 2 +
+              4 * (Qᵀ * A * Q) p q * (Qᵀ * A * Q) q p < 0) ∧
+      ∀ w ∈ W, A.mulVecLin w ∈ W := by
+  obtain ⟨W, hbranch, hWinv⟩ :=
+    LeanFpAnalysis.FP.exists_real_invariant_subspace_dim_one_or_two_no_real_eigenline hn A
+  rcases hbranch with h1 | ⟨h2, hWno⟩
+  · exact ⟨W, Or.inl h1, hWinv⟩
+  · obtain ⟨Q, p, q, hQ, hp, hq, hQspan, hno, hdisc⟩ :=
+      exists_orthogonal_frame_two_principalBlock_noRealEigenline_disc_neg
+        A W h2 hWinv hWno
+    exact ⟨W, Or.inr ⟨Q, p, q, h2, hQ, hp, hq, hQspan, hno, hdisc⟩, hWinv⟩
+
 /-! ### Reindexing helpers: conjugation and orthogonality transport
 
 Transporting an orthogonal conjugation `Xᵀ A X` along an index equivalence
@@ -379,6 +716,33 @@ lemma splitEquiv_isLeft_iff {d m n : ℕ} (hnm : d + m = n) (i : Fin n) :
     have hval : d + (b : ℕ) = (i : ℕ) := splitEquiv_inr_val hnm hsum
     omega
 
+/-- `splitEquiv` sends an index whose value is `< d` to the corresponding left
+    summand.  This is the pointwise form of the leading-block side of the
+    variable-`d` deflation split. -/
+lemma splitEquiv_eq_inl_of_lt {d m n : ℕ} (hnm : d + m = n)
+    (i : Fin n) (hi : (i : ℕ) < d) :
+    splitEquiv hnm i = Sum.inl ⟨(i : ℕ), hi⟩ := by
+  rcases hsum : splitEquiv hnm i with a | b
+  · have hval := splitEquiv_inl_val hnm hsum
+    have ha : a = ⟨(i : ℕ), hi⟩ := Fin.ext (by simpa using hval)
+    rw [ha]
+  · have hval : d + (b : ℕ) = (i : ℕ) := splitEquiv_inr_val hnm hsum
+    omega
+
+/-- `splitEquiv` sends an index whose value is `d + a` to the corresponding
+    right summand.  This is the pointwise form of the trailing-block side of the
+    variable-`d` deflation split. -/
+lemma splitEquiv_eq_inr_of_eq_add {d m n : ℕ} (hnm : d + m = n)
+    (i : Fin n) (a : Fin m) (hi : (i : ℕ) = d + (a : ℕ)) :
+    splitEquiv hnm i = Sum.inr a := by
+  rcases hsum : splitEquiv hnm i with b | b
+  · have hval := splitEquiv_inl_val hnm hsum
+    have hb := b.2
+    omega
+  · have hval : d + (b : ℕ) = (i : ℕ) := splitEquiv_inr_val hnm hsum
+    have hba : b = a := Fin.ext (by omega)
+    rw [hba]
+
 /-! ### Block conjugation by the re-embedded trailing orthogonal matrix -/
 
 /-- Conjugating a block matrix `[[P, Bu], [0, D]]` (zero lower-left) by the block
@@ -394,6 +758,361 @@ lemma conj_embedBlock_eq {d m : ℕ} (P : Matrix (Fin d) (Fin d) ℝ)
   rw [Matrix.fromBlocks_transpose]
   rw [Matrix.fromBlocks_multiply, Matrix.fromBlocks_multiply]
   simp
+
+/-- Re-embedding a trailing orthogonal factor does not change entries whose row
+    and column are both in the leading block. -/
+lemma embedBlock_conj_apply_inl_inl {d m : ℕ}
+    (M : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ) (a b : Fin d) :
+    ((embedBlock (d := d) U)ᵀ * M * embedBlock (d := d) U) (Sum.inl a) (Sum.inl b) =
+      M (Sum.inl a) (Sum.inl b) := by
+  simp [embedBlock, Matrix.fromBlocks, Matrix.mul_apply, Matrix.one_apply]
+
+/-- Re-embedding a trailing orthogonal factor turns the trailing block into the
+    conjugated trailing block. -/
+lemma embedBlock_conj_apply_inr_inr {d m : ℕ}
+    (M : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ) (a b : Fin m) :
+    ((embedBlock (d := d) U)ᵀ * M * embedBlock (d := d) U) (Sum.inr a) (Sum.inr b) =
+      (Uᵀ * M.toBlocks₂₂ * U) a b := by
+  simp [embedBlock, Matrix.fromBlocks, Matrix.toBlocks₂₂, Matrix.mul_apply]
+
+/-- Trailing recursive conjugation leaves entries in the leading `d = 2` block
+    unchanged after transporting back from the split index. -/
+lemma trailing_conj_preserves_leading_entry
+    {m n : ℕ} (hnm : 2 + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {i j : Fin n} (hi : (i : ℕ) < 2) (hj : (j : ℕ) < 2) :
+    let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := 2) U)
+    (Qfullᵀ * A * Qfull) i j = (Qᵀ * A * Q) i j := by
+  let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+  let Q' : Matrix (Fin 2 ⊕ Fin m) (Fin 2 ⊕ Fin m) ℝ := Matrix.reindex e e Q
+  let A' : Matrix (Fin 2 ⊕ Fin m) (Fin 2 ⊕ Fin m) ℝ := Matrix.reindex e e A
+  let E : Matrix (Fin 2 ⊕ Fin m) (Fin 2 ⊕ Fin m) ℝ := embedBlock (d := 2) U
+  let V : Matrix (Fin 2 ⊕ Fin m) (Fin 2 ⊕ Fin m) ℝ := Q' * E
+  have hQfull :
+      (Matrix.reindex e.symm e.symm V)ᵀ * A * Matrix.reindex e.symm e.symm V =
+        Matrix.reindex e.symm e.symm (Vᵀ * A' * V) := by
+    have h := reindex_conj e.symm A' V
+    rw [show Matrix.reindex e.symm e.symm A' = A by
+      simp [A']] at h
+    exact h.symm
+  have hV :
+      Vᵀ * A' * V = Eᵀ * (Q'ᵀ * A' * Q') * E := by
+    dsimp [V]
+    rw [Matrix.transpose_mul]
+    simp only [mul_assoc]
+  have hQ' : Q'ᵀ * A' * Q' = Matrix.reindex e e (Qᵀ * A * Q) := by
+    exact (reindex_conj e A Q).symm
+  have hei : e i = Sum.inl ⟨(i : ℕ), hi⟩ := splitEquiv_eq_inl_of_lt hnm i hi
+  have hej : e j = Sum.inl ⟨(j : ℕ), hj⟩ := splitEquiv_eq_inl_of_lt hnm j hj
+  have hsym_i : e.symm (Sum.inl ⟨(i : ℕ), hi⟩) = i := by
+    rw [← hei]
+    exact e.symm_apply_apply i
+  have hsym_j : e.symm (Sum.inl ⟨(j : ℕ), hj⟩) = j := by
+    rw [← hej]
+    exact e.symm_apply_apply j
+  change (((Matrix.reindex e.symm e.symm V)ᵀ * A *
+      Matrix.reindex e.symm e.symm V) i j = (Qᵀ * A * Q) i j)
+  rw [hQfull]
+  simp only [Matrix.reindex_apply, Matrix.submatrix_apply]
+  change (Vᵀ * A' * V) (e i) (e j) = (Qᵀ * A * Q) i j
+  rw [hei, hej, hV, embedBlock_conj_apply_inl_inl, hQ']
+  simp [Matrix.reindex_apply, hsym_i, hsym_j]
+
+/-- Trailing recursive conjugation transports entries in the trailing block to
+    the conjugated recursive block after splitting by an arbitrary leading
+    dimension `d`.  This is the entrywise algebra needed before recursive
+    spectral certificates can be threaded through the Schur construction. -/
+lemma trailing_conj_preserves_trailing_entry
+    {d m n : ℕ} (hnm : d + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {i j : Fin n} {a b : Fin m}
+    (hi : (i : ℕ) = d + (a : ℕ)) (hj : (j : ℕ) = d + (b : ℕ)) :
+    let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := d) U)
+    (Qfullᵀ * A * Qfull) i j =
+      (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b := by
+  let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+  let Q' : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Matrix.reindex e e Q
+  let A' : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Matrix.reindex e e A
+  let E : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := embedBlock (d := d) U
+  let V : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Q' * E
+  have hQfull :
+      (Matrix.reindex e.symm e.symm V)ᵀ * A * Matrix.reindex e.symm e.symm V =
+        Matrix.reindex e.symm e.symm (Vᵀ * A' * V) := by
+    have h := reindex_conj e.symm A' V
+    rw [show Matrix.reindex e.symm e.symm A' = A by
+      simp [A']] at h
+    exact h.symm
+  have hV :
+      Vᵀ * A' * V = Eᵀ * (Q'ᵀ * A' * Q') * E := by
+    dsimp [V]
+    rw [Matrix.transpose_mul]
+    simp only [mul_assoc]
+  have hQ' : Q'ᵀ * A' * Q' = Matrix.reindex e e (Qᵀ * A * Q) := by
+    exact (reindex_conj e A Q).symm
+  have hei : e i = Sum.inr a := splitEquiv_eq_inr_of_eq_add hnm i a hi
+  have hej : e j = Sum.inr b := splitEquiv_eq_inr_of_eq_add hnm j b hj
+  change (((Matrix.reindex e.symm e.symm V)ᵀ * A *
+      Matrix.reindex e.symm e.symm V) i j =
+        (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b)
+  rw [hQfull]
+  simp only [Matrix.reindex_apply, Matrix.submatrix_apply]
+  change (Vᵀ * A' * V) (e i) (e j) =
+    (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b
+  rw [hei, hej, hV, embedBlock_conj_apply_inr_inr, hQ']
+
+/-- The ordered `2 x 2` block on a trailing pair is exactly the corresponding
+    principal block of the recursively conjugated trailing Schur factor. -/
+lemma principalTwoBlock_trailing_conj_transports_trailing_two
+    {d m n : ℕ} (hnm : d + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {p q : Fin n} {a b : Fin m}
+    (hp : (p : ℕ) = d + (a : ℕ))
+    (hq : (q : ℕ) = d + (b : ℕ)) :
+    let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := d) U)
+    LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q =
+      LeanFpAnalysis.FP.principalTwoBlock
+        (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b := by
+  funext i j
+  fin_cases i <;> fin_cases j
+  · exact trailing_conj_preserves_trailing_entry hnm A Q U hp hp
+  · exact trailing_conj_preserves_trailing_entry hnm A Q U hp hq
+  · exact trailing_conj_preserves_trailing_entry hnm A Q U hq hp
+  · exact trailing_conj_preserves_trailing_entry hnm A Q U hq hq
+
+/-- No-real-eigenline and negative-discriminant certificates for a trailing
+    recursive `2 x 2` block transport back through the full re-embedded Schur
+    factor. -/
+lemma trailing_twoBlock_spectral_preserved_after_trailing_conj
+    {d m n : ℕ} (hnm : d + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {p q : Fin n} {a b : Fin m}
+    (hp : (p : ℕ) = d + (a : ℕ))
+    (hq : (q : ℕ) = d + (b : ℕ))
+    (hno :
+      let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock
+          (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b)) :
+    let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := d) U)
+    LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) ∧
+      ((Qfullᵀ * A * Qfull) p p - (Qfullᵀ * A * Qfull) q q) ^ 2 +
+        4 * (Qfullᵀ * A * Qfull) p q * (Qfullᵀ * A * Qfull) q p < 0 := by
+  let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+  let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+    Matrix.reindex e.symm e.symm
+      (Matrix.reindex e e Q * embedBlock (d := d) U)
+  have hblock :
+      LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q =
+        LeanFpAnalysis.FP.principalTwoBlock
+          (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b :=
+    principalTwoBlock_trailing_conj_transports_trailing_two hnm A Q U hp hq
+  have hno' :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) := by
+    rw [hblock]
+    simpa [e] using hno
+  exact ⟨hno',
+    LeanFpAnalysis.FP.principalTwoBlock_disc_neg_of_matrixNoRealEigenline
+      (Qfullᵀ * A * Qfull) p q hno'⟩
+
+/-- A recursive trailing adjacent same-block spectral certificate lifts to the
+    parent block map after re-embedding the trailing Schur factor. -/
+lemma trailing_twoBlock_spectral_with_parentBlockMap_after_trailing_conj
+    {d m n : ℕ} (hnm : d + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    (p' : Fin m → ℕ) {a b : Fin m}
+    (hab : (b : ℕ) = (a : ℕ) + 1)
+    (hsame : p' a = p' b)
+    (hspectral :
+      let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+      HasRealQuasiSchurTwoBlockSpectral
+        (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) p') :
+    let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := d) U)
+    let pmap : Fin n → ℕ :=
+      fun i => Sum.elim (fun _ : Fin d => 0) (fun c : Fin m => p' c + 1) (e i)
+    let p : Fin n := e.symm (Sum.inr a)
+    let q : Fin n := e.symm (Sum.inr b)
+    (q : ℕ) = (p : ℕ) + 1 ∧
+      pmap p = pmap q ∧
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) ∧
+      ((Qfullᵀ * A * Qfull) p p - (Qfullᵀ * A * Qfull) q q) ^ 2 +
+        4 * (Qfullᵀ * A * Qfull) p q * (Qfullᵀ * A * Qfull) q p < 0 := by
+  let e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm
+  let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+    Matrix.reindex e.symm e.symm
+      (Matrix.reindex e e Q * embedBlock (d := d) U)
+  let pmap : Fin n → ℕ :=
+    fun i => Sum.elim (fun _ : Fin d => 0) (fun c : Fin m => p' c + 1) (e i)
+  let p : Fin n := e.symm (Sum.inr a)
+  let q : Fin n := e.symm (Sum.inr b)
+  have hpval : (p : ℕ) = d + (a : ℕ) := by
+    have hsum : splitEquiv hnm p = Sum.inr a := by
+      dsimp [p, e]
+      exact (splitEquiv hnm).apply_symm_apply (Sum.inr a)
+    exact (splitEquiv_inr_val hnm hsum).symm
+  have hqval : (q : ℕ) = d + (b : ℕ) := by
+    have hsum : splitEquiv hnm q = Sum.inr b := by
+      dsimp [q, e]
+      exact (splitEquiv hnm).apply_symm_apply (Sum.inr b)
+    exact (splitEquiv_inr_val hnm hsum).symm
+  have hadj : (q : ℕ) = (p : ℕ) + 1 := by
+    omega
+  have hsame_parent : pmap p = pmap q := by
+    dsimp [pmap, p, q, e]
+    simp [hsame]
+  have htrail :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock
+          (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b) ∧
+        ((Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a a -
+            (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) b b) ^ 2 +
+          4 * (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) a b *
+            (Uᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U) b a < 0 := by
+    simpa [e] using hspectral a b hab hsame
+  have hfull :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+          (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) ∧
+        ((Qfullᵀ * A * Qfull) p p - (Qfullᵀ * A * Qfull) q q) ^ 2 +
+          4 * (Qfullᵀ * A * Qfull) p q * (Qfullᵀ * A * Qfull) q p < 0 := by
+    simpa [e, Qfull, p, q] using
+      trailing_twoBlock_spectral_preserved_after_trailing_conj
+        hnm A Q U hpval hqval htrail.1
+  exact ⟨hadj, hsame_parent, hfull.1, hfull.2⟩
+
+/-- The principal leading `2 x 2` block is unchanged when the trailing recursive
+    conjugation is re-embedded. -/
+lemma principalTwoBlock_trailing_conj_preserves_leading_two
+    {m n : ℕ} (hnm : 2 + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {p q : Fin n}
+    (hp : (p : ℕ) = 0) (hq : (q : ℕ) = 1) :
+    let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := 2) U)
+    LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q =
+      LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q := by
+  funext i j
+  fin_cases i <;> fin_cases j
+  · exact trailing_conj_preserves_leading_entry hnm A Q U (by omega) (by omega)
+  · exact trailing_conj_preserves_leading_entry hnm A Q U (by omega) (by omega)
+  · exact trailing_conj_preserves_leading_entry hnm A Q U (by omega) (by omega)
+  · exact trailing_conj_preserves_leading_entry hnm A Q U (by omega) (by omega)
+
+/-- No-real-eigenline and negative-discriminant certificates for the leading
+    `2 x 2` block survive the trailing recursive conjugation. -/
+lemma leading_twoBlock_spectral_preserved_after_trailing_conj
+    {m n : ℕ} (hnm : 2 + m = n)
+    (A Q : Matrix (Fin n) (Fin n) ℝ)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    {p q : Fin n}
+    (hp : (p : ℕ) = 0) (hq : (q : ℕ) = 1)
+    (hno :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q)) :
+    let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+    let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+      Matrix.reindex e.symm e.symm
+        (Matrix.reindex e e Q * embedBlock (d := 2) U)
+    LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) ∧
+      ((Qfullᵀ * A * Qfull) p p - (Qfullᵀ * A * Qfull) q q) ^ 2 +
+        4 * (Qfullᵀ * A * Qfull) p q * (Qfullᵀ * A * Qfull) q p < 0 := by
+  let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+  let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+    Matrix.reindex e.symm e.symm
+      (Matrix.reindex e e Q * embedBlock (d := 2) U)
+  have hblock :
+      LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q =
+        LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q :=
+    principalTwoBlock_trailing_conj_preserves_leading_two hnm A Q U hp hq
+  have hno' :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+        (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) := by
+    rw [hblock]
+    exact hno
+  exact ⟨hno',
+    LeanFpAnalysis.FP.principalTwoBlock_disc_neg_of_matrixNoRealEigenline
+      (Qfullᵀ * A * Qfull) p q hno'⟩
+
+/-- A two-dimensional no-real-eigenline peel branch can be framed, recursively
+    re-embedded through an orthogonal trailing factor, and still expose the
+    leading `2 x 2` no-real-eigenline/negative-discriminant certificate. -/
+lemma exists_orthogonal_frame_two_principalBlock_spectral_after_trailing_conj
+    {m n : ℕ} (hnm : 2 + m = n)
+    (A : Matrix (Fin n) (Fin n) ℝ)
+    (W : Submodule ℝ (Fin n → ℝ))
+    (hd : finrank ℝ W = 2)
+    (hWinv : ∀ w ∈ W, A.mulVecLin w ∈ W)
+    (hWno :
+      ∀ w ∈ W, w ≠ 0 →
+        ¬ ∃ nu : ℝ, A *ᵥ w = nu • w)
+    (U : Matrix (Fin m) (Fin m) ℝ)
+    (hUorth : U ∈ Matrix.orthogonalGroup (Fin m) ℝ) :
+    ∃ (Q Qfull : Matrix (Fin n) (Fin n) ℝ) (p q : Fin n),
+      Q ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+        Qfull ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+        (p : ℕ) = 0 ∧
+        (q : ℕ) = 1 ∧
+        Submodule.span ℝ
+          (Set.range
+            (fun c : {c : Fin n // (c : ℕ) < 2} => (fun k => Q k c.1))) = W ∧
+        (let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+         Qfull =
+          Matrix.reindex e.symm e.symm
+            (Matrix.reindex e e Q * embedBlock (d := 2) U)) ∧
+        LeanFpAnalysis.FP.MatrixNoRealEigenline
+          (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) ∧
+        ((Qfullᵀ * A * Qfull) p p - (Qfullᵀ * A * Qfull) q q) ^ 2 +
+          4 * (Qfullᵀ * A * Qfull) p q * (Qfullᵀ * A * Qfull) q p < 0 := by
+  obtain ⟨Q, p, q, hQ, hp, hq, hQspan, hno, _hdisc⟩ :=
+    exists_orthogonal_frame_two_principalBlock_noRealEigenline_disc_neg
+      A W hd hWinv hWno
+  let e : Fin n ≃ Fin 2 ⊕ Fin m := splitEquiv hnm
+  let Qfull : Matrix (Fin n) (Fin n) ℝ :=
+    Matrix.reindex e.symm e.symm
+      (Matrix.reindex e e Q * embedBlock (d := 2) U)
+  have hQfullorth : Qfull ∈ Matrix.orthogonalGroup (Fin n) ℝ := by
+    change Matrix.reindex e.symm e.symm
+      (Matrix.reindex e e Q * embedBlock (d := 2) U) ∈ Matrix.orthogonalGroup (Fin n) ℝ
+    exact reindex_mem_orthogonal e.symm
+      (Submonoid.mul_mem _
+        (reindex_mem_orthogonal e hQ)
+        (embedBlock_mem_orthogonal (d := 2) hUorth))
+  have hspectral :
+      LeanFpAnalysis.FP.MatrixNoRealEigenline
+          (LeanFpAnalysis.FP.principalTwoBlock (Qfullᵀ * A * Qfull) p q) ∧
+        ((Qfullᵀ * A * Qfull) p p - (Qfullᵀ * A * Qfull) q q) ^ 2 +
+          4 * (Qfullᵀ * A * Qfull) p q * (Qfullᵀ * A * Qfull) q p < 0 :=
+    leading_twoBlock_spectral_preserved_after_trailing_conj
+      hnm A Q U hp hq hno
+  exact ⟨Q, Qfull, p, q, hQ, hQfullorth, hp, hq, hQspan, rfl,
+    hspectral.1, hspectral.2⟩
 
 /-! ### The variable-`d` orthogonal deflation induction (Higham (16.4)) -/
 
@@ -600,6 +1319,251 @@ theorem exists_orthogonal_conj_quasiUpperTriangular :
             simp only [hq, hei, hej, Sum.elim_inr] at hlt
             omega
 
+open RealInvariantSubspaceAux in
+/-- Strengthened real quasi-Schur construction carrying spectral certificates
+    for every adjacent `2 x 2` block produced by the recursive block map. -/
+theorem exists_orthogonal_conj_quasiUpperTriangular_twoBlockSpectral :
+    ∀ (n : ℕ) (A : Matrix (Fin n) (Fin n) ℝ),
+      ∃ Q : Matrix (Fin n) (Fin n) ℝ, Q ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+        ∃ pmap : Fin n → ℕ,
+          Monotone pmap ∧
+          (∀ c : ℕ, (Finset.univ.filter (fun i => pmap i = c)).card ≤ 2) ∧
+          (∀ i j : Fin n, pmap j < pmap i → (Qᵀ * A * Q) i j = 0) ∧
+          HasRealQuasiSchurTwoBlockSpectral (Qᵀ * A * Q) pmap := by
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    intro A
+    rcases Nat.eq_zero_or_pos n with hn0 | hnpos
+    · subst hn0
+      refine ⟨1, Submonoid.one_mem _, ?_⟩
+      refine ⟨fun _ => 0, monotone_const, ?_, ?_, ?_⟩
+      · intro c; simp
+      · intro i; exact absurd i.2 (Nat.not_lt_zero _)
+      · intro p _q _hadj _hsame
+        exact Fin.elim0 p
+    · obtain ⟨W, hWbranch, hWinv⟩ :=
+        exists_invariant_subspace_dim_one_or_two_frame_twoBlock_spectral hnpos A
+      obtain ⟨d, hd, hdle, Q, hQorth, hQspan, hlead⟩ :
+          ∃ d : ℕ, finrank ℝ W = d ∧ (d = 1 ∨ d = 2) ∧
+            ∃ Q : Matrix (Fin n) (Fin n) ℝ,
+              Q ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+              Submodule.span ℝ
+                (Set.range
+                  (fun c : {c : Fin n // (c : ℕ) < d} => (fun k => Q k c.1))) = W ∧
+              (d = 2 →
+                ∃ p q : Fin n, (p : ℕ) = 0 ∧ (q : ℕ) = 1 ∧
+                  LeanFpAnalysis.FP.MatrixNoRealEigenline
+                    (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) p q)) := by
+        rcases hWbranch with h1 | h2data
+        · obtain ⟨Q, hQorth, _hQmem, hQspan⟩ := exists_orthogonal_frame W 1 h1
+          refine ⟨1, h1, Or.inl rfl, Q, hQorth, hQspan, ?_⟩
+          intro h12
+          omega
+        · obtain ⟨Q, p, q, h2, hQorth, hp, hq, hQspan, hno, _hdisc⟩ := h2data
+          refine ⟨2, h2, Or.inr rfl, Q, hQorth, hQspan, ?_⟩
+          intro _h22
+          exact ⟨p, q, hp, hq, hno⟩
+      have hdpos : 0 < d := by rcases hdle with h | h <;> omega
+      have hdcard : d ≤ 2 := by rcases hdle with h | h <;> omega
+      set m : ℕ := n - d with hm
+      have hdn : d ≤ n := by
+        have hle : finrank ℝ W ≤ finrank ℝ (Fin n → ℝ) := Submodule.finrank_le W
+        rw [hd] at hle
+        simpa using hle
+      have hnm : d + m = n := by omega
+      have hmlt : m < n := by omega
+      have hinv : ∀ j : Fin n, (j : ℕ) < d →
+          (A *ᵥ (fun k => Q k j)) ∈
+            Submodule.span ℝ
+              (Set.range (fun c : {c : Fin n // (c : ℕ) < d} => (fun k => Q k c.1))) := by
+        intro j hj
+        have hcolmem : (fun k => Q k j) ∈ W := by
+          rw [← hQspan]
+          exact Submodule.subset_span (Set.mem_range.mpr ⟨⟨j, hj⟩, rfl⟩)
+        have hmap := hWinv (fun k => Q k j) hcolmem
+        rw [hQspan]
+        simpa [Matrix.mulVecLin_apply] using hmap
+      have hMzero : ∀ i j : Fin n, d ≤ (i : ℕ) → (j : ℕ) < d →
+          (Qᵀ * A * Q) i j = 0 :=
+        fun i j hi hj => deflation_lower_left_zero A Q hQorth d hinv i j hi hj
+      set e : Fin n ≃ Fin d ⊕ Fin m := splitEquiv hnm with he
+      set M : Matrix (Fin n) (Fin n) ℝ := Qᵀ * A * Q with hMdef
+      set M' : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Matrix.reindex e e M with hM'
+      have hM'zero : M'.toBlocks₂₁ = 0 := by
+        ext a b
+        simp only [Matrix.toBlocks₂₁, hM', Matrix.reindex_apply, Matrix.submatrix_apply,
+          Matrix.of_apply, Matrix.zero_apply]
+        apply hMzero
+        · have hsum : splitEquiv hnm (e.symm (Sum.inr a)) = Sum.inr a := by
+            rw [← he]; exact e.apply_symm_apply _
+          have hval := splitEquiv_inr_val hnm hsum
+          omega
+        · have hsum : splitEquiv hnm (e.symm (Sum.inl b)) = Sum.inl b := by
+            rw [← he]; exact e.apply_symm_apply _
+          have hval := splitEquiv_inl_val hnm hsum
+          have hb := b.2
+          omega
+      have hM'block : M' = Matrix.fromBlocks M'.toBlocks₁₁ M'.toBlocks₁₂ 0 M'.toBlocks₂₂ := by
+        conv_lhs => rw [← Matrix.fromBlocks_toBlocks M']
+        rw [hM'zero]
+      obtain ⟨U', hU'orth, p', hp'mono, hp'card, hp'zero, hp'spectral⟩ :=
+        ih m hmlt M'.toBlocks₂₂
+      set Q' : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Matrix.reindex e e Q with hQ'
+      set A' : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Matrix.reindex e e A with hA'
+      set V : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ := Q' * embedBlock U' with hV
+      set Qfull : Matrix (Fin n) (Fin n) ℝ := Matrix.reindex e.symm e.symm V with hQfull
+      have hQfullorth : Qfull ∈ Matrix.orthogonalGroup (Fin n) ℝ := by
+        rw [hQfull]
+        apply reindex_mem_orthogonal
+        rw [hV]
+        exact Submonoid.mul_mem _ (reindex_mem_orthogonal e hQorth)
+          (embedBlock_mem_orthogonal hU'orth)
+      set X : Matrix (Fin d ⊕ Fin m) (Fin d ⊕ Fin m) ℝ :=
+        (embedBlock U')ᵀ * M' * embedBlock U' with hX
+      have hconj : Qfullᵀ * A * Qfull = Matrix.reindex e.symm e.symm X := by
+        have hM'conj : M' = Q'ᵀ * A' * Q' := by
+          rw [hM', hMdef, hQ', hA', reindex_conj]
+        have hXeq : X = Vᵀ * A' * V := by
+          rw [hX, hM'conj, hV]
+          rw [Matrix.transpose_mul]
+          simp only [mul_assoc]
+        rw [hXeq, reindex_conj, ← hQfull, hA', reindex_symm_reindex]
+      have hXblock : X = Matrix.fromBlocks M'.toBlocks₁₁ (M'.toBlocks₁₂ * U') 0
+          (U'ᵀ * M'.toBlocks₂₂ * U') := by
+        rw [hX]
+        conv_lhs => rw [hM'block]
+        rw [conj_embedBlock_eq]
+      have hRentry : ∀ i j : Fin n, (Matrix.reindex e.symm e.symm X) i j = X (e i) (e j) := by
+        intro i j
+        simp [Matrix.reindex_apply, Matrix.submatrix_apply]
+      set q : Fin d ⊕ Fin m → ℕ := Sum.elim (fun _ => 0) (fun a => p' a + 1) with hq
+      refine ⟨Qfull, hQfullorth, ?_⟩
+      refine ⟨fun i => q (e i), ?_, ?_, ?_, ?_⟩
+      · intro i i' hii'
+        rcases hei : e i with a | a
+        · simp [hq, hei]
+        · have heisp : splitEquiv hnm i = Sum.inr a := by rw [← he]; exact hei
+          have hia : d + (a : ℕ) = (i : ℕ) := splitEquiv_inr_val hnm heisp
+          rcases hei' : e i' with a' | a'
+          · have hei'sp : splitEquiv hnm i' = Sum.inl a' := by rw [← he]; exact hei'
+            have hia' : (a' : ℕ) = (i' : ℕ) := splitEquiv_inl_val hnm hei'sp
+            have ha'2 := a'.2
+            have hii'val : (i : ℕ) ≤ (i' : ℕ) := hii'
+            omega
+          · have hei'sp : splitEquiv hnm i' = Sum.inr a' := by rw [← he]; exact hei'
+            have hia' : d + (a' : ℕ) = (i' : ℕ) := splitEquiv_inr_val hnm hei'sp
+            have haa' : (a : ℕ) ≤ (a' : ℕ) := by
+              have hii'val : (i : ℕ) ≤ (i' : ℕ) := hii'
+              omega
+            simp only [hq, hei, hei', Sum.elim_inr]
+            have := hp'mono (show a ≤ a' from haa')
+            omega
+      · intro c
+        have hcardeq : (Finset.univ.filter (fun i : Fin n => q (e i) = c)).card
+            = (Finset.univ.filter (fun x : Fin d ⊕ Fin m => q x = c)).card := by
+          rw [← Fintype.card_subtype, ← Fintype.card_subtype]
+          exact Fintype.card_congr (Equiv.subtypeEquiv e (fun a => Iff.rfl))
+        rw [hcardeq, ← Fintype.card_subtype]
+        rw [Fintype.card_congr (Equiv.subtypeSum (p := fun x : Fin d ⊕ Fin m => q x = c))]
+        rw [Fintype.card_sum]
+        by_cases hc0 : c = 0
+        · subst hc0
+          have hleft : Fintype.card {a : Fin d // q (Sum.inl a) = 0} = d := by
+            simp only [hq, Sum.elim_inl]
+            simp [Fintype.card_subtype]
+          have hright : Fintype.card {b : Fin m // q (Sum.inr b) = 0} = 0 := by
+            simp only [hq, Sum.elim_inr]
+            rw [Fintype.card_subtype]
+            simp only [Nat.succ_ne_zero, Finset.filter_false, Finset.card_empty]
+          rw [hleft, hright]
+          omega
+        · have hleft : Fintype.card {a : Fin d // q (Sum.inl a) = c} = 0 := by
+            simp only [hq, Sum.elim_inl]
+            rw [Fintype.card_subtype]
+            simp only [Finset.card_eq_zero]
+            rw [Finset.filter_eq_empty_iff]
+            intro a _
+            exact fun h => hc0 h.symm
+          have hright : Fintype.card {b : Fin m // q (Sum.inr b) = c} ≤ 2 := by
+            simp only [hq, Sum.elim_inr]
+            rw [Fintype.card_subtype]
+            have hce : ∀ b : Fin m, (p' b + 1 = c) ↔ (p' b = c - 1) := by
+              intro b
+              omega
+            simp only [hce]
+            rw [← Fintype.card_subtype, Fintype.card_subtype]
+            exact hp'card (c - 1)
+          rw [hleft]
+          omega
+      · intro i j hlt
+        rw [hconj, hRentry, hXblock]
+        rcases hei : e i with a | a
+        · exfalso
+          simp only [hq, hei, Sum.elim_inl] at hlt
+          exact Nat.not_lt_zero _ hlt
+        · rcases hej : e j with b | b
+          · simp [Matrix.fromBlocks]
+          · simp only [Matrix.fromBlocks_apply₂₂]
+            apply hp'zero
+            simp only [hq, hei, hej, Sum.elim_inr] at hlt
+            omega
+      · intro i j hadj hsame
+        rcases hei : e i with a | a
+        · rcases hej : e j with b | b
+          · have heisp : splitEquiv hnm i = Sum.inl a := by rw [← he]; exact hei
+            have hejsp : splitEquiv hnm j = Sum.inl b := by rw [← he]; exact hej
+            have hia : (a : ℕ) = (i : ℕ) := splitEquiv_inl_val hnm heisp
+            have hjb : (b : ℕ) = (j : ℕ) := splitEquiv_inl_val hnm hejsp
+            rcases hdle with hd1 | hd2
+            · subst hd1
+              have ha := a.2
+              have hb := b.2
+              omega
+            · subst hd2
+              obtain ⟨p0, q0, hp0, hq0, hno0⟩ := hlead rfl
+              have hi0 : (i : ℕ) = 0 := by omega
+              have hj1 : (j : ℕ) = 1 := by omega
+              have hip0 : i = p0 := Fin.ext (by omega)
+              have hjq0 : j = q0 := Fin.ext (by omega)
+              have hnoij :
+                  LeanFpAnalysis.FP.MatrixNoRealEigenline
+                    (LeanFpAnalysis.FP.principalTwoBlock (Qᵀ * A * Q) i j) := by
+                simpa [hip0, hjq0] using hno0
+              simpa [hQfull, hV, hQ', e] using
+                leading_twoBlock_spectral_preserved_after_trailing_conj
+                  hnm A Q U' hi0 hj1 hnoij
+          · exfalso
+            simp only [hq, hei, hej, Sum.elim_inl, Sum.elim_inr] at hsame
+            omega
+        · rcases hej : e j with b | b
+          · have heisp : splitEquiv hnm i = Sum.inr a := by rw [← he]; exact hei
+            have hejsp : splitEquiv hnm j = Sum.inl b := by rw [← he]; exact hej
+            have hia : d + (a : ℕ) = (i : ℕ) := splitEquiv_inr_val hnm heisp
+            have hjb : (b : ℕ) = (j : ℕ) := splitEquiv_inl_val hnm hejsp
+            have hb := b.2
+            omega
+          · have heisp : splitEquiv hnm i = Sum.inr a := by rw [← he]; exact hei
+            have hejsp : splitEquiv hnm j = Sum.inr b := by rw [← he]; exact hej
+            have hia : d + (a : ℕ) = (i : ℕ) := splitEquiv_inr_val hnm heisp
+            have hjb : d + (b : ℕ) = (j : ℕ) := splitEquiv_inr_val hnm hejsp
+            have hab : (b : ℕ) = (a : ℕ) + 1 := by omega
+            have hsame' : p' a = p' b := by
+              simp only [hq, hei, hej, Sum.elim_inr] at hsame
+              omega
+            have htrail :
+                LeanFpAnalysis.FP.MatrixNoRealEigenline
+                    (LeanFpAnalysis.FP.principalTwoBlock
+                      (U'ᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U') a b) ∧
+                  ((U'ᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U') a a -
+                      (U'ᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U') b b) ^ 2 +
+                    4 * (U'ᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U') a b *
+                      (U'ᵀ * (Matrix.reindex e e (Qᵀ * A * Q)).toBlocks₂₂ * U') b a < 0 := by
+              simpa [hM', hMdef] using hp'spectral a b hab hsame'
+            simpa [hQfull, hV, hQ', e] using
+              trailing_twoBlock_spectral_preserved_after_trailing_conj
+                hnm A Q U' hia.symm hjb.symm htrail.1
+
 end RealQuasiSchurAux
 
 /-! ### The main theorems (Higham §16.2 (16.4)) -/
@@ -662,5 +1626,25 @@ theorem real_quasi_schur_blocks {n : ℕ} (A : Matrix (Fin n) (Fin n) ℝ) :
   obtain ⟨Q, hQ, p, hmono, hcard, hzero⟩ :=
     RealQuasiSchurAux.exists_orthogonal_conj_quasiUpperTriangular n A
   exact ⟨Q, p, hQ, hmono, hcard, hzero⟩
+
+/-- **Real quasi-triangular Schur decomposition with `2 x 2` spectral
+    certificates (Higham §16.2 (16.4)).**
+
+    Strengthens `real_quasi_schur_blocks`: every adjacent pair in the same
+    constructed `2 x 2` block has no real eigenline, hence negative
+    discriminant.  This is the source-facing certificate that such blocks carry
+    complex-conjugate eigenvalue pairs; it does not by itself assert Sylvester
+    separation from another matrix. -/
+theorem real_quasi_schur_blocks_twoBlockSpectral {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ) :
+    ∃ (Q : Matrix (Fin n) (Fin n) ℝ) (p : Fin n → ℕ),
+      Q ∈ Matrix.orthogonalGroup (Fin n) ℝ ∧
+      Monotone p ∧
+      (∀ c : ℕ, (Finset.univ.filter (fun i => p i = c)).card ≤ 2) ∧
+      (∀ i j : Fin n, p j < p i → (Qᵀ * A * Q) i j = 0) ∧
+      HasRealQuasiSchurTwoBlockSpectral (Qᵀ * A * Q) p := by
+  obtain ⟨Q, hQ, p, hmono, hcard, hzero, hspectral⟩ :=
+    RealQuasiSchurAux.exists_orthogonal_conj_quasiUpperTriangular_twoBlockSpectral n A
+  exact ⟨Q, p, hQ, hmono, hcard, hzero, hspectral⟩
 
 end LeanFpAnalysis.FP
