@@ -163,6 +163,11 @@ The latest 2026-07-09 increment adds the terminal-tail zero residual and
 `higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions`, so the
 future mixed-pivot path induction has a base-case package in the same common
 branch-local result shape.
+A follow-up 2026-07-09 increment adds
+`higham11_7_tridiagonalBranchLocalAssumptions_of_terminalTailAssumptions` and
+`higham11_7_tridiagonalBranchPathLocalAssumptions_of_terminalTailAssumptions`,
+so terminal branches and terminal paths can also be consumed through the
+ordinary local-assumption interface with `tail_fl = tail_exact`.
 The latest 2026-07-09 increment adds the finite path predicates
 `higham11_7_TridiagonalBranchPathLocalAssumptions`,
 `higham11_7_TridiagonalBranchPathLocalResiduals`, and terminal path variants,
@@ -1020,6 +1025,15 @@ Problem transcription.
     `higham11_7_tridiagonalRecursiveTailZeroResidual_infNorm`,
     `higham11_7_TridiagonalBranchTerminalAssumptions`, and
     `higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 terminal-tail local-assumption adapter increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchLocalAssumptions_of_terminalTailAssumptions`
+    and
+    `higham11_7_tridiagonalBranchPathLocalAssumptions_of_terminalTailAssumptions`
     → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.7 finite mixed-pivot path interface increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;

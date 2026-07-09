@@ -4116,18 +4116,17 @@ def higham11_7_TridiagonalBranchTerminalAssumptions
       gammaValid fp 3 ∧
       0 ≤ c_bound ∧ 0 ≤ c_rec ∧ 0 ≤ u
 
-/-- **Theorem 11.7 terminal branch adapter**.  A local branch satisfying the
-terminal-tail assumptions produces the common branch residual with
+/-- **Theorem 11.7 terminal branch local-assumption adapter**.  A terminal-tail
+branch is a local branch with zero recursive tail residual, hence with
 `tail_fl = tail_exact`. -/
-theorem higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+theorem higham11_7_tridiagonalBranchLocalAssumptions_of_terminalTailAssumptions
     (n : ℕ) (fp : FPModel) (s : PivotSize)
     (A : higham11_7_TridiagonalBranchMatrix n s)
     (c_bound c_rec u tail_exact : ℝ)
     (hterminal : higham11_7_TridiagonalBranchTerminalAssumptions n fp s A
       c_bound c_rec u) :
-    higham11_7_TridiagonalBranchLocalResidual n fp s A
+    higham11_7_TridiagonalBranchLocalAssumptions n fp s A
       c_bound c_rec u tail_exact tail_exact := by
-  apply higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions
   cases s with
   | one =>
       rcases hterminal with
@@ -4143,6 +4142,23 @@ theorem higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
         higham11_7_tridiagonalRecursiveTailZeroResidual_infNorm n (n + 3)
           A c_rec u tail_exact hc_rec hu,
         hc_bound, hc_rec, hu⟩
+
+/-- **Theorem 11.7 terminal branch adapter**.  A local branch satisfying the
+terminal-tail assumptions produces the common branch residual with
+`tail_fl = tail_exact`. -/
+theorem higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_exact : ℝ)
+    (hterminal : higham11_7_TridiagonalBranchTerminalAssumptions n fp s A
+      c_bound c_rec u) :
+    higham11_7_TridiagonalBranchLocalResidual n fp s A
+      c_bound c_rec u tail_exact tail_exact := by
+  exact
+    higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions n fp s A
+      c_bound c_rec u tail_exact tail_exact
+      (higham11_7_tridiagonalBranchLocalAssumptions_of_terminalTailAssumptions
+        n fp s A c_bound c_rec u tail_exact hterminal)
 
 /-- **Theorem 11.7 mixed-pivot path assumptions**.  A finite path is represented
 as a family of local tridiagonal branch choices, local ambient tail dimensions,
@@ -4197,6 +4213,24 @@ def higham11_7_TridiagonalBranchPathTerminalAssumptions
   ∀ t : Fin k,
     higham11_7_TridiagonalBranchTerminalAssumptions (tailDim t) fp (step t)
       (A t) (c_bound t) (c_rec t) (u t)
+
+/-- **Theorem 11.7 terminal path local-assumption adapter**.  Pointwise
+terminal-tail assumptions form a local-assumption path with exact tail
+residual scalars. -/
+theorem higham11_7_tridiagonalBranchPathLocalAssumptions_of_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_exact : Fin k → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp tailDim
+      step A c_bound c_rec u) :
+    higham11_7_TridiagonalBranchPathLocalAssumptions k fp tailDim
+      step A c_bound c_rec u tail_exact tail_exact := by
+  intro t
+  exact
+    higham11_7_tridiagonalBranchLocalAssumptions_of_terminalTailAssumptions
+      (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
+      (tail_exact t) (hpath t)
 
 /-- **Theorem 11.7 terminal mixed-pivot path adapter**.  Applying the terminal
 branch adapter at every finite path step gives pointwise residual packages with
