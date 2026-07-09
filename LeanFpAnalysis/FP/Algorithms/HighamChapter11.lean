@@ -3224,6 +3224,41 @@ theorem higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with
     higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm
       m offset k E (fun _ => c) u Amax (fun _ => hβ) hbound hsupp
 
+/-- **Theorem 11.7 finite support-sum combiner, printed coefficient nonnegative
+form**.  This version derives each product-budget nonnegativity condition from
+nonnegative coefficients, unit roundoff, and ambient matrix budget. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_nonneg
+    (m offset k : ℕ) (E : Fin k → Fin m → Fin m → ℝ) (c : Fin k → ℝ)
+    (u Amax : ℝ)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u) (hAmax : 0 ≤ Amax)
+    (hbound : ∀ t : Fin k, ∀ i j : Fin m, |E t i j| ≤ c t * u * Amax)
+    (hsupp : ∀ t : Fin k, higham11_7_TridiagonalLeadingBlockSupport m offset (E t)) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ (∑ t : Fin k, c t) * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      infNorm G ≤ (m : ℝ) * ((∑ t : Fin k, c t) * u * Amax) ∧
+      (∀ i j : Fin m, G i j = ∑ t : Fin k, E t i j) :=
+  higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm
+    m offset k E c u Amax
+    (fun t => mul_nonneg (mul_nonneg (hc t) hu) hAmax) hbound hsupp
+
+/-- **Theorem 11.7 finite support-sum combiner, uniform printed nonnegative
+form**.  This discharges `0 ≤ c*u*Amax` from separate nonnegativity hypotheses. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm_nonneg
+    (m offset k : ℕ) (E : Fin k → Fin m → Fin m → ℝ)
+    (c u Amax : ℝ)
+    (hc : 0 ≤ c) (hu : 0 ≤ u) (hAmax : 0 ≤ Amax)
+    (hbound : ∀ t : Fin k, ∀ i j : Fin m, |E t i j| ≤ c * u * Amax)
+    (hsupp : ∀ t : Fin k, higham11_7_TridiagonalLeadingBlockSupport m offset (E t)) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ (k : ℝ) * c * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      infNorm G ≤ (m : ℝ) * ((k : ℝ) * c * u * Amax) ∧
+      (∀ i j : Fin m, G i j = ∑ t : Fin k, E t i j) :=
+  higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm
+    m offset k E c u Amax (mul_nonneg (mul_nonneg hc hu) hAmax)
+    hbound hsupp
+
 /-- **Theorem 11.7 support predicate bridge**, identifying the specialized
 trailing-block support predicate with zero-prefix support at offset two. -/
 theorem higham11_7_tridiagonalTwoByTwoTrailingBlockSupport_iff_leadingBlockSupport
