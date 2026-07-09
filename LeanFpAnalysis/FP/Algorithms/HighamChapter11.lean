@@ -4473,6 +4473,48 @@ theorem higham11_8_aasen_factor_solve_coeff_le_of_product_square_bounds
       (by simpa [α] using hSB)
       hparts
 
+/-- Product-size helper: two factor caps by the same nonnegative scalar imply
+the corresponding square cap. -/
+theorem higham11_8_product_square_bound_of_factor_caps
+    (m κLeft κRight : ℝ) (hm : 0 ≤ m)
+    (hκRight : 0 ≤ κRight) (hleft : κLeft ≤ m) (hright : κRight ≤ m) :
+    κLeft * κRight ≤ m ^ 2 := by
+  have hmul : κLeft * κRight ≤ m * m :=
+    mul_le_mul hleft hright hκRight hm
+  simpa [pow_two] using hmul
+
+/-- Product-size helper for the exact-product Aasen route.  Individual caps on
+the exact and computed-relative outer factors imply the two base square caps
+consumed by the `T_hat` exact-radius wrappers. -/
+theorem higham11_8_aasen_base_square_bounds_of_factor_caps
+    (n : ℕ) (γ_factor κL κLT : ℝ)
+    (hγ_factor : 0 ≤ γ_factor)
+    (hκL : 0 ≤ κL) (hκLT : 0 ≤ κLT)
+    (hκL_cap : κL ≤ ((n - 1 : ℕ) : ℝ))
+    (hκLT_cap : κLT ≤ ((n - 1 : ℕ) : ℝ))
+    (hrelL_cap : (1 + γ_factor) * κL ≤ ((n - 1 : ℕ) : ℝ))
+    (hrelLT_cap : (1 + γ_factor) * κLT ≤ ((n - 1 : ℕ) : ℝ)) :
+    (κL * κLT ≤ ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) := by
+  let m : ℝ := ((n - 1 : ℕ) : ℝ)
+  have hm : 0 ≤ m := by
+    dsimp [m]
+    exact Nat.cast_nonneg _
+  have h1γ : 0 ≤ 1 + γ_factor := by nlinarith
+  have hrelL_nonneg : 0 ≤ (1 + γ_factor) * κL :=
+    mul_nonneg h1γ hκL
+  have hrelLT_nonneg : 0 ≤ (1 + γ_factor) * κLT :=
+    mul_nonneg h1γ hκLT
+  refine ⟨?_, ?_⟩
+  · exact
+      higham11_8_product_square_bound_of_factor_caps m κL κLT hm hκLT
+        (by simpa [m] using hκL_cap) (by simpa [m] using hκLT_cap)
+  · exact
+      higham11_8_product_square_bound_of_factor_caps m
+        ((1 + γ_factor) * κL) ((1 + γ_factor) * κLT) hm hrelLT_nonneg
+        (by simpa [m] using hrelL_cap) (by simpa [m] using hrelLT_cap)
+
 /-- Insert a nonnegative middle factor bounded by `1` into a product already
 bounded by the printed Aasen `(n-1)^2` square. -/
 theorem higham11_8_triple_product_square_bound_of_middle_le_one
