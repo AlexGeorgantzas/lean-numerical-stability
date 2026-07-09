@@ -12794,6 +12794,132 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpec
       (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap
       hU hV hA hB rfl hmono hcard hzero hspectral hnoOrig hXformula
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
+    recursive-candidate witness from generated frontier schedules, two-block
+    spectral data, singleton shifted determinants, and explicit exclusions of
+    the constructed adjacent-block complex roots from `R`. -/
+theorem exists_isSylvesterSolutionRect_and_generatedStepFormula_of_quasiSchur_schedule_twoBlockSpectral_complex_root_separation
+    (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hsingle_det : forall p : Fin n,
+      (forall q : Fin n, q.val + 1 = p.val -> Not (pmap q = pmap p)) ->
+      (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) ->
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0))
+    (hblock_noR : forall p q : Fin n,
+      q.val = p.val + 1 ->
+      pmap p = pmap q ->
+      Not (exists y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of R)) y =
+            fun i =>
+              sylvesterTwoColumnRealSchurBlockComplexRoot n S p q
+                (Real.sqrt (-((S p p - S q q) ^ 2 + 4 * S p q * S q p))) *
+                  y i)) :
+    exists X : RMatFn m n,
+      IsSylvesterSolutionRect m n R S C X /\
+        IsSylvesterQuasiSchurGeneratedStepFormula m n R S C X pmap := by
+  rcases exists_isSylvesterQuasiSchurGeneratedStepFormula_of_quasiSchur_schedule
+      m n R S C pmap hcard with ⟨X, hXformula⟩
+  have hXsol :
+      IsSylvesterSolutionRect m n R S C X :=
+    sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_complex_root_separation_generated_step_formula
+      m n R S C X pmap hmono hcard hzero hspectral hsingle_det
+      hblock_noR hXformula
+  exact ⟨X, hXsol, hXformula⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    exact recursive-candidate witness under explicit constructed-root
+    exclusions for the Schur-coordinate left factor. -/
+theorem exists_original_solution_and_generated_step_formula_of_quasiSchur_schedule_twoBlockSpectral_complex_root_separation
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hsingle_det : forall p : Fin n,
+      (forall q : Fin n, q.val + 1 = p.val -> Not (pmap q = pmap p)) ->
+      (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) ->
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0))
+    (hblock_noR : forall p q : Fin n,
+      q.val = p.val + 1 ->
+      pmap p = pmap q ->
+      Not (exists y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of R)) y =
+            fun i =>
+              sylvesterTwoColumnRealSchurBlockComplexRoot n S p q
+                (Real.sqrt (-((S p p - S q q) ^ 2 + 4 * S p q * S q p))) *
+                  y i)) :
+    exists X : RMatFn m n,
+      IsSylvesterQuasiSchurGeneratedStepFormula m n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap /\
+      IsSylvesterSolutionRect m n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) := by
+  obtain ⟨X, hXsol, hXformula⟩ :=
+    exists_isSylvesterSolutionRect_and_generatedStepFormula_of_quasiSchur_schedule_twoBlockSpectral_complex_root_separation
+      m n R S (rectMatMul (matTranspose U) (rectMatMul C V)) pmap
+      hmono hcard hzero hspectral hsingle_det hblock_noR
+  refine ⟨X, hXformula, ?_⟩
+  exact
+    (sylvester_schur_transform_solution_iff m n
+      U R A V S B C X hU hV hA hB).mpr hXsol
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
+    exact recursive-candidate unique solvability under explicit constructed
+    complex-root exclusions. -/
+theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpectral_complex_root_separation_generated_step_formula_witness
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C : RMatFn m n)
+    (pmap : Fin n -> Nat)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hsingle_det : forall p : Fin n,
+      (forall q : Fin n, q.val + 1 = p.val -> Not (pmap q = pmap p)) ->
+      (forall q : Fin n, q.val = p.val + 1 -> Not (pmap p = pmap q)) ->
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S p p)) = 0))
+    (hblock_noR : forall p q : Fin n,
+      q.val = p.val + 1 ->
+      pmap p = pmap q ->
+      Not (exists y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of R)) y =
+            fun i =>
+              sylvesterTwoColumnRealSchurBlockComplexRoot n S p q
+                (Real.sqrt (-((S p p - S q q) ^ 2 + 4 * S p q * S q p))) *
+                  y i)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) := by
+  obtain ⟨X, hXformula, _hXorig⟩ :=
+    exists_original_solution_and_generated_step_formula_of_quasiSchur_schedule_twoBlockSpectral_complex_root_separation
+      m n U R A V S B C pmap hU hV hA hB hmono hcard hzero
+      hspectral hsingle_det hblock_noR
+  exact
+    existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_complex_root_separation_generated_step_formula
+      m n U R A V S B C
+      (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap
+      hU hV hA hB rfl hmono hcard hzero hspectral hsingle_det
+      hblock_noR hXformula
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
     recursive-candidate witness with the real quasi-Schur factors chosen
     internally.  Under the original no-common complex spectrum hypothesis, the
