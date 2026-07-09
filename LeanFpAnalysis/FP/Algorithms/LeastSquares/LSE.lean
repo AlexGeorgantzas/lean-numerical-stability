@@ -48075,6 +48075,130 @@ theorem
       hbpos hBpos hdpos hxpos hyx hrpos hmax hMP hBAPt hstack hstackPert
       hx hy hkappa hepsSmall hDeltaGQRFrob hgapScale hbracket
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    same-`Q` source-radius version of the GQR/BAplus handoff.
+
+    The displayed max-relative perturbation hypothesis already gives
+    `||DeltaA||_F <= eps*||A||_F`.  If the supplied perturbed GQR record uses
+    the same right factor `Q`, this source perturbation budget supplies the
+    reduced Wedin radius with `Ared_norm = ||A||_F`.  Thus callers no longer
+    provide a separate reduced trailing-block perturbation bound on this
+    same-basis route. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gqrQ2_reducedGram_BAplus_residual_gap_sourceA_frob_sameQ_autoAredPlusPos_of_eps_lt_inv_kappaB_eps_nonneg
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (hpert : GeneralizedQRFactorization r p (k + 1)
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (x y : Fin (p + (k + 1)) → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hstackPert : LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hkappa :
+      theorem20_8KappaB A APplus =
+        complexMatrixOp2
+            (realRectToCMatrix (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) *
+          frobNormRect A)
+    (hepsSmall : eps < 1 / theorem20_8KappaB A APplus)
+    (hQsame : hpert.Q = h.Q)
+    (hgapScale :
+      complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B hB.rightInverse)) *
+          vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) +
+        ((theorem20_8KappaB A APplus *
+              (complexMatrixOp2
+                  (realRectToCMatrix (rectMatMul A hB.rightInverse)) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B hB.rightInverse APplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b) ≤
+        eps * vecNorm2 (lsResidualHigham A b x))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hAredPlus_pos :
+      0 < complexMatrixOp2
+        (realRectToCMatrix (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) :=
+    h.A_Q2_reduced_gram_pseudoinverse_op2_pos hstack
+  have hkappa_pos :
+      0 < theorem20_8KappaB A APplus := by
+    rw [hkappa]
+    exact mul_pos hAredPlus_pos hApos
+  have hsmall : theorem20_8KappaB A APplus * eps < 1 :=
+    theorem20_8KappaB_mul_eps_lt_one_of_eps_lt_inv A APplus hkappa_pos
+      hepsSmall
+  have hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps :=
+    theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax
+  have hDeltaGQRFrob :
+      frobNormRect
+        (fun i j =>
+          gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q i j -
+            gqrAQ2Block A h.Q i j)
+        ≤ eps * frobNormRect A :=
+    h.gqrAQ2Block_delta_frobNorm_le_of_same_Q hpert hQsame hbudget.1
+  have hDeltaGQR :
+      rectOpNorm2Le
+        (fun i j =>
+          gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q i j -
+            gqrAQ2Block A h.Q i j)
+        (eps * frobNormRect A) :=
+    rectOpNorm2Le_of_frobNormRect_le _ hDeltaGQRFrob
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gqrQ2_reducedGram_BAplus_residual_gap_concreteAredPlusNorm_kappaB_eps_nonneg
+      (Ared_norm := frobNormRect A)
+      A DeltaA b Deltab hB DeltaB APplus d Deltad hpert x y hApos
+      hbpos hBpos hdpos hxpos hyx hrpos hmax hMP hBAPt hstack hstackPert
+      hx hy hAredPlus_pos hkappa hsmall hDeltaGQR hgapScale hbracket
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS A-side bridge:
     the source null-intersection condition supplies every nonzero-stage
     normalizer needed for exact MGS applied to the smaller `A Q₂` block. -/
