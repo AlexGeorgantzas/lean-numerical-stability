@@ -55,6 +55,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.7 mixed-path schedule monotonicity | `higham11_7_tridiagonalPathStartOffsetsFrom_le_of_le`, `higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_branch_end_of_le`, `higham11_7_tridiagonalPathStartOffsets_le_of_le`, `higham11_7_tridiagonalPathStartOffsets_branch_end_le_branch_end_of_le` | Ch11 | **new this session**; packages monotonicity of scheduled starts and consumed-branch endpoints for base-offset and zero-based mixed tridiagonal paths. |
 | Thm 11.7 mixed-path schedule uniqueness | `higham11_7_tridiagonalPathStartOffsetsFrom_unique`, `higham11_7_tridiagonalPathStartOffsetsFrom_exists_unique`, `higham11_7_tridiagonalPathStartOffsets_unique`, `higham11_7_tridiagonalPathStartOffsets_exists_unique` | Ch11 | **new this session**; proves the base-offset and zero-based mixed-path start schedules are unique, and packages existence plus uniqueness for canonical schedule handoffs. |
 | Thm 11.7 mixed-path schedule prefix spans | `higham11_7_tridiagonalPathPrefixSpan`, `higham11_7_tridiagonalPathPrefixSpan_zero`, `higham11_7_tridiagonalPathPrefixSpan_succ`, `higham11_7_tridiagonalPathStartOffsetsFrom_eq_base_add_prefixSpan`, `higham11_7_tridiagonalPathStartOffsets_eq_prefixSpan`, `higham11_7_tridiagonalPathPrefixSpan_last_add_branch_eq_pivotSpan` | Ch11 | **new this session**; identifies each scheduled branch start with the base plus the sum of earlier consumed pivot spans, and identifies the last explicit prefix endpoint with the full path span. |
+| Thm 11.7 mixed-path prefix-span bounds and ordering | `higham11_7_tridiagonalPathPrefixSpan_lt_pivotSpan`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_pivotSpan`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_of_lt`, `higham11_7_tridiagonalPathPrefixSpan_lt_of_lt`, `higham11_7_tridiagonalPathPrefixSpan_le_of_le`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_branch_end_of_le` | Ch11 | **new this session**; transfers containment, strict ordering, and monotone endpoint facts from canonical schedules to explicit prefix spans, so later lifted-entry arguments can avoid carrying a separate `starts` witness. |
 | §11.1.1 1×1 multiplier bound `|c/e| ≤ 1/α` | `oneByOne_multiplier_bound`, `higham11_1_oneByOne_multiplier_bound` | " | **new this session**; derived from pivot test `α·ω ≤ |e|`; the honest content behind the `bunch_parlett_L_bound`/`bunch_kaufman` `‖L‖`-interfaces |
 | §11.1.1 / §11.1.2 1×1 Schur step growth `|b−c₁c₂/e| ≤ (1+1/α)μ₀` | `oneByOne_schur_growth`, `higham11_1_oneByOne_schur_growth` | " | **new this session**; printed bound `|ã_ij| ≤ μ₀+μ₀²/μ₁ ≤ (1+1/α)μ₀`; mechanism behind ρₙ ≤ (1+α⁻¹)^{n−1} |
 | §11.1.1 2×2 pivot det bound `det E ≤ (α²−1)μ₀²` | `twoByTwo_completePivot_det_bound`, `higham11_4_twoByTwo_det_bound` | " | **new this session**; printed `det(E) ≤ μ₁²−μ₀² ≤ (α²−1)μ₀²` |
@@ -412,6 +413,10 @@ zero and successor split lemmas, the base-offset and zero-based start equality
 theorems, and
 `higham11_7_tridiagonalPathPrefixSpan_last_add_branch_eq_pivotSpan`, exposing
 the explicit prefix-sum form of the canonical mixed-path schedule.
+The prefix-span bounds increment adds the corresponding direct prefix-span
+containment, branch-end containment, strict ordering, and monotone endpoint
+facts, so downstream concrete path proofs can reason from prefix spans without
+first materializing a start-offset schedule.
 The remaining Theorem 11.7 work is still instantiating those adapters over the
 full mixed pivot path and instantiating this start-offset schedule,
 coefficient/roundoff/local-norm comparisons, and final lifted solve equation.
@@ -1753,6 +1758,18 @@ Problem transcription.
     `higham11_7_tridiagonalPathStartOffsetsFrom_eq_base_add_prefixSpan`,
     `higham11_7_tridiagonalPathStartOffsets_eq_prefixSpan`, and
     `higham11_7_tridiagonalPathPrefixSpan_last_add_branch_eq_pivotSpan`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 mixed-path prefix-span bounds/order increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathPrefixSpan_lt_pivotSpan`,
+    `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_pivotSpan`,
+    `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_of_lt`,
+    `higham11_7_tridiagonalPathPrefixSpan_lt_of_lt`,
+    `higham11_7_tridiagonalPathPrefixSpan_le_of_le`, and
+    `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_branch_end_of_le`
     → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.7 mixed-path schedule uniqueness increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
