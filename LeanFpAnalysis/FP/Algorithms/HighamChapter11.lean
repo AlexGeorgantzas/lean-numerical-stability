@@ -6934,6 +6934,81 @@ theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTail
       (fun t => c_rec t.succ) (fun t => u t.succ)
       (fun t => tail_fl t.succ) (fun t => tail_exact t.succ) htail)
 
+/-- **Theorem 11.7 path-local assumptions from initial local branches and a
+terminal last branch**.  This packages the natural finite mixed-pivot path
+shape: all branches before the last carry recursive local assumptions, while
+the final branch is discharged by the terminal-tail adapter. -/
+theorem higham11_7_tridiagonalBranchPathLocalAssumptions_of_init_localAssumptions_last_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hinit : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchLocalAssumptions
+        (tailDim (Fin.castSucc t)) fp (step (Fin.castSucc t))
+        (A (Fin.castSucc t)) (c_bound (Fin.castSucc t))
+        (c_rec (Fin.castSucc t)) (u (Fin.castSucc t))
+        (tail_fl (Fin.castSucc t)) (tail_exact (Fin.castSucc t)))
+    (hlast_eq : tail_fl (Fin.last k) = tail_exact (Fin.last k))
+    (hlast : higham11_7_TridiagonalBranchTerminalAssumptions
+      (tailDim (Fin.last k)) fp (step (Fin.last k)) (A (Fin.last k))
+      (c_bound (Fin.last k)) (c_rec (Fin.last k)) (u (Fin.last k))) :
+    higham11_7_TridiagonalBranchPathLocalAssumptions (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact := by
+  intro t
+  by_cases ht : t = Fin.last k
+  · subst t
+    have hlocal :
+        higham11_7_TridiagonalBranchLocalAssumptions
+          (tailDim (Fin.last k)) fp (step (Fin.last k)) (A (Fin.last k))
+          (c_bound (Fin.last k)) (c_rec (Fin.last k)) (u (Fin.last k))
+          (tail_exact (Fin.last k)) (tail_exact (Fin.last k)) :=
+      higham11_7_tridiagonalBranchLocalAssumptions_of_terminalTailAssumptions
+        (tailDim (Fin.last k)) fp (step (Fin.last k)) (A (Fin.last k))
+        (c_bound (Fin.last k)) (c_rec (Fin.last k)) (u (Fin.last k))
+        (tail_exact (Fin.last k)) hlast
+    simpa [hlast_eq] using hlocal
+  · let q : Fin k := ⟨t.val, by
+        have hle : t.val ≤ k := Nat.lt_succ_iff.mp t.isLt
+        have hne : t.val ≠ k := by
+          intro hv
+          apply ht
+          ext
+          simp [Fin.last, hv]
+        exact lt_of_le_of_ne hle hne⟩
+    have hqt : Fin.castSucc q = t := by
+      ext
+      simp [q]
+    simpa [hqt] using hinit q
+
+/-- **Theorem 11.7 path residuals from initial local branches and a terminal
+last branch**.  This is the residual-package version of
+`higham11_7_tridiagonalBranchPathLocalAssumptions_of_init_localAssumptions_last_terminalTailAssumptions`. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_of_init_localAssumptions_last_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hinit : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchLocalAssumptions
+        (tailDim (Fin.castSucc t)) fp (step (Fin.castSucc t))
+        (A (Fin.castSucc t)) (c_bound (Fin.castSucc t))
+        (c_rec (Fin.castSucc t)) (u (Fin.castSucc t))
+        (tail_fl (Fin.castSucc t)) (tail_exact (Fin.castSucc t)))
+    (hlast_eq : tail_fl (Fin.last k) = tail_exact (Fin.last k))
+    (hlast : higham11_7_TridiagonalBranchTerminalAssumptions
+      (tailDim (Fin.last k)) fp (step (Fin.last k)) (A (Fin.last k))
+      (c_bound (Fin.last k)) (c_rec (Fin.last k)) (u (Fin.last k))) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+    (k + 1) fp tailDim step A c_bound c_rec u tail_fl tail_exact
+    (higham11_7_tridiagonalBranchPathLocalAssumptions_of_init_localAssumptions_last_terminalTailAssumptions
+      k fp tailDim step A c_bound c_rec u tail_fl tail_exact
+      hinit hlast_eq hlast)
+
 /-- **Theorem 11.7 path supported witnesses**.  This predicate records the
 explicit per-branch perturbation matrices extracted from a finite mixed-pivot
 path residual package, together with their componentwise budget, zero-prefix
