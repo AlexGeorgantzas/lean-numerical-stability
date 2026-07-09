@@ -865,6 +865,34 @@ theorem higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct
       _ ≤ higham11_4_bunchKaufmanProductMax n hn L_hat D_hat :=
           higham11_4_absLDLTProduct_entry_le_productMax n hn L_hat D_hat i j
 
+/-- Pointwise matrix-product estimates package directly into the source-style
+max-entry norm estimate for `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_absLDLTProduct_entries
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) (B : ℝ)
+    (hentries : ∀ i j : Fin n, higham11_4_absLDLTProduct n L_hat D_hat i j ≤ B) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤ B := by
+  apply maxEntryNorm_le_of_entry_le_bound
+  intro i j
+  have hnonneg : 0 ≤ higham11_4_absLDLTProduct n L_hat D_hat i j := by
+    rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+    exact higham11_4_bunchKaufmanProductEntry_nonneg n L_hat D_hat i j
+  calc
+    |higham11_4_absLDLTProduct n L_hat D_hat i j|
+        = higham11_4_absLDLTProduct n L_hat D_hat i j := abs_of_nonneg hnonneg
+    _ ≤ B := hentries i j
+
+/-- Pointwise expanded double-sum estimates package directly into the
+source-style max-entry norm estimate for `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_product_entries
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) (B : ℝ)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ B) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤ B :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_absLDLTProduct_entries
+    n hn L_hat D_hat B (fun i j => by
+      simpa [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+        using hentries i j)
+
 /-- Pointwise product-entry estimates package into the scalar max-entry product
 certificate used in Theorem 11.4. -/
 theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries (n : ℕ)
