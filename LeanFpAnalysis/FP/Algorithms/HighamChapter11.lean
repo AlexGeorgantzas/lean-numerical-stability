@@ -4991,12 +4991,71 @@ theorem higham11_7_tridiagonalBranchSupportOffset_pos (s : PivotSize) :
     0 < higham11_7_tridiagonalBranchSupportOffset s := by
   cases s <;> simp [higham11_7_tridiagonalBranchSupportOffset]
 
+/-- A tridiagonal branch consumes at most two pivot indices. -/
+theorem higham11_7_tridiagonalBranchSupportOffset_le_two (s : PivotSize) :
+    higham11_7_tridiagonalBranchSupportOffset s ≤ 2 := by
+  cases s <;> simp [higham11_7_tridiagonalBranchSupportOffset]
+
 /-- Total number of rows/columns consumed by a finite mixed tridiagonal
 pivot path.  A `1 × 1` branch consumes one index and a `2 × 2` branch consumes
 two. -/
 def higham11_7_tridiagonalPathPivotSpan (k : ℕ)
     (step : Fin k → PivotSize) : ℕ :=
   ∑ t : Fin k, higham11_7_tridiagonalBranchSupportOffset (step t)
+
+/-- The empty mixed tridiagonal pivot path consumes no rows/columns. -/
+theorem higham11_7_tridiagonalPathPivotSpan_zero
+    (step : Fin 0 → PivotSize) :
+    higham11_7_tridiagonalPathPivotSpan 0 step = 0 := by
+  simp [higham11_7_tridiagonalPathPivotSpan]
+
+/-- Cons decomposition of the total consumed pivot span. -/
+theorem higham11_7_tridiagonalPathPivotSpan_cons
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) :
+    higham11_7_tridiagonalPathPivotSpan (k + 1) step =
+      higham11_7_tridiagonalBranchSupportOffset (step 0) +
+        higham11_7_tridiagonalPathPivotSpan k
+          (fun t : Fin k => step t.succ) := by
+  simp [higham11_7_tridiagonalPathPivotSpan, Fin.sum_univ_succ]
+
+/-- Any nonempty mixed tridiagonal pivot path consumes at least one row/column. -/
+theorem higham11_7_tridiagonalPathPivotSpan_pos
+    (k : ℕ) (step : Fin k → PivotSize) (hk : 0 < k) :
+    0 < higham11_7_tridiagonalPathPivotSpan k step := by
+  cases k with
+  | zero =>
+      omega
+  | succ k =>
+      rw [higham11_7_tridiagonalPathPivotSpan_cons]
+      exact Nat.add_pos_left
+        (higham11_7_tridiagonalBranchSupportOffset_pos (step 0)) _
+
+/-- A length-`k` mixed tridiagonal pivot path consumes at least `k` rows/columns. -/
+theorem higham11_7_tridiagonalPathPivotSpan_ge_length
+    (k : ℕ) (step : Fin k → PivotSize) :
+    k ≤ higham11_7_tridiagonalPathPivotSpan k step := by
+  induction k with
+  | zero =>
+      simp [higham11_7_tridiagonalPathPivotSpan]
+  | succ k ih =>
+      rw [higham11_7_tridiagonalPathPivotSpan_cons]
+      have hstep : 1 ≤ higham11_7_tridiagonalBranchSupportOffset (step 0) :=
+        higham11_7_tridiagonalBranchSupportOffset_pos (step 0)
+      have htail := ih (fun t : Fin k => step t.succ)
+      omega
+
+/-- A length-`k` mixed tridiagonal pivot path consumes at most `2k` rows/columns. -/
+theorem higham11_7_tridiagonalPathPivotSpan_le_two_mul
+    (k : ℕ) (step : Fin k → PivotSize) :
+    higham11_7_tridiagonalPathPivotSpan k step ≤ 2 * k := by
+  induction k with
+  | zero =>
+      simp [higham11_7_tridiagonalPathPivotSpan]
+  | succ k ih =>
+      rw [higham11_7_tridiagonalPathPivotSpan_cons]
+      have hstep := higham11_7_tridiagonalBranchSupportOffset_le_two (step 0)
+      have htail := ih (fun t : Fin k => step t.succ)
+      omega
 
 /-- Start offsets for a finite mixed tridiagonal pivot path, relative to an
 ambient base offset.  The head starts at `base`; each successor starts after
