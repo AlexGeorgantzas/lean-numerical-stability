@@ -15849,3 +15849,14 @@ small enough to serve as a smoke check for representative public declarations.
 #check matPow_G_tendsto_oneEigenProjector_of_convergence
 #check matPow_G_tendsto_oneEigenProjector_of_spectralRadius
 #check matPow_blockJ_tendsto_topProjector_of_spectralRadius
+-- Split-3B: (18.5) primary δ⁻¹A-transform form (ch18 last row → gate PASS)
+#check higham_eq_18_5_primary_lp_jordan
+#check higham_eq_18_5_primary_real_jordan
+-- Split-3B Wave-13 (ch19 open rows, user-authorized): 19.7 printed γ₄; 19.9/19.10 dim-independent; rounded CGS; 19.6 pivoted assembly
+#check Wave13.fl_givensCoeffError_gamma4
+#check Wave13.H19_Lemma19_9_disjoint_stage_column_backward_error
+#check Wave13.H19_Theorem19_10_givens_qr_dimIndep
+#check fl_classicalGramSchmidt
+#check fl_classicalGramSchmidt_roundedState
+#check Wave13.H19_Theorem19_6_pivoted_qr_rowwise_backward_error
+#check Wave13.pivoted_qr_backward_error_of_perm
