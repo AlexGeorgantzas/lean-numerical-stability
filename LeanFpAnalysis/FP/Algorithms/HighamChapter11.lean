@@ -934,6 +934,70 @@ theorem higham11_4_bunchKaufmanProductEntry_nonneg (n : ℕ)
     Finset.sum_nonneg (fun k₂ _ =>
       mul_nonneg (mul_nonneg (abs_nonneg _) (abs_nonneg _)) (abs_nonneg _)))
 
+/-- Entrywise row-sum majorants for `|L̂|`, together with a uniform entry bound
+for `|D̂|`, bound one source product entry of `|L̂||D̂||L̂ᵀ|`.  This is the
+algebraic handoff used when the remaining Theorem 11.4 proof turns pivot-local
+bounds into eq. (4.14)'s product-entry estimate. -/
+theorem higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n)
+    (Dmax Lrow_i Lrow_j : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrow_i : (∑ k : Fin n, |L_hat i k|) ≤ Lrow_i)
+    (hrow_j : (∑ k : Fin n, |L_hat j k|) ≤ Lrow_j) :
+    higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+      Lrow_i * Dmax * Lrow_j := by
+  have hLrow_j : 0 ≤ Lrow_j :=
+    (Finset.sum_nonneg (fun k _ => abs_nonneg (L_hat j k))).trans hrow_j
+  unfold higham11_4_bunchKaufmanProductEntry
+  calc
+    ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂|
+        ≤ ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+            |L_hat i k₁| * Dmax * |L_hat j k₂| := by
+          apply Finset.sum_le_sum
+          intro k₁ _
+          apply Finset.sum_le_sum
+          intro k₂ _
+          have hleft :
+              |L_hat i k₁| * |D_hat k₁ k₂| ≤ |L_hat i k₁| * Dmax :=
+            mul_le_mul_of_nonneg_left (hD k₁ k₂) (abs_nonneg (L_hat i k₁))
+          exact mul_le_mul_of_nonneg_right hleft (abs_nonneg (L_hat j k₂))
+    _ ≤ ∑ k₁ : Fin n, |L_hat i k₁| * Dmax * Lrow_j := by
+          apply Finset.sum_le_sum
+          intro k₁ _
+          have hscale : 0 ≤ |L_hat i k₁| * Dmax :=
+            mul_nonneg (abs_nonneg _) hDmax
+          calc
+            ∑ k₂ : Fin n, |L_hat i k₁| * Dmax * |L_hat j k₂|
+                = (|L_hat i k₁| * Dmax) * ∑ k₂ : Fin n, |L_hat j k₂| := by
+                  rw [Finset.mul_sum]
+            _ ≤ (|L_hat i k₁| * Dmax) * Lrow_j :=
+                mul_le_mul_of_nonneg_left hrow_j hscale
+            _ = |L_hat i k₁| * Dmax * Lrow_j := by ring
+    _ = (∑ k₁ : Fin n, |L_hat i k₁|) * Dmax * Lrow_j := by
+          rw [← Finset.sum_mul]
+          rw [← Finset.sum_mul]
+    _ ≤ Lrow_i * Dmax * Lrow_j := by
+          have hscale : 0 ≤ Dmax * Lrow_j := mul_nonneg hDmax hLrow_j
+          calc
+            (∑ k₁ : Fin n, |L_hat i k₁|) * Dmax * Lrow_j
+                = (∑ k₁ : Fin n, |L_hat i k₁|) * (Dmax * Lrow_j) := by ring
+            _ ≤ Lrow_i * (Dmax * Lrow_j) :=
+                mul_le_mul_of_nonneg_right hrow_i hscale
+            _ = Lrow_i * Dmax * Lrow_j := by ring
+
+/-- Uniform row-sum specialization of
+`higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds`. -/
+theorem higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n)
+    (Dmax Lrow : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow) :
+    higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+      Lrow * Dmax * Lrow :=
+  higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds n L_hat D_hat i j
+    Dmax Lrow Lrow hDmax hD (hrows i) (hrows j)
+
 /-- **Theorem 11.4 max-entry norm target**: the finite max-entry norm of
 `|L̂||D̂||L̂ᵀ|`, written as a finite supremum over entry pairs.  The positive
 dimension hypothesis supplies the nonempty finite set for `Finset.sup'`. -/
@@ -1100,6 +1164,20 @@ theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_product_entries
       simpa [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
         using hentries i j)
 
+/-- Uniform row-sum and `D̂` entry caps package into the source max-entry norm
+target for `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lrow B : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hB : Lrow * Dmax * Lrow ≤ B) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤ B :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_product_entries
+    n hn L_hat D_hat B (fun i j =>
+      (higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound
+        n L_hat D_hat i j Dmax Lrow hDmax hD hrows).trans hB)
+
 /-- Pointwise product-entry estimates package into the scalar max-entry product
 certificate used in Theorem 11.4. -/
 theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries (n : ℕ)
@@ -1138,6 +1216,23 @@ theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProdu
   simpa [higham11_4_bunchKaufmanMaxEntryProductBound,
     higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct n hn L_hat D_hat]
     using hproduct
+
+/-- Uniform row-sum and `D̂` entry caps package directly into the scalar
+max-entry product certificate used by the Theorem 11.4 stability and solve
+consumers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_row_sum_bound
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lrow ρ_n Amax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hbudget : Lrow * Dmax * Lrow ≤ 36 * (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct
+    n hn L_hat D_hat ρ_n Amax
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound
+      n hn L_hat D_hat Dmax Lrow (36 * (n : ℝ) * ρ_n * Amax)
+      hDmax hD hrows hbudget)
 
 /-- **Theorem 11.4 constant (Higham [608, 1997], eq (4.13))**: the `36` in the
 bound `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36 n ρₙ ‖A‖_M` comes from
