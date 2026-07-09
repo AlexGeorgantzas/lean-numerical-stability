@@ -3838,6 +3838,101 @@ theorem higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions
                     hbudget)
                 hval hrec hc_bound hc_rec hu)
 
+/-- **Theorem 11.7 recursive base certificate**.  A zero perturbation supplies
+the recursive scalar residual certificate for a terminal tail. -/
+theorem higham11_7_tridiagonalRecursiveTailZeroResidual
+    (m : ℕ) (β tail_exact : ℝ) (hβ : 0 ≤ β) :
+    ∃ ΔRtail : Fin (m + 1) → Fin (m + 1) → ℝ,
+      (∀ i j : Fin (m + 1), |ΔRtail i j| ≤ β) ∧
+      tail_exact = tail_exact + ΔRtail 0 0 := by
+  refine ⟨fun _ _ => 0, ?_, ?_⟩
+  · intro i j
+    simpa using hβ
+  · simp
+
+/-- **Theorem 11.7 recursive base certificate, infinity-norm form**.  This is
+the zero-tail package in the same printed coefficient shape used by the local
+tridiagonal branch adapters. -/
+theorem higham11_7_tridiagonalRecursiveTailZeroResidual_infNorm
+    (m p : ℕ) (A : Fin p → Fin p → ℝ)
+    (c_rec u tail_exact : ℝ) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔRtail : Fin (m + 1) → Fin (m + 1) → ℝ,
+      (∀ i j : Fin (m + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_exact = tail_exact + ΔRtail 0 0 :=
+  higham11_7_tridiagonalRecursiveTailZeroResidual m
+    (c_rec * u * infNorm A) tail_exact
+    (mul_nonneg (mul_nonneg hc_rec hu) (infNorm_nonneg A))
+
+/-- **Theorem 11.7 terminal branch assumptions**.  These are the local
+assumptions needed when the current `1 × 1` or `2 × 2` tridiagonal branch is
+followed by a zero recursive tail. -/
+def higham11_7_TridiagonalBranchTerminalAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u : ℝ) : Prop :=
+  match s with
+  | PivotSize.one =>
+      higham11_6_BunchTridiagonalPivotChoice (infNorm A)
+          (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))
+          (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))
+          PivotSize.one ∧
+      A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+          (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one) ≠ 0 ∧
+      gamma fp 3 *
+          (infNorm A + infNorm A / higham11_6_bunchTridiagonalAlpha) ≤
+        c_bound * u * infNorm A ∧
+      gammaValid fp 3 ∧
+      0 ≤ c_bound ∧ 0 ≤ c_rec ∧ 0 ≤ u
+  | PivotSize.two =>
+      higham11_6_BunchTridiagonalPivotChoice (infNorm A)
+          (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two))
+          (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two))
+          PivotSize.two ∧
+      gamma fp 3 *
+          (infNorm A +
+            infNorm A *
+              (infNorm A /
+                ((1 - higham11_6_bunchTridiagonalAlpha) *
+                  (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                    (higham11_7_tridiagonalBranchLeadingIndex n
+                      PivotSize.two)) ^ 2)) *
+                infNorm A) ≤
+        c_bound * u * infNorm A ∧
+      gammaValid fp 3 ∧
+      0 ≤ c_bound ∧ 0 ≤ c_rec ∧ 0 ≤ u
+
+/-- **Theorem 11.7 terminal branch adapter**.  A local branch satisfying the
+terminal-tail assumptions produces the common branch residual with
+`tail_fl = tail_exact`. -/
+theorem higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_exact : ℝ)
+    (hterminal : higham11_7_TridiagonalBranchTerminalAssumptions n fp s A
+      c_bound c_rec u) :
+    higham11_7_TridiagonalBranchLocalResidual n fp s A
+      c_bound c_rec u tail_exact tail_exact := by
+  apply higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions
+  cases s with
+  | one =>
+      rcases hterminal with
+        ⟨hchoice, ha21, hbudget, hval, hc_bound, hc_rec, hu⟩
+      exact ⟨hchoice, ha21, hbudget, hval,
+        higham11_7_tridiagonalRecursiveTailZeroResidual_infNorm n (n + 2)
+          A c_rec u tail_exact hc_rec hu,
+        hc_bound, hc_rec, hu⟩
+  | two =>
+      rcases hterminal with
+        ⟨hchoice, hbudget, hval, hc_bound, hc_rec, hu⟩
+      exact ⟨hchoice, hbudget, hval,
+        higham11_7_tridiagonalRecursiveTailZeroResidual_infNorm n (n + 3)
+          A c_rec u tail_exact hc_rec hu,
+        hc_bound, hc_rec, hu⟩
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
