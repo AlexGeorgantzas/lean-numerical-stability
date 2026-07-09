@@ -13895,6 +13895,30 @@ theorem existsUnique_isSylvesterSolutionRect_of_twoBlockSpectral_no_common_gener
       (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap
       hU hV hA hB rfl hmono hcard hzero hspectral hnoOrig hXformula
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-step characterization of exact
+    Schur-coordinate solutions. -/
+alias H16_eq16_4_8_isSylvesterQuasiSchurGeneratedStepFormula_of_solution_twoBlockSpectral_no_common :=
+  isSylvesterQuasiSchurGeneratedStepFormula_of_solution_twoBlockSpectral_no_common
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for exact Schur-coordinate generated-step witness
+    existence. -/
+alias H16_eq16_4_8_exists_isSylvesterSolutionRect_and_generatedStepFormula_of_twoBlockSpectral_no_common :=
+  exists_isSylvesterSolutionRect_and_generatedStepFormula_of_twoBlockSpectral_no_common
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate generated-step witness
+    existence. -/
+alias H16_eq16_4_8_exists_original_solution_and_generated_step_formula_of_twoBlockSpectral_no_common :=
+  exists_original_solution_and_generated_step_formula_of_twoBlockSpectral_no_common
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate unique solvability from an
+    exact generated-step witness. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_twoBlockSpectral_no_common_generated_step_formula_witness :=
+  existsUnique_isSylvesterSolutionRect_of_twoBlockSpectral_no_common_generated_step_formula_witness
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
     `A - t_kk I` nonsingular, two solutions of `AX - XT = C` coincide, by
