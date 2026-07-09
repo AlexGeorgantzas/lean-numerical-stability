@@ -1710,6 +1710,67 @@ theorem LSAugmentedSystem.of_eq20_6_full_column_rank {m n : ℕ}
     LSAugmentedSystem.of_eq20_6_nonsing_gram A u v
       (rectLSGram_det_ne_zero_of_rectMatMulVec_injective A hA)
 
+/-- Full-column-rank Gram pseudoinverse support: a nonzero Gram determinant
+    makes `(AᵀA)^{-1}Aᵀ` a left inverse for `A`. -/
+theorem lsAplusOfGramNonsingInv_mul_self_of_det_ne_zero {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (hdet : Matrix.det (rectLSGram A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    rectMatMul (lsAplusOfGramNonsingInv A) A = idMatrix n := by
+  ext j k
+  have hentry :=
+    lsAugmentedInverseAction_Aplus_mul_A
+      A (lsAplusOfGramNonsingInv A) (lsGramNonsingInv A)
+      (by intro j i; rfl)
+      (lsGramNonsingInv_isInverse_of_det_ne_zero A hdet) j k
+  simpa [rectMatMul, idMatrix] using hentry
+
+/-- Full-column-rank Gram pseudoinverse support: the range projection
+    `A(AᵀA)^{-1}Aᵀ` is symmetric. -/
+theorem lsAplusOfGramNonsingInv_projection_symmetric {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) :
+    IsSymmetricFiniteMatrix (rectMatMul A (lsAplusOfGramNonsingInv A)) := by
+  intro i j
+  unfold rectMatMul lsAplusOfGramNonsingInv
+  calc
+    (∑ k : Fin n, A i k *
+        (∑ l : Fin n, lsGramNonsingInv A k l * A j l)) =
+        ∑ k : Fin n, ∑ l : Fin n,
+          A i k * (lsGramNonsingInv A k l * A j l) := by
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [Finset.mul_sum]
+    _ = ∑ l : Fin n, ∑ k : Fin n,
+          A i k * (lsGramNonsingInv A k l * A j l) := by
+          rw [Finset.sum_comm]
+    _ = ∑ l : Fin n, ∑ k : Fin n,
+          A j l * (lsGramNonsingInv A l k * A i k) := by
+          apply Finset.sum_congr rfl
+          intro l _
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [lsGramNonsingInv_symmetric A k l]
+          ring
+    _ = ∑ l : Fin n, A j l *
+          (∑ k : Fin n, lsGramNonsingInv A l k * A i k) := by
+          apply Finset.sum_congr rfl
+          intro l _
+          rw [Finset.mul_sum]
+
+/-- Full-column-rank Gram pseudoinverse package for the reduced Wedin route:
+    injectivity of `x ↦ A*x` supplies both the left inverse and symmetric
+    range-projection fields required by the repository Moore--Penrose-style
+    least-squares interfaces. -/
+theorem lsAplusOfGramNonsingInv_left_inverse_and_projection_symmetric
+    {m n : ℕ} (A : Fin m → Fin n → ℝ)
+    (hA : Function.Injective (rectMatMulVec A)) :
+    rectMatMul (lsAplusOfGramNonsingInv A) A = idMatrix n ∧
+      IsSymmetricFiniteMatrix (rectMatMul A (lsAplusOfGramNonsingInv A)) := by
+  constructor
+  · exact
+      lsAplusOfGramNonsingInv_mul_self_of_det_ne_zero A
+        (rectLSGram_det_ne_zero_of_rectMatMulVec_injective A hA)
+  · exact lsAplusOfGramNonsingInv_projection_symmetric A
+
 /-- The `I - A A^+` top-left block in Higham, 2nd ed., Chapter 20,
     equation (20.6). -/
 noncomputable def lsAugmentedProjectionBlock {m n : ℕ}
