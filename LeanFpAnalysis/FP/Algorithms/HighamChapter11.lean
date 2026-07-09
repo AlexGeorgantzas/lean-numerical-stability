@@ -6903,6 +6903,77 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relat
       (by simpa [add_assoc] using hcoeff)
 
 /-- Relative abs-LU componentwise-middle wrapper with the concrete
+factorization-side `T_hat` budget, exact product majorants, and the standard
+gamma/product-square coefficient discharge. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_square_products
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n)
+    (A Pmat L T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κT κBT κmidLU : ℝ)
+    (hγ_factor : 0 ≤ γ_factor)
+    (hγ_factor_le : γ_factor ≤ gamma fp n)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hγ15 : gamma fp (15 * n + 25) ≤ γ15n25)
+    (hκL : 0 ≤ κL)
+    (hκT : 0 ≤ κT) (hκBT : 0 ≤ κBT) (hκmidLU : 0 ≤ κmidLU)
+    (hκBT_le : κBT ≤ gamma fp n)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hLhat_entry : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ_factor * |L i j|)
+    (hThat_component : ∀ i j : Fin n, |T_hat i j - T i j| ≤ κBT * |T_hat i j|)
+    (hL_norm : infNorm L ≤ κL)
+    (hLT_norm : infNorm (fun r c => L c r) ≤ κLT)
+    (hT_norm : infNorm T ≤ κT * infNorm T_hat)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤
+        κmidLU * |T_hat i j|)
+    (hprodFT : κL * κT * κLT ≤ ((n - 1 : ℕ) : ℝ) ^ 2)
+    (hprodFB_base : κL * κLT ≤ ((n - 1 : ℕ) : ℝ) ^ 2)
+    (hprodST :
+      ((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2)
+    (hprodSB :
+      ((1 + γ_factor) * κL) * κmidLU * ((1 + γ_factor) * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => κBT * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA) γ15n25
+        (infNorm T_hat) := by
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_concrete_product_majorants
+      fp n hn_pos A Pmat L T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      γ_factor (gamma fp n) (gamma fp n) (gamma fp n) γ15n25
+      κL κLT κT κBT κmidLU hγ_factor hγ_factor_le le_rfl le_rfl
+      hκL hκT hκBT hκmidLU h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hn hprod hLhat_entry hThat_component
+      hL_norm hLT_norm hT_norm hmiddle_entry
+      (higham11_8_aasen_relative_coeff_le_of_gamma_product_square_bounds
+        fp n γ_factor γ15n25 κL κLT κT κBT κmidLU hcoeff_valid hγ15
+        hκBT hκBT_le hprodFT hprodFB_base hprodST hprodSB)
+
+/-- Relative abs-LU componentwise-middle wrapper with the concrete
 factorization-side `T_hat` budget and exact product majorants, using four
 shares of the printed coefficient. -/
 theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_concrete_product_majorants_gamma_parts
