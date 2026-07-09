@@ -998,6 +998,33 @@ theorem higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound (n : ℕ)
   higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds n L_hat D_hat i j
     Dmax Lrow Lrow hDmax hD (hrows i) (hrows j)
 
+/-- Uniform entry bounds for `|L̂|` imply the row-sum caps consumed by the
+Theorem 11.4 product-entry bridge. -/
+theorem higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound (n : ℕ)
+    (L_hat : Fin n → Fin n → ℝ) (Lmax : ℝ)
+    (hL : ∀ i k : Fin n, |L_hat i k| ≤ Lmax) (i : Fin n) :
+    (∑ k : Fin n, |L_hat i k|) ≤ (n : ℝ) * Lmax := by
+  calc
+    (∑ k : Fin n, |L_hat i k|)
+        ≤ ∑ _k : Fin n, Lmax := by
+          exact Finset.sum_le_sum (fun k _ => hL i k)
+    _ = (n : ℝ) * Lmax := by
+          simp
+
+/-- Uniform entry caps for `|L̂|` and `|D̂|` bound a source product entry of
+`|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n)
+    (Dmax Lmax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax) :
+    higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) :=
+  higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound n L_hat D_hat i j
+    Dmax ((n : ℝ) * Lmax) hDmax hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+
 /-- **Theorem 11.4 max-entry norm target**: the finite max-entry norm of
 `|L̂||D̂||L̂ᵀ|`, written as a finite supremum over entry pairs.  The positive
 dimension hypothesis supplies the nonempty finite set for `Finset.sup'`. -/
@@ -1178,6 +1205,21 @@ theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound
       (higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound
         n L_hat D_hat i j Dmax Lrow hDmax hD hrows).trans hB)
 
+/-- Uniform entry caps for `|L̂|` and `|D̂|` package into the source max-entry
+norm target for `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax B : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hB : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ B) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤ B :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound
+    n hn L_hat D_hat Dmax ((n : ℝ) * Lmax) B hDmax hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hB
+
 /-- Pointwise product-entry estimates package into the scalar max-entry product
 certificate used in Theorem 11.4. -/
 theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries (n : ℕ)
@@ -1233,6 +1275,25 @@ theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_row_sum_bound
     (higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound
       n hn L_hat D_hat Dmax Lrow (36 * (n : ℝ) * ρ_n * Amax)
       hDmax hD hrows hbudget)
+
+/-- Uniform entry caps for `|L̂|` and `|D̂|` package directly into the scalar
+max-entry product certificate used by the Theorem 11.4 stability and solve
+consumers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_entry_bounds
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax ρ_n Amax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        36 * (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct
+    n hn L_hat D_hat ρ_n Amax
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds
+      n hn L_hat D_hat Dmax Lmax (36 * (n : ℝ) * ρ_n * Amax)
+      hDmax hD hL hbudget)
 
 /-- **Theorem 11.4 constant (Higham [608, 1997], eq (4.13))**: the `36` in the
 bound `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36 n ρₙ ‖A‖_M` comes from
@@ -1298,6 +1359,30 @@ theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_su
       exact
         (higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound
           n L_hat D_hat i j Dmax Lrow hDmax hD hrows).trans hbudget)
+
+/-- Uniform entry caps for `|L̂|` and `|D̂|` that reach Higham's exact
+coefficient feed the source-facing `36nρₙ` max-entry norm target for
+`|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax ρ_n Amax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound
+    n hn L_hat D_hat Dmax ((n : ℝ) * Lmax) ρ_n Amax hDmax hρ
+    hAmax hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hbudget
 
 /-- Per-row row-sum caps for `|L̂|`, rather than a single uniform row cap, are
 enough to feed Higham [608, 1997], eq. (4.14)'s exact-coefficient max-entry
@@ -1382,6 +1467,28 @@ theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_row_
     n hn L_hat D_hat ρ_n Amax
     (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound
       n hn L_hat D_hat Dmax Lrow ρ_n Amax hDmax hρ hAmax hD hrows hbudget)
+
+/-- Uniform entry caps for `|L̂|` and `|D̂|` that reach Higham's exact
+coefficient package directly into the scalar product certificate consumed by
+the 11.4 stability and solve wrappers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_entry_bounds
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax ρ_n Amax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct
+    n hn L_hat D_hat ρ_n Amax
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds
+      n hn L_hat D_hat Dmax Lmax ρ_n Amax hDmax hρ hAmax hD hL hbudget)
 
 /-- Per-row row-sum caps package directly into the scalar product certificate
 consumed by the Theorem 11.4 stability and solve wrappers. -/
