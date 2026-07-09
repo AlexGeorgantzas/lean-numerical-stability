@@ -49173,6 +49173,80 @@ theorem
       d Deltad x y res resHigh heps_nonneg hApos hbpos hBpos hdpos
       hxpos hyx hmax hAPaction hx hy hres_source hres_pert hgap
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source-shaped first-order handoff for the concrete lifted reduced-Gram
+    `APplus` candidate, with the residual-gap obligation stated as a relative
+    residual estimate.
+
+    The GQR rank assumptions discharge the projected-action hypothesis
+    `(AP)^+ AP v = P v` for `APplus = Q₂(AQ₂)^+`.  The residual-relative
+    estimate and its scalar comparison with the residual amplifier remain
+    explicit obligations. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_source_residual_relative_bound
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ)
+    {B : Fin p → Fin (p + q) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p q A B)
+    (x y : Fin (p + q) → ℝ)
+    (res resHigh : Fin (r + q) → ℝ)
+    {eps residualRelativeRHS : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 res)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres_source : lsResidualHigham A b x = res)
+    (hres_pert :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = resHigh)
+    (hrelative :
+      vecNorm2 (fun i : Fin (r + q) => res i - resHigh i) /
+          vecNorm2 res ≤
+        residualRelativeRHS)
+    (hscale :
+      complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+          (residualRelativeRHS * vecNorm2 res) ≤
+        eps * theorem20_8ResidualAmplifier A B h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B hB.rightInverse h.liftedReducedGramAPplus) *
+          (vecNorm2 res / frobNormRect A)) :
+    vecNorm2 (fun j : Fin (p + q) => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x res h.liftedReducedGramAPplus
+          (theorem20_8BAplus A B hB.rightInverse h.liftedReducedGramAPplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x res h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B hB.rightInverse h.liftedReducedGramAPplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B hB.rightInverse h.liftedReducedGramAPplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+              frobNormRect A) := by
+  have hAPaction :
+      rectMatMulVec h.liftedReducedGramAPplus
+          (rectMatMulVec (theorem20_8AP A B hB.rightInverse)
+            (fun k : Fin (p + q) => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B hB.rightInverse)
+          (fun k : Fin (p + q) => y k - x k) :=
+    h.liftedReducedGramAPplus_projected_action hB hstack
+      (fun k : Fin (p + q) => y k - x k)
+  exact
+    theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_source_residual_relative_bound_projected_action_op2_le
+      A DeltaA b Deltab B DeltaB hB.rightInverse h.liftedReducedGramAPplus
+      d Deltad x y res resHigh heps_nonneg hApos hbpos hBpos hdpos
+      hxpos hyx hrpos hmax hAPaction hx hy hres_source hres_pert
+      hrelative hscale
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     for supplied GQR data, `B` has full row rank iff the displayed
     lower-triangular constraint block `S` has trivial kernel.
