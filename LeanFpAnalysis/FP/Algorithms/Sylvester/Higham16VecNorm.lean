@@ -3055,6 +3055,25 @@ theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_operator
     n A B C sigma
     (SepLowerBound_sylvester_of_sigmaMin n A B sigma hsigma hSigmaMin)
 
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.25)-(16.26): source-numbered alias for the operator-sigma-min route to
+    the internally chosen real-Schur active-block determinant package. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_operator_sigmaMin :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.25)-(16.26): source-numbered alias for the operator-sigma-min route to
+    a real-Schur generated-step original solution witness. -/
+alias H16_eq16_4_8_exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_operator_sigmaMin :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.25)-(16.26): source-numbered alias for the operator-sigma-min route to
+    original-coordinate unique solvability via the generated real-Schur
+    witness. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_operator_sigmaMin :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_operator_sigmaMin_generated_step_formula_witness
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     a Sylvester operator sigma-min certificate gives the exact trivial-kernel
     statement for the vectorized coefficient. -/
