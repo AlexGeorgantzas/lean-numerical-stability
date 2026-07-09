@@ -1034,6 +1034,49 @@ theorem higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds (n : ℕ)
     (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
       L_hat Lmax hL r)
 
+/-- Row-sum product-entry bridge deriving `0≤Dmax` from the nonempty absolute
+`D̂` entry cap. -/
+theorem higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n)
+    (Dmax Lrow_i Lrow_j : ℝ)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrow_i : (∑ k : Fin n, |L_hat i k|) ≤ Lrow_i)
+    (hrow_j : (∑ k : Fin n, |L_hat j k|) ≤ Lrow_j) :
+    higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+      Lrow_i * Dmax * Lrow_j :=
+  higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds n L_hat D_hat i j
+    Dmax Lrow_i Lrow_j
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hD hrow_i hrow_j
+
+/-- Uniform row-sum product-entry bridge deriving `0≤Dmax` from the nonempty
+absolute `D̂` entry cap. -/
+theorem higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n)
+    (Dmax Lrow : ℝ)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow) :
+    higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+      Lrow * Dmax * Lrow :=
+  higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound n L_hat D_hat i j
+    Dmax Lrow
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hD hrows
+
+/-- Uniform entry product-entry bridge deriving `0≤Dmax` from the nonempty
+absolute `D̂` entry cap. -/
+theorem higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n)
+    (Dmax Lmax : ℝ)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax) :
+    higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) :=
+  higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds n L_hat D_hat i j
+    Dmax Lmax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hD hL
+
 /-- **Theorem 11.4 max-entry norm target**: the finite max-entry norm of
 `|L̂||D̂||L̂ᵀ|`, written as a finite supremum over entry pairs.  The positive
 dimension hypothesis supplies the nonempty finite set for `Finset.sup'`. -/
