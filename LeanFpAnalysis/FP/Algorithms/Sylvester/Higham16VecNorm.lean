@@ -2943,6 +2943,40 @@ theorem sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterS
         n A B sigma hsigma hle)
       hz
 
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the `SepLowerBound` left inverse action. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_sepLowerBound :=
+  sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the `SepLowerBound` right inverse action. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_sepLowerBound :=
+  sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias identifying exact solutions with the
+    `SepLowerBound` nonsingular-inverse vector. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound :=
+  sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the positive exact-infimum left inverse
+    action. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the positive exact-infimum right inverse
+    action. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias identifying exact solutions with the
+    positive exact-infimum nonsingular-inverse vector. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
     with a supplied `SepLowerBound` certificate, Mathlib's nonsingular inverse
     gives an explicit exact vectorized Sylvester coefficient solution. -/
