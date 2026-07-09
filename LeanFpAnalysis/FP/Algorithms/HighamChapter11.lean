@@ -6861,6 +6861,37 @@ theorem higham11_8_gammaValid_n_two_prefix_of_15n25
   intro _ next _
   exact gammaValid_mono fp (by omega) hval
 
+/-- **Theorem 11.8 printed gamma-validity guard**: the source-side smallness
+condition `(15n+25)u < 1` is exactly the repository `gammaValid` hypothesis for
+the displayed radius `γ_{15n+25}`. -/
+theorem higham11_8_gammaValid_15n25_of_unit_roundoff_bound
+    (fp : FPModel) (n : ℕ)
+    (hcap : (((15 * n + 25 : ℕ) : ℝ) * fp.u) < 1) :
+    gammaValid fp (15 * n + 25) := by
+  simpa [gammaValid] using hcap
+
+/-- Displayed-cap version of the Theorem 11.8 gamma-validity guard: if the
+model unit roundoff is bounded by a source cap `Ucap`, and the cap satisfies
+`(15n+25)Ucap < 1`, then the printed `γ_{15n+25}` radius is valid. -/
+theorem higham11_8_gammaValid_15n25_of_u_le_cap
+    (fp : FPModel) (n : ℕ) (Ucap : ℝ)
+    (hu : fp.u ≤ Ucap)
+    (hcap : (((15 * n + 25 : ℕ) : ℝ) * Ucap) < 1) :
+    gammaValid fp (15 * n + 25) :=
+  gammaValid_of_u_le_cap fp (15 * n + 25) Ucap hu hcap
+
+/-- A displayed unit-roundoff cap for Theorem 11.8 supplies the local
+`gammaValid n`, `gammaValid 2`, and source-prefix dot-product validity
+conditions used by the Aasen recurrence wrappers. -/
+theorem higham11_8_gammaValid_n_two_prefix_of_u_le_cap
+    (fp : FPModel) (n : ℕ) (Ucap : ℝ)
+    (hu : fp.u ≤ Ucap)
+    (hcap : (((15 * n + 25 : ℕ) : ℝ) * Ucap) < 1) :
+    gammaValid fp n ∧ gammaValid fp 2 ∧
+      (∀ i next : Fin n, next.val = i.val + 1 → gammaValid fp next.val) :=
+  higham11_8_gammaValid_n_two_prefix_of_15n25 fp n
+    (higham11_8_gammaValid_15n25_of_u_le_cap fp n Ucap hu hcap)
+
 /-- Product-cap version of
 `higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts`.  Each of the four
 coefficient pieces may first be bounded by a simpler product cap, and the cap
