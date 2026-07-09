@@ -1451,6 +1451,69 @@ theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds
           n L_hat D_hat i j Dmax (Lrow i) (Lrow j) hDmax hD
           (hrows i) (hrows j)).trans (hbudget i j))
 
+/-- Exact-coefficient uniform row-sum and `D̂` entry caps feed the max-entry
+norm target, deriving `0≤Dmax` from the absolute `D̂` entry cap. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lrow ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hbudget :
+      Lrow * Dmax * Lrow ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound
+    n hn L_hat D_hat Dmax Lrow ρ_n Amax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hρ hAmax hD hrows hbudget
+
+/-- Exact-coefficient uniform entry caps feed the max-entry norm target,
+deriving `0≤Dmax` from the absolute `D̂` entry cap. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds
+    n hn L_hat D_hat Dmax Lmax ρ_n Amax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hρ hAmax hD hL hbudget
+
+/-- Exact-coefficient per-row row-sum caps feed the max-entry norm target,
+deriving `0≤Dmax` from the absolute `D̂` entry cap. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax : ℝ) (Lrow : Fin n → ℝ) (ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow r)
+    (hbudget : ∀ i j : Fin n,
+      Lrow i * Dmax * Lrow j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds
+    n hn L_hat D_hat Dmax Lrow ρ_n Amax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hρ hAmax hD hrows hbudget
+
 /-- Exact-coefficient pointwise estimates package directly into the scalar
 max-entry product certificate used by the Bunch-Kaufman consumers. -/
 theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_absLDLTProduct_entries
