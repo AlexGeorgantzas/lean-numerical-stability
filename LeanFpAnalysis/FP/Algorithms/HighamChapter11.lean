@@ -3933,6 +3933,78 @@ theorem higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
           A c_rec u tail_exact hc_rec hu,
         hc_bound, hc_rec, hu⟩
 
+/-- **Theorem 11.7 mixed-pivot path assumptions**.  A finite path is represented
+as a family of local tridiagonal branch choices, local ambient tail dimensions,
+local matrices, budgets, and scalar tail residuals.  This is the path-level
+interface that the remaining mixed recursion will instantiate branch by branch. -/
+def higham11_7_TridiagonalBranchPathLocalAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ) : Prop :=
+  ∀ t : Fin k,
+    higham11_7_TridiagonalBranchLocalAssumptions (tailDim t) fp (step t)
+      (A t) (c_bound t) (c_rec t) (u t) (tail_fl t) (tail_exact t)
+
+/-- **Theorem 11.7 mixed-pivot path residuals**.  Pointwise residual packages
+for all branches of a finite tridiagonal mixed-pivot path.  The global
+composition theorem still has to accumulate these local packages. -/
+def higham11_7_TridiagonalBranchPathLocalResiduals
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ) : Prop :=
+  ∀ t : Fin k,
+    higham11_7_TridiagonalBranchLocalResidual (tailDim t) fp (step t)
+      (A t) (c_bound t) (c_rec t) (u t) (tail_fl t) (tail_exact t)
+
+/-- **Theorem 11.7 mixed-pivot path local adapter**.  Applying the branch-local
+adapter at every finite path step turns pointwise local assumptions into
+pointwise local residual packages. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions k fp tailDim
+      step A c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step A c_bound c_rec u tail_fl tail_exact := by
+  intro t
+  exact
+    higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions
+      (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
+      (tail_fl t) (tail_exact t) (hpath t)
+
+/-- **Theorem 11.7 terminal mixed-pivot path assumptions**.  Pointwise
+terminal-tail assumptions for a finite family of local tridiagonal branches. -/
+def higham11_7_TridiagonalBranchPathTerminalAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u : Fin k → ℝ) : Prop :=
+  ∀ t : Fin k,
+    higham11_7_TridiagonalBranchTerminalAssumptions (tailDim t) fp (step t)
+      (A t) (c_bound t) (c_rec t) (u t)
+
+/-- **Theorem 11.7 terminal mixed-pivot path adapter**.  Applying the terminal
+branch adapter at every finite path step gives pointwise residual packages with
+`tail_fl = tail_exact`. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_exact : Fin k → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp tailDim
+      step A c_bound c_rec u) :
+    higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step A c_bound c_rec u tail_exact tail_exact := by
+  intro t
+  exact
+    higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+      (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
+      (tail_exact t) (hpath t)
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
