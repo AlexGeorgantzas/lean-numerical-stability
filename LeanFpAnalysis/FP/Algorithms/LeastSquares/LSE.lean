@@ -27815,6 +27815,69 @@ theorem theorem20_8_source_residual_gap_op2_le_of_solution_difference_maxRelativ
             (theorem20_8BAplus A B Bplus APplus) *
           (vecNorm2 r / frobNormRect A) := hscale
 
+/-- Elementary small-gain algebra used by the residual-gap route: from
+    `x <= a*x + b` and `a < 1`, absorb the self term. -/
+theorem real_le_div_one_sub_of_le_mul_add {x a b : ℝ}
+    (ha : a < 1) (h : x ≤ a * x + b) :
+  x ≤ b / (1 - a) := by
+  have hden : 0 < 1 - a := by linarith
+  have hmul : (1 - a) * x ≤ b := by nlinarith
+  exact (le_div_iff₀ hden).2 (by simpa [mul_comm] using hmul)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the explicit non-residual part of the `B_A^+` split residual-gap estimate.
+
+    The missing residual-gap estimate contains a self term
+    `||(AP)||₂ * ||y-x||₂`; this definition names the remaining data and
+    constraint-defect correction terms so the small-gain wrapper below can
+    absorb the self term without re-exposing the long scalar expression. -/
+noncomputable def theorem20_8BAplusResidualGapCorrection {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d : Fin p → ℝ)
+    (y : Fin n → ℝ) (eps : ℝ) : ℝ :=
+  (theorem20_8KappaB A APplus *
+      (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+        (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+    complexMatrixOp2
+        (realRectToCMatrix
+          (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) *
+      (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+    (eps * frobNormRect A) * vecNorm2 y +
+    eps * vecNorm2 b
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the right-hand side obtained after substituting the `B_A^+` residual-gap
+    split into the residual-explicit solution-difference inequality, before the
+    small-gain self term is absorbed. -/
+noncomputable def theorem20_8BAplusSmallGainSolutionRHS {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d : Fin p → ℝ)
+    (y : Fin n → ℝ) (eps : ℝ) : ℝ :=
+  complexMatrixOp2
+      (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+    (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+  complexMatrixOp2 (realRectToCMatrix APplus) *
+    (theorem20_8BAplusResidualGapCorrection A b B Bplus APplus d y eps +
+      ((eps * frobNormRect A) * vecNorm2 y + eps * vecNorm2 b))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the residual-gap radius obtained after small-gain absorption of the
+    `||(AP)^+||₂ ||AP||₂ ||y-x||₂` self term. -/
+noncomputable def theorem20_8BAplusSmallGainResidualRadius {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d : Fin p → ℝ)
+    (y : Fin n → ℝ) (eps : ℝ) : ℝ :=
+  complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) *
+      (theorem20_8BAplusSmallGainSolutionRHS A b B Bplus APplus d y eps /
+        (1 -
+          complexMatrixOp2 (realRectToCMatrix APplus) *
+            complexMatrixOp2
+              (realRectToCMatrix (theorem20_8AP A B Bplus)))) +
+    theorem20_8BAplusResidualGapCorrection A b B Bplus APplus d y eps
+
 /-- The source quantity `kappa_A(B)` in Theorem 20.8 is nonnegative. -/
 theorem theorem20_8KappaA_nonneg {n p : ℕ}
     (B : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ) :
@@ -32730,6 +32793,128 @@ theorem theorem20_8_vecNorm2_solution_difference_source_residual_gap_le_of_maxRe
       hApos hbpos hBpos hdpos hmax hAPaction hx hy hr hres
       (theorem20_8_vecNorm2_source_residual_forcing_le_of_residual_gap_relativeBudget
         A DeltaA b Deltab B DeltaB d Deltad y r rHigh hbudget hgap)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    a non-circular scaled residual-gap handoff for the `B_A^+` split route.
+
+    The proved split estimate bounds `||r-r_high||₂` by a term proportional to
+    `||y-x||₂` plus explicit data-correction terms.  The residual-explicit
+    solution-difference inequality bounds `||y-x||₂` by the same residual gap,
+    producing a scalar self term.  Under the small-gain condition
+    `||(AP)^+||₂ ||AP||₂ < 1`, this theorem absorbs that self term and leaves
+    only the explicit scalar comparison `hscale`. -/
+theorem theorem20_8_source_residual_gap_op2_le_of_BAplus_split_small_gain
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hAPaction :
+      rectMatMulVec APplus
+          (rectMatMulVec (theorem20_8AP A B Bplus)
+            (fun k : Fin n => y k - x k)) =
+        rectMatMulVec (theorem20_8Projection B Bplus)
+          (fun k : Fin n => y k - x k))
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hgain :
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+          complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) < 1)
+    (hscale :
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+          theorem20_8BAplusSmallGainResidualRadius A b B Bplus APplus d y eps ≤
+        eps * theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) :
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        vecNorm2 (fun i : Fin m => r i - rHigh i) ≤
+      eps * theorem20_8ResidualAmplifier A B APplus
+          (theorem20_8BAplus A B Bplus APplus) *
+        (vecNorm2 r / frobNormRect A) := by
+  let APnorm : ℝ := complexMatrixOp2 (realRectToCMatrix APplus)
+  let APop : ℝ :=
+    complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus))
+  let gapCorr : ℝ :=
+    theorem20_8BAplusResidualGapCorrection A b B Bplus APplus d y eps
+  let solRHS : ℝ :=
+    theorem20_8BAplusSmallGainSolutionRHS A b B Bplus APplus d y eps
+  let gapRadius : ℝ :=
+    theorem20_8BAplusSmallGainResidualRadius A b B Bplus APplus d y eps
+  let D : ℝ := vecNorm2 (fun j : Fin n => y j - x j)
+  let gap : ℝ := vecNorm2 (fun i : Fin m => r i - rHigh i)
+  have hgap_raw : gap ≤ APop * D + gapCorr := by
+    have h :=
+      theorem20_8_source_residual_gap_norm_le_symm_of_solution_difference_maxRelativePerturbation_BAplus_split
+        A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+        hApos hbpos hBpos hdpos hmax hx hy hr hres
+    simpa [gap, APop, D, gapCorr, theorem20_8BAplusResidualGapCorrection,
+      add_assoc] using h
+  have hD_raw :
+      D ≤
+        complexMatrixOp2
+            (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+          (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        APnorm *
+          (((APop * D + gapCorr) +
+              (eps * frobNormRect A) * vecNorm2 y) +
+            eps * vecNorm2 b) := by
+    have hsol :=
+      theorem20_8_vecNorm2_solution_difference_source_residual_gap_le_of_maxRelativePerturbation_projected_action_op2
+        A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+        hApos hbpos hBpos hdpos hmax hAPaction hx hy hr hres
+        (residual_gap_norm := APop * D + gapCorr) hgap_raw
+    simpa [D, APnorm, APop, gapCorr] using hsol
+  have hD_self : D ≤ (APnorm * APop) * D + solRHS := by
+    calc
+      D ≤
+        complexMatrixOp2
+            (realRectToCMatrix (theorem20_8BAplus A B Bplus APplus)) *
+          (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) +
+        APnorm *
+          (((APop * D + gapCorr) +
+              (eps * frobNormRect A) * vecNorm2 y) +
+            eps * vecNorm2 b) :=
+          hD_raw
+      _ = (APnorm * APop) * D + solRHS := by
+          dsimp [solRHS, theorem20_8BAplusSmallGainSolutionRHS, gapCorr,
+            theorem20_8BAplusResidualGapCorrection, APnorm, APop]
+          ring
+  have hgain' : APnorm * APop < 1 := by
+    simpa [APnorm, APop] using hgain
+  have hD_bound :
+      D ≤ solRHS / (1 - APnorm * APop) :=
+    real_le_div_one_sub_of_le_mul_add hgain' hD_self
+  have hAPop_nonneg : 0 ≤ APop := by
+    dsimp [APop]
+    exact complexMatrixOp2_nonneg
+      (realRectToCMatrix (theorem20_8AP A B Bplus))
+  have hgap_bound : gap ≤ gapRadius := by
+    calc
+      gap ≤ APop * D + gapCorr := hgap_raw
+      _ ≤ APop * (solRHS / (1 - APnorm * APop)) + gapCorr := by
+          have hmul :=
+            mul_le_mul_of_nonneg_left hD_bound hAPop_nonneg
+          linarith
+      _ = gapRadius := by
+          simp [gapRadius, theorem20_8BAplusSmallGainResidualRadius, solRHS,
+            gapCorr, APnorm, APop]
+  have hAP_nonneg : 0 ≤ APnorm := by
+    dsimp [APnorm]
+    exact complexMatrixOp2_nonneg (realRectToCMatrix APplus)
+  have hscaled : APnorm * gap ≤ APnorm * gapRadius :=
+    mul_le_mul_of_nonneg_left hgap_bound hAP_nonneg
+  exact hscaled.trans (by simpa [APnorm, gapRadius] using hscale)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-gap first-order handoff using only the projected action of
