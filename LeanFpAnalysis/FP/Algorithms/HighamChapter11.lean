@@ -2471,6 +2471,74 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_b
       (infNorm_nonneg A) hκ hb hc hratio hbudget hval hrec hc_bound
       hc_rec hu
 
+/-- **Theorem 11.7 recursive residual norm aggregation, exact inverse-ratio
+form**.  For the accepted Algorithm 11.6 `2 × 2` tridiagonal branch, choosing
+`κ` to be the exact inverse-entry ratio discharges the generic `κ ≥ 0` and
+`ratio ≤ κ` side conditions from the branch predicate and `σ ≥ 0`. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_exact_inverse_ratio
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (σ a11 a21 a22 c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσ : 0 ≤ σ)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hbudget :
+      gamma fp 3 *
+          (infNorm A +
+            infNorm A *
+              (σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2)) *
+                infNorm A) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      infNorm ΔA ≤ ((n + 3 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_mul
+              (A ⟨1, by omega⟩
+                (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+              (a11 / (a11 * a22 - a21 ^ 2)))
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) -
+          (A ⟨1, by omega⟩
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) *
+            (a11 / (a11 * a22 - a21 ^ 2)) *
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  let κ : ℝ := σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2)
+  have ha21 : a21 ≠ 0 :=
+    higham11_6_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg
+      σ a11 a21 hchoice hσ
+  have hαgap : 0 < 1 - higham11_6_bunchTridiagonalAlpha := by
+    have hlt := higham11_6_bunch_tridiagonal_alpha_lt_one
+    linarith
+  have ha21sq : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have hden_pos :
+      0 < (1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2 :=
+    mul_pos hαgap ha21sq
+  have hκ : 0 ≤ κ := by
+    dsimp [κ]
+    exact div_nonneg hσ (le_of_lt hden_pos)
+  simpa [κ] using
+    higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries
+      n fp A σ a11 a21 a22 κ c_bound c_rec u tail_fl tail_exact
+      hchoice hσa11 hσa22 hκ le_rfl hbudget hval hrec hc_bound hc_rec hu
+
 /-- Local index of the first trailing scalar after a leading `1 × 1`
 tridiagonal pivot inside a block of size `n+2`. -/
 abbrev higham11_7_tridiagonalOneByOneFirstTrailingIndex (n : ℕ) :
