@@ -77,6 +77,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.4 loose max-entry product cap nonnegativity wrappers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound_entry_nonneg`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds_entry_nonneg` | Ch11 | **new this session**; the loose `maxEntryNorm` row-sum and uniform-entry routes now derive `0≤Dmax` from the nonempty uniform absolute `D̂` entry cap, matching the loose scalar product-certificate wrappers. |
 | Thm 11.4 max-entry product cap nonnegativity wrappers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound_entry_nonneg`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds_entry_nonneg`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds_entry_nonneg` | Ch11 | **new this session**; the exact-coefficient max-entry norm routes now derive `0≤Dmax` from the nonempty uniform absolute `D̂` entry cap, matching the scalar product-certificate wrappers and removing a separate positivity handoff for uniform-row, uniform-entry, and per-row row-sum paths. |
 | Thm 11.4 first-stage/recursive product aggregation | `higham11_4_first_stage_recursive_product_bound`, `higham11_4_product_entries_of_first_stage_recursive_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_bounds`, `higham11_4_first_stage_recursive_product_bound_of_higham_const`, `higham11_4_product_entries_of_first_stage_recursive_higham_const_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_bounds` | Ch11 | **new this session**; formalizes the scalar handoff implicit in Higham [608, 1997], eqs. (4.11)--(4.14): one local first-stage product share plus a recursive Schur-complement product share bounded by `36(n-s)ρₙ‖A‖_M` fits inside the printed `36nρₙ‖A‖_M` budget, and the resulting entrywise split packages directly into the scalar max-entry product certificate. The exact-coefficient variants let callers supply Higham's `(3+α²)(3+α)/(1−α²)^2` bound first and use the proved eq-(4.13) `≤36` handoff only at the final source-facing step. This does not prove the concrete first-stage or recursive split hypotheses; it removes the remaining scalar aggregation once those pivot-path bounds are supplied. |
+| Thm 11.4 first-stage/recursive stability/solve consumers | `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_bounds`, `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_bounds` | Ch11 | **new this session**; the loose and exact-coefficient first-stage/trailing product split now feeds both the pointwise Bunch-Kaufman stability surface and the solve-side normwise perturbation wrapper directly, so the remaining pivot-path proof can target the concrete local/trailing split hypotheses. |
 | α bounds `1/2 < α ≤ 5/7`, `α² = (α+1)/4` | `bunch_parlett_alpha_gt_half`, `bunch_parlett_alpha_le_5_7`, `bunch_parlett_alpha_sq` | " | **new this session**; supporting the Thm 11.4 constants |
 | Eq (11.6) example factorization A = LDLᵀ (partial pivoting) | `higham11_6_partialPivotExample_factorization` | Ch11 | exact `fin_cases` algebra, ε≠0 |
 | §11.3 skew-symmetric diag zero | `skewSymmetric_diag_zero`, `higham11_16_skew_diag_zero` | " | Aᵀ=−A ⇒ Aᵢᵢ=0 |
@@ -358,6 +359,13 @@ The companion solve-side increment adds
 `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_row_sum_bound`,
 `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_entry_bounds`, and
 `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_row_sum_bounds`.
+Another 2026-07-09 increment composes the first-stage/recursive split
+certificates directly into the stability and solve consumers via
+`higham11_4_bunch_kaufman_stability_of_first_stage_recursive_bounds`,
+`higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_bounds`,
+`higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_bounds`,
+and
+`higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_bounds`.
 
 ## External proof sources
 | Selected claim | Source and exact location | Role | Local Lean closure | Status |
@@ -1457,6 +1465,16 @@ Problem transcription.
     `higham11_4_first_stage_recursive_product_bound_of_higham_const`,
     `higham11_4_product_entries_of_first_stage_recursive_higham_const_bounds`, and
     `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 first-stage/recursive consumer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_bounds`,
+    `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_bounds`,
+    `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_bounds`, and
+    `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_bounds`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-08 Theorem 11.4 max-entry product bridge increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
