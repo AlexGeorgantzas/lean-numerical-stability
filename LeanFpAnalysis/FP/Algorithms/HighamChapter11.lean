@@ -6202,6 +6202,123 @@ def higham11_7_TridiagonalBranchLocalResidual
             ΔA (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
               (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
 
+/-- **Theorem 11.7 branch residual witness**.  This is the non-existential
+form of `higham11_7_TridiagonalBranchLocalResidual`, keeping the local
+perturbation matrix tied to the scalar residual equation for the branch. -/
+def higham11_7_TridiagonalBranchLocalResidualWitness
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_fl tail_exact : ℝ)
+    (ΔA : Fin (higham11_7_tridiagonalBranchAmbientDim n s) →
+      Fin (higham11_7_tridiagonalBranchAmbientDim n s) → ℝ) : Prop :=
+  match s with
+  | PivotSize.one =>
+      (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.one),
+        |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim n PivotSize.one)
+        (higham11_7_tridiagonalBranchSupportOffset PivotSize.one) ΔA ∧
+      infNorm ΔA ≤
+        ((higham11_7_tridiagonalBranchAmbientDim n PivotSize.one : ℕ) : ℝ) *
+          (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+            (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one))
+          (fp.fl_mul
+            (fp.fl_div
+              (A (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                  PivotSize.one)
+                (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))
+              (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)
+                (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)))
+            (A (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                PivotSize.one)
+              (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))) +
+          tail_fl =
+        ((A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+            (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)) -
+          (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)) *
+            (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+              (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)) /
+            (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)
+              (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+            (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+  | PivotSize.two =>
+      (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.two),
+        |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim n PivotSize.two)
+        (higham11_7_tridiagonalBranchSupportOffset PivotSize.two) ΔA ∧
+      infNorm ΔA ≤
+        ((higham11_7_tridiagonalBranchAmbientDim n PivotSize.two : ℕ) : ℝ) *
+          (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
+            (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two))
+          (fp.fl_mul
+            (fp.fl_mul
+              (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                  PivotSize.two))
+              ((A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+                  (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)) /
+                ((A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+                    (higham11_7_tridiagonalBranchLeadingIndex n
+                      PivotSize.two)) *
+                  (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                    (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)) -
+                  (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                    (higham11_7_tridiagonalBranchLeadingIndex n
+                      PivotSize.two)) ^ 2)))
+            (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                PivotSize.two))) +
+          tail_fl =
+        ((A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
+            (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)) -
+          (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+            (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)) *
+            ((A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+                (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)) /
+              ((A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+                  (higham11_7_tridiagonalBranchLeadingIndex n
+                    PivotSize.two)) *
+                (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                  (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)) -
+                (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                  (higham11_7_tridiagonalBranchLeadingIndex n
+                    PivotSize.two)) ^ 2)) *
+            (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                PivotSize.two))) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
+            (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
+
+/-- **Theorem 11.7 branch residual witness extraction**.  A branch-local
+residual package can be opened to a specific perturbation matrix satisfying the
+richer residual-witness predicate. -/
+theorem higham11_7_tridiagonalBranchLocalResidual_exists_residual_witness
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hres : higham11_7_TridiagonalBranchLocalResidual n fp s A
+      c_bound c_rec u tail_fl tail_exact) :
+    ∃ ΔA : Fin (higham11_7_tridiagonalBranchAmbientDim n s) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim n s) → ℝ,
+      higham11_7_TridiagonalBranchLocalResidualWitness n fp s A
+        c_bound c_rec u tail_fl tail_exact ΔA := by
+  cases s with
+  | one =>
+      simpa [higham11_7_TridiagonalBranchLocalResidual,
+        higham11_7_TridiagonalBranchLocalResidualWitness] using hres
+  | two =>
+      simpa [higham11_7_TridiagonalBranchLocalResidual,
+        higham11_7_TridiagonalBranchLocalResidualWitness] using hres
+
 /-- **Theorem 11.7 mixed-recursion branch adapter**.  Either accepted local
 tridiagonal pivot branch, with its explicit local budget and recursive tail
 certificate, produces the common branch-indexed local residual package. -/
@@ -7032,6 +7149,47 @@ def higham11_7_TridiagonalBranchPathSupportedWitnesses
     infNorm (ΔA t) ≤
       ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
         (c_bound t + c_rec t) * u t * infNorm (A t)
+
+/-- **Theorem 11.7 path residual witnesses with equations**.  This path-level
+predicate keeps the specific perturbation matrix for each branch tied to that
+branch's scalar residual equation, in addition to the usual bounds/support/norm
+data. -/
+def higham11_7_TridiagonalBranchPathResidualWitnesses
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ) :
+    Prop :=
+  ∀ t : Fin k,
+    higham11_7_TridiagonalBranchLocalResidualWitness (tailDim t) fp (step t)
+      (A t) (c_bound t) (c_rec t) (u t) (tail_fl t) (tail_exact t) (ΔA t)
+
+/-- **Theorem 11.7 path residual witness extraction with equations**.  A finite
+path-local residual package supplies explicit per-branch perturbation matrices
+that preserve each branch's scalar residual equation. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_exists_residual_witnesses
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step A c_bound c_rec u tail_fl tail_exact) :
+    ∃ ΔA : ∀ t : Fin k,
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+      higham11_7_TridiagonalBranchPathResidualWitnesses k fp tailDim step A
+        c_bound c_rec u tail_fl tail_exact ΔA := by
+  classical
+  choose ΔA hΔA using fun t =>
+    higham11_7_tridiagonalBranchLocalResidual_exists_residual_witness
+      (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
+      (tail_fl t) (tail_exact t) (hpath t)
+  exact ⟨ΔA, hΔA⟩
 
 /-- Index embedding for placing a local tridiagonal branch block into a larger
 ambient matrix starting at row/column `start`. -/
@@ -8788,6 +8946,83 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_termina
       k fp step A b x_hat c_bound c_rec tail_exact
       (fun _ : Fin k => c) ((k : ℝ) * c) u hpath
       hc_bound hc_rec (fun _ => hc) hu (fun t => hcoeff t) hC hsolve
+
+/-- **Theorem 11.7 concrete prefix-span mixed path endpoint from initial local
+branches and a terminal last branch**, zero common offset.  This composes the
+last-terminal path assembly theorem with the concrete prefix-span
+uniform-roundoff/uniform-coefficient source endpoint. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_uniform_coeff_norm
+    (k : ℕ) (fp : FPModel) (step : Fin (k + 1) → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (b x_hat :
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (c_bound c_rec tail_fl tail_exact : Fin (k + 1) → ℝ) (c u : ℝ)
+    (hinit : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchLocalAssumptions
+        (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.castSucc t))
+        fp (step (Fin.castSucc t))
+        (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+          (Fin.castSucc t))
+        (c_bound (Fin.castSucc t)) (c_rec (Fin.castSucc t)) u
+        (tail_fl (Fin.castSucc t)) (tail_exact (Fin.castSucc t)))
+    (hlast_eq : tail_fl (Fin.last k) = tail_exact (Fin.last k))
+    (hlast : higham11_7_TridiagonalBranchTerminalAssumptions
+      (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+      fp (step (Fin.last k))
+      (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+        (Fin.last k))
+      (c_bound (Fin.last k)) (c_rec (Fin.last k)) u)
+    (hc_bound : ∀ t : Fin (k + 1), 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin (k + 1), 0 ≤ c_rec t)
+    (hc : 0 ≤ c) (hu : 0 ≤ u)
+    (hcoeff : ∀ t : Fin (k + 1), c_bound t + c_rec t ≤ c)
+    (hsolve :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+        ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              (A i j +
+                (∑ t : Fin (k + 1),
+                  higham11_7_tridiagonalLiftLocalBlockPerturbation
+                    (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                    (higham11_7_tridiagonalPathPrefixSpan (k + 1) step t)
+                    (higham11_7_tridiagonalBranchAmbientDim
+                      (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                      (step t))
+                    (Δloc t) i j)) *
+                x_hat j =
+            b i) :
+    ∃ ΔA1 ΔA2 :
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+        Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ,
+      (∀ i j, |ΔA1 i j| ≤ ((k + 1 : ℕ) : ℝ) * c * u * infNorm A) ∧
+      (∀ i j, |ΔA2 i j| ≤ ((k + 1 : ℕ) : ℝ) * c * u * infNorm A) ∧
+      infNorm ΔA1 ≤
+        ((higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1 : ℕ) : ℝ) *
+          (((k + 1 : ℕ) : ℝ) * c) * u * infNorm A ∧
+      infNorm ΔA2 ≤
+        ((higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1 : ℕ) : ℝ) *
+          (((k + 1 : ℕ) : ℝ) * c) * u * infNorm A ∧
+      (∀ i,
+        ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_uniform_coeff_norm
+    (k + 1) fp step A b x_hat c_bound c_rec tail_fl tail_exact c u
+    (higham11_7_tridiagonalBranchPathLocalAssumptions_of_init_localAssumptions_last_terminalTailAssumptions
+      k fp (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t)
+      step
+      (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+      c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact
+      hinit hlast_eq hlast)
+    hc_bound hc_rec hc hu hcoeff hsolve
 
 /-- **Theorem 11.7 embedded path solve-delta aggregation from local
 assumptions**.  This composes the finite path-local branch adapter, witness
