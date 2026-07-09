@@ -14391,6 +14391,12 @@ theorem sylvesterVecCoeff_realQuasiSchur_strictBBlockMap_det_ne_zero
       (isUpperTriangularFn_of_strictBlockMap n S pB hpBstrict hSstrict)
       hshift
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the minimal strict `B`-side real-quasi-Schur
+    determinant route. -/
+alias H16_eq16_3_sylvesterVecCoeff_realQuasiSchur_strictBBlockMap_det_ne_zero :=
+  sylvesterVecCoeff_realQuasiSchur_strictBBlockMap_det_ne_zero
+
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
     real-quasi-Schur singleton-block case: supplied real quasi-Schur factors
     whose `B`-side block map is strictly increasing reduce to the supplied
@@ -14424,6 +14430,12 @@ theorem sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero (m n : Nat)
   exact
     sylvesterVecCoeff_realQuasiSchur_strictBBlockMap_det_ne_zero
       m n U R A V S B pB hU hV hA hB hpBstrict hSstrict hshift
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for the strict singleton-block real-quasi-Schur
+    determinant route. -/
+alias H16_eq16_3_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_det_ne_zero
 
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
     real-quasi-Schur singleton-block case: the strict supplied-factor
@@ -14606,6 +14618,12 @@ theorem existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec
   refine ⟨x, hx, ?_⟩
   intro y hy
   exact hinj (by rw [hy, hx])
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for unique vectorized solves in the strict
+    singleton-block real-quasi-Schur subcase. -/
+alias H16_eq16_2_6_existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec :=
+  existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec
 
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
     real-quasi-Schur singleton-block case: Mathlib's nonsingular inverse gives
@@ -14823,6 +14841,18 @@ theorem no_common_real_left_eigenpair_of_realQuasiSchur_strictBlockMap
   rw [sylvesterVecCoeff_eigenpair_vecMul m n A B v w lam lam hv hw]
   funext p
   simp
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for excluding supplied common real eigenpairs of
+    `A` and `B^T` in the strict singleton-block real-quasi-Schur subcase. -/
+alias H16_eq16_3_no_common_real_eigenpair_of_realQuasiSchur_strictBlockMap :=
+  no_common_real_eigenpair_of_realQuasiSchur_strictBlockMap
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6):
+    source-numbered alias for excluding supplied common real left-eigenpair
+    data in the strict singleton-block real-quasi-Schur subcase. -/
+alias H16_eq16_3_no_common_real_left_eigenpair_of_realQuasiSchur_strictBlockMap :=
+  no_common_real_left_eigenpair_of_realQuasiSchur_strictBlockMap
 
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3)-(16.6),
     supplied triangular Schur-coordinate case: the exact shifted-determinant
