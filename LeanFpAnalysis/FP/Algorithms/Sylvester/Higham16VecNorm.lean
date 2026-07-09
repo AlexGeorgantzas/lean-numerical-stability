@@ -2823,6 +2823,30 @@ theorem existsUnique_sylvesterVecCoeff_mulVec_of_pos_le_sylvesterSepInf
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
       c
 
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for `SepLowerBound` vectorized
+    coefficient bijectivity. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_mulVec_bijective_of_sepLowerBound :=
+  sylvesterVecCoeff_mulVec_bijective_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for `SepLowerBound` vectorized unique
+    solvability. -/
+alias H16_eq16_2_26_existsUnique_sylvesterVecCoeff_mulVec_of_sepLowerBound :=
+  existsUnique_sylvesterVecCoeff_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for positive exact-infimum vectorized
+    coefficient bijectivity. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_mulVec_bijective_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_mulVec_bijective_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for positive exact-infimum vectorized
+    unique solvability. -/
+alias H16_eq16_2_26_existsUnique_sylvesterVecCoeff_mulVec_of_pos_le_sylvesterSepInf :=
+  existsUnique_sylvesterVecCoeff_mulVec_of_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
     a supplied `SepLowerBound` certificate instantiates the determinant-based
     left nonsingular-inverse action for the vectorized Sylvester coefficient. -/
