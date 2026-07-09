@@ -4258,6 +4258,28 @@ theorem higham11_8_infNorm_cap_of_relative_infNorm_cap (n : ℕ)
         mul_le_mul_of_nonneg_right h1γ (infNorm_nonneg M)
   exact hscale.trans hrel
 
+/-- Per-row scaled row-sum caps imply the corresponding relative
+`(1+γ)` infinity-norm cap. -/
+theorem higham11_8_relative_infNorm_cap_of_row_sum_caps (n : ℕ)
+    (M : Fin n → Fin n → ℝ) (γ cap : ℝ) (hγ : 0 ≤ γ) (hcap : 0 ≤ cap)
+    (hrows : ∀ i : Fin n, (1 + γ) * (∑ j : Fin n, |M i j|) ≤ cap) :
+    (1 + γ) * infNorm M ≤ cap := by
+  have hscale_pos : 0 < 1 + γ := by linarith
+  have hscale_nonneg : 0 ≤ 1 + γ := le_of_lt hscale_pos
+  have hrows_div : ∀ i : Fin n, (∑ j : Fin n, |M i j|) ≤ cap / (1 + γ) := by
+    intro i
+    exact (le_div_iff₀ hscale_pos).mpr (by simpa [mul_comm] using hrows i)
+  have hinf : infNorm M ≤ cap / (1 + γ) := by
+    apply infNorm_le_of_row_sum_le
+    · intro i
+      exact hrows_div i
+    · exact div_nonneg hcap hscale_nonneg
+  calc
+    (1 + γ) * infNorm M ≤ (1 + γ) * (cap / (1 + γ)) :=
+      mul_le_mul_of_nonneg_left hinf hscale_nonneg
+    _ = cap := by
+      field_simp [ne_of_gt hscale_pos]
+
 /-- A relative entrywise factor perturbation controls the perturbed factor's
 infinity norm by `(1+γ)` times the source factor norm. -/
 theorem higham11_8_infNorm_factor_le_of_relative_entry_bound (n : ℕ)
@@ -11263,6 +11285,101 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_sourc
       (higham11_8_infNorm_cap_of_relative_infNorm_cap
         n (fun r c => L c r) (gamma fp n) ((n - 1 : ℕ) : ℝ) hγn hrelLT_cap)
       hrelL_cap hrelLT_cap
+
+/-- Source-prefix checkerboard-middle endpoint where row and column scaled
+sum caps provide the relative outer-factor norm caps required by the exact
+radius route. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_componentwise_T_checkerboard_middle
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_component : ∀ i j : Fin n, |T i j| ≤ |T_hat i j|)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hrowL_cap : ∀ i : Fin n,
+      (1 + gamma fp n) * (∑ j : Fin n, |L i j|) ≤ ((n - 1 : ℕ) : ℝ))
+    (hcolL_cap : ∀ j : Fin n,
+      (1 + gamma fp n) * (∑ i : Fin n, |L i j|) ≤ ((n - 1 : ℕ) : ℝ)) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  have hn : gammaValid fp n :=
+    (higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1
+  have hγn : 0 ≤ gamma fp n := gamma_nonneg fp hn
+  have hcap_nonneg : 0 ≤ (((n - 1 : ℕ) : ℝ)) := Nat.cast_nonneg _
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_componentwise_T_checkerboard_middle
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hprod hThat_component hT_component
+      hTNJ hdetJ hleadJ hLU
+      (higham11_8_relative_infNorm_cap_of_row_sum_caps
+        n L (gamma fp n) ((n - 1 : ℕ) : ℝ) hγn hcap_nonneg hrowL_cap)
+      (higham11_8_relative_infNorm_cap_of_row_sum_caps
+        n (fun r c => L c r) (gamma fp n) ((n - 1 : ℕ) : ℝ) hγn hcap_nonneg
+        (fun r => by simpa using hcolL_cap r))
 
 /-- Source-prefix relative abs-LU componentwise-middle wrapper with the
 concrete factorization-side `T_hat` budget and exact product majorants, using
