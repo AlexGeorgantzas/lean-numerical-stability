@@ -45869,6 +45869,27 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_op2_eq
     h.complexMatrixOp2_realRectToCMatrix_rectMatMul_Q2Basis_eq
       (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    source `kappa_B(A)` for the concrete lifted reduced-Gram candidate
+    `Q₂(AQ₂)^+`, rewritten in reduced `A Q₂` coordinates.
+
+    This is the GQR-specific norm identification used by the Eldén--Cox--
+    Higham transfer; it does not assert a Moore--Penrose certificate for the
+    lifted table. -/
+theorem GeneralizedQRFactorization.theorem20_8KappaB_liftedReducedGramAPplus_eq
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    theorem20_8KappaB A h.liftedReducedGramAPplus =
+      complexMatrixOp2
+          (realRectToCMatrix
+            (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) *
+        frobNormRect A := by
+  unfold theorem20_8KappaB
+  rw [h.liftedReducedGramAPplus_op2_eq]
+  ring
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     the lifted reduced-Gram `APplus` candidate has all columns in the
     constraint nullspace, because its range is contained in the concrete GQR
@@ -47287,6 +47308,20 @@ theorem GeneralizedQRFactorization.A_Q2_reduced_gram_pseudoinverse_op2_pos
   exact complexMatrixOp2_realRectToCMatrix_pos_of_rect_left_inverse
     (gqrAQ2Block A h.Q)
     (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q)) hred.1
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    positivity of the lifted reduced-Gram source `kappa_B(A)` under the source
+    stacked-rank condition and positive `||A||_F`. -/
+theorem GeneralizedQRFactorization.theorem20_8KappaB_liftedReducedGramAPplus_pos
+    {r p k : ℕ}
+    {A : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ}
+    {B : Fin p → Fin (p + (k + 1)) → ℝ}
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hApos : 0 < frobNormRect A) :
+    0 < theorem20_8KappaB A h.liftedReducedGramAPplus := by
+  rw [h.theorem20_8KappaB_liftedReducedGramAPplus_eq]
+  exact mul_pos (h.A_Q2_reduced_gram_pseudoinverse_op2_pos hstack) hApos
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     stacked full column rank makes the concrete reduced block `A Q₂` a
