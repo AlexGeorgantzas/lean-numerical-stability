@@ -8111,6 +8111,18 @@ theorem lyapunov_relative_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywi
         U A a sigma hU hA hSigma hgap)
       hExact hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total supplied spectral-coordinate Lyapunov a posteriori
+    error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative supplied spectral-coordinate Lyapunov
+    a posteriori error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_relative_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     the Lyapunov condition-number certificate follows from a positive lower
     bound on the printed vectorized Lyapunov coefficient. -/
@@ -8930,6 +8942,18 @@ theorem lyapunov_relative_perturbation_spectralDiagonal_of_vecCoeff_entrywise_ab
         U A a sigma hU hA hsigma hgap)
       alpha gamma eps halpha hgamma heps
       hDeltaA hDeltaC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total supplied spectral-coordinate
+    Lyapunov perturbation endpoint. -/
+alias H16_eq16_27_lyapunov_perturbation_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_perturbation_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total relative supplied spectral-coordinate
+    Lyapunov perturbation endpoint. -/
+alias H16_eq16_27_lyapunov_relative_perturbation_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_relative_perturbation_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     source-shaped Lyapunov first-order perturbation bound from a finite
