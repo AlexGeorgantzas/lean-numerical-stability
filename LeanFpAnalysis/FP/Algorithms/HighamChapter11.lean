@@ -3598,6 +3598,246 @@ theorem higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_b
       n fp A (infNorm A) c_bound c_rec u tail_fl tail_exact hchoice ha21
       le_rfl hbudget hval hrec hc_bound hc_rec hu
 
+/-- Ambient dimension for one local step of the mixed tridiagonal recursion in
+Theorem 11.7: a leading `1 × 1` pivot has a local block of size `n+2`, while a
+leading `2 × 2` pivot has a local block of size `n+3`. -/
+def higham11_7_tridiagonalBranchAmbientDim (n : ℕ) : PivotSize → ℕ
+  | PivotSize.one => n + 2
+  | PivotSize.two => n + 3
+
+/-- Matrix type for one branch of the mixed tridiagonal recursion. -/
+abbrev higham11_7_TridiagonalBranchMatrix (n : ℕ) (s : PivotSize) :=
+  Fin (higham11_7_tridiagonalBranchAmbientDim n s) →
+    Fin (higham11_7_tridiagonalBranchAmbientDim n s) → ℝ
+
+/-- Leading pivot index for the branch-uniform local tridiagonal recursion
+interface. -/
+def higham11_7_tridiagonalBranchLeadingIndex (n : ℕ) :
+    (s : PivotSize) → Fin (higham11_7_tridiagonalBranchAmbientDim n s)
+  | PivotSize.one => ⟨0, by change 0 < n + 2; omega⟩
+  | PivotSize.two => ⟨0, by change 0 < n + 3; omega⟩
+
+/-- First trailing diagonal index after the current tridiagonal pivot branch. -/
+def higham11_7_tridiagonalBranchFirstTrailingIndex (n : ℕ) :
+    (s : PivotSize) → Fin (higham11_7_tridiagonalBranchAmbientDim n s)
+  | PivotSize.one => higham11_7_tridiagonalOneByOneFirstTrailingIndex n
+  | PivotSize.two => higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n
+
+/-- The second pivot index in the `2 × 2` branch of the tridiagonal recursion. -/
+def higham11_7_tridiagonalTwoByTwoSecondPivotIndex (n : ℕ) :
+    Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.two) :=
+  ⟨1, by change 1 < n + 3; omega⟩
+
+/-- Zero-prefix support offset after one local tridiagonal pivot branch. -/
+def higham11_7_tridiagonalBranchSupportOffset : PivotSize → ℕ
+  | PivotSize.one => 1
+  | PivotSize.two => 2
+
+/-- **Theorem 11.7 mixed-recursion local assumptions**.  This branch-indexed
+predicate records exactly the local pivot choice, scalar budget, recursive tail
+certificate, and nonnegativity hypotheses needed by the already proved `1 × 1`
+and `2 × 2` local-recursive tridiagonal packages. -/
+def higham11_7_TridiagonalBranchLocalAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_fl tail_exact : ℝ) : Prop :=
+  match s with
+  | PivotSize.one =>
+      higham11_6_BunchTridiagonalPivotChoice (infNorm A)
+          (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))
+          (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))
+          PivotSize.one ∧
+      A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+          (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one) ≠ 0 ∧
+      gamma fp 3 *
+          (infNorm A + infNorm A / higham11_6_bunchTridiagonalAlpha) ≤
+        c_bound * u * infNorm A ∧
+      gammaValid fp 3 ∧
+      (∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+        (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+        tail_fl = tail_exact + ΔRtail 0 0) ∧
+      0 ≤ c_bound ∧ 0 ≤ c_rec ∧ 0 ≤ u
+  | PivotSize.two =>
+      higham11_6_BunchTridiagonalPivotChoice (infNorm A)
+          (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two))
+          (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two))
+          PivotSize.two ∧
+      gamma fp 3 *
+          (infNorm A +
+            infNorm A *
+              (infNorm A /
+                ((1 - higham11_6_bunchTridiagonalAlpha) *
+                  (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                    (higham11_7_tridiagonalBranchLeadingIndex n
+                      PivotSize.two)) ^ 2)) *
+                infNorm A) ≤
+        c_bound * u * infNorm A ∧
+      gammaValid fp 3 ∧
+      (∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+        (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+        tail_fl = tail_exact + ΔRtail 0 0) ∧
+      0 ≤ c_bound ∧ 0 ≤ c_rec ∧ 0 ≤ u
+
+/-- **Theorem 11.7 mixed-recursion local residual**, a common branch-indexed
+result shape for the local `1 × 1` or `2 × 2` tridiagonal step composed with a
+recursive trailing scalar residual.  This is the local target consumed by the
+remaining full mixed-pivot path induction. -/
+def higham11_7_TridiagonalBranchLocalResidual
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_fl tail_exact : ℝ) : Prop :=
+  match s with
+  | PivotSize.one =>
+      ∃ ΔA : Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.one) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.one) → ℝ,
+        (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.one),
+          |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalBranchAmbientDim n PivotSize.one)
+          (higham11_7_tridiagonalBranchSupportOffset PivotSize.one) ΔA ∧
+        infNorm ΔA ≤
+          ((higham11_7_tridiagonalBranchAmbientDim n PivotSize.one : ℕ) : ℝ) *
+            (c_bound + c_rec) * u * infNorm A ∧
+        fp.fl_sub
+            (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one))
+            (fp.fl_mul
+              (fp.fl_div
+                (A (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                    PivotSize.one)
+                  (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))
+                (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)
+                  (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)))
+              (A (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                  PivotSize.one)
+                (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))) +
+            tail_fl =
+          ((A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)) -
+            (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+              (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)) *
+              (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+                (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)) /
+              (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)
+                (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))) +
+            tail_exact +
+            ΔA (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+  | PivotSize.two =>
+      ∃ ΔA : Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.two) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.two) → ℝ,
+        (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.two),
+          |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalBranchAmbientDim n PivotSize.two)
+          (higham11_7_tridiagonalBranchSupportOffset PivotSize.two) ΔA ∧
+        infNorm ΔA ≤
+          ((higham11_7_tridiagonalBranchAmbientDim n PivotSize.two : ℕ) : ℝ) *
+            (c_bound + c_rec) * u * infNorm A ∧
+        fp.fl_sub
+            (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two))
+            (fp.fl_mul
+              (fp.fl_mul
+                (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                  (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                    PivotSize.two))
+                ((A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+                    (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)) /
+                  ((A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+                      (higham11_7_tridiagonalBranchLeadingIndex n
+                        PivotSize.two)) *
+                    (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                      (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)) -
+                    (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                      (higham11_7_tridiagonalBranchLeadingIndex n
+                        PivotSize.two)) ^ 2)))
+              (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                  PivotSize.two))) +
+            tail_fl =
+          ((A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)) -
+            (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)) *
+              ((A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+                  (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)) /
+                ((A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+                    (higham11_7_tridiagonalBranchLeadingIndex n
+                      PivotSize.two)) *
+                  (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                    (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)) -
+                  (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                    (higham11_7_tridiagonalBranchLeadingIndex n
+                      PivotSize.two)) ^ 2)) *
+              (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                  PivotSize.two))) +
+            tail_exact +
+            ΔA (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
+
+/-- **Theorem 11.7 mixed-recursion branch adapter**.  Either accepted local
+tridiagonal pivot branch, with its explicit local budget and recursive tail
+certificate, produces the common branch-indexed local residual package. -/
+theorem higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hlocal : higham11_7_TridiagonalBranchLocalAssumptions n fp s A
+      c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchLocalResidual n fp s A
+      c_bound c_rec u tail_fl tail_exact := by
+  cases s with
+  | one =>
+      rcases hlocal with
+        ⟨hchoice, ha21, hbudget, hval, hrec, hc_bound, hc_rec, hu⟩
+      exact
+        (by
+          simpa [higham11_7_TridiagonalBranchLocalResidual,
+            higham11_7_TridiagonalBranchLocalAssumptions,
+            higham11_7_tridiagonalBranchAmbientDim,
+            higham11_7_tridiagonalBranchSupportOffset,
+            higham11_7_tridiagonalBranchLeadingIndex,
+            higham11_7_tridiagonalBranchFirstTrailingIndex] using
+              higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_infNorm_choice_of_subdiagonal_ne_zero
+                n fp A c_bound c_rec u tail_fl tail_exact
+                (by
+                  simpa [higham11_7_tridiagonalBranchLeadingIndex,
+                    higham11_7_tridiagonalBranchFirstTrailingIndex] using
+                    hchoice)
+                (by
+                  simpa [higham11_7_tridiagonalBranchLeadingIndex,
+                    higham11_7_tridiagonalBranchFirstTrailingIndex] using ha21)
+                hbudget hval hrec hc_bound hc_rec hu)
+  | two =>
+      rcases hlocal with
+        ⟨hchoice, hbudget, hval, hrec, hc_bound, hc_rec, hu⟩
+      exact
+        (by
+          simpa [higham11_7_TridiagonalBranchLocalResidual,
+            higham11_7_TridiagonalBranchLocalAssumptions,
+            higham11_7_tridiagonalBranchAmbientDim,
+            higham11_7_tridiagonalBranchSupportOffset,
+            higham11_7_tridiagonalBranchLeadingIndex,
+            higham11_7_tridiagonalBranchFirstTrailingIndex,
+            higham11_7_tridiagonalTwoByTwoSecondPivotIndex] using
+              higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_infNorm_choice
+                n fp A c_bound c_rec u tail_fl tail_exact
+                (by
+                  simpa [higham11_7_tridiagonalBranchLeadingIndex,
+                    higham11_7_tridiagonalTwoByTwoSecondPivotIndex] using
+                    hchoice)
+                (by
+                  simpa [higham11_7_tridiagonalBranchLeadingIndex,
+                    higham11_7_tridiagonalTwoByTwoSecondPivotIndex] using
+                    hbudget)
+                hval hrec hc_bound hc_rec hu)
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
