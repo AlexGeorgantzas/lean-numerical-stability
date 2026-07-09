@@ -5057,6 +5057,31 @@ theorem higham11_7_tridiagonalPathPivotSpan_le_two_mul
       have htail := ih (fun t : Fin k => step t.succ)
       omega
 
+/-- Prefix span consumed before a branch of a mixed tridiagonal pivot path. -/
+def higham11_7_tridiagonalPathPrefixSpan (k : ℕ)
+    (step : Fin k → PivotSize) (t : Fin k) : ℕ :=
+  ∑ r : Fin k,
+    if r.val < t.val then
+      higham11_7_tridiagonalBranchSupportOffset (step r)
+    else 0
+
+/-- The first branch has zero prefix span. -/
+theorem higham11_7_tridiagonalPathPrefixSpan_zero
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) :
+    higham11_7_tridiagonalPathPrefixSpan (k + 1) step 0 = 0 := by
+  simp [higham11_7_tridiagonalPathPrefixSpan]
+
+/-- Prefix span after the head splits into the head branch span plus the tail
+prefix. -/
+theorem higham11_7_tridiagonalPathPrefixSpan_succ
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) (t : Fin k) :
+    higham11_7_tridiagonalPathPrefixSpan (k + 1) step t.succ =
+      higham11_7_tridiagonalBranchSupportOffset (step 0) +
+        higham11_7_tridiagonalPathPrefixSpan k
+          (fun r : Fin k => step r.succ) t := by
+  rw [higham11_7_tridiagonalPathPrefixSpan, Fin.sum_univ_succ]
+  simp [higham11_7_tridiagonalPathPrefixSpan, Fin.val_succ]
+
 /-- Start offsets for a finite mixed tridiagonal pivot path, relative to an
 ambient base offset.  The head starts at `base`; each successor starts after
 the current branch's consumed `1 × 1` or `2 × 2` pivot block. -/
@@ -5269,6 +5294,34 @@ theorem higham11_7_tridiagonalPathStartOffsetsFrom_exists_unique
   exact
     higham11_7_tridiagonalPathStartOffsetsFrom_unique
       base k step starts' starts hstarts' hstarts
+
+/-- Scheduled starts equal the base plus the prefix span consumed by earlier
+branches. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_eq_base_add_prefixSpan
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts)
+    (t : Fin k) :
+    starts t = base + higham11_7_tridiagonalPathPrefixSpan k step t := by
+  induction k generalizing base with
+  | zero =>
+      exact Fin.elim0 t
+  | succ k ih =>
+      cases t using Fin.cases with
+      | zero =>
+          have hhead :=
+            higham11_7_tridiagonalPathStartOffsetsFrom_head
+              base (k + 1) step starts hstarts (by omega)
+          simpa [higham11_7_tridiagonalPathPrefixSpan] using hhead
+      | succ t =>
+          have htail :=
+            higham11_7_tridiagonalPathStartOffsetsFrom_tail
+              base k step starts hstarts
+          have htail_eq := ih
+            (base + higham11_7_tridiagonalBranchSupportOffset (step 0))
+            (fun r : Fin k => step r.succ)
+            (fun r : Fin k => starts r.succ) htail t
+          rw [htail_eq]
+          simp [higham11_7_tridiagonalPathPrefixSpan_succ, add_assoc]
 
 /-- Every start offset in a base-offset mixed path is at or after the base. -/
 theorem higham11_7_tridiagonalPathStartOffsetsFrom_base_le
@@ -5576,6 +5629,16 @@ theorem higham11_7_tridiagonalPathStartOffsets_exists_unique
   simpa [higham11_7_TridiagonalPathStartOffsets] using
     higham11_7_tridiagonalPathStartOffsetsFrom_exists_unique 0 k step
 
+/-- Zero-based scheduled starts are exactly the prefix spans. -/
+theorem higham11_7_tridiagonalPathStartOffsets_eq_prefixSpan
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets k step starts)
+    (t : Fin k) :
+    starts t = higham11_7_tridiagonalPathPrefixSpan k step t := by
+  simpa [higham11_7_TridiagonalPathStartOffsets] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_eq_base_add_prefixSpan
+      0 k step starts hstarts t
+
 /-- Every zero-based start offset lies strictly before the full path span. -/
 theorem higham11_7_tridiagonalPathStartOffsets_lt_pivotSpan
     (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
@@ -5654,6 +5717,23 @@ theorem higham11_7_tridiagonalPathStartOffsets_last_branch_end_eq
   simpa [higham11_7_TridiagonalPathStartOffsets] using
     higham11_7_tridiagonalPathStartOffsetsFrom_last_branch_end_eq
       0 k step starts hstarts
+
+/-- The explicit prefix span plus the last branch span is the full pivot span. -/
+theorem higham11_7_tridiagonalPathPrefixSpan_last_add_branch_eq_pivotSpan
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) :
+    higham11_7_tridiagonalPathPrefixSpan (k + 1) step (Fin.last k) +
+        higham11_7_tridiagonalBranchSupportOffset (step (Fin.last k)) =
+      higham11_7_tridiagonalPathPivotSpan (k + 1) step := by
+  obtain ⟨starts, hstarts⟩ :=
+    higham11_7_tridiagonalPathStartOffsets_exists (k + 1) step
+  have hprefix :=
+    higham11_7_tridiagonalPathStartOffsets_eq_prefixSpan
+      (k + 1) step starts hstarts (Fin.last k)
+  have hlast :=
+    higham11_7_tridiagonalPathStartOffsets_last_branch_end_eq
+      k step starts hstarts
+  rw [hprefix] at hlast
+  simpa using hlast
 
 /-- **Theorem 11.7 mixed-recursion local assumptions**.  This branch-indexed
 predicate records exactly the local pivot choice, scalar budget, recursive tail
