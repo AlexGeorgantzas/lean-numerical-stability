@@ -4654,6 +4654,42 @@ theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumpt
           (tail_exact t.succ) (htail t)
       simpa [htail_eq t] using hres)
 
+/-- **Theorem 11.7 path residual cons from a terminal head and local tail**.
+This mixed handoff covers the complementary induction step: the head branch is
+terminal, while the remaining tail is still represented by local assumptions. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTailAssumptions_tail_localAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchTerminalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0))
+    (hhead_eq : tail_fl 0 = tail_exact 0)
+    (htail : higham11_7_TridiagonalBranchPathLocalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_fl t.succ)
+      (fun t => tail_exact t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_cons
+    k fp tailDim step A c_bound c_rec u tail_fl tail_exact
+    (by
+      have hres :
+          higham11_7_TridiagonalBranchLocalResidual
+            (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+            (tail_exact 0) (tail_exact 0) :=
+        higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+          (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+          (tail_exact 0) hhead
+      simpa [hhead_eq] using hres)
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+      k fp (fun t => tailDim t.succ) (fun t => step t.succ)
+      (fun t => A t.succ) (fun t => c_bound t.succ)
+      (fun t => c_rec t.succ) (fun t => u t.succ)
+      (fun t => tail_fl t.succ) (fun t => tail_exact t.succ) htail)
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/

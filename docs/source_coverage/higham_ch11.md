@@ -203,6 +203,10 @@ The follow-up 2026-07-09 increment adds the mixed terminal-tail handoff
 `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions_tail_terminalTailAssumptions`,
 which covers a local head branch followed by terminal tail assumptions, with the
 tail `tail_fl = tail_exact` equalities stated explicitly.
+The latest 2026-07-09 increment adds the complementary mixed handoff
+`higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTailAssumptions_tail_localAssumptions`,
+which covers a terminal head branch followed by a tail path of local branch
+assumptions, with the head `tail_fl = tail_exact` equality stated explicitly.
 The remaining Theorem 11.7 work is still instantiating those adapters over the
 full mixed pivot path and proving the final solve equation.
 
@@ -1087,6 +1091,13 @@ Problem transcription.
     `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
     focused lookup/axiom check of fully-qualified
     `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions_tail_terminalTailAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot terminal-head local-tail handoff increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTailAssumptions_tail_localAssumptions`
     → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-08 Theorem 11.3 all-1×1 source-facing package increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
