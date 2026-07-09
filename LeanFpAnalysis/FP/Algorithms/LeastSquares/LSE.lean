@@ -27021,6 +27021,71 @@ theorem theorem20_8_source_residual_gap_norm_le_of_solution_difference_maxRelati
       A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    symmetric source-residual gap norm bound from the BAplus split residual
+    decomposition.  This is the same estimate as
+    `theorem20_8_source_residual_gap_norm_le_of_solution_difference_maxRelativePerturbation_BAplus_split`,
+    but with `r-rHigh` instead of `rHigh-r`, matching later direct-radius
+    interfaces. -/
+theorem theorem20_8_source_residual_gap_norm_le_symm_of_solution_difference_maxRelativePerturbation_BAplus_split
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ) {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    vecNorm2 (fun i : Fin m => r i - rHigh i) ≤
+      complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) *
+          vecNorm2 (fun j : Fin n => y j - x j) +
+        ((theorem20_8KappaB A APplus *
+              (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b) := by
+  have hgapHigh :
+      vecNorm2 (fun i : Fin m => rHigh i - r i) ≤
+        complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) *
+            vecNorm2 (fun j : Fin n => y j - x j) +
+          ((theorem20_8KappaB A APplus *
+                (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+                  (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+              complexMatrixOp2
+                  (realRectToCMatrix
+                    (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            (eps * frobNormRect A) * vecNorm2 y +
+            eps * vecNorm2 b) :=
+    theorem20_8_source_residual_gap_norm_le_of_solution_difference_maxRelativePerturbation_BAplus_split
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+      hApos hbpos hBpos hdpos hmax hx hy hr hres
+  have hneg :
+      (fun i : Fin m => r i - rHigh i) =
+        fun i : Fin m => -(rHigh i - r i) := by
+    ext i
+    ring
+  have hnorm :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) =
+        vecNorm2 (fun i : Fin m => rHigh i - r i) := by
+    rw [hneg]
+    simpa using vecNorm2_neg (fun i : Fin m => rHigh i - r i)
+  rw [hnorm]
+  exact hgapHigh
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the BAplus split residual-gap estimate supplies the
     `(AP)^+`-scaled residual-gap obligation used by the ECH handoff, once the
     remaining scalar comparison with the source residual-amplifier term is
@@ -39997,6 +40062,143 @@ theorem
       hbracket
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    generic Moore--Penrose/transpose-range handoff where the residual gap is
+    supplied by the `B_A^+` split residual decomposition.
+
+    This removes the caller-facing direct residual-norm premise from the
+    full-row-rank MP route.  The remaining residual obligation is the explicit
+    scalar comparison between the proved BAplus residual-gap RHS and
+    `eps * ||r||_2`; the reduced Wedin budgets, smallness guard, and source
+    bracket comparison remain visible. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_BAplus_residual_gap_kappaB_eps_nonneg
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ)
+    {AredPlus_norm eps Ared_norm : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hkappa : theorem20_8KappaB A APplus = AredPlus_norm * Ared_norm)
+    (hsmall : theorem20_8KappaB A APplus * eps < 1)
+    (hAredPlus : rectOpNorm2Le AredPlus AredPlus_norm)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) (eps * Ared_norm))
+    (hgapScale :
+      complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B hB.rightInverse)) *
+          vecNorm2 (fun j : Fin n => y j - x j) +
+        ((theorem20_8KappaB A APplus *
+              (complexMatrixOp2
+                  (realRectToCMatrix (rectMatMul A hB.rightInverse)) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B hB.rightInverse APplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b) ≤
+        eps * vecNorm2 (lsResidualHigham A b x))
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hgap_le :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) ≤
+        complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B hB.rightInverse)) *
+            vecNorm2 (fun j : Fin n => y j - x j) +
+          ((theorem20_8KappaB A APplus *
+                (complexMatrixOp2
+                    (realRectToCMatrix (rectMatMul A hB.rightInverse)) *
+                  (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+              complexMatrixOp2
+                  (realRectToCMatrix
+                    (rectMatMul A
+                      (theorem20_8BAplus A B hB.rightInverse APplus))) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            (eps * frobNormRect A) * vecNorm2 y +
+            eps * vecNorm2 b) := by
+    simpa using
+      theorem20_8_source_residual_gap_norm_le_of_solution_difference_maxRelativePerturbation_BAplus_split
+        A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y
+        (lsResidualHigham A b x)
+        (lsResidualHigham (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i) y)
+        hApos hbpos hBpos hdpos hmax hx.1 hy.1 rfl rfl
+  have hres_norm :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) ≤
+        eps * vecNorm2 (lsResidualHigham A b x) :=
+    hgap_le.trans hgapScale
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_norm_kappaB_eps_nonneg
+      hm A DeltaA b Deltab hB DeltaB APplus d Deltad N Npert
+      AredPlus BredPlus x y hApos hbpos hBpos hdpos hxpos hyx hrpos
+      hmax hMP hBAPt hstack hx hy hN hNpert hAredPlus_pos hkappa
+      hsmall hAredPlus hDelta hres_norm hleftA hleftB hSymA hSymB
+      hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank projected-difference handoff for the
     Moore--Penrose/transpose-range route. -/
 theorem
@@ -47299,6 +47501,117 @@ theorem complexMatrixOp2_realRectToCMatrix_pos_of_rect_left_inverse
     exact complexMatrixOp2_nonneg (realRectToCMatrix Aleft)
   exact lt_of_le_of_ne hop_nonneg (Ne.symm hop_ne)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    concrete reduced-pseudoinverse-norm version of the generic MP/BAplus
+    residual-gap handoff.
+
+    The reduced left-inverse field implies that the concrete operator norm of
+    `AredPlus` is positive, and the repository operator-norm API supplies the
+    corresponding `rectOpNorm2Le` certificate. -/
+theorem
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_BAplus_residual_gap_concreteAredPlusNorm_kappaB_eps_nonneg
+    {m n p k : ℕ} (hm : 0 < m)
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (N Npert : Fin n → Fin (k + 1) → ℝ)
+    (AredPlus BredPlus : Fin (k + 1) → Fin m → ℝ)
+    (x y : Fin n → ℝ)
+    {eps Ared_norm : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin m => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hN : rectMatMul B N =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hNpert : rectMatMul (fun i j => B i j + DeltaB i j) Npert =
+      (fun _i : Fin p => fun _j : Fin (k + 1) => 0))
+    (hkappa :
+      theorem20_8KappaB A APplus =
+        complexMatrixOp2 (realRectToCMatrix AredPlus) * Ared_norm)
+    (hsmall : theorem20_8KappaB A APplus * eps < 1)
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) Npert i j -
+            rectMatMul A N i j) (eps * Ared_norm))
+    (hgapScale :
+      complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B hB.rightInverse)) *
+          vecNorm2 (fun j : Fin n => y j - x j) +
+        ((theorem20_8KappaB A APplus *
+              (complexMatrixOp2
+                  (realRectToCMatrix (rectMatMul A hB.rightInverse)) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B hB.rightInverse APplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b) ≤
+        eps * vecNorm2 (lsResidualHigham A b x))
+    (hleftA : rectMatMul AredPlus (rectMatMul A N) = idMatrix (k + 1))
+    (hleftB :
+      rectMatMul BredPlus
+          (rectMatMul (fun i j => A i j + DeltaA i j) Npert) =
+        idMatrix (k + 1))
+    (hSymA : IsSymmetricFiniteMatrix (rectMatMul (rectMatMul A N) AredPlus))
+    (hSymB : IsSymmetricFiniteMatrix
+      (rectMatMul (rectMatMul (fun i j => A i j + DeltaA i j) Npert)
+        BredPlus))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hAredPlus_pos :
+      0 < complexMatrixOp2 (realRectToCMatrix AredPlus) :=
+    complexMatrixOp2_realRectToCMatrix_pos_of_rect_left_inverse
+      (rectMatMul A N) AredPlus hleftA
+  have hAredPlus :
+      rectOpNorm2Le AredPlus
+        (complexMatrixOp2 (realRectToCMatrix AredPlus)) :=
+    rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le AredPlus le_rfl
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_BAplus_residual_gap_kappaB_eps_nonneg
+      (AredPlus_norm := complexMatrixOp2 (realRectToCMatrix AredPlus))
+      (Ared_norm := Ared_norm)
+      hm A DeltaA b Deltab hB DeltaB APplus d Deltad N Npert
+      AredPlus BredPlus x y hApos hbpos hBpos hdpos hxpos hyx hrpos
+      hmax hMP hBAPt hstack hx hy hN hNpert hAredPlus_pos hkappa
+      hsmall hAredPlus hDelta hgapScale hleftA hleftB hSymA hSymB
+      hbracket
+
 /-- A real rectangular table with a left inverse has positive complexified
     operator norm on a nonempty domain. -/
 theorem complexMatrixOp2_realRectToCMatrix_pos_of_rect_has_left_inverse
@@ -50286,6 +50599,183 @@ theorem
       A DeltaA b Deltab hB DeltaB d Deltad x y res resHigh heps_nonneg
       hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack hx hy
       hres_source hres_pert hrelative hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    Gram-projector lifted reduced-Gram handoff where the direct residual-radius
+    premise is supplied by the existing `B_A^+` split residual-gap estimate.
+
+    The remaining scalar hypothesis compares the explicit BAplus residual-gap
+    RHS with `eps*||r||₂`; the source `kappa_B` bracket remains explicit. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_bracket
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ)
+    {B : Fin p → Fin (p + q) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p q A B)
+    (x y : Fin (p + q) → ℝ)
+    (res resHigh : Fin (r + q) → ℝ)
+    {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 res)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres_source : lsResidualHigham A b x = res)
+    (hres_pert :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = resHigh)
+    (hgapScale :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) *
+          vecNorm2 (fun j : Fin (p + q) => y j - x j) +
+        ((theorem20_8KappaB A h.liftedReducedGramAPplus *
+              (complexMatrixOp2
+                  (realRectToCMatrix
+                    (rectMatMul A (undetAplusOfGramNonsingInv B))) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                      h.liftedReducedGramAPplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b) ≤
+        eps * vecNorm2 res)
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A h.liftedReducedGramAPplus ≤
+        theorem20_8KappaB A h.liftedReducedGramAPplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                      h.liftedReducedGramAPplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin (p + q) => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x res h.liftedReducedGramAPplus
+          (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+            h.liftedReducedGramAPplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x res h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+              frobNormRect A) := by
+  have hres_norm :
+      vecNorm2 (fun i : Fin (r + q) => res i - resHigh i) ≤
+        eps * vecNorm2 res :=
+    (theorem20_8_source_residual_gap_norm_le_symm_of_solution_difference_maxRelativePerturbation_BAplus_split
+      A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B)
+      h.liftedReducedGramAPplus d Deltad x y res resHigh hApos hbpos
+      hBpos hdpos hmax hx hy hres_source hres_pert).trans hgapScale
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_source_residual_norm_bracket
+      A DeltaA b Deltab hB DeltaB d Deltad x y res resHigh heps_nonneg
+      hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack hx hy
+      hres_source hres_pert hres_norm hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    minimizer-facing Gram-projector lifted reduced-Gram BAplus residual-gap
+    handoff.  The displayed maximum-relative perturbation bound supplies
+    `eps >= 0`, and the minimizer hypotheses supply feasibility. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_bracket_of_minimizers
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ)
+    {B : Fin p → Fin (p + q) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p q A B)
+    (x y : Fin (p + q) → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hgapScale :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) *
+          vecNorm2 (fun j : Fin (p + q) => y j - x j) +
+        ((theorem20_8KappaB A h.liftedReducedGramAPplus *
+              (complexMatrixOp2
+                  (realRectToCMatrix
+                    (rectMatMul A (undetAplusOfGramNonsingInv B))) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                      h.liftedReducedGramAPplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b) ≤
+        eps * vecNorm2 (lsResidualHigham A b x))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A h.liftedReducedGramAPplus ≤
+        theorem20_8KappaB A h.liftedReducedGramAPplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                      h.liftedReducedGramAPplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin (p + q) => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          h.liftedReducedGramAPplus
+          (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+            h.liftedReducedGramAPplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+              frobNormRect A) := by
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_bracket
+      A DeltaA b Deltab hB DeltaB d Deltad x y (lsResidualHigham A b x)
+      (lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y)
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack
+      hx.1 hy.1 rfl rfl hgapScale hbracket
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     for supplied GQR data, `B` has full row rank iff the displayed
