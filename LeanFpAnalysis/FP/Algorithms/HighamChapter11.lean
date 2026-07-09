@@ -7850,6 +7850,125 @@ theorem higham11_7_tridiagonalBranchPathResidualWitnesses_supported
       (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
       (tail_fl t) (tail_exact t) (ΔA t) (hwit t)
 
+/-- Componentwise bounds from a path supported-witness package, exposed as a
+named accessor so downstream path-lift proofs do not unfold the witness tuple. -/
+theorem higham11_7_tridiagonalBranchPathSupportedWitnesses_bound
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim
+      step A c_bound c_rec u tail_fl tail_exact ΔA)
+    (t : Fin k) :
+    ∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+      |ΔA t i j| ≤ (c_bound t + c_rec t) * u t * infNorm (A t) :=
+  (hwit t).1
+
+/-- Zero-prefix support from a path supported-witness package, exposed as a
+named accessor for local-to-ambient lift decomposition proofs. -/
+theorem higham11_7_tridiagonalBranchPathSupportedWitnesses_leadingBlockSupport
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim
+      step A c_bound c_rec u tail_fl tail_exact ΔA)
+    (t : Fin k) :
+    higham11_7_TridiagonalLeadingBlockSupport
+      (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+      (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t) :=
+  (hwit t).2.1
+
+/-- The induced `∞`-norm bound from a path supported-witness package. -/
+theorem higham11_7_tridiagonalBranchPathSupportedWitnesses_infNorm_bound
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim
+      step A c_bound c_rec u tail_fl tail_exact ΔA)
+    (t : Fin k) :
+    infNorm (ΔA t) ≤
+      ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
+        (c_bound t + c_rec t) * u t * infNorm (A t) :=
+  (hwit t).2.2
+
+/-- Componentwise bounds from a path residual-witness package, routed through
+the supported-witness projection. -/
+theorem higham11_7_tridiagonalBranchPathResidualWitnesses_bound
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp tailDim
+      step A c_bound c_rec u tail_fl tail_exact ΔA)
+    (t : Fin k) :
+    ∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+      |ΔA t i j| ≤ (c_bound t + c_rec t) * u t * infNorm (A t) :=
+  higham11_7_tridiagonalBranchPathSupportedWitnesses_bound
+    k fp tailDim step A c_bound c_rec u tail_fl tail_exact ΔA
+    (higham11_7_tridiagonalBranchPathResidualWitnesses_supported
+      k fp tailDim step A c_bound c_rec u tail_fl tail_exact ΔA hwit) t
+
+/-- Zero-prefix support from a path residual-witness package, routed through
+the supported-witness projection. -/
+theorem higham11_7_tridiagonalBranchPathResidualWitnesses_leadingBlockSupport
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp tailDim
+      step A c_bound c_rec u tail_fl tail_exact ΔA)
+    (t : Fin k) :
+    higham11_7_TridiagonalLeadingBlockSupport
+      (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+      (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t) :=
+  higham11_7_tridiagonalBranchPathSupportedWitnesses_leadingBlockSupport
+    k fp tailDim step A c_bound c_rec u tail_fl tail_exact ΔA
+    (higham11_7_tridiagonalBranchPathResidualWitnesses_supported
+      k fp tailDim step A c_bound c_rec u tail_fl tail_exact ΔA hwit) t
+
+/-- The induced `∞`-norm bound from a path residual-witness package. -/
+theorem higham11_7_tridiagonalBranchPathResidualWitnesses_infNorm_bound
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp tailDim
+      step A c_bound c_rec u tail_fl tail_exact ΔA)
+    (t : Fin k) :
+    infNorm (ΔA t) ≤
+      ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
+        (c_bound t + c_rec t) * u t * infNorm (A t) :=
+  higham11_7_tridiagonalBranchPathSupportedWitnesses_infNorm_bound
+    k fp tailDim step A c_bound c_rec u tail_fl tail_exact ΔA
+    (higham11_7_tridiagonalBranchPathResidualWitnesses_supported
+      k fp tailDim step A c_bound c_rec u tail_fl tail_exact ΔA hwit) t
+
 /-- **Theorem 11.7 concrete path residual witness accessor, `1 × 1` branch**.
 At a concrete prefix-span branch whose pivot choice is `1 × 1`, the
 equation-bearing path witness can be read as the corresponding branch-local
