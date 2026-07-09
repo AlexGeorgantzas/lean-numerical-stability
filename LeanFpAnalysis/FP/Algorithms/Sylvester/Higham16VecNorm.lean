@@ -3020,6 +3020,18 @@ theorem existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBou
     _ = Matrix.mulVec (Inv.inv (sylvesterVecCoeff n n A B)) c := by
         rw [hy]
 
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the `SepLowerBound` nonsingular-inverse
+    vectorized Sylvester coefficient solution. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound :=
+  sylvesterVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the `SepLowerBound` unique exact
+    vectorized Sylvester coefficient solve witness. -/
+alias H16_eq16_2_26_existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound :=
+  existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     a Sylvester operator sigma-min certificate transfers to the concrete
     vectorized Sylvester coefficient sigma-min route. -/
@@ -3844,6 +3856,18 @@ theorem existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylv
       n A B sigma
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
       c
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the positive exact-infimum
+    nonsingular-inverse vectorized Sylvester coefficient solution. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the positive exact-infimum unique exact
+    vectorized Sylvester coefficient solve witness. -/
+alias H16_eq16_2_26_existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf :=
+  existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf
 
 /-- A concrete left inverse and operator-2 radius for the printed Sylvester
     vec/Kronecker coefficient gives the inverse-operator bound used by the
