@@ -27008,6 +27008,104 @@ theorem theorem20_8_source_residual_gap_norm_le_of_solution_difference_maxRelati
     (theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
       A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the BAplus split residual-gap estimate supplies the
+    `(AP)^+`-scaled residual-gap obligation used by the ECH handoff, once the
+    remaining scalar comparison with the source residual-amplifier term is
+    provided explicitly. -/
+theorem theorem20_8_source_residual_gap_op2_le_of_solution_difference_maxRelativePerturbation_BAplus_split
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ) {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hscale :
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+          (complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) *
+              vecNorm2 (fun j : Fin n => y j - x j) +
+            ((theorem20_8KappaB A APplus *
+                  (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+                    (eps * vecNorm2 d + (eps * frobNormRect B) *
+                      vecNorm2 y)) +
+                complexMatrixOp2
+                    (realRectToCMatrix
+                      (rectMatMul A
+                        (theorem20_8BAplus A B Bplus APplus))) *
+                  (eps * vecNorm2 d + (eps * frobNormRect B) *
+                    vecNorm2 y)) +
+              (eps * frobNormRect A) * vecNorm2 y +
+              eps * vecNorm2 b)) ≤
+        eps * theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) :
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        vecNorm2 (fun i : Fin m => r i - rHigh i) ≤
+      eps * theorem20_8ResidualAmplifier A B APplus
+          (theorem20_8BAplus A B Bplus APplus) *
+        (vecNorm2 r / frobNormRect A) := by
+  have hgapHigh :
+      vecNorm2 (fun i : Fin m => rHigh i - r i) ≤
+        complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) *
+            vecNorm2 (fun j : Fin n => y j - x j) +
+          ((theorem20_8KappaB A APplus *
+                (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+                  (eps * vecNorm2 d + (eps * frobNormRect B) *
+                    vecNorm2 y)) +
+              complexMatrixOp2
+                  (realRectToCMatrix
+                    (rectMatMul A
+                      (theorem20_8BAplus A B Bplus APplus))) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) *
+                  vecNorm2 y)) +
+            (eps * frobNormRect A) * vecNorm2 y +
+            eps * vecNorm2 b) :=
+    theorem20_8_source_residual_gap_norm_le_of_solution_difference_maxRelativePerturbation_BAplus_split
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+      hApos hbpos hBpos hdpos hmax hx hy hr hres
+  have hgap :
+      vecNorm2 (fun i : Fin m => r i - rHigh i) ≤
+        complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) *
+            vecNorm2 (fun j : Fin n => y j - x j) +
+          ((theorem20_8KappaB A APplus *
+                (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+                  (eps * vecNorm2 d + (eps * frobNormRect B) *
+                    vecNorm2 y)) +
+              complexMatrixOp2
+                  (realRectToCMatrix
+                    (rectMatMul A
+                      (theorem20_8BAplus A B Bplus APplus))) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) *
+                  vecNorm2 y)) +
+            (eps * frobNormRect A) * vecNorm2 y +
+            eps * vecNorm2 b) := by
+    have hneg :
+        (fun i : Fin m => r i - rHigh i) =
+          fun i : Fin m => -(rHigh i - r i) := by
+      ext i
+      ring
+    have hnorm :
+        vecNorm2 (fun i : Fin m => r i - rHigh i) =
+          vecNorm2 (fun i : Fin m => rHigh i - r i) := by
+      rw [hneg]
+      simpa using vecNorm2_neg (fun i : Fin m => rHigh i - r i)
+    rw [hnorm]
+    exact hgapHigh
+  have hop_nonneg : 0 ≤ complexMatrixOp2 (realRectToCMatrix APplus) :=
+    complexMatrixOp2_nonneg (realRectToCMatrix APplus)
+  exact (mul_le_mul_of_nonneg_left hgap hop_nonneg).trans hscale
+
 /-- The source quantity `kappa_A(B)` in Theorem 20.8 is nonnegative. -/
 theorem theorem20_8KappaA_nonneg {n p : ℕ}
     (B : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ) :
