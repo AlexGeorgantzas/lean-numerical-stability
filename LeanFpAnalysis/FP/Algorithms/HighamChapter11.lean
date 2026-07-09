@@ -5427,6 +5427,44 @@ theorem higham11_7_tridiagonalPathStartOffsetsFrom_lt_of_lt
     (Nat.lt_add_of_pos_right
       (higham11_7_tridiagonalBranchSupportOffset_pos (step t))) hend
 
+/-- Start offsets are monotone with respect to path index in a scheduled mixed
+tridiagonal path. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_le_of_le
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts)
+    {t u : Fin k} (htu : t.val ≤ u.val) :
+    starts t ≤ starts u := by
+  by_cases hEq : t = u
+  · subst u
+    exact le_rfl
+  · have hval_ne : t.val ≠ u.val := by
+      intro hval
+      exact hEq (Fin.ext hval)
+    have hlt : t.val < u.val := lt_of_le_of_ne htu hval_ne
+    exact
+      (higham11_7_tridiagonalPathStartOffsetsFrom_lt_of_lt
+        base k step starts hstarts hlt).le
+
+/-- Branch endpoints are monotone with respect to path index in a scheduled
+mixed tridiagonal path. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_branch_end_of_le
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts)
+    {t u : Fin k} (htu : t.val ≤ u.val) :
+    starts t + higham11_7_tridiagonalBranchSupportOffset (step t) ≤
+      starts u + higham11_7_tridiagonalBranchSupportOffset (step u) := by
+  by_cases hEq : t = u
+  · subst u
+    exact le_rfl
+  · have hval_ne : t.val ≠ u.val := by
+      intro hval
+      exact hEq (Fin.ext hval)
+    have hlt : t.val < u.val := lt_of_le_of_ne htu hval_ne
+    have hend :=
+      higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_of_lt
+        base k step starts hstarts hlt
+    exact Nat.le_trans hend (Nat.le_add_right (starts u) _)
+
 /-- The end of the last branch in a nonempty scheduled path is exactly the
 base plus the total pivot span. -/
 theorem higham11_7_tridiagonalPathStartOffsetsFrom_last_branch_end_eq
@@ -5579,6 +5617,29 @@ theorem higham11_7_tridiagonalPathStartOffsets_lt_of_lt
     starts t < starts u := by
   simpa [higham11_7_TridiagonalPathStartOffsets] using
     higham11_7_tridiagonalPathStartOffsetsFrom_lt_of_lt
+      0 k step starts hstarts htu
+
+/-- Zero-based scheduled start offsets are monotone with respect to path
+index. -/
+theorem higham11_7_tridiagonalPathStartOffsets_le_of_le
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets k step starts)
+    {t u : Fin k} (htu : t.val ≤ u.val) :
+    starts t ≤ starts u := by
+  simpa [higham11_7_TridiagonalPathStartOffsets] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_le_of_le
+      0 k step starts hstarts htu
+
+/-- Zero-based scheduled branch endpoints are monotone with respect to path
+index. -/
+theorem higham11_7_tridiagonalPathStartOffsets_branch_end_le_branch_end_of_le
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets k step starts)
+    {t u : Fin k} (htu : t.val ≤ u.val) :
+    starts t + higham11_7_tridiagonalBranchSupportOffset (step t) ≤
+      starts u + higham11_7_tridiagonalBranchSupportOffset (step u) := by
+  simpa [higham11_7_TridiagonalPathStartOffsets] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_branch_end_of_le
       0 k step starts hstarts htu
 
 /-- The end of the last branch in a nonempty zero-based scheduled path is the
