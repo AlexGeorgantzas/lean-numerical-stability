@@ -4412,6 +4412,57 @@ theorem higham11_7_tridiagonalBranchPathLocalResiduals_iff_head_tail
       higham11_7_tridiagonalBranchPathLocalResiduals_cons
         k fp tailDim step A c_bound c_rec u tail_fl tail_exact h.1 h.2
 
+/-- **Theorem 11.7 path residual cons from a head local assumption**.  A
+branch-local head proof and an already packaged tail residual rebuild the
+nonempty path residual predicate. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchLocalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+      (tail_fl 0) (tail_exact 0))
+    (htail : higham11_7_TridiagonalBranchPathLocalResiduals k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_fl t.succ)
+      (fun t => tail_exact t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_cons
+    k fp tailDim step A c_bound c_rec u tail_fl tail_exact
+    (higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+      (tail_fl 0) (tail_exact 0) hhead)
+    htail
+
+/-- **Theorem 11.7 path residual cons from a terminal head**.  This is the
+terminal-head companion to
+`higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions`. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchTerminalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0))
+    (htail : higham11_7_TridiagonalBranchPathLocalResiduals k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_exact t.succ)
+      (fun t => tail_exact t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_exact tail_exact :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_cons
+    k fp tailDim step A c_bound c_rec u tail_exact tail_exact
+    (higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+      (tail_exact 0) hhead)
+    htail
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
