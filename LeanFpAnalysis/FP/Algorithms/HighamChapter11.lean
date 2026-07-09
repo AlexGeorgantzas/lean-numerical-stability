@@ -4637,6 +4637,38 @@ theorem higham11_8_relative_outer_factor_caps_of_row_col_sum_majorants (n : ℕ)
         n (fun r c => L c r) γ κcol cap hγ hcap hκcol
         (fun r => by simpa using hcols r)
 
+/-- Uniform entrywise majorants for the exact Aasen outer factor imply the
+row/column majorants, and hence the two relative norm caps, after one scalar
+scale comparison. -/
+theorem higham11_8_relative_outer_factor_caps_of_entrywise_majorant (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (γ κ cap : ℝ)
+    (hγ : 0 ≤ γ) (hκ : 0 ≤ κ)
+    (hκcap : (1 + γ) * ((n : ℝ) * κ) ≤ cap)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (1 + γ) * infNorm L ≤ cap ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤ cap := by
+  have hscale_nonneg : 0 ≤ 1 + γ := by linarith
+  have hrow_majorant_nonneg : 0 ≤ (n : ℝ) * κ :=
+    mul_nonneg (Nat.cast_nonneg n) hκ
+  have hcap : 0 ≤ cap :=
+    (mul_nonneg hscale_nonneg hrow_majorant_nonneg).trans hκcap
+  have hrows : ∀ i : Fin n, (∑ j : Fin n, |L i j|) ≤ (n : ℝ) * κ := by
+    intro i
+    calc
+      (∑ j : Fin n, |L i j|) ≤ ∑ _j : Fin n, κ :=
+        Finset.sum_le_sum (fun j _ => hentry i j)
+      _ = (n : ℝ) * κ := by simp [Finset.sum_const, nsmul_eq_mul]
+  have hcols : ∀ j : Fin n, (∑ i : Fin n, |L i j|) ≤ (n : ℝ) * κ := by
+    intro j
+    calc
+      (∑ i : Fin n, |L i j|) ≤ ∑ _i : Fin n, κ :=
+        Finset.sum_le_sum (fun i _ => hentry i j)
+      _ = (n : ℝ) * κ := by simp [Finset.sum_const, nsmul_eq_mul]
+  exact
+    higham11_8_relative_outer_factor_caps_of_row_col_sum_majorants
+      n L γ ((n : ℝ) * κ) ((n : ℝ) * κ) cap
+      hγ hcap hκcap hκcap hrows hcols
+
 /-- A relative entrywise factor perturbation controls the perturbed factor's
 infinity norm by `(1+γ)` times the source factor norm. -/
 theorem higham11_8_infNorm_factor_le_of_relative_entry_bound (n : ℕ)
