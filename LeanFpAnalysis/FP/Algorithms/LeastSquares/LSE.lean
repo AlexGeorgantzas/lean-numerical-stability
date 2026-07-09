@@ -45662,6 +45662,19 @@ theorem GeneralizedQRFactorization.Q2Basis_nullspace
   simpa [GeneralizedQRFactorization.Q2Basis, rectMatMul, rectMatMulVec]
     using hc
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.24) support:
+    every source projector `P = I - B^+B` fixes the concrete GQR `Q₂` basis,
+    because the `Q₂` columns lie in the nullspace of `B`. -/
+theorem GeneralizedQRFactorization.theorem20_8Projection_mul_Q2Basis_eq_self
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (Bplus : Fin (p + q) → Fin p → ℝ) :
+    rectMatMul (theorem20_8Projection B Bplus) h.Q2Basis = h.Q2Basis :=
+  theorem20_8_APplus_projection_range_of_constraint_annihilates
+    B Bplus h.Q2Basis h.Q2Basis_nullspace
+
 /-- A vector padded by zero leading coordinates has the same Euclidean norm as
     its trailing block. -/
 theorem vecNorm2_zeroLeft_append {p q : ℕ}
@@ -49239,6 +49252,60 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_reproduces_pseudoinve
           h.liftedReducedGramAPplus := by
           rw [h.liftedReducedGramAPplus_AP_eq_projection hB hstack]
     _ = h.liftedReducedGramAPplus := hProjFix
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
+    the range projection `AP * Q₂(AQ₂)^+` for the lifted reduced-Gram
+    candidate is exactly the reduced Gram projection `(AQ₂)(AQ₂)^+`. -/
+theorem GeneralizedQRFactorization.liftedReducedGramAPplus_range_projection_eq_reduced
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (Bplus : Fin (p + q) → Fin p → ℝ) :
+    rectMatMul (theorem20_8AP A B Bplus) h.liftedReducedGramAPplus =
+      rectMatMul (gqrAQ2Block A h.Q)
+        (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q)) := by
+  let Cplus : Fin q → Fin (r + q) → ℝ :=
+    lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q)
+  have hPQ2 :
+      rectMatMul (theorem20_8Projection B Bplus) h.Q2Basis = h.Q2Basis :=
+    h.theorem20_8Projection_mul_Q2Basis_eq_self Bplus
+  calc
+    rectMatMul (theorem20_8AP A B Bplus) h.liftedReducedGramAPplus =
+        rectMatMul (rectMatMul A (theorem20_8Projection B Bplus))
+          (rectMatMul h.Q2Basis Cplus) := by
+          rfl
+    _ = rectMatMul A
+          (rectMatMul (theorem20_8Projection B Bplus)
+            (rectMatMul h.Q2Basis Cplus)) := by
+          rw [rectMatMul_assoc]
+    _ = rectMatMul A
+          (rectMatMul
+            (rectMatMul (theorem20_8Projection B Bplus) h.Q2Basis)
+            Cplus) := by
+          rw [← rectMatMul_assoc
+            (theorem20_8Projection B Bplus) h.Q2Basis Cplus]
+    _ = rectMatMul A (rectMatMul h.Q2Basis Cplus) := by
+          rw [hPQ2]
+    _ = rectMatMul (rectMatMul A h.Q2Basis) Cplus := by
+          rw [← rectMatMul_assoc]
+    _ = rectMatMul (gqrAQ2Block A h.Q) Cplus := by
+          rw [h.A_mul_Q2Basis]
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
+    the range-projection symmetry Penrose field for the lifted reduced-Gram
+    candidate follows from the reduced Gram-pseudoinverse symmetry. -/
+theorem GeneralizedQRFactorization.liftedReducedGramAPplus_range_projection_symmetric
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (Bplus : Fin (p + q) → Fin p → ℝ)
+    (hstack : LSEStackedFullColumnRank A B) :
+    IsSymmetricFiniteMatrix
+      (rectMatMul (theorem20_8AP A B Bplus) h.liftedReducedGramAPplus) := by
+  rw [h.liftedReducedGramAPplus_range_projection_eq_reduced Bplus]
+  exact (h.A_Q2_reduced_gram_left_inverse_and_projection_symmetric hstack).2
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-shaped first-order handoff for the concrete lifted reduced-Gram
