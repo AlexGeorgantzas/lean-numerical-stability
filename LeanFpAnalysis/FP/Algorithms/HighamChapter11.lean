@@ -8065,6 +8065,27 @@ def higham11_7_tridiagonalPathFirstTrailingIndex_one
           (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one).val :=
   rfl
 
+@[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_pathFirstTrailing_one
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.one)
+    (E : Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one) →
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one) → ℝ) :
+    higham11_7_tridiagonalLiftLocalBlockPerturbation
+        (higham11_7_tridiagonalPathPivotSpan k step + 1)
+        (higham11_7_tridiagonalPathPrefixSpan k step t)
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one) E
+        (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep)
+        (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep) =
+      E
+        (higham11_7_tridiagonalBranchFirstTrailingIndex
+          (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one)
+        (higham11_7_tridiagonalBranchFirstTrailingIndex
+          (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one) := by
+  simp [higham11_7_tridiagonalPathFirstTrailingIndex_one]
+
 /-- Full-ambient first-trailing index for a concrete path branch accepted as
 `2 × 2`. -/
 def higham11_7_tridiagonalPathFirstTrailingIndex_two
@@ -8089,6 +8110,27 @@ def higham11_7_tridiagonalPathFirstTrailingIndex_two
         (higham11_7_tridiagonalBranchFirstTrailingIndex
           (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two).val :=
   rfl
+
+@[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_pathFirstTrailing_two
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two)
+    (E : Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two) →
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two) → ℝ) :
+    higham11_7_tridiagonalLiftLocalBlockPerturbation
+        (higham11_7_tridiagonalPathPivotSpan k step + 1)
+        (higham11_7_tridiagonalPathPrefixSpan k step t)
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two) E
+        (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep)
+        (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep) =
+      E
+        (higham11_7_tridiagonalBranchFirstTrailingIndex
+          (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two)
+        (higham11_7_tridiagonalBranchFirstTrailingIndex
+          (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two) := by
+  simp [higham11_7_tridiagonalPathFirstTrailingIndex_two]
 
 /-- **Theorem 11.7 lifted 1×1 branch residual equation**.  The scalar residual
 equation from a 1×1 branch witness can be read at the embedded first-trailing
