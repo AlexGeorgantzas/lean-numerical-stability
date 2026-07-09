@@ -2409,6 +2409,68 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_b
     hchoice hσa11 hσa22 hAmax hκ hb hc hratio hbudget hval hrec
     (mul_nonneg (mul_nonneg (add_nonneg hc_bound hc_rec) hu) hAmax)
 
+/-- **Theorem 11.7 recursive residual norm aggregation, matrix-entry form**.
+For a leading `2 × 2` tridiagonal step inside an ambient `Fin (n+3)` matrix,
+the local trailing diagonal and coupling entries are bounded by `‖A‖∞`.  This
+removes the separate scalar `|b|≤Amax` and `|c|≤Amax` hypotheses from the
+local+recursive accumulator when the printed budget is expressed using the
+ambient infinity norm. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (σ a11 a21 a22 κ c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hκ : 0 ≤ κ)
+    (hratio : σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (infNorm A + infNorm A * κ * infNorm A) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      infNorm ΔA ≤ ((n + 3 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_mul
+              (A ⟨1, by omega⟩
+                (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+              (a11 / (a11 * a22 - a21 ^ 2)))
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) -
+          (A ⟨1, by omega⟩
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) *
+            (a11 / (a11 * a22 - a21 ^ 2)) *
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  let tail : Fin (n + 3) :=
+    higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n
+  let pivot₂ : Fin (n + 3) := ⟨1, by omega⟩
+  have hb : |A tail tail| ≤ infNorm A :=
+    higham11_7_abs_entry_le_infNorm (n + 3) A tail tail
+  have hc : |A pivot₂ tail| ≤ infNorm A :=
+    higham11_7_abs_entry_le_infNorm (n + 3) A pivot₂ tail
+  simpa [tail, pivot₂] using
+    higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_with_norm_bound_nonneg
+      n fp σ a11 a21 a22 (A tail tail) (A pivot₂ tail) (infNorm A) κ
+      c_bound c_rec u tail_fl tail_exact hchoice hσa11 hσa22
+      (infNorm_nonneg A) hκ hb hc hratio hbudget hval hrec hc_bound
+      hc_rec hu
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
@@ -4558,6 +4620,46 @@ theorem higham11_8_infNorm_le_mul_of_componentwise_T_bound (n : ℕ)
             mul_le_mul_of_nonneg_left (row_sum_le_infNorm T_hat i) hη
     · exact mul_nonneg hη (infNorm_nonneg T_hat)
 
+/-- The source-style relative `T_hat - T` comparison gives the corresponding
+infinity-norm perturbation budget for the actual middle-factor difference. -/
+theorem higham11_8_infNorm_T_hat_sub_T_le_mul_of_relative_error (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ) (γ : ℝ) (hγ : 0 ≤ γ)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ γ * |T_hat i j|) :
+    infNorm (fun i j : Fin n => T_hat i j - T i j) ≤ γ * infNorm T_hat :=
+  higham11_8_infNorm_le_mul_of_componentwise_T_bound n
+    (fun i j : Fin n => T_hat i j - T i j) T_hat γ hγ hThat
+
+/-- The concrete envelope `γ |T_hat|` used as a middle-factor budget has
+infinity norm at most `γ ‖T_hat‖∞` when `γ` is nonnegative. -/
+theorem higham11_8_infNorm_scaled_abs_T_hat_le (n : ℕ)
+    (T_hat : Fin n → Fin n → ℝ) (γ : ℝ) (hγ : 0 ≤ γ) :
+    infNorm (fun i j : Fin n => γ * |T_hat i j|) ≤ γ * infNorm T_hat := by
+  apply higham11_8_infNorm_le_mul_of_componentwise_T_bound n
+    (fun i j : Fin n => γ * |T_hat i j|) T_hat γ hγ
+  intro i j
+  have hnonneg : 0 ≤ γ * |T_hat i j| := mul_nonneg hγ (abs_nonneg _)
+  rw [abs_of_nonneg hnonneg]
+
+/-- A relative componentwise `T_hat - T` comparison also bounds the exact
+middle-factor norm by `(1+γ) ‖T_hat‖∞`.  This is weaker than the direct
+`‖T‖∞ ≤ ‖T_hat‖∞` cap needed by the exact-radius source endpoint, but records
+the norm consequence available from the relative error statement alone. -/
+theorem higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ) (γ : ℝ) (hγ : 0 ≤ γ)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ γ * |T_hat i j|) :
+    infNorm T ≤ (1 + γ) * infNorm T_hat := by
+  have hscale : 0 ≤ 1 + γ := by linarith
+  apply higham11_8_infNorm_le_mul_of_componentwise_T_bound n T T_hat (1 + γ) hscale
+  intro i j
+  have hrewrite : T i j = T_hat i j + (-(T_hat i j - T i j)) := by ring
+  calc
+    |T i j| = |T_hat i j + (-(T_hat i j - T i j))| :=
+      congrArg (fun x : ℝ => |x|) hrewrite
+    _ ≤ |T_hat i j| + |-(T_hat i j - T i j)| := abs_add_le _ _
+    _ = |T_hat i j| + |T_hat i j - T i j| := by rw [abs_neg]
+    _ ≤ |T_hat i j| + γ * |T_hat i j| := by linarith [hThat i j]
+    _ = (1 + γ) * |T_hat i j| := by ring
+
 /-- Componentwise absolute domination transfers directly to the matrix
 infinity norm. -/
 theorem higham11_8_infNorm_le_of_componentwise_abs_bound (n : ℕ)
@@ -5969,6 +6071,63 @@ theorem higham11_8_aasen_factor_solve_norm_budget_of_factor_norm_bounds
         simpa [τ, mul_assoc] using
           mul_le_mul_of_nonneg_right hcoeff' hτ
 
+/-- Scalar reducer variant where the factorization-side middle perturbation is
+the concrete envelope `κBT |T_hat|` and the exact middle-factor norm is derived
+from the relative componentwise comparison `|T_hat - T| ≤ κBT |T_hat|`.  This
+is a fallback route: it gives `‖T‖∞ ≤ (1+κBT) ‖T_hat‖∞`, not the sharper
+source-constant cap `‖T‖∞ ≤ ‖T_hat‖∞`. -/
+theorem higham11_8_aasen_factor_solve_norm_budget_of_relative_T_hat_error
+    (fp : FPModel) (n : ℕ)
+    (L T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κLhat κLhatT κBT κmid : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hn : gammaValid fp n)
+    (hκL : 0 ≤ κL) (hκLhat : 0 ≤ κLhat)
+    (hκBT : 0 ≤ κBT) (hκmid : 0 ≤ κmid)
+    (hL : infNorm L ≤ κL)
+    (hLT : infNorm (fun r c => L c r) ≤ κLT)
+    (hLhat : infNorm L_hat ≤ κLhat)
+    (hLhatT : infNorm (fun r c => L_hat c r) ≤ κLhatT)
+    (hThat_component : ∀ i j : Fin n, |T_hat i j - T i j| ≤ κBT * |T_hat i j|)
+    (hmiddle :
+      infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) ≤
+        κmid * infNorm T_hat)
+    (hcoeff :
+      (2 * γ_factor + γ_factor ^ 2) * (κL * (1 + κBT) * κLT) +
+        (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) +
+        (2 * gamma fp n + (gamma fp n) ^ 2) * (κLhat * κLhatT) +
+        (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+          (κLhat * κmid * κLhatT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    ((2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm T * infNorm (fun r c => L c r)) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L *
+          infNorm (fun i j : Fin n => κBT * |T_hat i j|) *
+          infNorm (fun r c => L c r))) +
+    ((2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat *
+          infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) *
+          infNorm (fun r c => L_hat c r))) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat := by
+  have hκT : 0 ≤ 1 + κBT := by linarith
+  have hT :
+      infNorm T ≤ (1 + κBT) * infNorm T_hat :=
+    higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error
+      n T T_hat κBT hκBT hThat_component
+  have hBT :
+      infNorm (fun i j : Fin n => κBT * |T_hat i j|) ≤
+        κBT * infNorm T_hat :=
+    higham11_8_infNorm_scaled_abs_T_hat_le n T_hat κBT hκBT
+  exact
+    higham11_8_aasen_factor_solve_norm_budget_of_factor_norm_bounds
+      fp n L T L_hat T_hat L_T_hat U_T_hat
+      (fun i j : Fin n => κBT * |T_hat i j|)
+      γ_factor γ15n25 κL κLT κLhat κLhatT (1 + κBT) κBT κmid
+      hγ_factor hn hκL hκLhat hκT hκBT hκmid hL hLT hLhat hLhatT
+      hT hBT hmiddle hcoeff
+
 /-- Scalar reducer variant where the computed-factor norm bounds are derived
 from the relative entrywise `L_hat` perturbation and the source-factor norm
 bounds. -/
@@ -6028,6 +6187,66 @@ theorem higham11_8_aasen_factor_solve_norm_budget_of_relative_factor_norm_bounds
       κL κLT ((1 + γ_factor) * κL) ((1 + γ_factor) * κLT) κT κBT κmid
       hγ_factor hn hκL (mul_nonneg hγ1 hκL) hκT hκBT hκmid
       hL hLT hLhat_norm hLhatT_norm hT hBT hmiddle hcoeff
+
+/-- Scalar reducer variant combining generated relative outer-factor bounds
+with the fallback relative-`T_hat` middle-factor norm route. -/
+theorem higham11_8_aasen_factor_solve_norm_budget_of_relative_factor_norm_bounds_relative_T_hat_error
+    (fp : FPModel) (n : ℕ)
+    (L T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κBT κmid : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hn : gammaValid fp n)
+    (hκL : 0 ≤ κL)
+    (hκBT : 0 ≤ κBT) (hκmid : 0 ≤ κmid)
+    (hLhat_entry : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ_factor * |L i j|)
+    (hL : infNorm L ≤ κL)
+    (hLT : infNorm (fun r c => L c r) ≤ κLT)
+    (hThat_component : ∀ i j : Fin n, |T_hat i j - T i j| ≤ κBT * |T_hat i j|)
+    (hmiddle :
+      infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) ≤
+        κmid * infNorm T_hat)
+    (hcoeff :
+      (2 * γ_factor + γ_factor ^ 2) * (κL * (1 + κBT) * κLT) +
+        (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) +
+        (2 * gamma fp n + (gamma fp n) ^ 2) *
+          (((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT)) +
+        (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+          (((1 + γ_factor) * κL) * κmid * ((1 + γ_factor) * κLT)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    ((2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm T * infNorm (fun r c => L c r)) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L *
+          infNorm (fun i j : Fin n => κBT * |T_hat i j|) *
+          infNorm (fun r c => L c r))) +
+    ((2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat *
+          infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) *
+          infNorm (fun r c => L_hat c r))) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat := by
+  have hγ1 : 0 ≤ 1 + γ_factor := by linarith
+  have hLhat_norm : infNorm L_hat ≤ (1 + γ_factor) * κL := by
+    calc
+      infNorm L_hat ≤ (1 + γ_factor) * infNorm L :=
+        higham11_8_infNorm_factor_le_of_relative_entry_bound n L L_hat
+          γ_factor hγ_factor hLhat_entry
+      _ ≤ (1 + γ_factor) * κL := mul_le_mul_of_nonneg_left hL hγ1
+  have hLhatT_norm :
+      infNorm (fun r c => L_hat c r) ≤
+        (1 + γ_factor) * κLT := by
+    calc
+      infNorm (fun r c => L_hat c r) ≤
+          (1 + γ_factor) * infNorm (fun r c => L c r) :=
+        higham11_8_infNorm_factorTranspose_le_of_relative_entry_bound n
+          L L_hat γ_factor hγ_factor hLhat_entry
+      _ ≤ (1 + γ_factor) * κLT := mul_le_mul_of_nonneg_left hLT hγ1
+  exact
+    higham11_8_aasen_factor_solve_norm_budget_of_relative_T_hat_error
+      fp n L T L_hat T_hat L_T_hat U_T_hat γ_factor γ15n25
+      κL κLT ((1 + γ_factor) * κL) ((1 + γ_factor) * κLT) κBT κmid
+      hγ_factor hn hκL (mul_nonneg hγ1 hκL) hκBT hκmid
+      hL hLT hLhat_norm hLhatT_norm hThat_component hmiddle hcoeff
 
 /-- Relative-factor scalar reducer with the final printed coefficient supplied
 as four shares of the printed `(n-1)^2 γ_{15n+25}` budget. -/
