@@ -5477,6 +5477,23 @@ theorem higham11_8_infNorm_T_hat_sub_T_le_mul_of_relative_error (n : ℕ)
   higham11_8_infNorm_le_mul_of_componentwise_T_bound n
     (fun i j : Fin n => T_hat i j - T i j) T_hat γ hγ hThat
 
+/-- A relative componentwise `T_hat - T` comparison gives the entrywise
+`(1+γ)` domination of the exact middle factor by the computed one.  This is the
+entrywise diagnostic behind the weaker norm cap below. -/
+theorem higham11_8_abs_T_le_one_plus_gamma_T_hat_of_relative_error (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ) (γ : ℝ) (_hγ : 0 ≤ γ)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ γ * |T_hat i j|) :
+    ∀ i j : Fin n, |T i j| ≤ (1 + γ) * |T_hat i j| := by
+  intro i j
+  have hrewrite : T i j = T_hat i j + (-(T_hat i j - T i j)) := by ring
+  calc
+    |T i j| = |T_hat i j + (-(T_hat i j - T i j))| :=
+      congrArg (fun x : ℝ => |x|) hrewrite
+    _ ≤ |T_hat i j| + |-(T_hat i j - T i j)| := abs_add_le _ _
+    _ = |T_hat i j| + |T_hat i j - T i j| := by rw [abs_neg]
+    _ ≤ |T_hat i j| + γ * |T_hat i j| := by linarith [hThat i j]
+    _ = (1 + γ) * |T_hat i j| := by ring
+
 /-- The concrete envelope `γ |T_hat|` used as a middle-factor budget has
 infinity norm at most `γ ‖T_hat‖∞` when `γ` is nonnegative. -/
 theorem higham11_8_infNorm_scaled_abs_T_hat_le (n : ℕ)
@@ -5497,16 +5514,10 @@ theorem higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error (n : ℕ)
     (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ γ * |T_hat i j|) :
     infNorm T ≤ (1 + γ) * infNorm T_hat := by
   have hscale : 0 ≤ 1 + γ := by linarith
-  apply higham11_8_infNorm_le_mul_of_componentwise_T_bound n T T_hat (1 + γ) hscale
-  intro i j
-  have hrewrite : T i j = T_hat i j + (-(T_hat i j - T i j)) := by ring
-  calc
-    |T i j| = |T_hat i j + (-(T_hat i j - T i j))| :=
-      congrArg (fun x : ℝ => |x|) hrewrite
-    _ ≤ |T_hat i j| + |-(T_hat i j - T i j)| := abs_add_le _ _
-    _ = |T_hat i j| + |T_hat i j - T i j| := by rw [abs_neg]
-    _ ≤ |T_hat i j| + γ * |T_hat i j| := by linarith [hThat i j]
-    _ = (1 + γ) * |T_hat i j| := by ring
+  exact higham11_8_infNorm_le_mul_of_componentwise_T_bound n T T_hat
+    (1 + γ) hscale
+    (higham11_8_abs_T_le_one_plus_gamma_T_hat_of_relative_error
+      n T T_hat γ hγ hThat)
 
 /-- Componentwise absolute domination transfers directly to the matrix
 infinity norm. -/
