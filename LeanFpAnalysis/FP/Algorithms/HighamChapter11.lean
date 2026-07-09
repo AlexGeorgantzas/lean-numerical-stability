@@ -5078,6 +5078,61 @@ theorem higham11_7_tridiagonalPathStartOffsetsFrom_cons
             htail t hnext_tail
         simpa using htail_succ
 
+/-- Tail projection for mixed-path start schedules.  Dropping the first branch
+reschedules the tail from the offset reached after the head pivot block. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_tail
+    (base k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (starts : Fin (k + 1) → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base (k + 1)
+      step starts) :
+    higham11_7_TridiagonalPathStartOffsetsFrom
+      (base + higham11_7_tridiagonalBranchSupportOffset (step 0)) k
+      (fun t : Fin k => step t.succ) (fun t : Fin k => starts t.succ) := by
+  refine ⟨?_, ?_⟩
+  · intro hk
+    have hhead :=
+      higham11_7_tridiagonalPathStartOffsetsFrom_head
+        base (k + 1) step starts hstarts (by omega)
+    have hzero : starts (0 : Fin (k + 1)) = base := by
+      simpa using hhead
+    have hnext0 : (0 : Fin (k + 1)).val + 1 < k + 1 := by
+      simpa using Nat.succ_lt_succ hk
+    have hsucc :=
+      higham11_7_tridiagonalPathStartOffsetsFrom_succ
+        base (k + 1) step starts hstarts (0 : Fin (k + 1)) hnext0
+    simpa [hzero, add_comm, add_left_comm, add_assoc] using hsucc
+  · intro t hnext
+    have hnext_full : t.succ.val + 1 < k + 1 := by
+      rw [Fin.val_succ]
+      omega
+    have hsucc :=
+      higham11_7_tridiagonalPathStartOffsetsFrom_succ
+        base (k + 1) step starts hstarts t.succ hnext_full
+    simpa [Fin.val_succ, Nat.add_assoc] using hsucc
+
+/-- A nonempty base-offset start schedule is equivalent to its head offset
+and scheduled tail. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_iff_head_tail
+    (base k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (starts : Fin (k + 1) → ℕ) :
+    higham11_7_TridiagonalPathStartOffsetsFrom base (k + 1) step starts ↔
+      starts 0 = base ∧
+        higham11_7_TridiagonalPathStartOffsetsFrom
+          (base + higham11_7_tridiagonalBranchSupportOffset (step 0)) k
+          (fun t : Fin k => step t.succ)
+          (fun t : Fin k => starts t.succ) := by
+  constructor
+  · intro hstarts
+    exact
+      ⟨higham11_7_tridiagonalPathStartOffsetsFrom_head
+          base (k + 1) step starts hstarts (by omega),
+        higham11_7_tridiagonalPathStartOffsetsFrom_tail
+          base k step starts hstarts⟩
+  · intro h
+    exact
+      higham11_7_tridiagonalPathStartOffsetsFrom_cons
+        base k step starts h.1 h.2
+
 /-- A zero-based path schedule starts at offset `0`. -/
 theorem higham11_7_tridiagonalPathStartOffsets_head
     (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
@@ -5104,6 +5159,31 @@ theorem higham11_7_tridiagonalPathStartOffsets_succ_lt
     starts t < starts ⟨t.val + 1, hnext⟩ :=
   higham11_7_tridiagonalPathStartOffsetsFrom_succ_lt
     0 k step starts hstarts t hnext
+
+/-- Tail projection for zero-based mixed-path start schedules. -/
+theorem higham11_7_tridiagonalPathStartOffsets_tail
+    (k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (starts : Fin (k + 1) → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets (k + 1) step starts) :
+    higham11_7_TridiagonalPathStartOffsetsFrom
+      (higham11_7_tridiagonalBranchSupportOffset (step 0)) k
+      (fun t : Fin k => step t.succ) (fun t : Fin k => starts t.succ) := by
+  simpa [higham11_7_TridiagonalPathStartOffsets, zero_add] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_tail 0 k step starts hstarts
+
+/-- A nonempty zero-based start schedule is equivalent to its zero head and
+scheduled tail. -/
+theorem higham11_7_tridiagonalPathStartOffsets_iff_head_tail
+    (k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (starts : Fin (k + 1) → ℕ) :
+    higham11_7_TridiagonalPathStartOffsets (k + 1) step starts ↔
+      starts 0 = 0 ∧
+        higham11_7_TridiagonalPathStartOffsetsFrom
+          (higham11_7_tridiagonalBranchSupportOffset (step 0)) k
+          (fun t : Fin k => step t.succ)
+          (fun t : Fin k => starts t.succ) := by
+  simpa [higham11_7_TridiagonalPathStartOffsets, zero_add] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_iff_head_tail 0 k step starts
 
 /-- **Theorem 11.7 mixed-recursion local assumptions**.  This branch-indexed
 predicate records exactly the local pivot choice, scalar budget, recursive tail
