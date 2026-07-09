@@ -5890,6 +5890,195 @@ def higham11_7_TridiagonalBranchPathSupportedWitnesses
       ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
         (c_bound t + c_rec t) * u t * infNorm (A t)
 
+/-- Index embedding for placing a local tridiagonal branch block into a larger
+ambient matrix starting at row/column `start`. -/
+def higham11_7_tridiagonalLocalBlockIndex
+    (n start m : ℕ) (i : Fin m) (hi : start + i.val < n) : Fin n :=
+  ⟨start + i.val, hi⟩
+
+@[simp] theorem higham11_7_tridiagonalLocalBlockIndex_val
+    (n start m : ℕ) (i : Fin m) (hi : start + i.val < n) :
+    (higham11_7_tridiagonalLocalBlockIndex n start m i hi).val =
+      start + i.val :=
+  rfl
+
+/-- Lift a local branch perturbation into a shared ambient matrix by placing it
+at offset `start` and filling all non-embedded entries with zero. -/
+noncomputable def higham11_7_tridiagonalLiftLocalBlockPerturbation
+    (n start m : ℕ) (E : Fin m → Fin m → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    if hi : ∃ a : Fin m, start + a.val = i.val then
+      if hj : ∃ b : Fin m, start + b.val = j.val then
+        E (Classical.choose hi) (Classical.choose hj)
+      else 0
+    else 0
+
+/-- The ambient lift agrees with the local perturbation on embedded local
+indices. -/
+@[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_embedded
+    (n start m : ℕ) (E : Fin m → Fin m → ℝ)
+    (i j : Fin m) (hi : start + i.val < n) (hj : start + j.val < n) :
+    higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E
+        (higham11_7_tridiagonalLocalBlockIndex n start m i hi)
+        (higham11_7_tridiagonalLocalBlockIndex n start m j hj) =
+      E i j := by
+  classical
+  have hi_ex : ∃ a : Fin m,
+      start + a.val =
+        (higham11_7_tridiagonalLocalBlockIndex n start m i hi).val :=
+    ⟨i, rfl⟩
+  have hj_ex : ∃ b : Fin m,
+      start + b.val =
+        (higham11_7_tridiagonalLocalBlockIndex n start m j hj).val :=
+    ⟨j, rfl⟩
+  have hci : Classical.choose hi_ex = i := by
+    apply Fin.ext
+    have hval := Classical.choose_spec hi_ex
+    simpa using Nat.add_left_cancel hval
+  have hcj : Classical.choose hj_ex = j := by
+    apply Fin.ext
+    have hval := Classical.choose_spec hj_ex
+    simpa using Nat.add_left_cancel hval
+  rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi_ex,
+    dif_pos hj_ex, hci, hcj]
+
+/-- Componentwise bounds are preserved when a local branch perturbation is
+lifted into a shared ambient matrix. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_bound
+    (n start m : ℕ) (E : Fin m → Fin m → ℝ) (β : ℝ)
+    (hβ : 0 ≤ β) (hEbound : ∀ i j : Fin m, |E i j| ≤ β) :
+    ∀ i j : Fin n,
+      |higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E i j| ≤ β := by
+  classical
+  intro i j
+  by_cases hi : ∃ a : Fin m, start + a.val = i.val
+  · by_cases hj : ∃ b : Fin m, start + b.val = j.val
+    · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi,
+        dif_pos hj]
+      exact hEbound (Classical.choose hi) (Classical.choose hj)
+    · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi,
+        dif_neg hj]
+      simpa using hβ
+  · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_neg hi]
+    simpa using hβ
+
+/-- Zero-prefix support is shifted by `start` when a local branch perturbation
+is lifted into a shared ambient matrix. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_leadingBlockSupport
+    (n start m localOffset : ℕ) (E : Fin m → Fin m → ℝ)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m localOffset E) :
+    higham11_7_TridiagonalLeadingBlockSupport n (start + localOffset)
+      (higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E) := by
+  classical
+  intro i j hlead
+  by_cases hi : ∃ a : Fin m, start + a.val = i.val
+  · by_cases hj : ∃ b : Fin m, start + b.val = j.val
+    · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi,
+        dif_pos hj]
+      apply hEsupp
+      rcases hlead with hilt | hjlt
+      · left
+        have hval := Classical.choose_spec hi
+        omega
+      · right
+        have hval := Classical.choose_spec hj
+        omega
+    · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi,
+        dif_neg hj]
+  · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_neg hi]
+
+/-- **Theorem 11.7 local-to-ambient branch lift package**.  A local branch
+perturbation with a componentwise bound and zero-prefix support can be embedded
+into a shared ambient matrix at offset `start`, preserving the bound, shifting
+support, and agreeing on all embedded local entries. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_bound_leadingBlockSupport
+    (n start m localOffset : ℕ) (E : Fin m → Fin m → ℝ) (β : ℝ)
+    (hβ : 0 ≤ β) (hEbound : ∀ i j : Fin m, |E i j| ≤ β)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m localOffset E) :
+    (∀ i j : Fin n,
+      |higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E i j| ≤ β) ∧
+    higham11_7_TridiagonalLeadingBlockSupport n (start + localOffset)
+      (higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E) ∧
+    (∀ i j : Fin m, ∀ hi : start + i.val < n, ∀ hj : start + j.val < n,
+      higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E
+        (higham11_7_tridiagonalLocalBlockIndex n start m i hi)
+        (higham11_7_tridiagonalLocalBlockIndex n start m j hj) =
+          E i j) := by
+  exact
+    ⟨higham11_7_tridiagonalLiftLocalBlockPerturbation_bound n start m E β
+        hβ hEbound,
+      higham11_7_tridiagonalLiftLocalBlockPerturbation_leadingBlockSupport
+        n start m localOffset E hEsupp,
+      fun i j hi hj =>
+        higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_embedded
+          n start m E i j hi hj⟩
+
+/-- **Theorem 11.7 path witness ambient lift**.  Pointwise local residual
+witnesses for a finite mixed-pivot path can be lifted into one ambient matrix
+family at supplied start offsets, preserving the requested global componentwise
+budget and shifting each branch's zero-prefix support. -/
+theorem higham11_7_tridiagonalBranchPathSupportedWitnesses_lift_to_ambient
+    (n k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (starts : Fin k → ℕ)
+    (c : Fin k → ℝ) (u : ℝ)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hbudget : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u_loc t * infNorm (Aloc t) ≤
+        c t * u * infNorm A)
+    (Δloc : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ)
+    (hΔloc : higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc) :
+    ∃ E : Fin k → Fin n → Fin n → ℝ,
+      (∀ t : Fin k, ∀ i j : Fin n, |E t i j| ≤ c t * u * infNorm A) ∧
+      (∀ t : Fin k,
+        higham11_7_TridiagonalLeadingBlockSupport n
+          (starts t + higham11_7_tridiagonalBranchSupportOffset (step t)) (E t)) ∧
+      (∀ t : Fin k,
+        ∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+        ∀ hi : starts t + i.val < n, ∀ hj : starts t + j.val < n,
+          E t
+            (higham11_7_tridiagonalLocalBlockIndex n (starts t)
+              (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) i hi)
+            (higham11_7_tridiagonalLocalBlockIndex n (starts t)
+              (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) j hj) =
+            Δloc t i j) := by
+  let E : Fin k → Fin n → Fin n → ℝ := fun t =>
+    higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+      (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) (Δloc t)
+  refine ⟨E, ?_, ?_, ?_⟩
+  · intro t i j
+    have hβ : 0 ≤ c t * u * infNorm A :=
+      mul_nonneg (mul_nonneg (hc t) hu) (infNorm_nonneg A)
+    have hlocal : ∀ a b :
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+        |Δloc t a b| ≤ c t * u * infNorm A := by
+      intro a b
+      exact (hΔloc t).1 a b |>.trans (hbudget t)
+    exact
+      higham11_7_tridiagonalLiftLocalBlockPerturbation_bound n (starts t)
+        (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+        (Δloc t) (c t * u * infNorm A) hβ hlocal i j
+  · intro t
+    exact
+      higham11_7_tridiagonalLiftLocalBlockPerturbation_leadingBlockSupport
+        n (starts t)
+        (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+        (higham11_7_tridiagonalBranchSupportOffset (step t)) (Δloc t)
+        (hΔloc t).2.1
+  · intro t i j hi hj
+    exact
+      higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_embedded
+        n (starts t)
+        (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+        (Δloc t) i j hi hj
+
 /-- **Theorem 11.7 branch residual witness extraction**.  A single branch-local
 residual package supplies an explicit perturbation matrix with the componentwise
 budget, leading-block support, and `∞`-norm bound needed by later aggregation. -/
@@ -6213,6 +6402,80 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_
   exact
     higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets_of_coeff_sum_le
       n offset k offsets A b x_hat E c C u hc hu hoff hC hEbound hEsupp hEsolve
+
+/-- **Theorem 11.7 lifted path solve-delta aggregation, coefficient majorant
+form**.  This specializes the embedded path bridge to the concrete ambient lift
+at supplied start offsets.  The remaining path proof has to provide the scalar
+budget comparisons and the final solve equation for this explicit lifted sum. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_of_coeff_sum_le
+    (n offset k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (starts : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hoff : ∀ t : Fin k,
+      offset ≤ starts t + higham11_7_tridiagonalBranchSupportOffset (step t))
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hbudget : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u_loc t * infNorm (Aloc t) ≤
+        c t * u * infNorm A)
+    (hsolve :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∀ i : Fin n,
+          ∑ j : Fin n,
+              (A i j +
+                (∑ t : Fin k,
+                  higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+                    (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+                    (Δloc t) i j)) *
+                x_hat j =
+            b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  refine
+    higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum_of_coeff_sum_le
+      n offset k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact
+      A b x_hat
+      (fun t => starts t + higham11_7_tridiagonalBranchSupportOffset (step t))
+      c C u hpath hc hu hoff hC ?_
+  intro Δloc hΔloc
+  refine ⟨fun t =>
+      higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+        (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+        (Δloc t), ?_, ?_, ?_⟩
+  · intro t i j
+    have hβ : 0 ≤ c t * u * infNorm A :=
+      mul_nonneg (mul_nonneg (hc t) hu) (infNorm_nonneg A)
+    have hlocal : ∀ a b :
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+        |Δloc t a b| ≤ c t * u * infNorm A := by
+      intro a b
+      exact (hΔloc t).1 a b |>.trans (hbudget t)
+    exact
+      higham11_7_tridiagonalLiftLocalBlockPerturbation_bound n (starts t)
+        (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+        (Δloc t) (c t * u * infNorm A) hβ hlocal i j
+  · intro t
+    exact
+      higham11_7_tridiagonalLiftLocalBlockPerturbation_leadingBlockSupport
+        n (starts t)
+        (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+        (higham11_7_tridiagonalBranchSupportOffset (step t)) (Δloc t)
+        (hΔloc t).2.1
+  · exact hsolve Δloc hΔloc
 
 /-- **Theorem 11.7 embedded path solve-delta aggregation from local
 assumptions**.  This composes the finite path-local branch adapter, witness
