@@ -4986,6 +4986,125 @@ def higham11_7_tridiagonalBranchSupportOffset : PivotSize → ℕ
   | PivotSize.one => 1
   | PivotSize.two => 2
 
+/-- Every tridiagonal branch consumes at least one pivot index. -/
+theorem higham11_7_tridiagonalBranchSupportOffset_pos (s : PivotSize) :
+    0 < higham11_7_tridiagonalBranchSupportOffset s := by
+  cases s <;> simp [higham11_7_tridiagonalBranchSupportOffset]
+
+/-- Total number of rows/columns consumed by a finite mixed tridiagonal
+pivot path.  A `1 × 1` branch consumes one index and a `2 × 2` branch consumes
+two. -/
+def higham11_7_tridiagonalPathPivotSpan (k : ℕ)
+    (step : Fin k → PivotSize) : ℕ :=
+  ∑ t : Fin k, higham11_7_tridiagonalBranchSupportOffset (step t)
+
+/-- Start offsets for a finite mixed tridiagonal pivot path, relative to an
+ambient base offset.  The head starts at `base`; each successor starts after
+the current branch's consumed `1 × 1` or `2 × 2` pivot block. -/
+def higham11_7_TridiagonalPathStartOffsetsFrom
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ) : Prop :=
+  (∀ hk : 0 < k, starts ⟨0, hk⟩ = base) ∧
+  ∀ t : Fin k, ∀ hnext : t.val + 1 < k,
+    starts ⟨t.val + 1, hnext⟩ =
+      starts t + higham11_7_tridiagonalBranchSupportOffset (step t)
+
+/-- Start offsets for a mixed tridiagonal pivot path beginning at the first
+ambient row/column. -/
+abbrev higham11_7_TridiagonalPathStartOffsets
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ) : Prop :=
+  higham11_7_TridiagonalPathStartOffsetsFrom 0 k step starts
+
+/-- The head offset of a path schedule is its supplied base offset. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_head
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts)
+    (hk : 0 < k) :
+    starts ⟨0, hk⟩ = base :=
+  hstarts.1 hk
+
+/-- Successor offsets advance by the local pivot span of the current branch. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_succ
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts)
+    (t : Fin k) (hnext : t.val + 1 < k) :
+    starts ⟨t.val + 1, hnext⟩ =
+      starts t + higham11_7_tridiagonalBranchSupportOffset (step t) :=
+  hstarts.2 t hnext
+
+/-- Successor starts strictly increase along any scheduled mixed tridiagonal
+path. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_succ_lt
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts)
+    (t : Fin k) (hnext : t.val + 1 < k) :
+    starts t < starts ⟨t.val + 1, hnext⟩ := by
+  rw [higham11_7_tridiagonalPathStartOffsetsFrom_succ
+    base k step starts hstarts t hnext]
+  exact Nat.lt_add_of_pos_right
+    (higham11_7_tridiagonalBranchSupportOffset_pos (step t))
+
+/-- Cons constructor for mixed-path start schedules.  A nonempty path starts
+at `base`; its tail is scheduled from the offset reached after the head pivot
+block. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_cons
+    (base k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (starts : Fin (k + 1) → ℕ)
+    (hhead : starts 0 = base)
+    (htail : higham11_7_TridiagonalPathStartOffsetsFrom
+      (base + higham11_7_tridiagonalBranchSupportOffset (step 0)) k
+      (fun t : Fin k => step t.succ) (fun t : Fin k => starts t.succ)) :
+    higham11_7_TridiagonalPathStartOffsetsFrom base (k + 1) step starts := by
+  refine ⟨?_, ?_⟩
+  · intro hk
+    simpa using hhead
+  · intro t hnext
+    cases t using Fin.cases with
+    | zero =>
+        have hk : 0 < k := by omega
+        have htail_head :=
+          higham11_7_tridiagonalPathStartOffsetsFrom_head
+            (base + higham11_7_tridiagonalBranchSupportOffset (step 0)) k
+            (fun t : Fin k => step t.succ) (fun t : Fin k => starts t.succ)
+            htail hk
+        simpa [hhead, add_comm, add_left_comm, add_assoc] using htail_head
+    | succ t =>
+        have hnext' : t.val + 2 < k + 1 := by
+          simpa [Fin.val_succ, Nat.add_assoc] using hnext
+        have hnext_tail : t.val + 1 < k := by omega
+        have htail_succ :=
+          higham11_7_tridiagonalPathStartOffsetsFrom_succ
+            (base + higham11_7_tridiagonalBranchSupportOffset (step 0)) k
+            (fun t : Fin k => step t.succ) (fun t : Fin k => starts t.succ)
+            htail t hnext_tail
+        simpa using htail_succ
+
+/-- A zero-based path schedule starts at offset `0`. -/
+theorem higham11_7_tridiagonalPathStartOffsets_head
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets k step starts)
+    (hk : 0 < k) :
+    starts ⟨0, hk⟩ = 0 :=
+  hstarts.1 hk
+
+/-- A zero-based path schedule advances by each branch's pivot span. -/
+theorem higham11_7_tridiagonalPathStartOffsets_succ
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets k step starts)
+    (t : Fin k) (hnext : t.val + 1 < k) :
+    starts ⟨t.val + 1, hnext⟩ =
+      starts t + higham11_7_tridiagonalBranchSupportOffset (step t) :=
+  hstarts.2 t hnext
+
+/-- Successor starts strictly increase along any zero-based scheduled mixed
+tridiagonal path. -/
+theorem higham11_7_tridiagonalPathStartOffsets_succ_lt
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets k step starts)
+    (t : Fin k) (hnext : t.val + 1 < k) :
+    starts t < starts ⟨t.val + 1, hnext⟩ :=
+  higham11_7_tridiagonalPathStartOffsetsFrom_succ_lt
+    0 k step starts hstarts t hnext
+
 /-- **Theorem 11.7 mixed-recursion local assumptions**.  This branch-indexed
 predicate records exactly the local pivot choice, scalar budget, recursive tail
 certificate, and nonnegativity hypotheses needed by the already proved `1 × 1`
@@ -23216,6 +23335,64 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split
     hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hprod hLhat hThat
     hbudget_factor hbudget_solve hη_parts
 
+/-- Rounded Aasen factorization-plus-solve split-entry endpoint specialized
+to the actual printed radius, with the local `gammaValid n` side condition
+derived from `gammaValid fp (15*n+25)`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma_validity
+    (fp : FPModel) (n : ℕ)
+    (A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor η_factor η_solve : ℝ)
+    (hγ_factor : 0 ≤ γ_factor)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hBT_factor : ∀ i j : Fin n, 0 ≤ BT_factor i j)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hLhat : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ_factor * |L i j|)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT_factor i j)
+    (hbudget_factor : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T
+          (fun r c => L c r) i j ≤
+        η_factor * |T_hat i j|)
+    (hbudget_solve : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n (gamma fp n)
+          (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat)
+          L_hat T_hat (fun r c => L_hat c r) i j ≤
+        η_solve * |T_hat i j|)
+    (hη_parts : η_factor + η_solve ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * gamma fp (15 * n + 25)) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma
+      fp n A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve hγ_factor hcoeff_valid hBT_factor h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      (higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1
+      hprod hLhat hThat hbudget_factor hbudget_solve hη_parts
+
 /-- Rounded Aasen source-prefix recurrence wrapper plus the printed Theorem
 11.8 normwise predicate.  This is the normwise sibling of
 `higham11_8_fl_aasen_factor_solve_source_backward_error_of_source_prefix_updates`:
@@ -23572,6 +23749,90 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_sourc
     hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
     hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn
     hprod hThat hbudget_factor hbudget_solve hη_parts
+
+/-- Source-prefix rounded Aasen split-entry endpoint specialized to the actual
+printed radius, with `gammaValid n`, `gammaValid 2`, and all source-prefix
+dot-product validity side conditions derived from
+`gammaValid fp (15*n+25)`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_gamma_validity
+    (fp : FPModel) (n : ℕ)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor :
+      Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor η_factor η_solve : ℝ)
+    (hγ_factor : 0 ≤ γ_factor)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hBT_factor : ∀ i j : Fin n, 0 ≤ BT_factor i j)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ γ_factor * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT_factor i j)
+    (hbudget_factor : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T
+          (fun r c => L c r) i j ≤
+        η_factor * |T_hat i j|)
+    (hbudget_solve : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n (gamma fp n)
+          (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat)
+          L_hat T_hat (fun r c => L_hat c r) i j ≤
+        η_solve * |T_hat i j|)
+    (hη_parts : η_factor + η_solve ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * gamma fp (15 * n + 25)) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  rcases higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid with
+    ⟨hn, hvalUpdate, hvalSum⟩
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_gamma
+      fp n A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve hγ_factor hcoeff_valid hBT_factor hrec hHnz
+      hvalSum hvalUpdate hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower
+      hT_U_upper hn hprod hThat hbudget_factor hbudget_solve hη_parts
 
 /-- Aasen growth factor `rho_n = max_ij |t_ij| / max_ij |a_ij|`. -/
 noncomputable def higham11_8_aasenGrowthFactor
