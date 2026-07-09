@@ -43,6 +43,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.7 finite mixed-pivot path interface | `higham11_7_TridiagonalBranchPathLocalAssumptions`, `higham11_7_TridiagonalBranchPathLocalResiduals`, `higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions`, `higham11_7_TridiagonalBranchPathTerminalAssumptions`, `higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions`, `higham11_7_tridiagonalBranchPathLocalResiduals_empty`, `higham11_7_tridiagonalBranchPathLocalResiduals_singleton_of_localAssumptions`, `higham11_7_tridiagonalBranchPathLocalResiduals_singleton_of_terminalTailAssumptions`, `higham11_7_tridiagonalBranchPathLocalAssumptions_head`, `higham11_7_tridiagonalBranchPathLocalAssumptions_tail`, `higham11_7_tridiagonalBranchPathTerminalAssumptions_head`, `higham11_7_tridiagonalBranchPathTerminalAssumptions_tail`, `higham11_7_tridiagonalBranchPathLocalResiduals_head`, `higham11_7_tridiagonalBranchPathLocalResiduals_tail` | Ch11 | **new this session**; lifts the branch-local and terminal-tail adapters pointwise over a finite family of `1×1`/`2×2` tridiagonal branch choices with per-step dimensions, matrices, budgets, and tail scalars. The empty and singleton adapters expose the induction base and one-step entry points; the head/tail projections expose the elimination side for future induction. This is path-level scaffolding for the remaining mixed-pivot induction; it still leaves the global accumulation of those pointwise residuals open. |
 | Thm 11.7 finite mixed-pivot last-terminal path assembly | `higham11_7_tridiagonalBranchPathLocalAssumptions_of_init_localAssumptions_last_terminalTailAssumptions`, `higham11_7_tridiagonalBranchPathLocalResiduals_of_init_localAssumptions_last_terminalTailAssumptions` | Ch11 | **new this session**; packages the concrete recursion shape where all initial branches carry ordinary local recursive assumptions and the final branch is discharged by the terminal-tail adapter, yielding both path-local assumptions and path-local residuals. |
 | Thm 11.7 finite mixed-pivot path witness extraction | `higham11_7_tridiagonalBranchLocalResidual_exists_supported_witness`, `higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses`, `higham11_7_tridiagonalBranchPathLocalAssumptions_exists_supported_witnesses`, `higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_witnesses`, `higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses_of_uniform_budgets`, `higham11_7_tridiagonalBranchPathLocalAssumptions_exists_supported_witnesses_of_uniform_budgets`, `higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_witnesses_of_uniform_budgets` | Ch11 | **new this session**; extracts explicit per-branch perturbation matrices from branch-local, finite-path residual, path-local-assumption, and terminal-tail-assumption packages, retaining the componentwise budget, leading-block support, and `∞`-norm bound needed by the later global accumulation theorem. Uniform-budget variants package supplied per-branch scalar comparisons into the extracted witnesses directly. |
+| Thm 11.7 finite mixed-pivot residual equation witnesses | `higham11_7_TridiagonalBranchPathResidualWitnesses`, `higham11_7_tridiagonalBranchPathLocalResiduals_exists_residual_witnesses` | Ch11 | **new this session**; lifts the richer branch residual-witness predicate over finite paths and extracts witnesses that preserve each branch's scalar residual equation, not only the bound/support/norm data. |
 | Thm 11.7 solve-side interface bridge | `higham11_7_tridiagonal_backward_error_interface_of_solve_delta`, `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_nonneg`, `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm` | Ch11 | **new this session**; if the recursive tridiagonal analysis constructs the solve-side perturbation `ΔA₂` with the printed componentwise budget, the factorization-side perturbation `ΔA₁` can be filled by zero to produce the source-facing Theorem 11.7 interface shape; the `_nonneg` form derives `0 ≤ c*u*Amax` from separate nonnegativity of `c`, `u`, and `Amax`, and the `_infNorm` form specializes the budget to `c*u*‖A‖∞` |
 | Thm 11.7 entrywise infinity-norm bridge | `higham11_7_abs_entry_le_infNorm` | Ch11 | **new this session**; row-sum bridge showing every entry satisfies `|Aᵢⱼ| ≤ ‖A‖∞`, used to discharge local scalar `Amax` hypotheses from a norm budget |
 | Thm 11.7 componentwise-to-infinity-norm bridge | `higham11_7_infNorm_le_card_mul_of_uniform_componentwise_bound`, `higham11_7_infNorm_le_card_mul_of_printed_componentwise_bound` | Ch11 | **new this session**; aggregates a uniform componentwise perturbation budget to an infinity-norm bound by row sums, with the printed `c*u*Amax` form exposed for the final normwise theorem |
@@ -275,6 +276,11 @@ The path witness extraction increment adds
 `higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses`, so
 the next aggregation proof can consume explicit per-branch perturbation matrices
 with their componentwise, support, and norm budgets.
+A residual equation-witness extraction increment adds
+`higham11_7_TridiagonalBranchPathResidualWitnesses` and
+`higham11_7_tridiagonalBranchPathLocalResiduals_exists_residual_witnesses`, so
+future solve-equation assembly can keep each extracted perturbation tied to its
+local scalar residual equation.
 A follow-up 2026-07-09 increment composes that extractor with the path-local and
 terminal-tail assumption surfaces via
 `higham11_7_tridiagonalBranchPathLocalAssumptions_exists_supported_witnesses`
@@ -1581,6 +1587,14 @@ Problem transcription.
     focused lookup/axiom check of fully-qualified
     `higham11_7_tridiagonalBranchLocalResidual_exists_supported_witness` and
     `higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot residual equation-witness increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_TridiagonalBranchPathResidualWitnesses` and
+    `higham11_7_tridiagonalBranchPathLocalResiduals_exists_residual_witnesses`
     → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.7 finite mixed-pivot assumption-to-witness increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;

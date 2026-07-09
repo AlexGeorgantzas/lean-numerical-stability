@@ -7150,6 +7150,47 @@ def higham11_7_TridiagonalBranchPathSupportedWitnesses
       ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
         (c_bound t + c_rec t) * u t * infNorm (A t)
 
+/-- **Theorem 11.7 path residual witnesses with equations**.  This path-level
+predicate keeps the specific perturbation matrix for each branch tied to that
+branch's scalar residual equation, in addition to the usual bounds/support/norm
+data. -/
+def higham11_7_TridiagonalBranchPathResidualWitnesses
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ) :
+    Prop :=
+  ∀ t : Fin k,
+    higham11_7_TridiagonalBranchLocalResidualWitness (tailDim t) fp (step t)
+      (A t) (c_bound t) (c_rec t) (u t) (tail_fl t) (tail_exact t) (ΔA t)
+
+/-- **Theorem 11.7 path residual witness extraction with equations**.  A finite
+path-local residual package supplies explicit per-branch perturbation matrices
+that preserve each branch's scalar residual equation. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_exists_residual_witnesses
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step A c_bound c_rec u tail_fl tail_exact) :
+    ∃ ΔA : ∀ t : Fin k,
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+      higham11_7_TridiagonalBranchPathResidualWitnesses k fp tailDim step A
+        c_bound c_rec u tail_fl tail_exact ΔA := by
+  classical
+  choose ΔA hΔA using fun t =>
+    higham11_7_tridiagonalBranchLocalResidual_exists_residual_witness
+      (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
+      (tail_fl t) (tail_exact t) (hpath t)
+  exact ⟨ΔA, hΔA⟩
+
 /-- Index embedding for placing a local tridiagonal branch block into a larger
 ambient matrix starting at row/column `start`. -/
 def higham11_7_tridiagonalLocalBlockIndex
