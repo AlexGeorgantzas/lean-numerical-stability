@@ -15532,6 +15532,252 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hcert.deltaA_bound hcert.deltab_bound
 
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where the
+    stored prefix lower-zero theorem and nonzero local diagonals supply
+    nonbreakdown, with active-suffix row ratios supplied by finite active-ratio
+    maxima. -/
+theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_diag_ne_zero_activeRatioMax_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    {phi : ℝ} (gammaTilde err : ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hdiagPrev : ∀ t (ht : t < n) (r : Fin t),
+      storedHouseholderQRMatrixSeq fp hnm A t
+        (qrPrefixRow m t (le_of_lt (lt_of_lt_of_le ht hnm)) r)
+        (qrPreviousColumn n t ht r) ≠ 0)
+    (hdiagLead : ∀ t (ht : t < n) (r : Fin (t + 1)),
+      storedHouseholderQRMatrixSeq fp hnm A t
+        (qrLeadingRow m t
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le ht hnm)) r)
+        (qrLeadingColumn n t ht r) ≠ 0)
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotChoice : ∀ t (ht : t < n),
+      Fin.mk t ht =
+        householderActiveMaxPivotColumn
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)
+          (storedHouseholderQRMatrixSeq fp hnm A t))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |storedHouseholderQRMatrixSeq fp hnm A (t + 1) r j -
+            Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRMatrixSeq fp hnm A t r j - Aexact t r j|)
+    (hArowRatioMax :
+      theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤
+        Real.sqrt (m : ℝ))
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |storedHouseholderQRRhsSeq fp hnm A b (t + 1) r -
+            bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRRhsSeq fp hnm A b t r - bexact t r|)
+    (hbrowRatioMax :
+      theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm A b phi ≤
+        Real.sqrt (m : ℝ))
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn
+              (storedHouseholderQRMatrixSeq fp hnm A) A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn
+              (storedHouseholderQRMatrixSeq fp hnm A) A
+              (storedHouseholderQRRhsSeq fp hnm A b) b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (theorem20_7_compactActiveHorizon fp m err (n - 1))
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  have hprefix :=
+    theorem20_7_storedHouseholderQRMatrixSeq_prefix_lower_zero_nat
+      fp hnm A
+  have hdetPrev : ∀ t (ht : t < n),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose
+          (storedHouseholderQRMatrixSeq fp hnm A t)
+          (le_of_lt (lt_of_lt_of_le ht hnm)) ht :
+          Matrix (Fin t) (Fin t) ℝ) ≠ 0 := by
+    intro t ht
+    apply
+      qrPreviousLeadingBlockTranspose_det_ne_zero_of_local_lower_triangular_diag_ne_zero
+        (storedHouseholderQRMatrixSeq fp hnm A t)
+        (le_of_lt (lt_of_lt_of_le ht hnm)) ht
+    · intro i j hij
+      simpa [qrPreviousLeadingBlockTranspose, qrPrefixRow, qrPreviousColumn] using
+        hprefix t (Nat.le_of_lt ht)
+          (qrPrefixRow m t (le_of_lt (lt_of_lt_of_le ht hnm)) j)
+          (qrPreviousColumn n t ht i)
+          (by simp [qrPreviousColumn])
+          (by simpa [qrPrefixRow, qrPreviousColumn] using hij)
+    · exact hdiagPrev t ht
+  have hdetLead : ∀ t (ht : t < n),
+      Matrix.det
+        (qrLeadingBlock
+          (storedHouseholderQRMatrixSeq fp hnm A t)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le ht hnm)) ht :
+          Matrix (Fin (t + 1)) (Fin (t + 1)) ℝ) ≠ 0 := by
+    intro t ht
+    apply
+      qrLeadingBlock_det_ne_zero_of_local_upper_triangular_diag_ne_zero
+        (storedHouseholderQRMatrixSeq fp hnm A t)
+        (Nat.succ_le_iff.mpr (lt_of_lt_of_le ht hnm)) ht
+    · intro i j hji
+      have hcol_lt_t : (qrLeadingColumn n t ht j).val < t := by
+        simp [qrLeadingColumn]
+        exact Nat.lt_of_lt_of_le hji (Nat.le_of_lt_succ i.isLt)
+      have hcol_lt_row :
+          (qrLeadingColumn n t ht j).val <
+            (qrLeadingRow m t
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le ht hnm)) i).val := by
+        simpa [qrLeadingColumn, qrLeadingRow] using hji
+      simpa [qrLeadingBlock] using
+        hprefix t (Nat.le_of_lt ht)
+          (qrLeadingRow m t
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le ht hnm)) i)
+          (qrLeadingColumn n t ht j) hcol_lt_t hcol_lt_row
+    · exact hdiagLead t ht
+  have hlowerPrev : ∀ t (ht : t < n) (i : Fin m) (j : Fin t),
+      t ≤ i.val →
+        storedHouseholderQRMatrixSeq fp hnm A t i
+          (qrPreviousColumn n t ht j) = 0 := by
+    intro t ht i j hti
+    exact
+      hprefix t (Nat.le_of_lt ht) i (qrPreviousColumn n t ht j)
+        (by simp [qrPreviousColumn])
+        (Nat.lt_of_lt_of_le j.isLt hti)
+  exact
+    theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_leading_block_det_ne_zero_activeRatioMax_le_nat
+      hm hn hnm fp Aexact A bexact b gammaTilde err DeltaA Deltab
+      hphi hgamma herr hmfp hrows hAexact0 hbexact0 hdetPrev hdetLead
+      hlowerPrev hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
+      hAstepErr hArowRatioMax hbstepExact hbstepErr hbrowRatioMax
+      hDeltaA hDeltab
+
+/-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
+    prefix-lower-zero plus diagonal-nonzero wrapper whose active-suffix
+    row-ratio hypotheses are supplied by finite active-ratio maxima. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_diag_ne_zero_activeRatioMax_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    {phi : ℝ} (gammaTilde err : ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hdiagPrev : ∀ t (ht : t < n) (r : Fin t),
+      storedHouseholderQRMatrixSeq fp hnm A t
+        (qrPrefixRow m t (le_of_lt (lt_of_lt_of_le ht hnm)) r)
+        (qrPreviousColumn n t ht r) ≠ 0)
+    (hdiagLead : ∀ t (ht : t < n) (r : Fin (t + 1)),
+      storedHouseholderQRMatrixSeq fp hnm A t
+        (qrLeadingRow m t
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le ht hnm)) r)
+        (qrLeadingColumn n t ht r) ≠ 0)
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotChoice : ∀ t (ht : t < n),
+      Fin.mk t ht =
+        householderActiveMaxPivotColumn
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)
+          (storedHouseholderQRMatrixSeq fp hnm A t))
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |storedHouseholderQRMatrixSeq fp hnm A (t + 1) r j -
+            Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRMatrixSeq fp hnm A t r j - Aexact t r j|)
+    (hArowRatioMax :
+      theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤
+        Real.sqrt (m : ℝ))
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |storedHouseholderQRRhsSeq fp hnm A b (t + 1) r -
+            bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRRhsSeq fp hnm A b t r - bexact t r|)
+    (hbrowRatioMax :
+      theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm A b phi ≤
+        Real.sqrt (m : ℝ))
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn A b
+        (storedHouseholderQRMatrixSeq fp hnm A)
+        (storedHouseholderQRRhsSeq fp hnm A b) phi gammaTilde xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j => A i j + hcert.DeltaA i j)
+        (fun i => b i + hcert.Deltab i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |hcert.DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |hcert.Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_compactActiveHorizon fp m err (n - 1))
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  refine ⟨hcert.exact_solution, ?_⟩
+  exact
+    theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_diag_ne_zero_activeRatioMax_le_nat
+      hm hn hnm fp Aexact A bexact b gammaTilde err hcert.DeltaA
+      hcert.Deltab hphi hgamma herr hmfp hrows hAexact0 hbexact0
+      hdiagPrev hdiagLead hcopy hpivotChoice hAsorted hbAbsSorted
+      hAstepExact hAstepErr hArowRatioMax hbstepExact hbstepErr
+      hbrowRatioMax hcert.deltaA_bound hcert.deltab_bound
+
+/-- Theorem 20.7 support: concrete stored-Householder QR wrapper where the
     stored prefix lower-zero theorem and leading-block diagonal nonzero facts
     supply the determinant/lower-prefix nonbreakdown hypotheses. -/
 theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_leading_diag_ne_zero_row_scale_ratios_nat
