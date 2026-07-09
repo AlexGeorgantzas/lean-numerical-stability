@@ -4252,6 +4252,79 @@ theorem higham11_7_tridiagonalBranchPathLocalResiduals_tail
   intro t
   exact hpath t.succ
 
+/-- **Theorem 11.7 path-local assumptions, cons constructor**.  A head
+branch-local assumption plus a tail path gives the corresponding nonempty
+finite path assumption. -/
+theorem higham11_7_tridiagonalBranchPathLocalAssumptions_cons
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchLocalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+      (tail_fl 0) (tail_exact 0))
+    (htail : higham11_7_TridiagonalBranchPathLocalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_fl t.succ)
+      (fun t => tail_exact t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalAssumptions (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact := by
+  intro t
+  cases t using Fin.cases with
+  | zero =>
+      simpa using hhead
+  | succ t =>
+      exact htail t
+
+/-- **Theorem 11.7 terminal path assumptions, cons constructor**. -/
+theorem higham11_7_tridiagonalBranchPathTerminalAssumptions_cons
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchTerminalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0))
+    (htail : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ)) :
+    higham11_7_TridiagonalBranchPathTerminalAssumptions (k + 1) fp
+      tailDim step A c_bound c_rec u := by
+  intro t
+  cases t using Fin.cases with
+  | zero =>
+      simpa using hhead
+  | succ t =>
+      exact htail t
+
+/-- **Theorem 11.7 path-local residuals, cons constructor**.  This is the
+introduction-side companion to the head/tail residual projections. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchLocalResidual
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+      (tail_fl 0) (tail_exact 0))
+    (htail : higham11_7_TridiagonalBranchPathLocalResiduals k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_fl t.succ)
+      (fun t => tail_exact t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact := by
+  intro t
+  cases t using Fin.cases with
+  | zero =>
+      simpa using hhead
+  | succ t =>
+      exact htail t
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
