@@ -4352,6 +4352,59 @@ theorem higham11_8_one_plus_two_gamma_plus_sq_mul_le_of_majorants
     exact mul_le_mul hcoeff_le hxy hx hγbcoeff_nonneg
   exact hleft.trans hyη
 
+/-- Absorb Chapter 9's tridiagonal-LU source polynomial
+`f(γ_n)=4γ_n+3γ_n^2+γ_n^3` into a single accumulated gamma radius. -/
+theorem higham11_8_higham9_14_f_gamma_le_gamma_4n
+    (fp : FPModel) (n : ℕ) (hval : gammaValid fp (4 * n)) :
+    higham9_14_f (gamma fp n) ≤ gamma fp (4 * n) := by
+  let γn : ℝ := gamma fp n
+  let γ3n : ℝ := gamma fp (3 * n)
+  have hn : gammaValid fp n := gammaValid_mono fp (by omega) hval
+  have h3n : gammaValid fp (3 * n) := gammaValid_mono fp (by omega) hval
+  have hγn : 0 ≤ γn := by
+    dsimp [γn]
+    exact gamma_nonneg fp hn
+  have h3 :
+      3 * γn + γn ^ 2 ≤ γ3n := by
+    simpa [γn, γ3n] using three_gamma_plus_sq_le_gamma fp n h3n
+  have h3mul :
+      (3 * γn + γn ^ 2) * γn ≤ γ3n * γn :=
+    mul_le_mul_of_nonneg_right h3 hγn
+  have hpoly :
+      higham9_14_f γn ≤ γ3n + γn + γ3n * γn := by
+    unfold higham9_14_f
+    nlinarith
+  have h4 :
+      γ3n + γn + γ3n * γn ≤ gamma fp (4 * n) := by
+    have hsum :
+        gamma fp (3 * n) + gamma fp n +
+            gamma fp (3 * n) * gamma fp n ≤ gamma fp (3 * n + n) :=
+      gamma_sum_le fp (3 * n) n (by
+        simpa [show 3 * n + n = 4 * n by omega] using hval)
+    simpa [γn, γ3n, show 3 * n + n = 4 * n by omega] using hsum
+  exact hpoly.trans h4
+
+/-- Column/row-dominant Aasen middle solves use the coefficient
+`3f(γ_n)`; this helper absorbs that term into `γ_{12n}`. -/
+theorem higham11_8_three_higham9_14_f_gamma_le_gamma_12n
+    (fp : FPModel) (n : ℕ) (hval : gammaValid fp (12 * n)) :
+    3 * higham9_14_f (gamma fp n) ≤ gamma fp (12 * n) := by
+  have h4valid : gammaValid fp (4 * n) :=
+    gammaValid_mono fp (by omega) hval
+  have hf :
+      higham9_14_f (gamma fp n) ≤ gamma fp (4 * n) :=
+    higham11_8_higham9_14_f_gamma_le_gamma_4n fp n h4valid
+  have htriple :
+      (3 : ℝ) * gamma fp (4 * n) ≤ gamma fp (3 * (4 * n)) :=
+    gamma_nsmul_le fp 3 (4 * n) (by norm_num) (by
+      simpa [show 3 * (4 * n) = 12 * n by omega] using hval)
+  calc
+    3 * higham9_14_f (gamma fp n)
+        ≤ (3 : ℝ) * gamma fp (4 * n) :=
+          mul_le_mul_of_nonneg_left hf (by norm_num)
+    _ ≤ gamma fp (12 * n) := by
+      simpa [show 3 * (4 * n) = 12 * n by omega] using htriple
+
 /-- Product-cap version of
 `higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts`.  Each of the four
 coefficient pieces may first be bounded by a simpler product cap, and the cap
