@@ -5410,6 +5410,42 @@ theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound (n : ℕ)
       n L γ (((n - 1 : ℕ) : ℝ) * κ) (((n - 1 : ℕ) : ℝ) * κ) cap
       hγ hcap hκcap hκcap hrows hcols
 
+/-- Scalar scale comparison for the Aasen `(n-1)` outer-factor route.  A
+normalized entry bound `(1+γ)κ≤1` implies the row/column cap
+`(1+γ)((n-1)κ)≤n-1` consumed by the exact-radius wrappers. -/
+theorem higham11_8_aasen_outer_factor_scaled_entry_cap (n : ℕ) (γ κ : ℝ)
+    (hκunit : (1 + γ) * κ ≤ 1) :
+    (1 + γ) * (((n - 1 : ℕ) : ℝ) * κ) ≤ ((n - 1 : ℕ) : ℝ) := by
+  have hcard : 0 ≤ ((n - 1 : ℕ) : ℝ) := Nat.cast_nonneg (n - 1)
+  calc
+    (1 + γ) * (((n - 1 : ℕ) : ℝ) * κ)
+        = ((n - 1 : ℕ) : ℝ) * ((1 + γ) * κ) := by ring
+    _ ≤ ((n - 1 : ℕ) : ℝ) * 1 :=
+      mul_le_mul_of_nonneg_left hκunit hcard
+    _ = ((n - 1 : ℕ) : ℝ) := by ring
+
+/-- Aasen outer-factor relative caps from a normalized uniform entry bound.
+This factors the remaining source scalar comparison for the exact-radius route:
+after proving `(1+γ)κ≤1` for the concrete Aasen factor entries, the strict
+upper-zero and first-column-zero structure supplies both relative norm caps with
+the printed `(n-1)` radius. -/
+theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : 0 ≤ κ)
+    (hκunit : (1 + γ) * κ ≤ 1)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (1 + γ) * infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) := by
+  exact
+    higham11_8_relative_outer_factor_caps_of_aasen_entry_bound
+      n hn L γ κ ((n - 1 : ℕ) : ℝ) hγ hκ
+      (higham11_8_aasen_outer_factor_scaled_entry_cap n γ κ hκunit)
+      hentry hstrictUpperZero hfirstColZero
+
 /-- A relative entrywise factor perturbation controls the perturbed factor's
 infinity norm by `(1+γ)` times the source factor norm. -/
 theorem higham11_8_infNorm_factor_le_of_relative_entry_bound (n : ℕ)
