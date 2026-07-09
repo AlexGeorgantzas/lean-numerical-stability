@@ -2624,6 +2624,29 @@ theorem higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_leadingBlockSuppo
         dif_pos hi, dif_neg hj]
   · rw [higham11_7_tridiagonalOneByOneLiftTrailingPerturbation, dif_neg hi]
 
+/-- **Theorem 11.7 one-by-one recursive support-shift package**, lifting a
+recursive trailing perturbation while preserving its componentwise bound,
+shifting zero-prefix support by one, and preserving embedded entries. -/
+theorem higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_bound_leadingBlockSupport
+    (n offset : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ) (β : ℝ)
+    (hEbound : ∀ i j : Fin (n + 1), |E i j| ≤ β)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport (n + 1) offset E) :
+    ∃ ΔR : Fin (n + 2) → Fin (n + 2) → ℝ,
+      (∀ i j : Fin (n + 2), |ΔR i j| ≤ β) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 2) (offset + 1) ΔR ∧
+      (∀ i j : Fin (n + 1),
+        ΔR (higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n i)
+          (higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n j) =
+            E i j) := by
+  refine ⟨higham11_7_tridiagonalOneByOneLiftTrailingPerturbation n E, ?_, ?_, ?_⟩
+  · exact higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_bound
+      n E β hEbound
+  · exact higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_leadingBlockSupport
+      n offset E hEsupp
+  · intro i j
+    exact higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_apply_embedded
+      n E i j
+
 /-- **Theorem 11.7 one-by-one pivot correction bound**.  Algorithm 11.6's
 one-pivot threshold bounds the exact local correction
 `a21*a21/a11` by `Amax/α` once `σ ≤ Amax`. -/
@@ -2687,6 +2710,92 @@ theorem higham11_7_fl_tridiagonal_oneByOne_schur_step_printed_bound_of_choice
         σ a11 a21 Amax hchoice ha11 hσA)
   exact hΔ.trans ((mul_le_mul_of_nonneg_left hinside hγ0).trans hbudget)
 
+/-- **Theorem 11.7 one-by-one recursive residual aggregation**.  This
+dimension-generic scalar form is the `1 × 1` companion to the `2 × 2` local
+recursive accumulator: it embeds a recursive trailing perturbation at offset
+one, adds the local rounded Schur residual at the first trailing diagonal, and
+records the induced infinity-norm budget. -/
+theorem higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_with_norm_bound
+    (n : ℕ) (fp : FPModel)
+    (σ a11 a21 b Amax c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one)
+    (ha11 : a11 ≠ 0) (hσA : σ ≤ Amax) (hAmax : 0 ≤ Amax)
+    (hb : |b| ≤ Amax)
+    (hbudget :
+      gamma fp 3 *
+          (Amax + Amax / higham11_6_bunchTridiagonalAlpha) ≤
+        c_bound * u * Amax)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * Amax) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 2) → Fin (n + 2) → ℝ,
+      (∀ i j : Fin (n + 2), |ΔA i j| ≤ (c_bound + c_rec) * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 2) 1 ΔA ∧
+      infNorm ΔA ≤ ((n + 2 : ℕ) : ℝ) * (c_bound + c_rec) * u * Amax ∧
+      fp.fl_sub b (fp.fl_mul (fp.fl_div a21 a11) a21) + tail_fl =
+        (b - a21 * a21 / a11) + tail_exact +
+          ΔA (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) := by
+  let tail : Fin (n + 2) := higham11_7_tridiagonalOneByOneFirstTrailingIndex n
+  obtain ⟨ΔS, hΔS, hstep⟩ :=
+    higham11_7_fl_tridiagonal_oneByOne_schur_step_printed_bound_of_choice
+      fp σ a11 a21 b Amax c_bound u hchoice ha11 hσA hb hbudget hval
+  obtain ⟨ΔRtail, hRtail_bound, htail⟩ := hrec
+  let ΔSmat : Fin (n + 2) → Fin (n + 2) → ℝ :=
+    fun i j => if i = tail ∧ j = tail then ΔS else 0
+  have hΔSmat_bound :
+      ∀ i j : Fin (n + 2), |ΔSmat i j| ≤ c_bound * u * Amax := by
+    intro i j
+    have hzero_bound : |(0 : ℝ)| ≤ c_bound * u * Amax := by
+      simpa using (abs_nonneg ΔS).trans hΔS
+    by_cases h : i = tail ∧ j = tail
+    · simpa [ΔSmat, h] using hΔS
+    · simpa [ΔSmat, h] using hzero_bound
+  have hΔSmat_supp :
+      higham11_7_TridiagonalLeadingBlockSupport (n + 2) 1 ΔSmat := by
+    intro i j hlead
+    have hnot : ¬(i = tail ∧ j = tail) := by
+      intro h
+      rcases hlead with hi | hj
+      · have : tail.val < 1 := by simpa [h.1] using hi
+        simp [tail] at this
+      · have : tail.val < 1 := by simpa [h.2] using hj
+        simp [tail] at this
+    simp [ΔSmat, hnot]
+  have hRtail_supp :
+      higham11_7_TridiagonalLeadingBlockSupport (n + 1) 0 ΔRtail := by
+    intro i j hlead
+    rcases hlead with hi | hj <;> omega
+  obtain ⟨ΔR, hRbound, hRsupp, hRembed⟩ :=
+    higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_bound_leadingBlockSupport
+      n 0 ΔRtail (c_rec * u * Amax) hRtail_bound hRtail_supp
+  obtain ⟨ΔA, hΔA, hΔAsupp, hsum⟩ :=
+    higham11_7_tridiagonalLeadingBlockSupport_add_bound_printed (n + 2) 1
+      ΔSmat ΔR c_bound c_rec u Amax
+      hΔSmat_bound hRbound hΔSmat_supp hRsupp
+  refine ⟨ΔA, hΔA, hΔAsupp, ?_, ?_⟩
+  · exact
+      higham11_7_infNorm_le_card_mul_of_printed_componentwise_bound
+        (n + 2) ΔA (c_bound + c_rec) u Amax
+        (mul_nonneg (mul_nonneg (add_nonneg hc_bound hc_rec) hu) hAmax) hΔA
+  · rw [htail]
+    have hRtail : ΔR tail tail = ΔRtail 0 0 := by
+      change ΔR
+          (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+          (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) =
+        ΔRtail 0 0
+      rw [← higham11_7_tridiagonalOneByOneTrailingSubproblemIndex_zero n]
+      exact hRembed 0 0
+    have hsum_tail : ΔA tail tail = ΔS + ΔRtail 0 0 := by
+      rw [hsum tail tail]
+      have hSm : ΔSmat tail tail = ΔS := by
+        simp [ΔSmat]
+      rw [hSm, hRtail]
+    rw [hstep, hsum_tail]
+    ring
+
 /-- **Theorem 11.7 one-by-one recursive residual aggregation, matrix-entry
 form**.  This is the `1 × 1`-pivot companion to the `2 × 2` local-recursive
 accumulator above: it embeds a recursive trailing perturbation at offset one,
@@ -2733,74 +2842,11 @@ theorem higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_b
   let tail : Fin (n + 2) := higham11_7_tridiagonalOneByOneFirstTrailingIndex n
   have hb : |A tail tail| ≤ infNorm A :=
     higham11_7_abs_entry_le_infNorm (n + 2) A tail tail
-  obtain ⟨ΔS, hΔS, hstep⟩ :=
-    higham11_7_fl_tridiagonal_oneByOne_schur_step_printed_bound_of_choice
-      fp σ (A 0 0) (A tail 0) (A tail tail) (infNorm A) c_bound u
-      hchoice ha11 hσA hb hbudget hval
-  obtain ⟨ΔRtail, hRtail_bound, htail⟩ := hrec
-  let ΔSmat : Fin (n + 2) → Fin (n + 2) → ℝ :=
-    fun i j => if i = tail ∧ j = tail then ΔS else 0
-  have hΔSmat_bound :
-      ∀ i j : Fin (n + 2), |ΔSmat i j| ≤ c_bound * u * infNorm A := by
-    intro i j
-    have hzero_bound : |(0 : ℝ)| ≤ c_bound * u * infNorm A := by
-      simpa using (abs_nonneg ΔS).trans hΔS
-    by_cases h : i = tail ∧ j = tail
-    · simpa [ΔSmat, h] using hΔS
-    · simpa [ΔSmat, h] using hzero_bound
-  have hΔSmat_supp :
-      higham11_7_TridiagonalLeadingBlockSupport (n + 2) 1 ΔSmat := by
-    intro i j hlead
-    have hnot : ¬(i = tail ∧ j = tail) := by
-      intro h
-      rcases hlead with hi | hj
-      · have : tail.val < 1 := by simpa [h.1] using hi
-        simp [tail] at this
-      · have : tail.val < 1 := by simpa [h.2] using hj
-        simp [tail] at this
-    simp [ΔSmat, hnot]
-  let ΔR : Fin (n + 2) → Fin (n + 2) → ℝ :=
-    higham11_7_tridiagonalOneByOneLiftTrailingPerturbation n ΔRtail
-  have hRbound :
-      ∀ i j : Fin (n + 2), |ΔR i j| ≤ c_rec * u * infNorm A := by
-    intro i j
-    exact higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_bound
-      n ΔRtail (c_rec * u * infNorm A) hRtail_bound i j
-  have hRtail_supp :
-      higham11_7_TridiagonalLeadingBlockSupport (n + 1) 0 ΔRtail := by
-    intro i j hlead
-    rcases hlead with hi | hj <;> omega
-  have hRsupp : higham11_7_TridiagonalLeadingBlockSupport (n + 2) 1 ΔR := by
-    simpa [ΔR] using
-      higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_leadingBlockSupport
-        n 0 ΔRtail hRtail_supp
-  obtain ⟨ΔA, hΔA, hΔAsupp, hsum⟩ :=
-    higham11_7_tridiagonalLeadingBlockSupport_add_bound_printed (n + 2) 1
-      ΔSmat ΔR c_bound c_rec u (infNorm A)
-      hΔSmat_bound hRbound hΔSmat_supp hRsupp
-  refine ⟨ΔA, hΔA, hΔAsupp, ?_, ?_⟩
-  · exact
-      higham11_7_infNorm_le_card_mul_of_printed_componentwise_bound
-        (n + 2) ΔA (c_bound + c_rec) u (infNorm A)
-        (mul_nonneg (mul_nonneg (add_nonneg hc_bound hc_rec) hu)
-          (infNorm_nonneg A)) hΔA
-  · rw [htail]
-    have hRtail : ΔR tail tail = ΔRtail 0 0 := by
-      change higham11_7_tridiagonalOneByOneLiftTrailingPerturbation n ΔRtail
-          (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
-          (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) =
-        ΔRtail 0 0
-      rw [← higham11_7_tridiagonalOneByOneTrailingSubproblemIndex_zero n]
-      exact
-        higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_apply_embedded
-          n ΔRtail 0 0
-    have hsum_tail : ΔA tail tail = ΔS + ΔRtail 0 0 := by
-      rw [hsum tail tail]
-      have hSm : ΔSmat tail tail = ΔS := by
-        simp [ΔSmat]
-      rw [hSm, hRtail]
-    rw [hstep, hsum_tail]
-    ring
+  simpa [tail] using
+    higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_with_norm_bound
+      n fp σ (A 0 0) (A tail 0) (A tail tail) (infNorm A)
+      c_bound c_rec u tail_fl tail_exact hchoice ha11 hσA
+      (infNorm_nonneg A) hb hbudget hval hrec hc_bound hc_rec hu
 
 /-! ## §11.2 Aasen's method -/
 
