@@ -32608,6 +32608,86 @@ theorem theorem20_8_wedinResidualRHS_first_order_coeff_le_of_kappaB_bracket
       field_simp [ne_of_gt hApos]
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the remaining `kappa_B(A)` bracket follows from the sharper residual
+    amplifier lower bound
+    `1 + kappa_B(A) <= kappa_B(A) * ((||B||_F/||A||_F)||A B_A^+||_2)`.
+
+    This separates the genuine scalar side condition from the algebraic
+    `+ 1` term already present in the printed residual amplifier. -/
+theorem theorem20_8_kappaB_bracket_of_residual_amplifier_factor_lower_bound
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (hfactor :
+      1 + theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+            complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)))) :
+    1 + 2 * theorem20_8KappaB A APplus ≤
+      theorem20_8KappaB A APplus *
+        ((frobNormRect B / frobNormRect A) *
+            complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) +
+          1) := by
+  let factor : ℝ :=
+    (frobNormRect B / frobNormRect A) *
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus))
+  let kappa : ℝ := theorem20_8KappaB A APplus
+  have hfactor' : 1 + kappa ≤ kappa * factor := by
+    simpa [kappa, factor] using hfactor
+  have hplus : 1 + kappa + kappa ≤ kappa * factor + kappa := by
+    linarith
+  calc
+    1 + 2 * theorem20_8KappaB A APplus = 1 + kappa + kappa := by
+      simp [kappa]
+      ring
+    _ ≤ kappa * factor + kappa := hplus
+    _ = theorem20_8KappaB A APplus *
+        ((frobNormRect B / frobNormRect A) *
+            complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) +
+          1) := by
+      simp [kappa, factor]
+      ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-facing form of the residual-amplifier lower-bound side condition.
+    If the dimensionless residual factor is at least `1 + 1/kappa_B(A)`, then
+    the scalar `kappa_B(A)` bracket required by the Wedin residual handoff
+    holds. -/
+theorem theorem20_8_kappaB_bracket_of_residual_amplifier_factor_ge_one_add_inv
+    {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (BAplus : Fin n → Fin p → ℝ)
+    (hkappa_pos : 0 < theorem20_8KappaB A APplus)
+    (hfactor :
+      1 + (theorem20_8KappaB A APplus)⁻¹ ≤
+        (frobNormRect B / frobNormRect A) *
+          complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus))) :
+    1 + 2 * theorem20_8KappaB A APplus ≤
+      theorem20_8KappaB A APplus *
+        ((frobNormRect B / frobNormRect A) *
+            complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) +
+          1) := by
+  let factor : ℝ :=
+    (frobNormRect B / frobNormRect A) *
+      complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus))
+  let kappa : ℝ := theorem20_8KappaB A APplus
+  have hkappa_pos' : 0 < kappa := by
+    simpa [kappa] using hkappa_pos
+  have hfactor' : 1 + kappa⁻¹ ≤ factor := by
+    simpa [kappa, factor] using hfactor
+  have hmul : kappa * (1 + kappa⁻¹) ≤ kappa * factor :=
+    mul_le_mul_of_nonneg_left hfactor' hkappa_pos'.le
+  have hlower : 1 + kappa ≤ kappa * factor := by
+    calc
+      1 + kappa = kappa * (1 + kappa⁻¹) := by
+        field_simp [ne_of_gt hkappa_pos']
+        ring
+      _ ≤ kappa * factor := hmul
+  exact
+    theorem20_8_kappaB_bracket_of_residual_amplifier_factor_lower_bound
+      A B APplus BAplus (by simpa [kappa, factor] using hlower)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action first-order handoff when the reduced residual-relative
     estimate has Wedin's Theorem 20.1 residual RHS.  The comparison between
     that Wedin residual RHS and the Chapter 20.8 residual amplifier is still
@@ -50776,6 +50856,107 @@ theorem
         (fun i => b i + Deltab i) y)
       heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack
       hx.1 hy.1 rfl rfl hgapScale hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    minimizer-facing Gram-projector lifted reduced-Gram BAplus residual-gap
+    handoff with the scalar bracket replaced by a source-facing residual
+    amplifier lower bound.
+
+    The new scalar premise says that the dimensionless factor
+    `(||B||_F/||A||_F)||A B_A^+||_2` is at least `1 + 1/kappa_B(A)`.
+    Positivity of `kappa_B(A)` is derived from the concrete lifted reduced-Gram
+    table under the stacked full-column-rank and `||A||_F > 0` assumptions. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_residualFactor_of_minimizers
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (x y : Fin (p + (k + 1)) → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hgapScale :
+      complexMatrixOp2
+          (realRectToCMatrix
+            (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) *
+          vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) +
+        ((theorem20_8KappaB A h.liftedReducedGramAPplus *
+              (complexMatrixOp2
+                  (realRectToCMatrix
+                    (rectMatMul A (undetAplusOfGramNonsingInv B))) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                      h.liftedReducedGramAPplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b) ≤
+        eps * vecNorm2 (lsResidualHigham A b x))
+    (hresidualFactor :
+      1 + (theorem20_8KappaB A h.liftedReducedGramAPplus)⁻¹ ≤
+        (frobNormRect B / frobNormRect A) *
+          complexMatrixOp2
+            (realRectToCMatrix
+              (rectMatMul A
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)))) :
+    vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          h.liftedReducedGramAPplus
+          (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+            h.liftedReducedGramAPplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+              frobNormRect A) := by
+  have hkappa_pos :
+      0 < theorem20_8KappaB A h.liftedReducedGramAPplus :=
+    h.theorem20_8KappaB_liftedReducedGramAPplus_pos hstack hApos
+  have hbracket :
+      1 + 2 * theorem20_8KappaB A h.liftedReducedGramAPplus ≤
+        theorem20_8KappaB A h.liftedReducedGramAPplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                      h.liftedReducedGramAPplus))) +
+            1) :=
+    theorem20_8_kappaB_bracket_of_residual_amplifier_factor_ge_one_add_inv
+      A B h.liftedReducedGramAPplus
+      (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+        h.liftedReducedGramAPplus)
+      hkappa_pos hresidualFactor
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_bracket_of_minimizers
+      A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
+      hxpos hyx hrpos hmax hstack hx hy hgapScale hbracket
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     for supplied GQR data, `B` has full row rank iff the displayed
